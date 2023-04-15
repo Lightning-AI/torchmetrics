@@ -22,10 +22,10 @@ import torch
 from torch import Tensor
 from torch.nn import Module
 
-from torchmetrics.utilities import apply_to_collection, rank_zero_warn
 from torchmetrics.utilities.data import (
     _flatten,
     _squeeze_if_scalar,
+    apply_to_collection,
     dim_zero_cat,
     dim_zero_max,
     dim_zero_mean,
@@ -34,6 +34,8 @@ from torchmetrics.utilities.data import (
 )
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def jit_distributed_available() -> bool:
@@ -75,10 +77,20 @@ class Metric(Module, ABC):
     """
 
     __jit_ignored_attributes__ = ["device"]
-    __jit_unused_properties__ = ["is_differentiable"]
+    __jit_unused_properties__ = [
+        "is_differentiable",
+        "higher_is_better",
+        "plot_lower_bound",
+        "plot_upper_bound",
+        "plot_legend_name",
+    ]
     is_differentiable: Optional[bool] = None
     higher_is_better: Optional[bool] = None
     full_state_update: Optional[bool] = None
+
+    plot_lower_bound: Optional[float] = None
+    plot_upper_bound: Optional[float] = None
+    plot_legend_name: Optional[str] = None
 
     def __init__(
         self,
@@ -112,7 +124,7 @@ class Metric(Module, ABC):
                 f"Expected keyword argument `dist_sync_fn` to be an callable function but got {self.dist_sync_fn}"
             )
 
-        self.distributed_available_fn = kwargs.pop("distributed_available_fn", jit_distributed_available)
+        self.distributed_available_fn = kwargs.pop("distributed_available_fn", None) or jit_distributed_available
 
         self.sync_on_compute = kwargs.pop("sync_on_compute", True)
         if not isinstance(self.sync_on_compute, bool):
@@ -126,14 +138,15 @@ class Metric(Module, ABC):
 
         # initialize
         self._update_signature = inspect.signature(self.update)
-        self.update: Callable = self._wrap_update(self.update)  # type: ignore[assignment]
-        self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore[assignment]
+        self.update: Callable = self._wrap_update(self.update)  # type: ignore[method-assign]
+        self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore[method-assign]
         self._computed = None
         self._forward_cache = None
         self._update_count = 0
         self._to_sync = self.sync_on_compute
         self._should_unsync = True
         self._enable_grad = False
+        self._dtype_convert = False
 
         # initialize state
         self._defaults: Dict[str, Union[List, Tensor]] = {}
@@ -568,6 +581,37 @@ class Metric(Module, ABC):
         """Override this method plot the metric value."""
         raise NotImplementedError
 
+    def _plot(
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor], Dict[str, Tensor], Sequence[Dict[str, Tensor]]]] = None,
+        ax: Optional[_AX_TYPE] = None,
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+        """
+        val = val if val is not None else self.compute()
+        fig, ax = plot_single_or_multi_val(
+            val,
+            ax=ax,
+            higher_is_better=self.higher_is_better,
+            name=self.__class__.__name__,
+            lower_bound=self.plot_lower_bound,
+            upper_bound=self.plot_upper_bound,
+            legend_name=self.plot_legend_name,
+        )
+        return fig, ax
+
     def reset(self) -> None:
         """Reset metric state variables to their default value."""
         self._update_count = 0
@@ -599,12 +643,19 @@ class Metric(Module, ABC):
         # manually restore update and compute functions for pickling
         self.__dict__.update(state)
         self._update_signature = inspect.signature(self.update)
-        self.update: Callable = self._wrap_update(self.update)  # type: ignore[assignment]
-        self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore[assignment]
+        self.update: Callable = self._wrap_update(self.update)  # type: ignore[method-assign]
+        self.compute: Callable = self._wrap_compute(self.compute)  # type: ignore[method-assign]
 
     def __setattr__(self, name: str, value: Any) -> None:
         """Overwrite default method to prevent specific attributes from being set by user."""
-        if name in ("higher_is_better", "is_differentiable", "full_state_update"):
+        if name in (
+            "higher_is_better",
+            "is_differentiable",
+            "full_state_update",
+            "plot_lower_bound",
+            "plot_upper_bound",
+            "plot_legend_name",
+        ):
             raise RuntimeError(f"Can't change const `{name}`.")
         super().__setattr__(name, value)
 
@@ -647,14 +698,23 @@ class Metric(Module, ABC):
         Arguments:
             dst_type (type or string): the desired type.
         """
-        return super().type(dst_type)
+        self._dtype_convert = True
+        out = super().type(dst_type)
+        out._dtype_convert = False
+        return out
 
     def _apply(self, fn: Callable) -> Module:
         """Overwrite _apply function such that we can also move metric states to the correct device.
 
-        This method is called by the base ``nn.Module`` class whenever `.to`, `.cuda`, etc. methods are called.
+        This method is called by the base ``nn.Module`` class whenever `.to`, `.cuda`, `.float`, `.half` etc. methods
+        are called. Dtype conversion is garded and will only happen through the special `set_dtype` method.
         """
         this = super()._apply(fn)
+        fs = str(fn)
+        cond = any(f in fs for f in ["Module.type", "Module.half", "Module.float", "Module.double", "Module.bfloat16"])
+        if not self._dtype_convert and cond:
+            return this
+
         # Also apply fn to metric states and defaults
         for key, value in this._defaults.items():
             if isinstance(value, Tensor):
@@ -753,11 +813,11 @@ class Metric(Module, ABC):
         # if no kwargs filtered, return all kwargs as default
         if not filtered_kwargs and not exists_var_keyword:
             # no kwargs in update signature -> don't return any kwargs
-            filtered_kwargs = {}
-        elif exists_var_keyword:
+            return {}
+        if exists_var_keyword:
             # kwargs found in update signature -> return all kwargs to be sure to not omit any.
             # filtering logic is likely implemented within the update call.
-            filtered_kwargs = kwargs
+            return kwargs
         return filtered_kwargs
 
     def __hash__(self) -> int:
@@ -1046,9 +1106,7 @@ class CompositionalMetric(Metric):
     def __repr__(self) -> str:
         """Return a representation of the compositional metric, including the two inputs it was formed from."""
         _op_metrics = f"(\n  {self.op.__name__}(\n    {repr(self.metric_a)},\n    {repr(self.metric_b)}\n  )\n)"
-        repr_str = self.__class__.__name__ + _op_metrics
-
-        return repr_str
+        return self.__class__.__name__ + _op_metrics
 
     def _wrap_compute(self, compute: Callable) -> Callable:
         """No wrapping nessesary for compositional metrics."""

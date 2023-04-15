@@ -83,8 +83,11 @@ def _scipy_kendall(preds, target, alternative, variant):
 )
 @pytest.mark.parametrize("variant", ["b", "c"])
 class TestKendallRankCorrCoef(MetricTester):
+    """Test class for `KendallRankCorrCoef` metric."""
+
     @pytest.mark.parametrize("ddp", [False, True])
     def test_kendall_rank_corrcoef(self, preds, target, alternative, variant, ddp):
+        """Test class implementation of metric."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         t_test = bool(alternative is not None)
         _sk_kendall_tau = partial(_scipy_kendall, alternative=alternative, variant=variant)
@@ -100,6 +103,7 @@ class TestKendallRankCorrCoef(MetricTester):
         )
 
     def test_kendall_rank_corrcoef_functional(self, preds, target, alternative, variant):
+        """Test functional implementation of metric."""
         t_test = bool(alternative is not None)
         alternative = _adjust_alternative_to_scipy(alternative)
         metric_args = {"t_test": t_test, "alternative": alternative, "variant": variant}
@@ -107,6 +111,7 @@ class TestKendallRankCorrCoef(MetricTester):
         self.run_functional_metric_test(preds, target, kendall_rank_corrcoef, _sk_kendall_tau, metric_args=metric_args)
 
     def test_kendall_rank_corrcoef_differentiability(self, preds, target, alternative, variant):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_differentiability_test(
             preds=preds,
@@ -119,5 +124,5 @@ class TestKendallRankCorrCoef(MetricTester):
 def _adjust_alternative_to_scipy(alternative):
     """Scipy<1.8.0 supports only two-sided hypothesis testing."""
     if alternative is not None and not compare_version("scipy", operator.ge, "1.8.0"):
-        alternative = "two-sided"
+        return "two-sided"
     return alternative

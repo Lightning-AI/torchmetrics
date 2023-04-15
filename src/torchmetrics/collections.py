@@ -228,8 +228,7 @@ class MetricCollection(ModuleDict):
             # Stop when we iterate over everything and do not merge any groups
             if len(self._groups) == n_groups:
                 break
-            else:
-                n_groups = len(self._groups)
+            n_groups = len(self._groups)
 
         # Re-index groups
         temp = deepcopy(self._groups)
@@ -385,7 +384,7 @@ class MetricCollection(ModuleDict):
         simply initialize each metric in the collection as its own group
         """
         if isinstance(self._enable_compute_groups, list):
-            self._groups = {i: k for i, k in enumerate(self._enable_compute_groups)}
+            self._groups = dict(enumerate(self._enable_compute_groups))
             for v in self._groups.values():
                 for metric in v:
                     if metric not in self:
@@ -406,8 +405,7 @@ class MetricCollection(ModuleDict):
     def _set_name(self, base: str) -> str:
         """Adjust name of metric with both prefix and postfix."""
         name = base if self.prefix is None else self.prefix + base
-        name = name if self.postfix is None else name + self.postfix
-        return name
+        return name if self.postfix is None else name + self.postfix
 
     def _to_renamed_ordered_dict(self) -> OrderedDict:
         od = OrderedDict()
@@ -474,3 +472,13 @@ class MetricCollection(ModuleDict):
         if self.postfix:
             repr_str += f"{',' if not self.prefix else ''}\n  postfix={self.postfix}"
         return repr_str + "\n)"
+
+    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> "MetricCollection":
+        """Transfer all metric state to specific dtype. Special version of standard `type` method.
+
+        Arguments:
+            dst_type (type or string): the desired type.
+        """
+        for _, m in self.items(keep_base=True, copy_state=False):
+            m.set_dtype(dst_type)
+        return self

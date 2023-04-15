@@ -74,12 +74,15 @@ select = [
     "F",  # see: https://pypi.org/project/pyflakes
     "D",  # see: https://pypi.org/project/pydocstyle
     "N",  # see: https://pypi.org/project/pep8-naming
+    "S",  # see: https://pypi.org/project/flake8-bandit
 ]
 extend-select = [
     "C4",  # see: https://pypi.org/project/flake8-comprehensions
     "PT",  # see: https://pypi.org/project/flake8-pytest-style
-#    "RET",  # see: https://pypi.org/project/flake8-return
+    "RET",  # see: https://pypi.org/project/flake8-return
     "SIM",  # see: https://pypi.org/project/flake8-simplify
+    "YTT",  # see: https://pypi.org/project/flake8-2020
+    "ANN",  # see: https://pypi.org/project/flake8-annotations
 ]
 ignore = [
     "E731",  # Do not assign a lambda expression, use a def
@@ -87,6 +90,10 @@ ignore = [
     "D100",  # Missing docstring in public module
     "D104",  # Missing docstring in public package
     "D107",  # Missing docstring in `__init__`
+    "ANN101",  # Missing type annotation for `self` in method
+    "ANN102",  # Missing type annotation for `cls` in classmethod
+    "S301",  # `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue  # todo
+    "S310",  # Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.  # todo
 ]
 # Exclude a variety of commonly ignored directories.
 exclude = [
@@ -104,15 +111,10 @@ ignore-init-module-imports = true
 unfixable = ["F401"]
 
 [tool.ruff.per-file-ignores]
-"setup.py" = ["D100", "SIM115"]
-"__about__.py" = ["D100"]
-"__init__.py" = ["D100"]
+"setup.py" = ["ANN202", "ANN401"]
+"src/**" = ["S101", "ANN401"]
 "tests/**" = [
-    "D101",  # Missing docstring in public class
-    "D102",  # Missing docstring in public method
-    "D103",  # Missing docstring in public function
-    "D401",  # todo # First line of docstring should be in imperative mood: ...
-    "D415",  # todo # First line should end with a period, question mark, or exclamation point"
+    "S101", "ANN001", "ANN002", "ANN003", "ANN201", "ANN202", "ANN204", "ANN205", "ANN401"
 ]
 
 [tool.ruff.pydocstyle]
@@ -157,6 +159,7 @@ module = [
     "torchmetrics.classification.confusion_matrix",
     "torchmetrics.classification.exact_match",
     "torchmetrics.classification.f_beta",
+    "torchmetrics.classification.group_fairness",
     "torchmetrics.classification.hamming",
     "torchmetrics.classification.hinge",
     "torchmetrics.classification.jaccard",
@@ -176,6 +179,7 @@ module = [
     "torchmetrics.functional.classification.calibration_error",
     "torchmetrics.functional.classification.confusion_matrix",
     "torchmetrics.functional.classification.f_beta",
+    "torchmetrics.functional.classification.group_fairness",
     "torchmetrics.functional.classification.precision_recall_curve",
     "torchmetrics.functional.classification.ranking",
     "torchmetrics.functional.classification.recall_at_fixed_precision",
@@ -186,15 +190,7 @@ module = [
     "torchmetrics.functional.image.ssim",
     "torchmetrics.functional.image.uqi",
     "torchmetrics.functional.multimodal.clip_score",
-    "torchmetrics.functional.regression.cosine_similarity",
-    "torchmetrics.functional.regression.explained_variance",
-    "torchmetrics.functional.regression.kl_divergence",
-    "torchmetrics.functional.regression.r2",
-    "torchmetrics.functional.regression.wmape",
     "torchmetrics.functional.retrieval.r_precision",
-    "torchmetrics.functional.text.helper_embedding_metric",
-    "torchmetrics.functional.text.infolm",
-    "torchmetrics.functional.text.squad",
     "torchmetrics.image.fid",
     "torchmetrics.image.inception",
     "torchmetrics.image.lpip",
@@ -202,18 +198,6 @@ module = [
     "torchmetrics.image.ssim",
     "torchmetrics.image.tv",
     "torchmetrics.image.uqi",
-    "torchmetrics.regression.kl_divergence",
-    "torchmetrics.regression.log_mse",
-    "torchmetrics.regression.mae",
-    "torchmetrics.regression.mape",
-    "torchmetrics.regression.mse",
-    "torchmetrics.regression.symmetric_mape",
     "torchmetrics.retrieval.precision_recall_curve",
-    "torchmetrics.text.cer",
-    "torchmetrics.text.mer",
-    "torchmetrics.text.wer",
-    "torchmetrics.utilities.checks",
-    "torchmetrics.utilities.data",
-    "torchmetrics.wrappers.tracker",
 ]
 ignore_errors = "True"

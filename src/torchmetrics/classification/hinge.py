@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -30,6 +30,11 @@ from torchmetrics.functional.classification.hinge import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["BinaryHingeLoss.plot", "MulticlassHingeLoss.plot"]
 
 
 class BinaryHingeLoss(Metric):
@@ -79,6 +84,8 @@ class BinaryHingeLoss(Metric):
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,
@@ -111,6 +118,47 @@ class BinaryHingeLoss(Metric):
     def compute(self) -> Tensor:
         """Compute metric."""
         return _hinge_loss_compute(self.measures, self.total)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import BinaryHingeLoss
+            >>> metric = BinaryHingeLoss()
+            >>> metric.update(rand(10), randint(2,(10,)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import BinaryHingeLoss
+            >>> metric = BinaryHingeLoss()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(rand(10), randint(2,(10,))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
 
 
 class MulticlassHingeLoss(Metric):
@@ -173,6 +221,9 @@ class MulticlassHingeLoss(Metric):
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Class"
 
     def __init__(
         self,
@@ -215,6 +266,47 @@ class MulticlassHingeLoss(Metric):
     def compute(self) -> Tensor:
         """Compute metric."""
         return _hinge_loss_compute(self.measures, self.total)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value per class
+            >>> from torch import randint, randn
+            >>> from torchmetrics.classification import MulticlassHingeLoss
+            >>> metric = MulticlassHingeLoss(num_classes=3)
+            >>> metric.update(randn(20, 3), randint(3, (20,)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a multiple values per class
+            >>> from torch import randint, randn
+            >>> from torchmetrics.classification import MulticlassHingeLoss
+            >>> metric = MulticlassHingeLoss(num_classes=3)
+            >>> values = []
+            >>> for _ in range(20):
+            ...     values.append(metric(randn(20, 3), randint(3, (20,))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
 
 
 class HingeLoss:
@@ -264,3 +356,4 @@ class HingeLoss:
         if task == ClassificationTaskNoMultilabel.MULTICLASS:
             assert isinstance(num_classes, int)
             return MulticlassHingeLoss(num_classes, squared, multiclass_mode, **kwargs)
+        return None

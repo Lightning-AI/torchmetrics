@@ -150,16 +150,14 @@ def _union_lcs(pred_tokens_list: Sequence[Sequence[str]], target_tokens: Sequenc
     def lcs_ind(pred_tokens: Sequence[str], target_tokens: Sequence[str]) -> Sequence[int]:
         """Return one of the longest of longest common subsequence via backtracked lcs table."""
         lcs_table: Sequence[Sequence[int]] = _lcs(pred_tokens, target_tokens, return_full_table=True)  # type: ignore
-        backtracked_lcs_table = _backtracked_lcs(lcs_table, pred_tokens, target_tokens)
-        return backtracked_lcs_table
+        return _backtracked_lcs(lcs_table, pred_tokens, target_tokens)
 
     def find_union(lcs_tables: Sequence[Sequence[int]]) -> Sequence[int]:
         """Find union LCS given a list of LCS."""
         return sorted(set().union(*lcs_tables))
 
     lcs_tables = [lcs_ind(pred_tokens, target_tokens) for pred_tokens in pred_tokens_list]
-    union_lcs = [target_tokens[i] for i in find_union(lcs_tables)]
-    return union_lcs
+    return [target_tokens[i] for i in find_union(lcs_tables)]
 
 
 def _normalize_and_tokenize_text(
@@ -194,9 +192,7 @@ def _normalize_and_tokenize_text(
         tokens = [stemmer.stem(x) if len(x) > 3 else x for x in tokens]
 
     # One final check to drop any empty or invalid tokens.
-    tokens = [x for x in tokens if (isinstance(x, str) and len(x) > 0)]
-
-    return tokens
+    return [x for x in tokens if (isinstance(x, str) and len(x) > 0)]
 
 
 def _rouge_n_score(pred: Sequence[str], target: Sequence[str], n_gram: int) -> Dict[str, Tensor]:

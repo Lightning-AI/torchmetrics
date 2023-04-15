@@ -89,12 +89,15 @@ def _reference_bert_score(
 @pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 class TestBERTScore(TextTester):
+    """Tests for BERTScore."""
+
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     @skip_on_connection_issues()
     def test_bertscore_class(
         self, ddp, dist_sync_on_step, preds, targets, num_layers, all_layers, idf, rescale_with_baseline, metric_key
     ):
+        """Test the bertscore class."""
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "num_layers": num_layers,
@@ -126,6 +129,7 @@ class TestBERTScore(TextTester):
 
     @skip_on_connection_issues()
     def test_bertscore_functional(self, preds, targets, num_layers, all_layers, idf, rescale_with_baseline, metric_key):
+        """Test the bertscore functional."""
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "num_layers": num_layers,
@@ -154,6 +158,7 @@ class TestBERTScore(TextTester):
     def test_bertscore_differentiability(
         self, preds, targets, num_layers, all_layers, idf, rescale_with_baseline, metric_key
     ):
+        """Test the bertscore differentiability."""
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "num_layers": num_layers,

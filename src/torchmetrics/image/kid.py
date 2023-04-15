@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -21,9 +21,13 @@ from torchmetrics.image.fid import NoTrainInceptionV3
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-__doctest_requires__ = {("KernelInceptionDistance", "KID"): ["torch_fidelity"]}
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["KernelInceptionDistance.plot"]
+
+__doctest_requires__ = {("KernelInceptionDistance", "KernelInceptionDistance.plot"): ["torch_fidelity"]}
 
 
 def maximum_mean_discrepancy(k_xx: Tensor, k_xy: Tensor, k_yy: Tensor) -> Tensor:
@@ -50,8 +54,7 @@ def poly_kernel(f1: Tensor, f2: Tensor, degree: int = 3, gamma: Optional[float] 
     """Adapted from `KID Score`_."""
     if gamma is None:
         gamma = 1.0 / f1.shape[1]
-    kernel = (f1 @ f2.T * gamma + coef) ** degree
-    return kernel
+    return (f1 @ f2.T * gamma + coef) ** degree
 
 
 def poly_mmd(
@@ -155,6 +158,8 @@ class KernelInceptionDistance(Metric):
     higher_is_better: bool = False
     is_differentiable: bool = False
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     real_features: List[Tensor]
     fake_features: List[Tensor]
@@ -275,3 +280,53 @@ class KernelInceptionDistance(Metric):
             self._defaults["real_features"] = value
         else:
             super().reset()
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.image.kid import KernelInceptionDistance
+            >>> imgs_dist1 = torch.randint(0, 200, (30, 3, 299, 299), dtype=torch.uint8)
+            >>> imgs_dist2 = torch.randint(100, 255, (30, 3, 299, 299), dtype=torch.uint8)
+            >>> metric = KernelInceptionDistance(subsets=3, subset_size=20)
+            >>> metric.update(imgs_dist1, real=True)
+            >>> metric.update(imgs_dist2, real=False)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.image.kid import KernelInceptionDistance
+            >>> imgs_dist1 = lambda: torch.randint(0, 200, (30, 3, 299, 299), dtype=torch.uint8)
+            >>> imgs_dist2 = lambda: torch.randint(100, 255, (30, 3, 299, 299), dtype=torch.uint8)
+            >>> metric = KernelInceptionDistance(subsets=3, subset_size=20)
+            >>> values = [ ]
+            >>> for _ in range(3):
+            ...     metric.update(imgs_dist1(), real=True)
+            ...     metric.update(imgs_dist2(), real=False)
+            ...     values.append(metric.compute()[0])
+            ...     metric.reset()
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        val = val or self.compute()[0]  # by default we select the mean to plot
+        return self._plot(val, ax)

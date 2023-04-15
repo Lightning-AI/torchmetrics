@@ -40,7 +40,7 @@ from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_
 seed_all(42)
 
 
-def specificity_at_sensitivity_x_multilabel(predictions, targets, min_sensitivity):
+def _specificity_at_sensitivity_x_multilabel(predictions, targets, min_sensitivity):
     # get fpr, tpr and thresholds
     fpr, sensitivity, thresholds = sk_roc_curve(targets, predictions, pos_label=1.0, drop_intermediate=False)
     # check if fpr is filled with nan (All positive samples),
@@ -76,15 +76,18 @@ def _sklearn_specificity_at_sensitivity_binary(preds, target, min_sensitivity, i
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
     target, preds = remove_ignore_index(target, preds, ignore_index)
-    return specificity_at_sensitivity_x_multilabel(preds, target, min_sensitivity)
+    return _specificity_at_sensitivity_x_multilabel(preds, target, min_sensitivity)
 
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinarySpecificityAtSensitivity(MetricTester):
+    """Test class for `BinarySpecificityAtSensitivity` metric."""
+
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.85])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_specificity_at_sensitivity(self, input, ddp, min_sensitivity, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -106,6 +109,7 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_binary_specificity_at_sensitivity_functional(self, input, min_sensitivity, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -124,6 +128,7 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
         )
 
     def test_binary_specificity_at_sensitivity_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -135,6 +140,7 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_specificity_at_sensitivity_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -150,6 +156,7 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_specificity_at_sensitivity_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -162,6 +169,7 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
 
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.8])
     def test_binary_specificity_at_sensitivity_threshold_arg(self, input, min_sensitivity):
+        """Test that different types of `thresholds` argument lead to same result."""
         preds, target = input
 
         for pred, true in zip(preds, target):
@@ -184,7 +192,7 @@ def _sklearn_specificity_at_sensitivity_multiclass(preds, target, min_sensitivit
     for i in range(NUM_CLASSES):
         target_temp = np.zeros_like(target)
         target_temp[target == i] = 1
-        res = specificity_at_sensitivity_x_multilabel(preds[:, i], target_temp, min_sensitivity)
+        res = _specificity_at_sensitivity_x_multilabel(preds[:, i], target_temp, min_sensitivity)
         specificity.append(res[0])
         thresholds.append(res[1])
     return specificity, thresholds
@@ -194,10 +202,13 @@ def _sklearn_specificity_at_sensitivity_multiclass(preds, target, min_sensitivit
     "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassSpecificityAtSensitivity(MetricTester):
+    """Test class for `MulticlassSpecificityAtSensitivity` metric."""
+
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_specificity_at_sensitivity(self, input, ddp, min_sensitivity, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -222,6 +233,7 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_multiclass_specificity_at_sensitivity_functional(self, input, min_sensitivity, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -243,6 +255,7 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
         )
 
     def test_multiclass_specificity_at_sensitivity_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -254,6 +267,7 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_specificity_at_sensitivity_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
@@ -269,6 +283,7 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_specificity_at_sensitivity_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -281,6 +296,7 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
 
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.8])
     def test_multiclass_specificity_at_sensitivity_threshold_arg(self, input, min_sensitivity):
+        """Test that different types of `thresholds` argument lead to same result."""
         preds, target = input
         if (preds < 0).any():
             preds = preds.softmax(dim=-1)
@@ -312,10 +328,13 @@ def _sklearn_specificity_at_sensitivity_multilabel(preds, target, min_sensitivit
     "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelSpecificityAtSensitivity(MetricTester):
+    """Test class for `MultilabelSpecificityAtSensitivity` metric."""
+
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multilabel_specificity_at_sensitivity(self, input, ddp, min_sensitivity, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -340,6 +359,7 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_multilabel_specificity_at_sensitivity_functional(self, input, min_sensitivity, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -361,6 +381,7 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
         )
 
     def test_multiclass_specificity_at_sensitivity_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -372,6 +393,7 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_specificity_at_sensitivity_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
@@ -387,6 +409,7 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_specificity_at_sensitivity_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -399,6 +422,7 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
 
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.8])
     def test_multilabel_specificity_at_sensitivity_threshold_arg(self, input, min_sensitivity):
+        """Test that different types of `thresholds` argument lead to same result."""
         preds, target = input
         if (preds < 0).any():
             preds = sigmoid(preds)

@@ -22,10 +22,11 @@ from unittest.mock import Mock
 import torch
 from torch import Tensor
 
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
 
-_DOCTEST_DOWNLOAD_TIMEOUT = os.environ.get("DOCTEST_DOWNLOAD_TIMEOUT", 120)
+_DOCTEST_DOWNLOAD_TIMEOUT = int(os.environ.get("DOCTEST_DOWNLOAD_TIMEOUT", 120))
 _SKIP_SLOW_DOCTEST = bool(os.environ.get("SKIP_SLOW_DOCTEST", 0))
 
 
@@ -429,7 +430,7 @@ def _input_format_classification(
             num_classes = preds.shape[1]
             preds = select_topk(preds, top_k or 1)
         else:
-            num_classes = num_classes if num_classes else max(preds.max(), target.max()) + 1
+            num_classes = num_classes or int(max(preds.max().item(), target.max().item()) + 1)
             preds = to_onehot(preds, max(2, num_classes))
 
         target = to_onehot(target, max(2, num_classes))
@@ -615,23 +616,23 @@ def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-6) -> bool:
     # single output compare
     if isinstance(res1, Tensor):
         return torch.allclose(res1, res2, atol=atol)
-    elif isinstance(res1, str):
+    if isinstance(res1, str):
         return res1 == res2
-    elif isinstance(res1, Sequence):
+    if isinstance(res1, Sequence):
         return all(_allclose_recursive(r1, r2) for r1, r2 in zip(res1, res2))
-    elif isinstance(res1, Mapping):
+    if isinstance(res1, Mapping):
         return all(_allclose_recursive(res1[k], res2[k]) for k in res1)
     return res1 == res2
 
 
 @no_type_check
 def check_forward_full_state_property(
-    metric_class,
-    init_args: Dict[str, Any] = {},
-    input_args: Dict[str, Any] = {},
+    metric_class: Metric,
+    init_args: Optional[Dict[str, Any]] = None,
+    input_args: Optional[Dict[str, Any]] = None,
     num_update_to_compare: Sequence[int] = [10, 100, 1000],
     reps: int = 5,
-) -> bool:
+) -> None:
     """Check if the new ``full_state_update`` property works as intended.
 
     This function checks if the property can safely be set to ``False`` which will for most metrics results in a
@@ -676,6 +677,8 @@ def check_forward_full_state_property(
         ... )
         Recommended setting `full_state_update=True`
     """
+    init_args = init_args or {}
+    input_args = input_args or {}
 
     class FullState(metric_class):
         full_state_update = True
@@ -728,6 +731,7 @@ def check_forward_full_state_property(
 
     faster = (mean[1, -1] < mean[0, -1]).item()  # if faster on average, we recommend upgrading
     print(f"Recommended setting `full_state_update={not faster}`")
+    return
 
 
 def is_overridden(method_name: str, instance: object, parent: object) -> bool:

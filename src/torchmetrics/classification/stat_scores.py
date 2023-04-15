@@ -514,3 +514,4 @@ class StatScores:
         if task == ClassificationTask.MULTILABEL:
             assert isinstance(num_labels, int)
             return MultilabelStatScores(num_labels, threshold, average, **kwargs)
+        return None

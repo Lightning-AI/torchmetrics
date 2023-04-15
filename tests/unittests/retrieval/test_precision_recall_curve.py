@@ -21,7 +21,7 @@ import torch
 from numpy import array
 from torch import Tensor, tensor
 
-from torchmetrics import RetrievalPrecisionRecallCurve
+from torchmetrics.retrieval import RetrievalPrecisionRecallCurve
 from unittests.helpers import seed_all
 from unittests.helpers.testers import Metric, MetricTester
 from unittests.retrieval.helpers import _default_metric_class_input_arguments, get_group_indexes
@@ -112,6 +112,8 @@ def _compute_precision_recall_curve(
 
 
 class RetrievalPrecisionRecallCurveTester(MetricTester):
+    """Tester class for `RetrievalPrecisionRecallCurveTester` metric."""
+
     def run_class_metric_test(
         self,
         ddp: bool,
@@ -123,6 +125,7 @@ class RetrievalPrecisionRecallCurveTester(MetricTester):
         metric_args: dict,
         reverse: bool = False,
     ):
+        """Test class implementation of metric."""
         _ref_metric_adapted = partial(reference_metric, reverse=reverse, **metric_args)
 
         super().run_class_metric_test(
@@ -144,6 +147,8 @@ class RetrievalPrecisionRecallCurveTester(MetricTester):
 @pytest.mark.parametrize("adaptive_k", [False, True])
 @pytest.mark.parametrize(**_default_metric_class_input_arguments)
 class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
+    """Test class for `RetrievalPrecisionRecallCurveTester` metric."""
+
     atol = 0.02
 
     def test_class_metric(
@@ -157,6 +162,7 @@ class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
         max_k,
         adaptive_k,
     ):
+        """Test class implementation of metric."""
         metric_args = {
             "max_k": max_k,
             "adaptive_k": adaptive_k,

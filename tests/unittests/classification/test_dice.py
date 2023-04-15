@@ -76,6 +76,7 @@ def _scipy_dice(
     ],
 )
 def test_dice(pred, target, expected):
+    """Test that implementation returns the correct result."""
     score = dice(tensor(pred), tensor(target), ignore_index=0)
     assert score == expected
 
@@ -90,8 +91,11 @@ def test_dice(pred, target, expected):
 )
 @pytest.mark.parametrize("ignore_index", [None])
 class TestDiceBinary(MetricTester):
+    """Test class for `Dice` metric inf binary setting."""
+
     @pytest.mark.parametrize("ddp", [False])
     def test_dice_class(self, ddp, preds, target, ignore_index):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -102,6 +106,7 @@ class TestDiceBinary(MetricTester):
         )
 
     def test_dice_fn(self, preds, target, ignore_index):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -127,8 +132,11 @@ class TestDiceBinary(MetricTester):
 )
 @pytest.mark.parametrize("ignore_index", [None, 0])
 class TestDiceMulti(MetricTester):
+    """Test class for `Dice` metric in multi-class setting.."""
+
     @pytest.mark.parametrize("ddp", [False])
     def test_dice_class(self, ddp, preds, target, ignore_index):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -139,6 +147,7 @@ class TestDiceMulti(MetricTester):
         )
 
     def test_dice_fn(self, preds, target, ignore_index):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,

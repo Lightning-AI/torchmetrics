@@ -46,11 +46,14 @@ def _netcal_binary_calibration_error(preds, target, n_bins, norm, ignore_index):
 
 @pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinaryCalibrationError(MetricTester):
+    """Test class for `BinaryCalibrationError` metric."""
+
     @pytest.mark.parametrize("n_bins", [10, 15, 20])
     @pytest.mark.parametrize("norm", ["l1", "max"])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_calibration_error(self, input, ddp, n_bins, norm, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -73,6 +76,7 @@ class TestBinaryCalibrationError(MetricTester):
     @pytest.mark.parametrize("norm", ["l1", "max"])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_binary_calibration_error_functional(self, input, n_bins, norm, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -91,6 +95,7 @@ class TestBinaryCalibrationError(MetricTester):
         )
 
     def test_binary_calibration_error_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -101,6 +106,7 @@ class TestBinaryCalibrationError(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_calibration_error_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
 
         if (preds < 0).any() and dtype == torch.half:
@@ -116,6 +122,7 @@ class TestBinaryCalibrationError(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_calibration_error_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -124,6 +131,13 @@ class TestBinaryCalibrationError(MetricTester):
             metric_functional=binary_calibration_error,
             dtype=dtype,
         )
+
+
+def test_binary_with_zero_pred():
+    """Test that metric works with edge case where confidence is zero for a bin."""
+    preds = torch.tensor([1.0, 1.0, 1.0, 1.0, 0.0])
+    target = torch.tensor([0, 0, 1, 1, 1])
+    assert binary_calibration_error(preds, target, n_bins=2, norm="l1") == torch.tensor(0.6)
 
 
 def _netcal_multiclass_calibration_error(preds, target, n_bins, norm, ignore_index):
@@ -141,11 +155,14 @@ def _netcal_multiclass_calibration_error(preds, target, n_bins, norm, ignore_ind
     "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassCalibrationError(MetricTester):
+    """Test class for `MulticlassCalibrationError` metric."""
+
     @pytest.mark.parametrize("n_bins", [15, 20])
     @pytest.mark.parametrize("norm", ["l1", "max"])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_calibration_error(self, input, ddp, n_bins, norm, ignore_index):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -169,6 +186,7 @@ class TestMulticlassCalibrationError(MetricTester):
     @pytest.mark.parametrize("norm", ["l1", "max"])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     def test_multiclass_calibration_error_functional(self, input, n_bins, norm, ignore_index):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -188,6 +206,7 @@ class TestMulticlassCalibrationError(MetricTester):
         )
 
     def test_multiclass_calibration_error_differentiability(self, input):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -199,6 +218,7 @@ class TestMulticlassCalibrationError(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_calibration_error_dtype_cpu(self, input, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_9:
             pytest.xfail(reason="torch.max in metric not supported before pytorch v1.9 for cpu + half")
@@ -216,6 +236,7 @@ class TestMulticlassCalibrationError(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_calibration_error_dtype_gpu(self, input, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,

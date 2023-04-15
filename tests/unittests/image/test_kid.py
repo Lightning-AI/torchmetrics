@@ -30,7 +30,7 @@ def test_no_train():
     """Assert that metric never leaves evaluation mode."""
 
     class MyModel(Module):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.metric = KernelInceptionDistance()
 
@@ -86,6 +86,7 @@ def test_kid_raises_errors_and_warnings():
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_kid_extra_parameters():
+    """Test that the different input arguments raises expected errors if wrong."""
     with pytest.raises(ValueError, match="Argument `subsets` expected to be integer larger than 0"):
         KernelInceptionDistance(subsets=-1)
 
@@ -121,7 +122,7 @@ def test_kid_same_input(feature):
 
 
 class _ImgDataset(Dataset):
-    def __init__(self, imgs):
+    def __init__(self, imgs) -> None:
         self.imgs = imgs
 
     def __getitem__(self, idx):
@@ -169,6 +170,7 @@ def test_compare_kid(tmpdir, feature=2048):
 
 @pytest.mark.parametrize("reset_real_features", [True, False])
 def test_reset_real_features_arg(reset_real_features):
+    """Test that `reset_real_features` arg works as expected."""
     metric = KernelInceptionDistance(feature=64, reset_real_features=reset_real_features)
 
     metric.update(torch.randint(0, 180, (2, 3, 299, 299), dtype=torch.uint8), real=True)

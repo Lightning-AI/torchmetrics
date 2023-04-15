@@ -62,14 +62,14 @@ def _sklearn_precision_recall_binary(preds, target, sk_fn, ignore_index, multidi
     if multidim_average == "global":
         target, preds = remove_ignore_index(target, preds, ignore_index)
         return sk_fn(target, preds)
-    else:
-        res = []
-        for pred, true in zip(preds, target):
-            pred = pred.flatten()
-            true = true.flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
-            res.append(sk_fn(true, pred))
-        return np.stack(res)
+
+    res = []
+    for pred, true in zip(preds, target):
+        pred = pred.flatten()
+        true = true.flatten()
+        true, pred = remove_ignore_index(true, pred, ignore_index)
+        res.append(sk_fn(true, pred))
+    return np.stack(res)
 
 
 @pytest.mark.parametrize("input", _binary_cases)
@@ -82,10 +82,13 @@ def _sklearn_precision_recall_binary(preds, target, sk_fn, ignore_index, multidi
     ids=["precision", "recall"],
 )
 class TestBinaryPrecisionRecall(MetricTester):
+    """Test class for `BinaryPrecisionRecall` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
     def test_binary_precision_recall(self, ddp, input, module, functional, compare, ignore_index, multidim_average):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -113,6 +116,7 @@ class TestBinaryPrecisionRecall(MetricTester):
     def test_binary_precision_recall_functional(
         self, input, module, functional, compare, ignore_index, multidim_average
     ):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -137,6 +141,7 @@ class TestBinaryPrecisionRecall(MetricTester):
         )
 
     def test_binary_precision_recall_differentiability(self, input, module, functional, compare):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -148,6 +153,7 @@ class TestBinaryPrecisionRecall(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_precision_recall_half_cpu(self, input, module, functional, compare, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -163,6 +169,7 @@ class TestBinaryPrecisionRecall(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_precision_recall_half_gpu(self, input, module, functional, compare, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -182,16 +189,16 @@ def _sklearn_precision_recall_multiclass(preds, target, sk_fn, ignore_index, mul
         target = target.numpy().flatten()
         target, preds = remove_ignore_index(target, preds, ignore_index)
         return sk_fn(target, preds, average=average)
-    else:
-        preds = preds.numpy()
-        target = target.numpy()
-        res = []
-        for pred, true in zip(preds, target):
-            pred = pred.flatten()
-            true = true.flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
-            res.append(sk_fn(true, pred, average=average, labels=list(range(NUM_CLASSES))))
-        return np.stack(res, 0)
+
+    preds = preds.numpy()
+    target = target.numpy()
+    res = []
+    for pred, true in zip(preds, target):
+        pred = pred.flatten()
+        true = true.flatten()
+        true, pred = remove_ignore_index(true, pred, ignore_index)
+        res.append(sk_fn(true, pred, average=average, labels=list(range(NUM_CLASSES))))
+    return np.stack(res, 0)
 
 
 @pytest.mark.parametrize("input", _multiclass_cases)
@@ -204,6 +211,8 @@ def _sklearn_precision_recall_multiclass(preds, target, sk_fn, ignore_index, mul
     ids=["precision", "recall"],
 )
 class TestMulticlassPrecisionRecall(MetricTester):
+    """Test class for `MulticlassPrecisionRecall` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
@@ -211,6 +220,7 @@ class TestMulticlassPrecisionRecall(MetricTester):
     def test_multiclass_precision_recall(
         self, ddp, input, module, functional, compare, ignore_index, multidim_average, average
     ):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -245,6 +255,7 @@ class TestMulticlassPrecisionRecall(MetricTester):
     def test_multiclass_precision_recall_functional(
         self, input, module, functional, compare, ignore_index, multidim_average, average
     ):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -271,6 +282,7 @@ class TestMulticlassPrecisionRecall(MetricTester):
         )
 
     def test_multiclass_precision_recall_differentiability(self, input, module, functional, compare):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -282,6 +294,7 @@ class TestMulticlassPrecisionRecall(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_precision_recall_half_cpu(self, input, module, functional, compare, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -297,6 +310,7 @@ class TestMulticlassPrecisionRecall(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multiclass_precision_recall_half_gpu(self, input, module, functional, compare, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,
@@ -360,13 +374,14 @@ def _sklearn_precision_recall_multilabel_global(preds, target, sk_fn, ignore_ind
 
     if average == "macro":
         return res.mean(0)
-    elif average == "weighted":
+    if average == "weighted":
         weights = np.stack(weights, 0).astype(float)
         weights_norm = weights.sum(-1, keepdims=True)
         weights_norm[weights_norm == 0] = 1.0
         return ((weights * res) / weights_norm).sum(-1)
-    elif average is None or average == "none":
+    if average is None or average == "none":
         return res
+    return None
 
 
 def _sklearn_precision_recall_multilabel_local(preds, target, sk_fn, ignore_index, average):
@@ -393,13 +408,14 @@ def _sklearn_precision_recall_multilabel_local(preds, target, sk_fn, ignore_inde
     res = np.stack(precision_recall, 0)
     if average == "macro":
         return res.mean(-1)
-    elif average == "weighted":
+    if average == "weighted":
         weights = np.stack(weights, 0).astype(float)
         weights_norm = weights.sum(-1, keepdims=True)
         weights_norm[weights_norm == 0] = 1.0
         return ((weights * res) / weights_norm).sum(-1)
-    elif average is None or average == "none":
+    if average is None or average == "none":
         return res
+    return None
 
 
 def _sklearn_precision_recall_multilabel(preds, target, sk_fn, ignore_index, multidim_average, average):
@@ -417,7 +433,7 @@ def _sklearn_precision_recall_multilabel(preds, target, sk_fn, ignore_index, mul
             preds.transpose(0, 2, 1).reshape(-1, NUM_CLASSES),
             average=average,
         )
-    elif multidim_average == "global":
+    if multidim_average == "global":
         return _sklearn_precision_recall_multilabel_global(preds, target, sk_fn, ignore_index, average)
     return _sklearn_precision_recall_multilabel_local(preds, target, sk_fn, ignore_index, average)
 
@@ -432,6 +448,8 @@ def _sklearn_precision_recall_multilabel(preds, target, sk_fn, ignore_index, mul
     ids=["precision", "recall"],
 )
 class TestMultilabelPrecisionRecall(MetricTester):
+    """Test class for `MultilabelPrecisionRecall` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
@@ -439,6 +457,7 @@ class TestMultilabelPrecisionRecall(MetricTester):
     def test_multilabel_precision_recall(
         self, ddp, input, module, functional, compare, ignore_index, multidim_average, average
     ):
+        """Test class implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -474,6 +493,7 @@ class TestMultilabelPrecisionRecall(MetricTester):
     def test_multilabel_precision_recall_functional(
         self, input, module, functional, compare, ignore_index, multidim_average, average
     ):
+        """Test functional implementation of metric."""
         preds, target = input
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -501,6 +521,7 @@ class TestMultilabelPrecisionRecall(MetricTester):
         )
 
     def test_multilabel_precision_recall_differentiability(self, input, module, functional, compare):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = input
         self.run_differentiability_test(
             preds=preds,
@@ -512,6 +533,7 @@ class TestMultilabelPrecisionRecall(MetricTester):
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_precision_recall_half_cpu(self, input, module, functional, compare, dtype):
+        """Test dtype support of the metric on CPU."""
         preds, target = input
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -527,6 +549,7 @@ class TestMultilabelPrecisionRecall(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_multilabel_precision_recall_half_gpu(self, input, module, functional, compare, dtype):
+        """Test dtype support of the metric on GPU."""
         preds, target = input
         self.run_precision_test_gpu(
             preds=preds,

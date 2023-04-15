@@ -18,7 +18,7 @@ from torch import Tensor, tensor
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 __doctest_requires__ = {"SignalDistortionRatio": ["fast_bss_eval"]}
 
@@ -85,7 +85,8 @@ class SignalDistortionRatio(Metric):
     full_state_update: bool = False
     is_differentiable: bool = True
     higher_is_better: bool = True
-    plot_options: dict = {"lower_bound": -20.0, "upper_bound": 1.0}
+    plot_lower_bound: float = -20.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,
@@ -138,7 +139,7 @@ class SignalDistortionRatio(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.audio.sdr import SignalDistortionRatio
+            >>> from torchmetrics.audio import SignalDistortionRatio
             >>> metric = SignalDistortionRatio()
             >>> metric.update(torch.rand(8000), torch.rand(8000))
             >>> fig_, ax_ = metric.plot()
@@ -148,18 +149,14 @@ class SignalDistortionRatio(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.audio.sdr import SignalDistortionRatio
+            >>> from torchmetrics.audio import SignalDistortionRatio
             >>> metric = SignalDistortionRatio()
             >>> values = [ ]
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(8000), torch.rand(8000)))
             >>> fig_, ax_ = metric.plot(values)
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
-        )
-        return fig, ax
+        return self._plot(val, ax)
 
 
 class ScaleInvariantSignalDistortionRatio(Metric):
@@ -186,7 +183,7 @@ class ScaleInvariantSignalDistortionRatio(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import ScaleInvariantSignalDistortionRatio
+        >>> from torchmetrics.audio import ScaleInvariantSignalDistortionRatio
         >>> target = tensor([3.0, -0.5, 2.0, 7.0])
         >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
         >>> si_sdr = ScaleInvariantSignalDistortionRatio()
@@ -198,7 +195,8 @@ class ScaleInvariantSignalDistortionRatio(Metric):
     higher_is_better = True
     sum_si_sdr: Tensor
     total: Tensor
-    plot_options: dict = {"lower_bound": -40.0, "upper_bound": 20.0}
+    plot_lower_bound: float = -40.0
+    plot_upper_bound: float = 20.0
 
     def __init__(
         self,
@@ -244,7 +242,7 @@ class ScaleInvariantSignalDistortionRatio(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio
+            >>> from torchmetrics.audio import ScaleInvariantSignalDistortionRatio
             >>> target = torch.randn(5)
             >>> preds = torch.randn(5)
             >>> metric = ScaleInvariantSignalDistortionRatio()
@@ -256,7 +254,7 @@ class ScaleInvariantSignalDistortionRatio(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio
+            >>> from torchmetrics.audio import ScaleInvariantSignalDistortionRatio
             >>> target = torch.randn(5)
             >>> preds = torch.randn(5)
             >>> metric = ScaleInvariantSignalDistortionRatio()
@@ -265,8 +263,4 @@ class ScaleInvariantSignalDistortionRatio(Metric):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
         """
-        val = val or self.compute()
-        fig, ax = plot_single_or_multi_val(
-            val, ax=ax, higher_is_better=self.higher_is_better, **self.plot_options, name=self.__class__.__name__
-        )
-        return fig, ax
+        return self._plot(val, ax)

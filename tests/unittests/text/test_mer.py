@@ -27,8 +27,11 @@ def _compute_mer_metric_jiwer(preds: Union[str, List[str]], target: Union[str, L
     ],
 )
 class TestMatchErrorRate(TextTester):
+    """Test class for `MatchErrorRate` metric."""
+
     @pytest.mark.parametrize("ddp", [False, True])
     def test_mer_class(self, ddp, preds, targets):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -38,6 +41,7 @@ class TestMatchErrorRate(TextTester):
         )
 
     def test_mer_functional(self, preds, targets):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             targets,
@@ -46,6 +50,7 @@ class TestMatchErrorRate(TextTester):
         )
 
     def test_mer_differentiability(self, preds, targets):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             targets=targets,

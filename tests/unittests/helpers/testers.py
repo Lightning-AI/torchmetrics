@@ -28,55 +28,55 @@ from torchmetrics.utilities.data import _flatten, apply_to_collection
 from unittests import NUM_PROCESSES
 
 
-def _assert_allclose(pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Optional[str] = None) -> None:
-    """Utility function for recursively asserting that two results are within a certain tolerance."""
+def _assert_allclose(tm_result: Any, ref_result: Any, atol: float = 1e-8, key: Optional[str] = None) -> None:
+    """Recursively assert that two results are within a certain tolerance."""
     # single output compare
-    if isinstance(pl_result, Tensor):
-        assert np.allclose(pl_result.detach().cpu().numpy(), sk_result, atol=atol, equal_nan=True)
+    if isinstance(tm_result, Tensor):
+        assert np.allclose(tm_result.detach().cpu().numpy(), ref_result, atol=atol, equal_nan=True)
     # multi output compare
-    elif isinstance(pl_result, Sequence):
-        for pl_res, sk_res in zip(pl_result, sk_result):
+    elif isinstance(tm_result, Sequence):
+        for pl_res, sk_res in zip(tm_result, ref_result):
             _assert_allclose(pl_res, sk_res, atol=atol)
-    elif isinstance(pl_result, Dict):
+    elif isinstance(tm_result, Dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
-        assert np.allclose(pl_result[key].detach().cpu().numpy(), sk_result, atol=atol, equal_nan=True)
+        assert np.allclose(tm_result[key].detach().cpu().numpy(), ref_result, atol=atol, equal_nan=True)
     else:
         raise ValueError("Unknown format for comparison")
 
 
-def _assert_tensor(pl_result: Any, key: Optional[str] = None) -> None:
-    """Utility function for recursively checking that some input only consists of torch tensors."""
-    if isinstance(pl_result, Sequence):
-        for plr in pl_result:
+def _assert_tensor(tm_result: Any, key: Optional[str] = None) -> None:
+    """Recursively check that some input only consists of torch tensors."""
+    if isinstance(tm_result, Sequence):
+        for plr in tm_result:
             _assert_tensor(plr)
-    elif isinstance(pl_result, Dict):
+    elif isinstance(tm_result, Dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
-        assert isinstance(pl_result[key], Tensor)
-    elif isinstance(pl_result, MAPMetricResults):
-        for val_index in [a for a in dir(pl_result) if not a.startswith("__")]:
-            assert isinstance(pl_result[val_index], Tensor)
+        assert isinstance(tm_result[key], Tensor)
+    elif isinstance(tm_result, MAPMetricResults):
+        for val_index in [a for a in dir(tm_result) if not a.startswith("__")]:
+            assert isinstance(tm_result[val_index], Tensor)
     else:
-        assert isinstance(pl_result, Tensor)
+        assert isinstance(tm_result, Tensor)
 
 
-def _assert_requires_grad(metric: Metric, pl_result: Any, key: Optional[str] = None) -> None:
-    """Function for recursively asserting that metric output is consistent with the `is_differentiable` attribute."""
-    if isinstance(pl_result, Sequence):
-        for plr in pl_result:
+def _assert_requires_grad(metric: Metric, tm_result: Any, key: Optional[str] = None) -> None:
+    """Recursively assert that metric output is consistent with the `is_differentiable` attribute."""
+    if isinstance(tm_result, Sequence):
+        for plr in tm_result:
             _assert_requires_grad(metric, plr, key=key)
-    elif isinstance(pl_result, Dict):
+    elif isinstance(tm_result, Dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
-        assert metric.is_differentiable == pl_result[key].requires_grad
+        assert metric.is_differentiable == tm_result[key].requires_grad
     else:
-        assert metric.is_differentiable == pl_result.requires_grad
+        assert metric.is_differentiable == tm_result.requires_grad
 
 
 def _class_test(
     rank: int,
-    worldsize: int,
+    world_size: int,
     preds: Union[Tensor, list, List[Dict[str, Tensor]]],
     target: Union[Tensor, list, List[Dict[str, Tensor]]],
     metric_class: Metric,
@@ -92,11 +92,11 @@ def _class_test(
     check_state_dict: bool = True,
     **kwargs_update: Any,
 ):
-    """Utility function doing the actual comparison between class metric and reference metric.
+    """Comparison between class metric and reference metric.
 
     Args:
         rank: rank of current process
-        worldsize: number of processes
+        world_size: number of processes
         preds: torch tensor with predictions
         target: torch tensor with targets
         metric_class: metric class that should be tested
@@ -149,22 +149,22 @@ def _class_test(
     pickled_metric = pickle.dumps(metric)
     metric = pickle.loads(pickled_metric)
 
-    for i in range(rank, num_batches, worldsize):
+    for i in range(rank, num_batches, world_size):
         batch_kwargs_update = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
         batch_result = metric(preds[i], target[i], **batch_kwargs_update)
 
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
             if isinstance(preds, Tensor):
-                ddp_preds = torch.cat([preds[i + r] for r in range(worldsize)]).cpu()
+                ddp_preds = torch.cat([preds[i + r] for r in range(world_size)]).cpu()
             else:
-                ddp_preds = _flatten([preds[i + r] for r in range(worldsize)])
+                ddp_preds = _flatten([preds[i + r] for r in range(world_size)])
             if isinstance(target, Tensor):
-                ddp_target = torch.cat([target[i + r] for r in range(worldsize)]).cpu()
+                ddp_target = torch.cat([target[i + r] for r in range(world_size)]).cpu()
             else:
-                ddp_target = _flatten([target[i + r] for r in range(worldsize)])
+                ddp_target = _flatten([target[i + r] for r in range(world_size)])
             ddp_kwargs_upd = {
-                k: torch.cat([v[i + r] for r in range(worldsize)]).cpu() if isinstance(v, Tensor) else v
+                k: torch.cat([v[i + r] for r in range(world_size)]).cpu() if isinstance(v, Tensor) else v
                 for k, v in (kwargs_update if fragment_kwargs else batch_kwargs_update).items()
             }
             ref_batch_result = reference_metric(ddp_preds, ddp_target, **ddp_kwargs_upd)
@@ -237,7 +237,7 @@ def _functional_test(
     fragment_kwargs: bool = False,
     **kwargs_update: Any,
 ):
-    """Utility function doing the actual comparison between functional metric and reference metric.
+    """Comparison between functional metric and reference metric.
 
     Args:
         preds: torch tensor with predictions
@@ -316,7 +316,7 @@ def _assert_dtype_support(
 
 
 class MetricTester:
-    """General test class for all metrics
+    """Test class for all metrics.
 
     Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup once and
     that pool of processes are used for all tests. All tests should subclass from this and implement a new method called
@@ -335,7 +335,7 @@ class MetricTester:
         fragment_kwargs: bool = False,
         **kwargs_update: Any,
     ):
-        """Main method that should be used for testing functions. Call this inside testing method.
+        """Core method that should be used for testing functions. Call this inside testing method.
 
         Args:
             preds: torch tensor with predictions
@@ -376,7 +376,7 @@ class MetricTester:
         check_scriptable: bool = True,
         **kwargs_update: Any,
     ):
-        """Main method that should be used for testing class. Call this inside testing methods.
+        """Core method that should be used for testing class. Call this inside testing methods.
 
         Args:
             ddp: bool, if running in ddp mode or not
@@ -423,7 +423,7 @@ class MetricTester:
 
             _class_test(
                 rank=0,
-                worldsize=1,
+                world_size=1,
                 preds=preds,
                 target=target,
                 metric_class=metric_class,
@@ -543,58 +543,77 @@ class MetricTester:
 
 
 class DummyMetric(Metric):
+    """DummyMetric for testing core components."""
+
     name = "Dummy"
     full_state_update: Optional[bool] = True
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.add_state("x", tensor(0.0), dist_reduce_fx="sum")
 
     def update(self):
+        """Update state."""
         pass
 
     def compute(self):
+        """Compute value."""
         pass
 
 
 class DummyListMetric(Metric):
+    """DummyListMetric for testing core components."""
+
     name = "DummyList"
     full_state_update: Optional[bool] = True
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.add_state("x", [], dist_reduce_fx="cat")
 
     def update(self, x=torch.tensor(1)):
+        """Update state."""
         self.x.append(x)
 
     def compute(self):
+        """Compute value."""
         return self.x
 
 
 class DummyMetricSum(DummyMetric):
+    """DummyMetricSum for testing core components."""
+
     def update(self, x):
+        """Update state."""
         self.x += x
 
     def compute(self):
+        """Compute value."""
         return self.x
 
 
 class DummyMetricDiff(DummyMetric):
+    """DummyMetricDiff for testing core components."""
+
     def update(self, y):
+        """Update state."""
         self.x -= y
 
     def compute(self):
+        """Compute value."""
         return self.x
 
 
 class DummyMetricMultiOutput(DummyMetricSum):
+    """DummyMetricMultiOutput for testing core components."""
+
     def compute(self):
+        """Compute value."""
         return [self.x, self.x]
 
 
 def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
-    """Utility function for injecting the ignored index value into a tensor randomly."""
+    """Injecting the ignored index value into a tensor randomly."""
     if any(x.flatten() == ignore_index):  # ignore index is a class label
         return x
     classes = torch.unique(x)
@@ -614,8 +633,18 @@ def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
 
 
 def remove_ignore_index(target: Tensor, preds: Tensor, ignore_index: Optional[int]) -> Tuple[Tensor, Tensor]:
-    """Utility function for removing samples that are equal to the ignore_index in comparison functions."""
+    """Remove samples that are equal to the ignore_index in comparison functions."""
     if ignore_index is not None:
         idx = target == ignore_index
         target, preds = deepcopy(target[~idx]), deepcopy(preds[~idx])
     return target, preds
+
+
+def remove_ignore_index_groups(
+    target: Tensor, preds: Tensor, groups: Tensor, ignore_index: Optional[int]
+) -> Tuple[Tensor, Tensor, Tensor]:
+    """Version of the remove_ignore_index which includes groups."""
+    if ignore_index is not None:
+        idx = target == ignore_index
+        target, preds, groups = deepcopy(target[~idx]), deepcopy(preds[~idx]), deepcopy(groups[~idx])
+    return target, preds, groups

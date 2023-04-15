@@ -11,23 +11,42 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.image.d_lambda import SpectralDistortionIndex  # noqa: F401
-from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis  # noqa: F401
-from torchmetrics.image.psnr import PeakSignalNoiseRatio  # noqa: F401
-from torchmetrics.image.sam import SpectralAngleMapper  # noqa: F401
-from torchmetrics.image.ssim import (  # noqa: F401
-    MultiScaleStructuralSimilarityIndexMeasure,
-    StructuralSimilarityIndexMeasure,
-)
-from torchmetrics.image.uqi import UniversalImageQualityIndex  # noqa: F401
+from torchmetrics.image.d_lambda import SpectralDistortionIndex
+from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
+from torchmetrics.image.psnr import PeakSignalNoiseRatio
+from torchmetrics.image.rase import RelativeAverageSpectralError
+from torchmetrics.image.rmse_sw import RootMeanSquaredErrorUsingSlidingWindow
+from torchmetrics.image.sam import SpectralAngleMapper
+from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure, StructuralSimilarityIndexMeasure
+from torchmetrics.image.tv import TotalVariation
+from torchmetrics.image.uqi import UniversalImageQualityIndex
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 
+__all__ = [
+    "SpectralDistortionIndex",
+    "ErrorRelativeGlobalDimensionlessSynthesis",
+    "PeakSignalNoiseRatio",
+    "RelativeAverageSpectralError",
+    "RootMeanSquaredErrorUsingSlidingWindow",
+    "SpectralAngleMapper",
+    "MultiScaleStructuralSimilarityIndexMeasure",
+    "StructuralSimilarityIndexMeasure",
+    "UniversalImageQualityIndex",
+    "TotalVariation",
+]
+
 if _TORCH_FIDELITY_AVAILABLE:
-    from torchmetrics.image.fid import FrechetInceptionDistance  # noqa: F401
-    from torchmetrics.image.inception import InceptionScore  # noqa: F401
-    from torchmetrics.image.kid import KernelInceptionDistance  # noqa: F401
+    from torchmetrics.image.fid import FrechetInceptionDistance
+    from torchmetrics.image.inception import InceptionScore
+    from torchmetrics.image.kid import KernelInceptionDistance
+
+    __all__ += [
+        "FrechetInceptionDistance",
+        "InceptionScore",
+        "KernelInceptionDistance",
+    ]
 
 if _LPIPS_AVAILABLE:
     from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity  # noqa: F401
 
-from torchmetrics.image.tv import TotalVariation  # noqa: F401
+    __all__.append("LearnedPerceptualImagePatchSimilarity")

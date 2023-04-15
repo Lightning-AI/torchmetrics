@@ -45,16 +45,16 @@ def _specificity_reduce(
 ) -> Tensor:
     if average == "binary":
         return _safe_divide(tn, tn + fp)
-    elif average == "micro":
+    if average == "micro":
         tn = tn.sum(dim=0 if multidim_average == "global" else 1)
         fp = fp.sum(dim=0 if multidim_average == "global" else 1)
         return _safe_divide(tn, tn + fp)
-    else:
-        specificity_score = _safe_divide(tn, tn + fp)
-        if average is None or average == "none":
-            return specificity_score
-        weights = tp + fn if average == "weighted" else torch.ones_like(specificity_score)
-        return _safe_divide(weights * specificity_score, weights.sum(-1, keepdim=True)).sum(-1)
+
+    specificity_score = _safe_divide(tn, tn + fp)
+    if average is None or average == "none":
+        return specificity_score
+    weights = tp + fn if average == "weighted" else torch.ones_like(specificity_score)
+    return _safe_divide(weights * specificity_score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
 def binary_specificity(

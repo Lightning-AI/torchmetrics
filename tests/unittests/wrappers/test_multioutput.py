@@ -71,7 +71,7 @@ def _multi_target_sk_r2score(preds, target, adjusted=0, multioutput="raw_values"
     sk_target = target.view(-1, num_targets).numpy()
     r2_score = sk_r2score(sk_target, sk_preds, multioutput=multioutput)
     if adjusted != 0:
-        r2_score = 1 - (1 - r2_score) * (sk_preds.shape[0] - 1) / (sk_preds.shape[0] - adjusted - 1)
+        return 1 - (1 - r2_score) * (sk_preds.shape[0] - 1) / (sk_preds.shape[0] - adjusted - 1)
     return r2_score
 
 
@@ -107,7 +107,7 @@ class TestMultioutputWrapper(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multioutput_wrapper(self, base_metric_class, compare_metric, preds, target, num_outputs, ddp):
-        """Test correctness of implementation
+        """Test correctness of implementation.
 
         Tests that the multioutput wrapper properly slices and computes outputs along the output dimension for both
         classification and regression metrics, by comparing to the metric if they had been calculated sequentially.
@@ -134,3 +134,12 @@ def test_reset_called_correctly():
     res = cf(tensor([[1, 1]]), tensor([[0, 0]]))
     assert torch.allclose(res[0], tensor([[0, 1], [0, 0]]))
     assert torch.allclose(res[1], tensor([[0, 1], [0, 0]]))
+
+
+def test_squeeze_argument():
+    """Test that the squeeze_outputs argument works as expected."""
+    m = MultioutputWrapper(ConfusionMatrix(task="binary"), num_outputs=3)
+    m.update(torch.randint(2, (10, 3)), torch.randint(2, (10, 3)))  # as args
+    m.update(preds=torch.randint(2, (10, 3)), target=torch.randint(2, (10, 3)))  # as kwargs
+    val = m.compute()
+    assert val.shape == (3, 2, 2)

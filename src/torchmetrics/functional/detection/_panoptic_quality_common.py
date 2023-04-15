@@ -11,12 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Collection, Dict, List, Set, Tuple
+from typing import Collection, Dict, Iterator, List, Optional, Set, Tuple, cast
 
 import torch
 from torch import Tensor
 
 from torchmetrics.utilities import rank_zero_warn
+
+_Color = Tuple[int, int]  # A (category_id, instance_id) tuple that uniquely identifies a panoptic segment.
 
 
 def _nested_tuple(nested_list: List) -> Tuple:
@@ -200,28 +202,133 @@ def _prepocess_inputs(
     return out
 
 
+def _calculate_iou(
+    pred_color: _Color,
+    target_color: _Color,
+    pred_areas: Dict[_Color, Tensor],
+    target_areas: Dict[_Color, Tensor],
+    intersection_areas: Dict[Tuple[_Color, _Color], Tensor],
+    void_color: _Color,
+) -> Tensor:
+    """Helper function that calculates the IoU from precomputed areas of segments and their intersections.
+
+    Args:
+        pred_color: The `(category_id, instance_id)`, or "color", of a predicted segment that is being matched with a
+            target segment.
+        target_color: The `(category_id, instance_id)`, or "color", of a ground truth segment that is being matched
+            with a predicted segment.
+        pred_areas: Mapping from colors of the predicted segments to their extents.
+        target_areas: Mapping from colors of the ground truth segments to their extents.
+        intersection_areas: Mapping from tuples of `(pred_color, target_color)` to their extent.
+        void_color: An additional color that is masked out during metrics calculation.
+
+    Returns:
+        The calculated IoU as a torch.Tensor containing a single scalar value.
+    """
+    if pred_color[0] != target_color[0]:
+        raise ValueError(
+            "Attempting to compute IoU on segments with different category ID: "
+            f"pred {pred_color[0]}, target {target_color[0]}"
+        )
+    if pred_color == void_color:
+        raise ValueError("Attempting to compute IoU on a void segment.")
+    intersection = intersection_areas[(pred_color, target_color)]
+    pred_area = pred_areas[pred_color]
+    target_area = target_areas[target_color]
+    pred_void_area = intersection_areas.get((pred_color, void_color), 0)
+    void_target_area = intersection_areas.get((void_color, target_color), 0)
+    union = pred_area - pred_void_area + target_area - void_target_area - intersection
+    return intersection / union
+
+
+def _filter_false_negatives(
+    target_areas: Dict[_Color, Tensor],
+    target_segment_matched: Set[_Color],
+    intersection_areas: Dict[Tuple[_Color, _Color], Tensor],
+    void_color: Tuple[int, int],
+) -> Iterator[int]:
+    """Filter false negative segments and yield their category IDs.
+
+    False negatives occur when a ground truth segment is not matched with a prediction.
+    Areas that are mostly void in the prediction are ignored.
+
+    Args:
+        target_areas: Mapping from colors of the ground truth segments to their extents.
+        target_segment_matched: Set of ground truth segments that have been matched to a prediction.
+        intersection_areas: Mapping from tuples of `(pred_color, target_color)` to their extent.
+        void_color: An additional color that is masked out during metrics calculation.
+
+    Yields:
+        Category IDs of segments that account for false negatives.
+    """
+    false_negative_colors = set(target_areas) - target_segment_matched
+    false_negative_colors.discard(void_color)
+    for target_color in false_negative_colors:
+        void_target_area = intersection_areas.get((void_color, target_color), 0)
+        if void_target_area / target_areas[target_color] <= 0.5:
+            yield target_color[0]
+
+
+def _filter_false_positives(
+    pred_areas: Dict[_Color, Tensor],
+    pred_segment_matched: Set[_Color],
+    intersection_areas: Dict[Tuple[_Color, _Color], Tensor],
+    void_color: Tuple[int, int],
+) -> Iterator[int]:
+    """Filter false positive segments and yield their category IDs.
+
+    False positives occur when a predicted segment is not matched with a corresponding target one.
+    Areas that are mostly void in the target are ignored.
+
+    Args:
+        pred_areas: Mapping from colors of the predicted segments to their extents.
+        pred_segment_matched: Set of predicted segments that have been matched to a ground truth.
+        intersection_areas: Mapping from tuples of `(pred_color, target_color)` to their extent.
+        void_color: An additional color that is masked out during metrics calculation.
+
+    Yields:
+        Category IDs of segments that account for false positives.
+    """
+    false_positive_colors = set(pred_areas) - pred_segment_matched
+    false_positive_colors.discard(void_color)
+    for pred_color in false_positive_colors:
+        pred_void_area = intersection_areas.get((pred_color, void_color), 0)
+        if pred_void_area / pred_areas[pred_color] <= 0.5:
+            yield pred_color[0]
+
+
 def _panoptic_quality_update_sample(
     flatten_preds: Tensor,
     flatten_target: Tensor,
     cat_id_to_continuous_id: Dict[int, int],
     void_color: Tuple[int, int],
+    stuffs_modified_metric: Optional[Set[int]] = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Calculate stat scores required to compute accuracy **for a single sample**.
+    """Calculate stat scores required to compute the metric **for a single sample**.
 
     Computed scores: iou sum, true positives, false positives, false negatives.
+
+    NOTE: For the modified PQ case, this implementation uses the `true_positives` output tensor to aggregate the actual
+        TPs for things classes, but the number of target segments for stuff classes.
+        The `iou_sum` output tensor, instead, aggregates the IoU values at different thresholds (i.e., 0.5 for things
+        and 0 for stuffs).
+        This allows seamlessly using the same `.compute()` method for both PQ variants.
 
     Args:
         flatten_preds: A flattened prediction tensor referring to a single sample, shape (num_points, 2).
         flatten_target: A flattened target tensor referring to a single sample, shape (num_points, 2).
         cat_id_to_continuous_id: Mapping from original category IDs to continuous IDs
         void_color: an additional, unused color.
+        stuffs_modified_metric: Set of stuff category IDs for which the PQ metric is computed using the "modified"
+            formula. If not specified, the original formula is used for all categories.
 
     Returns:
         - IOU Sum
         - True positives
         - False positives
-        - False negatives
+        - False negatives.
     """
+    stuffs_modified_metric = stuffs_modified_metric or set()
     device = flatten_preds.device
     n_categories = len(cat_id_to_continuous_id)
     iou_sum = torch.zeros(n_categories, dtype=torch.double, device=device)
@@ -229,57 +336,47 @@ def _panoptic_quality_update_sample(
     false_positives = torch.zeros(n_categories, dtype=torch.int, device=device)
     false_negatives = torch.zeros(n_categories, dtype=torch.int, device=device)
 
-    # calculate the area of each prediction, ground truth and pairwise intersection
-    pred_areas = _get_color_areas(flatten_preds)
-    target_areas = _get_color_areas(flatten_target)
+    # calculate the area of each prediction, ground truth and pairwise intersection.
+    # NOTE: mypy needs `cast()` because the annotation for `_get_color_areas` is too generic.
+    pred_areas = cast(Dict[_Color, Tensor], _get_color_areas(flatten_preds))
+    target_areas = cast(Dict[_Color, Tensor], _get_color_areas(flatten_target))
     # intersection matrix of shape [num_pixels, 2, 2]
     intersection_matrix = torch.transpose(torch.stack((flatten_preds, flatten_target), -1), -1, -2)
-    intersection_areas = _get_color_areas(intersection_matrix)
+    intersection_areas = cast(Dict[Tuple[_Color, _Color], Tensor], _get_color_areas(intersection_matrix))
 
     # select intersection of things of same category with iou > 0.5
     pred_segment_matched = set()
     target_segment_matched = set()
-    for (pred_color, target_color), intersection in intersection_areas.items():
+    for pred_color, target_color in intersection_areas:
         # test only non void, matching category
         if target_color == void_color:
             continue
         if pred_color[0] != target_color[0]:
             continue
-        continuous_id = cat_id_to_continuous_id[pred_color[0]]
-        pred_area = pred_areas[pred_color]
-        target_area = target_areas[target_color]
-        pred_void_area = intersection_areas.get((pred_color, void_color), 0)
-        void_target_area = intersection_areas.get((void_color, target_color), 0)
-        union = pred_area - pred_void_area + target_area - void_target_area - intersection
-        iou = intersection / union
-
-        if iou > 0.5:
+        iou = _calculate_iou(pred_color, target_color, pred_areas, target_areas, intersection_areas, void_color)
+        continuous_id = cat_id_to_continuous_id[target_color[0]]
+        if target_color[0] not in stuffs_modified_metric and iou > 0.5:
             pred_segment_matched.add(pred_color)
             target_segment_matched.add(target_color)
             iou_sum[continuous_id] += iou
             true_positives[continuous_id] += 1
+        elif target_color[0] in stuffs_modified_metric and iou > 0:
+            iou_sum[continuous_id] += iou
 
-    # count false negative: ground truth but not matched
-    # areas that are mostly void in the prediction are ignored
-    false_negative_colors = set(target_areas.keys()).difference(target_segment_matched)
-    false_negative_colors.discard(void_color)
-    for target_color in false_negative_colors:
-        void_target_area = intersection_areas.get((void_color, target_color), 0)
-        if void_target_area / target_areas[target_color] > 0.5:
-            continue
-        continuous_id = cat_id_to_continuous_id[target_color[0]]
-        false_negatives[continuous_id] += 1
+    for cat_id in _filter_false_negatives(target_areas, target_segment_matched, intersection_areas, void_color):
+        if cat_id not in stuffs_modified_metric:
+            continuous_id = cat_id_to_continuous_id[cat_id]
+            false_negatives[continuous_id] += 1
 
-    # count false positive: predicted but not matched
-    # areas that are mostly void in the target are ignored
-    false_positive_colors = set(pred_areas.keys()).difference(pred_segment_matched)
-    false_positive_colors.discard(void_color)
-    for pred_color in false_positive_colors:
-        pred_void_area = intersection_areas.get((pred_color, void_color), 0)
-        if pred_void_area / pred_areas[pred_color] > 0.5:
-            continue
-        continuous_id = cat_id_to_continuous_id[pred_color[0]]
-        false_positives[continuous_id] += 1
+    for cat_id in _filter_false_positives(pred_areas, pred_segment_matched, intersection_areas, void_color):
+        if cat_id not in stuffs_modified_metric:
+            continuous_id = cat_id_to_continuous_id[cat_id]
+            false_positives[continuous_id] += 1
+
+    for cat_id, _ in target_areas:
+        if cat_id in stuffs_modified_metric:
+            continuous_id = cat_id_to_continuous_id[cat_id]
+            true_positives[continuous_id] += 1
 
     return iou_sum, true_positives, false_positives, false_negatives
 
@@ -289,8 +386,9 @@ def _panoptic_quality_update(
     flatten_target: Tensor,
     cat_id_to_continuous_id: Dict[int, int],
     void_color: Tuple[int, int],
+    modified_metric_stuffs: Optional[Set[int]] = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Calculate stat scores required to compute accuracy.
+    """Calculate stat scores required to compute the metric for a full batch.
 
     Computed scores: iou sum, true positives, false positives, false negatives.
 
@@ -299,6 +397,8 @@ def _panoptic_quality_update(
         flatten_target: A flattened target tensor, shape (B, num_points, 2).
         cat_id_to_continuous_id: Mapping from original category IDs to continuous IDs.
         void_color: an additional, unused color.
+        modified_metric_stuffs: Set of stuff category IDs for which the PQ metric is computed using the "modified"
+            formula. If not specified, the original formula is used for all categories.
 
     Returns:
         - IOU Sum
@@ -320,6 +420,7 @@ def _panoptic_quality_update(
             flatten_target_single,
             cat_id_to_continuous_id,
             void_color,
+            stuffs_modified_metric=modified_metric_stuffs,
         )
         iou_sum += result[0]
         true_positives += result[1]
@@ -351,81 +452,3 @@ def _panoptic_quality_compute(
     panoptic_quality = torch.where(denominator > 0.0, iou_sum / denominator, 0.0)
     # Reduce across categories. TODO: is it useful to have the option of returning per class metrics?
     return torch.mean(panoptic_quality[denominator > 0])
-
-
-def panoptic_quality(
-    preds: Tensor,
-    target: Tensor,
-    things: Collection[int],
-    stuffs: Collection[int],
-    allow_unknown_preds_category: bool = False,
-) -> Tensor:
-    r"""Compute `Panoptic Quality`_ for panoptic segmentations.
-
-    .. math::
-        PQ = \frac{IOU}{TP + 0.5 FP + 0.5 FN}
-
-    where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives, the number of
-    true postitives, false positives and false negatives. This metric is inspired by the PQ implementation of
-    panopticapi, a standard implementation for the PQ metric for object detection.
-
-
-    .. note:
-        Points in the target tensor that do not map to a known category ID are automatically ignored in the metric
-        computation.
-
-    Args:
-        preds:
-            torch tensor with panoptic detection of shape [height, width, 2] containing the pair
-            (category_id, instance_id) for each pixel of the image. If the category_id refer to a stuff, the
-            instance_id is ignored.
-        target:
-            torch tensor with ground truth of shape [height, width, 2] containing the pair (category_id, instance_id)
-            for each pixel of the image. If the category_id refer to a stuff, the instance_id is ignored.
-        things:
-            Set of ``category_id`` for countable things.
-        stuffs:
-            Set of ``category_id`` for uncountable stuffs.
-        allow_unknown_preds_category:
-            Boolean flag to specify if unknown categories in the predictions are to be ignored in the metric
-            computation or raise an exception when found.
-
-    Raises:
-        ValueError:
-            If ``things``, ``stuffs`` have at least one common ``category_id``.
-        TypeError:
-            If ``things``, ``stuffs`` contain non-integer ``category_id``.
-        TypeError:
-            If ``preds`` or ``target`` is not an ``torch.Tensor``.
-        ValueError:
-             If ``preds`` or ``target`` has different shape.
-        ValueError:
-            If ``preds`` has less than 3 dimensions.
-        ValueError:
-            If the final dimension of ``preds`` has size != 2.
-
-    Example:
-        >>> from torch import tensor
-        >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
-        ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
-        ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
-        ...                  [[0, 0], [7, 0], [6, 0], [1, 0]],
-        ...                  [[0, 0], [7, 0], [7, 0], [7, 0]]]])
-        >>> target = tensor([[[[6, 0], [0, 1], [6, 0], [0, 1]],
-        ...                   [[0, 1], [0, 1], [6, 0], [0, 1]],
-        ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
-        ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
-        ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
-        >>> panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7})
-        tensor(0.5463, dtype=torch.float64)
-    """
-    things, stuffs = _parse_categories(things, stuffs)
-    _validate_inputs(preds, target)
-    void_color = _get_void_color(things, stuffs)
-    cat_id_to_continuous_id = _get_category_id_to_continuous_id(things, stuffs)
-    flatten_preds = _prepocess_inputs(things, stuffs, preds, void_color, allow_unknown_preds_category)
-    flatten_target = _prepocess_inputs(things, stuffs, target, void_color, True)
-    iou_sum, true_positives, false_positives, false_negatives = _panoptic_quality_update(
-        flatten_preds, flatten_target, cat_id_to_continuous_id, void_color
-    )
-    return _panoptic_quality_compute(iou_sum, true_positives, false_positives, false_negatives)

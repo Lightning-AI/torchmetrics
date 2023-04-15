@@ -137,8 +137,7 @@ def _get_scaled_precision_or_recall(cos_sim: Tensor, metric: str, idf_scale: Ten
     res = cos_sim.max(dim=dim).values
     res = torch.einsum("bls, bs -> bls", res, idf_scale).sum(-1)
     # We transpose the results and squeeze if possible to match the format of the original BERTScore implementation
-    res = res.transpose(0, 1).squeeze()
-    return res
+    return res.transpose(0, 1).squeeze()
 
 
 def _get_precision_recall_f1(
@@ -169,8 +168,7 @@ def _get_precision_recall_f1(
 
 def _get_hash(model_name_or_path: Optional[str] = None, num_layers: Optional[int] = None, idf: bool = False) -> str:
     """Compute `BERT_score`_ (copied and adjusted)."""
-    msg = f"{model_name_or_path}_L{num_layers}{'_idf' if idf else '_no-idf'}"
-    return msg
+    return f"{model_name_or_path}_L{num_layers}{'_idf' if idf else '_no-idf'}"
 
 
 def _read_csv_from_local_file(baseline_path: str) -> Tensor:
@@ -181,8 +179,7 @@ def _read_csv_from_local_file(baseline_path: str) -> Tensor:
     with open(baseline_path) as fname:
         csv_file = csv.reader(fname)
         baseline_list = [[float(item) for item in row] for idx, row in enumerate(csv_file) if idx > 0]
-    baseline = torch.tensor(baseline_list)[:, 1:]
-    return baseline
+    return torch.tensor(baseline_list)[:, 1:]
 
 
 def _read_csv_from_url(baseline_url: str) -> Tensor:
@@ -196,8 +193,7 @@ def _read_csv_from_url(baseline_url: str) -> Tensor:
             for idx, row in enumerate(http_request)
             if idx > 0
         ]
-        baseline = torch.tensor(baseline_list)[:, 1:]
-    return baseline
+        return torch.tensor(baseline_list)[:, 1:]
 
 
 def _load_baseline(

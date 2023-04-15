@@ -73,7 +73,7 @@ def _accuracy_reduce(
     """
     if average == "binary":
         return _safe_divide(tp + tn, tp + tn + fp + fn)
-    elif average == "micro":
+    if average == "micro":
         tp = tp.sum(dim=0 if multidim_average == "global" else 1)
         fn = fn.sum(dim=0 if multidim_average == "global" else 1)
         if multilabel:
@@ -81,12 +81,12 @@ def _accuracy_reduce(
             tn = tn.sum(dim=0 if multidim_average == "global" else 1)
             return _safe_divide(tp + tn, tp + tn + fp + fn)
         return _safe_divide(tp, tp + fn)
-    else:
-        score = _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else _safe_divide(tp, tp + fn)
-        if average is None or average == "none":
-            return score
-        weights = tp + fn if average == "weighted" else torch.ones_like(score)
-        return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
+
+    score = _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else _safe_divide(tp, tp + fn)
+    if average is None or average == "none":
+        return score
+    weights = tp + fn if average == "weighted" else torch.ones_like(score)
+    return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
 def binary_accuracy(
@@ -378,8 +378,8 @@ def accuracy(
     threshold: float = 0.5,
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
-    multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+    average: Literal["micro", "macro", "weighted", "none"] = "micro",
+    multidim_average: Literal["global", "samplewise"] = "global",
     top_k: Optional[int] = 1,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
@@ -409,17 +409,24 @@ def accuracy(
         tensor(0.6667)
     """
     task = ClassificationTask.from_str(task)
-    assert multidim_average is not None
+
     if task == ClassificationTask.BINARY:
         return binary_accuracy(preds, target, threshold, multidim_average, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
-        assert isinstance(num_classes, int)
-        assert isinstance(top_k, int)
+        if not isinstance(num_classes, int):
+            raise ValueError(
+                f"Optional arg `num_classes` must be type `int` when task is {task}. Got {type(num_classes)}"
+            )
+        if not isinstance(top_k, int):
+            raise ValueError(f"Optional arg `top_k` must be type `int` when task is {task}. Got {type(top_k)}")
         return multiclass_accuracy(
             preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
     if task == ClassificationTask.MULTILABEL:
-        assert isinstance(num_labels, int)
+        if not isinstance(num_labels, int):
+            raise ValueError(
+                f"Optional arg `num_labels` must be type `int` when task is {task}. Got {type(num_labels)}"
+            )
         return multilabel_accuracy(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )

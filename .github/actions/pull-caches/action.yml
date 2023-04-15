@@ -1,0 +1,87 @@
+name: Prepare env. / restore caches
+description: some more complex pull-caches - pip & hf
+
+inputs:
+  pytorch-version:
+    description: PyTorch version
+    required: false
+    default: ""
+  requires:
+    description: define oldest or latest
+    required: false
+    default: ""
+  pypi-dir:
+    description: location of local PyPI cache
+    required: false
+    default: "_ci-cache_PyPI"
+
+runs:
+  using: "composite"
+  steps:
+
+  - name: install assistant's deps
+    run: pip install -q fire requests packaging
+    shell: bash
+
+  - name: Set PyTorch version
+    if: inputs.pytorch-version != ''
+    run: python ./requirements/adjust-versions.py requirements.txt ${{ inputs.pytorch-version }}
+    shell: bash
+
+  - name: Set min. dependencies
+    if: inputs.requires == 'oldest'
+    run: python .github/assistant.py set-oldest-versions
+    shell: bash
+
+  - name: Define caches
+    id: cache_dirs
+    run: |
+      torch_cache=$(python -c "import os ; print(os.path.join(os.getcwd(), '_ci-cache_pytorch'))")
+      echo "TORCH_HOME=$torch_cache" >> $GITHUB_ENV
+      hf_cache=$(python -c "import os ; print(os.path.join(os.getcwd(), '_ci-cache_huggingface'))")
+      echo "TRANSFORMERS_CACHE=$hf_cache" >> $GITHUB_ENV
+    shell: bash
+
+  - name: Cache pip
+    continue-on-error: true
+    uses: actions/cache/restore@v3
+    with:
+      path: ${{ inputs.pypi-dir }}
+      key: pypi-packages
+
+  - name: Restored Packages
+    run: |
+      mkdir -p ${{ inputs.pypi-dir }}
+      printf "list ${{ inputs.pypi-dir }}:\n"
+      ls -lh ${{ inputs.pypi-dir }}
+    shell: bash
+
+  - name: Cache Torch
+    continue-on-error: true
+    uses: actions/cache/restore@v3
+    with:
+      path: ${{ env.TORCH_HOME }}
+      key: cache-pytorch
+
+  - name: Restored PT
+    if: ${{ runner.os == 'Linux' }}
+    run: |
+      mkdir -p $TORCH_HOME
+      printf "list $TORCH_HOME:\n"
+      sudo apt install -q -y tree
+      tree -h $TORCH_HOME
+    shell: bash
+
+  - name: Cache HF
+    continue-on-error: true
+    uses: actions/cache/restore@v3
+    with:
+      path: ${{ env.TRANSFORMERS_CACHE }}
+      key: cache-transformers
+
+  - name: Restored HF
+    run: |
+      mkdir -p $TRANSFORMERS_CACHE
+      printf "list $TRANSFORMERS_CACHE:\n"
+      ls -lh $TRANSFORMERS_CACHE
+    shell: bash

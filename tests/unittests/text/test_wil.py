@@ -23,8 +23,11 @@ def _compute_wil_metric_jiwer(preds: Union[str, List[str]], target: Union[str, L
     ],
 )
 class TestWordInfoLost(TextTester):
+    """Test class for `WordInfoLost` metric."""
+
     @pytest.mark.parametrize("ddp", [False, True])
     def test_wil_class(self, ddp, preds, targets):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -34,6 +37,7 @@ class TestWordInfoLost(TextTester):
         )
 
     def test_wil_functional(self, preds, targets):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             targets,
@@ -42,6 +46,7 @@ class TestWordInfoLost(TextTester):
         )
 
     def test_wil_differentiability(self, preds, targets):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             targets=targets,

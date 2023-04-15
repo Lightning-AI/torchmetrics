@@ -13,10 +13,15 @@
 # limitations under the License.
 """Import utilities."""
 import operator
+import shutil
+import sys
+from distutils.version import LooseVersion
 from typing import Optional
 
 from lightning_utilities.core.imports import compare_version, package_available
 
+_PYTHON_VERSION = ".".join(map(str, [sys.version_info.major, sys.version_info.minor, sys.version_info.micro]))
+_PYTHON_LOWER_3_8 = LooseVersion(_PYTHON_VERSION) < LooseVersion("3.8")
 _TORCH_LOWER_1_12_DEV: Optional[bool] = compare_version("torch", operator.lt, "1.12.0.dev")
 _TORCH_GREATER_EQUAL_1_9: Optional[bool] = compare_version("torch", operator.ge, "1.9.0")
 _TORCH_GREATER_EQUAL_1_10: Optional[bool] = compare_version("torch", operator.ge, "1.10.0")
@@ -42,5 +47,8 @@ _REGEX_AVAILABLE: bool = package_available("regex")
 _PYSTOI_AVAILABLE: bool = package_available("pystoi")
 _FAST_BSS_EVAL_AVAILABLE: bool = package_available("fast_bss_eval")
 _MATPLOTLIB_AVAILABLE: bool = package_available("matplotlib")
+_SCIENCEPLOT_AVAILABLE: bool = package_available("scienceplots")
 _MULTIPROCESSING_AVAILABLE: bool = package_available("multiprocessing")
 _XLA_AVAILABLE: bool = package_available("torch_xla")
+
+_LATEX_AVAILABLE: bool = shutil.which("latex") is not None

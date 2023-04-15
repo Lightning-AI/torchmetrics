@@ -1,8 +1,9 @@
 import pytest
 import torch
 
-from torchmetrics import ClasswiseWrapper, MetricCollection
+from torchmetrics import MetricCollection
 from torchmetrics.classification import MulticlassAccuracy, MulticlassRecall
+from torchmetrics.wrappers import ClasswiseWrapper
 
 
 def test_raises_error_on_wrong_input():
@@ -75,8 +76,7 @@ def test_using_metriccollection(prefix, postfix):
 
     def _get_correct_name(base):
         name = base if prefix is None else prefix + base
-        name = name if postfix is None else name + postfix
-        return name
+        return name if postfix is None else name + postfix
 
     for lab in labels:
         name = _get_correct_name(f"multiclassaccuracy_{lab}")

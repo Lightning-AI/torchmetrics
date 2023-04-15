@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added`RelativeAverageSpectralError` and `RootMeanSquaredErrorUsingSlidingWindow` to image package ([#816](https://github.com/PyTorchLightning/metrics/pull/816))
+
+
 - Added support for `SpecificityAtSensitivity` Metric ([#1432](https://github.com/Lightning-AI/metrics/pull/1432))
 
 
@@ -19,6 +22,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     [#1481](https://github.com/Lightning-AI/metrics/pull/1481),
     [#1480](https://github.com/Lightning-AI/metrics/pull/1480),
     [#1490](https://github.com/Lightning-AI/metrics/pull/1490),
+    [#1581](https://github.com/Lightning-AI/metrics/pull/1581),
+    [#1585](https://github.com/Lightning-AI/metrics/pull/1585),
+    [#1593](https://github.com/Lightning-AI/metrics/pull/1593),
+    [#1600](https://github.com/Lightning-AI/metrics/pull/1600),
+    [#1605](https://github.com/Lightning-AI/metrics/pull/1605),
+    [#1610](https://github.com/Lightning-AI/metrics/pull/1610),
+    [#1609](https://github.com/Lightning-AI/metrics/pull/1609),
+    [#1621](https://github.com/Lightning-AI/metrics/pull/1621),
+    [#1624](https://github.com/Lightning-AI/metrics/pull/1624),
+    [#1623](https://github.com/Lightning-AI/metrics/pull/1623),
+    [#1638](https://github.com/Lightning-AI/metrics/pull/1638),
+    [#1631](https://github.com/Lightning-AI/metrics/pull/1631),
+    [#1650](https://github.com/Lightning-AI/metrics/pull/1650),
+    [#1639](https://github.com/Lightning-AI/metrics/pull/1639),
+    [#1660](https://github.com/Lightning-AI/metrics/pull/1660)
 )
 
 
@@ -26,6 +44,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Added `classes` to output from `MAP` metric ([#1419](https://github.com/Lightning-AI/metrics/pull/1419))
+
+
+- Added Binary group fairness metrics to classification package ([#1404](https://github.com/Lightning-AI/metrics/pull/1404))
+
+
+- Added new detection metric `PanopticQuality` ([#929](https://github.com/PyTorchLightning/metrics/pull/929))
 
 
 - Added `MinkowskiDistance` to regression package ([#1362](https://github.com/Lightning-AI/metrics/pull/1362))
@@ -52,6 +76,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for deterministic evaluation on GPU for metrics that uses `torch.cumsum` operator ([#1499](https://github.com/Lightning-AI/metrics/pull/1499))
 
 
+- Added support for plotting of aggregation metrics through `.plot()` method ([#1485](https://github.com/Lightning-AI/metrics/pull/1485))
+
+
+- Added support for python 3.11 ([#1612](https://github.com/Lightning-AI/metrics/pull/1612))
+
+
+- Added support for auto clamping of input for metrics that uses the `data_range` ([#1606](argument https://github.com/Lightning-AI/metrics/pull/1606))
+
+
+- Added `ModifiedPanopticQuality` metric to detection package ([#1627](https://github.com/Lightning-AI/metrics/pull/1627))
+
+
 ### Changed
 
 - Changed `update_count` and `update_called` from private to public methods ([#1370](https://github.com/Lightning-AI/metrics/pull/1370))
@@ -69,28 +105,77 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed `__iter__` method from raising `NotImplementedError` to `TypeError` by setting to `None` ([#1538](https://github.com/Lightning-AI/metrics/pull/1538))
 
 
+- `FID` metric will now raise an error if too few samples are provided ([#1655](https://github.com/Lightning-AI/metrics/pull/1655))
+
+
+- Allowed FID with `torch.float64` ([#1628](https://github.com/Lightning-AI/metrics/pull/1628))
+
+
 ### Deprecated
 
--
+- Deprecated domain metrics import from package root (
+    [#1685](https://github.com/Lightning-AI/metrics/pull/1685),
+    [#1694](https://github.com/Lightning-AI/metrics/pull/1694),
+    [#1696](https://github.com/Lightning-AI/metrics/pull/1696),
+    [#1699](https://github.com/Lightning-AI/metrics/pull/1699),
+    [#1703](https://github.com/Lightning-AI/metrics/pull/1703),
+)
 
 
 ### Removed
 
--
+- Support for python 3.7 ([#1640](https://github.com/Lightning-AI/metrics/pull/1640))
 
 
 ### Fixed
 
-- Fixed compatibility between XLA in `_bincount` function ([#1471](https://github.com/Lightning-AI/metrics/pull/1471))
+- Fixed support in `MetricTracker` for `MultioutputWrapper` and nested structures ([#1608](https://github.com/Lightning-AI/metrics/pull/1608))
 
 
-- Fixed type hints in methods belonging to `MetricTracker` wrapper ([#1472](https://github.com/Lightning-AI/metrics/pull/1472))
+- Fixed restrictive check in `PearsonCorrCoef` ([#1649](https://github.com/Lightning-AI/metrics/pull/1649))
 
 
-- Fixed `multilabel` in `ExactMatch` ([#1474](https://github.com/Lightning-AI/metrics/pull/1474))
+- Fixed integration with `jsonargparse` and `LightningCLI` ([#1651](https://github.com/Lightning-AI/metrics/pull/1651))
 
+
+- Fixed corner case in calibration error for zero confidence input ([#1648](https://github.com/Lightning-AI/metrics/pull/1648))
+
+
+- Fix precision-recall curve based computations for float target ([#1642](https://github.com/Lightning-AI/metrics/pull/1642))
+
+
+- Fixed missing kwarg squeeze in `MultiOutputWrapper` ([#1675](https://github.com/Lightning-AI/torchmetrics/pull/1675))
+
+
+- Fixed padding removal for 3d input in `MSSSIM` ([#1674](https://github.com/Lightning-AI/torchmetrics/pull/1674))
+
+
+## [0.11.4] - 2023-03-10
+
+### Fixed
+
+- Fixed evaluation of `R2Score` with near constant target ([#1576](https://github.com/Lightning-AI/metrics/pull/1576))
+- Fixed dtype conversion when metric is submodule ([#1583](https://github.com/Lightning-AI/metrics/pull/1583))
+- Fixed bug related to `top_k>1` and `ignore_index!=None` in `StatScores` based metrics ([#1589](https://github.com/Lightning-AI/metrics/pull/1589))
+- Fixed corner case for `PearsonCorrCoef` when running in ddp mode but only on single device ([#1587](https://github.com/Lightning-AI/metrics/pull/1587))
+- Fixed overflow error for specific cases in `MAP` when big areas are calculated ([#1607](https://github.com/Lightning-AI/metrics/pull/1607))
+
+
+## [0.11.3] - 2023-02-28
+
+### Fixed
 
 - Fixed classification metrics for `byte` input ([#1521](https://github.com/Lightning-AI/metrics/pull/1474))
+- Fixed the use of `ignore_index` in `MulticlassJaccardIndex` ([#1386](https://github.com/Lightning-AI/metrics/pull/1386))
+
+
+## [0.11.2] - 2023-02-21
+
+### Fixed
+
+- Fixed compatibility between XLA in `_bincount` function ([#1471](https://github.com/Lightning-AI/metrics/pull/1471))
+- Fixed type hints in methods belonging to `MetricTracker` wrapper ([#1472](https://github.com/Lightning-AI/metrics/pull/1472))
+- Fixed `multilabel` in `ExactMatch` ([#1474](https://github.com/Lightning-AI/metrics/pull/1474))
 
 
 ## [0.11.1] - 2023-01-30

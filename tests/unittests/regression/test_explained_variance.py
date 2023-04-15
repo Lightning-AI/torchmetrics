@@ -62,8 +62,11 @@ def _multi_target_ref_metric(preds, target, sk_fn=explained_variance_score):
     ],
 )
 class TestExplainedVariance(MetricTester):
+    """Test class for `ExplainedVariance` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     def test_explained_variance(self, multioutput, preds, target, ref_metric, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -74,6 +77,7 @@ class TestExplainedVariance(MetricTester):
         )
 
     def test_explained_variance_functional(self, multioutput, preds, target, ref_metric):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -83,6 +87,7 @@ class TestExplainedVariance(MetricTester):
         )
 
     def test_explained_variance_differentiability(self, multioutput, preds, target, ref_metric):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -92,14 +97,17 @@ class TestExplainedVariance(MetricTester):
         )
 
     def test_explained_variance_half_cpu(self, multioutput, preds, target, ref_metric):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(preds, target, ExplainedVariance, explained_variance)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_explained_variance_half_gpu(self, multioutput, preds, target, ref_metric):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(preds, target, ExplainedVariance, explained_variance)
 
 
 def test_error_on_different_shape(metric_class=ExplainedVariance):
+    """Test that error is raised on different shapes of input."""
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))

@@ -46,7 +46,7 @@ def _baseline_ergas(
     ratio: Union[int, float] = 4,
     reduction: str = "elementwise_mean",
 ) -> Tensor:
-    """Reference implementation of Erreur Relative Globale Adimensionnelle de Synthèse."""
+    """Baseline implementation of Erreur Relative Globale Adimensionnelle de Synthèse."""
     reduction_options = ("elementwise_mean", "sum", "none")
     if reduction not in reduction_options:
         raise ValueError(f"reduction has to be one of {reduction_options}, got: {reduction}.")
@@ -63,12 +63,10 @@ def _baseline_ergas(
     ergas_score = 100 * ratio * torch.sqrt(torch.sum((rmse_per_band / mean_target) ** 2, dim=1) / c)
     # reduction
     if reduction == "sum":
-        to_return = torch.sum(ergas_score)
-    elif reduction == "elementwise_mean":
-        to_return = torch.mean(ergas_score)
-    else:
-        to_return = ergas_score
-    return to_return
+        return torch.sum(ergas_score)
+    if reduction == "elementwise_mean":
+        return torch.mean(ergas_score)
+    return ergas_score
 
 
 @pytest.mark.parametrize("reduction", ["sum", "elementwise_mean"])
@@ -77,8 +75,11 @@ def _baseline_ergas(
     [(i.preds, i.target, i.ratio) for i in _inputs],
 )
 class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
+    """Test class for `ErrorRelativeGlobalDimensionlessSynthesis` metric."""
+
     @pytest.mark.parametrize("ddp", [True, False])
     def test_ergas(self, reduction, preds, target, ratio, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -89,6 +90,7 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
         )
 
     def test_ergas_functional(self, reduction, preds, target, ratio):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -100,6 +102,7 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
     # ERGAS half + cpu does not work due to missing support in torch.log
     @pytest.mark.xfail(reason="ERGAS metric does not support cpu + half precision")
     def test_ergas_half_cpu(self, reduction, preds, target, ratio):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
             preds,
             target,
@@ -109,6 +112,7 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_ergas_half_gpu(self, reduction, preds, target, ratio):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds, target, ErrorRelativeGlobalDimensionlessSynthesis, error_relative_global_dimensionless_synthesis
         )
@@ -122,13 +126,14 @@ def test_error_on_different_shape(metric_class=ErrorRelativeGlobalDimensionlessS
 
 
 def test_error_on_invalid_shape(metric_class=ErrorRelativeGlobalDimensionlessSynthesis):
-    """Check that error is raised when input is not 4D"""
+    """Check that error is raised when input is not 4D."""
     metric = metric_class()
     with pytest.raises(ValueError, match="Expected `preds` and `target` to have BxCxHxW shape.*"):
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16]))
 
 
 def test_error_on_invalid_type(metric_class=ErrorRelativeGlobalDimensionlessSynthesis):
+    """Test that error is raised if preds and target have different dtype."""
     metric = metric_class()
     with pytest.raises(TypeError, match="Expected `preds` and `target` to have the same data type.*"):
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16], dtype=torch.float64))

@@ -20,8 +20,8 @@ from pystoi import stoi as stoi_backend
 from scipy.io import wavfile
 from torch import Tensor
 
-from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
-from torchmetrics.functional.audio.stoi import short_time_objective_intelligibility
+from torchmetrics.audio import ShortTimeObjectiveIntelligibility
+from torchmetrics.functional.audio import short_time_objective_intelligibility
 from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -40,7 +40,7 @@ inputs_16k = Input(
 )
 
 
-def stoi_original_batch(preds: Tensor, target: Tensor, fs: int, extended: bool):
+def _stoi_original_batch(preds: Tensor, target: Tensor, fs: int, extended: bool):
     # shape: preds [BATCH_SIZE, Time] , target [BATCH_SIZE, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, Time] , target [NUM_BATCHES*BATCH_SIZE, Time]
     target = target.detach().cpu().numpy()
@@ -52,16 +52,16 @@ def stoi_original_batch(preds: Tensor, target: Tensor, fs: int, extended: bool):
     return torch.tensor(mss)
 
 
-def average_metric(preds, target, metric_func):
+def _average_metric(preds, target, metric_func):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     return metric_func(preds, target).mean()
 
 
-stoi_original_batch_8k_ext = partial(stoi_original_batch, fs=8000, extended=True)
-stoi_original_batch_16k_ext = partial(stoi_original_batch, fs=16000, extended=True)
-stoi_original_batch_8k_noext = partial(stoi_original_batch, fs=8000, extended=False)
-stoi_original_batch_16k_noext = partial(stoi_original_batch, fs=16000, extended=False)
+stoi_original_batch_8k_ext = partial(_stoi_original_batch, fs=8000, extended=True)
+stoi_original_batch_16k_ext = partial(_stoi_original_batch, fs=16000, extended=True)
+stoi_original_batch_8k_noext = partial(_stoi_original_batch, fs=8000, extended=False)
+stoi_original_batch_16k_noext = partial(_stoi_original_batch, fs=16000, extended=False)
 
 
 @pytest.mark.parametrize(
@@ -74,20 +74,24 @@ stoi_original_batch_16k_noext = partial(stoi_original_batch, fs=16000, extended=
     ],
 )
 class TestSTOI(MetricTester):
+    """Test class for `ShortTimeObjectiveIntelligibility` metric."""
+
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_stoi(self, preds, target, ref_metric, fs, extended, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             ShortTimeObjectiveIntelligibility,
-            reference_metric=partial(average_metric, metric_func=ref_metric),
+            reference_metric=partial(_average_metric, metric_func=ref_metric),
             metric_args={"fs": fs, "extended": extended},
         )
 
     def test_stoi_functional(self, preds, target, ref_metric, fs, extended):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -97,6 +101,7 @@ class TestSTOI(MetricTester):
         )
 
     def test_stoi_differentiability(self, preds, target, ref_metric, fs, extended):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -106,10 +111,12 @@ class TestSTOI(MetricTester):
         )
 
     def test_stoi_half_cpu(self, preds, target, ref_metric, fs, extended):
+        """Test dtype support of the metric on CPU."""
         pytest.xfail("STOI metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_stoi_half_gpu(self, preds, target, ref_metric, fs, extended):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -120,12 +127,14 @@ class TestSTOI(MetricTester):
 
 
 def test_error_on_different_shape(metric_class=ShortTimeObjectiveIntelligibility):
+    """Test that error is raised on different shapes of input."""
     metric = metric_class(16000)
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
 
 
 def test_on_real_audio():
+    """Test that metric works on real audio signal."""
     rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
     rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
     assert torch.allclose(

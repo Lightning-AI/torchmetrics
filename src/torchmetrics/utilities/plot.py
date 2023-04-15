@@ -13,13 +13,13 @@
 # limitations under the License.
 from itertools import product
 from math import ceil, floor, sqrt
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Generator, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.imports import _LATEX_AVAILABLE, _MATPLOTLIB_AVAILABLE, _SCIENCEPLOT_AVAILABLE
 
 if _MATPLOTLIB_AVAILABLE:
     import matplotlib
@@ -27,9 +27,26 @@ if _MATPLOTLIB_AVAILABLE:
 
     _PLOT_OUT_TYPE = Tuple[plt.Figure, Union[matplotlib.axes.Axes, np.ndarray]]
     _AX_TYPE = matplotlib.axes.Axes
+
+    style_change = plt.style.context
 else:
     _PLOT_OUT_TYPE = Tuple[object, object]  # type: ignore[misc]
     _AX_TYPE = object
+
+    from contextlib import contextmanager
+
+    @contextmanager
+    def style_change(*args: Any, **kwargs: Any) -> Generator:
+        """No-ops decorator if matplotlib is not installed."""
+        yield
+
+
+if _SCIENCEPLOT_AVAILABLE:
+    import scienceplots  # noqa: F401
+
+    _style = ["science", "no-latex"]
+
+_style = ["science"] if _SCIENCEPLOT_AVAILABLE and _LATEX_AVAILABLE else ["default"]
 
 
 def _error_on_missing_matplotlib() -> None:
@@ -40,8 +57,9 @@ def _error_on_missing_matplotlib() -> None:
         )
 
 
+@style_change(_style)
 def plot_single_or_multi_val(
-    val: Union[Tensor, Sequence[Tensor]],
+    val: Union[Tensor, Sequence[Tensor], Dict[str, Tensor], Sequence[Dict[str, Tensor]]],
     ax: Optional[_AX_TYPE] = None,  # type: ignore[valid-type]
     higher_is_better: Optional[bool] = None,
     lower_bound: Optional[float] = None,
@@ -80,16 +98,27 @@ def plot_single_or_multi_val(
             for i, v in enumerate(val):
                 label = f"{legend_name} {i}" if legend_name else f"{i}"
                 ax.plot(i, v.detach().cpu(), marker="o", markersize=10, linestyle="None", label=label)
-    else:
-        val = torch.stack(list(val), 0)
-        multi_series = val.ndim != 1
-        val = val.T if multi_series else val.unsqueeze(0)
-        for i, v in enumerate(val):
-            label = (f"{legend_name} {i}" if legend_name else f"{i}") if multi_series else ""
-            ax.plot(v.detach().cpu(), marker="o", markersize=10, linestyle="-", label=label)
+    elif isinstance(val, dict):
+        for i, (k, v) in enumerate(val.items()):
+            ax.plot(i, v.detach().cpu(), marker="o", markersize=10, label=k)
+    elif isinstance(val, Sequence):
+        n_steps = len(val)
+        if isinstance(val[0], dict):
+            val = {k: torch.stack([val[i][k] for i in range(n_steps)]) for k in val[0]}  # type: ignore
+            for k, v in val.items():
+                ax.plot(v.detach().cpu(), marker="o", markersize=10, linestyle="-", label=k)
+        else:
+            val = torch.stack(val, 0)  # type: ignore
+            multi_series = val.ndim != 1
+            val = val.T if multi_series else val.unsqueeze(0)
+            for i, v in enumerate(val):
+                label = (f"{legend_name} {i}" if legend_name else f"{i}") if multi_series else ""
+                ax.plot(v.detach().cpu(), marker="o", markersize=10, linestyle="-", label=label)
         ax.get_xaxis().set_visible(True)
         ax.set_xlabel("Step")
-        ax.set_xticks(torch.arange(val.shape[1]))
+        ax.set_xticks(torch.arange(n_steps))
+    else:
+        raise ValueError("Got unknown format for argument `val`.")
 
     handles, labels = ax.get_legend_handles_labels()
     if handles and labels:
@@ -133,10 +162,9 @@ def _get_col_row_split(n: int) -> Tuple[int, int]:
     nsq = sqrt(n)
     if nsq * nsq == n:
         return int(nsq), int(nsq)
-    elif floor(nsq) * ceil(nsq) > n:
+    if floor(nsq) * ceil(nsq) > n:
         return floor(nsq), ceil(nsq)
-    else:
-        return ceil(nsq), ceil(nsq)
+    return ceil(nsq), ceil(nsq)
 
 
 def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> np.ndarray:  # type: ignore[valid-type]
@@ -146,17 +174,18 @@ def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> np.ndarray:  # type: 
     """
     if isinstance(axs, _AX_TYPE):
         return axs
-    else:
-        axs = axs.flat  # type: ignore[union-attr]
-        for ax in axs[nb:]:
-            ax.remove()
-        return axs[:nb]
+
+    axs = axs.flat  # type: ignore[union-attr]
+    for ax in axs[nb:]:
+        ax.remove()
+    return axs[:nb]
 
 
+@style_change(_style)
 def plot_confusion_matrix(
     confmat: Tensor,
     add_text: bool = True,
-    labels: Optional[List[str]] = None,
+    labels: Optional[List[Union[int, str]]] = None,
 ) -> _PLOT_OUT_TYPE:
     """Plot an confusion matrix.
 
@@ -167,7 +196,7 @@ def plot_confusion_matrix(
         confmat: the confusion matrix. Either should be an [N,N] matrix in the binary and multiclass cases or an
             [N, 2, 2] matrix for multilabel classification
         add_text: if text should be added to each cell with the given value
-        labels: labels to add the the x and y axis
+        labels: labels to add the x- and y-axis
 
     Returns:
         A tuple consisting of the figure and respective ax objects (or array of ax objects) of the generated figure
@@ -189,16 +218,19 @@ def plot_confusion_matrix(
             "Expected number of elements in arg `labels` to match number of labels in confmat but "
             f"got {len(labels)} and {n_classes}"
         )
-    labels: Union[List[int], List[str]] = labels if labels is not None else np.arange(n_classes).tolist()
+    if confmat.ndim == 3:
+        fig_label = labels or np.arange(nb)
+        labels = list(map(str, range(n_classes)))
+    else:
+        fig_label = None
+        labels = labels or np.arange(n_classes).tolist()
 
     fig, axs = plt.subplots(nrows=rows, ncols=cols)
     axs = trim_axs(axs, nb)
     for i in range(nb):
-        if rows != 1 and cols != 1:
-            ax = axs[i]
-            ax.set_title(f"Label {i}", fontsize=15)
-        else:
-            ax = axs
+        ax = axs[i] if rows != 1 and cols != 1 else axs
+        if fig_label is not None:
+            ax.set_title(f"Label {fig_label[i]}", fontsize=15)
         ax.imshow(confmat[i].cpu().detach() if confmat.ndim == 3 else confmat.cpu().detach())
         ax.set_xlabel("True class", fontsize=15)
         ax.set_ylabel("Predicted class", fontsize=15)
@@ -215,25 +247,27 @@ def plot_confusion_matrix(
     return fig, axs
 
 
-def plot_binary_roc_curve(
-    tpr: Tensor,
-    fpr: Tensor,
+@style_change(_style)
+def plot_curve(
+    curve: Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]],
+    score: Optional[Tensor] = None,
     ax: Optional[_AX_TYPE] = None,  # type: ignore[valid-type]
-    roc_auc: Optional[Union[float, Tensor]] = None,
+    label_names: Optional[Tuple[str, str]] = None,
+    legend_name: Optional[str] = None,
     name: Optional[str] = None,
-    **kwargs: Any,
 ) -> _PLOT_OUT_TYPE:
     """Inspired by: https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/metrics/_plot/roc_curve.py.
 
-    Plots the roc curve
+    Plots a curve object
 
     Args:
-        tpr: Tensor containing the values for True Positive Rate
-        fpr: Tensor containing the values for False Positive Rate
+        curve: a tuple of (x, y, t) where x and y are the coordinates of the curve and t are the thresholds used
+            to compute the curve
+        score: optional area under the curve added as label to the plot
         ax: Axis from a figure
-        roc_auc: AUROC score (computed separately)
-        name: Custom name to describe the classifier
-        kwargs: additional keyword arguments for line drawing
+        label_names: Tuple containing the names of the x and y axis
+        legend_name: Name of the curve to be used in the legend
+        name: Custom name to describe the metric
 
     Returns:
         A tuple consisting of the figure and respective ax objects (or array of ax objects) of the generated figure
@@ -241,26 +275,37 @@ def plot_binary_roc_curve(
     Raises:
         ModuleNotFoundError:
             If `matplotlib` is not installed
+        ValueError:
+            If `curve` does not have 3 elements, being in the wrong format
     """
+    if len(curve) < 2:
+        raise ValueError("Expected 2 or 3 elements in curve but got {len(curve)}")
+    x, y = curve[:2]
+
     _error_on_missing_matplotlib()
     fig, ax = plt.subplots() if ax is None else (None, ax)
 
-    if isinstance(roc_auc, Tensor):
-        assert roc_auc.numel() == 1, "roc_auc Tensor must consist of only one element"
-        roc_auc = roc_auc.item()
-
-    line_kwargs = {}
-    if roc_auc is not None and name is not None:
-        line_kwargs["label"] = f"{name} (AUC = {roc_auc:0.2f})"
-    elif roc_auc is not None:
-        line_kwargs["label"] = f"AUC = {roc_auc:0.2f}"
-    elif name is not None:
-        line_kwargs["label"] = name
-
-    line_kwargs.update(**kwargs)
-
-    ax.plot(fpr.detach().cpu(), tpr.detach().cpu(), **line_kwargs)
-    ax.set_xlabel("False Positive Rate")
-    ax.set_ylabel("True Positive Rate")
+    if isinstance(x, Tensor) and isinstance(y, Tensor) and x.ndim == 1 and y.ndim == 1:
+        label = f"AUC={score.item():0.3f}" if score is not None else None
+        ax.plot(x.detach().cpu(), y.detach().cpu(), linestyle="-", linewidth=2, label=label)
+        if label_names is not None:
+            ax.set_xlabel(label_names[0])
+            ax.set_ylabel(label_names[1])
+        if label is not None:
+            ax.legend()
+    elif (isinstance(x, list) and isinstance(y, list)) or (
+        isinstance(x, Tensor) and isinstance(y, Tensor) and x.ndim == 2 and y.ndim == 2
+    ):
+        for i, (x_, y_) in enumerate(zip(x, y)):
+            label = f"{legend_name}_{i}" if legend_name is not None else str(i)
+            label += f" AUC={score[i].item():0.3f}" if score is not None else ""
+            ax.plot(x_.detach().cpu(), y_.detach().cpu(), label=label)
+            ax.legend()
+    else:
+        raise ValueError(
+            f"Unknown format for argument `x` and `y`. Expected either list or tensors but got {type(x)} and {type(y)}."
+        )
+    ax.grid(True)
+    ax.set_title(name)
 
     return fig, ax
