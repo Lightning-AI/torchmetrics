@@ -36,7 +36,7 @@ def _assert_all_close_regardless_of_order(
     """Recursively asserting that two results are within a certain tolerance regardless of the order."""
     # single output compare
     if isinstance(pl_result, Tensor):
-        assert np.allclose(pl_result.detach().cpu().numpy().mean(0), sk_result.mean(0), atol=atol, equal_nan=True)
+        assert np.allclose(pl_result.detach().cpu().numpy().mean(-1), sk_result.mean(-1), atol=atol, equal_nan=True)
     # multi output compare
     elif isinstance(pl_result, Sequence):
         for pl_res, sk_res in zip(pl_result, sk_result):
@@ -44,7 +44,9 @@ def _assert_all_close_regardless_of_order(
     elif isinstance(pl_result, Dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
-        assert np.allclose(pl_result[key].detach().cpu().numpy().mean(0), sk_result.mean(0), atol=atol, equal_nan=True)
+        assert np.allclose(
+            pl_result[key].detach().cpu().numpy().mean(-1), sk_result.mean(-1), atol=atol, equal_nan=True
+        )
     else:
         raise ValueError("Unknown format for comparison")
 
@@ -129,14 +131,6 @@ def _class_test(
             }
 
             sk_batch_result = ref_metric(ddp_preds, ddp_targets, **ddp_kwargs_upd)
-            if isinstance(batch_result, dict):
-                print(key)
-                print(batch_result)
-                print(batch_result[key])
-            else:
-                print(batch_result)
-            print("~~~~~~~~~~")
-            print(sk_batch_result)
             if ignore_order:
                 _assert_all_close_regardless_of_order(batch_result, sk_batch_result, atol=atol, key=key)
             else:
@@ -148,14 +142,6 @@ def _class_test(
                 for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
             }
             sk_batch_result = ref_metric(preds[i], targets[i], **batch_kwargs_update)
-            if isinstance(batch_result, dict):
-                print(key)
-                print(batch_result)
-                print(batch_result[key])
-            else:
-                print(batch_result)
-            print("~~~~~~~~~~")
-            print(sk_batch_result)
             if ignore_order:
                 _assert_all_close_regardless_of_order(batch_result, sk_batch_result, atol=atol, key=key)
             else:
@@ -180,7 +166,10 @@ def _class_test(
     }
     sk_result = ref_metric(total_preds, total_targets, **total_kwargs_update)
     # assert after aggregation
-    _assert_allclose(result, sk_result, atol=atol, key=key)
+    if ignore_order:
+        _assert_all_close_regardless_of_order(result, sk_result, atol=atol, key=key)
+    else:
+        _assert_allclose(result, sk_result, atol=atol, key=key)
 
 
 def _functional_test(

@@ -92,11 +92,8 @@ class TestBERTScore(TextTester):
     """Tests for BERTScore."""
 
     @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
     @skip_on_connection_issues()
-    def test_bertscore_class(
-        self, ddp, dist_sync_on_step, preds, targets, num_layers, all_layers, idf, rescale_with_baseline, metric_key
-    ):
+    def test_bertscore_class(self, ddp, preds, targets, num_layers, all_layers, idf, rescale_with_baseline, metric_key):
         """Test the bertscore class."""
         metric_args = {
             "model_name_or_path": MODEL_NAME,
@@ -120,7 +117,6 @@ class TestBERTScore(TextTester):
             targets=targets,
             metric_class=BERTScore,
             reference_metric=reference_bert_score_metric,
-            dist_sync_on_step=dist_sync_on_step,
             metric_args=metric_args,
             key=metric_key,
             check_scriptable=False,  # huggingface transformers are not usually scriptable
