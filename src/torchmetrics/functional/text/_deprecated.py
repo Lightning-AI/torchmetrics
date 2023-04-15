@@ -62,7 +62,7 @@ def _bert_score(
     >>> target = ["hello there", "master kenobi"]
     >>> score = _bert_score(preds, target)
     >>> from pprint import pprint
-    >>> pprint(rounded_score)
+    >>> pprint(score)
     {'f1': tensor([1.0000, 0.9961]),
      'precision': tensor([1.0000, 0.9961]),
      'recall': tensor([1.0000, 0.9961])}
