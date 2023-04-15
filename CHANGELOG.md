@@ -88,6 +88,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `ModifiedPanopticQuality` metric to detection package ([#1627](https://github.com/Lightning-AI/metrics/pull/1627))
 
 
+- Added `PrecisionAtFixedRecall` metric to classification package ([#1683](https://github.com/Lightning-AI/torchmetrics/pull/1683))
+
+
 - Added multiple metrics to detection package ([#1284](https://github.com/Lightning-AI/metrics/pull/1284))
   * `IntersectionOverUnion`
   * `GeneralizedIntersectionOverUnion`
