@@ -12,12 +12,12 @@ Peak Signal To Noise Ratio With Blocked Effect
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.PeakSignalNoiseRatioWithBlockedEffect
+.. autoclass:: torchmetrics.image.PeakSignalNoiseRatioWithBlockedEffect
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.peak_signal_noise_ratio_with_blocked_effect
+.. autofunction:: torchmetrics.functional.image.peak_signal_noise_ratio_with_blocked_effect
     :noindex:
