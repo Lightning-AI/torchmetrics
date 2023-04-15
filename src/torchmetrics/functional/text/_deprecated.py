@@ -55,16 +55,17 @@ def _bert_score(
     rescale_with_baseline: bool = False,
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
-) -> Dict[str, Union[List[float], str]]:
+) -> Dict[str, Union[Tensor, List[float], str]]:
     """Wrapper for deprecated import.
 
     >>> preds = ["hello there", "general kenobi"]
     >>> target = ["hello there", "master kenobi"]
     >>> score = _bert_score(preds, target)
     >>> from pprint import pprint
-    >>> rounded_score = {k: [round(v, 3) for v in vv] for k, vv in score.items()}
     >>> pprint(rounded_score)
-    {'f1': [1.0, 0.996], 'precision': [1.0, 0.996], 'recall': [1.0, 0.996]}
+    {'f1': tensor([1.0000, 0.9961]),
+     'precision': tensor([1.0000, 0.9961]),
+     'recall': tensor([1.0000, 0.9961])}
     """
     _deprecated_root_import_func("bert_score", "text")
     return bert_score(
