@@ -394,10 +394,10 @@ class MeanAveragePrecision(Metric):
             raise ModuleNotFoundError("When `iou_type` is set to 'segm', pycocotools need to be installed")
         self.iou_type = iou_type
         self.bbox_area_ranges = {
-            "all": (float(0**2), float(1e5**2)),
-            "small": (float(0**2), float(32**2)),
-            "medium": (float(32**2), float(96**2)),
-            "large": (float(96**2), float(1e5**2)),
+            "all": (float(0 ** 2), float(1e5 ** 2)),
+            "small": (float(0 ** 2), float(32 ** 2)),
+            "medium": (float(32 ** 2), float(96 ** 2)),
+            "large": (float(96 ** 2), float(1e5 ** 2)),
         }
 
         if not isinstance(class_metrics, bool):
@@ -795,8 +795,8 @@ class MeanAveragePrecision(Metric):
         """
         results = {"precision": precisions, "recall": recalls}
         map_metrics = MAPMetricResults()
-        map_metrics.map = self._summarize(results, True)
         last_max_det_thr = self.max_detection_thresholds[-1]
+        map_metrics.map = self._summarize(results, True, max_dets=last_max_det_thr)
         if 0.5 in self.iou_thresholds:
             map_metrics.map_50 = self._summarize(results, True, iou_threshold=0.5, max_dets=last_max_det_thr)
         else:
