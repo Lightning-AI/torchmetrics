@@ -85,7 +85,11 @@ def _accuracy_reduce(
     score = _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else _safe_divide(tp, tp + fn)
     if average is None or average == "none":
         return score
-    weights = tp + fn if average == "weighted" else torch.ones_like(score)
+    if average == "weighted":
+        weights = tp + fn
+    else:
+        weights = torch.ones_like(score)
+        weights[tp + fp + fn == 0] = 0.0
     return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
 

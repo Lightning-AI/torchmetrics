@@ -115,6 +115,21 @@ _binary_cases = (
 )
 
 
+def _multiclass_with_missing_class(*shape, num_classes=NUM_CLASSES):
+    """Generate multiclass input where a class is missing.
+
+    Args:
+        shape: shape of the tensor
+        num_classes: number of classes
+
+    Returns:
+        tensor with missing classes
+    """
+    x = torch.randint(0, num_classes, shape)
+    x[x == 0] = 2
+    return x
+
+
 _multiclass_cases = (
     pytest.param(
         Input(
@@ -157,6 +172,13 @@ _multiclass_cases = (
             target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
         ),
         id="input[multi dim-logits]",
+    ),
+    pytest.param(
+        Input(
+            preds=_multiclass_with_missing_class(NUM_BATCHES, BATCH_SIZE, num_classes=NUM_CLASSES),
+            target=_multiclass_with_missing_class(NUM_BATCHES, BATCH_SIZE, num_classes=NUM_CLASSES),
+        ),
+        id="input[single dim-labels-missing class]",
     ),
 )
 

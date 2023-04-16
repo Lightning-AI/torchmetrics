@@ -78,6 +78,7 @@ def _jaccard_index_reduce(
         denom = denom.sum() - (denom[ignore_index] if ignore_index_cond else 0.0)
 
     jaccard = _safe_divide(num, denom)
+    jaccard[confmat.sum(1) + confmat.sum(0) == 0] = 1.0
 
     if average is None or average == "none" or average == "micro":
         return jaccard

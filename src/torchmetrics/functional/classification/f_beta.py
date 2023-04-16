@@ -56,7 +56,11 @@ def _fbeta_reduce(
     fbeta_score = _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
     if average is None or average == "none":
         return fbeta_score
-    weights = tp + fn if average == "weighted" else torch.ones_like(fbeta_score)
+    if average == "weighted":
+        weights = tp + fn
+    else:
+        weights = torch.ones_like(fbeta_score)
+        weights[tp + fp + fn == 0] = 0.0
     return _safe_divide(weights * fbeta_score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
