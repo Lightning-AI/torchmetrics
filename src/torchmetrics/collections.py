@@ -82,7 +82,8 @@ class MetricCollection(ModuleDict):
     Example (input as list):
         >>> from torch import tensor
         >>> from pprint import pprint
-        >>> from torchmetrics import MetricCollection, MeanSquaredError
+        >>> from torchmetrics import MetricCollection
+        >>> from torchmetrics.regression import MeanSquaredError
         >>> from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall
         >>> target = tensor([0, 2, 0, 2, 0, 1, 0, 2])
         >>> preds = tensor([2, 1, 2, 0, 1, 2, 2, 2])

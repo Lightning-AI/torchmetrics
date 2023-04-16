@@ -124,7 +124,7 @@ class MaxMetric(BaseAggregator):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import MaxMetric
+        >>> from torchmetrics.aggregation import MaxMetric
         >>> metric = MaxMetric()
         >>> metric.update(1)
         >>> metric.update(tensor([2, 3]))
@@ -178,7 +178,7 @@ class MaxMetric(BaseAggregator):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> from torchmetrics import MaxMetric
+            >>> from torchmetrics.aggregation import MaxMetric
             >>> metric = MaxMetric()
             >>> metric.update([1, 2, 3])
             >>> fig_, ax_ = metric.plot()
@@ -187,7 +187,7 @@ class MaxMetric(BaseAggregator):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> from torchmetrics import MaxMetric
+            >>> from torchmetrics.aggregation import MaxMetric
             >>> metric = MaxMetric()
             >>> values = [ ]
             >>> for i in range(10):
@@ -224,7 +224,7 @@ class MinMetric(BaseAggregator):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import MinMetric
+        >>> from torchmetrics.aggregation import MinMetric
         >>> metric = MinMetric()
         >>> metric.update(1)
         >>> metric.update(tensor([2, 3]))
@@ -278,7 +278,7 @@ class MinMetric(BaseAggregator):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> from torchmetrics import MinMetric
+            >>> from torchmetrics.aggregation import MinMetric
             >>> metric = MinMetric()
             >>> metric.update([1, 2, 3])
             >>> fig_, ax_ = metric.plot()
@@ -287,7 +287,7 @@ class MinMetric(BaseAggregator):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> from torchmetrics import MinMetric
+            >>> from torchmetrics.aggregation import MinMetric
             >>> metric = MinMetric()
             >>> values = [ ]
             >>> for i in range(10):
@@ -324,7 +324,7 @@ class SumMetric(BaseAggregator):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import SumMetric
+        >>> from torchmetrics.aggregation import SumMetric
         >>> metric = SumMetric()
         >>> metric.update(1)
         >>> metric.update(tensor([2, 3]))
@@ -376,7 +376,7 @@ class SumMetric(BaseAggregator):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> from torchmetrics import SumMetric
+            >>> from torchmetrics.aggregation import SumMetric
             >>> metric = SumMetric()
             >>> metric.update([1, 2, 3])
             >>> fig_, ax_ = metric.plot()
@@ -386,7 +386,7 @@ class SumMetric(BaseAggregator):
 
             >>> # Example plotting multiple values
             >>> from torch import rand, randint
-            >>> from torchmetrics import SumMetric
+            >>> from torchmetrics.aggregation import SumMetric
             >>> metric = SumMetric()
             >>> values = [ ]
             >>> for i in range(10):
@@ -423,7 +423,7 @@ class CatMetric(BaseAggregator):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import CatMetric
+        >>> from torchmetrics.aggregation import CatMetric
         >>> metric = CatMetric()
         >>> metric.update(1)
         >>> metric.update(tensor([2, 3]))
@@ -484,7 +484,7 @@ class MeanMetric(BaseAggregator):
             If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
 
     Example:
-        >>> from torchmetrics import MeanMetric
+        >>> from torchmetrics.aggregation import MeanMetric
         >>> metric = MeanMetric()
         >>> metric.update(1)
         >>> metric.update(torch.tensor([2, 3]))
@@ -551,7 +551,7 @@ class MeanMetric(BaseAggregator):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> from torchmetrics import MeanMetric
+            >>> from torchmetrics.aggregation import MeanMetric
             >>> metric = MeanMetric()
             >>> metric.update([1, 2, 3])
             >>> fig_, ax_ = metric.plot()
@@ -560,7 +560,7 @@ class MeanMetric(BaseAggregator):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> from torchmetrics import MeanMetric
+            >>> from torchmetrics.aggregation import MeanMetric
             >>> metric = MeanMetric()
             >>> values = [ ]
             >>> for i in range(10):

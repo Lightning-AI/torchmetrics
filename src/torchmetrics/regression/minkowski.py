@@ -44,7 +44,7 @@ class MinkowskiDistance(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import MinkowskiDistance
+        >>> from torchmetrics.regression import MinkowskiDistance
         >>> target = tensor([1.0, 2.8, 3.5, 4.5])
         >>> preds = tensor([6.1, 2.11, 3.1, 5.6])
         >>> minkowski_distance = MinkowskiDistance(3)

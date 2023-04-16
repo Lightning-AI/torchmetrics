@@ -608,7 +608,7 @@ def confusion_matrix(
 
     Legacy Example:
         >>> from torch import tensor
-        >>> from torchmetrics import ConfusionMatrix
+        >>> from torchmetrics.classification import ConfusionMatrix
         >>> target = tensor([1, 1, 0, 0])
         >>> preds = tensor([0, 1, 0, 0])
         >>> confmat = ConfusionMatrix(task="binary")

@@ -143,7 +143,7 @@ class ClasswiseWrapper(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics import ClasswiseWrapper
+            >>> from torchmetrics.wrappers import ClasswiseWrapper
             >>> from torchmetrics.classification import MulticlassAccuracy
             >>> metric = ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None))
             >>> metric.update(torch.randint(3, (20,)), torch.randint(3, (20,)))
@@ -154,7 +154,7 @@ class ClasswiseWrapper(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics import ClasswiseWrapper
+            >>> from torchmetrics.wrappers import ClasswiseWrapper
             >>> from torchmetrics.classification import MulticlassAccuracy
             >>> metric = ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None))
             >>> values = [ ]

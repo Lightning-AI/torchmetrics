@@ -18,7 +18,7 @@ import pytest
 from scipy.spatial.distance import dice as sc_dice
 from torch import Tensor, tensor
 
-from torchmetrics import Dice
+from torchmetrics.classification import Dice
 from torchmetrics.functional import dice
 from torchmetrics.functional.classification.stat_scores import _del_column
 from torchmetrics.utilities.checks import _input_format_classification

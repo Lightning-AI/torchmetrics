@@ -67,7 +67,7 @@ class ExplainedVariance(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import ExplainedVariance
+        >>> from torchmetrics.regression import ExplainedVariance
         >>> target = tensor([3, -0.5, 2, 7])
         >>> preds = tensor([2.5, 0.0, 2, 8])
         >>> explained_variance = ExplainedVariance()

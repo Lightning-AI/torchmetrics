@@ -45,7 +45,8 @@ class MeanSquaredLogError(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import MeanSquaredLogError
+        >>> from torchmetrics.regression
+        import MeanSquaredLogError
         >>> target = tensor([2.5, 5, 4, 8])
         >>> preds = tensor([3, 5, 2.5, 7])
         >>> mean_squared_log_error = MeanSquaredLogError()

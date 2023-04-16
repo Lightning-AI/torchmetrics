@@ -121,7 +121,7 @@ def peak_signal_noise_ratio(
             If ``dim`` is not ``None`` and ``data_range`` is not provided.
 
     Example:
-        >>> from torchmetrics.functional import peak_signal_noise_ratio
+        >>> from torchmetrics.functional.image import.image peak_signal_noise_ratio
         >>> pred = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
         >>> peak_signal_noise_ratio(pred, target)
