@@ -434,7 +434,7 @@ def average_precision(
     for the specific details of each argument influence and examples.
 
     Legacy Example:
-        >>> from torchmetrics.functional.audio import average_precision
+        >>> from torchmetrics.functional.classification import average_precision
         >>> pred = torch.tensor([0.0, 1.0, 2.0, 3.0])
         >>> target = torch.tensor([0, 1, 1, 1])
         >>> average_precision(pred, target, task="binary")
