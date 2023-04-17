@@ -118,7 +118,7 @@ def spectral_distortion_index(
             If ``p`` is not a positive integer.
 
     Example:
-        >>> from torchmetrics.functional import spectral_distortion_index
+        >>> from torchmetrics.functional.image import spectral_distortion_index
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand([16, 3, 16, 16])
         >>> target = torch.rand([16, 3, 16, 16])

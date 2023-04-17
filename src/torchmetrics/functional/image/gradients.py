@@ -59,7 +59,7 @@ def image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
             If ``img`` is not a 4D tensor.
 
     Example:
-        >>> from torchmetrics.functional import image_gradients
+        >>> from torchmetrics.functional.image import image_gradients
         >>> image = torch.arange(0, 1*1*5*5, dtype=torch.float32)
         >>> image = torch.reshape(image, (1, 1, 5, 5))
         >>> dy, dx = image_gradients(image)

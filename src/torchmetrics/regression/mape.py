@@ -54,7 +54,7 @@ class MeanAbsolutePercentageError(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import MeanAbsolutePercentageError
+        >>> from torchmetrics.regression import MeanAbsolutePercentageError
         >>> target = tensor([1, 10, 1e6])
         >>> preds = tensor([0.9, 15, 1.2e6])
         >>> mean_abs_percentage_error = MeanAbsolutePercentageError()

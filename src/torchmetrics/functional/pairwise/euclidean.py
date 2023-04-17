@@ -71,7 +71,7 @@ def pairwise_euclidean_distance(
 
     Example:
         >>> import torch
-        >>> from torchmetrics.functional import pairwise_euclidean_distance
+        >>> from torchmetrics.functional.pairwise import pairwise_euclidean_distance
         >>> x = torch.tensor([[2, 3], [3, 5], [5, 8]], dtype=torch.float32)
         >>> y = torch.tensor([[1, 0], [2, 1]], dtype=torch.float32)
         >>> pairwise_euclidean_distance(x, y)
