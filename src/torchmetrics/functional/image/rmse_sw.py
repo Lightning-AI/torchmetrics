@@ -122,7 +122,7 @@ def root_mean_squared_error_using_sliding_window(
         (Optionally) RMSE map
 
     Example:
-        >>> from torchmetrics.functional import root_mean_squared_error_using_sliding_window
+        >>> from torchmetrics.functional.image import root_mean_squared_error_using_sliding_window
         >>> g = torch.manual_seed(22)
         >>> preds = torch.rand(4, 3, 16, 16)
         >>> target = torch.rand(4, 3, 16, 16)

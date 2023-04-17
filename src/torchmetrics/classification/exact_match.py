@@ -398,9 +398,11 @@ class ExactMatch:
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
         )
         if task == ClassificationTaskNoBinary.MULTICLASS:
-            assert isinstance(num_classes, int)
+            if not isinstance(num_classes, int):
+                raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassExactMatch(num_classes, **kwargs)
         if task == ClassificationTaskNoBinary.MULTILABEL:
-            assert isinstance(num_labels, int)
+            if not isinstance(num_labels, int):
+                raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelExactMatch(num_labels, threshold, **kwargs)
         return None

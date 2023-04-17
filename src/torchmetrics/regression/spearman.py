@@ -51,7 +51,7 @@ class SpearmanCorrCoef(Metric):
 
     Example (single output regression):
         >>> from torch import tensor
-        >>> from torchmetrics import SpearmanCorrCoef
+        >>> from torchmetrics.regression import SpearmanCorrCoef
         >>> target = tensor([3, -0.5, 2, 7])
         >>> preds = tensor([2.5, 0.0, 2, 8])
         >>> spearman = SpearmanCorrCoef()
@@ -59,7 +59,7 @@ class SpearmanCorrCoef(Metric):
         tensor(1.0000)
 
     Example (multi output regression):
-        >>> from torchmetrics import SpearmanCorrCoef
+        >>> from torchmetrics.regression import SpearmanCorrCoef
         >>> target = tensor([[3, -0.5], [2, 7]])
         >>> preds = tensor([[2.5, 0.0], [2, 8]])
         >>> spearman = SpearmanCorrCoef(num_outputs=2)

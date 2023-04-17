@@ -131,7 +131,7 @@ class MinMaxMetric(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics import MinMaxMetric
+            >>> from torchmetrics.wrappers import MinMaxMetric
             >>> from torchmetrics.classification import BinaryAccuracy
             >>> metric = MinMaxMetric(BinaryAccuracy())
             >>> metric.update(torch.randint(2, (20,)), torch.randint(2, (20,)))
@@ -142,7 +142,7 @@ class MinMaxMetric(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics import MinMaxMetric
+            >>> from torchmetrics.wrappers import MinMaxMetric
             >>> from torchmetrics.classification import BinaryAccuracy
             >>> metric = MinMaxMetric(BinaryAccuracy())
             >>> values = [ ]
