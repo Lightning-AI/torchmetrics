@@ -21,6 +21,7 @@ import pytest
 import torch
 from torch import tensor
 
+from torchmetrics import MetricCollection
 from torchmetrics.aggregation import MaxMetric, MeanMetric, MinMetric, SumMetric
 from torchmetrics.audio import (
     ScaleInvariantSignalDistortionRatio,
@@ -773,6 +774,36 @@ def test_confusion_matrix_plotter(metric_class, preds, target, labels, use_label
     cond1 = isinstance(axs, matplotlib.axes.Axes)
     cond2 = isinstance(axs, np.ndarray) and all(isinstance(a, matplotlib.axes.Axes) for a in axs)
     assert cond1 or cond2
+
+
+@pytest.mark.parametrize("together", [True, False])
+@pytest.mark.parametrize("num_vals", [1, 2])
+def test_plot_method_collection(together, num_vals):
+    """Test the plot method of metric collection."""
+    m_collection = MetricCollection(
+        BinaryAccuracy(),
+        BinaryPrecision(),
+        BinaryRecall(),
+    )
+    if num_vals == 1:
+        m_collection.update(torch.randint(0, 2, size=(10,)), torch.randint(0, 2, size=(10,)))
+        fig_ax = m_collection.plot(together=together)
+    else:
+        vals = []
+        for _ in range(num_vals):
+            vals.append(m_collection(torch.randint(0, 2, size=(10,)), torch.randint(0, 2, size=(10,))))
+        fig_ax = m_collection.plot(val=vals, together=together)
+
+    if together:
+        assert isinstance(fig_ax, tuple)
+        assert len(fig_ax) == 2
+        fig, ax = fig_ax
+        assert isinstance(fig, plt.Figure)
+        assert isinstance(ax, matplotlib.axes.Axes)
+    else:
+        assert isinstance(fig_ax, list)
+        assert all(isinstance(f[0], plt.Figure) for f in fig_ax)
+        assert all(isinstance(f[1], matplotlib.axes.Axes) for f in fig_ax)
 
 
 @pytest.mark.parametrize(
