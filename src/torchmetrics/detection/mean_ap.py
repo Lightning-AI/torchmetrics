@@ -743,8 +743,8 @@ class MeanAveragePrecision(Metric):
         """
         results = {"precision": precisions, "recall": recalls}
         map_metrics = MAPMetricResults()
-        map_metrics.map = self._summarize(results, True)
         last_max_det_thr = self.max_detection_thresholds[-1]
+        map_metrics.map = self._summarize(results, True, max_dets=last_max_det_thr)
         if 0.5 in self.iou_thresholds:
             map_metrics.map_50 = self._summarize(results, True, iou_threshold=0.5, max_dets=last_max_det_thr)
         else:
