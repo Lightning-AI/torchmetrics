@@ -110,6 +110,7 @@ jobs:
 
       - name: update cashing
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        continue-on-error: true
         uses: ./.github/actions/push-caches
         with:
           pypi-dir: ${{ env.PYPI_CACHE }}
