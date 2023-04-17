@@ -122,7 +122,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allowed FID with `torch.float64` ([#1628](https://github.com/Lightning-AI/metrics/pull/1628))
 
 
+- Changed `LPIPS` implementation to no more rely on third-party package ([#1575](https://github.com/Lightning-AI/metrics/pull/1575))
+
+
 - Changed FID matrix square root calculation from `scipy` to `torch` ([#1708](https://github.com/Lightning-AI/torchmetrics/pull/1708))
+
 
 ### Deprecated
 
