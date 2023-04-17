@@ -68,7 +68,7 @@ class StructuralSimilarityIndexMeasure(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics import StructuralSimilarityIndexMeasure
+        >>> from torchmetrics.image import StructuralSimilarityIndexMeasure
         >>> preds = torch.rand([3, 3, 256, 256])
         >>> target = preds * 0.75
         >>> ssim = StructuralSimilarityIndexMeasure(data_range=1.0)
@@ -191,7 +191,7 @@ class StructuralSimilarityIndexMeasure(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics import StructuralSimilarityIndexMeasure
+            >>> from torchmetrics.image import StructuralSimilarityIndexMeasure
             >>> preds = torch.rand([3, 3, 256, 256])
             >>> target = preds * 0.75
             >>> metric = StructuralSimilarityIndexMeasure(data_range=1.0)
@@ -203,7 +203,7 @@ class StructuralSimilarityIndexMeasure(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics import StructuralSimilarityIndexMeasure
+            >>> from torchmetrics.image import StructuralSimilarityIndexMeasure
             >>> preds = torch.rand([3, 3, 256, 256])
             >>> target = preds * 0.75
             >>> metric = StructuralSimilarityIndexMeasure(data_range=1.0)
@@ -266,7 +266,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
             If ``normalize`` is neither `None`, `ReLU` nor `simple`.
 
     Example:
-        >>> from torchmetrics import MultiScaleStructuralSimilarityIndexMeasure
+        >>> from torchmetrics.image import MultiScaleStructuralSimilarityIndexMeasure
         >>> import torch
         >>> preds = torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
@@ -390,7 +390,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> from torchmetrics import MultiScaleStructuralSimilarityIndexMeasure
+            >>> from torchmetrics.image import MultiScaleStructuralSimilarityIndexMeasure
             >>> import torch
             >>> preds = torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
             >>> target = preds * 0.75
@@ -402,7 +402,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> from torchmetrics import MultiScaleStructuralSimilarityIndexMeasure
+            >>> from torchmetrics.image import MultiScaleStructuralSimilarityIndexMeasure
             >>> import torch
             >>> preds = torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
             >>> target = preds * 0.75

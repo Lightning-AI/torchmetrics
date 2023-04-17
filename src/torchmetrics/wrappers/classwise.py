@@ -37,7 +37,7 @@ class ClasswiseWrapper(Metric):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(42)
-        >>> from torchmetrics import ClasswiseWrapper
+        >>> from torchmetrics.wrappers import ClasswiseWrapper
         >>> from torchmetrics.classification import MulticlassAccuracy
         >>> metric = ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None))
         >>> preds = torch.randn(10, 3).softmax(dim=-1)
@@ -48,7 +48,7 @@ class ClasswiseWrapper(Metric):
         'multiclassaccuracy_2': tensor(0.)}
 
     Example (labels as list of strings):
-        >>> from torchmetrics import ClasswiseWrapper
+        >>> from torchmetrics.wrappers import ClasswiseWrapper
         >>> from torchmetrics.classification import MulticlassAccuracy
         >>> metric = ClasswiseWrapper(
         ...    MulticlassAccuracy(num_classes=3, average=None),
@@ -62,7 +62,8 @@ class ClasswiseWrapper(Metric):
         'multiclassaccuracy_dog': tensor(0.)}
 
     Example (in metric collection):
-        >>> from torchmetrics import ClasswiseWrapper, MetricCollection
+        >>> from torchmetrics import MetricCollection
+        >>> from torchmetrics.wrappers import ClasswiseWrapper
         >>> from torchmetrics.classification import MulticlassAccuracy, MulticlassRecall
         >>> labels = ["horse", "fish", "dog"]
         >>> metric = MetricCollection(

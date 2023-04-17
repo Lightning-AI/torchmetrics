@@ -68,7 +68,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
+        >>> from torchmetrics.audio import PerceptualEvaluationSpeechQuality
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
@@ -147,7 +147,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
+            >>> from torchmetrics.audio import PerceptualEvaluationSpeechQuality
             >>> metric = PerceptualEvaluationSpeechQuality(8000, 'nb')
             >>> metric.update(torch.rand(8000), torch.rand(8000))
             >>> fig_, ax_ = metric.plot()
@@ -157,7 +157,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
+            >>> from torchmetrics.audio import PerceptualEvaluationSpeechQuality
             >>> metric = PerceptualEvaluationSpeechQuality(8000, 'nb')
             >>> values = [ ]
             >>> for _ in range(10):

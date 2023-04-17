@@ -55,8 +55,8 @@ class PermutationInvariantTraining(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics import PermutationInvariantTraining
-        >>> from torchmetrics.functional import scale_invariant_signal_noise_ratio
+        >>> from torchmetrics.audio import PermutationInvariantTraining
+        >>> from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
@@ -122,8 +122,8 @@ class PermutationInvariantTraining(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.audio.pit import PermutationInvariantTraining
-            >>> from torchmetrics.functional import scale_invariant_signal_noise_ratio
+            >>> from torchmetrics.audio import PermutationInvariantTraining
+            >>> from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
             >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
             >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
             >>> metric = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
@@ -135,8 +135,8 @@ class PermutationInvariantTraining(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.audio.pit import PermutationInvariantTraining
-            >>> from torchmetrics.functional import scale_invariant_signal_noise_ratio
+            >>> from torchmetrics.audio import PermutationInvariantTraining
+            >>> from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
             >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
             >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
             >>> metric = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')

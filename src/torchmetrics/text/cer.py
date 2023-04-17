@@ -58,6 +58,7 @@ class CharErrorRate(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Examples:
+        >>> from torchmetrics.text import CharErrorRate
         >>> preds = ["this is the prediction", "there is an other sample"]
         >>> target = ["this is the reference", "there is another one"]
         >>> cer = CharErrorRate()
@@ -112,7 +113,7 @@ class CharErrorRate(Metric):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> from torchmetrics import CharErrorRate
+            >>> from torchmetrics.text import CharErrorRate
             >>> metric = CharErrorRate()
             >>> preds = ["this is the prediction", "there is an other sample"]
             >>> target = ["this is the reference", "there is another one"]
@@ -123,7 +124,7 @@ class CharErrorRate(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> from torchmetrics import CharErrorRate
+            >>> from torchmetrics.text import CharErrorRate
             >>> metric = CharErrorRate()
             >>> preds = ["this is the prediction", "there is an other sample"]
             >>> target = ["this is the reference", "there is another one"]
