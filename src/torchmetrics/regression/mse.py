@@ -46,7 +46,7 @@ class MeanSquaredError(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import MeanSquaredError
+        >>> from torchmetrics.regression import MeanSquaredError
         >>> target = tensor([2.5, 5.0, 4.0, 8.0])
         >>> preds = tensor([3.0, 5.0, 2.5, 7.0])
         >>> mean_squared_error = MeanSquaredError()

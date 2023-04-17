@@ -93,7 +93,7 @@ class PearsonCorrCoef(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (single output regression):
-        >>> from torchmetrics import PearsonCorrCoef
+        >>> from torchmetrics.regression import PearsonCorrCoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> pearson = PearsonCorrCoef()
@@ -101,7 +101,7 @@ class PearsonCorrCoef(Metric):
         tensor(0.9849)
 
     Example (multi output regression):
-        >>> from torchmetrics import PearsonCorrCoef
+        >>> from torchmetrics.regression import PearsonCorrCoef
         >>> target = torch.tensor([[3, -0.5], [2, 7]])
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
         >>> pearson = PearsonCorrCoef(num_outputs=2)
