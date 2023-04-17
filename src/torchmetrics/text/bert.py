@@ -27,9 +27,6 @@ from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TRANSFORMERS_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["BERTScore.plot"]
-
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL = "roberta-large"
 
@@ -45,6 +42,9 @@ if _TRANSFORMERS_AVAILABLE:
         __doctest_skip__ = ["BERTScore", "BERTScore.plot"]
 else:
     __doctest_skip__ = ["BERTScore", "BERTScore.plot"]
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ += ["BERTScore.plot"]
 
 
 def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> Dict[str, Tensor]:
