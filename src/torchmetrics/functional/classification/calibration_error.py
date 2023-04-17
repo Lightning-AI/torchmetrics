@@ -349,10 +349,11 @@ def calibration_error(
     each argument influence and examples.
     """
     task = ClassificationTaskNoMultilabel.from_str(task)
-    assert norm is not None
+    assert norm is not None  # noqa: S101  # needed for mypy
     if task == ClassificationTaskNoMultilabel.BINARY:
         return binary_calibration_error(preds, target, n_bins, norm, ignore_index, validate_args)
     if task == ClassificationTaskNoMultilabel.MULTICLASS:
-        assert isinstance(num_classes, int)
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         return multiclass_calibration_error(preds, target, num_classes, n_bins, norm, ignore_index, validate_args)
     raise ValueError(f"Expected argument `task` to either be `'binary'` or `'multiclass'` but got {task}")

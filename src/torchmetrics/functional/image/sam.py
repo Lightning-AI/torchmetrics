@@ -103,7 +103,7 @@ def spectral_angle_mapper(
             If ``preds`` and ``target`` don't have ``BxCxHxW shape``.
 
     Example:
-        >>> from torchmetrics.functional import spectral_angle_mapper
+        >>> from torchmetrics.functional.image import spectral_angle_mapper
         >>> preds = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42))
         >>> target = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(123))
         >>> spectral_angle_mapper(preds, target)

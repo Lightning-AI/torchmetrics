@@ -320,6 +320,7 @@ class CohenKappa:
         if task == ClassificationTaskNoMultilabel.BINARY:
             return BinaryCohenKappa(threshold, **kwargs)
         if task == ClassificationTaskNoMultilabel.MULTICLASS:
-            assert isinstance(num_classes, int)
+            if not isinstance(num_classes, int):
+                raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassCohenKappa(num_classes, **kwargs)
         return None

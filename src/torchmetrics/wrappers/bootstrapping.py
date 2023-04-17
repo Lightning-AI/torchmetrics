@@ -178,7 +178,8 @@ class BootStrapper(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics import BootStrapper, MeanSquaredError
+            >>> from torchmetrics.wrappers import BootStrapper
+            >>> from torchmetrics.regression import MeanSquaredError
             >>> metric = BootStrapper(MeanSquaredError(), num_bootstraps=20)
             >>> metric.update(torch.randn(100,), torch.randn(100,))
             >>> fig_, ax_ = metric.plot()
@@ -188,7 +189,8 @@ class BootStrapper(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics import BootStrapper, MeanSquaredError
+            >>> from torchmetrics.wrappers import BootStrapper
+            >>> from torchmetrics.regression import MeanSquaredError
             >>> metric = BootStrapper(MeanSquaredError(), num_bootstraps=20)
             >>> values = [ ]
             >>> for _ in range(3):
