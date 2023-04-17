@@ -16,32 +16,16 @@ from contextlib import nullcontext as does_not_raise
 
 import pytest
 import torch
-from scipy.linalg import sqrtm as scipy_sqrtm
 from torch.nn import Module
 from torch.utils.data import Dataset
 
-from torchmetrics.image.fid import FrechetInceptionDistance, sqrtm
-from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
+from torchmetrics.image.fid import FrechetInceptionDistance
+from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
 
 torch.manual_seed(42)
 
 
-@pytest.mark.parametrize("matrix_size", [2, 10, 100, 500])
-def test_matrix_sqrt(matrix_size):
-    """Test that metrix sqrt function works as expected."""
-
-    def generate_cov(n):
-        data = torch.randn(2 * n, n)
-        return (data - data.mean(dim=0)).T @ (data - data.mean(dim=0))
-
-    cov1 = generate_cov(matrix_size)
-    cov2 = generate_cov(matrix_size)
-
-    scipy_res = scipy_sqrtm((cov1 @ cov2).numpy()).real
-    tm_res = sqrtm(cov1 @ cov2)
-    assert torch.allclose(torch.tensor(scipy_res).float().trace(), tm_res.trace())
-
-
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_9, reason="test requires torch>=1.9")
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_no_train():
     """Assert that metric never leaves evaluation mode."""
@@ -60,6 +44,7 @@ def test_no_train():
     assert not model.metric.inception.training, "FID metric was changed to training mode which should not happen"
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_9, reason="test requires torch>=1.9")
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_fid_pickle():
     """Assert that we can initialize the metric and pickle it."""
@@ -73,21 +58,28 @@ def test_fid_pickle():
 
 def test_fid_raises_errors_and_warnings():
     """Test that expected warnings and errors are raised."""
-    if _TORCH_FIDELITY_AVAILABLE:
-        with pytest.raises(ValueError, match="Integer input to argument `feature` must be one of .*"):
-            _ = FrechetInceptionDistance(feature=2)
+    if _TORCH_GREATER_EQUAL_1_9:
+        if _TORCH_FIDELITY_AVAILABLE:
+            with pytest.raises(ValueError, match="Integer input to argument `feature` must be one of .*"):
+                _ = FrechetInceptionDistance(feature=2)
+        else:
+            with pytest.raises(
+                ModuleNotFoundError,
+                match="FID metric requires that `Torch-fidelity` is installed."
+                " Either install as `pip install torchmetrics[image-quality]` or `pip install torch-fidelity`.",
+            ):
+                _ = FrechetInceptionDistance()
+
+        with pytest.raises(TypeError, match="Got unknown input to argument `feature`"):
+            _ = FrechetInceptionDistance(feature=[1, 2])
     else:
         with pytest.raises(
-            ModuleNotFoundError,
-            match="FID metric requires that `Torch-fidelity` is installed."
-            " Either install as `pip install torchmetrics[image-quality]` or `pip install torch-fidelity`.",
+            ValueError, match="FrechetInceptionDistance metric requires that PyTorch is version 1.9.0 or higher."
         ):
             _ = FrechetInceptionDistance()
 
-    with pytest.raises(TypeError, match="Got unknown input to argument `feature`"):
-        _ = FrechetInceptionDistance(feature=[1, 2])
 
-
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_9, reason="test requires torch>=1.9")
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 @pytest.mark.parametrize("feature", [64, 192, 768, 2048])
 def test_fid_same_input(feature):
@@ -119,6 +111,7 @@ class _ImgDataset(Dataset):
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_9, reason="test requires torch>=1.9")
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 @pytest.mark.parametrize("equal_size", [False, True])
 def test_compare_fid(tmpdir, equal_size, feature=768):
@@ -156,6 +149,7 @@ def test_compare_fid(tmpdir, equal_size, feature=768):
     assert torch.allclose(tm_res.cpu(), torch.tensor([torch_fid["frechet_inception_distance"]]), atol=1e-3)
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_9, reason="test requires torch>=1.9")
 @pytest.mark.parametrize("reset_real_features", [True, False])
 def test_reset_real_features_arg(reset_real_features):
     """Test that `reset_real_features` argument works as expected."""
@@ -185,6 +179,7 @@ def test_reset_real_features_arg(reset_real_features):
         assert metric.real_features_cov_sum.shape == torch.Size([64, 64])
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_9, reason="test requires torch>=1.9")
 def test_normalize_arg_true():
     """Test that normalize argument works as expected."""
     img = torch.rand(2, 3, 299, 299)
@@ -193,6 +188,7 @@ def test_normalize_arg_true():
         metric.update(img, real=True)
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_9, reason="test requires torch>=1.9")
 def test_normalize_arg_false():
     """Test that normalize argument works as expected."""
     img = torch.rand(2, 3, 299, 299)
@@ -201,6 +197,7 @@ def test_normalize_arg_false():
         metric.update(img, real=True)
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_9, reason="test requires torch>=1.9")
 def test_not_enough_samples():
     """Test that an error is raised if not enough samples were provided."""
     img = torch.randint(0, 255, (1, 3, 299, 299), dtype=torch.uint8)
@@ -213,6 +210,7 @@ def test_not_enough_samples():
         metric.compute()
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_9, reason="test requires torch>=1.9")
 def test_dtype_transfer_to_submodule():
     """Test that change in dtype also changes the default inception net."""
     imgs = torch.randn(1, 3, 256, 256)
