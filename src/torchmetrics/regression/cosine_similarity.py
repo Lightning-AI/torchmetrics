@@ -50,7 +50,7 @@ class CosineSimilarity(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import CosineSimilarity
+        >>> from torchmetrics.regression import CosineSimilarity
         >>> target = tensor([[0, 1], [1, 1]])
         >>> preds = tensor([[0, 1], [0, 1]])
         >>> cosine_similarity = CosineSimilarity(reduction = 'mean')

@@ -71,7 +71,7 @@ def minkowski_distance(preds: Tensor, targets: Tensor, p: float) -> Tensor:
         Tensor with the Minkowski distance
 
     Example:
-        >>> from torchmetrics.functional import minkowski_distance
+        >>> from torchmetrics.functional.regression import minkowski_distance
         >>> x = torch.tensor([1.0, 2.8, 3.5, 4.5])
         >>> y = torch.tensor([6.1, 2.11, 3.1, 5.6])
         >>> minkowski_distance(x, y, p=3)

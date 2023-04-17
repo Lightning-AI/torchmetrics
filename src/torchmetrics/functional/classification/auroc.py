@@ -464,9 +464,11 @@ def auroc(
     if task == ClassificationTask.BINARY:
         return binary_auroc(preds, target, max_fpr, thresholds, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
-        assert isinstance(num_classes, int)
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         return multiclass_auroc(preds, target, num_classes, average, thresholds, ignore_index, validate_args)
     if task == ClassificationTask.MULTILABEL:
-        assert isinstance(num_labels, int)
+        if not isinstance(num_labels, int):
+            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_auroc(preds, target, num_labels, average, thresholds, ignore_index, validate_args)
     return None

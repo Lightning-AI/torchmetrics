@@ -158,7 +158,7 @@ def r2_score(
             If ``adjusted`` is not an ``integer`` greater than ``0``.
 
     Example:
-        >>> from torchmetrics.functional import r2_score
+        >>> from torchmetrics.functional.regression import r2_score
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> r2_score(preds, target)
