@@ -20,9 +20,10 @@ from torchmetrics.functional.detection.diou import _diou_compute, _diou_update
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_13
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["DistanceIntersectionOverUnion.plot"]
-__doctest_requires__ = {("DistanceIntersectionOverUnion", "DistanceIntersectionOverUnion.plot"): ["torchvision"]}
+__doctest_requires__ = {
+    "DistanceIntersectionOverUnion": ["torchvision"],
+    "DistanceIntersectionOverUnion.plot": ["torchvision", "matplotlib"],
+}
 
 
 class DistanceIntersectionOverUnion(IntersectionOverUnion):
