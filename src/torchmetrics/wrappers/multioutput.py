@@ -63,7 +63,8 @@ class MultioutputWrapper(Metric):
     Example:
          >>> # Mimic R2Score in `multioutput`, `raw_values` mode:
          >>> import torch
-         >>> from torchmetrics import MultioutputWrapper, R2Score
+         >>> from torchmetrics.wrappers import MultioutputWrapper
+         >>> from torchmetrics.regression import R2Score
          >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
          >>> preds = torch.tensor([[0, 2], [-1, 2], [8, -5]])
          >>> r2score = MultioutputWrapper(R2Score(), 2)
@@ -105,6 +106,7 @@ class MultioutputWrapper(Metric):
 
             if self.squeeze_outputs:
                 selected_args = [arg.squeeze(self.output_dim) for arg in selected_args]
+                selected_kwargs = {k: v.squeeze(self.output_dim) for k, v in selected_kwargs.items()}
             args_kwargs_by_output.append((selected_args, selected_kwargs))
         return args_kwargs_by_output
 

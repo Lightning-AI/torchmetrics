@@ -11,24 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.classification.confusion_matrix import (  # isort:skip
-    BinaryConfusionMatrix,
-    ConfusionMatrix,
-    MulticlassConfusionMatrix,
-    MultilabelConfusionMatrix,
-)
-from torchmetrics.classification.precision_recall_curve import (  # isort:skip
-    PrecisionRecallCurve,
-    BinaryPrecisionRecallCurve,
-    MulticlassPrecisionRecallCurve,
-    MultilabelPrecisionRecallCurve,
-)
-from torchmetrics.classification.stat_scores import (  # isort:skip
-    BinaryStatScores,
-    MulticlassStatScores,
-    MultilabelStatScores,
-    StatScores,
-)
 from torchmetrics.classification.accuracy import Accuracy, BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy
 from torchmetrics.classification.auroc import AUROC, BinaryAUROC, MulticlassAUROC, MultilabelAUROC
 from torchmetrics.classification.average_precision import (
@@ -43,6 +25,12 @@ from torchmetrics.classification.calibration_error import (
     MulticlassCalibrationError,
 )
 from torchmetrics.classification.cohen_kappa import BinaryCohenKappa, CohenKappa, MulticlassCohenKappa
+from torchmetrics.classification.confusion_matrix import (
+    BinaryConfusionMatrix,
+    ConfusionMatrix,
+    MulticlassConfusionMatrix,
+    MultilabelConfusionMatrix,
+)
 from torchmetrics.classification.dice import Dice
 from torchmetrics.classification.exact_match import ExactMatch, MulticlassExactMatch, MultilabelExactMatch
 from torchmetrics.classification.f_beta import (
@@ -76,6 +64,12 @@ from torchmetrics.classification.matthews_corrcoef import (
     MulticlassMatthewsCorrCoef,
     MultilabelMatthewsCorrCoef,
 )
+from torchmetrics.classification.precision_fixed_recall import (
+    BinaryPrecisionAtFixedRecall,
+    MulticlassPrecisionAtFixedRecall,
+    MultilabelPrecisionAtFixedRecall,
+    PrecisionAtFixedRecall,
+)
 from torchmetrics.classification.precision_recall import (
     BinaryPrecision,
     BinaryRecall,
@@ -86,15 +80,22 @@ from torchmetrics.classification.precision_recall import (
     Precision,
     Recall,
 )
+from torchmetrics.classification.precision_recall_curve import (
+    BinaryPrecisionRecallCurve,
+    MulticlassPrecisionRecallCurve,
+    MultilabelPrecisionRecallCurve,
+    PrecisionRecallCurve,
+)
 from torchmetrics.classification.ranking import (
     MultilabelCoverageError,
     MultilabelRankingAveragePrecision,
     MultilabelRankingLoss,
 )
-from torchmetrics.classification.recall_at_fixed_precision import (
+from torchmetrics.classification.recall_fixed_precision import (
     BinaryRecallAtFixedPrecision,
     MulticlassRecallAtFixedPrecision,
     MultilabelRecallAtFixedPrecision,
+    RecallAtFixedPrecision,
 )
 from torchmetrics.classification.roc import ROC, BinaryROC, MulticlassROC, MultilabelROC
 from torchmetrics.classification.specificity import (
@@ -103,10 +104,16 @@ from torchmetrics.classification.specificity import (
     MultilabelSpecificity,
     Specificity,
 )
-from torchmetrics.classification.specificity_at_sensitivity import (
+from torchmetrics.classification.specificity_sensitivity import (
     BinarySpecificityAtSensitivity,
     MulticlassSpecificityAtSensitivity,
     MultilabelSpecificityAtSensitivity,
+)
+from torchmetrics.classification.stat_scores import (
+    BinaryStatScores,
+    MulticlassStatScores,
+    MultilabelStatScores,
+    StatScores,
 )
 
 __all__ = [
@@ -134,9 +141,6 @@ __all__ = [
     "BinaryAveragePrecision",
     "MulticlassAveragePrecision",
     "MultilabelAveragePrecision",
-    "BinnedAveragePrecision",
-    "BinnedPrecisionRecallCurve",
-    "BinnedRecallAtFixedPrecision",
     "BinaryCalibrationError",
     "CalibrationError",
     "MulticlassCalibrationError",
@@ -180,9 +184,6 @@ __all__ = [
     "MultilabelRecall",
     "Precision",
     "Recall",
-    "CoverageError",
-    "LabelRankingAveragePrecision",
-    "LabelRankingLoss",
     "MultilabelCoverageError",
     "MultilabelRankingAveragePrecision",
     "MultilabelRankingLoss",
@@ -200,4 +201,12 @@ __all__ = [
     "BinarySpecificityAtSensitivity",
     "MulticlassSpecificityAtSensitivity",
     "MultilabelSpecificityAtSensitivity",
+    "BinaryPrecisionAtFixedRecall",
+    "MulticlassPrecisionAtFixedRecall",
+    "MultilabelPrecisionAtFixedRecall",
+    "PrecisionAtFixedRecall",
+    "RecallAtFixedPrecision",
+    "BinaryPrecisionAtFixedRecall",
+    "MulticlassPrecisionAtFixedRecall",
+    "MultilabelPrecisionAtFixedRecall",
 ]

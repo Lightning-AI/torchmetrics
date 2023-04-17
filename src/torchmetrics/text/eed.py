@@ -49,7 +49,7 @@ class ExtendedEditDistance(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import ExtendedEditDistance
+        >>> from torchmetrics.text import ExtendedEditDistance
         >>> preds = ["this is the prediction", "here is an other sample"]
         >>> target = ["this is the reference", "here is another one"]
         >>> eed = ExtendedEditDistance()
@@ -140,7 +140,7 @@ class ExtendedEditDistance(Metric):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> from torchmetrics import ExtendedEditDistance
+            >>> from torchmetrics.text import ExtendedEditDistance
             >>> metric = ExtendedEditDistance()
             >>> preds = ["this is the prediction", "there is an other sample"]
             >>> target = ["this is the reference", "there is another one"]
@@ -151,7 +151,7 @@ class ExtendedEditDistance(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> from torchmetrics import ExtendedEditDistance
+            >>> from torchmetrics.text import ExtendedEditDistance
             >>> metric = ExtendedEditDistance()
             >>> preds = ["this is the prediction", "there is an other sample"]
             >>> target = ["this is the reference", "there is another one"]

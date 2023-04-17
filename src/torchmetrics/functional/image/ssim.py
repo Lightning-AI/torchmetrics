@@ -72,7 +72,7 @@ def _ssim_update(
             The luminance term can be obtained with luminance=ssim/contrast
             Mutually exclusive with ``return_full_image``
     """
-    is_3d = len(preds.shape) == 5
+    is_3d = preds.ndim == 5
 
     if not isinstance(kernel_size, Sequence):
         kernel_size = 3 * [kernel_size] if is_3d else 2 * [kernel_size]
@@ -168,7 +168,10 @@ def _ssim_update(
 
     if return_contrast_sensitivity:
         contrast_sensitivity = upper / lower
-        contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
+        if is_3d:
+            contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w, pad_d:-pad_d]
+        else:
+            contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
         return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), contrast_sensitivity.reshape(
             contrast_sensitivity.shape[0], -1
         ).mean(-1)
@@ -364,7 +367,7 @@ def _multiscale_ssim_update(
     """
     mcs_list: List[Tensor] = []
 
-    is_3d = len(preds.shape) == 5
+    is_3d = preds.ndim == 5
 
     if not isinstance(kernel_size, Sequence):
         kernel_size = 3 * [kernel_size] if is_3d else 2 * [kernel_size]

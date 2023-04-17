@@ -60,7 +60,7 @@ class Dice(Metric):
 
     Args:
         num_classes:
-            Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
+            Number of classes. Necessary for ``'macro'``, and ``None`` average methods.
         threshold:
             Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
             of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
@@ -120,7 +120,7 @@ class Dice(Metric):
 
     Raises:
         ValueError:
-            If ``average`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"``, ``None``.
+            If ``average`` is none of ``"micro"``, ``"macro"``, ``"samples"``, ``"none"``, ``None``.
         ValueError:
             If ``mdmc_average`` is not one of ``None``, ``"samplewise"``, ``"global"``.
         ValueError:
@@ -130,7 +130,7 @@ class Dice(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import Dice
+        >>> from torchmetrics.classification import Dice
         >>> preds  = tensor([2, 0, 2, 1])
         >>> target = tensor([1, 1, 2, 0])
         >>> dice = Dice(average='micro')
@@ -150,7 +150,7 @@ class Dice(Metric):
         zero_division: int = 0,
         num_classes: Optional[int] = None,
         threshold: float = 0.5,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+        average: Optional[Literal["micro", "macro", "none"]] = "micro",
         mdmc_average: Optional[str] = "global",
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
@@ -164,6 +164,7 @@ class Dice(Metric):
         )
 
         allowed_average = ("micro", "macro", "weighted", "samples", "none", None)
+        super().__init__(**kwargs)
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 
