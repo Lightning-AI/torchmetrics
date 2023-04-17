@@ -65,7 +65,7 @@ def mean_squared_error(preds: Tensor, target: Tensor, squared: bool = True) -> T
         Tensor with MSE
 
     Example:
-        >>> from torchmetrics.functional import mean_squared_error
+        >>> from torchmetrics.functional.regression import mean_squared_error
         >>> x = torch.tensor([0., 1, 2, 3])
         >>> y = torch.tensor([0., 1, 2, 2])
         >>> mean_squared_error(x, y)

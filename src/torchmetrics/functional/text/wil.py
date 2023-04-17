@@ -81,7 +81,7 @@ def word_information_lost(preds: Union[str, List[str]], target: Union[str, List[
         Word Information Lost rate
 
     Examples:
-        >>> from torchmetrics.functional import word_information_lost
+        >>> from torchmetrics.functional.text import word_information_lost
         >>> preds = ["this is the prediction", "there is an other sample"]
         >>> target = ["this is the reference", "there is another one"]
         >>> word_information_lost(preds, target)

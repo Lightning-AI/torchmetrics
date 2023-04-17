@@ -67,7 +67,7 @@ class TweedieDevianceScore(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import TweedieDevianceScore
+        >>> from torchmetrics.regression import TweedieDevianceScore
         >>> targets = torch.tensor([1.0, 2.0, 3.0, 4.0])
         >>> preds = torch.tensor([4.0, 3.0, 2.0, 1.0])
         >>> deviance_score = TweedieDevianceScore(power=2)

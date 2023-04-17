@@ -24,8 +24,8 @@ import torch
 from torch import Tensor, tensor
 from torch.nn import Module
 
-from torchmetrics import PearsonCorrCoef
 from torchmetrics.classification import BinaryAccuracy
+from torchmetrics.regression import PearsonCorrCoef
 from unittests.helpers import seed_all
 from unittests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
 from unittests.helpers.utilities import no_warning_call

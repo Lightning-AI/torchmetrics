@@ -258,7 +258,7 @@ def structural_similarity_index_measure(
             If one of the elements of ``sigma`` is not a ``positive number``.
 
     Example:
-        >>> from torchmetrics.functional import structural_similarity_index_measure
+        >>> from torchmetrics.functional.image import structural_similarity_index_measure
         >>> preds = torch.rand([3, 3, 256, 256])
         >>> target = preds * 0.75
         >>> structural_similarity_index_measure(preds, target)
@@ -495,7 +495,7 @@ def multiscale_structural_similarity_index_measure(
             If one of the elements of ``sigma`` is not a ``positive number``.
 
     Example:
-        >>> from torchmetrics.functional import multiscale_structural_similarity_index_measure
+        >>> from torchmetrics.functional.image import multiscale_structural_similarity_index_measure
         >>> preds = torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
         >>> multiscale_structural_similarity_index_measure(preds, target, data_range=1.0)

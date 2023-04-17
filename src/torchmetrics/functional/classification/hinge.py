@@ -279,6 +279,7 @@ def hinge_loss(
     if task == ClassificationTaskNoMultilabel.BINARY:
         return binary_hinge_loss(preds, target, squared, ignore_index, validate_args)
     if task == ClassificationTaskNoMultilabel.MULTICLASS:
-        assert isinstance(num_classes, int)
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         return multiclass_hinge_loss(preds, target, num_classes, squared, multiclass_mode, ignore_index, validate_args)
     raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy
