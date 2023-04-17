@@ -23,7 +23,7 @@ from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 if not _TORCHVISION_GREATER_EQUAL_0_13:
     __doctest_skip__ = ["DistanceIntersectionOverUnion", "DistanceIntersectionOverUnion.plot"]
 elif not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ += ["DistanceIntersectionOverUnion.plot"]
+    __doctest_skip__ = ["DistanceIntersectionOverUnion.plot"]
 
 
 class DistanceIntersectionOverUnion(IntersectionOverUnion):

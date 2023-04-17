@@ -17,13 +17,13 @@ from torch import Tensor
 
 from torchmetrics.detection.iou import IntersectionOverUnion
 from torchmetrics.functional.detection.giou import _giou_compute, _giou_update
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-__doctest_requires__ = {
-    "GeneralizedIntersectionOverUnion": ["torchvision"],
-    "GeneralizedIntersectionOverUnion.plot": ["torchvision", "matplotlib"],
-}
+if not _TORCHVISION_GREATER_EQUAL_0_8:
+    __doctest_skip__ = ["GeneralizedIntersectionOverUnion", "GeneralizedIntersectionOverUnion.plot"]
+elif not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["GeneralizedIntersectionOverUnion.plot"]
 
 
 class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
