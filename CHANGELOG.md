@@ -50,9 +50,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Binary group fairness metrics to classification package ([#1404](https://github.com/Lightning-AI/metrics/pull/1404))
 
 
-- Added new detection metric `PanopticQuality` ([#929](https://github.com/PyTorchLightning/metrics/pull/929))
-
-
 - Added `MinkowskiDistance` to regression package ([#1362](https://github.com/Lightning-AI/metrics/pull/1362))
 
 
@@ -63,6 +60,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     [#929](https://github.com/PyTorchLightning/metrics/pull/929),
     [#1527](https://github.com/PyTorchLightning/metrics/pull/1527),
 )
+
+
+- Added `PSNRB` metric ([#1421](https://github.com/Lightning-AI/metrics/pull/1421))
 
 
 - Added `ClassificationTask` Enum and use in metrics ([#1479](https://github.com/Lightning-AI/metrics/pull/1479))
