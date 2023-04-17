@@ -20,10 +20,10 @@ from torchmetrics.functional.detection.ciou import _ciou_compute, _ciou_update
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_13
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-__doctest_requires__ = {
-    "CompleteIntersectionOverUnion": ["torchvision"],
-    "CompleteIntersectionOverUnion.plot": ["torchvision", "matplotlib"],
-}
+if not _TORCHVISION_GREATER_EQUAL_0_13:
+    __doctest_skip__ = ["CompleteIntersectionOverUnion"]
+    if not _MATPLOTLIB_AVAILABLE:
+        __doctest_skip__ += ["CompleteIntersectionOverUnion.plot"]
 
 
 class CompleteIntersectionOverUnion(IntersectionOverUnion):
