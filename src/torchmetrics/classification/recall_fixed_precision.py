@@ -21,7 +21,7 @@ from torchmetrics.classification.precision_recall_curve import (
     MulticlassPrecisionRecallCurve,
     MultilabelPrecisionRecallCurve,
 )
-from torchmetrics.functional.classification.recall_at_fixed_precision import (
+from torchmetrics.functional.classification.recall_fixed_precision import (
     _binary_recall_at_fixed_precision_arg_validation,
     _binary_recall_at_fixed_precision_compute,
     _multiclass_recall_at_fixed_precision_arg_compute,
@@ -68,7 +68,7 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
 
     .. note::
        The implementation both supports calculating the metric in a non-binned but accurate version and a
-       binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None`
+       binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to ``None``
        will activate the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting
        the `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory
        of size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
@@ -78,12 +78,12 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
         thresholds:
             Can be one of:
 
-            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+            - If set to ``None``, will use a non-binned approach where thresholds are dynamically calculated from
               all the data. Most accurate but also most memory consuming approach.
-            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+            - If set to an ``int`` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
-            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - If set to an ``list`` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d :class:`~torch.Tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -122,12 +122,16 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        state = (
+            (dim_zero_cat(self.preds), dim_zero_cat(self.target))  # type: ignore[arg-type]
+            if self.thresholds is None
+            else self.confmat
+        )
         return _binary_recall_at_fixed_precision_compute(state, self.thresholds, self.min_precision)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -198,7 +202,7 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
 
     .. note::
        The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-       that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+       that is less accurate but more memory efficient. Setting the `thresholds` argument to ``None`` will activate the
        non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
        argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
@@ -211,10 +215,10 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
 
             - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
               all the data. Most accurate but also most memory consuming approach.
-            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+            - If set to an ``int`` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
-            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - If set to an ``list`` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d :class:`~torch.Tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -260,14 +264,18 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        state = (
+            (dim_zero_cat(self.preds), dim_zero_cat(self.target))  # type: ignore[arg-type]
+            if self.thresholds is None
+            else self.confmat
+        )
         return _multiclass_recall_at_fixed_precision_arg_compute(
             state, self.num_classes, self.thresholds, self.min_precision
         )
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -338,9 +346,9 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
 
     .. note::
        The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-       that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
-       non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
-       argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+       that is less accurate but more memory efficient. Setting the `thresholds` argument to ```None``` will activate
+       the non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the
+       `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
     Args:
@@ -349,12 +357,12 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
         thresholds:
             Can be one of:
 
-            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+            - If set to ``None``, will use a non-binned approach where thresholds are dynamically calculated from
               all the data. Most accurate but also most memory consuming approach.
-            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+            - If set to an ``int`` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
-            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - If set to an ``list`` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d :class:`~torch.Tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -403,14 +411,18 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        state = (
+            (dim_zero_cat(self.preds), dim_zero_cat(self.target))  # type: ignore[arg-type]
+            if self.thresholds is None
+            else self.confmat
+        )
         return _multilabel_recall_at_fixed_precision_arg_compute(
             state, self.num_labels, self.thresholds, self.ignore_index, self.min_precision
         )
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -466,7 +478,7 @@ class RecallAtFixedPrecision:
     :func:`MultilabelRecallAtFixedPrecision` for the specific details of each argument influence and examples.
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
         min_precision: float,
@@ -493,4 +505,4 @@ class RecallAtFixedPrecision:
             return MultilabelRecallAtFixedPrecision(
                 num_labels, min_precision, thresholds, ignore_index, validate_args, **kwargs
             )
-        return None
+        return None  # type: ignore[return-value]
