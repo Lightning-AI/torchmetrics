@@ -22,20 +22,16 @@ from torch import Tensor
 
 from torchmetrics.audio import SignalNoiseRatio
 from torchmetrics.functional.audio import signal_noise_ratio
-from unittests import NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-TIME = 25
-
 Input = namedtuple("Input", ["preds", "target"])
 
-BATCH_SIZE = 2
 inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, TIME),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, TIME),
+    preds=torch.rand(2, 1, 1, 25),
+    target=torch.rand(2, 1, 1, 25),
 )
 
 

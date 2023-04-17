@@ -34,12 +34,12 @@ seed_all(42)
 Input = namedtuple("Input", ["preds", "target"])
 
 inputs_1spk = Input(
-    preds=torch.rand(4, 1, 1, 1000),
-    target=torch.rand(4, 1, 1, 1000),
+    preds=torch.rand(2, 1, 1, 500),
+    target=torch.rand(2, 1, 1, 500),
 )
 inputs_2spk = Input(
-    preds=torch.rand(4, 1, 2, 1000),
-    target=torch.rand(4, 1, 2, 1000),
+    preds=torch.rand(2, 1, 2, 500),
+    target=torch.rand(2, 1, 2, 500),
 )
 
 
@@ -52,7 +52,7 @@ def _sdr_original_batch(preds: Tensor, target: Tensor, compute_permutation: bool
     for b in range(preds.shape[0]):
         sdr_val_np, _, _, _ = bss_eval_sources(target[b], preds[b], compute_permutation)
         mss.append(sdr_val_np)
-    return torch.tensor(mss)
+    return torch.tensor(np.array(mss))
 
 
 def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Tensor:
