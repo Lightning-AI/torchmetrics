@@ -92,14 +92,14 @@ def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         target: ground truth scores
 
     Example (single output regression):
-        >>> from torchmetrics.functional import pearson_corrcoef
+        >>> from torchmetrics.functional.regression import pearson_corrcoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> pearson_corrcoef(preds, target)
         tensor(0.9849)
 
     Example (multi output regression):
-        >>> from torchmetrics.functional import pearson_corrcoef
+        >>> from torchmetrics.functional.regression import pearson_corrcoef
         >>> target = torch.tensor([[3, -0.5], [2, 7]])
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
         >>> pearson_corrcoef(preds, target)

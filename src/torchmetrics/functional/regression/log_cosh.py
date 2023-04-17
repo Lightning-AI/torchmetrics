@@ -74,14 +74,14 @@ def log_cosh_error(preds: Tensor, target: Tensor) -> Tensor:
         Tensor with LogCosh error
 
     Example (single output regression)::
-        >>> from torchmetrics.functional import log_cosh_error
+        >>> from torchmetrics.functional.regression import log_cosh_error
         >>> preds = torch.tensor([3.0, 5.0, 2.5, 7.0])
         >>> target = torch.tensor([2.5, 5.0, 4.0, 8.0])
         >>> log_cosh_error(preds, target)
         tensor(0.3523)
 
     Example (multi output regression)::
-        >>> from torchmetrics.functional import log_cosh_error
+        >>> from torchmetrics.functional.regression import log_cosh_error
         >>> preds = torch.tensor([[3.0, 5.0, 1.2], [-2.1, 2.5, 7.0]])
         >>> target = torch.tensor([[2.5, 5.0, 1.3], [0.3, 4.0, 8.0]])
         >>> log_cosh_error(preds, target)

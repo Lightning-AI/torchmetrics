@@ -61,7 +61,7 @@ def mean_squared_log_error(preds: Tensor, target: Tensor) -> Tensor:
         Tensor with RMSLE
 
     Example:
-        >>> from torchmetrics.functional import mean_squared_log_error
+        >>> from torchmetrics.functional.regression import mean_squared_log_error
         >>> x = torch.tensor([0., 1, 2, 3])
         >>> y = torch.tensor([0., 1, 2, 2])
         >>> mean_squared_log_error(x, y)

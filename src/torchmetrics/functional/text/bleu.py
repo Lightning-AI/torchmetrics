@@ -168,7 +168,7 @@ def bleu_score(
         ValueError: If a length of a list of weights is not ``None`` and not equal to ``n_gram``.
 
     Example:
-        >>> from torchmetrics.functional import bleu_score
+        >>> from torchmetrics.functional.text import bleu_score
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> bleu_score(preds, target)

@@ -129,7 +129,7 @@ def tweedie_deviance_score(preds: Tensor, targets: Tensor, power: float = 0.0) -
             - `otherwise` : Positive stable distribution. (Requires: targets > 0 and preds > 0.)
 
     Example:
-        >>> from torchmetrics.functional import tweedie_deviance_score
+        >>> from torchmetrics.functional.regression import tweedie_deviance_score
         >>> targets = torch.tensor([1.0, 2.0, 3.0, 4.0])
         >>> preds = torch.tensor([4.0, 3.0, 2.0, 1.0])
         >>> tweedie_deviance_score(preds, targets, power=2)
