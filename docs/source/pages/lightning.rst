@@ -34,7 +34,7 @@ The example below shows how to use a metric in your `LightningModule <https://py
 
         def __init__(self, num_classes):
             ...
-            self.accuracy = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+            self.accuracy = torchmetrics.classification.Accuracy(task="multiclass", num_classes=num_classes)
 
         def training_step(self, batch, batch_idx):
             x, y = batch
@@ -82,8 +82,8 @@ method, Lightning will log the metric based on ``on_step`` and ``on_epoch`` flag
 
         def __init__(self, num_classes):
             ...
-            self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
-            self.valid_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+            self.train_acc = torchmetrics.classification.Accuracy(task="multiclass", num_classes=num_classes)
+            self.valid_acc = torchmetrics.classification.Accuracy(task="multiclass", num_classes=num_classes)
 
         def training_step(self, batch, batch_idx):
             x, y = batch
@@ -107,8 +107,8 @@ also manually log the output of the metrics.
 
         def __init__(self):
             ...
-            self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
-            self.valid_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+            self.train_acc = torchmetrics.classification.Accuracy(task="multiclass", num_classes=num_classes)
+            self.valid_acc = torchmetrics.classification.Accuracy(task="multiclass", num_classes=num_classes)
 
         def training_step(self, batch, batch_idx):
             x, y = batch
@@ -146,7 +146,7 @@ Additionally, we highly recommend that the two ways of logging are not mixed as 
 
             def __init__(self, num_classes):
                 ...
-                self.valid_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
+                self.valid_acc = torchmetrics.classification.Accuracy(task="multiclass", num_classes=num_classes)
 
             def validation_step(self, batch, batch_idx):
                 logits = self(x)
@@ -171,7 +171,9 @@ The following contains a list of pitfalls to be aware of:
 
         def __init__(self, num_classes):
             ...
-            self.val_acc = nn.ModuleList([torchmetrics.Accuracy(task="multiclass", num_classes=num_classes) for _ in range(2)])
+            self.val_acc = nn.ModuleList(
+                [torchmetrics.classification.Accuracy(task="multiclass", num_classes=num_classes) for _ in range(2)]
+            )
 
         def val_dataloader(self):
             return [DataLoader(...), DataLoader(...)]

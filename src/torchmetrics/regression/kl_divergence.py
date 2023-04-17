@@ -69,7 +69,7 @@ class KLDivergence(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import KLDivergence
+        >>> from torchmetrics.regression import KLDivergence
         >>> p = tensor([[0.36, 0.48, 0.16]])
         >>> q = tensor([[1/3, 1/3, 1/3]])
         >>> kl_divergence = KLDivergence()
