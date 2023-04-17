@@ -328,12 +328,14 @@ def precision_at_fixed_recall(
     if task == ClassificationTask.BINARY:
         return binary_precision_at_fixed_recall(preds, target, min_recall, thresholds, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
-        assert isinstance(num_classes, int)
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         return multiclass_precision_at_fixed_recall(
             preds, target, num_classes, min_recall, thresholds, ignore_index, validate_args
         )
     if task == ClassificationTask.MULTILABEL:
-        assert isinstance(num_labels, int)
+        if not isinstance(num_labels, int):
+            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_precision_at_fixed_recall(
             preds, target, num_labels, min_recall, thresholds, ignore_index, validate_args
         )
