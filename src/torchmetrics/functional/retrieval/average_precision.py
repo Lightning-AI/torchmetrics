@@ -39,7 +39,7 @@ def retrieval_average_precision(preds: Tensor, target: Tensor, top_k: Optional[i
             If ``top_k`` is not ``None`` or an integer larger than 0.
 
     Example:
-        >>> from torchmetrics.functional import retrieval_average_precision
+        >>> from torchmetrics.functional.retrieval import retrieval_average_precision
         >>> preds = tensor([0.2, 0.3, 0.5])
         >>> target = tensor([True, False, True])
         >>> retrieval_average_precision(preds, target)

@@ -112,7 +112,7 @@ def pearsons_contingency_coefficient(
         Pearson's Contingency Coefficient
 
     Example:
-        >>> from torchmetrics.functional import pearsons_contingency_coefficient
+        >>> from torchmetrics.functional.nominal import pearsons_contingency_coefficient
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randint(0, 4, (100,))
         >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)

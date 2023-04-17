@@ -128,7 +128,7 @@ def tschuprows_t(
         Tschuprow's T statistic
 
     Example:
-        >>> from torchmetrics.functional import tschuprows_t
+        >>> from torchmetrics.functional.nominal import tschuprows_t
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randint(0, 4, (100,))
         >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)

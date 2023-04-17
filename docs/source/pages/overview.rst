@@ -352,7 +352,7 @@ property that can be used to determine this:
 .. code-block:: python
 
     # returns True because accuracy is optimal when it is maximized
-    torchmetrics.Accuracy.higher_is_better
+    torchmetrics.classification.Accuracy.higher_is_better
 
     # returns False because the mean squared error is optimal when it is minimized
     torchmetrics.MeanSquaredError.higher_is_better
