@@ -154,6 +154,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed padding removal for 3d input in `MSSSIM` ([#1674](https://github.com/Lightning-AI/torchmetrics/pull/1674))
 
 
+- Fixed `max_det_threshold` in MAP detection ([#1712](https://github.com/Lightning-AI/torchmetrics/pull/1712))
+
+
 ## [0.11.4] - 2023-03-10
 
 ### Fixed
