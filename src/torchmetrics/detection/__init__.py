@@ -21,20 +21,14 @@ from torchmetrics.utilities.imports import (
 __all__ = ["ModifiedPanopticQuality", "PanopticQuality"]
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
-    from torchmetrics.detection.mean_ap import MeanAveragePrecision  # noqa: F401
+    from torchmetrics.detection.giou import GeneralizedIntersectionOverUnion
+    from torchmetrics.detection.iou import IntersectionOverUnion
+    from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
-    __all__.append("MeanAveragePrecision")
+    __all__ += ["MeanAveragePrecision", "GeneralizedIntersectionOverUnion", "IntersectionOverUnion"]
 
-if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_13:
-    from torchmetrics.detection.ciou import CompleteIntersectionOverUnion  # noqa: F401
-    from torchmetrics.detection.diou import DistanceIntersectionOverUnion  # noqa: F401
+if _TORCHVISION_GREATER_EQUAL_0_13:
+    from torchmetrics.detection.ciou import CompleteIntersectionOverUnion
+    from torchmetrics.detection.diou import DistanceIntersectionOverUnion
 
-    __all__.append("CompleteIntersectionOverUnion")
-    __all__.append("DistanceIntersectionOverUnion")
-
-if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
-    from torchmetrics.detection.giou import GeneralizedIntersectionOverUnion  # noqa: F401
-    from torchmetrics.detection.iou import IntersectionOverUnion  # noqa: F401
-
-    __all__.append("GeneralizedIntersectionOverUnion")
-    __all__.append("IntersectionOverUnion")
+    __all__ += ["CompleteIntersectionOverUnion", "DistanceIntersectionOverUnion"]
