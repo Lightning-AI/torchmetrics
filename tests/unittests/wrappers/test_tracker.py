@@ -22,7 +22,7 @@ from torchmetrics.classification import (
     MulticlassPrecision,
     MulticlassRecall,
 )
-from torchmetrics.wrappers import MetricTracker
+from torchmetrics.wrappers import MetricTracker, MultioutputWrapper
 from unittests.helpers import seed_all
 
 seed_all(42)
@@ -184,3 +184,39 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
         else:
             assert best is None
             assert idx is None
+
+
+@pytest.mark.parametrize(
+    ("input_to_tracker", "assert_type"),
+    [
+        (MultioutputWrapper(MeanSquaredError(), num_outputs=2), torch.Tensor),
+        (  # nested version
+            MetricCollection(
+                {
+                    "mse": MultioutputWrapper(MeanSquaredError(), num_outputs=2),
+                    "mae": MultioutputWrapper(MeanAbsoluteError(), num_outputs=2),
+                }
+            ),
+            dict,
+        ),
+    ],
+)
+def test_metric_tracker_and_collection_multioutput(input_to_tracker, assert_type):
+    """Check that MetricTracker support wrapper inputs and nested structures."""
+    tracker = MetricTracker(input_to_tracker)
+    for _ in range(5):
+        tracker.increment()
+        for _ in range(5):
+            preds, target = torch.randn(100, 2), torch.randn(100, 2)
+            tracker.update(preds, target)
+    all_res = tracker.compute_all()
+    assert isinstance(all_res, assert_type)
+    best_metric, which_epoch = tracker.best_metric(return_step=True)
+    if isinstance(best_metric, dict):
+        for v in best_metric.values():
+            assert v is None
+        for v in which_epoch.values():
+            assert v is None
+    else:
+        assert best_metric is None
+        assert which_epoch is None

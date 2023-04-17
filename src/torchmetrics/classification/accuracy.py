@@ -16,6 +16,7 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.accuracy import _accuracy_reduce
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import ClassificationTask
@@ -24,12 +25,6 @@ from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["BinaryAccuracy.plot", "MulticlassAccuracy.plot", "MultilabelAccuracy.plot"]
-
-from torchmetrics.classification.stat_scores import (  # isort:skip
-    BinaryStatScores,
-    MulticlassStatScores,
-    MultilabelStatScores,
-)
 
 
 class BinaryAccuracy(BinaryStatScores):
@@ -96,8 +91,8 @@ class BinaryAccuracy(BinaryStatScores):
     is_differentiable = False
     higher_is_better = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def compute(self) -> Tensor:
         """Compute accuracy based on inputs passed in to ``update`` previously."""
@@ -242,9 +237,9 @@ class MulticlassAccuracy(MulticlassStatScores):
     is_differentiable = False
     higher_is_better = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
-    plot_legend_name = "Class"
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Class"
 
     def compute(self) -> Tensor:
         """Compute accuracy based on inputs passed in to ``update`` previously."""
@@ -389,9 +384,9 @@ class MultilabelAccuracy(MultilabelStatScores):
     is_differentiable = False
     higher_is_better = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
-    plot_legend_name = "Label"
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
     def compute(self) -> Tensor:
         """Compute accuracy based on inputs passed in to ``update`` previously."""
@@ -485,16 +480,25 @@ class Accuracy:
     ) -> Metric:
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
+
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
         )
+
         if task == ClassificationTask.BINARY:
             return BinaryAccuracy(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:
-            assert isinstance(num_classes, int)
-            assert isinstance(top_k, int)
+            if not isinstance(num_classes, int):
+                raise ValueError(
+                    f"Optional arg `num_classes` must be type `int` when task is {task}. Got {type(num_classes)}"
+                )
+            if not isinstance(top_k, int):
+                raise ValueError(f"Optional arg `top_k` must be type `int` when task is {task}. Got {type(top_k)}")
             return MulticlassAccuracy(num_classes, top_k, average, **kwargs)
         if task == ClassificationTask.MULTILABEL:
-            assert isinstance(num_labels, int)
+            if not isinstance(num_labels, int):
+                raise ValueError(
+                    f"Optional arg `num_labels` must be type `int` when task is {task}. Got {type(num_labels)}"
+                )
             return MultilabelAccuracy(num_labels, threshold, average, **kwargs)
-        return None
+        raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

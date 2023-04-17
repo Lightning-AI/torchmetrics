@@ -17,14 +17,20 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, Union
 
+from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.text.bleu import _bleu_score_update
 from torchmetrics.functional.text.sacre_bleu import _SacreBLEUTokenizer
 from torchmetrics.text.bleu import BLEUScore
-from torchmetrics.utilities.imports import _REGEX_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _REGEX_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["SacreBLEUScore.plot"]
+
 
 AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char")
 
@@ -65,7 +71,7 @@ class SacreBLEUScore(BLEUScore):
 
 
     Example:
-        >>> from torchmetrics import SacreBLEUScore
+        >>> from torchmetrics.text import SacreBLEUScore
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> sacre_bleu = SacreBLEUScore()
@@ -81,6 +87,8 @@ class SacreBLEUScore(BLEUScore):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = True
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,
@@ -90,7 +98,7 @@ class SacreBLEUScore(BLEUScore):
         lowercase: bool = False,
         weights: Optional[Sequence[float]] = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(n_gram=n_gram, smooth=smooth, weights=weights, **kwargs)
         if tokenize not in AVAILABLE_TOKENIZERS:
             raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
@@ -114,3 +122,46 @@ class SacreBLEUScore(BLEUScore):
             self.n_gram,
             self.tokenizer,
         )
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torchmetrics.text import SacreBLEUScore
+            >>> metric = SacreBLEUScore()
+            >>> preds = ['the cat is on the mat']
+            >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.text import SacreBLEUScore
+            >>> metric = SacreBLEUScore()
+            >>> preds = ['the cat is on the mat']
+            >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)

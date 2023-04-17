@@ -57,7 +57,7 @@ class SpectralAngleMapper(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics import SpectralAngleMapper
+        >>> from torchmetrics.image import SpectralAngleMapper
         >>> preds = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42))
         >>> target = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(123))
         >>> sam = SpectralAngleMapper()
@@ -68,8 +68,8 @@ class SpectralAngleMapper(Metric):
     higher_is_better: bool = False
     is_differentiable: bool = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     preds: List[Tensor]
     target: List[Tensor]
@@ -123,7 +123,7 @@ class SpectralAngleMapper(Metric):
 
             >>> # Example plotting single value
             >>> import torch
-            >>> from torchmetrics import SpectralAngleMapper
+            >>> from torchmetrics.image import SpectralAngleMapper
             >>> preds = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42))
             >>> target = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(123))
             >>> metric = SpectralAngleMapper()
@@ -135,7 +135,7 @@ class SpectralAngleMapper(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics import SpectralAngleMapper
+            >>> from torchmetrics.image import SpectralAngleMapper
             >>> preds = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42))
             >>> target = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(123))
             >>> metric = SpectralAngleMapper()

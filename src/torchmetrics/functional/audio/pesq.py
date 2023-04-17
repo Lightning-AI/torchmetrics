@@ -111,6 +111,6 @@ def perceptual_evaluation_speech_quality(
         pesq_val = pesq_val.reshape(preds.shape[:-1])
 
     if keep_same_device:
-        pesq_val = pesq_val.to(preds.device)
+        return pesq_val.to(preds.device)
 
     return pesq_val

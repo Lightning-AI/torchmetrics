@@ -137,7 +137,7 @@ class _InformationMeasure:
         self.beta = beta or 0
 
     def __call__(self, preds_distribution: Tensor, target_distribtuion: Tensor) -> Tensor:
-        information_measure_function = getattr(self, f"_calculate_{self.information_measure}")
+        information_measure_function = getattr(self, f"_calculate_{self.information_measure.value}")
         return torch.nan_to_num(information_measure_function(preds_distribution, target_distribtuion))
 
     @staticmethod
@@ -398,11 +398,9 @@ def _get_batch_distribution(
     prob_distribution_batch = torch.einsum("bsv, bs -> bsv", prob_distribution_batch.to(token_mask.device), token_mask)
     if idf:
         masked_input_ids_idf = token_mask * batch["input_ids_idf"].to(token_mask.device)
-        prob_distribution_batch = prob_distribution_batch.sum(dim=1) / masked_input_ids_idf.sum(dim=1).unsqueeze(1)
-    else:
-        prob_distribution_batch = prob_distribution_batch.sum(dim=1) / token_mask.sum(dim=1).unsqueeze(1)
+        return prob_distribution_batch.sum(dim=1) / masked_input_ids_idf.sum(dim=1).unsqueeze(1)
 
-    return prob_distribution_batch
+    return prob_distribution_batch.sum(dim=1) / token_mask.sum(dim=1).unsqueeze(1)
 
 
 @torch.no_grad()

@@ -51,7 +51,7 @@ class TheilsU(Metric):
         Theil's U Statistic: Tensor
 
     Example:
-        >>> from torchmetrics import TheilsU
+        >>> from torchmetrics.nominal import TheilsU
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randint(10, (10,))
         >>> target = torch.randint(10, (10,))
@@ -63,8 +63,8 @@ class TheilsU(Metric):
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
     confmat: Tensor
 
     def __init__(
@@ -73,7 +73,7 @@ class TheilsU(Metric):
         nan_strategy: Literal["replace", "drop"] = "replace",
         nan_replace_value: Optional[Union[int, float]] = 0.0,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         self.num_classes = num_classes
 
@@ -121,7 +121,7 @@ class TheilsU(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics import TheilsU
+            >>> from torchmetrics.nominal import TheilsU
             >>> metric = TheilsU(num_classes=10)
             >>> metric.update(torch.randint(10, (10,)), torch.randint(10, (10,)))
             >>> fig_, ax_ = metric.plot()
@@ -131,7 +131,7 @@ class TheilsU(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics import TheilsU
+            >>> from torchmetrics.nominal import TheilsU
             >>> metric = TheilsU(num_classes=10)
             >>> values = [ ]
             >>> for _ in range(10):

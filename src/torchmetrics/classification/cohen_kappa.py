@@ -16,7 +16,7 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix
+from torchmetrics.classification.confusion_matrix import BinaryConfusionMatrix, MulticlassConfusionMatrix
 from torchmetrics.functional.classification.cohen_kappa import (
     _binary_cohen_kappa_arg_validation,
     _cohen_kappa_reduce,
@@ -90,8 +90,8 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,
@@ -215,8 +215,9 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Class"
 
     def __init__(
         self,

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any
+from typing import Any, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -20,6 +20,11 @@ from typing_extensions import Literal
 from torchmetrics.functional.regression.kl_divergence import _kld_compute, _kld_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["KLDivergence.plot"]
 
 
 class KLDivergence(Metric):
@@ -74,6 +79,8 @@ class KLDivergence(Metric):
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+
     total: Tensor
     # FIXME: Apply once minimal torch is 1.10. For torch<=1.9, jit does not support Union types
     # measures: Union[Tensor, List[Tensor]]
@@ -117,3 +124,44 @@ class KLDivergence(Metric):
             else self.measures  # type: ignore[assignment]
         )
         return _kld_compute(measures, self.total, self.reduction)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn
+            >>> # Example plotting a single value
+            >>> from torchmetrics.regression import KLDivergence
+            >>> metric = KLDivergence()
+            >>> metric.update(randn(10,3).softmax(dim=-1), randn(10,3).softmax(dim=-1))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.regression import KLDivergence
+            >>> metric = KLDivergence()
+            >>> values = []
+            >>> for _ in range(10):
+            ...     values.append(metric(randn(10,3).softmax(dim=-1), randn(10,3).softmax(dim=-1)))
+            >>> fig, ax = metric.plot(values)
+        """
+        return self._plot(val, ax)

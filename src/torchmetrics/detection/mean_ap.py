@@ -315,7 +315,7 @@ class MeanAveragePrecision(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics.detection.mean_ap import MeanAveragePrecision
+        >>> from torchmetrics.detection import MeanAveragePrecision
         >>> preds = [
         ...   dict(
         ...     boxes=tensor([[258.0, 41.0, 606.0, 285.0]]),
@@ -352,6 +352,8 @@ class MeanAveragePrecision(Metric):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = True
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     detections: List[Tensor]
     detection_scores: List[Tensor]
@@ -392,10 +394,10 @@ class MeanAveragePrecision(Metric):
             raise ModuleNotFoundError("When `iou_type` is set to 'segm', pycocotools need to be installed")
         self.iou_type = iou_type
         self.bbox_area_ranges = {
-            "all": (0**2, int(1e5**2)),
-            "small": (0**2, 32**2),
-            "medium": (32**2, 96**2),
-            "large": (96**2, int(1e5**2)),
+            "all": (float(0**2), float(1e5**2)),
+            "small": (float(0**2), float(32**2)),
+            "medium": (float(32**2), float(96**2)),
+            "large": (float(96**2), float(1e5**2)),
         }
 
         if not isinstance(class_metrics, bool):

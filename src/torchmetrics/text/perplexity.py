@@ -12,12 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Sequence, Union
 
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.perplexity import _perplexity_compute, _perplexity_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["Perplexity.plot"]
 
 
 class Perplexity(Metric):
@@ -27,8 +32,9 @@ class Perplexity(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): Probabilities assigned to each token in a sequence with shape
-        [batch_size, seq_len, vocab_size]
+    - ``preds`` (:class:`~torch.Tensor`): Logits or a unnormalized score assigned to each token in a sequence with shape
+        [batch_size, seq_len, vocab_size], which is the output of a language model. Scores will be normalized internally
+        using softmax.
     - ``target`` (:class:`~torch.Tensor`): Ground truth values with a shape [batch_size, seq_len]
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
@@ -42,6 +48,7 @@ class Perplexity(Metric):
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Examples:
+        >>> from torchmetrics.text import Perplexity
         >>> import torch
         >>> preds = torch.rand(2, 8, 5, generator=torch.manual_seed(22))
         >>> target = torch.randint(5, (2, 8), generator=torch.manual_seed(22))
@@ -60,7 +67,7 @@ class Perplexity(Metric):
         self,
         ignore_index: Optional[int] = None,
         **kwargs: Dict[str, Any],
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         if ignore_index is not None and not isinstance(ignore_index, int):
             raise ValueError(f"Argument `ignore_index` expected to either be `None` or an `int` but got {ignore_index}")
@@ -77,3 +84,44 @@ class Perplexity(Metric):
     def compute(self) -> Tensor:
         """Compute the Perplexity."""
         return _perplexity_compute(self.total_log_probs, self.count)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.text import Perplexity
+            >>> metric = Perplexity()
+            >>> metric.update(torch.rand(2, 8, 5), torch.randint(5, (2, 8)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.text import Perplexity
+            >>> metric = Perplexity()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.rand(2, 8, 5), torch.randint(5, (2, 8))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)

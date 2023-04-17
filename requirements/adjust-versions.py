@@ -20,6 +20,7 @@ from typing import Dict, Optional
 from packaging.version import Version
 
 VERSIONS = [
+    {"torch": "2.0.0", "torchvision": "0.15.1", "torchtext": "0.15.1"},  # stable
     {"torch": "1.14.0", "torchvision": "0.15.0", "torchtext": "0.15.0"},  # nightly
     {"torch": "1.13.1", "torchvision": "0.14.1", "torchtext": "0.14.1"},  # stable
     {"torch": "1.13.0", "torchvision": "0.14.0", "torchtext": "0.14.0"},
@@ -60,7 +61,8 @@ def adjust(requires: str, torch_version: Optional[str] = None) -> str:
         import torch
 
         torch_version = torch.__version__
-    assert torch_version, f"invalid torch: {torch_version}"
+    if not torch_version:
+        raise ValueError(f"invalid torch: {torch_version}")
 
     # remove comments and strip whitespace
     requires = re.sub(rf"\s*#.*{os.linesep}", os.linesep, requires).strip()
@@ -80,7 +82,7 @@ if __name__ == "__main__":
         requirements_path, torch_version = sys.argv[1:]
     else:
         requirements_path, torch_version = sys.argv[1], None
-    logging.info(f"requirements_path='{requirements_path}' with torch_version='{torch_version}'")
+    logging.info(f"requirements_path='{requirements_path}' with arg torch_version='{torch_version}'")
 
     with open(requirements_path) as fp:
         requirements = fp.read()
