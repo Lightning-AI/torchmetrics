@@ -36,7 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     [#1631](https://github.com/Lightning-AI/metrics/pull/1631),
     [#1650](https://github.com/Lightning-AI/metrics/pull/1650),
     [#1639](https://github.com/Lightning-AI/metrics/pull/1639),
-    [#1660](https://github.com/Lightning-AI/metrics/pull/1660)
+    [#1660](https://github.com/Lightning-AI/metrics/pull/1660),
+    [#1682](https://github.com/Lightning-AI/torchmetrics/pull/1682),
 )
 
 
@@ -79,10 +80,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for plotting of aggregation metrics through `.plot()` method ([#1485](https://github.com/Lightning-AI/metrics/pull/1485))
 
 
+- Added support for python 3.11 ([#1612](https://github.com/Lightning-AI/metrics/pull/1612))
+
+
 - Added support for auto clamping of input for metrics that uses the `data_range` ([#1606](argument https://github.com/Lightning-AI/metrics/pull/1606))
 
 
 - Added `ModifiedPanopticQuality` metric to detection package ([#1627](https://github.com/Lightning-AI/metrics/pull/1627))
+
+
+- Added `PrecisionAtFixedRecall` metric to classification package ([#1683](https://github.com/Lightning-AI/torchmetrics/pull/1683))
 
 
 ### Changed
@@ -110,7 +117,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
--
+- Deprecated domain metrics import from package root (
+    [#1685](https://github.com/Lightning-AI/metrics/pull/1685),
+    [#1694](https://github.com/Lightning-AI/metrics/pull/1694),
+    [#1696](https://github.com/Lightning-AI/metrics/pull/1696),
+    [#1699](https://github.com/Lightning-AI/metrics/pull/1699),
+    [#1703](https://github.com/Lightning-AI/metrics/pull/1703),
+)
 
 
 ### Removed

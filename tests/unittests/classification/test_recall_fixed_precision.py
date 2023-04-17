@@ -21,12 +21,12 @@ from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import precision_recall_curve as sk_precision_recall_curve
 
-from torchmetrics.classification.recall_at_fixed_precision import (
+from torchmetrics.classification.recall_fixed_precision import (
     BinaryRecallAtFixedPrecision,
     MulticlassRecallAtFixedPrecision,
     MultilabelRecallAtFixedPrecision,
 )
-from torchmetrics.functional.classification.recall_at_fixed_precision import (
+from torchmetrics.functional.classification.recall_fixed_precision import (
     binary_recall_at_fixed_precision,
     multiclass_recall_at_fixed_precision,
     multilabel_recall_at_fixed_precision,

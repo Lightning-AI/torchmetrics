@@ -16,7 +16,7 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix
+from torchmetrics.classification.confusion_matrix import BinaryConfusionMatrix, MulticlassConfusionMatrix
 from torchmetrics.functional.classification.cohen_kappa import (
     _binary_cohen_kappa_arg_validation,
     _cohen_kappa_reduce,
