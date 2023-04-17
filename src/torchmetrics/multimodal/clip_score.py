@@ -100,7 +100,7 @@ class CLIPScore(Metric):
             "openai/clip-vit-base-patch32",
             "openai/clip-vit-large-patch14-336",
             "openai/clip-vit-large-patch14",
-        ] = _DEFAULT_MODEL,
+        ] = _DEFAULT_MODEL,  # type: ignore[assignment]
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
