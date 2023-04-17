@@ -27,7 +27,7 @@ from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["CLIPScore.plot"]
 
-_DEFAULT_MODEL = "openai/clip-vit-large-patch14"
+_DEFAULT_MODEL: str = "openai/clip-vit-large-patch14"
 
 if _TRANSFORMERS_AVAILABLE:
     from transformers import CLIPModel as _CLIPModel

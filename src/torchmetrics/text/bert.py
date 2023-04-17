@@ -31,7 +31,7 @@ if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["BERTScore.plot"]
 
 # Default model recommended in the original implementation.
-_DEFAULT_MODEL = "roberta-large"
+_DEFAULT_MODEL: str = "roberta-large"
 
 if _TRANSFORMERS_AVAILABLE:
     from transformers import AutoModel, AutoTokenizer
