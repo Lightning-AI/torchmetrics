@@ -25,9 +25,9 @@ from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_G
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _TORCHVISION_GREATER_EQUAL_0_8:
-    __doctest_skip__ = ["IntersectionOverUnion"]
-    if not _MATPLOTLIB_AVAILABLE:
-        __doctest_skip__ += ["IntersectionOverUnion.plot"]
+    __doctest_skip__ = ["IntersectionOverUnion", "IntersectionOverUnion.plot"]
+elif not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ += ["IntersectionOverUnion.plot"]
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_convert

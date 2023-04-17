@@ -21,9 +21,9 @@ from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_G
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _TORCHVISION_GREATER_EQUAL_0_13:
-    __doctest_skip__ = ["CompleteIntersectionOverUnion"]
-    if not _MATPLOTLIB_AVAILABLE:
-        __doctest_skip__ += ["CompleteIntersectionOverUnion.plot"]
+    __doctest_skip__ = ["CompleteIntersectionOverUnion", "CompleteIntersectionOverUnion.plot"]
+elif not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ += ["CompleteIntersectionOverUnion.plot"]
 
 
 class CompleteIntersectionOverUnion(IntersectionOverUnion):
@@ -32,7 +32,7 @@ class CompleteIntersectionOverUnion(IntersectionOverUnion):
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~List`): A list consisting of dictionaries each containing the key-values
-      (each dictionary corresponds to a single image). Parameters that should be provided per dict
+      (each dictionary corresponds to a single image). Parameters that should be provided per dict:
 
         - boxes: (:class:`~torch.FloatTensor`) of shape ``(num_boxes, 4)`` containing ``num_boxes`` detection
           boxes of the format specified in the constructor.
