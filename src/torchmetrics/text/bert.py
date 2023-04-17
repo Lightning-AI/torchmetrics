@@ -27,6 +27,9 @@ from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TRANSFORMERS_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["BERTScore.plot"]
+
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL = "roberta-large"
 
@@ -42,9 +45,6 @@ if _TRANSFORMERS_AVAILABLE:
         __doctest_skip__ = ["BERTScore", "BERTScore.plot"]
 else:
     __doctest_skip__ = ["BERTScore", "BERTScore.plot"]
-
-if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ += ["BERTScore.plot"]
 
 
 def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> Dict[str, Tensor]:
@@ -279,9 +279,9 @@ class BERTScore(Metric):
 
             >>> # Example plotting a single value
             >>> from torchmetrics.text.bert import BERTScore
-            >>> metric = BERTScore()
             >>> preds = ["hello there", "general kenobi"]
             >>> target = ["hello there", "master kenobi"]
+            >>> metric = BERTScore()
             >>> metric.update(preds, target)
             >>> fig_, ax_ = metric.plot()
 
@@ -289,15 +289,15 @@ class BERTScore(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> import torch
+            >>> from torch import tensor
             >>> from torchmetrics.text.bert import BERTScore
-            >>> metric = BERTScore()
             >>> preds = ["hello there", "general kenobi"]
             >>> target = ["hello there", "master kenobi"]
-            >>> values = [ ]
+            >>> metric = BERTScore()
+            >>> values = []
             >>> for _ in range(10):
             ...     val = metric(preds, target)
-            ...     val = {k: torch.tensor(v).mean() for k,v in val.items()}  # convert into single value per key
+            ...     val = {k: tensor(v).mean() for k,v in val.items()}  # convert into single value per key
             ...     values.append(val)
             >>> fig_, ax_ = metric.plot(values)
         """

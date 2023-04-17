@@ -24,21 +24,23 @@ from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PESQ_AVAILABLE, _TRANSFORMERS_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["CLIPScore.plot"]
+
+_DEFAULT_MODEL = "openai/clip-vit-large-patch14"
+
 if _TRANSFORMERS_AVAILABLE:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
 
     def _download_clip() -> None:
-        _CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
-        _CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
+        _CLIPModel.from_pretrained(_DEFAULT_MODEL)
+        _CLIPProcessor.from_pretrained(_DEFAULT_MODEL)
 
     if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_clip):
         __doctest_skip__ = ["CLIPScore", "CLIPScore.plot"]
 else:
     __doctest_skip__ = ["CLIPScore", "CLIPScore.plot"]
-
-if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ += ["CLIPScore.plot"]
 
 
 class CLIPScore(Metric):
@@ -58,9 +60,12 @@ class CLIPScore(Metric):
     .. note:: Metric is not scriptable
 
     Args:
-        model_name_or_path: string indicating the version of the CLIP model to use. Available models are
-            `"openai/clip-vit-base-patch16"`, `"openai/clip-vit-base-patch32"`, `"openai/clip-vit-large-patch14-336"`
-            and `"openai/clip-vit-large-patch14"`,
+        model_name_or_path: string indicating the version of the CLIP model to use. Available models are:
+
+            - `"openai/clip-vit-base-patch16"`
+            - `"openai/clip-vit-base-patch32"`
+            - `"openai/clip-vit-large-patch14-336"`
+            - `"openai/clip-vit-large-patch14"`
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -95,7 +100,7 @@ class CLIPScore(Metric):
             "openai/clip-vit-base-patch32",
             "openai/clip-vit-large-patch14-336",
             "openai/clip-vit-large-patch14",
-        ] = "openai/clip-vit-large-patch14",
+        ] = _DEFAULT_MODEL,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
