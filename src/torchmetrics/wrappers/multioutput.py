@@ -170,7 +170,8 @@ class MultioutputWrapper(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics import MultioutputWrapper, R2Score
+            >>> from torchmetrics.wrappers import MultioutputWrapper
+            >>> from torchmetrics.regression import R2Score
             >>> metric = MultioutputWrapper(R2Score(), 2)
             >>> metric.update(torch.randn(20, 2), torch.randn(20, 2))
             >>> fig_, ax_ = metric.plot()
@@ -180,7 +181,8 @@ class MultioutputWrapper(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics import MultioutputWrapper, R2Score
+            >>> from torchmetrics.wrappers import MultioutputWrapper
+            >>> from torchmetrics.regression import R2Score
             >>> metric = MultioutputWrapper(R2Score(), 2)
             >>> values = [ ]
             >>> for _ in range(3):

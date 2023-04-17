@@ -64,7 +64,7 @@ def mean_absolute_error(preds: Tensor, target: Tensor) -> Tensor:
         Tensor with MAE
 
     Example:
-        >>> from torchmetrics.functional import mean_absolute_error
+        >>> from torchmetrics.functional.regression import mean_absolute_error
         >>> x = torch.tensor([0., 1, 2, 3])
         >>> y = torch.tensor([0., 1, 2, 2])
         >>> mean_absolute_error(x, y)

@@ -564,7 +564,7 @@ def chrf_score(
             If ``beta`` is smaller than 0.
 
     Example:
-        >>> from torchmetrics.functional import chrf_score
+        >>> from torchmetrics.functional.text import chrf_score
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> chrf_score(preds, target)

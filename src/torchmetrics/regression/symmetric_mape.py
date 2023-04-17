@@ -47,7 +47,7 @@ class SymmetricMeanAbsolutePercentageError(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import SymmetricMeanAbsolutePercentageError
+        >>> from torchmetrics.regression import SymmetricMeanAbsolutePercentageError
         >>> target = tensor([1, 10, 1e6])
         >>> preds = tensor([0.9, 15, 1.2e6])
         >>> smape = SymmetricMeanAbsolutePercentageError()
