@@ -37,7 +37,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _PLOT_OUT_TYPE, plot_confusion_matrix
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_confusion_matrix
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = [
@@ -131,13 +131,18 @@ class BinaryConfusionMatrix(Metric):
         return _binary_confusion_matrix_compute(self.confmat, self.normalize)
 
     def plot(
-        self, val: Optional[Tensor] = None, add_text: bool = True, labels: Optional[List[str]] = None
+        self,
+        val: Optional[Tensor] = None,
+        ax: Optional[_AX_TYPE] = None,
+        add_text: bool = True,
+        labels: Optional[List[str]] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
         Args:
             val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
                 If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
             add_text: if the value of each cell should be added to the plot
             labels: a list of strings, if provided will be added to the plot to indicate the different classes
 
@@ -157,10 +162,10 @@ class BinaryConfusionMatrix(Metric):
             >>> metric.update(randint(5, (20,)), randint(5, (20,)))
             >>> fig_, ax_ = metric.plot()
         """
-        val = val or self.compute()
+        val = val if val is not None else self.compute()
         if not isinstance(val, Tensor):
             raise TypeError(f"Expected val to be a single tensor but got {val}")
-        fig, ax = plot_confusion_matrix(val, add_text=add_text, labels=labels)
+        fig, ax = plot_confusion_matrix(val, ax=ax, add_text=add_text, labels=labels)
         return fig, ax
 
 
@@ -269,13 +274,18 @@ class MulticlassConfusionMatrix(Metric):
         return _multiclass_confusion_matrix_compute(self.confmat, self.normalize)
 
     def plot(
-        self, val: Optional[Tensor] = None, add_text: bool = True, labels: Optional[List[str]] = None
+        self,
+        val: Optional[Tensor] = None,
+        ax: Optional[_AX_TYPE] = None,
+        add_text: bool = True,
+        labels: Optional[List[str]] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
         Args:
             val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
                 If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
             add_text: if the value of each cell should be added to the plot
             labels: a list of strings, if provided will be added to the plot to indicate the different classes
 
@@ -295,10 +305,10 @@ class MulticlassConfusionMatrix(Metric):
             >>> metric.update(randint(5, (20,)), randint(5, (20,)))
             >>> fig_, ax_ = metric.plot()
         """
-        val = val or self.compute()
+        val = val if val is not None else self.compute()
         if not isinstance(val, Tensor):
             raise TypeError(f"Expected val to be a single tensor but got {val}")
-        fig, ax = plot_confusion_matrix(val, add_text=add_text, labels=labels)
+        fig, ax = plot_confusion_matrix(val, ax=ax, add_text=add_text, labels=labels)
         return fig, ax
 
 
@@ -393,13 +403,18 @@ class MultilabelConfusionMatrix(Metric):
         return _multilabel_confusion_matrix_compute(self.confmat, self.normalize)
 
     def plot(
-        self, val: Optional[Tensor] = None, add_text: bool = True, labels: Optional[List[str]] = None
+        self,
+        val: Optional[Tensor] = None,
+        ax: Optional[_AX_TYPE] = None,
+        add_text: bool = True,
+        labels: Optional[List[str]] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
         Args:
             val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
                 If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
             add_text: if the value of each cell should be added to the plot
             labels: a list of strings, if provided will be added to the plot to indicate the different classes
 
@@ -419,10 +434,10 @@ class MultilabelConfusionMatrix(Metric):
             >>> metric.update(randint(5, (20,)), randint(5, (20,)))
             >>> fig_, ax_ = metric.plot()
         """
-        val = val or self.compute()
+        val = val if val is not None else self.compute()
         if not isinstance(val, Tensor):
             raise TypeError(f"Expected val to be a single tensor but got {val}")
-        fig, ax = plot_confusion_matrix(val, add_text=add_text, labels=labels)
+        fig, ax = plot_confusion_matrix(val, ax=ax, add_text=add_text, labels=labels)
         return fig, ax
 
 
