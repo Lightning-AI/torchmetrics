@@ -53,7 +53,7 @@ def compute_area(input: List[Tensor], device: torch.device, iou_type: str = "bbo
 
     if iou_type == "bbox":
         return box_area(torch.stack(input).to(device))
-    elif iou_type == "segm":
+    if iou_type == "segm":
         input = [{"size": i[0], "counts": i[1]} for i in input]
         area = torch.tensor(mask_utils.area(input).astype("float")).to(device)
 
@@ -71,7 +71,7 @@ def compute_iou(
     """Compute IOU between detections and ground-truth using the specified iou_type."""
     if iou_type == "bbox":
         return box_iou(torch.stack(det).to(device), torch.stack(gt).to(device))
-    elif iou_type == "segm":
+    if iou_type == "segm":
         return _segm_iou(det, gt, device)
     raise Exception(f"IOU type {iou_type} is not supported")
 
@@ -140,9 +140,9 @@ def _segm_iou(
     Args:
        det: A list of detection masks as ``[(RLE_SIZE, RLE_COUNTS)]``, where ``RLE_SIZE`` is (width, height) dimension
            of the input and RLE_COUNTS is its RLE representation;
-
        gt: A list of ground-truth masks as ``[(RLE_SIZE, RLE_COUNTS)]``, where ``RLE_SIZE`` is (width, height) dimension
            of the input and RLE_COUNTS is its RLE representation;
+       device: device
 
     """
     det_coco_format = [{"size": i[0], "counts": i[1]} for i in det]

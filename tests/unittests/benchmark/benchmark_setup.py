@@ -11,13 +11,22 @@ total_time = {}
 
 
 class UpdateTime:
+    """Custom clock."""
+
     def __init__(self, step_name: str):
+        """Create timer.
+
+        Args:
+            step_name: name of the step
+        """
         self._step_name = step_name
 
     def __enter__(self):
+        """Enter Context manager."""
         self._start_time = time.perf_counter()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """Exit Context manager."""
         end_time = time.perf_counter()
         if self._step_name in total_time:
             total_time[self._step_name] += end_time - self._start_time
@@ -27,6 +36,7 @@ class UpdateTime:
 
 
 def generate(n, factor: int = 1000):
+    """Generate inputs."""
     boxes = torch.rand(n, 4) * factor
     boxes[:, 2:] += boxes[:, :2]
     labels = torch.randint(0, 10, (n,))
@@ -35,6 +45,7 @@ def generate(n, factor: int = 1000):
 
 
 def run_mean_ap_benchmark(device: Union[str, int] = "cuda") -> Dict[str, float]:
+    """Run benchmark with Mean Average precision."""
     mean_ap = MeanAveragePrecision()
     mean_ap.to(device=torch.device(device))
 
@@ -49,6 +60,7 @@ def run_mean_ap_benchmark(device: Union[str, int] = "cuda") -> Dict[str, float]:
 
 
 def run_speed_benchmark(device: Union[str, int] = "cuda") -> Dict[str, float]:
+    """Run benchmark."""
     with UpdateTime("init"):
         mean_ap = MeanAveragePrecision()
         mean_ap.to(device=torch.device(device))

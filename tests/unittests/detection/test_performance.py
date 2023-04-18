@@ -12,6 +12,7 @@ _gpu_test_condition = not torch.cuda.is_available()
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 @pytest.mark.skipif(_gpu_test_condition, reason="test requires CUDA availability")
 def test_performance_with_cuda():
+    """Test performance on CUDA device."""
     results = run_speed_benchmark(device=0)
     expected_results = {"init": 0.0011681069154292345, "update": 0.11278650932945311, "compute": 146.6234815029893}
     for step_name, step_time in results.items():
@@ -21,6 +22,7 @@ def test_performance_with_cuda():
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_performance_with_cpu():
+    """Test performance on CPU device."""
     results = run_speed_benchmark(device="cpu")
     expected_results = {"init": 0.0011681069154292345, "update": 0.11010122182779014, "compute": 77.43531435285695}
     for step_name, step_time in results.items():
@@ -30,6 +32,7 @@ def test_performance_with_cpu():
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_test_consecutive_runs_with_cpu():
+    """Test consistency on CPU device."""
     restuls_1 = run_mean_ap_benchmark(device="cpu")
     restuls_2 = run_mean_ap_benchmark(device="cpu")
 
