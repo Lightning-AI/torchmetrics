@@ -118,6 +118,7 @@ def _class_test(
     """
     assert len(preds) == len(target)
     num_batches = len(preds)
+    assert num_batches % world_size == 0, "Number of batches must be divisible by world_size"
 
     if not metric_args:
         metric_args = {}
