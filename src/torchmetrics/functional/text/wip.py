@@ -80,7 +80,7 @@ def word_information_preserved(preds: Union[str, List[str]], target: Union[str, 
         Word Information preserved rate
 
     Examples:
-        >>> from torchmetrics.functional import word_information_preserved
+        >>> from torchmetrics.functional.text import word_information_preserved
         >>> preds = ["this is the prediction", "there is an other sample"]
         >>> target = ["this is the reference", "there is another one"]
         >>> word_information_preserved(preds, target)

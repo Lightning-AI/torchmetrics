@@ -159,7 +159,7 @@ def universal_image_quality_index(
             If one of the elements of ``sigma`` is not a ``positive number``.
 
     Example:
-        >>> from torchmetrics.functional import universal_image_quality_index
+        >>> from torchmetrics.functional.image import universal_image_quality_index
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> universal_image_quality_index(preds, target)

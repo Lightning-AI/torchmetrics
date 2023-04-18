@@ -50,7 +50,7 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (single output regression):
-        >>> from torchmetrics import ConcordanceCorrCoef
+        >>> from torchmetrics.regression import ConcordanceCorrCoef
         >>> from torch import tensor
         >>> target = tensor([3, -0.5, 2, 7])
         >>> preds = tensor([2.5, 0.0, 2, 8])
@@ -59,7 +59,7 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
         tensor(0.9777)
 
     Example (multi output regression):
-        >>> from torchmetrics import ConcordanceCorrCoef
+        >>> from torchmetrics.regression import ConcordanceCorrCoef
         >>> target = tensor([[3, -0.5], [2, 7]])
         >>> preds = tensor([[2.5, 0.0], [2, 8]])
         >>> concordance = ConcordanceCorrCoef(num_outputs=2)
