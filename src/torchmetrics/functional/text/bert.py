@@ -14,7 +14,7 @@
 import csv
 import os
 import urllib
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 from warnings import warn
 
 import torch
@@ -238,8 +238,8 @@ def _rescale_metrics_with_baseline(
 
 
 def bert_score(
-    preds: Union[List[str], Dict[str, Tensor]],
-    target: Union[List[str], Dict[str, Tensor]],
+    preds: Union[str, Sequence[str], Dict[str, Tensor]],
+    target: Union[str, Sequence[str], Dict[str, Tensor]],
     model_name_or_path: Optional[str] = None,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
@@ -251,13 +251,13 @@ def bert_score(
     device: Optional[Union[str, torch.device]] = None,
     max_length: int = 512,
     batch_size: int = 64,
-    num_threads: int = 4,
+    num_threads: int = 0,
     return_hash: bool = False,
     lang: str = "en",
     rescale_with_baseline: bool = False,
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
-) -> Dict[str, Union[List[float], str]]:
+) -> Dict[str, Union[Tensor, List[float], str]]:
     """`Bert_score Evaluating Text Generation`_ for text similirity matching.
 
     This metric leverages the pre-trained contextual embeddings from BERT and matches words in candidate and reference
@@ -321,17 +321,19 @@ def bert_score(
             If invalid input is provided.
 
     Example:
+        >>> from pprint import pprint
         >>> from torchmetrics.functional.text.bert import bert_score
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
-        >>> score = bert_score(preds, target)
-        >>> from pprint import pprint
-        >>> rounded_score = {k: [round(v, 3) for v in vv] for k, vv in score.items()}
-        >>> pprint(rounded_score)
-        {'f1': [1.0, 0.996], 'precision': [1.0, 0.996], 'recall': [1.0, 0.996]}
+        >>> pprint(bert_score(preds, target))
+        {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
     """
     if len(preds) != len(target):
         raise ValueError("Number of predicted and reference sententes must be the same!")
+    if not isinstance(preds, (str, list, dict)):  # dict for BERTScore class compute call
+        preds = list(preds)
+    if not isinstance(target, (str, list, dict)):  # dict for BERTScore class compute call
+        target = list(target)
 
     if verbose and (not _TQDM_AVAILABLE):
         raise ModuleNotFoundError(
@@ -375,7 +377,7 @@ def bert_score(
     )
     if _are_empty_lists:
         warn("Predictions and references are empty.")
-        output_dict: Dict[str, Union[List[float], str]] = {
+        output_dict: Dict[str, Union[Tensor, List[float], str]] = {
             "precision": [0.0],
             "recall": [0.0],
             "f1": [0.0],
@@ -416,6 +418,15 @@ def bert_score(
     precision, recall, f1_score = _get_precision_recall_f1(
         preds_embeddings, target_embeddings, preds_idf_scale, target_idf_scale
     )
+    # Sort predictions
+    if len(precision.shape) == 1:  # i.e. when all_layers = False
+        precision = precision[preds_loader.dataset.sorting_indices]
+        recall = recall[preds_loader.dataset.sorting_indices]
+        f1_score = f1_score[preds_loader.dataset.sorting_indices]
+    elif len(precision.shape) == 2:  # i.e. when all_layers = True
+        precision = precision[:, preds_loader.dataset.sorting_indices]
+        recall = recall[:, preds_loader.dataset.sorting_indices]
+        f1_score = f1_score[:, preds_loader.dataset.sorting_indices]
 
     if baseline is not None:
         precision, recall, f1_score = _rescale_metrics_with_baseline(
@@ -423,9 +434,9 @@ def bert_score(
         )
 
     output_dict = {
-        "precision": precision.tolist(),
-        "recall": recall.tolist(),
-        "f1": f1_score.tolist(),
+        "precision": precision,
+        "recall": recall,
+        "f1": f1_score,
     }
     if return_hash:
         output_dict.update({"hash": _get_hash(model_name_or_path, num_layers, idf)})
