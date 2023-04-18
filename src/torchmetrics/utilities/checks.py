@@ -773,8 +773,9 @@ def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIM
     """
     # source: https://stackoverflow.com/a/14924210/4521646
     proc = multiprocessing.Process(target=fn)
+    logging.debug(f"try to run `{fn.__name__}` for {timeout}s...")
     proc.start()
-    # Wait for 10 seconds or until process finishes
+    # Wait for N seconds or until process finishes
     proc.join(timeout)
     # If thread is still active
     if not proc.is_alive():
