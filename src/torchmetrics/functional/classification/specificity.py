@@ -31,7 +31,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_tensor_validation,
     _multilabel_stat_scores_update,
 )
-from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.compute import _safe_divide, _score_average
 from torchmetrics.utilities.enums import ClassificationTask
 
 
@@ -51,10 +51,7 @@ def _specificity_reduce(
         return _safe_divide(tn, tn + fp)
 
     specificity_score = _safe_divide(tn, tn + fp)
-    if average is None or average == "none":
-        return specificity_score
-    weights = tp + fn if average == "weighted" else torch.ones_like(specificity_score)
-    return _safe_divide(weights * specificity_score, weights.sum(-1, keepdim=True)).sum(-1)
+    return _score_average(specificity_score, tp, fp, fn, average)
 
 
 def binary_specificity(

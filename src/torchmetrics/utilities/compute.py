@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
 
@@ -53,6 +54,29 @@ def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
     num = num if num.is_floating_point() else num.float()
     denom = denom if denom.is_floating_point() else denom.float()
     return num / denom
+
+
+def _score_average(
+    scores: Tensor, tp: Tensor, fp: Tensor, fn: Tensor, average: Optional[Literal["macro", "weighted", "none"]]
+) -> Tensor:
+    """Average the scores based on the average method after accounting for micro average.
+
+    Args:
+        scores: tensor of scores
+        tp: tensor of true positives
+        fp: tensor of false positives
+        fn: tensor of false negatives
+        average: method to average the scores
+
+    """
+    if average is None or average == "none":
+        return scores
+    if average == "weighted":
+        weights = tp + fn
+    else:
+        weights = torch.ones_like(scores)
+        weights[tp + fp + fn == 0] = 0.0
+    return _safe_divide(weights * scores, weights.sum(-1, keepdim=True)).sum(-1)
 
 
 def _auc_format_inputs(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:

@@ -31,7 +31,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_tensor_validation,
     _multilabel_stat_scores_update,
 )
-from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.compute import _safe_divide, _score_average
 from torchmetrics.utilities.enums import ClassificationTask
 
 
@@ -54,14 +54,7 @@ def _fbeta_reduce(
         return _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
 
     fbeta_score = _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
-    if average is None or average == "none":
-        return fbeta_score
-    if average == "weighted":
-        weights = tp + fn
-    else:
-        weights = torch.ones_like(fbeta_score)
-        weights[tp + fp + fn == 0] = 0.0
-    return _safe_divide(weights * fbeta_score, weights.sum(-1, keepdim=True)).sum(-1)
+    return _score_average(fbeta_score, tp, fp, fn, average)
 
 
 def _binary_fbeta_score_arg_validation(
