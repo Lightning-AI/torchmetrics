@@ -13,7 +13,7 @@
 # limitations under the License.
 from itertools import product
 from math import ceil, floor, sqrt
-from typing import Any, Dict, Generator, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Generator, List, Optional, Sequence, Tuple, Union, no_type_check
 
 import numpy as np
 import torch
@@ -100,7 +100,13 @@ def plot_single_or_multi_val(
                 ax.plot(i, v.detach().cpu(), marker="o", markersize=10, linestyle="None", label=label)
     elif isinstance(val, dict):
         for i, (k, v) in enumerate(val.items()):
-            ax.plot(i, v.detach().cpu(), marker="o", markersize=10, label=k)
+            if v.numel() != 1:
+                ax.plot(v.detach().cpu(), marker="o", markersize=10, linestyle="-", label=k)
+                ax.get_xaxis().set_visible(True)
+                ax.set_xlabel("Step")
+                ax.set_xticks(torch.arange(len(v)))
+            else:
+                ax.plot(i, v.detach().cpu(), marker="o", markersize=10, label=k)
     elif isinstance(val, Sequence):
         n_steps = len(val)
         if isinstance(val[0], dict):
@@ -167,7 +173,7 @@ def _get_col_row_split(n: int) -> Tuple[int, int]:
     return ceil(nsq), ceil(nsq)
 
 
-def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> np.ndarray:  # type: ignore[valid-type]
+def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> Union[np.ndarray, _AX_TYPE]:  # type: ignore[valid-type]
     """Reduce `axs` to `nb` Axes.
 
     All further Axes are removed from the figure.
@@ -182,8 +188,10 @@ def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> np.ndarray:  # type: 
 
 
 @style_change(_style)
+@no_type_check
 def plot_confusion_matrix(
     confmat: Tensor,
+    ax: Optional[_AX_TYPE] = None,
     add_text: bool = True,
     labels: Optional[List[Union[int, str]]] = None,
 ) -> _PLOT_OUT_TYPE:
@@ -195,6 +203,7 @@ def plot_confusion_matrix(
     Args:
         confmat: the confusion matrix. Either should be an [N,N] matrix in the binary and multiclass cases or an
             [N, 2, 2] matrix for multilabel classification
+        ax: Axis from a figure. If not provided, a new figure and axis will be created
         add_text: if text should be added to each cell with the given value
         labels: labels to add the x- and y-axis
 
@@ -225,7 +234,7 @@ def plot_confusion_matrix(
         fig_label = None
         labels = labels or np.arange(n_classes).tolist()
 
-    fig, axs = plt.subplots(nrows=rows, ncols=cols)
+    fig, axs = plt.subplots(nrows=rows, ncols=cols) if ax is None else (ax.get_figure(), ax)
     axs = trim_axs(axs, nb)
     for i in range(nb):
         ax = axs[i] if rows != 1 and cols != 1 else axs

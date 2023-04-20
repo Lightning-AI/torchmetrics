@@ -108,7 +108,7 @@ def error_relative_global_dimensionless_synthesis(
             If ``preds`` and ``target`` don't have ``BxCxHxW shape``.
 
     Example:
-        >>> from torchmetrics.functional import error_relative_global_dimensionless_synthesis
+        >>> from torchmetrics.functional.image import error_relative_global_dimensionless_synthesis
         >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
         >>> ergds = error_relative_global_dimensionless_synthesis(preds, target)

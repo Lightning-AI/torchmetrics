@@ -23,6 +23,11 @@ from torch.nn import Module, ModuleDict
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import _flatten_dict, allclose
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["MetricCollection.plot", "MetricCollection.plot_all"]
 
 
 class MetricCollection(ModuleDict):
@@ -82,7 +87,8 @@ class MetricCollection(ModuleDict):
     Example (input as list):
         >>> from torch import tensor
         >>> from pprint import pprint
-        >>> from torchmetrics import MetricCollection, MeanSquaredError
+        >>> from torchmetrics import MetricCollection
+        >>> from torchmetrics.regression import MeanSquaredError
         >>> from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall
         >>> target = tensor([0, 2, 0, 2, 0, 1, 0, 2])
         >>> preds = tensor([2, 1, 2, 0, 1, 2, 2, 2])
@@ -482,3 +488,90 @@ class MetricCollection(ModuleDict):
         for _, m in self.items(keep_base=True, copy_state=False):
             m.set_dtype(dst_type)
         return self
+
+    def plot(
+        self,
+        val: Optional[Union[Dict, Sequence[Dict]]] = None,
+        ax: Optional[Union[_AX_TYPE, Sequence[_AX_TYPE]]] = None,
+        together: bool = False,
+    ) -> Sequence[_PLOT_OUT_TYPE]:
+        """Plot a single or multiple values from the metric.
+
+        The plot method has two modes of operation. If argument `together` is set to `False` (default), the `.plot`
+        method of each metric will be called individually and the result will be list of figures. If `together` is set
+        to `True`, the values of all metrics will instead be plotted in the same figure.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: Either a single instance of matplotlib axis object or an sequence of matplotlib axis objects. If
+                provided, will add the plots to the provided axis objects. If not provided, will create a new. If
+                argument `together` is set to `True`, a single object is expected. If `together` is set to `False`,
+                the number of axis objects needs to be the same lenght as the number of metrics in the collection.
+            together: If `True`, will plot all metrics in the same axis. If `False`, will plot each metric in a separate
+
+        Returns:
+            Either instal tupel of Figure and Axes object or an sequence of tuples with Figure and Axes object for each
+            metric in the collection.
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+            ValueError:
+                If `together` is not an bool
+            ValueError:
+                If `ax` is not an instance of matplotlib axis object or a sequence of matplotlib axis objects
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics import MetricCollection
+            >>> from torchmetrics.classification import BinaryAccuracy, BinaryPrecision, BinaryRecall
+            >>> metrics = MetricCollection([BinaryAccuracy(), BinaryPrecision(), BinaryRecall()])
+            >>> metrics.update(torch.rand(10), torch.randint(2, (10,)))
+            >>> fig_ax_ = metrics.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics import MetricCollection
+            >>> from torchmetrics.classification import BinaryAccuracy, BinaryPrecision, BinaryRecall
+            >>> metrics = MetricCollection([BinaryAccuracy(), BinaryPrecision(), BinaryRecall()])
+            >>> values = []
+            >>> for _ in range(10):
+            ...     values.append(metrics(torch.rand(10), torch.randint(2, (10,))))
+            >>> fig_, ax_ = metrics.plot(values, together=True)
+        """
+        if not isinstance(together, bool):
+            raise ValueError(f"Expected argument `together` to be a boolean, but got {type(together)}")
+        if ax is not None:
+            if together and not isinstance(ax, _AX_TYPE):
+                raise ValueError(
+                    f"Expected argument `ax` to be a matplotlib axis object, but got {type(ax)} when `together=True`"
+                )
+            if (
+                not together
+                and not isinstance(ax, Sequence)
+                and not all(isinstance(a, _AX_TYPE) for a in ax)
+                and len(ax) != len(self)
+            ):
+                raise ValueError(
+                    f"Expected argument `ax` to be a sequence of matplotlib axis objects with the same length as the "
+                    f"number of metrics in the collection, but got {type(ax)} with len {len(ax)} when `together=False`"
+                )
+
+        val = val or self.compute()
+        if together:
+            return plot_single_or_multi_val(val, ax=ax)
+        fig_axs = []
+        for i, (k, m) in enumerate(self.items(keep_base=True, copy_state=False)):
+            if isinstance(val, dict):
+                f, a = m.plot(val[k], ax=ax[i] if ax is not None else ax)
+            elif isinstance(val, Sequence):
+                f, a = m.plot([v[k] for v in val], ax=ax[i] if ax is not None else ax)
+            fig_axs.append((f, a))
+        return fig_axs

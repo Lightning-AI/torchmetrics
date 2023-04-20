@@ -120,14 +120,14 @@ def spearman_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         target: ground truth scores
 
     Example (single output regression):
-        >>> from torchmetrics.functional import spearman_corrcoef
+        >>> from torchmetrics.functional.regression import spearman_corrcoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> spearman_corrcoef(preds, target)
         tensor(1.0000)
 
     Example (multi output regression):
-        >>> from torchmetrics.functional import spearman_corrcoef
+        >>> from torchmetrics.functional.regression import spearman_corrcoef
         >>> target = torch.tensor([[3, -0.5], [2, 7]])
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
         >>> spearman_corrcoef(preds, target)

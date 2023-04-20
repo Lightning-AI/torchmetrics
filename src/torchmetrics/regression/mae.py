@@ -45,7 +45,7 @@ class MeanAbsoluteError(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics import MeanAbsoluteError
+        >>> from torchmetrics.regression import MeanAbsoluteError
         >>> target = tensor([3.0, -0.5, 2.0, 7.0])
         >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
         >>> mean_absolute_error = MeanAbsoluteError()

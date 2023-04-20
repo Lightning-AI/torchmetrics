@@ -123,7 +123,7 @@ import torch
 import torchmetrics
 
 # initialize metric
-metric = torchmetrics.Accuracy(task="multiclass", num_classes=5)
+metric = torchmetrics.classification.Accuracy(task="multiclass", num_classes=5)
 
 # move the metric to device you want computations to take place
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -169,7 +169,7 @@ def metric_ddp(rank, world_size):
     dist.init_process_group("gloo", rank=rank, world_size=world_size)
 
     # initialize model
-    metric = torchmetrics.Accuracy(task="multiclass", num_classes=5)
+    metric = torchmetrics.classification.Accuracy(task="multiclass", num_classes=5)
 
     # define a model and append your metric to it
     # this allows metric states to be placed on correct accelerators when

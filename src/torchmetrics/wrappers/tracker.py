@@ -289,7 +289,7 @@ class MetricTracker(ModuleList):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics import MetricTracker
+            >>> from torchmetrics.wrappers import MetricTracker
             >>> from torchmetrics.classification import BinaryAccuracy
             >>> tracker = MetricTracker(BinaryAccuracy())
             >>> for epoch in range(5):
@@ -299,7 +299,7 @@ class MetricTracker(ModuleList):
             >>> fig_, ax_ = tracker.plot()  # plot all epochs
 
         """
-        val = val if val is not None else list(self.compute_all())
+        val = val if val is not None else self.compute_all()
         fig, ax = plot_single_or_multi_val(
             val,
             ax=ax,
