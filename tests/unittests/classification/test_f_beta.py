@@ -566,3 +566,13 @@ class TestMultilabelFBetaScore(MetricTester):
             metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
             dtype=dtype,
         )
+
+
+def test_corner_case():
+    """Issue: https://github.com/Lightning-AI/torchmetrics/issues/1664."""
+    target = torch.tensor([2, 1, 0, 0])
+    preds = torch.tensor([2, 1, 0, 1])
+    for i in range(3, 9):
+        f1_score = MulticlassF1Score(num_classes=i, average="macro")
+        res = f1_score(preds, target)
+        assert res == torch.tensor([0.77777779])

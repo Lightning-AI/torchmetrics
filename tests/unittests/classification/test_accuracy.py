@@ -536,3 +536,18 @@ class TestMultilabelAccuracy(MetricTester):
             metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
             dtype=dtype,
         )
+
+
+def test_corner_case():
+    """Issue: https://github.com/Lightning-AI/torchmetrics/issues/1691."""
+    # simulate the output of a perfect predictor (i.e. preds == target)
+    target = torch.tensor([0, 1, 2, 0, 1, 2])
+    preds = target
+
+    metric = MulticlassAccuracy(num_classes=3, average="none", ignore_index=0)
+    res = metric(preds, target)
+    assert torch.allclose(res, torch.tensor([0.0, 1.0, 1.0]))
+
+    metric = MulticlassAccuracy(num_classes=3, average="macro", ignore_index=0)
+    res = metric(preds, target)
+    assert res == 1.0
