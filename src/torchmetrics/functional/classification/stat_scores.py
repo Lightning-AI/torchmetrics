@@ -303,7 +303,7 @@ def _multiclass_stat_scores_tensor_validation(
     if check:
         raise RuntimeError(
             "Detected more unique values in `target` than `num_classes`. Expected only "
-            f"{num_classes if ignore_index is None else num_classes + 1} but found"
+            f"{num_classes if ignore_index is None else num_classes + 1} but found "
             f"{num_unique_values} in `target`."
         )
 
