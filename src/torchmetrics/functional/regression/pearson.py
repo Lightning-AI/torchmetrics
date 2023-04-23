@@ -49,13 +49,25 @@ def _pearson_corrcoef_update(
     # Data checking
     _check_same_shape(preds, target)
     _check_data_shape_to_num_outputs(preds, target, num_outputs)
+    cond = n_prior > 0
 
     n_obs = preds.shape[0]
-    mx_new = (n_prior * mean_x + preds.mean(0) * n_obs) / (n_prior + n_obs)
-    my_new = (n_prior * mean_y + target.mean(0) * n_obs) / (n_prior + n_obs)
+    if cond:
+        mx_new = (n_prior * mean_x + preds.sum(0)) / (n_prior + n_obs)
+        my_new = (n_prior * mean_y + target.sum(0)) / (n_prior + n_obs)
+    else:
+        mx_new = preds.mean()
+        my_new = target.mean()
+
     n_prior += n_obs
-    var_x += ((preds - mx_new) * (preds - mean_x)).sum(0)
-    var_y += ((target - my_new) * (target - mean_y)).sum(0)
+
+    if cond:
+        var_x += ((preds - mx_new) * (preds - mean_x)).sum(0)
+        var_y += ((target - my_new) * (target - mean_y)).sum(0)
+
+    else:
+        var_x += preds.var() * (n_obs - 1)
+        var_y += target.var() * (n_obs - 1)
     corr_xy += ((preds - mx_new) * (target - mean_y)).sum(0)
     mean_x = mx_new
     mean_y = my_new
