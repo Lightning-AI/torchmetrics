@@ -99,7 +99,6 @@ jobs:
       timeout-minutes: 25
       run: |
         pip --version
-        pip install -q "numpy<1.24"  # trying to resolve pesq installation
         pip install -e . -U --find-links $PYTORCH_URL -f $PYPI_CACHE
         pip install -r requirements/doctest.txt -U -f $PYPI_CACHE
         pip list
