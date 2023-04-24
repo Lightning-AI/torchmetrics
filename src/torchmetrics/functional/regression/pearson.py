@@ -49,7 +49,7 @@ def _pearson_corrcoef_update(
     # Data checking
     _check_same_shape(preds, target)
     _check_data_shape_to_num_outputs(preds, target, num_outputs)
-    cond = n_prior > 0
+    cond = n_prior.mean() > 0
 
     n_obs = preds.shape[0]
     if cond:
