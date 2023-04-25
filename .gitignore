@@ -25,6 +25,7 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+_pip-wheels/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -123,3 +124,6 @@ lightning_logs
 *.gz
 .DS_Store
 .*_submit.py
+
+# Ruff
+.ruff_cache/
