@@ -125,8 +125,7 @@ jobs:
             python ./requirements/adjust-versions.py $fpath
         done
         pip install --requirement requirements/devel.txt -U \
-          --find-links $PYTORCH_URL -f $PYPI_CACHE \
-          --trusted-host=pypi.python.org --trusted-host=pypi.org --trusted-host=files.pythonhosted.org
+          --find-links $PYTORCH_URL -f $PYPI_CACHE --no-verify-host
         pip list
 
     - name: Sanity check
