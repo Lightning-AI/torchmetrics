@@ -341,14 +341,16 @@ Join our [Slack](https://www.pytorchlightning.ai/community) to get help with bec
 
 For help or questions, join our huge community on [Slack](https://www.pytorchlightning.ai/community)!
 
-
 ## Contributors
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+
 <!-- prettier-ignore-start -->
+
 <!-- markdownlint-disable -->
 
 <!-- markdownlint-restore -->
+
 <!-- prettier-ignore-end -->
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
