@@ -2,5 +2,5 @@
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
 # this need to be the same as used inside speechmetrics
-pesq @ https://github.com/ludlows/PESQ/archive/refs/heads/master.zip
+pesq @ git+https://github.com/vBaiCai/python-pesq
 pystoi <=0.3.3
