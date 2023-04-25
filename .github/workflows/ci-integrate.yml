@@ -65,7 +65,7 @@ jobs:
       run: |
         set -e
         pip install -r requirements/test.txt -r requirements/integrate.txt \
-          --find-links $PYTORCH_URL -f $PYPI_CACHE --upgrade-strategy eager --no-verify-host
+          --find-links $PYTORCH_URL -f $PYPI_CACHE --upgrade-strategy eager
         python ./requirements/adjust-versions.py requirements.txt
         python ./requirements/adjust-versions.py requirements/image.txt
         cat requirements.txt
