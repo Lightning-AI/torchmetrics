@@ -302,17 +302,17 @@ def _multiclass_stat_scores_tensor_validation(
     check = num_unique_values > num_classes if ignore_index is None else num_unique_values > num_classes + 1
     if check:
         raise RuntimeError(
-            "Detected more unique values in `target` than `num_classes`. Expected only "
-            f"{num_classes if ignore_index is None else num_classes + 1} but found"
-            f"{num_unique_values} in `target`."
+            "Detected more unique values in `target` than `num_classes`. Expected only"
+            f" {num_classes if ignore_index is None else num_classes + 1} but found"
+            f" {num_unique_values} in `target`."
         )
 
     if not preds.is_floating_point():
         unique_values = torch.unique(preds)
         if len(unique_values) > num_classes:
             raise RuntimeError(
-                "Detected more unique values in `preds` than `num_classes`. Expected only "
-                f"{num_classes} but found {len(unique_values)} in `preds`."
+                "Detected more unique values in `preds` than `num_classes`. Expected only"
+                f" {num_classes} but found {len(unique_values)} in `preds`."
             )
 
 
