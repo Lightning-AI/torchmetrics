@@ -195,8 +195,8 @@ class ScalingLayer(nn.Module):
 
     def __init__(self) -> None:
         super().__init__()
-        self.register_buffer("shift", torch.Tensor([-0.030, -0.088, -0.188])[None, :, None, None])
-        self.register_buffer("scale", torch.Tensor([0.458, 0.448, 0.450])[None, :, None, None])
+        self.register_buffer("shift", torch.Tensor([-0.030, -0.088, -0.188])[None, :, None, None], persistent=False)
+        self.register_buffer("scale", torch.Tensor([0.458, 0.448, 0.450])[None, :, None, None], persistent=False)
 
     def forward(self, inp: Tensor) -> Tensor:
         """Process input."""
