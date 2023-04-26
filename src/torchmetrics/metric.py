@@ -1024,12 +1024,12 @@ class CompositionalMetric(Metric):
         self.op = operator
 
         if isinstance(metric_a, Tensor):
-            self.register_buffer("metric_a", metric_a)
+            self.register_buffer("metric_a", metric_a, persistent=False)
         else:
             self.metric_a = metric_a
 
         if isinstance(metric_b, Tensor):
-            self.register_buffer("metric_b", metric_b)
+            self.register_buffer("metric_b", metric_b, persistent=False)
         else:
             self.metric_b = metric_b
 
