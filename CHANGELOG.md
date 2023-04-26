@@ -50,9 +50,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Binary group fairness metrics to classification package ([#1404](https://github.com/Lightning-AI/metrics/pull/1404))
 
 
-- Added new detection metric `PanopticQuality` ([#929](https://github.com/PyTorchLightning/metrics/pull/929))
-
-
 - Added `MinkowskiDistance` to regression package ([#1362](https://github.com/Lightning-AI/metrics/pull/1362))
 
 
@@ -66,6 +63,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     [#929](https://github.com/PyTorchLightning/metrics/pull/929),
     [#1527](https://github.com/PyTorchLightning/metrics/pull/1527),
 )
+
+
+- Added `PSNRB` metric ([#1421](https://github.com/Lightning-AI/metrics/pull/1421))
 
 
 - Added `ClassificationTask` Enum and use in metrics ([#1479](https://github.com/Lightning-AI/metrics/pull/1479))
@@ -95,6 +95,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `PrecisionAtFixedRecall` metric to classification package ([#1683](https://github.com/Lightning-AI/torchmetrics/pull/1683))
 
 
+- Added multiple metrics to detection package ([#1284](https://github.com/Lightning-AI/metrics/pull/1284))
+  * `IntersectionOverUnion`
+  * `GeneralizedIntersectionOverUnion`
+  * `CompleteIntersectionOverUnion`
+  * `DistanceIntersectionOverUnion`
+
+
 ### Changed
 
 - Changed `update_count` and `update_called` from private to public methods ([#1370](https://github.com/Lightning-AI/metrics/pull/1370))
@@ -117,6 +124,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Allowed FID with `torch.float64` ([#1628](https://github.com/Lightning-AI/metrics/pull/1628))
 
+
+- Changed `LPIPS` implementation to no more rely on third-party package ([#1575](https://github.com/Lightning-AI/metrics/pull/1575))
+
+
+- Changed FID matrix square root calculation from `scipy` to `torch` ([#1708](https://github.com/Lightning-AI/torchmetrics/pull/1708))
+
+
+- Changed calculation in `PearsonCorrCoeff` to be more robust in certain cases  ([#1729](https://github.com/Lightning-AI/torchmetrics/pull/1729))
 
 ### Deprecated
 
@@ -158,6 +173,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fixed padding removal for 3d input in `MSSSIM` ([#1674](https://github.com/Lightning-AI/torchmetrics/pull/1674))
+
+
+- Fixed `max_det_threshold` in MAP detection ([#1712](https://github.com/Lightning-AI/torchmetrics/pull/1712))
+
+
+- Fixed states being saved in metrics that use `register_buffer` ([#1728](https://github.com/Lightning-AI/torchmetrics/pull/1728))
 
 
 ## [0.11.4] - 2023-03-10

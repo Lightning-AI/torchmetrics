@@ -14,6 +14,7 @@
 from torchmetrics.image.d_lambda import SpectralDistortionIndex
 from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
 from torchmetrics.image.psnr import PeakSignalNoiseRatio
+from torchmetrics.image.psnrb import PeakSignalNoiseRatioWithBlockedEffect
 from torchmetrics.image.rase import RelativeAverageSpectralError
 from torchmetrics.image.rmse_sw import RootMeanSquaredErrorUsingSlidingWindow
 from torchmetrics.image.sam import SpectralAngleMapper
@@ -26,6 +27,7 @@ __all__ = [
     "SpectralDistortionIndex",
     "ErrorRelativeGlobalDimensionlessSynthesis",
     "PeakSignalNoiseRatio",
+    "PeakSignalNoiseRatioWithBlockedEffect",
     "RelativeAverageSpectralError",
     "RootMeanSquaredErrorUsingSlidingWindow",
     "SpectralAngleMapper",

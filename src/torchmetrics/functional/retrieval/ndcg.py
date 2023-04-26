@@ -45,7 +45,7 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, top_k: Optional[int]
             If ``top_k`` parameter is not `None` or an integer larger than 0
 
     Example:
-        >>> from torchmetrics.functional import retrieval_normalized_dcg
+        >>> from torchmetrics.functional.retrieval import retrieval_normalized_dcg
         >>> preds = torch.tensor([.1, .2, .3, 4, 70])
         >>> target = torch.tensor([10, 0, 0, 1, 5])
         >>> retrieval_normalized_dcg(preds, target)

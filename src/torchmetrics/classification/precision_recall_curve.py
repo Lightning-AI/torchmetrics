@@ -145,7 +145,7 @@ class BinaryPrecisionRecallCurve(Metric):
             self.add_state("preds", default=[], dist_reduce_fx="cat")
             self.add_state("target", default=[], dist_reduce_fx="cat")
         else:
-            self.register_buffer("thresholds", thresholds)
+            self.register_buffer("thresholds", thresholds, persistent=False)
             self.add_state(
                 "confmat", default=torch.zeros(len(thresholds), 2, 2, dtype=torch.long), dist_reduce_fx="sum"
             )
@@ -311,7 +311,7 @@ class MulticlassPrecisionRecallCurve(Metric):
             self.add_state("preds", default=[], dist_reduce_fx="cat")
             self.add_state("target", default=[], dist_reduce_fx="cat")
         else:
-            self.register_buffer("thresholds", thresholds)
+            self.register_buffer("thresholds", thresholds, persistent=False)
             self.add_state(
                 "confmat",
                 default=torch.zeros(len(thresholds), num_classes, 2, 2, dtype=torch.long),
@@ -490,7 +490,7 @@ class MultilabelPrecisionRecallCurve(Metric):
             self.add_state("preds", default=[], dist_reduce_fx="cat")
             self.add_state("target", default=[], dist_reduce_fx="cat")
         else:
-            self.register_buffer("thresholds", thresholds)
+            self.register_buffer("thresholds", thresholds, persistent=False)
             self.add_state(
                 "confmat",
                 default=torch.zeros(len(thresholds), num_labels, 2, 2, dtype=torch.long),
@@ -611,9 +611,11 @@ class PrecisionRecallCurve:
         if task == ClassificationTask.BINARY:
             return BinaryPrecisionRecallCurve(**kwargs)
         if task == ClassificationTask.MULTICLASS:
-            assert isinstance(num_classes, int)
+            if not isinstance(num_classes, int):
+                raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassPrecisionRecallCurve(num_classes, **kwargs)
         if task == ClassificationTask.MULTILABEL:
-            assert isinstance(num_labels, int)
+            if not isinstance(num_labels, int):
+                raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelPrecisionRecallCurve(num_labels, **kwargs)
         return None

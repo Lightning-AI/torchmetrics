@@ -122,7 +122,7 @@ def cramers_v(
         Cramer's V statistic
 
     Example:
-        >>> from torchmetrics.functional import cramers_v
+        >>> from torchmetrics.functional.nominal import cramers_v
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randint(0, 4, (100,))
         >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)

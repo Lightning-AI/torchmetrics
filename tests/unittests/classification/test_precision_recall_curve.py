@@ -416,3 +416,18 @@ def test_valid_input_thresholds(metric, thresholds):
     with pytest.warns(None) as record:
         metric(thresholds=thresholds)
     assert len(record) == 0
+
+
+@pytest.mark.parametrize(
+    "metric",
+    [
+        BinaryPrecisionRecallCurve,
+        partial(MulticlassPrecisionRecallCurve, num_classes=NUM_CLASSES),
+        partial(MultilabelPrecisionRecallCurve, num_labels=NUM_CLASSES),
+    ],
+)
+@pytest.mark.parametrize("thresholds", [None, 100, [0.3, 0.5, 0.7, 0.9], torch.linspace(0, 1, 10)])
+def test_empty_state_dict(metric, thresholds):
+    """Test that metric have an empty state dict."""
+    m = metric(thresholds=thresholds)
+    assert m.state_dict() == {}, "Metric state dict should be empty."
