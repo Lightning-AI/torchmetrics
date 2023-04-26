@@ -174,8 +174,6 @@ module = [
     "torchmetrics.collections",
     "torchmetrics.detection.mean_ap",
     "torchmetrics.functional.audio.pit",
-    "torchmetrics.functional.classification.auroc",
-    "torchmetrics.functional.classification.average_precision",
     "torchmetrics.functional.classification.calibration_error",
     "torchmetrics.functional.classification.confusion_matrix",
     "torchmetrics.functional.classification.f_beta",
