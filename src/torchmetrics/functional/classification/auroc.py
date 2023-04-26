@@ -49,11 +49,10 @@ def _reduce_auroc(
     weights: Optional[Tensor] = None,
 ) -> Tensor:
     """Reduce multiple average precision score into one number."""
-    if isinstance(fpr, Tensor):
+    if isinstance(fpr, Tensor) and isinstance(tpr, Tensor):
         res = _auc_compute_without_check(fpr, tpr, 1.0, axis=1)
     else:
-        res = [_auc_compute_without_check(x, y, 1.0) for x, y in zip(fpr, tpr)]
-        res = torch.stack(res)
+        res = torch.stack([_auc_compute_without_check(x, y, 1.0) for x, y in zip(fpr, tpr)])
     if average is None or average == "none":
         return res
     if torch.isnan(res).any():
@@ -85,7 +84,7 @@ def _binary_auroc_compute(
     thresholds: Optional[Tensor],
     max_fpr: Optional[float] = None,
     pos_label: int = 1,
-) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor]]:
+) -> Tensor:
     fpr, tpr, _ = _binary_roc_compute(state, thresholds, pos_label)
     if max_fpr is None or max_fpr == 1:
         return _auc_compute_without_check(fpr, tpr, 1.0)
@@ -114,7 +113,7 @@ def binary_auroc(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> Tensor:
     r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks.
 
     The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
@@ -309,7 +308,7 @@ def _multilabel_auroc_compute(
     average: Optional[Literal["micro", "macro", "weighted", "none"]],
     thresholds: Optional[Tensor],
     ignore_index: Optional[int] = None,
-) -> Union[Tuple[Tensor, Tensor, Tensor], Tensor]:
+) -> Tensor:
     if average == "micro":
         if isinstance(state, Tensor) and thresholds is not None:
             return _binary_auroc_compute(state.sum(1), thresholds, max_fpr=None)
@@ -339,7 +338,7 @@ def multilabel_auroc(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+) -> Tensor:
     r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks.
 
     The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
@@ -433,7 +432,7 @@ def auroc(
     max_fpr: Optional[float] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+) -> Optional[Tensor]:
     r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_).
 
     The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
