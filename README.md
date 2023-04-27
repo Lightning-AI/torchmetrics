@@ -31,7 +31,6 @@ ______________________________________________________________________
 
 [![Documentation Status](https://readthedocs.org/projects/torchmetrics/badge/?version=latest)](https://torchmetrics.readthedocs.io/en/latest/?badge=latest)
 [![Discord](https://img.shields.io/discord/1077906959069626439?style=plastic)](https://discord.gg/VptPCZkGNa)
-[![All Contributors](https://img.shields.io/github/all-contributors/Lightning-AI/torchmetrics?color=ee8449&style=flat-square)](#contributors)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5844769.svg)](https://doi.org/10.5281/zenodo.5844769)
 [![JOSS status](https://joss.theoj.org/papers/561d9bb59b400158bc8204e2639dca43/status.svg)](https://joss.theoj.org/papers/561d9bb59b400158bc8204e2639dca43)
 
@@ -340,20 +339,6 @@ Join our [Slack](https://www.pytorchlightning.ai/community) to get help with bec
 ## Community
 
 For help or questions, join our huge community on [Slack](https://www.pytorchlightning.ai/community)!
-
-## Contributors
-
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-
-<!-- prettier-ignore-start -->
-
-<!-- markdownlint-disable -->
-
-<!-- markdownlint-restore -->
-
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
 
 ## Citation
 
