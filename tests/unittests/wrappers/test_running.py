@@ -31,7 +31,7 @@ def test_errors_on_wrong_input():
     with pytest.raises(ValueError, match="Expected argument `window` to be a positive integer but got -1"):
         Running(SumMetric(), window=-1)
 
-    with pytest.raises(ValueError, match="Expected argument `metric` to have `full_state_update` set to False .*"):
+    with pytest.raises(ValueError, match="Expected attribute `full_state_update` set to False but got True"):
         Running(PearsonCorrCoef(), window=3)
 
 
