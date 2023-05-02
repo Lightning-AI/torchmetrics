@@ -23,6 +23,7 @@ from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.helper_embedding_metric import _preprocess_text
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TRANSFORMERS_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -30,7 +31,7 @@ if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["BERTScore.plot"]
 
 # Default model recommended in the original implementation.
-_DEFAULT_MODEL = "roberta-large"
+_DEFAULT_MODEL: str = "roberta-large"
 
 if _TRANSFORMERS_AVAILABLE:
     from transformers import AutoModel, AutoTokenizer
@@ -110,15 +111,13 @@ class BERTScore(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from pprint import pprint
         >>> from torchmetrics.text.bert import BERTScore
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
         >>> bertscore = BERTScore()
-        >>> score = bertscore(preds, target)
-        >>> from pprint import pprint
-        >>> rounded_score = {k: [round(v, 3) for v in vv] for k, vv in score.items()}
-        >>> pprint(rounded_score)
-        {'f1': [1.0, 0.996], 'precision': [1.0, 0.996], 'recall': [1.0, 0.996]}
+        >>> pprint(bertscore(preds, target))
+        {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
     """
 
     is_differentiable: bool = False
@@ -145,7 +144,7 @@ class BERTScore(Metric):
         device: Optional[Union[str, torch.device]] = None,
         max_length: int = 512,
         batch_size: int = 64,
-        num_threads: int = 4,
+        num_threads: int = 0,
         return_hash: bool = False,
         lang: str = "en",
         rescale_with_baseline: bool = False,
@@ -170,8 +169,6 @@ class BERTScore(Metric):
         self.rescale_with_baseline = rescale_with_baseline
         self.baseline_path = baseline_path
         self.baseline_url = baseline_url
-        self.preds: Dict[str, List[Tensor]] = {"input_ids": [], "attention_mask": []}
-        self.target: Dict[str, List[Tensor]] = {"input_ids": [], "attention_mask": []}
 
         if user_tokenizer:
             self.tokenizer = user_tokenizer
@@ -196,11 +193,16 @@ class BERTScore(Metric):
         self.add_state("target_input_ids", [], dist_reduce_fx="cat")
         self.add_state("target_attention_mask", [], dist_reduce_fx="cat")
 
-    def update(self, preds: List[str], target: List[str]) -> None:
+    def update(self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str]]) -> None:
         """Store predictions/references for computing BERT scores.
 
         It is necessary to store sentences in a tokenized form to ensure the DDP mode working.
         """
+        if not isinstance(preds, list):
+            preds = list(preds)
+        if not isinstance(target, list):
+            target = list(target)
+
         preds_dict, _ = _preprocess_text(
             preds,
             self.tokenizer,
@@ -223,11 +225,19 @@ class BERTScore(Metric):
         self.target_input_ids.append(target_dict["input_ids"])
         self.target_attention_mask.append(target_dict["attention_mask"])
 
-    def compute(self) -> Dict[str, Union[List[float], str]]:
+    def compute(self) -> Dict[str, Union[Tensor, List[float], str]]:
         """Calculate BERT scores."""
+        preds = {
+            "input_ids": dim_zero_cat(self.preds_input_ids),
+            "attention_mask": dim_zero_cat(self.preds_attention_mask),
+        }
+        target = {
+            "input_ids": dim_zero_cat(self.target_input_ids),
+            "attention_mask": dim_zero_cat(self.target_attention_mask),
+        }
         return bert_score(
-            preds=_get_input_dict(self.preds_input_ids, self.preds_attention_mask),
-            target=_get_input_dict(self.target_input_ids, self.target_attention_mask),
+            preds=preds,
+            target=target,
             model_name_or_path=self.model_name_or_path,
             num_layers=self.num_layers,
             all_layers=self.all_layers,
@@ -269,9 +279,9 @@ class BERTScore(Metric):
 
             >>> # Example plotting a single value
             >>> from torchmetrics.text.bert import BERTScore
-            >>> metric = BERTScore()
             >>> preds = ["hello there", "general kenobi"]
             >>> target = ["hello there", "master kenobi"]
+            >>> metric = BERTScore()
             >>> metric.update(preds, target)
             >>> fig_, ax_ = metric.plot()
 
@@ -279,15 +289,15 @@ class BERTScore(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> import torch
+            >>> from torch import tensor
             >>> from torchmetrics.text.bert import BERTScore
-            >>> metric = BERTScore()
             >>> preds = ["hello there", "general kenobi"]
             >>> target = ["hello there", "master kenobi"]
-            >>> values = [ ]
+            >>> metric = BERTScore()
+            >>> values = []
             >>> for _ in range(10):
             ...     val = metric(preds, target)
-            ...     val = {k: torch.tensor(v).mean() for k,v in val.items()}  # convert into single value per key
+            ...     val = {k: tensor(v).mean() for k,v in val.items()}  # convert into single value per key
             ...     values.append(val)
             >>> fig_, ax_ = metric.plot(values)
         """

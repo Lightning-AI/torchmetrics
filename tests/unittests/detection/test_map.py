@@ -28,37 +28,40 @@ from unittests.helpers.testers import MetricTester
 
 Input = namedtuple("Input", ["preds", "target"])
 
-with open(_SAMPLE_DETECTION_SEGMENTATION) as fp:
-    inputs_json = json.load(fp)
 
-_mask_unsqueeze_bool = lambda m: Tensor(mask.decode(m)).unsqueeze(0).bool()
-_masks_stack_bool = lambda ms: Tensor(np.stack([mask.decode(m) for m in ms])).bool()
+def _create_inputs_masks() -> Input:
+    with open(_SAMPLE_DETECTION_SEGMENTATION) as fp:
+        inputs_json = json.load(fp)
 
-_inputs_masks = Input(
-    preds=[
-        [
-            {
-                "masks": _mask_unsqueeze_bool(inputs_json["preds"][0]),
-                "scores": Tensor([0.236]),
-                "labels": IntTensor([4]),
-            },
-            {
-                "masks": _masks_stack_bool([inputs_json["preds"][1], inputs_json["preds"][2]]),
-                "scores": Tensor([0.318, 0.726]),
-                "labels": IntTensor([3, 2]),
-            },  # 73
+    _mask_unsqueeze_bool = lambda m: Tensor(mask.decode(m)).unsqueeze(0).bool()
+    _masks_stack_bool = lambda ms: Tensor(np.stack([mask.decode(m) for m in ms])).bool()
+
+    return Input(
+        preds=[
+            [
+                {
+                    "masks": _mask_unsqueeze_bool(inputs_json["preds"][0]),
+                    "scores": Tensor([0.236]),
+                    "labels": IntTensor([4]),
+                },
+                {
+                    "masks": _masks_stack_bool([inputs_json["preds"][1], inputs_json["preds"][2]]),
+                    "scores": Tensor([0.318, 0.726]),
+                    "labels": IntTensor([3, 2]),
+                },  # 73
+            ],
         ],
-    ],
-    target=[
-        [
-            {"masks": _mask_unsqueeze_bool(inputs_json["targets"][0]), "labels": IntTensor([4])},  # 42
-            {
-                "masks": _masks_stack_bool([inputs_json["targets"][1], inputs_json["targets"][2]]),
-                "labels": IntTensor([2, 2]),
-            },  # 73
+        target=[
+            [
+                {"masks": _mask_unsqueeze_bool(inputs_json["targets"][0]), "labels": IntTensor([4])},  # 42
+                {
+                    "masks": _masks_stack_bool([inputs_json["targets"][1], inputs_json["targets"][2]]),
+                    "labels": IntTensor([2, 2]),
+                },  # 73
+            ],
         ],
-    ],
-)
+    )
+
 
 _inputs = Input(
     preds=[
@@ -161,7 +164,7 @@ _inputs = Input(
     ],
 )
 
-# example from this issue https://github.com/Lightning-AI/metrics/issues/943
+# example from this issue https://github.com/Lightning-AI/torchmetrics/issues/943
 _inputs2 = Input(
     preds=[
         [
@@ -196,8 +199,8 @@ _inputs2 = Input(
 )
 
 # Test empty preds case, to ensure bool inputs are properly casted to uint8
-# From https://github.com/Lightning-AI/metrics/issues/981
-# and https://github.com/Lightning-AI/metrics/issues/1147
+# From https://github.com/Lightning-AI/torchmetrics/issues/981
+# and https://github.com/Lightning-AI/torchmetrics/issues/1147
 _inputs3 = Input(
     preds=[
         [
@@ -357,6 +360,7 @@ class TestMAP(MetricTester):
     @pytest.mark.parametrize("ddp", [False])
     def test_map_segm(self, compute_on_cpu, ddp):
         """Test modular implementation for correctness."""
+        _inputs_masks = _create_inputs_masks()
         self.run_class_metric_test(
             ddp=ddp,
             preds=_inputs_masks.preds,

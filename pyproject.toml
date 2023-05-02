@@ -112,7 +112,7 @@ unfixable = ["F401"]
 
 [tool.ruff.per-file-ignores]
 "setup.py" = ["ANN202", "ANN401"]
-"src/**" = ["S101", "ANN401"]
+"src/**" = ["ANN401"]
 "tests/**" = [
     "S101", "ANN001", "ANN002", "ANN003", "ANN201", "ANN202", "ANN204", "ANN205", "ANN401"
 ]
@@ -174,8 +174,6 @@ module = [
     "torchmetrics.collections",
     "torchmetrics.detection.mean_ap",
     "torchmetrics.functional.audio.pit",
-    "torchmetrics.functional.classification.auroc",
-    "torchmetrics.functional.classification.average_precision",
     "torchmetrics.functional.classification.calibration_error",
     "torchmetrics.functional.classification.confusion_matrix",
     "torchmetrics.functional.classification.f_beta",
