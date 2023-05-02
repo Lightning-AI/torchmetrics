@@ -68,20 +68,18 @@ class _AbstractStatScores(Metric):
             self.tn.append(tn)
             self.fn.append(fn)
         else:
-            self.tp.add_(tp)
-            self.fp.add_(fp)
-            self.tn.add_(tn)
-            self.fn.add_(fn)
+            self.tp += tp
+            self.fp += fp
+            self.tn += tn
+            self.fn += fn
 
     def _final_state(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
         """Aggregate states that are lists and return final states."""
-        if isinstance(self.tp, list):
-            tp = dim_zero_cat(self.tp)
-            fp = dim_zero_cat(self.fp)
-            tn = dim_zero_cat(self.tn)
-            fn = dim_zero_cat(self.fn)
-            return tp, fp, tn, fn
-        return self.tp, self.fp, self.tn, self.fn
+        tp = dim_zero_cat(self.tp)
+        fp = dim_zero_cat(self.fp)
+        tn = dim_zero_cat(self.tn)
+        fn = dim_zero_cat(self.fn)
+        return tp, fp, tn, fn
 
 
 class BinaryStatScores(_AbstractStatScores):
@@ -503,17 +501,20 @@ class StatScores:
     ) -> Metric:
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
-        assert multidim_average is not None
+        assert multidim_average is not None  # noqa: S101  # needed for mypy
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
         )
         if task == ClassificationTask.BINARY:
             return BinaryStatScores(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:
-            assert isinstance(num_classes, int)
-            assert isinstance(top_k, int)
+            if not isinstance(num_classes, int):
+                raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
+            if not isinstance(top_k, int):
+                raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
             return MulticlassStatScores(num_classes, top_k, average, **kwargs)
         if task == ClassificationTask.MULTILABEL:
-            assert isinstance(num_labels, int)
+            if not isinstance(num_labels, int):
+                raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelStatScores(num_labels, threshold, average, **kwargs)
         return None
