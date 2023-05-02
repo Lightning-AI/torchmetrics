@@ -27,7 +27,8 @@ METRIC_EPS = 1e-6
 
 def dim_zero_cat(x: Union[Tensor, List[Tensor]]) -> Tensor:
     """Concatenation along the zero dimension."""
-    x = x if isinstance(x, (list, tuple)) else [x]
+    if isinstance(x, torch.Tensor):
+        return x
     x = [y.unsqueeze(0) if y.numel() == 1 and y.ndim == 0 else y for y in x]
     if not x:  # empty list
         raise ValueError("No samples to concatenate")
