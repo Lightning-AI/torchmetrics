@@ -20,7 +20,7 @@ class MultitaskWrapper(Metric):
             Dictionary associating each task to a Metric or a MetricCollection. The keys of the dictionary represent the
             names of the tasks, and the values represent the metrics to use for each task.
 
-    Example:
+    Example (with a single metric per class):
          >>> import torch
          >>> from torchmetrics.wrappers import MultitaskWrapper
          >>> from torchmetrics.regression import MeanSquaredError
@@ -38,6 +38,27 @@ class MultitaskWrapper(Metric):
          >>> metrics.update(preds, targets)
          >>> metrics.compute()
          {'Classification': tensor(0.3333), 'Regression': tensor(0.8333)}
+
+    Example (with several metrics per task):
+         >>> import torch
+         >>> from torchmetrics import MetricCollection
+         >>> from torchmetrics.wrappers import MultitaskWrapper
+         >>> from torchmetrics.regression import MeanSquaredError, MeanAbsoluteError
+         >>> from torchmetrics.classification import BinaryAccuracy, BinaryF1Score
+         >>> classification_target = torch.tensor([0, 1, 0])
+         >>> regression_target = torch.tensor([2.5, 5.0, 4.0])
+         >>> targets = {"Classification": classification_target, "Regression": regression_target}
+         >>> classification_preds = torch.tensor([0, 0, 1])
+         >>> regression_preds = torch.tensor([3.0, 5.0, 2.5])
+         >>> preds = {"Classification": classification_preds, "Regression": regression_preds}
+         >>> metrics = MultitaskWrapper({
+         ...     "Classification": MetricCollection(BinaryAccuracy(), BinaryF1Score()),
+         ...     "Regression": MetricCollection(MeanSquaredError(), MeanAbsoluteError())
+         ... })
+         >>> metrics.update(preds, targets)
+         >>> metrics.compute()
+         {'Classification': {'BinaryAccuracy': tensor(0.3333), 'BinaryF1Score': tensor(0.)},
+          'Regression': {'MeanSquaredError': tensor(0.8333), 'MeanAbsoluteError': tensor(0.6667)}}
     """
 
     is_differentiable = False
