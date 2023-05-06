@@ -71,8 +71,8 @@ class MultitaskWrapper(Metric):
         """
         if not self.task_metrics.keys() == task_preds.keys() == task_targets.keys():
             raise ValueError(
-                "Expected task_preds and task_targets to have the same keys as task_metrics. Found "
-                f"task_preds.keys() = {task_preds.keys()}, task_targets.keys() =  {task_targets.keys()} "
+                "Expected arguments `task_preds` and `task_targets` to have the same keys as the wrapped `task_metrics`"
+                f". Found task_preds.keys() = {task_preds.keys()}, task_targets.keys() = {task_targets.keys()} "
                 f"and self.task_metrics.keys() = {self.task_metrics.keys()}"
             )
 
@@ -104,7 +104,8 @@ class MultitaskWrapper(Metric):
                 f, a = task_metric.plot([v[task_name] for v in val], ax=ax[i] if ax is not None else ax)
             else:
                 raise TypeError(
-                    "Expected val to be None or of type Dict or Sequence[Dict]. Found type(val)=" f"{type(val)}"
+                    "Expected argument `val` to be None or of type Dict or Sequence[Dict]. "
+                    f"Found type(val)= {type(val)}"
                 )
             fig_axs.append((f, a))
         return fig_axs
