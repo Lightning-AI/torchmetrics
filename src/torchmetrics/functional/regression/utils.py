@@ -41,3 +41,14 @@ def _check_data_shape_to_num_outputs(
             f"Expected argument `num_outputs` to match the second dimension of input, but got {num_outputs}"
             f" and {preds.shape[1]}."
         )
+
+
+def _check_data_shape_to_weights(preds: Tensor, weights: Tensor) -> None:
+    """Check that the predictions (or target) and weights have the correct shape, else raise error."""
+    if weights.ndim == preds.ndim:
+        raise ValueError(
+            f"Expected `n_samples` of preds to match the length of `weights`,"
+            f" but got {preds.shape[0]} and {len(weights)}."
+        )
+    else:
+        raise ValueError(f"")

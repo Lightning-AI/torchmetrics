@@ -50,10 +50,34 @@ _multi_target_inputs2 = Input(
 )
 
 
+def _ref_metric(preds, target, metric_args):
+    if metric_args:
+        return _weighted_pearson(preds, target, metric_args["weights"])
+    else:
+        return _scipy_pearson(preds, target)
+
+
 def _scipy_pearson(preds, target):
     if preds.ndim == 2:
         return [pearsonr(t.numpy(), p.numpy())[0] for t, p in zip(target.T, preds.T)]
     return pearsonr(target.numpy(), preds.numpy())[0]
+
+
+def _weighted_pearson(preds, target, weights):
+    if preds.ndim == 2:
+        return [pearsonr(t.numpy(), p.numpy())[0] for t, p in zip(target.T, preds.T)]
+    else:
+        weights = weights.numpy()
+        preds = preds.numpy()
+        target = target.numpy()
+
+        mx = (weights * preds).sum() / weights.sum()
+        my = (weights * target).sum() / weights.sum()
+        var_x = (weights * (preds - mx) ** 2).sum() / weights.sum()
+        var_y = (weights * (target - my) ** 2).sum() / weights.sum()
+        cov_xy = (weights * (preds - mx) * (target - my)).sum() / weights.sum()
+        corr = (cov_xy / (var_x * var_y).sqrt()).squeeze()
+        return corr
 
 
 @pytest.mark.parametrize(
@@ -65,6 +89,10 @@ def _scipy_pearson(preds, target):
         (_multi_target_inputs2.preds, _multi_target_inputs2.target),
     ],
 )
+@pytest.mark.parametrize(
+    "metric_args",
+    [({}), ({"weights": torch.rand(NUM_BATCHES, BATCH_SIZE)})],
+)
 class TestPearsonCorrCoef(MetricTester):
     """Test class for `PearsonCorrCoef` metric."""
 
@@ -72,7 +100,7 @@ class TestPearsonCorrCoef(MetricTester):
 
     @pytest.mark.parametrize("compute_on_cpu", [True, False])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_pearson_corrcoef(self, preds, target, compute_on_cpu, ddp):
+    def test_pearson_corrcoef(self, preds, target, metric_args, compute_on_cpu, ddp):
         """Test class implementation of metric."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_class_metric_test(
@@ -84,13 +112,17 @@ class TestPearsonCorrCoef(MetricTester):
             metric_args={"num_outputs": num_outputs, "compute_on_cpu": compute_on_cpu},
         )
 
-    def test_pearson_corrcoef_functional(self, preds, target):
+    def test_pearson_corrcoef_functional(self, preds, target, metric_args):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
-            preds=preds, target=target, metric_functional=pearson_corrcoef, reference_metric=_scipy_pearson
+            preds=preds,
+            target=target,
+            metric_functional=pearson_corrcoef,
+            reference_metric=partial(_ref_metric, metric_args=metric_args),
+            metric_args=metric_args,
         )
 
-    def test_pearson_corrcoef_differentiability(self, preds, target):
+    def test_pearson_corrcoef_differentiability(self, preds, target, metric_args):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_differentiability_test(
@@ -100,13 +132,13 @@ class TestPearsonCorrCoef(MetricTester):
             metric_functional=pearson_corrcoef,
         )
 
-    def test_pearson_corrcoef_half_cpu(self, preds, target):
+    def test_pearson_corrcoef_half_cpu(self, preds, target, metric_args):
         """Test dtype support of the metric on CPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_cpu(preds, target, partial(PearsonCorrCoef, num_outputs=num_outputs), pearson_corrcoef)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_pearson_corrcoef_half_gpu(self, preds, target):
+    def test_pearson_corrcoef_half_gpu(self, preds, target, metric_args):
         """Test dtype support of the metric on GPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_gpu(preds, target, partial(PearsonCorrCoef, num_outputs=num_outputs), pearson_corrcoef)

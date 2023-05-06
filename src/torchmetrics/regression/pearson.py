@@ -153,6 +153,7 @@ class PearsonCorrCoef(Metric):
             self.corr_xy,
             self.n_total,
             self.num_outputs,
+            self.weights,
         )
 
     def compute(self) -> Tensor:
