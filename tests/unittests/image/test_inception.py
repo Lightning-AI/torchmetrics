@@ -98,10 +98,10 @@ class _ImgDataset(Dataset):
     def __init__(self, imgs) -> None:
         self.imgs = imgs
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx) -> torch.Tensor:
         return self.imgs[idx]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.imgs.shape[0]
 
 

@@ -1,5 +1,6 @@
 from collections import namedtuple
 from functools import partial
+from typing import Any
 
 import pytest
 import torch
@@ -25,7 +26,7 @@ class _MultioutputMetric(Metric):
         self,
         base_metric_class,
         num_outputs: int = 1,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self.metric = MultioutputWrapper(
@@ -42,7 +43,7 @@ class _MultioutputMetric(Metric):
         return self.metric.compute()
 
     @torch.jit.unused
-    def forward(self, *args, **kwargs):
+    def forward(self, *args: Any, **kwargs: Any):
         """Run forward on the underlying metric."""
         return self.metric(*args, **kwargs)
 

@@ -109,7 +109,7 @@ class BinaryFairnessTester(MetricTester):
         metric_functional: Optional[Callable] = None,
         metric_args: Optional[dict] = None,
         groups: Optional[Tensor] = None,
-    ):
+    ) -> None:
         """Test if a metric is differentiable or not.
 
         Args:
@@ -148,7 +148,7 @@ class BinaryFairnessTester(MetricTester):
         metric_args: Optional[dict] = None,
         dtype: torch.dtype = torch.half,
         **kwargs_update: Any,
-    ):
+    ) -> None:
         """Test if a metric can be used with half precision tensors on cpu.
 
         Args:
@@ -185,7 +185,7 @@ class BinaryFairnessTester(MetricTester):
         metric_args: Optional[dict] = None,
         dtype: torch.dtype = torch.half,
         **kwargs_update: Any,
-    ):
+    ) -> None:
         """Test if a metric can be used with half precision tensors on gpu.
 
         Args:

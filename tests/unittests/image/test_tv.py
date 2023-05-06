@@ -13,6 +13,7 @@
 # limitations under the License.
 from collections import namedtuple
 from functools import partial
+from typing import Any
 
 import pytest
 import torch
@@ -30,7 +31,7 @@ seed_all(42)
 class TotalVariationTester(TotalVariation):
     """Tester class for `TotalVariation` metric overriding its update method."""
 
-    def update(self, img, *args):
+    def update(self, img, *args: Any):
         """Update metric."""
         super().update(img=img)
 

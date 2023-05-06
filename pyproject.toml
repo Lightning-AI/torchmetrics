@@ -75,6 +75,9 @@ select = [
     "D",  # see: https://pypi.org/project/pydocstyle
     "N",  # see: https://pypi.org/project/pep8-naming
     "S",  # see: https://pypi.org/project/flake8-bandit
+    "C4",  # see: https://pypi.org/project/flake8-comprehensions/
+    "T10",  # see: https://pypi.org/project/flake8-debugger/
+    "Q",  # see: https://pypi.org/project/flake8-quotes/
 ]
 extend-select = [
     "C4",  # see: https://pypi.org/project/flake8-comprehensions
@@ -114,7 +117,7 @@ unfixable = ["F401"]
 "setup.py" = ["ANN202", "ANN401"]
 "src/**" = ["ANN401"]
 "tests/**" = [
-    "S101", "ANN001", "ANN002", "ANN003", "ANN201", "ANN202", "ANN204", "ANN205", "ANN401"
+    "S101", "ANN001", "ANN201", "ANN202", "ANN401"
 ]
 
 [tool.ruff.pydocstyle]

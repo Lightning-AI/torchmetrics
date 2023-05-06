@@ -1,5 +1,6 @@
 from copy import deepcopy
 from functools import partial
+from typing import Any
 
 import pytest
 import torch
@@ -23,7 +24,7 @@ class TestingMinMaxMetric(MinMaxMetric):
         output_dict = super().compute()
         return [output_dict["raw"], output_dict["min"], output_dict["max"]]
 
-    def forward(self, *args, **kwargs):
+    def forward(self, *args: Any, **kwargs: Any):
         """Compute output for batch."""
         self.update(*args, **kwargs)
         return self.compute()
