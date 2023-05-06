@@ -20,8 +20,10 @@ from torch.nn import Linear
 
 if module_available("lightning"):
     from lightning import LightningModule, Trainer
+    from lightning.pytorch.loggers import CSVLogger
 else:
     from pytorch_lightning import LightningModule, Trainer
+    from pytorch_lightning.loggers import CSVLogger
 
 from integrations.helpers import no_warning_call
 from integrations.lightning.boring_model import BoringModel
@@ -179,8 +181,24 @@ def test_metric_lightning_log(tmpdir):
     class TestModel(BoringModel):
         def __init__(self) -> None:
             super().__init__()
-            self.metric_step = SumMetric()
-            self.metric_epoch = SumMetric()
+
+            # initiliaze one metric for every combination of `on_step` and `on_epoch` and `forward` and `update`
+            self.metric_update = SumMetric()
+            self.metric_update_step = SumMetric()
+            self.metric_update_epoch = SumMetric()
+
+            self.metric_forward = SumMetric()
+            self.metric_forward_step = SumMetric()
+            self.metric_forward_epoch = SumMetric()
+
+            self.compo_update = SumMetric() + SumMetric()
+            self.compo_update_step = SumMetric() + SumMetric()
+            self.compo_update_epoch = SumMetric() + SumMetric()
+
+            self.compo_forward = SumMetric() + SumMetric()
+            self.compo_forward_step = SumMetric() + SumMetric()
+            self.compo_forward_epoch = SumMetric() + SumMetric()
+
             self.register_buffer("sum", torch.tensor(0.0))
             self.outs = []
 
@@ -189,15 +207,37 @@ def test_metric_lightning_log(tmpdir):
 
         def training_step(self, batch, batch_idx):
             x = batch
-            self.metric_step(x.sum())
-            self.sum += x.sum()
-            self.log("sum_step", self.metric_step, on_epoch=True, on_step=False)
+            s = x.sum()
+
+            for metric in [self.metric_update, self.metric_update_step, self.metric_update_epoch]:
+                metric.update(s)
+            for metric in [self.metric_forward, self.metric_forward_step, self.metric_forward_epoch]:
+                _ = metric(s)
+            for metric in [self.compo_update, self.compo_update_step, self.compo_update_epoch]:
+                metric.update(s)
+            for metric in [self.compo_forward, self.compo_forward_step, self.compo_forward_epoch]:
+                _ = metric(s)
+
+            self.sum += s
+
+            self.log("metric_update", self.metric_update)
+            self.log("metric_update_step", self.metric_update_step, on_epoch=False, on_step=True)
+            self.log("metric_update_epoch", self.metric_update_epoch, on_epoch=True, on_step=False)
+
+            self.log("metric_forward", self.metric_forward)
+            self.log("metric_forward_step", self.metric_forward_step, on_epoch=False, on_step=True)
+            self.log("metric_forward_epoch", self.metric_forward_epoch, on_epoch=True, on_step=False)
+
+            self.log("compo_update", self.compo_update)
+            self.log("compo_update_step", self.compo_update_step, on_epoch=False, on_step=True)
+            self.log("compo_update_epoch", self.compo_update_epoch, on_epoch=True, on_step=False)
+
+            self.log("compo_forward", self.compo_forward)
+            self.log("compo_forward_step", self.compo_forward_step, on_epoch=False, on_step=True)
+            self.log("compo_forward_epoch", self.compo_forward_epoch, on_epoch=True, on_step=False)
+
             self.outs.append(x)
             return self.step(x)
-
-        def on_train_epoch_end(self):
-            self.log("sum_epoch", self.metric_epoch(torch.stack(self.outs)))
-            self.outs = []
 
     model = TestModel()
 
@@ -207,6 +247,7 @@ def test_metric_lightning_log(tmpdir):
         limit_val_batches=0,
         max_epochs=2,
         log_every_n_steps=1,
+        logger=CSVLogger("logs")
     )
     with no_warning_call(
         UserWarning,
@@ -217,6 +258,7 @@ def test_metric_lightning_log(tmpdir):
     logged = trainer.logged_metrics
     assert torch.allclose(tensor(logged["sum_step"]), model.sum, atol=2e-4)
     assert torch.allclose(tensor(logged["sum_epoch"]), model.sum, atol=2e-4)
+    assert torch.allclose(tensor(logged["compositional"]), 2*model.sum, atol=2e-4)
 
 
 def test_metric_collection_lightning_log(tmpdir):
