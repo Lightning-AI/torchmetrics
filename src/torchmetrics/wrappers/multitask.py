@@ -16,8 +16,9 @@ class MultitaskWrapper(Metric):
     It computes a different metric on each pred and target given to its `update` method.
 
     Args:
-        task_metrics: Dictionary associating each task to a Metric or a MetricCollection. The keys of the dictionary
-        represent the names of the tasks, and the values represent the metrics to use for each task.
+        task_metrics:
+            Dictionary associating each task to a Metric or a MetricCollection. The keys of the dictionary represent the
+            names of the tasks, and the values represent the metrics to use for each task.
 
     Example:
          >>> import torch
@@ -30,7 +31,10 @@ class MultitaskWrapper(Metric):
          >>> classification_preds = torch.tensor([0, 0, 1])
          >>> regression_preds = torch.tensor([3.0, 5.0, 2.5])
          >>> preds = {"Classification": classification_preds, "Regression": regression_preds}
-         >>> metrics = MultitaskWrapper({"Classification": BinaryAccuracy(), "Regression": MeanSquaredError()})
+         >>> metrics = MultitaskWrapper({
+         ...     "Classification": BinaryAccuracy(),
+         ...     "Regression": MeanSquaredError()
+         ... })
          >>> metrics.update(preds, targets)
          >>> metrics.compute()
          {'Classification': tensor(0.3333), 'Regression': tensor(0.8333)}
