@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional, Sequence, Union
 
-from torch import Tensor
+from torch import Tensor, nn
 
 from torchmetrics import Metric, MetricCollection
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
@@ -48,7 +48,7 @@ class MultitaskWrapper(Metric):
     ) -> None:
         self._check_task_metrics_type(task_metrics)
         super().__init__()
-        self.task_metrics = task_metrics
+        self.task_metrics = nn.ModuleDict(task_metrics)
 
     @staticmethod
     def _check_task_metrics_type(task_metrics: Dict[str, Union[Metric, MetricCollection]]) -> None:
