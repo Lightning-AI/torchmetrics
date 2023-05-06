@@ -247,7 +247,7 @@ def test_metric_lightning_log(tmpdir):
         limit_val_batches=0,
         max_epochs=2,
         log_every_n_steps=1,
-        logger=CSVLogger("logs")
+        logger=CSVLogger("logs"),
     )
     with no_warning_call(
         UserWarning,
@@ -258,7 +258,7 @@ def test_metric_lightning_log(tmpdir):
     logged = trainer.logged_metrics
     assert torch.allclose(tensor(logged["sum_step"]), model.sum, atol=2e-4)
     assert torch.allclose(tensor(logged["sum_epoch"]), model.sum, atol=2e-4)
-    assert torch.allclose(tensor(logged["compositional"]), 2*model.sum, atol=2e-4)
+    assert torch.allclose(tensor(logged["compositional"]), 2 * model.sum, atol=2e-4)
 
 
 def test_metric_collection_lightning_log(tmpdir):
