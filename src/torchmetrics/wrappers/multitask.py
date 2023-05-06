@@ -53,7 +53,7 @@ class MultitaskWrapper(Metric):
     @staticmethod
     def _check_task_metrics_type(task_metrics: Dict[str, Union[Metric, MetricCollection]]) -> None:
         if not isinstance(task_metrics, dict):
-            raise TypeError(f"Expected task_metrics to be a dict. Found task_metrics = {task_metrics}")
+            raise TypeError(f"Expected argument `task_metrics` to be a dict. Found task_metrics = {task_metrics}")
 
         for metric in task_metrics.values():
             if not (isinstance(metric, (Metric, MetricCollection))):
