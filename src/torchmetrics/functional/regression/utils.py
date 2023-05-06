@@ -51,4 +51,4 @@ def _check_data_shape_to_weights(preds: Tensor, weights: Tensor) -> None:
             f" but got {preds.shape[0]} and {len(weights)}."
         )
     else:
-        raise ValueError(f"")
+        raise ValueError("")
