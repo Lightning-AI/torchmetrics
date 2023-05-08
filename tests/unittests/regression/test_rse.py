@@ -27,7 +27,8 @@ _multi_target_inputs = Input(
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
 )
 
-def sk_rse(target, preds, squared):
+
+def _sk_rse(target, preds, squared):
     mean = np.mean(target, axis=0, keepdims=True)
     error = target - preds
     sum_squared_error = np.sum(error * error, axis=0)
@@ -38,18 +39,17 @@ def sk_rse(target, preds, squared):
         rse = np.sqrt(rse)
     return np.mean(rse)
 
+
 def _single_target_ref_metric(preds, target, squared):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
-    relative_squared_error = sk_rse(sk_target, sk_preds, squared=squared)
-    return relative_squared_error
+    return _sk_rse(sk_target, sk_preds, squared=squared)
 
 
 def _multi_target_ref_metric(preds, target, squared):
     sk_preds = preds.view(-1, num_targets).numpy()
     sk_target = target.view(-1, num_targets).numpy()
-    relative_squared_error = sk_rse(sk_target, sk_preds, squared=squared)
-    return relative_squared_error
+    return _sk_rse(sk_target, sk_preds, squared=squared)
 
 
 @pytest.mark.parametrize("squared", [False, True])

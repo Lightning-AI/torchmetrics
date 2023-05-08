@@ -2,12 +2,17 @@ from typing import Union
 
 import torch
 from torch import Tensor
+
 from torchmetrics.functional.regression.r2 import _r2_score_update
 
 
 def _relative_squared_error_compute(
-    sum_squared_obs: Tensor, sum_obs: Tensor, sum_squared_error: Tensor, n_obs: Union[int, Tensor], squared: bool = True,
-    epsilon: float = 1.17e-06
+    sum_squared_obs: Tensor,
+    sum_obs: Tensor,
+    sum_squared_error: Tensor,
+    n_obs: Union[int, Tensor],
+    squared: bool = True,
+    epsilon: float = 1.17e-06,
 ) -> Tensor:
     """Computes Relative Squared Error.
 
@@ -28,16 +33,14 @@ def _relative_squared_error_compute(
         >>> _relative_squared_error_compute(sum_squared_obs, sum_obs, rss, n_obs, squared=True)
         tensor(0.0632)
     """
-    rse = sum_squared_error / torch.clamp((sum_squared_obs - sum_obs*sum_obs/n_obs), min=epsilon)
+    rse = sum_squared_error / torch.clamp((sum_squared_obs - sum_obs * sum_obs / n_obs), min=epsilon)
     if not squared:
         rse = torch.sqrt(rse)
     return torch.mean(rse)
 
 
-def relative_squared_error(
-    preds: Tensor, target: Tensor, squared: bool = True
-) -> Tensor:
-    """Computes the relative squared error (RSE):
+def relative_squared_error(preds: Tensor, target: Tensor, squared: bool = True) -> Tensor:
+    r"""Computes the relative squared error (RSE).
 
     .. math:: \text{RSE} = \frac{\sum_i^N(y_i - \hat{y_i})^2}{\sum_i^N(y_i - \overline{y})^2}
     Where :math:`y` is a tensor of target values with mean :math:`\overline{y}`, and
@@ -60,6 +63,4 @@ def relative_squared_error(
         tensor(0.0514)
     """
     sum_squared_obs, sum_obs, rss, n_obs = _r2_score_update(preds, target)
-    return _relative_squared_error_compute(
-        sum_squared_obs, sum_obs, rss, n_obs, squared=squared
-    )
+    return _relative_squared_error_compute(sum_squared_obs, sum_obs, rss, n_obs, squared=squared)

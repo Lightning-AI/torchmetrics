@@ -5,9 +5,9 @@
 
 .. include:: ../links.rst
 
-########
-Relative Squared Error
-########
+############################
+Relative Squared Error (RSE)
+############################
 
 Module Interface
 ________________
