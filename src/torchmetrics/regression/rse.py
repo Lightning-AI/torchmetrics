@@ -3,12 +3,10 @@ from typing import Any
 import torch
 from torch import Tensor, tensor
 
-from torchmetrics.functional.regression.r2 import (
-    _r2_score_update
-)
+from torchmetrics.functional.regression.r2 import _r2_score_update
+from torchmetrics.functional.regression.rse import _relative_squared_error_compute
 from torchmetrics.metric import Metric
 
-from torchmetrics.functional.regression.rse import _relative_squared_error_compute
 
 class RelativeSquaredError(Metric):
     r"""Computes the (mean) relative squared error (RSE):
@@ -23,7 +21,7 @@ class RelativeSquaredError(Metric):
         num_outputs: Number of outputs in multioutput setting
         squared: If True returns RSE value, if False returns RRSE value.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-        
+
     Example:
         >>> from torchmetrics.regression import RelativeSquaredError
         >>> target = torch.tensor([3, -0.5, 2, 7])
@@ -55,7 +53,6 @@ class RelativeSquaredError(Metric):
         self.add_state("residual", default=torch.zeros(self.num_outputs), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
         self.squared = squared
-
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""

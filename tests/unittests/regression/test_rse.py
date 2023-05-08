@@ -27,6 +27,7 @@ _multi_target_inputs = Input(
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
 )
 
+
 def sk_rse(target, preds, squared):
     mean = np.mean(target, axis=0, keepdims=True)
     error = target - preds
@@ -37,6 +38,7 @@ def sk_rse(target, preds, squared):
     if not squared:
         rse = np.sqrt(rse)
     return np.mean(rse)
+
 
 def _single_target_ref_metric(preds, target, squared):
     sk_preds = preds.view(-1).numpy()
