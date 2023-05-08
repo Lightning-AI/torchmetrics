@@ -13,12 +13,20 @@ if not _MATPLOTLIB_AVAILABLE:
 class MultitaskWrapper(Metric):
     """Wrapper class for computing different metrics on different tasks in the context of multitask learning.
 
-    It computes a different metric on each pred and target given to its `update` method.
+    In multitask learning the different tasks requires different metrics to be evaluated. This wrapper allows
+    for easy evaluation in such cases by supporting multiple predictions and targets through a dictionary.
+    Note that only metrics where the signature of `update` follows the stardard `preds, target` is supported.
 
     Args:
         task_metrics:
             Dictionary associating each task to a Metric or a MetricCollection. The keys of the dictionary represent the
             names of the tasks, and the values represent the metrics to use for each task.
+
+    Raises:
+        TypeError:
+            If argument `task_metrics` is not an dictionary
+        TypeError:
+            If not all values in the `task_metrics` dictionary is instances of `Metric` or `MetricCollection`
 
     Example (with a single metric per class):
          >>> import torch
