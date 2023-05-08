@@ -99,6 +99,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `DistanceIntersectionOverUnion`
 
 
+- Added `MultitaskWrapper` to wrapper package ([#1762](https://github.com/Lightning-AI/torchmetrics/pull/1762))
+
+
 ### Changed
 
 - Changed `update_count` and `update_called` from private to public methods ([#1370](https://github.com/Lightning-AI/metrics/pull/1370))
