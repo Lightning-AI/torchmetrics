@@ -79,7 +79,6 @@ def naive_implementation_pit_scipy(
         for e in range(spk_num):
             metric_mtx[:, t, e] = metric_func(preds[:, e, ...], target[:, t, ...])
 
-    # pit_r = PermutationInvariantTraining(metric_func, eval_func)(preds, target)
     metric_mtx = metric_mtx.detach().cpu().numpy()
     best_metrics = []
     best_perms = []
