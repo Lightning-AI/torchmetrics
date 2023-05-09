@@ -14,6 +14,7 @@
 
 import json
 from collections import namedtuple
+from typing import Tuple
 
 import numpy as np
 import pytest
@@ -681,6 +682,25 @@ def test_error_on_wrong_input():
         )
 
 
+def _generate_random_segm_input() -> Tuple[Tensor, Tensor]:
+    """Generate random inputs for mAP when iou_type=segm."""
+    preds = []
+    targets = []
+    for _ in range(2):
+        result = {}
+        num_preds = torch.randint(0, 10, (1,)).item()
+        result["scores"] = torch.rand((num_preds,), device=device)
+        result["labels"] = torch.randint(0, 10, (num_preds,), device=device)
+        result["masks"] = torch.randint(0, 2, (num_preds, 10, 10), device=device).bool()
+        preds.append(result)
+        gt = {}
+        num_gt = torch.randint(0, 10, (1,)).item()
+        gt["labels"] = torch.randint(0, 10, (num_gt,), device=device)
+        gt["masks"] = torch.randint(0, 2, (num_gt, 10, 10), device=device).bool()
+        targets.append(gt)
+    return preds, target
+
+
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 def test_device_changing():
     """See issue: https://github.com/Lightning-AI/torchmetrics/issues/1743.
@@ -691,20 +711,7 @@ def test_device_changing():
     metric = MeanAveragePrecision(iou_type="segm").to(device)
 
     for _ in range(2):
-        preds = []
-        targets = []
-        for _ in range(2):
-            result = {}
-            num_preds = torch.randint(0, 10, (1,)).item()
-            result["scores"] = torch.rand((num_preds,), device=device)
-            result["labels"] = torch.randint(0, 10, (num_preds,), device=device)
-            result["masks"] = torch.randint(0, 2, (num_preds, 10, 10), device=device).bool()
-            preds.append(result)
-            gt = {}
-            num_gt = torch.randint(0, 10, (1,)).item()
-            gt["labels"] = torch.randint(0, 10, (num_gt,), device=device)
-            gt["masks"] = torch.randint(0, 2, (num_gt, 10, 10), device=device).bool()
-            targets.append(gt)
+        preds, target = _generate_random_segm_input()
         metric.update(preds, targets)
 
     metric = metric.cpu()
