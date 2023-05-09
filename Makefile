@@ -33,7 +33,6 @@ docs: clean
 env:
 	export FREEZE_REQUIREMENTS=1
 	pip install -e . -U
-	python ./requirements/adjust-versions.py requirements/image.txt
 	pip install -r requirements/devel.txt
 
 data:
