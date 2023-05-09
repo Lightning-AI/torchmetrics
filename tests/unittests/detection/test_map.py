@@ -14,7 +14,6 @@
 
 import json
 from collections import namedtuple
-from typing import Tuple
 
 import numpy as np
 import pytest
@@ -682,7 +681,7 @@ def test_error_on_wrong_input():
         )
 
 
-def _generate_random_segm_input() -> Tuple[Tensor, Tensor]:
+def _generate_random_segm_input(device):
     """Generate random inputs for mAP when iou_type=segm."""
     preds = []
     targets = []
@@ -711,7 +710,7 @@ def test_device_changing():
     metric = MeanAveragePrecision(iou_type="segm").to(device)
 
     for _ in range(2):
-        preds, target = _generate_random_segm_input()
+        preds, target = _generate_random_segm_input(device)
         metric.update(preds, targets)
 
     metric = metric.cpu()
