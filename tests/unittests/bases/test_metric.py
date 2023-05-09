@@ -14,6 +14,7 @@
 import os
 import pickle
 from collections import OrderedDict
+from typing import Any
 from unittest.mock import Mock
 
 import cloudpickle
@@ -473,7 +474,7 @@ def test_no_warning_on_custom_forward(metric_class):
     class UnsetProperty(metric_class):
         full_state_update = None
 
-        def forward(self, *args, **kwargs):
+        def forward(self, *args: Any, **kwargs: Any):
             self.update(*args, **kwargs)
 
     with no_warning_call(
