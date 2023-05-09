@@ -12,6 +12,7 @@ class RelativeSquaredError(Metric):
     r"""Computes the relative squared error (RSE).
 
     .. math:: \text{RSE} = \frac{\sum_i^N(y_i - \hat{y_i})^2}{\sum_i^N(y_i - \overline{y})^2}
+
     Where :math:`y` is a tensor of target values with mean :math:`\overline{y}`, and
     :math:`\hat{y}` is a tensor of predictions.
 
