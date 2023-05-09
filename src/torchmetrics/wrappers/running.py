@@ -26,13 +26,13 @@ if not _MATPLOTLIB_AVAILABLE:
 class Running(Metric):
     """Running wrapper for metrics.
 
-    Using this wrapper allows for calculating metrics over a running window of values, instead of the hole history of
+    Using this wrapper allows for calculating metrics over a running window of values, instead of the whole history of
     values. This is beneficial when you want to get a better estimate of the metric during training and don't want to
     wait for the whole training to finish to get epoch level estimates.
 
     The running window is defined by the `window` argument. The window is a fixed size and this wrapper will store a
     duplicate of the underlying metric state for each value in the window. Thus memory usage will increase linearly
-    with window size. Use accordingly. Also note that that the running only works with metrics that have the
+    with window size. Use accordingly. Also note that the running only works with metrics that have the
     `full_state_update` set to `False`.
 
     Importantly, the wrapper does not alter the value of the `forward` method of the underlying metric. Thus, forward
@@ -93,7 +93,7 @@ class Running(Metric):
 
         if base_metric.full_state_update is not False:
             raise ValueError(
-                f"Expected attribute `full_state_update` set to False but got {base_metric.full_state_update}"
+                f"Expected attribute `full_state_update` set to `False` but got {base_metric.full_state_update}"
             )
         self._num_vals_seen = 0
 
