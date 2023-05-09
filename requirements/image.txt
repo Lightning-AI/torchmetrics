@@ -2,6 +2,6 @@
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
 scipy >1.0.0, <1.11.0
-torchvision >=0.8, <=0.15.1
+torchvision >=0.8, <=0.15.2
 torch-fidelity <=0.3.0
 lpips <=0.1.4
