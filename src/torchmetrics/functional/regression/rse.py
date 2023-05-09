@@ -34,8 +34,6 @@ def _relative_squared_error_compute(
         sum_squared_error: Residual sum of squares
         n_obs: Number of predictions or observations
         squared: Returns RRSE value if set to False.
-        epsilon: Specifies the lower bound for target values. Any target value below epsilon
-            is set to epsilon (avoids ``ZeroDivisionError``).
 
     Example:
         >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
