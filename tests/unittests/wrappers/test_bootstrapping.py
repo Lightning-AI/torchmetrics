@@ -13,6 +13,7 @@
 # limitations under the License.
 import operator
 from functools import partial
+from typing import Any
 
 import numpy as np
 import pytest
@@ -40,7 +41,7 @@ class TestBootStrapper(BootStrapper):
     permutation.
     """
 
-    def update(self, *args) -> None:
+    def update(self, *args: Any) -> None:
         """Update input where the permutation is also saved."""
         self.out = []
         for idx in range(self.num_bootstraps):

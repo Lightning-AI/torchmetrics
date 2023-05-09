@@ -118,13 +118,13 @@ def test_metrics_reset(tmpdir):
 
             return loss
 
-        def training_step(self, batch, batch_idx, *args, **kwargs):
+        def training_step(self, batch, batch_idx):
             return self._step("train", batch)
 
-        def validation_step(self, batch, batch_idx, *args, **kwargs):
+        def validation_step(self, batch, batch_idx):
             return self._step("val", batch)
 
-        def test_step(self, batch, batch_idx, *args, **kwargs):
+        def test_step(self, batch, batch_idx):
             return self._step("test", batch)
 
         def _assert_epoch_end(self, stage):
