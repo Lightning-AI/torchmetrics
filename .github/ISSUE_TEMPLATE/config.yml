@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: Ask a Question
-    url: https://github.com/Lightning-AI/metrics/discussions/new
+    url: https://github.com/Lightning-AI/torchmetrics/discussions/new
     about: Ask and answer TorchMetrics related questions
   - name: 💬 Slack
     url: https://app.slack.com/client/TR9DVT48M/CQXV8BRH9/thread/CQXV8BRH9-1591382895.254600
