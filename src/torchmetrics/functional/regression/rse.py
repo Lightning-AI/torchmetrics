@@ -12,7 +12,6 @@ def _relative_squared_error_compute(
     sum_squared_error: Tensor,
     n_obs: Union[int, Tensor],
     squared: bool = True,
-    epsilon: float = 1.17e-06,
 ) -> Tensor:
     """Computes Relative Squared Error.
 
@@ -33,6 +32,7 @@ def _relative_squared_error_compute(
         >>> _relative_squared_error_compute(sum_squared_obs, sum_obs, rss, n_obs, squared=True)
         tensor(0.0632)
     """
+    epsilon = torch.finfo(sum_squared_error).eps
     rse = sum_squared_error / torch.clamp(sum_squared_obs - sum_obs * sum_obs / n_obs, min=epsilon)
     if not squared:
         rse = torch.sqrt(rse)
