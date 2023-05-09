@@ -19,6 +19,11 @@ from torch import Tensor, tensor
 from torchmetrics.functional.regression.r2 import _r2_score_update
 from torchmetrics.functional.regression.rse import _relative_squared_error_compute
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["RelativeSquaredError.plot"]
 
 
 class RelativeSquaredError(Metric):
@@ -30,6 +35,17 @@ class RelativeSquaredError(Metric):
     :math:`\hat{y}` is a tensor of predictions.
 
     If num_outputs > 1, the returned value is averaged over all the outputs.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model in float tensor with shape ``(N,)``
+      or ``(N, M)`` (multioutput)
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values in float tensor with shape ``(N,)``
+      or ``(N, M)`` (multioutput)
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``rse`` (:class:`~torch.Tensor`): A tensor with the RSE score(s)
 
     Args:
         num_outputs: Number of outputs in multioutput setting
@@ -82,3 +98,44 @@ class RelativeSquaredError(Metric):
         return _relative_squared_error_compute(
             self.sum_squared_error, self.sum_error, self.residual, self.total, squared=self.squared
         )
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn
+            >>> # Example plotting a single value
+            >>> from torchmetrics.regression import RelativeSquaredError
+            >>> metric = RelativeSquaredError()
+            >>> metric.update(randn(10,), randn(10,))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.regression import RelativeSquaredError
+            >>> metric = RelativeSquaredError()
+            >>> values = []
+            >>> for _ in range(10):
+            ...     values.append(metric(randn(10,), randn(10,)))
+            >>> fig, ax = metric.plot(values)
+        """
+        return self._plot(val, ax)
