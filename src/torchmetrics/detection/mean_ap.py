@@ -154,9 +154,12 @@ def _segm_iou(
 class MeanAveragePrecision(Metric):
     r"""Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection predictions.
 
-    Predicted boxes and targets have to be in Pascal VOC format (xmin-top left, ymin-top left, xmax-bottom right,
-    ymax-bottom right). The metric can both compute the mAP and mAR values per class or as an global average over all
-    classes.
+    .. math::
+        \text{mAP} = \frac{1}{n} \sum_{i=1}^{n} AP_i
+
+    where :math:`AP_i` is the average precision for class :math:`i` and :math:`n` is the number of classes. The average
+    precision is defined as the area under the precision-recall curve. If argument `class_metrics` is set to ``True``,
+    the metric will also return the mAP/mAR per class.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
