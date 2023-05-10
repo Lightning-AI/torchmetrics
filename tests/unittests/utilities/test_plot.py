@@ -722,8 +722,10 @@ def test_plot_methods_special_text_metrics():
 @pytest.mark.parametrize("num_vals", [1, 2])
 def test_plot_methods_retrieval(metric_class, preds, target, indexes, num_vals):
     """Test the plot method for retrieval metrics by themselves, since retrieval metrics requires an extra argument."""
-    if num_vals != 1 and metric_class == RetrievalPrecisionRecallCurve:  # curves does not support multiple step plot
+    if num_vals != 1 and metric_class == RetrievalPrecisionRecallCurve:
         pytest.skip("curve objects does not support plotting multiple steps")
+    if num_vals != 1 and metric_class == BinaryFairness:
+        pytest.skip("randomness in input leads to different keys for  `BinaryFairness` metric and breaks plotting")
 
     metric = metric_class()
 
