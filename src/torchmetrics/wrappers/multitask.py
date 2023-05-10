@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Sequence, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Union
 
 from torch import Tensor, nn
 
@@ -126,6 +126,10 @@ class MultitaskWrapper(Metric):
         for metric in self.task_metrics.values():
             metric.reset()
         super().reset()
+
+    def _wrap_update(self, update: Callable) -> Callable:
+        """Overwrite to do nothing."""
+        return update
 
     def plot(
         self, val: Optional[Union[Dict, Sequence[Dict]]] = None, ax: Optional[Sequence[_AX_TYPE]] = None
