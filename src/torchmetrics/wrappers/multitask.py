@@ -131,6 +131,10 @@ class MultitaskWrapper(Metric):
         """Overwrite to do nothing."""
         return update
 
+    def _wrap_compute(self, compute: Callable) -> Callable:
+        """Overwrite to do nothing."""
+        return compute
+
     def plot(
         self, val: Optional[Union[Dict, Sequence[Dict]]] = None, ax: Optional[Sequence[_AX_TYPE]] = None
     ) -> Sequence[_PLOT_OUT_TYPE]:
