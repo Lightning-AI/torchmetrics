@@ -121,6 +121,17 @@ class MultitaskWrapper(Metric):
         """Compute metrics for all tasks."""
         return {task_name: metric.compute() for task_name, metric in self.task_metrics.items()}
 
+    def forward(self, task_preds: Dict[str, Tensor], task_targets: Dict[str, Tensor]) -> Dict[str, Any]:
+        """Call underlying forward methods for all tasks and return the result as a dictionary."""
+        # This method is overriden because we do not need the complex version defined in Metric, that relies on the
+        # value of full_state_update, and that also accumulates the results. Here, all computations are handled by the
+        # underlying metrics, which all have their own value of full_state_update, and which all accumulate the results
+        # by themselves.
+        return {
+            task_name: metric(task_preds[task_name], task_targets[task_name])
+            for task_name, metric in self.task_metrics.items()
+        }
+
     def reset(self) -> None:
         """Reset all underlying metrics."""
         for metric in self.task_metrics.values():
