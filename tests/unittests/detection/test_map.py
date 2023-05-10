@@ -697,7 +697,7 @@ def _generate_random_segm_input(device):
         gt["labels"] = torch.randint(0, 10, (num_gt,), device=device)
         gt["masks"] = torch.randint(0, 2, (num_gt, 10, 10), device=device).bool()
         targets.append(gt)
-    return preds, target
+    return preds, targets
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
@@ -710,7 +710,7 @@ def test_device_changing():
     metric = MeanAveragePrecision(iou_type="segm").to(device)
 
     for _ in range(2):
-        preds, target = _generate_random_segm_input(device)
+        preds, targets = _generate_random_segm_input(device)
         metric.update(preds, targets)
 
     metric = metric.cpu()
