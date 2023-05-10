@@ -15,7 +15,7 @@ from typing import Any, Optional, Sequence, Union
 
 from torch import Tensor
 
-from torchmetrics import Metric
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -47,7 +47,7 @@ class Running(Metric):
         >>> from torch import tensor
         >>> from torchmetrics.wrappers import Running
         >>> from torchmetrics.aggregation import SumMetric
-        >>> metric = Running(SumMetric(), 3)
+        >>> metric = Running(SumMetric(), window=3)
         >>> for i in range(6):
         ...     current_val = metric(tensor([i]))
         ...     running_val = metric.compute()
@@ -170,7 +170,7 @@ class Running(Metric):
             >>> # Example plotting multiple values
             >>> import torch
             >>> from torchmetrics.wrappers import Running
-            >>> from torchmetrics.regression import R2Score
+            >>> from torchmetrics.aggregation import SumMetric
             >>> metric = Running(SumMetric(), 2)
             >>> values = [ ]
             >>> for _ in range(3):
