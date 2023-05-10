@@ -82,11 +82,11 @@ def _find_best_perm_by_exhaustive_method(
 
     # find the metric of each permutation
     perm_num = ps.shape[-1]
-    # shape [batch_size, spk_num, perm_num]
+    # shape of [batch_size, spk_num, perm_num]
     bps = ps[None, ...].expand(batch_size, spk_num, perm_num)
-    # shape [batch_size, spk_num, perm_num]
+    # shape of [batch_size, spk_num, perm_num]
     metric_of_ps_details = torch.gather(metric_mtx, 2, bps)
-    # shape [batch_size, perm_num]
+    # shape of [batch_size, perm_num]
     metric_of_ps = metric_of_ps_details.mean(dim=1)
 
     # find the best metric and best permutation
