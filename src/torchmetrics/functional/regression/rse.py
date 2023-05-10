@@ -53,10 +53,10 @@ def _relative_squared_error_compute(
 def relative_squared_error(preds: Tensor, target: Tensor, squared: bool = True) -> Tensor:
     r"""Computes the relative squared error (RSE).
 
-    .. math:: \text{RSE} = \frac{\\sum_i^N(y_i - \\hat{y_i})^2}{\\sum_i^N(y_i - \\overline{y})^2}
+    .. math:: \text{RSE} = \frac{\sum_i^N(y_i - \hat{y_i})^2}{\sum_i^N(y_i - \overline{y})^2}
 
-    Where :math:`y` is a tensor of target values with mean :math:`\\overline{y}`, and
-    :math:`\\hat{y}` is a tensor of predictions.
+    Where :math:`y` is a tensor of target values with mean :math:`\overline{y}`, and
+    :math:`\hat{y}` is a tensor of predictions.
 
     If `preds` and `targets` are 2D tensors, the RSE is averaged over the second dim.
 
