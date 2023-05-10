@@ -2,7 +2,8 @@ from typing import Any, Dict, Optional, Sequence, Union
 
 from torch import Tensor, nn
 
-from torchmetrics import Metric, MetricCollection
+from torchmetrics.collections import MetricCollection
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
