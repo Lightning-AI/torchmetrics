@@ -16,9 +16,8 @@ from torchmetrics.wrappers.classwise import ClasswiseWrapper
 from torchmetrics.wrappers.minmax import MinMaxMetric
 from torchmetrics.wrappers.multioutput import MultioutputWrapper
 from torchmetrics.wrappers.multitask import MultitaskWrapper
-from torchmetrics.wrappers.tracker import MetricTracker
 from torchmetrics.wrappers.running import Running
-
+from torchmetrics.wrappers.tracker import MetricTracker
 
 __all__ = [
     "BootStrapper",
