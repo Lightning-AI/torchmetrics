@@ -14,6 +14,7 @@
 import pickle
 import time
 from copy import deepcopy
+from typing import Any
 
 import pytest
 import torch
@@ -285,8 +286,8 @@ def test_collection_filtering():
         def __init__(self) -> None:
             super().__init__()
 
-        def update(self, *args, kwarg):
-            print("Entered DummyMetric")
+        def update(self, *args: Any, kwarg: Any):
+            pass
 
         def compute(self):
             return
@@ -298,7 +299,7 @@ def test_collection_filtering():
             super().__init__()
 
         def update(self, preds, target, kwarg2):
-            print("Entered MyAccuracy")
+            pass
 
         def compute(self):
             return
