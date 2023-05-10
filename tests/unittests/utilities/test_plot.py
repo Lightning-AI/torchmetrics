@@ -160,7 +160,14 @@ from torchmetrics.text import (
     WordInfoPreserved,
 )
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
-from torchmetrics.wrappers import BootStrapper, ClasswiseWrapper, MetricTracker, MinMaxMetric, MultioutputWrapper
+from torchmetrics.wrappers import (
+    BootStrapper,
+    ClasswiseWrapper,
+    MetricTracker,
+    MinMaxMetric,
+    MultioutputWrapper,
+    Running,
+)
 
 _rand_input = lambda: torch.rand(10)
 _binary_randint_input = lambda: torch.randint(2, (10,))
@@ -482,6 +489,12 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             _multilabel_rand_input,
             _multilabel_rand_input,
             id="multioutput wrapper",
+        ),
+        pytest.param(
+            partial(Running, base_metric=MeanSquaredError(), window=3),
+            _rand_input,
+            _rand_input,
+            id="running metric wrapper",
         ),
         pytest.param(Dice, _multiclass_randint_input, _multiclass_randint_input, id="dice"),
         pytest.param(
