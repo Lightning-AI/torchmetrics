@@ -143,7 +143,7 @@ def _test_state_dict_is_synced(rank, tmpdir):
         def compute(self):
             return self.x // self.c
 
-        def __repr__(self):
+        def __repr__(self) -> str:
             return f"DummyCatMetric(x={self.x}, c={self.c})"
 
     metric = DummyCatMetric()
