@@ -71,9 +71,7 @@ original_impl_compute_permutation = partial(_sdr_original_batch)
     "preds, target, ref_metric",
     [
         (inputs_1spk.preds, inputs_1spk.target, original_impl_compute_permutation),
-        # (inputs_1spk.preds, inputs_1spk.target, original_impl_no_compute_permutation, False),
         (inputs_2spk.preds, inputs_2spk.target, original_impl_compute_permutation),
-        # (inputs_2spk.preds, inputs_2spk.target, original_impl_no_compute_permutation, False),
     ],
 )
 class TestSDR(MetricTester):
