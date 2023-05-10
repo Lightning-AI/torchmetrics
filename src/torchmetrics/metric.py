@@ -711,11 +711,16 @@ class Metric(Module, ABC):
         out._dtype_convert = False
         return out
 
-    def _apply(self, fn: Callable) -> Module:
+    def _apply(self, fn: Callable, exclude_state: Sequence[str] = "") -> Module:
         """Overwrite _apply function such that we can also move metric states to the correct device.
 
         This method is called by the base ``nn.Module`` class whenever `.to`, `.cuda`, `.float`, `.half` etc. methods
         are called. Dtype conversion is garded and will only happen through the special `set_dtype` method.
+
+        Args:
+            fn: the function to apply
+            exclude_state: list of state variables to exclude from applying the function, that then needs to be handled
+                by the metric class itself.
         """
         this = super()._apply(fn)
         fs = str(fn)
@@ -725,6 +730,9 @@ class Metric(Module, ABC):
 
         # Also apply fn to metric states and defaults
         for key, value in this._defaults.items():
+            if key in exclude_state:
+                continue
+
             if isinstance(value, Tensor):
                 this._defaults[key] = fn(value)
             elif isinstance(value, Sequence):

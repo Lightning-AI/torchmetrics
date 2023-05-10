@@ -12,7 +12,15 @@ _PACKAGE_ROOT = os.path.dirname(__file__)
 _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
 from torchmetrics import functional  # noqa: E402
-from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric  # noqa: E402
+from torchmetrics.aggregation import (  # noqa: E402
+    CatMetric,
+    MaxMetric,
+    MeanMetric,
+    MinMetric,
+    RunningMean,
+    RunningSum,
+    SumMetric,
+)
 from torchmetrics.audio._deprecated import _PermutationInvariantTraining as PermutationInvariantTraining  # noqa: E402
 from torchmetrics.audio._deprecated import (  # noqa: E402
     _ScaleInvariantSignalDistortionRatio as ScaleInvariantSignalDistortionRatio,
