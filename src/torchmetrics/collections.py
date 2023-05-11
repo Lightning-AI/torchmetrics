@@ -313,7 +313,7 @@ class MetricCollection(ModuleDict):
                 res = m(*args, **m._filter_kwargs(**kwargs))
             else:
                 raise ValueError("method_name should be either 'compute' or 'forward', but got {method_name}")
-            res = m.compute()
+
             if isinstance(res, dict):
                 for key, v in res.items():
                     if hasattr(m, "prefix") and m.prefix is not None:
