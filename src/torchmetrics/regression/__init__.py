@@ -24,6 +24,7 @@ from torchmetrics.regression.minkowski import MinkowskiDistance
 from torchmetrics.regression.mse import MeanSquaredError
 from torchmetrics.regression.pearson import PearsonCorrCoef
 from torchmetrics.regression.r2 import R2Score
+from torchmetrics.regression.rse import RelativeSquaredError
 from torchmetrics.regression.spearman import SpearmanCorrCoef
 from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError
 from torchmetrics.regression.tweedie_deviance import TweedieDevianceScore
@@ -43,6 +44,7 @@ __all__ = [
     "MeanSquaredError",
     "PearsonCorrCoef",
     "R2Score",
+    "RelativeSquaredError",
     "SpearmanCorrCoef",
     "SymmetricMeanAbsolutePercentageError",
     "TweedieDevianceScore",
