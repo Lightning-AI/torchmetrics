@@ -736,7 +736,7 @@ def test_plot_methods_special_text_metrics():
 def test_plot_methods_retrieval(metric_class, preds, target, indexes, num_vals):
     """Test the plot method for retrieval metrics by themselves, since retrieval metrics requires an extra argument."""
     metric = metric_class()
-    
+
     if num_vals != 1 and isinstance(metric, RetrievalPrecisionRecallCurve):
         pytest.skip("curve objects does not support plotting multiple steps")
     if num_vals != 1 and isinstance(metric, BinaryFairness):
