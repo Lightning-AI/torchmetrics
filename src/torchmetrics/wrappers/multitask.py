@@ -147,16 +147,93 @@ class MultitaskWrapper(Metric):
         return compute
 
     def plot(
-        self, val: Optional[Union[Dict, Sequence[Dict]]] = None, ax: Optional[Sequence[_AX_TYPE]] = None
+        self, val: Optional[Union[Dict, Sequence[Dict]]] = None, axes: Optional[Sequence[_AX_TYPE]] = None
     ) -> Sequence[_PLOT_OUT_TYPE]:
-        """TODO."""
+        """Plot a single or multiple values from the metric.
+
+        All tasks' results are plotted on individual axes.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            axes: Sequence of matplotlib axis objects. If provided, will add the plots to the provided axis objects.
+                If not provided, will create them.
+
+        Returns:
+            Sequence of tuples with Figure and Axes object for each task.
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.wrappers import MultitaskWrapper
+            >>> from torchmetrics.regression import MeanSquaredError
+            >>> from torchmetrics.classification import BinaryAccuracy
+            >>>
+            >>> classification_target = torch.tensor([0, 1, 0])
+            >>> regression_target = torch.tensor([2.5, 5.0, 4.0])
+            >>> targets = {"Classification": classification_target, "Regression": regression_target}
+            >>>
+            >>> classification_preds = torch.tensor([0, 0, 1])
+            >>> regression_preds = torch.tensor([3.0, 5.0, 2.5])
+            >>> preds = {"Classification": classification_preds, "Regression": regression_preds}
+            >>>
+            >>> metrics = MultitaskWrapper({
+            ...     "Classification": BinaryAccuracy(),
+            ...     "Regression": MeanSquaredError()
+            ... })
+            >>> metrics.update(preds, targets)
+            >>> value = metrics.compute()
+            >>> fig_, ax_ = metrics.plot(value)
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.wrappers import MultitaskWrapper
+            >>> from torchmetrics.regression import MeanSquaredError
+            >>> from torchmetrics.classification import BinaryAccuracy
+            >>>
+            >>> classification_target = torch.tensor([0, 1, 0])
+            >>> regression_target = torch.tensor([2.5, 5.0, 4.0])
+            >>> targets = {"Classification": classification_target, "Regression": regression_target}
+            >>>
+            >>> classification_preds = torch.tensor([0, 0, 1])
+            >>> regression_preds = torch.tensor([3.0, 5.0, 2.5])
+            >>> preds = {"Classification": classification_preds, "Regression": regression_preds}
+            >>>
+            >>> metrics = MultitaskWrapper({
+            ...     "Classification": BinaryAccuracy(),
+            ...     "Regression": MeanSquaredError()
+            ... })
+            >>> values = []
+            >>> for _ in range(10):
+            ...     values.append(metrics(preds, targets))
+            >>> fig_, ax_ = metrics.plot(values)
+        """
+        if axes is not None:
+            if not isinstance(axes, Sequence):
+                raise TypeError(f"Expected argument `axes` to be a Sequence. Found type(axes) = {type(axes)}")
+
+            if not all(isinstance(ax, _AX_TYPE) for ax in axes):
+                raise TypeError("Expected each ax in argument `axes` to be a matplotlib axis object")
+
+            if len(axes) != len(self.task_metrics):
+                raise ValueError(
+                    "Expected argument `axes` to be a Sequence of the same length as the number of tasks."
+                    f"Found len(axes) = {len(axes)} and {len(self.task_metrics)} tasks"
+                )
+
         val = val if val is not None else self.compute()
         fig_axs = []
         for i, (task_name, task_metric) in enumerate(self.task_metrics.items()):
+            ax = axes[i] if axes is not None else None
             if isinstance(val, Dict):
-                f, a = task_metric.plot(val[task_name], ax=ax[i] if ax is not None else ax)
+                f, a = task_metric.plot(val[task_name], ax=ax)
             elif isinstance(val, Sequence):
-                f, a = task_metric.plot([v[task_name] for v in val], ax=ax[i] if ax is not None else ax)
+                f, a = task_metric.plot([v[task_name] for v in val], ax=ax)
             else:
                 raise TypeError(
                     "Expected argument `val` to be None or of type Dict or Sequence[Dict]. "
