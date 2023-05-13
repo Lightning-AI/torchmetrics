@@ -44,11 +44,24 @@ def _check_data_shape_to_num_outputs(
 
 
 def _check_data_shape_to_weights(preds: Tensor, weights: Tensor) -> None:
-    """Check that the predictions (or target) and weights have the correct shape, else raise error."""
-    if weights.ndim == preds.ndim:
+    """Check that the predictions and weights have the correct shape, else raise error.
+
+    This test assumes that the prediction and target vectors have been confirmed to have the same dimensions.
+    """
+    if preds.ndim == 1 and preds.shape != weights.shape:
         raise ValueError(
-            f"Expected `n_samples` of preds to match the length of `weights`,"
-            f" but got {preds.shape[0]} and {len(weights)}."
+            f"Expected `preds.shape` to equal to `weights.shape`, but got {preds.shape} and {weights.shape}."
         )
+    elif preds.ndim == 2:
+        if weights.ndim == 1 and preds.shape[0] != len(weights):
+            raise ValueError(
+                f"Expected `preds.shape[0]` to equal to `len(weights)` but got {preds.shape[0]} and {len(weights)}."
+            )
+        elif weights.ndim == 2 and preds.shape != weights.shape:
+            raise ValueError(
+                f"Expected `preds.shape` to equal to `weights.shape`," f" but got {preds.shape} and {weights.shape}."
+            )
+        else:
+            raise ValueError(f"Expected `weights.ndim` to equal 1 or 2 when `preds.ndim` is 2, but got {weights.ndim}.")
     else:
-        raise ValueError("")
+        raise ValueError(f"Expected `preds.ndim` to equal 1 or 2, but got {preds.ndim}.")
