@@ -15,7 +15,11 @@ from typing import Any, Optional, Sequence, Union
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio, complex_scale_invariant_signal_noise_ratio
+from torchmetrics.functional.audio.snr import (
+    complex_scale_invariant_signal_noise_ratio,
+    scale_invariant_signal_noise_ratio,
+    signal_noise_ratio,
+)
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -326,5 +330,3 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
             >>> fig_, ax_ = metric.plot(values)
         """
         return self._plot(val, ax)
-
-

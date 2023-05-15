@@ -16,12 +16,13 @@ from functools import partial
 
 import pytest
 import torch
-from torch import Tensor
 from scipy.io import wavfile
+from torch import Tensor
+
 from torchmetrics.audio import ComplexScaleInvariantSignalNoiseRatio
 from torchmetrics.functional.audio import complex_scale_invariant_signal_noise_ratio
-from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
 from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -90,16 +91,19 @@ def test_on_real_audio():
     Ref = torch.stft(ref, n_fft=256, hop_length=128, return_complex=True)
     Deg = torch.stft(deg, n_fft=256, hop_length=128, return_complex=True)
 
-    v = complex_scale_invariant_signal_noise_ratio(Deg, Ref,zero_mean=False)
+    v = complex_scale_invariant_signal_noise_ratio(Deg, Ref, zero_mean=False)
     assert v == 1.0832337141036987
-    v = complex_scale_invariant_signal_noise_ratio(Deg, Ref,zero_mean=True)
+    v = complex_scale_invariant_signal_noise_ratio(Deg, Ref, zero_mean=True)
     assert v == 1.6072081327438354
 
 
 def test_error_on_incorrect_shape(metric_class=ComplexScaleInvariantSignalNoiseRatio):
     """Test that error is raised on incorrect shapes of input."""
     metric = metric_class()
-    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the shape (..., frequency, time, 2), but got torch.Size([100]) and torch.Size([50])."):
+    with pytest.raises(
+        RuntimeError,
+        match="Predictions and targets are expected to have the shape (..., frequency, time, 2), but got torch.Size([100]) and torch.Size([50]).",
+    ):
         metric(torch.randn(100), torch.randn(50))
 
 
