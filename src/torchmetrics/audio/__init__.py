@@ -13,7 +13,11 @@
 # limitations under the License.
 from torchmetrics.audio.pit import PermutationInvariantTraining
 from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio, SignalDistortionRatio
-from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio, SignalNoiseRatio, ComplexScaleInvariantSignalNoiseRatio
+from torchmetrics.audio.snr import (
+    ComplexScaleInvariantSignalNoiseRatio,
+    ScaleInvariantSignalNoiseRatio,
+    SignalNoiseRatio,
+)
 from torchmetrics.utilities.imports import _PESQ_AVAILABLE, _PYSTOI_AVAILABLE
 
 __all__ = [
