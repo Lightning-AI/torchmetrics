@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Callable, Dict, List, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Tuple, Type, Union
 
 import numpy as np
 import pytest
@@ -78,7 +78,7 @@ def _compute_sklearn_metric(
     empty_target_action: str = "skip",
     ignore_index: int = None,
     reverse: bool = False,
-    **kwargs,
+    **kwargs: Any,
 ) -> Tensor:
     """Compute metric with multiple iterations over every query predictions set."""
     if indexes is None:
@@ -466,7 +466,7 @@ class RetrievalMetricTester(MetricTester):
         reference_metric: Callable,
         metric_args: dict,
         reverse: bool = False,
-        **kwargs,
+        **kwargs: Any,
     ):
         """Test functional implementation of metric."""
         _ref_metric_adapted = partial(_compute_sklearn_metric, metric=reference_metric, reverse=reverse, **metric_args)
@@ -537,7 +537,7 @@ class RetrievalMetricTester(MetricTester):
         metric_args: dict = None,
         exception_type: Type[Exception] = ValueError,
         kwargs_update: dict = None,
-    ):
+    ) -> None:
         """Test that specific errors are raised for incorrect input."""
         _errors_test_class_metric(
             indexes=indexes,
@@ -558,7 +558,7 @@ class RetrievalMetricTester(MetricTester):
         message: str = "",
         exception_type: Type[Exception] = ValueError,
         kwargs_update: dict = None,
-    ):
+    ) -> None:
         """Test that specific errors are raised for incorrect input."""
         _errors_test_functional_metric(
             preds=preds,

@@ -449,7 +449,7 @@ class MetricTester:
         metric_args: Optional[dict] = None,
         dtype: torch.dtype = torch.half,
         **kwargs_update: Any,
-    ):
+    ) -> None:
         """Test if a metric can be used with half precision tensors on cpu.
 
         Args:
@@ -482,7 +482,7 @@ class MetricTester:
         metric_args: Optional[dict] = None,
         dtype: torch.dtype = torch.half,
         **kwargs_update: Any,
-    ):
+    ) -> None:
         """Test if a metric can be used with half precision tensors on gpu.
 
         Args:
@@ -513,7 +513,7 @@ class MetricTester:
         metric_module: Metric,
         metric_functional: Optional[Callable] = None,
         metric_args: Optional[dict] = None,
-    ):
+    ) -> None:
         """Test if a metric is differentiable or not.
 
         Args:
@@ -549,7 +549,7 @@ class DummyMetric(Metric):
     name = "Dummy"
     full_state_update: Optional[bool] = True
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.add_state("x", tensor(0.0), dist_reduce_fx="sum")
 
@@ -568,7 +568,7 @@ class DummyListMetric(Metric):
     name = "DummyList"
     full_state_update: Optional[bool] = True
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.add_state("x", [], dist_reduce_fx="cat")
 
@@ -611,6 +611,14 @@ class DummyMetricMultiOutput(DummyMetricSum):
     def compute(self):
         """Compute value."""
         return [self.x, self.x]
+
+
+class DummyMetricMultiOutputDict(DummyMetricSum):
+    """DummyMetricMultiOutput for testing core components."""
+
+    def compute(self):
+        """Compute value."""
+        return {"output1": self.x, "output2": self.x}
 
 
 def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:

@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from functools import partial
+from typing import Any
 
 import pytest
 from nltk.translate.bleu_score import SmoothingFunction, corpus_bleu
@@ -27,7 +27,7 @@ from unittests.text.inputs import _inputs_multiple_references
 smooth_func = SmoothingFunction().method2
 
 
-def _compute_bleu_metric_nltk(preds, targets, weights, smoothing_function, **kwargs):
+def _compute_bleu_metric_nltk(preds, targets, weights, smoothing_function, **kwargs: Any):
     preds_ = [pred.split() for pred in preds]
     targets_ = [[line.split() for line in target] for target in targets]
     return corpus_bleu(
