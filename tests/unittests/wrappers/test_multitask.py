@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # this is just a bypass for this module name collision with build-in one
+import re
+
 import pytest
 import torch
 
@@ -91,11 +93,35 @@ def test_error_on_wrong_keys():
         }
     )
 
-    with pytest.raises(ValueError, match="Expected *"):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Expected arguments `task_preds` and `task_targets` to have the same keys as the wrapped `task_metrics`. "
+            "Found task_preds.keys() = dict_keys(['Classification']), task_targets.keys() = "
+            "dict_keys(['Classification', 'Regression']) and self.task_metrics.keys() = "
+            "odict_keys(['Classification', 'Regression'])"
+        ),
+    ):
         multitask_metrics.update(wrong_key_preds, _multitask_targets)
-    with pytest.raises(ValueError, match="Expected *"):
+
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Expected arguments `task_preds` and `task_targets` to have the same keys as the wrapped `task_metrics`. "
+            "Found task_preds.keys() = dict_keys(['Classification', 'Regression']), task_targets.keys() = "
+            "dict_keys(['Classification']) and self.task_metrics.keys() = odict_keys(['Classification', 'Regression'])"
+        ),
+    ):
         multitask_metrics.update(_multitask_preds, wrong_key_targets)
-    with pytest.raises(ValueError, match="Expected *"):
+
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Expected arguments `task_preds` and `task_targets` to have the same keys as the wrapped `task_metrics`. "
+            "Found task_preds.keys() = dict_keys(['Classification', 'Regression']), task_targets.keys() = "
+            "dict_keys(['Classification', 'Regression']) and self.task_metrics.keys() = odict_keys(['Classification'])"
+        ),
+    ):
         wrong_key_multitask_metrics.update(_multitask_preds, _multitask_targets)
 
 
