@@ -904,8 +904,11 @@ class MeanAveragePrecision(Metric):
         dist.all_gather_object(list_gathered, list_to_gather, group=process_group)
 
         for rank in range(1, world_size):
-            if list_gathered[rank] != list_gathered[0]:
-                raise ValueError(f"Rank {rank} and Rank 0 have different values for the list to gather.")
+            if len(list_gathered[rank]) != list_gathered[0]:
+                raise ValueError(
+                    f"Rank{rank} doesn't have the same number of elements as Rank0: "
+                    f"{list_gathered[rank]} vs. {list_gathered[0]}",
+                )
         list_merged = []
         for idx in range(len(list_gathered[0])):
             for rank in range(world_size):
