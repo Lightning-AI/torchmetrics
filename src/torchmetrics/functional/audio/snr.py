@@ -89,8 +89,8 @@ def complex_scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor, ze
     """`Complex scale-invariant signal-to-noise ratio`_ (C-SI-SNR).
 
     Args:
-        preds: float tensor with shape ``(..., frequency, time, 2)`` or complex float tensor with shape ``(..., frequency, time)``
-        target: float tensor with shape ``(..., frequency, time, 2)`` or complex float tensor with shape ``(..., frequency, time)``
+        preds: real/complex float tensor with shape ``(..., frequency, time, 2)``/``(..., frequency, time)``
+        target: real/complex float tensor with shape ``(..., frequency, time, 2)``/``(..., frequency, time)``
 
     Returns:
          Float tensor with shape ``(...,)`` of C-SI-SNR values per sample
@@ -104,10 +104,10 @@ def complex_scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor, ze
         >>> import torch
         >>> from torchmetrics.functional.audio import complex_scale_invariant_signal_noise_ratio
         >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn((1,257,100,2)
-        >>> target = torch.randn((1,257,100,2)
+        >>> preds = torch.randn((1,257,100,2))
+        >>> target = torch.randn((1,257,100,2))
         >>> complex_scale_invariant_signal_noise_ratio(preds, target)
-        tensor(15.0918)
+        tensor([-63.4849])
     """
     if preds.is_complex():
         preds = torch.view_as_real(preds)
