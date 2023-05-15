@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Update the plotting lower and upper bounds for audio metrics ([#1786](https://github.com/Lightning-AI/torchmetrics/pull/1786))
+
+
 - Added `Running` wrapper for calculate running statistics ([#1752](https://github.com/Lightning-AI/torchmetrics/pull/1752))
 
 
