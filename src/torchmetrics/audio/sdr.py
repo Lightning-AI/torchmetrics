@@ -85,8 +85,8 @@ class SignalDistortionRatio(Metric):
     full_state_update: bool = False
     is_differentiable: bool = True
     higher_is_better: bool = True
-    plot_lower_bound: float = None
-    plot_upper_bound: float = None
+    plot_lower_bound: Optional[float] = None
+    plot_upper_bound: Optional[float] = None
 
     def __init__(
         self,
@@ -195,8 +195,8 @@ class ScaleInvariantSignalDistortionRatio(Metric):
     higher_is_better = True
     sum_si_sdr: Tensor
     total: Tensor
-    plot_lower_bound: float = None
-    plot_upper_bound: float = None
+    plot_lower_bound: Optional[float] = None
+    plot_upper_bound: Optional[float] = None
 
     def __init__(
         self,
