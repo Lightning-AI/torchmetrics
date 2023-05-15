@@ -906,8 +906,8 @@ class MeanAveragePrecision(Metric):
         for rank in range(1, world_size):
             if len(list_gathered[rank]) != list_gathered[0]:
                 raise ValueError(
-                    f"Rank{rank} doesn't have the same number of elements as Rank0: "
-                    f"{list_gathered[rank]} vs. {list_gathered[0]}",
+                    f"Rank({rank}) doesn't have the same number of elements as Rank(0):"
+                    f" {list_gathered[rank]} vs. {list_gathered[0]}",
                 )
         list_merged = []
         for idx in range(len(list_gathered[0])):
