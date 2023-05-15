@@ -15,6 +15,7 @@ from torchmetrics.functional.audio.pit import permutation_invariant_training, pi
 from torchmetrics.functional.audio.sdr import (  # noqa: F401
     scale_invariant_signal_distortion_ratio,
     signal_distortion_ratio,
+    complex_scale_invariant_signal_noise_ratio,
 )
 from torchmetrics.functional.audio.snr import scale_invariant_signal_noise_ratio, signal_noise_ratio  # noqa: F401
 from torchmetrics.utilities.imports import _PESQ_AVAILABLE, _PYSTOI_AVAILABLE
