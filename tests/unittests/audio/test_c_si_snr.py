@@ -12,12 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import namedtuple
-from functools import partial
 
 import pytest
 import torch
 from scipy.io import wavfile
-from torch import Tensor
 
 from torchmetrics.audio import ComplexScaleInvariantSignalNoiseRatio
 from torchmetrics.functional.audio import complex_scale_invariant_signal_noise_ratio
@@ -88,12 +86,12 @@ def test_on_real_audio():
     rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
     ref = torch.tensor(ref)
     deg = torch.tensor(deg)
-    Ref = torch.stft(ref, n_fft=256, hop_length=128, return_complex=True)
-    Deg = torch.stft(deg, n_fft=256, hop_length=128, return_complex=True)
+    ref_stft = torch.stft(ref, n_fft=256, hop_length=128, return_complex=True)
+    deg_stft = torch.stft(deg, n_fft=256, hop_length=128, return_complex=True)
 
-    v = complex_scale_invariant_signal_noise_ratio(Deg, Ref, zero_mean=False)
+    v = complex_scale_invariant_signal_noise_ratio(deg_stft, ref_stft, zero_mean=False)
     assert v == 1.0832337141036987
-    v = complex_scale_invariant_signal_noise_ratio(Deg, Ref, zero_mean=True)
+    v = complex_scale_invariant_signal_noise_ratio(deg_stft, ref_stft, zero_mean=True)
     assert v == 1.6072081327438354
 
 
@@ -102,7 +100,8 @@ def test_error_on_incorrect_shape(metric_class=ComplexScaleInvariantSignalNoiseR
     metric = metric_class()
     with pytest.raises(
         RuntimeError,
-        match="Predictions and targets are expected to have the shape (..., frequency, time, 2), but got torch.Size([100]) and torch.Size([50]).",
+        match="Predictions and targets are expected to have the shape (..., frequency, time, 2),"
+        " but got torch.Size([100]) and torch.Size([50]).",
     ):
         metric(torch.randn(100), torch.randn(50))
 
