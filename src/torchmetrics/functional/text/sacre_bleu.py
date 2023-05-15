@@ -174,7 +174,7 @@ class _SacreBLEUTokenizer:
 
     @classmethod
     def _tokenize_13a(cls, line: str) -> str:
-        """Tokenizes an line using a relatively minimal tokenization that is equivalent to mteval-v13a, used by WMT.
+        """Tokenizes a line using a relatively minimal tokenization that is equivalent to mteval-v13a, used by WMT.
 
         Args:
             line: input sentence
@@ -193,7 +193,7 @@ class _SacreBLEUTokenizer:
             line = line.replace("&lt;", "<")
             line = line.replace("&gt;", ">")
 
-        return cls._tokenize_regex(line)
+        return cls._tokenize_regex(f" {line} ")
 
     @classmethod
     def _tokenize_zh(cls, line: str) -> str:
