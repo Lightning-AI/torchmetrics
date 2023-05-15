@@ -117,7 +117,7 @@ def complex_scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor, ze
 
     if (preds.ndim < 3 or preds.shape[-1] != 2) or (target.ndim < 3 or target.shape[-1] != 2):
         raise RuntimeError(
-            f"Predictions and targets are expected to have the shape (..., frequency, time, 2),"
+            "Predictions and targets are expected to have the shape (..., frequency, time, 2),"
             " but got {preds.shape} and {target.shape}."
         )
 
