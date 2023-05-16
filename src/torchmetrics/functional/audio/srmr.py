@@ -31,7 +31,7 @@ def _calc_erbs(low_freq: float, fs: int, n_filters: int, device: torch.device) -
     ear_q = 9.26449  # Glasberg and Moore Parameters
     min_bw = 24.7
     order = 1
-    erbs = ((centre_freqs(fs, n_filters, low_freq) / ear_q)**order + min_bw**order)**(1 / order)
+    erbs = ((centre_freqs(fs, n_filters, low_freq) / ear_q) ** order + min_bw**order) ** (1 / order)
     erbs = torch.tensor(erbs, device=device)
     return erbs
 
@@ -45,10 +45,11 @@ def _make_erb_filters(fs: int, num_freqs: int, cutoff: float, device: torch.devi
 
 
 @lru_cache(maxsize=100)
-def _compute_modulation_filterbank_and_cutoffs(min_cf: float, max_cf: float, n: int, Q: int, 
-        fs: float, q: int, device: torch.device) -> Union[Tensor, Tensor, Tensor, Tensor]:
+def _compute_modulation_filterbank_and_cutoffs(
+    min_cf: float, max_cf: float, n: int, Q: int, fs: float, q: int, device: torch.device
+) -> Union[Tensor, Tensor, Tensor, Tensor]:
     # this function is translated from the SRMRpy packaged
-    spacing_factor = (max_cf / min_cf)**(1.0 / (n - 1))
+    spacing_factor = (max_cf / min_cf) ** (1.0 / (n - 1))
     cfs = torch.zeros(n, dtype=torch.float64)
     cfs[0] = min_cf
     for k in range(1, n):
@@ -92,15 +93,15 @@ def _hilbert(x: Tensor, N: int = None):
     h = torch.zeros(N, dtype=x.dtype, device=x.device, requires_grad=False)
     assert N % 2 == 0, N
     h[0] = h[N // 2] = 1
-    h[1:N // 2] = 2
+    h[1 : N // 2] = 2
 
     y = torch.fft.ifft(x_fft * h, dim=-1)
-    y = y[..., :x.shape[-1]]
+    y = y[..., : x.shape[-1]]
     return y
 
 
 def _erb_filterbank(wave: Tensor, coefs: Tensor) -> Tensor:
-    """translated from gammatone package
+    """Translated from gammatone package.
 
     Args:
         wave: shape [B, time]
@@ -132,27 +133,35 @@ def _erb_filterbank(wave: Tensor, coefs: Tensor) -> Tensor:
 def _normalize_energy(energy: Tensor, drange: float = 30.0) -> Tensor:
     peak_energy = torch.mean(energy, dim=1, keepdim=True).max(dim=2, keepdim=True).values
     peak_energy = peak_energy.max(dim=3, keepdim=True).values
-    min_energy = peak_energy * 10.0**(-drange / 10.0)
+    min_energy = peak_energy * 10.0 ** (-drange / 10.0)
     energy = torch.where(energy < min_energy, min_energy, energy)
     energy = torch.where(energy > peak_energy, peak_energy, energy)
     return energy
 
 
 def _cal_srmr_score(BW: Tensor, avg_energy: Tensor, cutoffs: Tensor) -> Tensor:
-    if (BW > cutoffs[4]) and (BW <= cutoffs[5]):
+    if (cutoffs[4] < BW) and (cutoffs[5] >= BW):
         Kstar = 5
-    elif (BW > cutoffs[5]) and (BW <= cutoffs[6]):
+    elif (cutoffs[5] < BW) and (cutoffs[6] >= BW):
         Kstar = 6
-    elif (BW > cutoffs[6]) and (BW <= cutoffs[7]):
+    elif (cutoffs[6] < BW) and (cutoffs[7] >= BW):
         Kstar = 7
-    elif (BW > cutoffs[7]):
+    elif cutoffs[7] < BW:
         Kstar = 8
     return torch.sum(avg_energy[:, :4]) / torch.sum(avg_energy[:, 4:Kstar])
 
 
-def srmr(preds: Tensor, fs: int, n_cochlear_filters: int = 23, low_freq: float = 125, min_cf: float = 4,
-          max_cf: float = 128, norm: bool = False, fast: bool = False) -> Tensor:
-    """The speech-to-reverberation modulation energy ratio (SRMR) metric
+def srmr(
+    preds: Tensor,
+    fs: int,
+    n_cochlear_filters: int = 23,
+    low_freq: float = 125,
+    min_cf: float = 4,
+    max_cf: float = 128,
+    norm: bool = False,
+    fast: bool = False,
+) -> Tensor:
+    """The speech-to-reverberation modulation energy ratio (SRMR) metric.
 
     Args:
         preds: shape [..., time]
@@ -182,8 +191,8 @@ def srmr(preds: Tensor, fs: int, n_cochlear_filters: int = 23, low_freq: float =
     val_norm = torch.where(max_vals > 1, max_vals, 1)
     preds = preds / val_norm
 
-    wLengthS = .256
-    wIncS = .064
+    wLengthS = 0.256
+    wIncS = 0.064
     # Computing gammatone envelopes
     if fast:
         mfs = 400.0
@@ -201,18 +210,20 @@ def srmr(preds: Tensor, fs: int, n_cochlear_filters: int = 23, low_freq: float =
     wInc = ceil(wIncS * mfs)
 
     # Computing modulation filterbank with Q = 2 and 8 channels
-    _, MF, cutoffs, _ = _compute_modulation_filterbank_and_cutoffs(min_cf, max_cf, n=8, Q=2, fs=mfs, q=2,
-                                                                    device=preds.device)
+    _, MF, cutoffs, _ = _compute_modulation_filterbank_and_cutoffs(
+        min_cf, max_cf, n=8, Q=2, fs=mfs, q=2, device=preds.device
+    )
 
     n_frames = int(1 + (time - wLength) // wInc)
     w = torch.hamming_window(wLength + 1, dtype=torch.float64, device=preds.device)[:-1]
-    mod_out = lfilter(gt_env.unsqueeze(-2).expand(-1, -1, MF.shape[0], -1), MF[:, 1, :], MF[:, 0, :], 
-                      clamp=False, batching=True)  # [B, N_filters, 8, time]
+    mod_out = lfilter(
+        gt_env.unsqueeze(-2).expand(-1, -1, MF.shape[0], -1), MF[:, 1, :], MF[:, 0, :], clamp=False, batching=True
+    )  # [B, N_filters, 8, time]
     # pad signal if it's shorter than window or it is not multiple of wInc
-    padding = (0, max(ceil(time / wInc) * wInc - time, wLength - time))  
-    mod_out_pad = pad(mod_out, pad=padding, mode='constant', value=0)
+    padding = (0, max(ceil(time / wInc) * wInc - time, wLength - time))
+    mod_out_pad = pad(mod_out, pad=padding, mode="constant", value=0)
     mod_out_frame = mod_out_pad.unfold(-1, wLength, wInc)
-    energy = ((mod_out_frame[..., :n_frames, :] * w)**2).sum(dim=-1)  # [B, N_filters, 8, n_frames]
+    energy = ((mod_out_frame[..., :n_frames, :] * w) ** 2).sum(dim=-1)  # [B, N_filters, 8, n_frames]
 
     if norm:
         energy = _normalize_energy(energy)
