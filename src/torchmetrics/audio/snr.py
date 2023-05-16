@@ -256,6 +256,7 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
             If ``preds`` and ``target`` does not have the same shape.
 
     Example:
+        >>> import torch
         >>> from torch import tensor
         >>> from torchmetrics.audio import ComplexScaleInvariantSignalNoiseRatio
         >>> g = torch.manual_seed(1)
@@ -270,8 +271,8 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
     sum: Tensor
     num: Tensor
     higher_is_better = True
-    plot_lower_bound: float = None
-    plot_upper_bound: float = None
+    plot_lower_bound: Optional[float] = None
+    plot_upper_bound: Optional[float] = None
 
     def __init__(
         self,
