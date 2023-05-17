@@ -260,8 +260,8 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
         >>> from torch import tensor
         >>> from torchmetrics.audio import ComplexScaleInvariantSignalNoiseRatio
         >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn((1,257,100,2)
-        >>> target = torch.randn((1,257,100,2)
+        >>> preds = torch.randn((1,257,100,2))
+        >>> target = torch.randn((1,257,100,2))
         >>> c_si_snr = ComplexScaleInvariantSignalNoiseRatio()
         >>> c_si_snr(preds, target)
         tensor(-63.4849)
