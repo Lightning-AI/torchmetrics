@@ -593,11 +593,8 @@ class MetricCollection(ModuleDict):
                 raise ValueError(
                     f"Expected argument `ax` to be a matplotlib axis object, but got {type(ax)} when `together=True`"
                 )
-            if (
-                not together
-                and not isinstance(ax, Sequence)
-                and not all(isinstance(a, _AX_TYPE) for a in ax)
-                and len(ax) != len(self)
+            if not together and not (
+                isinstance(ax, Sequence) and all(isinstance(a, _AX_TYPE) for a in ax) and len(ax) == len(self)
             ):
                 raise ValueError(
                     f"Expected argument `ax` to be a sequence of matplotlib axis objects with the same length as the "
