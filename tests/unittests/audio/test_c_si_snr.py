@@ -26,13 +26,11 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Time = 100
-
 Input = namedtuple("Input", ["preds", "target"])
 
 inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, Time),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, Time),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 129, 20, 2),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 129, 20, 2),
 )
 
 
@@ -84,8 +82,8 @@ def test_on_real_audio():
     """Test that metric works as expected on real audio signals."""
     rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
     rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
-    ref = torch.tensor(ref)
-    deg = torch.tensor(deg)
+    ref = torch.tensor(ref, dtype=torch.float32)
+    deg = torch.tensor(deg, dtype=torch.float32)
     ref_stft = torch.stft(ref, n_fft=256, hop_length=128, return_complex=True)
     deg_stft = torch.stft(deg, n_fft=256, hop_length=128, return_complex=True)
 
