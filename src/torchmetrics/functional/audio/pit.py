@@ -98,8 +98,12 @@ def _find_best_perm_by_exhaustive_method(
 
 
 def permutation_invariant_training(
-    preds: Tensor, target: Tensor, metric_func: Callable, mode: Literal['speaker-wise', 'permutation-wise']
-    = 'speaker-wise', eval_func: Literal["max", "min"] = "max", **kwargs: Any
+    preds: Tensor,
+    target: Tensor,
+    metric_func: Callable,
+    mode: Literal["speaker-wise", "permutation-wise"] = "speaker-wise",
+    eval_func: Literal["max", "min"] = "max",
+    **kwargs: Any,
 ) -> Tuple[Tensor, Tensor]:
     """Calculate `Permutation invariant training`_ (PIT).
 
@@ -110,7 +114,7 @@ def permutation_invariant_training(
         preds: float tensor with shape ``(batch_size,num_speakers,...)``
         target: float tensor with shape ``(batch_size,num_speakers,...)``
         metric_func: a metric function accept a batch of target and estimate.
-            if `mode`==`'speaker-wise'`, then ``metric_func(preds[:, i, ...], target[:, j, ...])`` is called 
+            if `mode`==`'speaker-wise'`, then ``metric_func(preds[:, i, ...], target[:, j, ...])`` is called
             and expected to return a batch of metric tensors ``(batch,)``;
 
             if `mode`==`'permutation-wise'`, then ``metric_func(preds[:, p, ...], target[:, :, ...])`` is called,
@@ -142,10 +146,12 @@ def permutation_invariant_training(
                  [-0.1719,  0.3205,  0.2951]]])
     """
     if preds.shape[0:2] != target.shape[0:2]:
-        raise RuntimeError("Predictions and targets are expected to have the same shape at the batch and speaker dimensions")
+        raise RuntimeError(
+            "Predictions and targets are expected to have the same shape at the batch and speaker dimensions"
+        )
     if eval_func not in ["max", "min"]:
         raise ValueError(f'eval_func can only be "max" or "min" but got {eval_func}')
-    if mode not in ['speaker-wise', 'permutation-wise']:
+    if mode not in ["speaker-wise", "permutation-wise"]:
         raise ValueError(f'mode can only be "speaker-wise" or "permutation-wise" but got {eval_func}')
     if target.ndim < 2:
         raise ValueError(f"Inputs must be of shape [batch, spk, ...], got {target.shape} and {preds.shape} instead")
@@ -155,7 +161,7 @@ def permutation_invariant_training(
     # calculate the metric matrix
     batch_size, spk_num = target.shape[0:2]
 
-    if mode == 'permutation-wise':
+    if mode == "permutation-wise":
         perms = torch.tensor(list(permutations(range(spk_num))), dtype=torch.long)
         # shape of [batch_size, perm_num] or [batch_size, perm_num, spk_num]
         metric_of_ps = torch.stack([metric_func(preds[:, perm], target, **kwargs) for perm in perms], dim=1)
