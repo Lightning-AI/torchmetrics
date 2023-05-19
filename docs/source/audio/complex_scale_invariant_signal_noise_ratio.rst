@@ -12,12 +12,12 @@ Complex Scale-Invariant Signal-to-Noise Ratio (C-SI-SNR)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.ComplexScaleInvariantSignalNoiseRatio
+.. autoclass:: torchmetrics.audio.ComplexScaleInvariantSignalNoiseRatio
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.complex_scale_invariant_signal_noise_ratio
+.. autofunction:: torchmetrics.functional.audio.complex_scale_invariant_signal_noise_ratio
     :noindex:
