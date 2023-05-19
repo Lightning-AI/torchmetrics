@@ -180,8 +180,8 @@ class TestPIT(MetricTester):
     def test_pit_differentiability(self, preds, target, ref_metric, metric_func, mode, eval_func):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
 
-        def pit_diff(preds, target, metric_func, eval_func):
-            return permutation_invariant_training(preds, target, metric_func, eval_func)[0]
+        def pit_diff(preds, target, metric_func, mode, eval_func):
+            return permutation_invariant_training(preds, target, metric_func, mode, eval_func)[0]
 
         self.run_differentiability_test(
             preds=preds,
@@ -209,7 +209,7 @@ class TestPIT(MetricTester):
 
 def test_error_on_different_shape() -> None:
     """Test that error is raised on different shapes of input."""
-    metric = PermutationInvariantTraining(signal_noise_ratio, "max")
+    metric = PermutationInvariantTraining(signal_noise_ratio)
     with pytest.raises(
         RuntimeError,
         match="Predictions and targets are expected to have the same shape at the batch and speaker dimensions",
@@ -219,21 +219,21 @@ def test_error_on_different_shape() -> None:
 
 def test_error_on_wrong_eval_func() -> None:
     """Test that error is raised on wrong `eval_func` argument."""
-    metric = PermutationInvariantTraining(signal_noise_ratio, "xxx")
+    metric = PermutationInvariantTraining(signal_noise_ratio, eval_func="xxx")
     with pytest.raises(ValueError, match='eval_func can only be "max" or "min"'):
         metric(torch.randn(3, 3, 10), torch.randn(3, 3, 10))
 
 
-def test_error_on_wrong_eval_func() -> None:
+def test_error_on_wrong_mode() -> None:
     """Test that error is raised on wrong `mode` argument."""
-    metric = PermutationInvariantTraining(signal_noise_ratio, "xxx")
-    with pytest.raises(ValueError, match='eval_func can only be "max" or "min"'):
+    metric = PermutationInvariantTraining(signal_noise_ratio, mode="xxx")
+    with pytest.raises(ValueError, match='mode can only be "speaker-wise" or "permutation-wise"*'):
         metric(torch.randn(3, 3, 10), torch.randn(3, 3, 10))
 
 
 def test_error_on_wrong_shape() -> None:
     """Test that error is raised on wrong input shape."""
-    metric = PermutationInvariantTraining(signal_noise_ratio, "max")
+    metric = PermutationInvariantTraining(signal_noise_ratio)
     with pytest.raises(ValueError, match="Inputs must be of shape *"):
         metric(torch.randn(3), torch.randn(3))
 

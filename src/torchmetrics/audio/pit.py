@@ -82,7 +82,7 @@ class PermutationInvariantTraining(Metric):
     def __init__(
         self,
         metric_func: Callable,
-        mode: str,
+        mode: Literal["speaker-wise", "permutation-wise"] = 'speaker-wise',
         eval_func: Literal["max", "min"] = "max",
         **kwargs: Any,
     ) -> None:

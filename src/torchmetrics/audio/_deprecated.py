@@ -24,11 +24,12 @@ class _PermutationInvariantTraining(PermutationInvariantTraining):
     def __init__(
         self,
         metric_func: Callable,
+        mode: Literal["speaker-wise", "permutation-wise"] = "speaker-wise",
         eval_func: Literal["max", "min"] = "max",
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("PermutationInvariantTraining", "audio")
-        return super().__init__(metric_func=metric_func, eval_func=eval_func, **kwargs)
+        return super().__init__(metric_func=metric_func, mode=mode, eval_func=eval_func, **kwargs)
 
 
 class _ScaleInvariantSignalDistortionRatio(ScaleInvariantSignalDistortionRatio):
