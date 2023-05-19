@@ -70,10 +70,11 @@ class TestComplexSISNR(MetricTester):
         """Test dtype support of the metric on GPU."""
         pytest.xfail("C-SI-SDR metric does not support cpu + half precision")
 
+
 def test_on_real_audio():
     """Test that metric works as expected on real audio signals."""
-    rate, ref = wavfile.read('tests/_data/audio/audio_speech.wav')
-    rate, deg = wavfile.read('tests/_data/audio/audio_speech_bab_0dB.wav')
+    rate, ref = wavfile.read("tests/_data/audio/audio_speech.wav")
+    rate, deg = wavfile.read("tests/_data/audio/audio_speech_bab_0dB.wav")
     ref = torch.tensor(ref, dtype=torch.float32)
     deg = torch.tensor(deg, dtype=torch.float32)
     ref_stft = torch.stft(ref, n_fft=256, hop_length=128, return_complex=True)
