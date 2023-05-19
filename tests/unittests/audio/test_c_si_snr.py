@@ -75,9 +75,9 @@ def test_on_real_audio():
     deg_stft = torch.stft(deg, n_fft=256, hop_length=128, return_complex=True)
 
     v = complex_scale_invariant_signal_noise_ratio(deg_stft, ref_stft, zero_mean=False)
-    assert v == 0.03019072115421295
+    assert torch.allclose(v, torch.tensor(0.03019072115421295, dtype=v.dtype))
     v = complex_scale_invariant_signal_noise_ratio(deg_stft, ref_stft, zero_mean=True)
-    assert v == 0.030391741544008255
+    assert torch.allclose(v, torch.tensor(0.030391741544008255, dtype=v.dtype))
 
 
 def test_error_on_incorrect_shape(metric_class=ComplexScaleInvariantSignalNoiseRatio):
