@@ -46,7 +46,7 @@ class PermutationInvariantTraining(Metric):
         metric_func:
             a metric function accept a batch of target and estimate.
 
-            if `mode`==`'speaker-wise'`, then ``metric_func(preds[:, i, ...], target[:, j, ...])`` is called 
+            if `mode`==`'speaker-wise'`, then ``metric_func(preds[:, i, ...], target[:, j, ...])`` is called
             and expected to return a batch of metric tensors ``(batch,)``;
 
             if `mode`==`'permutation-wise'`, then ``metric_func(preds[:, p, ...], target[:, :, ...])`` is called,
@@ -102,8 +102,9 @@ class PermutationInvariantTraining(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        pit_metric = permutation_invariant_training(preds, target, self.metric_func, self.mode, 
-            self.eval_func, **self.kwargs)[0]
+        pit_metric = permutation_invariant_training(
+            preds, target, self.metric_func, self.mode, self.eval_func, **self.kwargs
+        )[0]
 
         self.sum_pit_metric += pit_metric.sum()
         self.total += pit_metric.numel()

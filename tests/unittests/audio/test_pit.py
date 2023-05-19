@@ -112,15 +112,42 @@ si_sdr_pit_scipy = partial(
 @pytest.mark.parametrize(
     "preds, target, ref_metric, metric_func, mode, eval_func",
     [
-        (inputs1.preds, inputs1.target, snr_pit_scipy, signal_noise_ratio, 'speaker-wise', "max"),
-        (inputs1.preds, inputs1.target, si_sdr_pit_scipy, scale_invariant_signal_distortion_ratio, 'speaker-wise', "max"),
-        (inputs2.preds, inputs2.target, snr_pit_scipy, signal_noise_ratio, 'speaker-wise', "max"),
-        (inputs2.preds, inputs2.target, si_sdr_pit_scipy, scale_invariant_signal_distortion_ratio, 'speaker-wise', "max"),
-
-        (inputs1.preds, inputs1.target, snr_pit_scipy, signal_noise_ratio, 'permutation-wise', "max"),
-        (inputs1.preds, inputs1.target, si_sdr_pit_scipy, scale_invariant_signal_distortion_ratio, 'permutation-wise', "max"),
-        (inputs2.preds, inputs2.target, snr_pit_scipy, signal_noise_ratio, 'permutation-wise', "max"),
-        (inputs2.preds, inputs2.target, si_sdr_pit_scipy, scale_invariant_signal_distortion_ratio, 'permutation-wise', "max"),
+        (inputs1.preds, inputs1.target, snr_pit_scipy, signal_noise_ratio, "speaker-wise", "max"),
+        (
+            inputs1.preds,
+            inputs1.target,
+            si_sdr_pit_scipy,
+            scale_invariant_signal_distortion_ratio,
+            "speaker-wise",
+            "max",
+        ),
+        (inputs2.preds, inputs2.target, snr_pit_scipy, signal_noise_ratio, "speaker-wise", "max"),
+        (
+            inputs2.preds,
+            inputs2.target,
+            si_sdr_pit_scipy,
+            scale_invariant_signal_distortion_ratio,
+            "speaker-wise",
+            "max",
+        ),
+        (inputs1.preds, inputs1.target, snr_pit_scipy, signal_noise_ratio, "permutation-wise", "max"),
+        (
+            inputs1.preds,
+            inputs1.target,
+            si_sdr_pit_scipy,
+            scale_invariant_signal_distortion_ratio,
+            "permutation-wise",
+            "max",
+        ),
+        (inputs2.preds, inputs2.target, snr_pit_scipy, signal_noise_ratio, "permutation-wise", "max"),
+        (
+            inputs2.preds,
+            inputs2.target,
+            si_sdr_pit_scipy,
+            scale_invariant_signal_distortion_ratio,
+            "permutation-wise",
+            "max",
+        ),
     ],
 )
 class TestPIT(MetricTester):
@@ -137,7 +164,7 @@ class TestPIT(MetricTester):
             target,
             PermutationInvariantTraining,
             reference_metric=partial(_average_metric, metric_func=ref_metric),
-            metric_args={"metric_func": metric_func, 'mode': mode, "eval_func": eval_func},
+            metric_args={"metric_func": metric_func, "mode": mode, "eval_func": eval_func},
         )
 
     def test_pit_functional(self, preds, target, ref_metric, metric_func, mode, eval_func):
@@ -147,7 +174,7 @@ class TestPIT(MetricTester):
             target=target,
             metric_functional=permutation_invariant_training,
             reference_metric=ref_metric,
-            metric_args={"metric_func": metric_func, 'mode': mode, "eval_func": eval_func},
+            metric_args={"metric_func": metric_func, "mode": mode, "eval_func": eval_func},
         )
 
     def test_pit_differentiability(self, preds, target, ref_metric, metric_func, mode, eval_func):
@@ -161,7 +188,7 @@ class TestPIT(MetricTester):
             target=target,
             metric_module=PermutationInvariantTraining,
             metric_functional=pit_diff,
-            metric_args={"metric_func": metric_func, 'mode': mode, "eval_func": eval_func},
+            metric_args={"metric_func": metric_func, "mode": mode, "eval_func": eval_func},
         )
 
     def test_pit_half_cpu(self, preds, target, ref_metric, metric_func, mode, eval_func):
@@ -176,7 +203,7 @@ class TestPIT(MetricTester):
             target=target,
             metric_module=PermutationInvariantTraining,
             metric_functional=partial(permutation_invariant_training, metric_func=metric_func, eval_func=eval_func),
-            metric_args={"metric_func": metric_func, 'mode': mode, "eval_func": eval_func},
+            metric_args={"metric_func": metric_func, "mode": mode, "eval_func": eval_func},
         )
 
 
