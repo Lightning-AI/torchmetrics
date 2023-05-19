@@ -15,6 +15,7 @@ from itertools import permutations
 from typing import Any, Callable, Tuple, Union
 from warnings import warn
 
+import numpy as np
 import torch
 from torch import Tensor
 from typing_extensions import Literal
@@ -45,7 +46,7 @@ def _find_best_perm_by_linear_sum_assignment(
     from scipy.optimize import linear_sum_assignment
 
     mmtx = metric_mtx.detach().cpu()
-    best_perm = torch.tensor([linear_sum_assignment(pwm, eval_func == torch.max)[1] for pwm in mmtx])
+    best_perm = torch.tensor(np.array([linear_sum_assignment(pwm, eval_func == torch.max)[1] for pwm in mmtx]))
     best_perm = best_perm.to(metric_mtx.device)
     best_metric = torch.gather(metric_mtx, 2, best_perm[:, :, None]).mean([-1, -2])
     return best_metric, best_perm  # shape [batch], shape [batch, spk]
@@ -97,7 +98,8 @@ def _find_best_perm_by_exhaustive_method(
 
 
 def permutation_invariant_training(
-    preds: Tensor, target: Tensor, metric_func: Callable, eval_func: Literal["max", "min"] = "max", **kwargs: Any
+    preds: Tensor, target: Tensor, metric_func: Callable, mode: Literal['speaker-wise', 'permutation-wise']
+    = 'speaker-wise', eval_func: Literal["max", "min"] = "max", **kwargs: Any
 ) -> Tuple[Tensor, Tensor]:
     """Calculate `Permutation invariant training`_ (PIT).
 
@@ -107,9 +109,15 @@ def permutation_invariant_training(
     Args:
         preds: float tensor with shape ``(batch_size,num_speakers,...)``
         target: float tensor with shape ``(batch_size,num_speakers,...)``
-        metric_func: a metric function accept a batch of target and estimate,
-            i.e. ``metric_func(preds[:, i, ...], target[:, j, ...])``, and returns a batch of metric
-            tensors ``(batch,)``
+        metric_func: a metric function accept a batch of target and estimate.
+            if `mode`==`'speaker-wise'`, then ``metric_func(preds[:, i, ...], target[:, j, ...])`` is called 
+            and expected to return a batch of metric tensors ``(batch,)``;
+
+            if `mode`==`'permutation-wise'`, then ``metric_func(preds[:, p, ...], target[:, :, ...])`` is called,
+            where `p` is one possible permutation, e.g. [0,1] or [1,0] for 2-speaker case, and expected to return
+            a batch of metric tensors ``(batch,)``;
+
+        mode: can be `'speaker-wise'` or `'permutation-wise'`.
         eval_func: the function to find the best permutation, can be ``'min'`` or ``'max'``,
             i.e. the smaller the better or the larger the better.
         kwargs: Additional args for metric_func
@@ -134,16 +142,31 @@ def permutation_invariant_training(
                  [-0.1719,  0.3205,  0.2951]]])
     """
     if preds.shape[0:2] != target.shape[0:2]:
-        raise RuntimeError(
-            "Predictions and targets are expected to have the same shape at the batch and speaker dimensions"
-        )
+        raise RuntimeError("Predictions and targets are expected to have the same shape at the batch and speaker dimensions")
     if eval_func not in ["max", "min"]:
         raise ValueError(f'eval_func can only be "max" or "min" but got {eval_func}')
+    if mode not in ['speaker-wise', 'permutation-wise']:
+        raise ValueError(f'mode can only be "speaker-wise" or "permutation-wise" but got {eval_func}')
     if target.ndim < 2:
         raise ValueError(f"Inputs must be of shape [batch, spk, ...], got {target.shape} and {preds.shape} instead")
 
+    eval_op = torch.max if eval_func == "max" else torch.min
+
     # calculate the metric matrix
     batch_size, spk_num = target.shape[0:2]
+
+    if mode == 'permutation-wise':
+        perms = torch.tensor(list(permutations(range(spk_num))), dtype=torch.long)
+        # shape of [batch_size, perm_num] or [batch_size, perm_num, spk_num]
+        metric_of_ps = torch.stack([metric_func(preds[:, perm], target, **kwargs) for perm in perms], dim=1)
+        metric_of_ps = torch.mean(metric_of_ps.reshape(batch_size, len(perms), -1), dim=-1)
+        # find the best metric and best permutation
+        best_metric, best_indexes = eval_op(metric_of_ps, dim=1)
+        best_indexes = best_indexes.detach()
+        best_perm = perms[best_indexes, :]
+        return best_metric, best_perm
+
+    # speaker-wise
     metric_mtx = None
     for target_idx in range(spk_num):  # we have spk_num speeches in target in each sample
         for preds_idx in range(spk_num):  # we have spk_num speeches in preds in each sample
@@ -157,14 +180,13 @@ def permutation_invariant_training(
                 metric_mtx[:, target_idx, preds_idx] = first_ele
 
     # find best
-    op = torch.max if eval_func == "max" else torch.min
     if spk_num < 3 or not _SCIPY_AVAILABLE:
         if spk_num >= 3 and not _SCIPY_AVAILABLE:
             warn(f"In pit metric for speaker-num {spk_num}>3, we recommend installing scipy for better performance")
 
-        best_metric, best_perm = _find_best_perm_by_exhaustive_method(metric_mtx, op)
+        best_metric, best_perm = _find_best_perm_by_exhaustive_method(metric_mtx, eval_op)
     else:
-        best_metric, best_perm = _find_best_perm_by_linear_sum_assignment(metric_mtx, op)
+        best_metric, best_perm = _find_best_perm_by_linear_sum_assignment(metric_mtx, eval_op)
 
     return best_metric, best_perm
 

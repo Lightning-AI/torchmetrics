@@ -110,12 +110,17 @@ si_sdr_pit_scipy = partial(
 
 
 @pytest.mark.parametrize(
-    "preds, target, ref_metric, metric_func, eval_func",
+    "preds, target, ref_metric, metric_func, mode, eval_func",
     [
-        (inputs1.preds, inputs1.target, snr_pit_scipy, signal_noise_ratio, "max"),
-        (inputs1.preds, inputs1.target, si_sdr_pit_scipy, scale_invariant_signal_distortion_ratio, "max"),
-        (inputs2.preds, inputs2.target, snr_pit_scipy, signal_noise_ratio, "max"),
-        (inputs2.preds, inputs2.target, si_sdr_pit_scipy, scale_invariant_signal_distortion_ratio, "max"),
+        (inputs1.preds, inputs1.target, snr_pit_scipy, signal_noise_ratio, 'speaker-wise', "max"),
+        (inputs1.preds, inputs1.target, si_sdr_pit_scipy, scale_invariant_signal_distortion_ratio, 'speaker-wise', "max"),
+        (inputs2.preds, inputs2.target, snr_pit_scipy, signal_noise_ratio, 'speaker-wise', "max"),
+        (inputs2.preds, inputs2.target, si_sdr_pit_scipy, scale_invariant_signal_distortion_ratio, 'speaker-wise', "max"),
+
+        (inputs1.preds, inputs1.target, snr_pit_scipy, signal_noise_ratio, 'permutation-wise', "max"),
+        (inputs1.preds, inputs1.target, si_sdr_pit_scipy, scale_invariant_signal_distortion_ratio, 'permutation-wise', "max"),
+        (inputs2.preds, inputs2.target, snr_pit_scipy, signal_noise_ratio, 'permutation-wise', "max"),
+        (inputs2.preds, inputs2.target, si_sdr_pit_scipy, scale_invariant_signal_distortion_ratio, 'permutation-wise', "max"),
     ],
 )
 class TestPIT(MetricTester):
@@ -124,7 +129,7 @@ class TestPIT(MetricTester):
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_pit(self, preds, target, ref_metric, metric_func, eval_func, ddp):
+    def test_pit(self, preds, target, ref_metric, metric_func, mode, eval_func, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
@@ -132,20 +137,20 @@ class TestPIT(MetricTester):
             target,
             PermutationInvariantTraining,
             reference_metric=partial(_average_metric, metric_func=ref_metric),
-            metric_args={"metric_func": metric_func, "eval_func": eval_func},
+            metric_args={"metric_func": metric_func, 'mode': mode, "eval_func": eval_func},
         )
 
-    def test_pit_functional(self, preds, target, ref_metric, metric_func, eval_func):
+    def test_pit_functional(self, preds, target, ref_metric, metric_func, mode, eval_func):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=permutation_invariant_training,
             reference_metric=ref_metric,
-            metric_args={"metric_func": metric_func, "eval_func": eval_func},
+            metric_args={"metric_func": metric_func, 'mode': mode, "eval_func": eval_func},
         )
 
-    def test_pit_differentiability(self, preds, target, ref_metric, metric_func, eval_func):
+    def test_pit_differentiability(self, preds, target, ref_metric, metric_func, mode, eval_func):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
 
         def pit_diff(preds, target, metric_func, eval_func):
@@ -156,22 +161,22 @@ class TestPIT(MetricTester):
             target=target,
             metric_module=PermutationInvariantTraining,
             metric_functional=pit_diff,
-            metric_args={"metric_func": metric_func, "eval_func": eval_func},
+            metric_args={"metric_func": metric_func, 'mode': mode, "eval_func": eval_func},
         )
 
-    def test_pit_half_cpu(self, preds, target, ref_metric, metric_func, eval_func):
+    def test_pit_half_cpu(self, preds, target, ref_metric, metric_func, mode, eval_func):
         """Test dtype support of the metric on CPU."""
         pytest.xfail("PIT metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_pit_half_gpu(self, preds, target, ref_metric, metric_func, eval_func):
+    def test_pit_half_gpu(self, preds, target, ref_metric, metric_func, mode, eval_func):
         """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
             metric_module=PermutationInvariantTraining,
             metric_functional=partial(permutation_invariant_training, metric_func=metric_func, eval_func=eval_func),
-            metric_args={"metric_func": metric_func, "eval_func": eval_func},
+            metric_args={"metric_func": metric_func, 'mode': mode, "eval_func": eval_func},
         )
 
 
@@ -187,6 +192,13 @@ def test_error_on_different_shape() -> None:
 
 def test_error_on_wrong_eval_func() -> None:
     """Test that error is raised on wrong `eval_func` argument."""
+    metric = PermutationInvariantTraining(signal_noise_ratio, "xxx")
+    with pytest.raises(ValueError, match='eval_func can only be "max" or "min"'):
+        metric(torch.randn(3, 3, 10), torch.randn(3, 3, 10))
+
+
+def test_error_on_wrong_eval_func() -> None:
+    """Test that error is raised on wrong `mode` argument."""
     metric = PermutationInvariantTraining(signal_noise_ratio, "xxx")
     with pytest.raises(ValueError, match='eval_func can only be "max" or "min"'):
         metric(torch.randn(3, 3, 10), torch.randn(3, 3, 10))

@@ -44,9 +44,16 @@ class PermutationInvariantTraining(Metric):
 
     Args:
         metric_func:
-            a metric function accept a batch of target and estimate,
-            i.e. ``metric_func(preds[:, i, ...], target[:, j, ...])``, and returns a batch of metric
-            tensors ``(batch,)``
+            a metric function accept a batch of target and estimate.
+
+            if `mode`==`'speaker-wise'`, then ``metric_func(preds[:, i, ...], target[:, j, ...])`` is called 
+            and expected to return a batch of metric tensors ``(batch,)``;
+
+            if `mode`==`'permutation-wise'`, then ``metric_func(preds[:, p, ...], target[:, :, ...])`` is called,
+            where `p` is one possible permutation, e.g. [0,1] or [1,0] for 2-speaker case, and expected to return
+            a batch of metric tensors ``(batch,)``;
+        mode:
+            can be `'speaker-wise'` or `'permutation-wise'`.
         eval_func:
             the function to find the best permutation, can be 'min' or 'max', i.e. the smaller the better
             or the larger the better.
@@ -75,6 +82,7 @@ class PermutationInvariantTraining(Metric):
     def __init__(
         self,
         metric_func: Callable,
+        mode: str,
         eval_func: Literal["max", "min"] = "max",
         **kwargs: Any,
     ) -> None:
@@ -85,6 +93,7 @@ class PermutationInvariantTraining(Metric):
         }
         super().__init__(**base_kwargs)
         self.metric_func = metric_func
+        self.mode = mode
         self.eval_func = eval_func
         self.kwargs = kwargs
 
@@ -93,7 +102,8 @@ class PermutationInvariantTraining(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        pit_metric = permutation_invariant_training(preds, target, self.metric_func, self.eval_func, **self.kwargs)[0]
+        pit_metric = permutation_invariant_training(preds, target, self.metric_func, self.mode, 
+            self.eval_func, **self.kwargs)[0]
 
         self.sum_pit_metric += pit_metric.sum()
         self.total += pit_metric.numel()
