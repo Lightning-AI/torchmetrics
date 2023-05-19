@@ -34,8 +34,7 @@ def _permutation_invariant_training(
     """
     _deprecated_root_import_func("permutation_invariant_training", "audio")
     return permutation_invariant_training(
-        preds=preds, target=target, metric_func=metric_func,
-        mode=mode, eval_func=eval_func, **kwargs
+        preds=preds, target=target, metric_func=metric_func, mode=mode, eval_func=eval_func, **kwargs
     )
 
 
