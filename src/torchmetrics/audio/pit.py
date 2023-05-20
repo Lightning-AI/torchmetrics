@@ -67,7 +67,8 @@ class PermutationInvariantTraining(Metric):
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> pit = PermutationInvariantTraining(scale_invariant_signal_noise_ratio)
+        >>> pit = PermutationInvariantTraining(scale_invariant_signal_noise_ratio,
+        ...     mode="speaker-wise", eval_func="max")
         >>> pit(preds, target)
         tensor(-2.1065)
     """
@@ -137,7 +138,8 @@ class PermutationInvariantTraining(Metric):
             >>> from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
             >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
             >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-            >>> metric = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
+            >>> metric = PermutationInvariantTraining(scale_invariant_signal_noise_ratio,
+            ...     mode="speaker-wise", eval_func="max")
             >>> metric.update(preds, target)
             >>> fig_, ax_ = metric.plot()
 
@@ -150,7 +152,8 @@ class PermutationInvariantTraining(Metric):
             >>> from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
             >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
             >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-            >>> metric = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
+            >>> metric = PermutationInvariantTraining(scale_invariant_signal_noise_ratio,
+            ...     mode="speaker-wise", eval_func="max")
             >>> values = [ ]
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
