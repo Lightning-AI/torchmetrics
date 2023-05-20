@@ -67,7 +67,7 @@ class PermutationInvariantTraining(Metric):
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> pit = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
+        >>> pit = PermutationInvariantTraining(scale_invariant_signal_noise_ratio)
         >>> pit(preds, target)
         tensor(-2.1065)
     """

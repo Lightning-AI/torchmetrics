@@ -23,7 +23,7 @@ def _permutation_invariant_training(
     >>> preds = tensor([[[-0.0579,  0.3560, -0.9604], [-0.1719,  0.3205,  0.2951]]])
     >>> target = tensor([[[ 1.0958, -0.1648,  0.5228], [-0.4100,  1.1942, -0.5103]]])
     >>> best_metric, best_perm = _permutation_invariant_training(
-    ...     preds, target, _scale_invariant_signal_distortion_ratio, 'max')
+    ...     preds, target, _scale_invariant_signal_distortion_ratio)
     >>> best_metric
     tensor([-5.1091])
     >>> best_perm
@@ -76,7 +76,7 @@ def _signal_distortion_ratio(
     >>> # use with permutation_invariant_training
     >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
     >>> target = torch.randn(4, 2, 8000)
-    >>> best_metric, best_perm = _permutation_invariant_training(preds, target, _signal_distortion_ratio, 'max')
+    >>> best_metric, best_perm = _permutation_invariant_training(preds, target, _signal_distortion_ratio)
     >>> best_metric
     tensor([-11.6375, -11.4358, -11.7148, -11.6325])
     >>> best_perm

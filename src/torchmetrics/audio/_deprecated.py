@@ -16,7 +16,7 @@ class _PermutationInvariantTraining(PermutationInvariantTraining):
     >>> _ = torch.manual_seed(42)
     >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
     >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-    >>> pit = _PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
+    >>> pit = _PermutationInvariantTraining(scale_invariant_signal_noise_ratio)
     >>> pit(preds, target)
     tensor(-2.1065)
     """
@@ -85,7 +85,7 @@ class _SignalDistortionRatio(SignalDistortionRatio):
     >>> from torchmetrics.functional import signal_distortion_ratio
     >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
     >>> target = torch.randn(4, 2, 8000)
-    >>> pit = _PermutationInvariantTraining(signal_distortion_ratio, 'max')
+    >>> pit = _PermutationInvariantTraining(signal_distortion_ratio)
     >>> pit(preds, target)
     tensor(-11.6051)
     """
