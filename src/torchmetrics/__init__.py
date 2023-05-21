@@ -129,6 +129,7 @@ from torchmetrics.wrappers import (  # noqa: E402
     MetricTracker,
     MinMaxMetric,
     MultioutputWrapper,
+    MultitaskWrapper,
 )
 
 __all__ = [
@@ -177,6 +178,7 @@ __all__ = [
     "MinMetric",
     "ModifiedPanopticQuality",
     "MultioutputWrapper",
+    "MultitaskWrapper",
     "MultiScaleStructuralSimilarityIndexMeasure",
     "PanopticQuality",
     "PearsonCorrCoef",
