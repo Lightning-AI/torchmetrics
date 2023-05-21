@@ -243,6 +243,7 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
 
     - ``preds`` (:class:`~torch.Tensor`): real/complex float tensor with shape ``(..., frequency, time, 2)``
      / ``(..., frequency, time)``
+
     - ``target`` (: :class:`~torch.Tensor`): real/complex float tensor with shape ``(..., frequency, time, 2)``
      / ``(..., frequency, time)``
 
