@@ -26,7 +26,8 @@ from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
 # it's necessary to cache it, otherwise it will consume a large amount of time
 _ps_dict: dict = {}  # _ps_dict[str(spk_num)+str(device)] = permutations
 
-def _gen_permutations(spk_num:int, device:torch.device) -> Tensor:
+
+def _gen_permutations(spk_num: int, device: torch.device) -> Tensor:
     key = str(spk_num) + str(device)
     if key not in _ps_dict:
         # ps: all the permutations, shape [perm_num, spk_num]
@@ -83,7 +84,7 @@ def _find_best_perm_by_exhaustive_method(
     # create/read/cache the permutations and its indexes
     # reading from cache would be much faster than creating in CPU then moving to GPU
     batch_size, spk_num = metric_mtx.shape[:2]
-    ps = _gen_permutations(spk_num=spk_num, device=metric_mtx.device) # [perm_num, spk_num]
+    ps = _gen_permutations(spk_num=spk_num, device=metric_mtx.device)  # [perm_num, spk_num]
 
     # find the metric of each permutation
     perm_num = ps.shape[0]
@@ -167,11 +168,12 @@ def permutation_invariant_training(
     batch_size, spk_num = target.shape[0:2]
 
     if mode == "permutation-wise":
-        perms = _gen_permutations(spk_num=spk_num, device=preds.device) # [perm_num, spk_num]
+        perms = _gen_permutations(spk_num=spk_num, device=preds.device)  # [perm_num, spk_num]
         perm_num = perms.shape[0]
         # shape of ppreds and ptarget: [batch_size*perm_num, spk_num, ...]
-        ppreds = torch.index_select(preds, dim=1, index=perms.reshape(-1)).reshape(batch_size 
-                                                                                   * perm_num, *preds.shape[1:])
+        ppreds = torch.index_select(preds, dim=1, index=perms.reshape(-1)).reshape(
+            batch_size * perm_num, *preds.shape[1:]
+        )
         ptarget = target.repeat_interleave(repeats=perm_num, dim=0)
         # shape of metric_of_ps [batch_size*perm_num] or [batch_size*perm_num, spk_num]
         metric_of_ps = metric_func(ppreds, ptarget)
