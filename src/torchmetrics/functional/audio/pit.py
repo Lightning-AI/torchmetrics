@@ -98,7 +98,7 @@ def _find_best_perm_by_exhaustive_method(
     # find the best metric and best permutation
     best_metric, best_indexes = eval_func(metric_of_ps, dim=1)
     best_indexes = best_indexes.detach()
-    best_perm = ps.T[best_indexes, :]
+    best_perm = ps[best_indexes, :]
     return best_metric, best_perm  # shape [batch], shape [batch, spk]
 
 
