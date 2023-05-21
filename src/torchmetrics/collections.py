@@ -19,10 +19,11 @@ from typing import Any, Dict, Hashable, Iterable, List, Optional, Sequence, Tupl
 import torch
 from torch import Tensor
 from torch.nn import Module, ModuleDict
+from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.data import _flatten_dict, allclose
+from torchmetrics.utilities.data import allclose
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
@@ -176,9 +177,7 @@ class MetricCollection(ModuleDict):
         Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
         """
-        res = {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items(keep_base=True, copy_state=False)}
-        res = _flatten_dict(res)
-        return {self._set_name(k): v for k, v in res.items()}
+        return self._compute_and_reduce("forward", *args, **kwargs)
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Call update for each metric sequentially.
@@ -288,9 +287,43 @@ class MetricCollection(ModuleDict):
 
     def compute(self) -> Dict[str, Any]:
         """Compute the result for each metric in the collection."""
-        res = {k: m.compute() for k, m in self.items(keep_base=True, copy_state=False)}
-        res = _flatten_dict(res)
-        return {self._set_name(k): v for k, v in res.items()}
+        return self._compute_and_reduce("compute")
+
+    def _compute_and_reduce(
+        self, method_name: Literal["compute", "forward"], *args: Any, **kwargs: Any
+    ) -> Dict[str, Any]:
+        """Compute result from collection and reduce into a single dictionary.
+
+        Args:
+            method_name: The method to call on each metric in the collection.
+                Should be either `compute` or `forward`.
+            args: Positional arguments to pass to each metric (if method_name is `forward`)
+            kwargs: Keyword arguments to pass to each metric (if method_name is `forward`)
+
+        Raises:
+            ValueError:
+                If method_name is not `compute` or `forward`.
+
+        """
+        result = {}
+        for k, m in self.items(keep_base=True, copy_state=False):
+            if method_name == "compute":
+                res = m.compute()
+            elif method_name == "forward":
+                res = m(*args, **m._filter_kwargs(**kwargs))
+            else:
+                raise ValueError("method_name should be either 'compute' or 'forward', but got {method_name}")
+
+            if isinstance(res, dict):
+                for key, v in res.items():
+                    if hasattr(m, "prefix") and m.prefix is not None:
+                        key = f"{m.prefix}{key}"
+                    if hasattr(m, "postfix") and m.postfix is not None:
+                        key = f"{key}{m.postfix}"
+                    result[key] = v
+            else:
+                result[k] = res
+        return {self._set_name(k): v for k, v in result.items()}
 
     def reset(self) -> None:
         """Call reset for each metric sequentially."""
@@ -358,6 +391,8 @@ class MetricCollection(ModuleDict):
                     self[name] = metric
                 else:
                     for k, v in metric.items(keep_base=False):
+                        v.postfix = metric.postfix
+                        v.prefix = metric.prefix
                         self[f"{name}_{k}"] = v
         elif isinstance(metrics, Sequence):
             for metric in metrics:
@@ -373,9 +408,14 @@ class MetricCollection(ModuleDict):
                     self[name] = metric
                 else:
                     for k, v in metric.items(keep_base=False):
+                        v.postfix = metric.postfix
+                        v.prefix = metric.prefix
                         self[k] = v
         else:
-            raise ValueError("Unknown input to MetricCollection.")
+            raise ValueError(
+                "Unknown input to MetricCollection. Expected, `Metric`, `MetricCollection` or `dict`/`sequence` of the"
+                f" previous, but got {metrics}"
+            )
 
         self._groups_checked = False
         if self._enable_compute_groups:
@@ -553,11 +593,8 @@ class MetricCollection(ModuleDict):
                 raise ValueError(
                     f"Expected argument `ax` to be a matplotlib axis object, but got {type(ax)} when `together=True`"
                 )
-            if (
-                not together
-                and not isinstance(ax, Sequence)
-                and not all(isinstance(a, _AX_TYPE) for a in ax)
-                and len(ax) != len(self)
+            if not together and not (
+                isinstance(ax, Sequence) and all(isinstance(a, _AX_TYPE) for a in ax) and len(ax) == len(self)
             ):
                 raise ValueError(
                     f"Expected argument `ax` to be a sequence of matplotlib axis objects with the same length as the "

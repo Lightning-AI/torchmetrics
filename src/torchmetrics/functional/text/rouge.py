@@ -49,7 +49,7 @@ def _ensure_nltk_punkt_is_downloaded() -> None:
     import nltk
 
     try:
-        nltk.data.find("tokenizers/punkt.zip")
+        nltk.data.find("tokenizers/punkt")
     except LookupError:
         try:
             nltk.download("punkt", quiet=True, force=False, halt_on_error=False, raise_on_error=True)
