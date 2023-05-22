@@ -24,6 +24,7 @@ from torch import tensor
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import MaxMetric, MeanMetric, MinMetric, SumMetric
 from torchmetrics.audio import (
+    ComplexScaleInvariantSignalNoiseRatio,
     ScaleInvariantSignalDistortionRatio,
     ScaleInvariantSignalNoiseRatio,
     ShortTimeObjectiveIntelligibility,
@@ -284,6 +285,12 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             ScaleInvariantSignalDistortionRatio, _rand_input, _rand_input, id="scale_invariant_signal_distortion_ratio"
         ),
         pytest.param(SignalNoiseRatio, _rand_input, _rand_input, id="signal_noise_ratio"),
+        pytest.param(
+            ComplexScaleInvariantSignalNoiseRatio, 
+            lambda: torch.randn(10, 2, 5),
+            lambda: torch.randn(10, 2, 5),
+            id="complex scale invariant signal noise ratio"
+        ),
         pytest.param(ScaleInvariantSignalNoiseRatio, _rand_input, _rand_input, id="scale_invariant_signal_noise_ratio"),
         pytest.param(
             partial(ShortTimeObjectiveIntelligibility, fs=8000, extended=False),
