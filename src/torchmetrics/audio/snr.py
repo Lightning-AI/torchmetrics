@@ -241,11 +241,11 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
 
     As input to `forward` and `update` the metric accepts the following input
 
-    - ``preds`` (:class:`~torch.Tensor`): real/complex float tensor with shape ``(..., frequency, time, 2)``
-    / ``(..., frequency, time)``
+    - ``preds`` (:class:`~torch.Tensor`): real/complex float tensor with shape ``(..., frequency, time, 2)``\
+        / ``(..., frequency, time)``
 
-    - ``target`` (: :class:`~torch.Tensor`): real/complex float tensor with shape ``(..., frequency, time, 2)``
-    / ``(..., frequency, time)``
+    - ``target`` (: :class:`~torch.Tensor`): real/complex float tensor with shape ``(..., frequency, time, 2)``\
+        / ``(..., frequency, time)``
 
     As output of `forward` and `compute` the metric returns the following output
 
