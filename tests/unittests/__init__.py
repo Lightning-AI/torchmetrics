@@ -2,7 +2,7 @@ import os.path
 
 import torch
 
-from unittests.conftest import (  # noqa: F401
+from unittests.conftest import (
     BATCH_SIZE,
     EXTRA_DIM,
     NUM_BATCHES,

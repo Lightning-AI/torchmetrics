@@ -42,7 +42,7 @@ else:
 
 
 if _SCIENCEPLOT_AVAILABLE:
-    import scienceplots  # noqa: F401
+    import scienceplots
 
     _style = ["science", "no-latex"]
 
