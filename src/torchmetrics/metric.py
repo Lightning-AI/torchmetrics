@@ -73,7 +73,8 @@ class Metric(Module, ABC):
                 custom implementation that calls ``torch.distributed.all_gather`` internally.
             - distributed_available_fn: function that checks if the distributed backend is available.
                 Defaults to a check of ``torch.distributed.is_available()`` and ``torch.distributed.is_initialized()``.
-            - sync_on_compute: If metric state should synchronize when ``compute`` is called. Default is ``True``-
+            - sync_on_compute: If metric state should synchronize when ``compute`` is called. Default is ``True``
+            - compute_with_cache: If results from ``compute`` should be cached. Default is ``False``
     """
 
     __jit_ignored_attributes__ = ["device"]
@@ -130,6 +131,11 @@ class Metric(Module, ABC):
         if not isinstance(self.sync_on_compute, bool):
             raise ValueError(
                 f"Expected keyword argument `sync_on_compute` to be a `bool` but got {self.sync_on_compute}"
+            )
+        self.compute_with_cache = kwargs.pop("compute_with_cache", True)
+        if not isinstance(self.compute_with_cache, bool):
+            raise ValueError(
+                f"Expected keyword argument `compute_with_cache` to be a `bool` but got {self.compute_with_cache}"
             )
 
         if kwargs:
@@ -559,10 +565,12 @@ class Metric(Module, ABC):
                 should_sync=self._to_sync,
                 should_unsync=self._should_unsync,
             ):
-                value = compute(*args, **kwargs)
-                self._computed = _squeeze_if_scalar(value)
+                value = _squeeze_if_scalar(compute(*args, **kwargs))
 
-            return self._computed
+            if self.compute_with_cache:
+                self._computed = value
+
+            return value
 
         return wrapped_func
 
