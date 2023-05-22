@@ -154,7 +154,7 @@ def test_check_full_state_update_fn(capsys, metric_class, expected):
 
 
 @pytest.mark.parametrize(
-    ("input", "expected"),
+    ("inputs", "expected"),
     [
         ((torch.ones(2), torch.ones(2)), True),
         ((torch.rand(2), torch.rand(2)), False),
