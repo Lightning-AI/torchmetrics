@@ -48,7 +48,7 @@ def _compute_rouge_score(
     use_stemmer: bool,
     rouge_level: str,
     metric: str,
-    accumulate: Literal = ["avg", "best", None],
+    accumulate: Literal["avg", "best", None],
 ) -> Tensor:
     """Evaluate rouge scores from rouge-score package for baseline evaluation."""
     if isinstance(target, list) and all(isinstance(tgt, str) for tgt in target):
