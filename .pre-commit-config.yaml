@@ -79,6 +79,7 @@ repos:
           - flake8-pytest-style
           - flake8-bandit
           - flake8-builtins
+          - flake8-bugbear
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.0.260

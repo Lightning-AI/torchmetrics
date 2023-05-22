@@ -282,7 +282,7 @@ class MetricCollection(ModuleDict):
                         m0_state = getattr(m0, state)
                         # Determine if we just should set a reference or a full copy
                         setattr(mi, state, deepcopy(m0_state) if copy else m0_state)
-                    setattr(mi, "_update_count", deepcopy(m0._update_count) if copy else m0._update_count)
+                    mi._update_count = deepcopy(m0._update_count) if copy else m0._update_count
         self._state_is_copy = copy
 
     def compute(self) -> Dict[str, Any]:
