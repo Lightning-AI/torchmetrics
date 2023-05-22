@@ -19,7 +19,6 @@ import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from sklearn.metrics import hamming_loss as sk_hamming_loss
-
 from torchmetrics.classification.hamming import (
     BinaryHammingDistance,
     MulticlassHammingDistance,
@@ -30,6 +29,7 @@ from torchmetrics.functional.classification.hamming import (
     multiclass_hamming_distance,
     multilabel_hamming_distance,
 )
+
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all

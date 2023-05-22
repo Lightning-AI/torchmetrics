@@ -19,13 +19,13 @@ import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from torch import Tensor, tensor
-
 from torchmetrics.classification.specificity import BinarySpecificity, MulticlassSpecificity, MultilabelSpecificity
 from torchmetrics.functional.classification.specificity import (
     binary_specificity,
     multiclass_specificity,
     multilabel_specificity,
 )
+
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all

@@ -19,9 +19,9 @@ import torch
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import roc_curve as sk_roc_curve
-
 from torchmetrics.classification.roc import BinaryROC, MulticlassROC, MultilabelROC
 from torchmetrics.functional.classification.roc import binary_roc, multiclass_roc, multilabel_roc
+
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all

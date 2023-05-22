@@ -17,7 +17,6 @@ import numpy as np
 import pytest
 import torch
 from torch import tensor
-
 from torchmetrics.regression import MeanSquaredError, PearsonCorrCoef
 from torchmetrics.utilities import check_forward_full_state_property, rank_zero_debug, rank_zero_info, rank_zero_warn
 from torchmetrics.utilities.checks import _allclose_recursive

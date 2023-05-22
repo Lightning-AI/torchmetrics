@@ -20,7 +20,6 @@ import torch
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import precision_recall_curve as sk_precision_recall_curve
-
 from torchmetrics.classification.recall_fixed_precision import (
     BinaryRecallAtFixedPrecision,
     MulticlassRecallAtFixedPrecision,
@@ -31,6 +30,7 @@ from torchmetrics.functional.classification.recall_fixed_precision import (
     multiclass_recall_at_fixed_precision,
     multilabel_recall_at_fixed_precision,
 )
+
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all

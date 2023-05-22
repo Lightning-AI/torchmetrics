@@ -20,8 +20,8 @@ import pytest
 import torch
 from numpy import array
 from torch import Tensor, tensor
-
 from torchmetrics.retrieval import RetrievalPrecisionRecallCurve
+
 from unittests.helpers import seed_all
 from unittests.helpers.testers import Metric, MetricTester
 from unittests.retrieval.helpers import _default_metric_class_input_arguments, get_group_indexes

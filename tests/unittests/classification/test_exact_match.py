@@ -17,9 +17,9 @@ import numpy as np
 import pytest
 import torch
 from scipy.special import expit as sigmoid
-
 from torchmetrics.classification.exact_match import MulticlassExactMatch, MultilabelExactMatch
 from torchmetrics.functional.classification.exact_match import multiclass_exact_match, multilabel_exact_match
+
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all

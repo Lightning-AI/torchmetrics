@@ -18,7 +18,6 @@ import pytest
 import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
-
 from torchmetrics.classification.confusion_matrix import (
     BinaryConfusionMatrix,
     MulticlassConfusionMatrix,
@@ -29,6 +28,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     multiclass_confusion_matrix,
     multilabel_confusion_matrix,
 )
+
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
