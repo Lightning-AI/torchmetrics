@@ -574,7 +574,7 @@ class DummyListMetric(Metric):
 
     def update(self, x=None):
         """Update state."""
-        x = x or torch.tensor(1)
+        x = x if x is None else torch.tensor(1)
         self.x.append(x)
 
     def compute(self):
