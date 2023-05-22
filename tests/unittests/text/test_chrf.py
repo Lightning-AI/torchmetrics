@@ -3,10 +3,10 @@ from typing import Sequence
 
 import pytest
 from torch import Tensor, tensor
-
 from torchmetrics.functional.text.chrf import chrf_score
 from torchmetrics.text.chrf import CHRFScore
 from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
+
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 

@@ -20,11 +20,11 @@ import pytest
 import torch
 from sklearn.metrics import mean_squared_error, precision_score, recall_score
 from torch import Tensor
-
 from torchmetrics.classification import MulticlassPrecision, MulticlassRecall
 from torchmetrics.regression import MeanSquaredError
 from torchmetrics.utilities import apply_to_collection
 from torchmetrics.wrappers.bootstrapping import BootStrapper, _bootstrap_sampler
+
 from unittests.helpers import seed_all
 
 seed_all(42)

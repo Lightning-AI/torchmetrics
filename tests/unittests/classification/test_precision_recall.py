@@ -21,7 +21,6 @@ from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from sklearn.metrics import precision_score as sk_precision_score
 from sklearn.metrics import recall_score as sk_recall_score
 from torch import Tensor, tensor
-
 from torchmetrics.classification.precision_recall import (
     BinaryPrecision,
     BinaryRecall,
@@ -38,6 +37,7 @@ from torchmetrics.functional.classification.precision_recall import (
     multilabel_precision,
     multilabel_recall,
 )
+
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all

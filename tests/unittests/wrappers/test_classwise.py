@@ -1,6 +1,5 @@
 import pytest
 import torch
-
 from torchmetrics import MetricCollection
 from torchmetrics.classification import MulticlassAccuracy, MulticlassRecall
 from torchmetrics.wrappers import ClasswiseWrapper

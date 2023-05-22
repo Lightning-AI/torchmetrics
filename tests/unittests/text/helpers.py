@@ -21,8 +21,8 @@ import pytest
 import torch
 from torch import Tensor
 from torch.multiprocessing import set_start_method
-
 from torchmetrics import Metric
+
 from unittests import NUM_PROCESSES
 from unittests.helpers.testers import MetricTester, _assert_allclose, _assert_requires_grad, _assert_tensor
 

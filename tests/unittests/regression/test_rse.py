@@ -17,9 +17,9 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-
 from torchmetrics.functional import relative_squared_error
 from torchmetrics.regression import RelativeSquaredError
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester

@@ -59,7 +59,6 @@ known_first_party = [
     "torchmetrics",
     "integrations",
     "unittests",
-    "integrations",
 ]
 skip_glob = []
 profile = "black"
@@ -72,6 +71,7 @@ line-length = 120
 select = [
     "E", "W",  # see: https://pypi.org/project/pycodestyle
     "F",  # see: https://pypi.org/project/pyflakes
+    "I",  #see: https://pypi.org/project/isort/
     "D",  # see: https://pypi.org/project/pydocstyle
     "N",  # see: https://pypi.org/project/pep8-naming
     "S",  # see: https://pypi.org/project/flake8-bandit
