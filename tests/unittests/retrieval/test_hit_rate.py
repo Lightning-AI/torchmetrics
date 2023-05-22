@@ -14,9 +14,9 @@
 import numpy as np
 import pytest
 from torch import Tensor
-
 from torchmetrics.functional.retrieval.hit_rate import retrieval_hit_rate
 from torchmetrics.retrieval.hit_rate import RetrievalHitRate
+
 from unittests.helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,

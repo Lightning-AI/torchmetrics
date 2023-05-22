@@ -21,7 +21,6 @@ from lightning_utilities import compare_version
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import precision_recall_curve as sk_precision_recall_curve
-
 from torchmetrics.classification.precision_recall_curve import (
     BinaryPrecisionRecallCurve,
     MulticlassPrecisionRecallCurve,
@@ -32,6 +31,7 @@ from torchmetrics.functional.classification.precision_recall_curve import (
     multiclass_precision_recall_curve,
     multilabel_precision_recall_curve,
 )
+
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all

@@ -15,10 +15,10 @@ from functools import partial
 
 import pytest
 import torch
-
 from torchmetrics.functional.text.infolm import infolm
 from torchmetrics.text.infolm import InfoLM
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+
 from unittests.text.helpers import TextTester, skip_on_connection_issues
 from unittests.text.inputs import HYPOTHESIS_A, HYPOTHESIS_C, _inputs_single_reference
 
