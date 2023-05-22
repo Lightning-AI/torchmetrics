@@ -30,11 +30,11 @@ __all__ = [
 ]
 
 if _PESQ_AVAILABLE:
-    from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality  # noqa: F401
+    from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
 
     __all__.append("PerceptualEvaluationSpeechQuality")
 
 if _PYSTOI_AVAILABLE:
-    from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility  # noqa: F401
+    from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
 
     __all__.append("ShortTimeObjectiveIntelligibility")
