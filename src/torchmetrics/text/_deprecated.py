@@ -33,7 +33,7 @@ class _BLEUScore(BLEUScore):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("BLEUScore", "text")
-        return super().__init__(n_gram=n_gram, smooth=smooth, weights=weights, **kwargs)
+        super().__init__(n_gram=n_gram, smooth=smooth, weights=weights, **kwargs)
 
 
 class _CharErrorRate(CharErrorRate):
@@ -51,7 +51,7 @@ class _CharErrorRate(CharErrorRate):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("CharErrorRate", "text")
-        return super().__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class _CHRFScore(CHRFScore):
@@ -75,7 +75,7 @@ class _CHRFScore(CHRFScore):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("CHRFScore", "text")
-        return super().__init__(
+        super().__init__(
             n_char_order=n_char_order,
             n_word_order=n_word_order,
             beta=beta,
@@ -107,7 +107,7 @@ class _ExtendedEditDistance(ExtendedEditDistance):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("ExtendedEditDistance", "text")
-        return super().__init__(
+        super().__init__(
             language=language,
             return_sentence_level_score=return_sentence_level_score,
             alpha=alpha,
@@ -133,7 +133,7 @@ class _MatchErrorRate(MatchErrorRate):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("MatchErrorRate", "text")
-        return super().__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class _Perplexity(Perplexity):
@@ -154,7 +154,7 @@ class _Perplexity(Perplexity):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("Perplexity", "text")
-        return super().__init__(ignore_index=ignore_index, **kwargs)
+        super().__init__(ignore_index=ignore_index, **kwargs)
 
 
 class _SacreBLEUScore(SacreBLEUScore):
@@ -177,7 +177,7 @@ class _SacreBLEUScore(SacreBLEUScore):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("SacreBLEUScore", "text")
-        return super().__init__(
+        super().__init__(
             n_gram=n_gram, smooth=smooth, tokenize=tokenize, lowercase=lowercase, weights=weights, **kwargs
         )
 
@@ -194,7 +194,7 @@ class _SQuAD(SQuAD):
 
     def __init__(self, **kwargs: Any) -> None:
         _deprecated_root_import_class("SQuAD", "text")
-        return super().__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class _TranslationEditRate(TranslationEditRate):
@@ -217,7 +217,7 @@ class _TranslationEditRate(TranslationEditRate):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("TranslationEditRate", "text")
-        return super().__init__(
+        super().__init__(
             normalize=normalize,
             no_punctuation=no_punctuation,
             lowercase=lowercase,
@@ -239,7 +239,7 @@ class _WordErrorRate(WordErrorRate):
 
     def __init__(self, **kwargs: Any) -> None:
         _deprecated_root_import_class("WordErrorRate", "text")
-        return super().__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class _WordInfoLost(WordInfoLost):
@@ -254,7 +254,7 @@ class _WordInfoLost(WordInfoLost):
 
     def __init__(self, **kwargs: Any) -> None:
         _deprecated_root_import_class("WordInfoLost", "text")
-        return super().__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class _WordInfoPreserved(WordInfoPreserved):
@@ -269,4 +269,4 @@ class _WordInfoPreserved(WordInfoPreserved):
 
     def __init__(self, **kwargs: Any) -> None:
         _deprecated_root_import_class("WordInfoPreserved", "text")
-        return super().__init__(**kwargs)
+        super().__init__(**kwargs)
