@@ -49,7 +49,7 @@ class _AbstractStatScores(Metric):
         """Initialize the states for the different statistics."""
         default: Union[Callable[[], list], Callable[[], Tensor]]
         if multidim_average == "samplewise":
-            default = lambda: []
+            default = list
             dist_reduce_fx = "cat"
         else:
             default = lambda: torch.zeros(size, dtype=torch.long)

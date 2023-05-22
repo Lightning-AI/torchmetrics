@@ -84,9 +84,7 @@ def class_reduce(
     if class_reduction == "none" or class_reduction is None:
         return fraction
 
-    raise ValueError(
-        f"Reduction parameter {class_reduction} unknown." f" Choose between one of these: {valid_reduction}"
-    )
+    raise ValueError(f"Reduction parameter {class_reduction} unknown. Choose between one of these: {valid_reduction}")
 
 
 def _simple_gather_all_tensors(result: Tensor, group: Any, world_size: int) -> List[Tensor]:
