@@ -555,11 +555,9 @@ class DummyMetric(Metric):
 
     def update(self):
         """Update state."""
-        pass
 
     def compute(self):
         """Compute value."""
-        pass
 
 
 class DummyListMetric(Metric):

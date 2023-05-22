@@ -90,7 +90,6 @@ class CLIPScore(Metric):
 
     score: Tensor
     n_samples: Tensor
-    plot_lower_bound = 0.0
     plot_upper_bound = 100.0
 
     def __init__(

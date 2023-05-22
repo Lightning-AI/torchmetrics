@@ -1043,7 +1043,6 @@ class CompositionalMetric(Metric):
 
     def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, process_group: Optional[Any] = None) -> None:
         """No syncing required here. syncing will be done in metric_a and metric_b."""
-        pass
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Redirect the call to the input which the conposition was formed from."""
