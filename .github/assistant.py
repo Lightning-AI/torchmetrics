@@ -35,7 +35,7 @@ LUT_PYTHON_TORCH = {
     "3.11": "1.13",
 }
 _path = lambda *ds: os.path.join(_PATH_ROOT, *ds)
-REQUIREMENTS_FILES = tuple(glob.glob(_path("requirements", "*.txt")) + [_path("requirements.txt")])
+REQUIREMENTS_FILES = (*glob.glob(_path("requirements", "*.txt")), _path("requirements.txt"))
 
 
 def request_url(url: str, auth_token: Optional[str] = None) -> Optional[dict]:

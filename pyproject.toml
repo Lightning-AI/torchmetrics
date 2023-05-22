@@ -86,6 +86,7 @@ extend-select = [
     "ANN",  # see: https://pypi.org/project/flake8-annotations
     "T10",  # see: https://pypi.org/project/flake8-debugger/
     "Q",  # see: https://pypi.org/project/flake8-quotes/
+    "RUF",  # Ruff-specific rules
 ]
 ignore = [
     "E731",  # Do not assign a lambda expression, use a def
