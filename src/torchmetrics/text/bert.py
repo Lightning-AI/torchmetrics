@@ -22,6 +22,7 @@ from torch.nn import Module
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.helper_embedding_metric import _preprocess_text
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TRANSFORMERS_AVAILABLE
@@ -180,7 +181,7 @@ class BERTScore(Metric):
                     " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."
                 )
             if model_name_or_path is None:
-                warn(
+                rank_zero_warn(
                     "The argument `model_name_or_path` was not specified while it is required when the default"
                     " `transformers` model is used."
                     f" It will use the default recommended model - {_DEFAULT_MODEL!r}."

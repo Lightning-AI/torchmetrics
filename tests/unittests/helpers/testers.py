@@ -572,8 +572,9 @@ class DummyListMetric(Metric):
         super().__init__(**kwargs)
         self.add_state("x", [], dist_reduce_fx="cat")
 
-    def update(self, x=torch.tensor(1)):
+    def update(self, x=None):
         """Update state."""
+        x = torch.tensor(1) if x is None else x
         self.x.append(x)
 
     def compute(self):
