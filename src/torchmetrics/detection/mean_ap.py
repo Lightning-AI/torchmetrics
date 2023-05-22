@@ -900,15 +900,11 @@ class MeanAveragePrecision(Metric):
     def _gather_tuple_list(list_to_gather: List[Tuple], process_group: Optional[Any] = None) -> List[Any]:
         """Gather a list of tuples over multiple devices."""
         world_size = dist.get_world_size(group=process_group)
-        list_gathered = [None] * world_size
+        dist.barrier(group=process_group)
+
+        list_gathered = [None for _ in range(world_size)]
         dist.all_gather_object(list_gathered, list_to_gather, group=process_group)
 
-        for rank in range(1, world_size):
-            if len(list_gathered[rank]) != list_gathered[0]:
-                raise ValueError(
-                    f"Rank({rank}) doesn't have the same number of elements as Rank(0):"
-                    f" {list_gathered[rank]} vs. {list_gathered[0]}",
-                )
         list_merged = []
         for idx in range(len(list_gathered[0])):
             for rank in range(world_size):
