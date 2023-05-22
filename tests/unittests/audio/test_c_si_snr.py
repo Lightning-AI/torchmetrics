@@ -16,9 +16,9 @@ from collections import namedtuple
 import pytest
 import torch
 from scipy.io import wavfile
-
 from torchmetrics.audio import ComplexScaleInvariantSignalNoiseRatio
 from torchmetrics.functional.audio import complex_scale_invariant_signal_noise_ratio
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
 from unittests.helpers import seed_all
