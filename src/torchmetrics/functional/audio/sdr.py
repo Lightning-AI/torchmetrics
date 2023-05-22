@@ -142,7 +142,7 @@ def signal_distortion_ratio(
         >>> from torchmetrics.functional.audio import permutation_invariant_training
         >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
         >>> target = torch.randn(4, 2, 8000)
-        >>> best_metric, best_perm = permutation_invariant_training(preds, target, signal_distortion_ratio, 'max')
+        >>> best_metric, best_perm = permutation_invariant_training(preds, target, signal_distortion_ratio)
         >>> best_metric
         tensor([-11.6375, -11.4358, -11.7148, -11.6325])
         >>> best_perm

@@ -126,7 +126,7 @@ def _get_void_color(things: Set[int], stuffs: Set[int]) -> Tuple[int, int]:
     Returns:
         A new color ID that does not belong to things nor stuffs.
     """
-    unused_category_id = 1 + max([0] + list(things) + list(stuffs))
+    unused_category_id = 1 + max([0, *list(things), *list(stuffs)])
     return unused_category_id, 0
 
 
