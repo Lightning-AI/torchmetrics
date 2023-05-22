@@ -613,6 +613,14 @@ class DummyMetricMultiOutput(DummyMetricSum):
         return [self.x, self.x]
 
 
+class DummyMetricMultiOutputDict(DummyMetricSum):
+    """DummyMetricMultiOutput for testing core components."""
+
+    def compute(self):
+        """Compute value."""
+        return {"output1": self.x, "output2": self.x}
+
+
 def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
     """Injecting the ignored index value into a tensor randomly."""
     if any(x.flatten() == ignore_index):  # ignore index is a class label
