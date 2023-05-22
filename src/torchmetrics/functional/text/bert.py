@@ -31,6 +31,7 @@ from torchmetrics.functional.text.helper_embedding_metric import (
     _output_data_collator,
     _process_attention_mask_for_special_tokens,
 )
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
 
@@ -213,8 +214,8 @@ def _load_baseline(
         baseline_url = f"{url_base}/{lang}/{model_name_or_path}.tsv"
         baseline = _read_csv_from_url(baseline_url)
     else:
-        baseline = None
-        warn("Baseline was not successfully loaded. No baseline is going to be used.")
+        rank_zero_warn("Baseline was not successfully loaded. No baseline is going to be used.")
+        return None
 
     return baseline
 
@@ -347,7 +348,7 @@ def bert_score(
                 " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."
             )
         if model_name_or_path is None:
-            warn(
+            rank_zero_warn(
                 "The argument `model_name_or_path` was not specified while it is required when default"
                 " `transformers` model are used."
                 f"It is, therefore, used the default recommended model - {_DEFAULT_MODEL}."
@@ -366,7 +367,7 @@ def bert_score(
                 f" Please use num_layers <= {model.config.num_hidden_layers}"
             )
     except AttributeError:
-        warn("It was not possible to retrieve the parameter `num_layers` from the model specification.")
+        rank_zero_warn("It was not possible to retrieve the parameter `num_layers` from the model specification.")
 
     _are_empty_lists = all(isinstance(text, list) and len(text) == 0 for text in (preds, target))
     _are_valid_lists = all(
@@ -376,7 +377,7 @@ def bert_score(
         isinstance(text, dict) and isinstance(text["input_ids"], Tensor) for text in (preds, target)
     )
     if _are_empty_lists:
-        warn("Predictions and references are empty.")
+        rank_zero_warn("Predictions and references are empty.")
         output_dict: Dict[str, Union[Tensor, List[float], str]] = {
             "precision": [0.0],
             "recall": [0.0],

@@ -32,9 +32,7 @@ class _RetrievalFallOut(RetrievalFallOut):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("RetrievalFallOut", "retrieval")
-        return super().__init__(
-            empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs
-        )
+        super().__init__(empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs)
 
 
 class _RetrievalHitRate(RetrievalHitRate):
@@ -57,9 +55,7 @@ class _RetrievalHitRate(RetrievalHitRate):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("RetrievalHitRate", "retrieval")
-        return super().__init__(
-            empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs
-        )
+        super().__init__(empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs)
 
 
 class _RetrievalMAP(RetrievalMAP):
@@ -82,9 +78,7 @@ class _RetrievalMAP(RetrievalMAP):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("RetrievalMAP", "retrieval")
-        return super().__init__(
-            empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs
-        )
+        super().__init__(empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs)
 
 
 class _RetrievalRecall(RetrievalRecall):
@@ -107,9 +101,7 @@ class _RetrievalRecall(RetrievalRecall):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("RetrievalRecall", "retrieval")
-        return super().__init__(
-            empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs
-        )
+        super().__init__(empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs)
 
 
 class _RetrievalRPrecision(RetrievalRPrecision):
@@ -131,7 +123,7 @@ class _RetrievalRPrecision(RetrievalRPrecision):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("RetrievalRPrecision", "retrieval")
-        return super().__init__(empty_target_action=empty_target_action, ignore_index=ignore_index, **kwargs)
+        super().__init__(empty_target_action=empty_target_action, ignore_index=ignore_index, **kwargs)
 
 
 class _RetrievalNormalizedDCG(RetrievalNormalizedDCG):
@@ -154,9 +146,7 @@ class _RetrievalNormalizedDCG(RetrievalNormalizedDCG):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("RetrievalNormalizedDCG", "retrieval")
-        return super().__init__(
-            empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs
-        )
+        super().__init__(empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs)
 
 
 class _RetrievalPrecision(RetrievalPrecision):
@@ -180,7 +170,7 @@ class _RetrievalPrecision(RetrievalPrecision):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("", "retrieval")
-        return super().__init__(
+        super().__init__(
             empty_target_action=empty_target_action,
             ignore_index=ignore_index,
             top_k=top_k,
@@ -215,7 +205,7 @@ class _RetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurve):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("", "retrieval")
-        return super().__init__(
+        super().__init__(
             max_k=max_k,
             adaptive_k=adaptive_k,
             empty_target_action=empty_target_action,
@@ -246,7 +236,7 @@ class _RetrievalRecallAtFixedPrecision(RetrievalRecallAtFixedPrecision):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("RetrievalRecallAtFixedPrecision", "retrieval")
-        return super().__init__(
+        super().__init__(
             min_precision=min_precision,
             max_k=max_k,
             adaptive_k=adaptive_k,
@@ -275,4 +265,4 @@ class _RetrievalMRR(RetrievalMRR):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("", "retrieval")
-        return super().__init__(empty_target_action=empty_target_action, ignore_index=ignore_index, **kwargs)
+        super().__init__(empty_target_action=empty_target_action, ignore_index=ignore_index, **kwargs)

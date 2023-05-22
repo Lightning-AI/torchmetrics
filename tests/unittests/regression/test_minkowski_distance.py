@@ -4,11 +4,11 @@ from functools import partial
 import pytest
 import torch
 from scipy.spatial.distance import minkowski as scipy_minkowski
-
 from torchmetrics.functional import minkowski_distance
 from torchmetrics.regression import MinkowskiDistance
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester

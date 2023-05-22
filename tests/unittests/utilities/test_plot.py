@@ -20,7 +20,6 @@ import numpy as np
 import pytest
 import torch
 from torch import tensor
-
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import MaxMetric, MeanMetric, MinMetric, SumMetric
 from torchmetrics.audio import (
@@ -823,6 +822,14 @@ def test_plot_method_collection(together, num_vals):
         assert isinstance(fig_ax, list)
         assert all(isinstance(f[0], plt.Figure) for f in fig_ax)
         assert all(isinstance(f[1], matplotlib.axes.Axes) for f in fig_ax)
+
+    # test ax arg
+    fig, ax = plt.subplots(nrows=len(m_collection), ncols=1)
+    m_collection.plot(ax=ax.tolist())
+
+    fig, ax = plt.subplots(nrows=len(m_collection) + 1, ncols=1)
+    with pytest.raises(ValueError, match="Expected argument `ax` to be a sequence of matplotlib axis objects with.*"):
+        m_collection.plot(ax=ax.tolist())
 
 
 @pytest.mark.parametrize(

@@ -18,12 +18,12 @@ import matplotlib
 import matplotlib.pyplot as plt
 import pytest
 import torch
-from transformers import CLIPModel as _CLIPModel
-from transformers import CLIPProcessor as _CLIPProcessor
-
 from torchmetrics.functional.multimodal.clip_score import clip_score
 from torchmetrics.multimodal.clip_score import CLIPScore
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from transformers import CLIPModel as _CLIPModel
+from transformers import CLIPProcessor as _CLIPProcessor
+
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 from unittests.text.helpers import skip_on_connection_issues

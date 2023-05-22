@@ -15,9 +15,9 @@ import numpy as np
 import pytest
 from sklearn.metrics import label_ranking_average_precision_score
 from torch import Tensor
-
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
 from torchmetrics.retrieval.reciprocal_rank import RetrievalMRR
+
 from unittests.helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,

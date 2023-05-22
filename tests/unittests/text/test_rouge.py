@@ -19,11 +19,11 @@ from typing import Callable, Sequence, Union
 import pytest
 import torch
 from torch import Tensor
-from typing_extensions import Literal
-
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.text.rouge import ROUGEScore
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
+from typing_extensions import Literal
+
 from unittests.text.helpers import TextTester, skip_on_connection_issues
 from unittests.text.inputs import Input, _inputs_multiple_references, _inputs_single_sentence_single_reference
 
@@ -48,7 +48,7 @@ def _compute_rouge_score(
     use_stemmer: bool,
     rouge_level: str,
     metric: str,
-    accumulate: Literal = ["avg", "best", None],
+    accumulate: Literal["avg", "best", None],
 ) -> Tensor:
     """Evaluate rouge scores from rouge-score package for baseline evaluation."""
     if isinstance(target, list) and all(isinstance(tgt, str) for tgt in target):

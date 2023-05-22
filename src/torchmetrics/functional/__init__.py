@@ -133,8 +133,8 @@ from torchmetrics.functional.text._deprecated import _word_information_preserved
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
-    from torchmetrics.functional.text._deprecated import _bert_score as bert_score  # noqa: F401
-    from torchmetrics.functional.text._deprecated import _infolm as infolm  # noqa: F401
+    from torchmetrics.functional.text._deprecated import _bert_score as bert_score
+    from torchmetrics.functional.text._deprecated import _infolm as infolm
 
 __all__ = [
     "accuracy",

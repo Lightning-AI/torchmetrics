@@ -21,10 +21,10 @@ import numpy as np
 import pytest
 import torch
 from torch import Tensor, tensor
-
 from torchmetrics import Metric
 from torchmetrics.detection.mean_ap import MAPMetricResults
 from torchmetrics.utilities.data import _flatten, apply_to_collection
+
 from unittests import NUM_PROCESSES
 
 
@@ -572,8 +572,9 @@ class DummyListMetric(Metric):
         super().__init__(**kwargs)
         self.add_state("x", [], dist_reduce_fx="cat")
 
-    def update(self, x=torch.tensor(1)):
+    def update(self, x=None):
         """Update state."""
+        x = torch.tensor(1) if x is None else x
         self.x.append(x)
 
     def compute(self):

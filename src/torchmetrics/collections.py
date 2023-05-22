@@ -282,7 +282,7 @@ class MetricCollection(ModuleDict):
                         m0_state = getattr(m0, state)
                         # Determine if we just should set a reference or a full copy
                         setattr(mi, state, deepcopy(m0_state) if copy else m0_state)
-                    setattr(mi, "_update_count", deepcopy(m0._update_count) if copy else m0._update_count)
+                    mi._update_count = deepcopy(m0._update_count) if copy else m0._update_count
         self._state_is_copy = copy
 
     def compute(self) -> Dict[str, Any]:
@@ -593,11 +593,8 @@ class MetricCollection(ModuleDict):
                 raise ValueError(
                     f"Expected argument `ax` to be a matplotlib axis object, but got {type(ax)} when `together=True`"
                 )
-            if (
-                not together
-                and not isinstance(ax, Sequence)
-                and not all(isinstance(a, _AX_TYPE) for a in ax)
-                and len(ax) != len(self)
+            if not together and not (
+                isinstance(ax, Sequence) and all(isinstance(a, _AX_TYPE) for a in ax) and len(ax) == len(self)
             ):
                 raise ValueError(
                     f"Expected argument `ax` to be a sequence of matplotlib axis objects with the same length as the "
