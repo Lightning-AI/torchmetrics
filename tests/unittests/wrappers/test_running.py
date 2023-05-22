@@ -14,12 +14,12 @@
 
 import pytest
 import torch
-
 from torchmetrics.aggregation import MeanMetric, SumMetric
 from torchmetrics.classification import BinaryAccuracy, BinaryConfusionMatrix
 from torchmetrics.collections import MetricCollection
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError, PearsonCorrCoef
 from torchmetrics.wrappers import Running
+
 from unittests.helpers.testers import MetricTester
 
 

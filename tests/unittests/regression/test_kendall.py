@@ -19,9 +19,9 @@ import pytest
 import torch
 from lightning_utilities.core.imports import compare_version
 from scipy.stats import kendalltau
-
 from torchmetrics.functional.regression.kendall import kendall_rank_corrcoef
 from torchmetrics.regression.kendall import KendallRankCorrCoef
+
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
