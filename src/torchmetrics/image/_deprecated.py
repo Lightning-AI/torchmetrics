@@ -32,7 +32,7 @@ class _ErrorRelativeGlobalDimensionlessSynthesis(ErrorRelativeGlobalDimensionles
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("ErrorRelativeGlobalDimensionlessSynthesis", "image")
-        return super().__init__(ratio=ratio, reduction=reduction, **kwargs)
+        super().__init__(ratio=ratio, reduction=reduction, **kwargs)
 
 
 class _MultiScaleStructuralSimilarityIndexMeasure(MultiScaleStructuralSimilarityIndexMeasure):
@@ -60,7 +60,7 @@ class _MultiScaleStructuralSimilarityIndexMeasure(MultiScaleStructuralSimilarity
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("MultiScaleStructuralSimilarityIndexMeasure", "image")
-        return super().__init__(
+        super().__init__(
             gaussian_kernel=gaussian_kernel,
             kernel_size=kernel_size,
             sigma=sigma,
@@ -94,7 +94,7 @@ class _PeakSignalNoiseRatio(PeakSignalNoiseRatio):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("PeakSignalNoiseRatio", "image")
-        return super().__init__(data_range=data_range, base=base, reduction=reduction, dim=dim, **kwargs)
+        super().__init__(data_range=data_range, base=base, reduction=reduction, dim=dim, **kwargs)
 
 
 class _RelativeAverageSpectralError(RelativeAverageSpectralError):
@@ -115,7 +115,7 @@ class _RelativeAverageSpectralError(RelativeAverageSpectralError):
         **kwargs: Dict[str, Any],
     ) -> None:
         _deprecated_root_import_class("RelativeAverageSpectralError", "image")
-        return super().__init__(window_size=window_size, **kwargs)
+        super().__init__(window_size=window_size, **kwargs)
 
 
 class _RootMeanSquaredErrorUsingSlidingWindow(RootMeanSquaredErrorUsingSlidingWindow):
@@ -136,7 +136,7 @@ class _RootMeanSquaredErrorUsingSlidingWindow(RootMeanSquaredErrorUsingSlidingWi
         **kwargs: Dict[str, Any],
     ) -> None:
         _deprecated_root_import_class("RootMeanSquaredErrorUsingSlidingWindow", "image")
-        return super().__init__(window_size=window_size, **kwargs)
+        super().__init__(window_size=window_size, **kwargs)
 
 
 class _SpectralAngleMapper(SpectralAngleMapper):
@@ -156,7 +156,7 @@ class _SpectralAngleMapper(SpectralAngleMapper):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("SpectralAngleMapper", "image")
-        return super().__init__(reduction=reduction, **kwargs)
+        super().__init__(reduction=reduction, **kwargs)
 
 
 class _SpectralDistortionIndex(SpectralDistortionIndex):
@@ -175,7 +175,7 @@ class _SpectralDistortionIndex(SpectralDistortionIndex):
         self, p: int = 1, reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean", **kwargs: Any
     ) -> None:
         _deprecated_root_import_class("SpectralDistortionIndex", "image")
-        return super().__init__(p=p, reduction=reduction, **kwargs)
+        super().__init__(p=p, reduction=reduction, **kwargs)
 
 
 class _StructuralSimilarityIndexMeasure(StructuralSimilarityIndexMeasure):
@@ -203,7 +203,7 @@ class _StructuralSimilarityIndexMeasure(StructuralSimilarityIndexMeasure):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("StructuralSimilarityIndexMeasure", "image")
-        return super().__init__(
+        super().__init__(
             gaussian_kernel=gaussian_kernel,
             sigma=sigma,
             kernel_size=kernel_size,
@@ -230,7 +230,7 @@ class _TotalVariation(TotalVariation):
 
     def __init__(self, reduction: Literal["mean", "sum", "none", None] = "sum", **kwargs: Any) -> None:
         _deprecated_root_import_class("TotalVariation", "image")
-        return super().__init__(reduction=reduction, **kwargs)
+        super().__init__(reduction=reduction, **kwargs)
 
 
 class _UniversalImageQualityIndex(UniversalImageQualityIndex):
@@ -253,6 +253,4 @@ class _UniversalImageQualityIndex(UniversalImageQualityIndex):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("UniversalImageQualityIndex", "image")
-        return super().__init__(
-            kernel_size=kernel_size, sigma=sigma, reduction=reduction, data_range=data_range, **kwargs
-        )
+        super().__init__(kernel_size=kernel_size, sigma=sigma, reduction=reduction, data_range=data_range, **kwargs)

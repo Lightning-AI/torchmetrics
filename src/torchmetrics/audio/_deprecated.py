@@ -28,7 +28,7 @@ class _PermutationInvariantTraining(PermutationInvariantTraining):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("PermutationInvariantTraining", "audio")
-        return super().__init__(metric_func=metric_func, eval_func=eval_func, **kwargs)
+        super().__init__(metric_func=metric_func, eval_func=eval_func, **kwargs)
 
 
 class _ScaleInvariantSignalDistortionRatio(ScaleInvariantSignalDistortionRatio):
@@ -48,7 +48,7 @@ class _ScaleInvariantSignalDistortionRatio(ScaleInvariantSignalDistortionRatio):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("ScaleInvariantSignalDistortionRatio", "audio")
-        return super().__init__(zero_mean=zero_mean, **kwargs)
+        super().__init__(zero_mean=zero_mean, **kwargs)
 
 
 class _ScaleInvariantSignalNoiseRatio(ScaleInvariantSignalNoiseRatio):
@@ -67,7 +67,7 @@ class _ScaleInvariantSignalNoiseRatio(ScaleInvariantSignalNoiseRatio):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("ScaleInvariantSignalNoiseRatio", "audio")
-        return super().__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class _SignalDistortionRatio(SignalDistortionRatio):
@@ -98,7 +98,7 @@ class _SignalDistortionRatio(SignalDistortionRatio):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("SignalDistortionRatio", "audio")
-        return super().__init__(
+        super().__init__(
             use_cg_iter=use_cg_iter, filter_length=filter_length, zero_mean=zero_mean, load_diag=load_diag, **kwargs
         )
 
@@ -120,4 +120,4 @@ class _SignalNoiseRatio(SignalNoiseRatio):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("SignalNoiseRatio", "audio")
-        return super().__init__(zero_mean=zero_mean, **kwargs)
+        super().__init__(zero_mean=zero_mean, **kwargs)
