@@ -2,15 +2,7 @@ import os.path
 
 import torch
 
-from unittests.conftest import (
-    BATCH_SIZE,
-    EXTRA_DIM,
-    NUM_BATCHES,
-    NUM_CLASSES,
-    NUM_PROCESSES,
-    THRESHOLD,
-    setup_ddp,
-)
+from unittests.conftest import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES, NUM_PROCESSES, THRESHOLD, setup_ddp
 
 _PATH_TESTS = os.path.dirname(__file__)
 _PATH_ROOT = os.path.dirname(_PATH_TESTS)
