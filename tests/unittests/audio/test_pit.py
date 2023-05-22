@@ -20,7 +20,6 @@ import pytest
 import torch
 from scipy.optimize import linear_sum_assignment
 from torch import Tensor
-
 from torchmetrics.audio import PermutationInvariantTraining
 from torchmetrics.functional.audio import (
     permutation_invariant_training,
@@ -31,6 +30,7 @@ from torchmetrics.functional.audio.pit import (
     _find_best_perm_by_exhaustive_method,
     _find_best_perm_by_linear_sum_assignment,
 )
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
