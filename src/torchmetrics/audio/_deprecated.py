@@ -16,7 +16,8 @@ class _PermutationInvariantTraining(PermutationInvariantTraining):
     >>> _ = torch.manual_seed(42)
     >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
     >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-    >>> pit = _PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
+    >>> pit = _PermutationInvariantTraining(scale_invariant_signal_noise_ratio,
+    ...     mode="speaker-wise", eval_func="max")
     >>> pit(preds, target)
     tensor(-2.1065)
     """
@@ -24,11 +25,12 @@ class _PermutationInvariantTraining(PermutationInvariantTraining):
     def __init__(
         self,
         metric_func: Callable,
+        mode: Literal["speaker-wise", "permutation-wise"] = "speaker-wise",
         eval_func: Literal["max", "min"] = "max",
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("PermutationInvariantTraining", "audio")
-        return super().__init__(metric_func=metric_func, eval_func=eval_func, **kwargs)
+        return super().__init__(metric_func=metric_func, mode=mode, eval_func=eval_func, **kwargs)
 
 
 class _ScaleInvariantSignalDistortionRatio(ScaleInvariantSignalDistortionRatio):
@@ -84,7 +86,8 @@ class _SignalDistortionRatio(SignalDistortionRatio):
     >>> from torchmetrics.functional import signal_distortion_ratio
     >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
     >>> target = torch.randn(4, 2, 8000)
-    >>> pit = _PermutationInvariantTraining(signal_distortion_ratio, 'max')
+    >>> pit = _PermutationInvariantTraining(signal_distortion_ratio,
+    ...     mode="speaker-wise", eval_func="max")
     >>> pit(preds, target)
     tensor(-11.6051)
     """
