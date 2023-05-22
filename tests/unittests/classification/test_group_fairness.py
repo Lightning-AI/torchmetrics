@@ -23,20 +23,23 @@ import torch
 from fairlearn.metrics import MetricFrame, selection_rate, true_positive_rate
 from scipy.special import expit as sigmoid
 from torch import Tensor
-
 from torchmetrics import Metric
 from torchmetrics.classification.group_fairness import BinaryFairness
 from torchmetrics.functional.classification.group_fairness import binary_fairness
 from torchmetrics.utilities.imports import _PYTHON_LOWER_3_8
+
 from unittests import THRESHOLD
 from unittests.classification.inputs import _group_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests.helpers.testers import (
+    MetricTester,
+    _assert_dtype_support,
+    inject_ignore_index,
+    remove_ignore_index_groups,
+)
 from unittests.helpers.testers import _assert_allclose as _core_assert_allclose
-from unittests.helpers.testers import _assert_dtype_support
 from unittests.helpers.testers import _assert_requires_grad as _core_assert_requires_grad
 from unittests.helpers.testers import _assert_tensor as _core_assert_tensor
-from unittests.helpers.testers import inject_ignore_index, remove_ignore_index_groups
 
 seed_all(42)
 

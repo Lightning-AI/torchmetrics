@@ -21,10 +21,10 @@ import numpy as np
 import pytest
 import torch
 from torch import Tensor, tensor
-
 from torchmetrics import Metric
 from torchmetrics.detection.mean_ap import MAPMetricResults
 from torchmetrics.utilities.data import _flatten, apply_to_collection
+
 from unittests import NUM_PROCESSES
 
 
@@ -611,6 +611,14 @@ class DummyMetricMultiOutput(DummyMetricSum):
     def compute(self):
         """Compute value."""
         return [self.x, self.x]
+
+
+class DummyMetricMultiOutputDict(DummyMetricSum):
+    """DummyMetricMultiOutput for testing core components."""
+
+    def compute(self):
+        """Compute value."""
+        return {"output1": self.x, "output2": self.x}
 
 
 def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
