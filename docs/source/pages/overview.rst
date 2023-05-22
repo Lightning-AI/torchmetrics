@@ -256,7 +256,8 @@ inside your LightningModule. In most cases we just have to replace ``self.log`` 
     from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall
 
     class MyModule(LightningModule):
-        def __init__(self, num_classes):
+        def __init__(self, num_classes: int):
+            super().__init__()
             metrics = MetricCollection([
                 MulticlassAccuracy(num_classes), MulticlassPrecision(num_classes), MulticlassRecall(num_classes)
             ])
@@ -281,6 +282,8 @@ inside your LightningModule. In most cases we just have to replace ``self.log`` 
             # metrics are logged with keys: val_Accuracy, val_Precision and val_Recall
             output = self.valid_metric.compute()
             self.log_dict(output)
+            # remember to reset metrics at the end of the epoch
+            self.valid_metrics.reset()
 
 .. note::
 
