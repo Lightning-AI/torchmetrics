@@ -17,9 +17,9 @@ from functools import partial
 import pytest
 import torch
 from sklearn.metrics import r2_score as sk_r2score
-
 from torchmetrics.functional import r2_score
 from torchmetrics.regression import R2Score
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester

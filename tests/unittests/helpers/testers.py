@@ -21,10 +21,10 @@ import numpy as np
 import pytest
 import torch
 from torch import Tensor, tensor
-
 from torchmetrics import Metric
 from torchmetrics.detection.mean_ap import MAPMetricResults
 from torchmetrics.utilities.data import _flatten, apply_to_collection
+
 from unittests import NUM_PROCESSES
 
 

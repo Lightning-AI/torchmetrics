@@ -19,13 +19,13 @@ import torch
 from netcal.metrics import ECE, MCE
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
-
 from torchmetrics.classification.calibration_error import BinaryCalibrationError, MulticlassCalibrationError
 from torchmetrics.functional.classification.calibration_error import (
     binary_calibration_error,
     multiclass_calibration_error,
 )
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
+
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases
 from unittests.helpers import seed_all

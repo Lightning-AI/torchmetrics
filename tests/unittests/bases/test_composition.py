@@ -17,7 +17,6 @@ from typing import Any
 import pytest
 import torch
 from torch import tensor
-
 from torchmetrics.metric import CompositionalMetric, Metric
 
 

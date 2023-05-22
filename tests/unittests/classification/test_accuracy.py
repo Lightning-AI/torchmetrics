@@ -19,7 +19,6 @@ import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import accuracy_score as sk_accuracy
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
-
 from torchmetrics.classification.accuracy import Accuracy, BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy
 from torchmetrics.functional.classification.accuracy import (
     accuracy,
@@ -27,6 +26,7 @@ from torchmetrics.functional.classification.accuracy import (
     multiclass_accuracy,
     multilabel_accuracy,
 )
+
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _input_binary, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all

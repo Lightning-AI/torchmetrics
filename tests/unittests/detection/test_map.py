@@ -20,9 +20,9 @@ import pytest
 import torch
 from pycocotools import mask
 from torch import IntTensor, Tensor
-
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+
 from unittests.detection import _SAMPLE_DETECTION_SEGMENTATION
 from unittests.helpers.testers import MetricTester
 

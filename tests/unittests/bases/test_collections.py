@@ -18,7 +18,6 @@ from typing import Any
 
 import pytest
 import torch
-
 from torchmetrics import Metric, MetricCollection
 from torchmetrics.classification import (
     BinaryAccuracy,
@@ -35,6 +34,7 @@ from torchmetrics.classification import (
     MultilabelAveragePrecision,
 )
 from torchmetrics.utilities.checks import _allclose_recursive
+
 from unittests.helpers import seed_all
 from unittests.helpers.testers import DummyMetricDiff, DummyMetricMultiOutputDict, DummyMetricSum
 
