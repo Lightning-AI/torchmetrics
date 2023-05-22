@@ -19,7 +19,6 @@ import torch
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import average_precision_score as sk_average_precision_score
-
 from torchmetrics.classification.average_precision import (
     BinaryAveragePrecision,
     MulticlassAveragePrecision,
@@ -31,6 +30,7 @@ from torchmetrics.functional.classification.average_precision import (
     multilabel_average_precision,
 )
 from torchmetrics.functional.classification.precision_recall_curve import binary_precision_recall_curve
+
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all

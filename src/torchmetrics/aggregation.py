@@ -91,7 +91,6 @@ class BaseAggregator(Metric):
 
     def update(self, value: Union[float, Tensor]) -> None:
         """Overwrite in child class."""
-        pass
 
     def compute(self) -> Tensor:
         """Compute the aggregated value."""

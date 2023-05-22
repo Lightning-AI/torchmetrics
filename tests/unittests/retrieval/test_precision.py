@@ -14,9 +14,9 @@
 import numpy as np
 import pytest
 from torch import Tensor
-
 from torchmetrics.functional.retrieval.precision import retrieval_precision
 from torchmetrics.retrieval.precision import RetrievalPrecision
+
 from unittests.helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,

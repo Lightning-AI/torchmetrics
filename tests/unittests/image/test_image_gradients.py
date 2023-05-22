@@ -14,7 +14,6 @@
 import pytest
 import torch
 from torch import Tensor
-
 from torchmetrics.functional import image_gradients
 
 

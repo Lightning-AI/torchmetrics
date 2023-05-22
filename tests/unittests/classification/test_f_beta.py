@@ -21,7 +21,6 @@ from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from sklearn.metrics import f1_score as sk_f1_score
 from sklearn.metrics import fbeta_score as sk_fbeta_score
 from torch import Tensor
-
 from torchmetrics.classification.f_beta import (
     BinaryF1Score,
     BinaryFBetaScore,
@@ -38,6 +37,7 @@ from torchmetrics.functional.classification.f_beta import (
     multilabel_f1_score,
     multilabel_fbeta_score,
 )
+
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
