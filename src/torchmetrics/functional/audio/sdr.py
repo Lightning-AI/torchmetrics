@@ -22,6 +22,7 @@ from torch import Tensor
 # import or def the norm/solve function
 from torch.linalg import norm
 
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE
 
@@ -178,7 +179,7 @@ def signal_distortion_ratio(
         sol = toeplitz_conjugate_gradient(r_0, b, n_iter=use_cg_iter)
     else:
         if use_cg_iter is not None and not _FAST_BSS_EVAL_AVAILABLE:
-            warnings.warn(
+            rank_zero_warn(
                 "The `use_cg_iter` parameter of `SDR` requires that `fast-bss-eval` is installed. "
                 "To make this this warning disappear, you could install `fast-bss-eval` using "
                 "`pip install fast-bss-eval` or set `use_cg_iter=None`. For this time, the solver "
