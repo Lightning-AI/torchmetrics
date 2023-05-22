@@ -71,7 +71,7 @@ def _skimage_psnr(preds, target, data_range, reduction, dim):
         [
             skimage_peak_signal_noise_ratio(sk_target, sk_preds, data_range=data_range)
             for sk_target, sk_preds in zip(sk_target_lists, sk_preds_lists)
-        ]
+        ],
     )
 
 

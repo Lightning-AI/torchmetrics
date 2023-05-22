@@ -122,7 +122,7 @@ def test_compare_is(tmpdir, compute_on_cpu):
         metric.update(img1[batch_size * i : batch_size * (i + 1)].cuda())
 
     torch_fid = calculate_metrics(
-        input1=_ImgDataset(img1), isc=True, isc_splits=1, batch_size=batch_size, save_cpu_ram=True
+        input1=_ImgDataset(img1), isc=True, isc_splits=1, batch_size=batch_size, save_cpu_ram=True,
     )
 
     tm_mean, _ = metric.compute()

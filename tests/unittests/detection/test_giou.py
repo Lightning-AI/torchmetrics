@@ -26,19 +26,19 @@ from unittests.helpers.testers import MetricTester
 giou = torch.Tensor(
     [
         [0.05507809],
-    ]
+    ],
 )
 giou_dontrespect = torch.Tensor(
     [
         [0.59242314],
-    ]
+    ],
 )
 box_giou = torch.Tensor(
     [
         [0.6895, -0.4964, -0.4944],
         [-0.5105, 0.4673, -0.3434],
         [-0.6024, -0.4021, 0.5345],
-    ]
+    ],
 )
 
 _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
@@ -51,7 +51,7 @@ class TestGeneralizedIntersectionOverUnion(MetricTester, BaseTestIntersectionOve
     data: Dict[str, TestCaseData] = {
         "iou_variant": TestCaseData(data=_inputs, result={GeneralizedIntersectionOverUnion._iou_type: giou}),
         "iou_variant_respect": TestCaseData(
-            data=_inputs, result={GeneralizedIntersectionOverUnion._iou_type: giou_dontrespect}
+            data=_inputs, result={GeneralizedIntersectionOverUnion._iou_type: giou_dontrespect},
         ),
         "fn_iou_variant": TestCaseData(data=_box_inputs, result=box_giou),
     }

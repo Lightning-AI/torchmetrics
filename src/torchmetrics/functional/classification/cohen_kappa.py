@@ -48,7 +48,7 @@ def _cohen_kappa_reduce(confmat: Tensor, weights: Optional[Literal["linear", "qu
         w_mat = torch.abs(w_mat - w_mat.T) if weights == "linear" else torch.pow(w_mat - w_mat.T, 2.0)
     else:
         raise ValueError(
-            f"Received {weights} for argument ``weights`` but should be either" " None, 'linear' or 'quadratic'"
+            f"Received {weights} for argument ``weights`` but should be either" " None, 'linear' or 'quadratic'",
         )
     k = torch.sum(w_mat * confmat) / torch.sum(w_mat * expected)
     return 1 - k

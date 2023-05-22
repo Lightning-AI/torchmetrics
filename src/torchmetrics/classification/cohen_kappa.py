@@ -112,7 +112,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
         return _cohen_kappa_reduce(self.confmat, self.weights)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -238,7 +238,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         return _cohen_kappa_reduce(self.confmat, self.weights)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

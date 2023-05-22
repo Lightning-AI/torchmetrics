@@ -371,13 +371,13 @@ def mean_average_precision() -> tuple:
             "boxes": torch.tensor([[258.0, 41.0, 606.0, 285.0]]) + torch.randint(10, (1, 4)),
             "scores": torch.tensor([0.536]) + 0.1 * torch.rand(1),
             "labels": torch.tensor([0]),
-        }
+        },
     ]
     target = [
         {
             "boxes": torch.tensor([[214.0, 41.0, 562.0, 285.0]]),
             "labels": torch.tensor([0]),
-        }
+        },
     ]
 
     # plot single value

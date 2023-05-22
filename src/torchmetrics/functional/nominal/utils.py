@@ -23,12 +23,12 @@ from torchmetrics.utilities.prints import rank_zero_warn
 def _nominal_input_validation(nan_strategy: str, nan_replace_value: Optional[Union[int, float]]) -> None:
     if nan_strategy not in ["replace", "drop"]:
         raise ValueError(
-            f"Argument `nan_strategy` is expected to be one of `['replace', 'drop']`, but got {nan_strategy}"
+            f"Argument `nan_strategy` is expected to be one of `['replace', 'drop']`, but got {nan_strategy}",
         )
     if nan_strategy == "replace" and not isinstance(nan_replace_value, (int, float)):
         raise ValueError(
             "Argument `nan_replace` is expected to be of a type `int` or `float` when `nan_strategy = 'replace`, "
-            f"but got {nan_replace_value}"
+            f"but got {nan_replace_value}",
         )
 
 
@@ -86,7 +86,7 @@ def _compute_phi_squared_corrected(
 ) -> Tensor:
     """Compute bias-corrected Phi Squared."""
     return torch.max(
-        torch.tensor(0.0, device=phi_squared.device), phi_squared - ((n_rows - 1) * (n_cols - 1)) / (confmat_sum - 1)
+        torch.tensor(0.0, device=phi_squared.device), phi_squared - ((n_rows - 1) * (n_cols - 1)) / (confmat_sum - 1),
     )
 
 
@@ -98,7 +98,7 @@ def _compute_rows_and_cols_corrected(n_rows: int, n_cols: int, confmat_sum: Tens
 
 
 def _compute_bias_corrected_values(
-    phi_squared: Tensor, n_rows: int, n_cols: int, confmat_sum: Tensor
+    phi_squared: Tensor, n_rows: int, n_cols: int, confmat_sum: Tensor,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Compute bias-corrected Phi Squared and number of rows and columns."""
     phi_squared_corrected = _compute_phi_squared_corrected(phi_squared, n_rows, n_cols, confmat_sum)
@@ -138,5 +138,5 @@ def _handle_nan_in_data(
 
 def _unable_to_use_bias_correction_warning(metric_name: str) -> None:
     rank_zero_warn(
-        f"Unable to compute {metric_name} using bias correction. Please consider to set `bias_correction=False`."
+        f"Unable to compute {metric_name} using bias correction. Please consider to set `bias_correction=False`.",
     )

@@ -101,7 +101,7 @@ class ExplainedVariance(Metric):
 
         if multioutput not in ALLOWED_MULTIOUTPUT:
             raise ValueError(
-                f"Invalid input to argument `multioutput`. Choose one of the following: {ALLOWED_MULTIOUTPUT}"
+                f"Invalid input to argument `multioutput`. Choose one of the following: {ALLOWED_MULTIOUTPUT}",
             )
         self.multioutput = multioutput
         self.add_state("sum_error", default=tensor(0.0), dist_reduce_fx="sum")
@@ -131,7 +131,7 @@ class ExplainedVariance(Metric):
         )
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

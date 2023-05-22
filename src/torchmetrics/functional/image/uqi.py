@@ -33,13 +33,13 @@ def _uqi_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     if preds.dtype != target.dtype:
         raise TypeError(
             "Expected `preds` and `target` to have the same data type."
-            f" Got preds: {preds.dtype} and target: {target.dtype}."
+            f" Got preds: {preds.dtype} and target: {target.dtype}.",
         )
     _check_same_shape(preds, target)
     if len(preds.shape) != 4:
         raise ValueError(
             "Expected `preds` and `target` to have BxCxHxW shape."
-            f" Got preds: {preds.shape} and target: {target.shape}."
+            f" Got preds: {preds.shape} and target: {target.shape}.",
         )
     return preds, target
 
@@ -77,7 +77,7 @@ def _uqi_compute(
     if len(kernel_size) != 2 or len(sigma) != 2:
         raise ValueError(
             "Expected `kernel_size` and `sigma` to have the length of two."
-            f" Got kernel_size: {len(kernel_size)} and sigma: {len(sigma)}."
+            f" Got kernel_size: {len(kernel_size)} and sigma: {len(sigma)}.",
         )
 
     if any(x % 2 == 0 or x <= 0 for x in kernel_size):

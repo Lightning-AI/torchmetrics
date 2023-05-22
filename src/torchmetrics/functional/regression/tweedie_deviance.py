@@ -49,7 +49,7 @@ def _tweedie_deviance_score_update(preds: Tensor, targets: Tensor, power: float 
         # Poisson distribution
         if torch.any(preds <= 0) or torch.any(targets < 0):
             raise ValueError(
-                f"For power={power}, 'preds' has to be strictly positive and 'targets' cannot be negative."
+                f"For power={power}, 'preds' has to be strictly positive and 'targets' cannot be negative.",
             )
 
         deviance_score = 2 * (_safe_xlogy(targets, targets / preds) + preds - targets)
@@ -66,7 +66,7 @@ def _tweedie_deviance_score_update(preds: Tensor, targets: Tensor, power: float 
         elif 1 < power < 2:
             if torch.any(preds <= 0) or torch.any(targets < 0):
                 raise ValueError(
-                    f"For power={power}, 'targets' has to be strictly positive and 'preds' cannot be negative."
+                    f"For power={power}, 'targets' has to be strictly positive and 'preds' cannot be negative.",
                 )
         else:
             if torch.any(preds <= 0) or torch.any(targets <= 0):

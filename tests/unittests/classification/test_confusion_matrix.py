@@ -163,7 +163,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
             target=target,
             metric_class=MulticlassConfusionMatrix,
             reference_metric=partial(
-                _sklearn_confusion_matrix_multiclass, normalize=normalize, ignore_index=ignore_index
+                _sklearn_confusion_matrix_multiclass, normalize=normalize, ignore_index=ignore_index,
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,
@@ -184,7 +184,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
             target=target,
             metric_functional=multiclass_confusion_matrix,
             reference_metric=partial(
-                _sklearn_confusion_matrix_multiclass, normalize=normalize, ignore_index=ignore_index
+                _sklearn_confusion_matrix_multiclass, normalize=normalize, ignore_index=ignore_index,
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,
@@ -280,7 +280,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
             target=target,
             metric_class=MultilabelConfusionMatrix,
             reference_metric=partial(
-                _sklearn_confusion_matrix_multilabel, normalize=normalize, ignore_index=ignore_index
+                _sklearn_confusion_matrix_multilabel, normalize=normalize, ignore_index=ignore_index,
             ),
             metric_args={
                 "num_labels": NUM_CLASSES,
@@ -301,7 +301,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
             target=target,
             metric_functional=multilabel_confusion_matrix,
             reference_metric=partial(
-                _sklearn_confusion_matrix_multilabel, normalize=normalize, ignore_index=ignore_index
+                _sklearn_confusion_matrix_multilabel, normalize=normalize, ignore_index=ignore_index,
             ),
             metric_args={
                 "num_labels": NUM_CLASSES,

@@ -26,7 +26,7 @@ else:
 
 
 def short_time_objective_intelligibility(
-    preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_same_device: bool = False
+    preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_same_device: bool = False,
 ) -> Tensor:
     r"""Calculate STOI (Short-Time Objective Intelligibility) metric for evaluating speech signals.
 
@@ -73,7 +73,7 @@ def short_time_objective_intelligibility(
     if not _PYSTOI_AVAILABLE:
         raise ModuleNotFoundError(
             "ShortTimeObjectiveIntelligibility metric requires that `pystoi` is installed."
-            " Either install as `pip install torchmetrics[audio]` or `pip install pystoi`."
+            " Either install as `pip install torchmetrics[audio]` or `pip install pystoi`.",
         )
     _check_same_shape(preds, target)
 

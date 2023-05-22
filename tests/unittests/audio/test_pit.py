@@ -105,7 +105,7 @@ def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Ten
 
 snr_pit_scipy = partial(naive_implementation_pit_scipy, metric_func=signal_noise_ratio, eval_func="max")
 si_sdr_pit_scipy = partial(
-    naive_implementation_pit_scipy, metric_func=scale_invariant_signal_distortion_ratio, eval_func="max"
+    naive_implementation_pit_scipy, metric_func=scale_invariant_signal_distortion_ratio, eval_func="max",
 )
 
 

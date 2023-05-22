@@ -44,14 +44,14 @@ for size, channel, coef, dtype in [
         Input(
             preds=preds2d,
             target=preds2d * coef,
-        )
+        ),
     )
     preds3d = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, size, dtype=dtype)
     _inputs.append(
         Input(
             preds=preds3d,
             target=preds3d * coef,
-        )
+        ),
     )
 
 
@@ -215,14 +215,14 @@ class TestSSIM(MetricTester):
     def test_ssim_half_cpu(self, preds, target, sigma):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
-            preds, target, StructuralSimilarityIndexMeasure, structural_similarity_index_measure, {"data_range": 1.0}
+            preds, target, StructuralSimilarityIndexMeasure, structural_similarity_index_measure, {"data_range": 1.0},
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_ssim_half_gpu(self, preds, target, sigma):
         """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
-            preds, target, StructuralSimilarityIndexMeasure, structural_similarity_index_measure, {"data_range": 1.0}
+            preds, target, StructuralSimilarityIndexMeasure, structural_similarity_index_measure, {"data_range": 1.0},
         )
 
 
@@ -289,9 +289,9 @@ def test_ssim_unequal_kernel_size():
                     [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0],
                     [0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0],
                     [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
-                ]
-            ]
-        ]
+                ],
+            ],
+        ],
     )
     target = torch.tensor(
         [
@@ -304,9 +304,9 @@ def test_ssim_unequal_kernel_size():
                     [1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0],
                     [0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0],
                     [0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0],
-                ]
-            ]
-        ]
+                ],
+            ],
+        ],
     )
     # kernel order matters
     assert torch.isclose(

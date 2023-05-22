@@ -51,7 +51,7 @@ def _rmse_sw_update(
     """
     if preds.dtype != target.dtype:
         raise TypeError(
-            f"Expected `preds` and `target` to have the same data type. But got {preds.dtype} and {target.dtype}."
+            f"Expected `preds` and `target` to have the same data type. But got {preds.dtype} and {target.dtype}.",
         )
     _check_same_shape(preds, target)
     if len(preds.shape) != 4:
@@ -60,7 +60,7 @@ def _rmse_sw_update(
     if round(window_size / 2) >= target.shape[2] or round(window_size / 2) >= target.shape[3]:
         raise ValueError(
             f"Parameter `round(window_size / 2)` is expected to be smaller than {min(target.shape[2], target.shape[3])}"
-            f" but got {round(window_size / 2)}."
+            f" but got {round(window_size / 2)}.",
         )
 
     if total_images is not None:
@@ -87,7 +87,7 @@ def _rmse_sw_update(
 
 
 def _rmse_sw_compute(
-    rmse_val_sum: Optional[Tensor], rmse_map: Tensor, total_images: Tensor
+    rmse_val_sum: Optional[Tensor], rmse_map: Tensor, total_images: Tensor,
 ) -> Tuple[Optional[Tensor], Tensor]:
     """Compute RMSE from the aggregated RMSE value. Optionally also computes the mean value for RMSE map.
 
@@ -107,7 +107,7 @@ def _rmse_sw_compute(
 
 
 def root_mean_squared_error_using_sliding_window(
-    preds: Tensor, target: Tensor, window_size: int = 8, return_rmse_map: bool = False
+    preds: Tensor, target: Tensor, window_size: int = 8, return_rmse_map: bool = False,
 ) -> Union[Optional[Tensor], Tuple[Optional[Tensor], Tensor]]:
     """Compute Root Mean Squared Error (RMSE) using sliding window.
 
@@ -136,7 +136,7 @@ def root_mean_squared_error_using_sliding_window(
         raise ValueError("Argument `window_size` is expected to be a positive integer.")
 
     rmse_val_sum, rmse_map, total_images = _rmse_sw_update(
-        preds, target, window_size, rmse_val_sum=None, rmse_map=None, total_images=None
+        preds, target, window_size, rmse_val_sum=None, rmse_map=None, total_images=None,
     )
     rmse, rmse_map = _rmse_sw_compute(rmse_val_sum, rmse_map, total_images)
 

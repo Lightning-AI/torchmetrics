@@ -35,7 +35,7 @@ _input_default = Input(
 )
 
 _input_logits = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES), target=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES), target=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES),
 )
 
 # No testing with replacing NaN's values is done as not supported in SciPy
@@ -103,7 +103,7 @@ class TestTschuprowsT(MetricTester):
         """Test functional implementation of metric."""
         metric_args = {"bias_correction": False}
         self.run_functional_metric_test(
-            preds, target, metric_functional=tschuprows_t, reference_metric=_pd_tschuprows_t, metric_args=metric_args
+            preds, target, metric_functional=tschuprows_t, reference_metric=_pd_tschuprows_t, metric_args=metric_args,
         )
 
     def test_tschuprows_t_differentiability(self, preds, target):

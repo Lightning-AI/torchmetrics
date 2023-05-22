@@ -536,7 +536,7 @@ class MetricTester:
             if metric.is_differentiable and metric_functional is not None:
                 # check for numerical correctness
                 assert torch.autograd.gradcheck(
-                    partial(metric_functional, **metric_args), (preds[0, :2].double(), target[0, :2])
+                    partial(metric_functional, **metric_args), (preds[0, :2].double(), target[0, :2]),
                 )
 
             # reset as else it will carry over to other tests
@@ -650,7 +650,7 @@ def remove_ignore_index(target: Tensor, preds: Tensor, ignore_index: Optional[in
 
 
 def remove_ignore_index_groups(
-    target: Tensor, preds: Tensor, groups: Tensor, ignore_index: Optional[int]
+    target: Tensor, preds: Tensor, groups: Tensor, ignore_index: Optional[int],
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Version of the remove_ignore_index which includes groups."""
     if ignore_index is not None:

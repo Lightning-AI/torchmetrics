@@ -80,7 +80,7 @@ class TestMinMaxWrapper(MetricTester):
             (0.5, 1.0, 0.5),
             (0.5, 1.0, 1.0),
             (0.5, 0.5, 0.5),
-        )
+        ),
     ],
 )
 def test_basic_example(preds, labels, raws, maxs, mins) -> None:

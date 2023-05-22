@@ -106,11 +106,11 @@ class BinaryPrecision(BinaryStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
-            "precision", tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average
+            "precision", tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average,
         )
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -257,11 +257,11 @@ class MulticlassPrecision(MulticlassStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
-            "precision", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
+            "precision", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average,
         )
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -405,11 +405,11 @@ class MultilabelPrecision(MultilabelStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
-            "precision", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
+            "precision", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average,
         )
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -522,11 +522,11 @@ class BinaryRecall(BinaryStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
-            "recall", tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average
+            "recall", tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average,
         )
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -672,11 +672,11 @@ class MulticlassRecall(MulticlassStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
-            "recall", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
+            "recall", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average,
         )
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -819,11 +819,11 @@ class MultilabelRecall(MultilabelStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
-            "recall", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
+            "recall", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average,
         )
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -907,7 +907,7 @@ class Precision:
         """Initialize task metric."""
         assert multidim_average is not None  # noqa: S101  # needed for mypy
         kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
+            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args},
         )
         task = ClassificationTask.from_str(task)
         if task == ClassificationTask.BINARY:
@@ -969,7 +969,7 @@ class Recall:
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None  # noqa: S101  # needed for mypy
         kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
+            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args},
         )
         if task == ClassificationTask.BINARY:
             return BinaryRecall(threshold, **kwargs)

@@ -286,12 +286,12 @@ class FrechetInceptionDistance(Metric):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ModuleNotFoundError(
                     "FrechetInceptionDistance metric requires that `Torch-fidelity` is installed."
-                    " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`."
+                    " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`.",
                 )
             valid_int_input = (64, 192, 768, 2048)
             if feature not in valid_int_input:
                 raise ValueError(
-                    f"Integer input to argument `feature` must be one of {valid_int_input}, but got {feature}."
+                    f"Integer input to argument `feature` must be one of {valid_int_input}, but got {feature}.",
                 )
 
             self.inception = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
@@ -376,7 +376,7 @@ class FrechetInceptionDistance(Metric):
         return out
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

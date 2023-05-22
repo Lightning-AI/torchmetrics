@@ -27,7 +27,7 @@ __doctest_requires__ = {("complete_intersection_over_union",): ["torchvision"]}
 
 
 def _ciou_update(
-    preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float], replacement_val: float = 0
+    preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float], replacement_val: float = 0,
 ) -> torch.Tensor:
     iou = complete_box_iou(preds, target)
     if iou_threshold is not None:
@@ -76,7 +76,7 @@ def complete_intersection_over_union(
         raise ModuleNotFoundError(
             f"`{complete_intersection_over_union.__name__}` requires that `torchvision` version 0.13.0 or newer"
             " is installed."
-            " Please install with `pip install torchvision>=0.13` or `pip install torchmetrics[detection]`."
+            " Please install with `pip install torchvision>=0.13` or `pip install torchmetrics[detection]`.",
         )
     iou = _ciou_update(preds, target, iou_threshold, replacement_val)
     return _ciou_compute(iou) if aggregate else iou

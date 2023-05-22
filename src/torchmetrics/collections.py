@@ -290,7 +290,7 @@ class MetricCollection(ModuleDict):
         return self._compute_and_reduce("compute")
 
     def _compute_and_reduce(
-        self, method_name: Literal["compute", "forward"], *args: Any, **kwargs: Any
+        self, method_name: Literal["compute", "forward"], *args: Any, **kwargs: Any,
     ) -> Dict[str, Any]:
         """Compute result from collection and reduce into a single dictionary.
 
@@ -354,7 +354,7 @@ class MetricCollection(ModuleDict):
             m.persistent(mode)
 
     def add_metrics(
-        self, metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]], *additional_metrics: Metric
+        self, metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]], *additional_metrics: Metric,
     ) -> None:
         """Add new metrics to Metric Collection."""
         if isinstance(metrics, Metric):
@@ -369,12 +369,12 @@ class MetricCollection(ModuleDict):
 
             if remain:
                 rank_zero_warn(
-                    f"You have passes extra arguments {remain} which are not `Metric` so they will be ignored."
+                    f"You have passes extra arguments {remain} which are not `Metric` so they will be ignored.",
                 )
         elif additional_metrics:
             raise ValueError(
                 f"You have passes extra arguments {additional_metrics} which are not compatible"
-                f" with first passed dictionary {metrics} so they will be ignored."
+                f" with first passed dictionary {metrics} so they will be ignored.",
             )
 
         if isinstance(metrics, dict):
@@ -385,7 +385,7 @@ class MetricCollection(ModuleDict):
                 if not isinstance(metric, (Metric, MetricCollection)):
                     raise ValueError(
                         f"Value {metric} belonging to key {name} is not an instance of"
-                        " `torchmetrics.Metric` or `torchmetrics.MetricCollection`"
+                        " `torchmetrics.Metric` or `torchmetrics.MetricCollection`",
                     )
                 if isinstance(metric, Metric):
                     self[name] = metric
@@ -399,7 +399,7 @@ class MetricCollection(ModuleDict):
                 if not isinstance(metric, (Metric, MetricCollection)):
                     raise ValueError(
                         f"Input {metric} to `MetricCollection` is not a instance of"
-                        " `torchmetrics.Metric` or `torchmetrics.MetricCollection`"
+                        " `torchmetrics.Metric` or `torchmetrics.MetricCollection`",
                     )
                 if isinstance(metric, Metric):
                     name = metric.__class__.__name__
@@ -414,7 +414,7 @@ class MetricCollection(ModuleDict):
         else:
             raise ValueError(
                 "Unknown input to MetricCollection. Expected, `Metric`, `MetricCollection` or `dict`/`sequence` of the"
-                f" previous, but got {metrics}"
+                f" previous, but got {metrics}",
             )
 
         self._groups_checked = False
@@ -436,7 +436,7 @@ class MetricCollection(ModuleDict):
                     if metric not in self:
                         raise ValueError(
                             f"Input {metric} in `compute_groups` argument does not match a metric in the collection."
-                            f" Please make sure that {self._enable_compute_groups} matches {self.keys(keep_base=True)}"
+                            f" Please make sure that {self._enable_compute_groups} matches {self.keys(keep_base=True)}",
                         )
             self._groups_checked = True
         else:
@@ -591,14 +591,14 @@ class MetricCollection(ModuleDict):
         if ax is not None:
             if together and not isinstance(ax, _AX_TYPE):
                 raise ValueError(
-                    f"Expected argument `ax` to be a matplotlib axis object, but got {type(ax)} when `together=True`"
+                    f"Expected argument `ax` to be a matplotlib axis object, but got {type(ax)} when `together=True`",
                 )
             if not together and not (
                 isinstance(ax, Sequence) and all(isinstance(a, _AX_TYPE) for a in ax) and len(ax) == len(self)
             ):
                 raise ValueError(
                     f"Expected argument `ax` to be a sequence of matplotlib axis objects with the same length as the "
-                    f"number of metrics in the collection, but got {type(ax)} with len {len(ax)} when `together=False`"
+                    f"number of metrics in the collection, but got {type(ax)} with len {len(ax)} when `together=False`",
                 )
 
         val = val or self.compute()

@@ -62,7 +62,7 @@ def _sklearn_ranking(preds, target, fn, ignore_index):
     ],
 )
 @pytest.mark.parametrize(
-    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]),
 )
 class TestMultilabelRanking(MetricTester):
     """Test class for `MultilabelRanking` metric."""
@@ -122,12 +122,12 @@ class TestMultilabelRanking(MetricTester):
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         if dtype == torch.half and functional_metric == multilabel_ranking_average_precision:
             pytest.xfail(
-                reason="multilabel_ranking_average_precision requires torch.unique which is not implemented for half"
+                reason="multilabel_ranking_average_precision requires torch.unique which is not implemented for half",
             )
         if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_9 and functional_metric == multilabel_coverage_error:
             pytest.xfail(
                 reason="multilabel_coverage_error requires torch.min which is only implemented for half"
-                " in v1.9 or higher of torch."
+                " in v1.9 or higher of torch.",
             )
         self.run_precision_test_cpu(
             preds=preds,

@@ -106,7 +106,7 @@ class SacreBLEUScore(BLEUScore):
         if tokenize == "intl" and not _REGEX_AVAILABLE:
             raise ModuleNotFoundError(
                 "`'intl'` tokenization requires that `regex` is installed."
-                " Use `pip install regex` or `pip install torchmetrics[text]`."
+                " Use `pip install regex` or `pip install torchmetrics[text]`.",
             )
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
 
@@ -124,7 +124,7 @@ class SacreBLEUScore(BLEUScore):
         )
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

@@ -33,7 +33,7 @@ def _r2_score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Ten
     if preds.ndim > 2:
         raise ValueError(
             "Expected both prediction and target to be 1D or 2D tensors,"
-            f" but received tensors with dimension {preds.shape}"
+            f" but received tensors with dimension {preds.shape}",
         )
 
     sum_obs = torch.sum(target, dim=0)
@@ -98,7 +98,7 @@ def _r2_score_compute(
     else:
         raise ValueError(
             "Argument `multioutput` must be either `raw_values`,"
-            f" `uniform_average` or `variance_weighted`. Received {multioutput}."
+            f" `uniform_average` or `variance_weighted`. Received {multioutput}.",
         )
 
     if adjusted < 0 or not isinstance(adjusted, int):

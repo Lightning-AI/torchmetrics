@@ -98,7 +98,7 @@ class BinarySpecificity(BinaryStatScores):
         return _specificity_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -244,7 +244,7 @@ class MulticlassSpecificity(MulticlassStatScores):
         return _specificity_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -386,7 +386,7 @@ class MultilabelSpecificity(MultilabelStatScores):
         return _specificity_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -471,7 +471,7 @@ class Specificity:
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None  # noqa: S101  # needed for mypy
         kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
+            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args},
         )
         if task == ClassificationTask.BINARY:
             return BinarySpecificity(threshold, **kwargs)

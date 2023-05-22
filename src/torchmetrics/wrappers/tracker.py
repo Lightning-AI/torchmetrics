@@ -109,7 +109,7 @@ class MetricTracker(ModuleList):
         if not isinstance(metric, (Metric, MetricCollection)):
             raise TypeError(
                 "Metric arg need to be an instance of a torchmetrics"
-                f" `Metric` or `MetricCollection` but got {metric}"
+                f" `Metric` or `MetricCollection` but got {metric}",
             )
         self._base_metric = metric
         if not isinstance(maximize, (bool, list)):
@@ -182,7 +182,7 @@ class MetricTracker(ModuleList):
             metric.reset()
 
     def best_metric(
-        self, return_step: bool = False
+        self, return_step: bool = False,
     ) -> Union[
         None,
         float,
@@ -217,7 +217,7 @@ class MetricTracker(ModuleList):
             rank_zero_warn(
                 "Encounted nested structure. You are probably using a metric collection inside a metric collection, or"
                 " a metric wrapper inside a metric collection, which is not supported by `.best_metric()` method."
-                "Returning `None` instead. Please consider "
+                "Returning `None` instead. Please consider ",
             )
             if return_step:
                 return None, None
@@ -268,7 +268,7 @@ class MetricTracker(ModuleList):
             raise ValueError(f"`{method}` cannot be called before `.increment()` has been called.")
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

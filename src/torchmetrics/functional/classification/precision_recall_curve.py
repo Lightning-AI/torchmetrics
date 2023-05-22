@@ -80,7 +80,7 @@ def _binary_clf_curve(
 
 
 def _adjust_threshold_arg(
-    thresholds: Optional[Union[int, List[float], Tensor]] = None, device: Optional[torch.device] = None
+    thresholds: Optional[Union[int, List[float], Tensor]] = None, device: Optional[torch.device] = None,
 ) -> Optional[Tensor]:
     """Convert threshold arg for list and int to tensor format."""
     if isinstance(thresholds, int):
@@ -102,16 +102,16 @@ def _binary_precision_recall_curve_arg_validation(
     if thresholds is not None and not isinstance(thresholds, (list, int, Tensor)):
         raise ValueError(
             "Expected argument `thresholds` to either be an integer, list of floats or"
-            f" tensor of floats, but got {thresholds}"
+            f" tensor of floats, but got {thresholds}",
         )
     if isinstance(thresholds, int) and thresholds < 2:
         raise ValueError(
-            f"If argument `thresholds` is an integer, expected it to be larger than 1, but got {thresholds}"
+            f"If argument `thresholds` is an integer, expected it to be larger than 1, but got {thresholds}",
         )
     if isinstance(thresholds, list) and not all(isinstance(t, float) and 0 <= t <= 1 for t in thresholds):
         raise ValueError(
             "If argument `thresholds` is a list, expected all elements to be floats in the [0,1] range,"
-            f" but got {thresholds}"
+            f" but got {thresholds}",
         )
     if isinstance(thresholds, Tensor) and not thresholds.ndim == 1:
         raise ValueError("If argument `thresholds` is an tensor, expected the tensor to be 1d")
@@ -121,7 +121,7 @@ def _binary_precision_recall_curve_arg_validation(
 
 
 def _binary_precision_recall_curve_tensor_validation(
-    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
+    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None,
 ) -> None:
     """Validate tensor input.
 
@@ -134,13 +134,13 @@ def _binary_precision_recall_curve_tensor_validation(
     if target.is_floating_point():
         raise ValueError(
             "Expected argument `target` to be an int or long tensor with ground truth labels"
-            f" but got tensor with dtype {target.dtype}"
+            f" but got tensor with dtype {target.dtype}",
         )
 
     if not preds.is_floating_point():
         raise ValueError(
             "Expected argument `preds` to be an floating tensor with probability/logit scores,"
-            f" but got tensor with dtype {preds.dtype}"
+            f" but got tensor with dtype {preds.dtype}",
         )
 
     # Check that target only contains {0,1} values or value in ignore_index
@@ -152,7 +152,7 @@ def _binary_precision_recall_curve_tensor_validation(
     if check:
         raise RuntimeError(
             f"Detected the following values in `target`: {unique_values} but expected only"
-            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}.",
         )
 
 
@@ -367,7 +367,7 @@ def _multiclass_precision_recall_curve_arg_validation(
 
 
 def _multiclass_precision_recall_curve_tensor_validation(
-    preds: Tensor, target: Tensor, num_classes: int, ignore_index: Optional[int] = None
+    preds: Tensor, target: Tensor, num_classes: int, ignore_index: Optional[int] = None,
 ) -> None:
     """Validate tensor input.
 
@@ -377,23 +377,23 @@ def _multiclass_precision_recall_curve_tensor_validation(
     """
     if not preds.ndim == target.ndim + 1:
         raise ValueError(
-            f"Expected `preds` to have one more dimension than `target` but got {preds.ndim} and {target.ndim}"
+            f"Expected `preds` to have one more dimension than `target` but got {preds.ndim} and {target.ndim}",
         )
     if target.is_floating_point():
         raise ValueError(
-            f"Expected argument `target` to be an int or long tensor, but got tensor with dtype {target.dtype}"
+            f"Expected argument `target` to be an int or long tensor, but got tensor with dtype {target.dtype}",
         )
     if not preds.is_floating_point():
         raise ValueError(f"Expected `preds` to be a float tensor, but got {preds.dtype}")
     if preds.shape[1] != num_classes:
         raise ValueError(
             "Expected `preds.shape[1]` to be equal to the number of classes but"
-            f" got {preds.shape[1]} and {num_classes}."
+            f" got {preds.shape[1]} and {num_classes}.",
         )
     if preds.shape[0] != target.shape[0] or preds.shape[2:] != target.shape[1:]:
         raise ValueError(
             "Expected the shape of `preds` should be (N, C, ...) and the shape of `target` should be (N, ...)"
-            f" but got {preds.shape} and {target.shape}"
+            f" but got {preds.shape} and {target.shape}",
         )
 
     num_unique_values = len(torch.unique(target))
@@ -402,7 +402,7 @@ def _multiclass_precision_recall_curve_tensor_validation(
         raise RuntimeError(
             "Detected more unique values in `target` than `num_classes`. Expected only "
             f"{num_classes if ignore_index is None else num_classes + 1} but found "
-            f"{num_unique_values} in `target`."
+            f"{num_unique_values} in `target`.",
         )
 
 
@@ -629,7 +629,7 @@ def multiclass_precision_recall_curve(
         _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
         _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index)
     preds, target, thresholds = _multiclass_precision_recall_curve_format(
-        preds, target, num_classes, thresholds, ignore_index
+        preds, target, num_classes, thresholds, ignore_index,
     )
     state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
     return _multiclass_precision_recall_curve_compute(state, num_classes, thresholds)
@@ -650,7 +650,7 @@ def _multilabel_precision_recall_curve_arg_validation(
 
 
 def _multilabel_precision_recall_curve_tensor_validation(
-    preds: Tensor, target: Tensor, num_labels: int, ignore_index: Optional[int] = None
+    preds: Tensor, target: Tensor, num_labels: int, ignore_index: Optional[int] = None,
 ) -> None:
     """Validate tensor input.
 
@@ -663,7 +663,7 @@ def _multilabel_precision_recall_curve_tensor_validation(
     if preds.shape[1] != num_labels:
         raise ValueError(
             "Expected both `target.shape[1]` and `preds.shape[1]` to be equal to the number of labels"
-            f" but got {preds.shape[1]} and expected {num_labels}"
+            f" but got {preds.shape[1]} and expected {num_labels}",
         )
 
 
@@ -856,7 +856,7 @@ def multilabel_precision_recall_curve(
         _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
         _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index)
     preds, target, thresholds = _multilabel_precision_recall_curve_format(
-        preds, target, num_labels, thresholds, ignore_index
+        preds, target, num_labels, thresholds, ignore_index,
     )
     state = _multilabel_precision_recall_curve_update(preds, target, num_labels, thresholds)
     return _multilabel_precision_recall_curve_compute(state, num_labels, thresholds, ignore_index)

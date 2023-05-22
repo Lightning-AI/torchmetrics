@@ -154,7 +154,7 @@ def _sklearn_roc_multiclass(preds, target, ignore_index=None):
 
 
 @pytest.mark.parametrize(
-    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5]),
 )
 class TestMulticlassROC(MetricTester):
     """Test class for `MulticlassROC` metric."""
@@ -262,7 +262,7 @@ def _sklearn_roc_multilabel(preds, target, ignore_index=None):
 
 
 @pytest.mark.parametrize(
-    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]),
 )
 class TestMultilabelROC(MetricTester):
     """Test class for `MultilabelROC` metric."""

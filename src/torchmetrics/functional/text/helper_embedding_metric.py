@@ -50,7 +50,7 @@ def _process_attention_mask_for_special_tokens(attention_mask: Tensor) -> Tensor
 
 
 def _input_data_collator(
-    batch: Dict[str, Tensor], device: Optional[Union[str, torch.device]] = None
+    batch: Dict[str, Tensor], device: Optional[Union[str, torch.device]] = None,
 ) -> Dict[str, Tensor]:
     """Trim model inputs.
 
@@ -69,7 +69,7 @@ def _output_data_collator(model_output: Tensor, attention_mask: Tensor, target_l
     zeros_shape = list(model_output.shape)
     zeros_shape[2] = target_len - zeros_shape[2]
     model_output = torch.cat(
-        [model_output, torch.zeros(zeros_shape, dtype=model_output.dtype).to(model_output.device)], dim=2
+        [model_output, torch.zeros(zeros_shape, dtype=model_output.dtype).to(model_output.device)], dim=2,
     )
     zeros = torch.zeros(zeros_shape[0], zeros_shape[2], dtype=attention_mask.dtype).to(attention_mask.device)
     attention_mask = torch.cat([attention_mask, zeros], dim=1)
@@ -118,7 +118,7 @@ def _preprocess_text(
     """
     if not own_tokenizer:
         tokenized_data = tokenizer(
-            text, padding="max_length", max_length=max_length, truncation=truncation, return_tensors="pt"
+            text, padding="max_length", max_length=max_length, truncation=truncation, return_tensors="pt",
         )
     else:
         try:
@@ -128,7 +128,7 @@ def _preprocess_text(
 
     if sort_according_length:
         input_ids, attention_mask, sorting_indices = _sort_data_according_length(
-            tokenized_data["input_ids"], tokenized_data["attention_mask"]
+            tokenized_data["input_ids"], tokenized_data["attention_mask"],
         )
         input_dict = {"input_ids": input_ids, "attention_mask": attention_mask}
     else:
@@ -154,12 +154,12 @@ def _check_shape_of_model_output(output: Tensor, input_ids: Tensor) -> None:
     if invalid_out_shape:
         raise ValueError(
             "The model output must be `Tensor` of a shape `[batch_size, seq_len, model_dim]` "
-            f"i.e. [{bs}, {seq_len}. , `model_dim`], but got {output.shape}."
+            f"i.e. [{bs}, {seq_len}. , `model_dim`], but got {output.shape}.",
         )
 
 
 def _load_tokenizer_and_model(
-    model_name_or_path: Union[str, os.PathLike], device: Optional[Union[str, torch.device]] = None
+    model_name_or_path: Union[str, os.PathLike], device: Optional[Union[str, torch.device]] = None,
 ) -> Tuple[PreTrainedTokenizerBase, PreTrainedModel]:
     """Load HuggingFace `transformers`' tokenizer and model. This function also handle a device placement.
 
@@ -188,7 +188,7 @@ class TextDataset(Dataset):
         tokenizer: Any,
         max_length: int = 512,
         preprocess_text_fn: Callable[
-            [List[str], Any, int], Union[Dict[str, Tensor], Tuple[Dict[str, Tensor], Optional[Tensor]]]
+            [List[str], Any, int], Union[Dict[str, Tensor], Tuple[Dict[str, Tensor], Optional[Tensor]]],
         ] = _preprocess_text,
         idf: bool = False,
         tokens_idf: Optional[Dict[int, float]] = None,
@@ -241,7 +241,7 @@ class TextDataset(Dataset):
 
         tokens_idf: Dict[int, float] = defaultdict(self._get_tokens_idf_default_value)
         tokens_idf.update(
-            {idx: math.log((self.num_sentences + 1) / (occurrence + 1)) for idx, occurrence in token_counter.items()}
+            {idx: math.log((self.num_sentences + 1) / (occurrence + 1)) for idx, occurrence in token_counter.items()},
         )
         return tokens_idf
 
@@ -278,7 +278,7 @@ class TokenizedDataset(TextDataset):
             zip(
                 ["input_ids", "attention_mask", "sorting_indices"],
                 _sort_data_according_length(input_ids, attention_mask),
-            )
+            ),
         )
         self.sorting_indices = text.pop("sorting_indices")
         self.text = _input_data_collator(text)

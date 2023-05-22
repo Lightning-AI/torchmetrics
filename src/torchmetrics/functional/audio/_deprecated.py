@@ -10,7 +10,7 @@ from torchmetrics.utilities.prints import _deprecated_root_import_func
 
 
 def _permutation_invariant_training(
-    preds: Tensor, target: Tensor, metric_func: Callable, eval_func: Literal["max", "min"] = "max", **kwargs: Any
+    preds: Tensor, target: Tensor, metric_func: Callable, eval_func: Literal["max", "min"] = "max", **kwargs: Any,
 ) -> Tuple[Tensor, Tensor]:
     """Wrapper for deprecated import.
 
@@ -29,7 +29,7 @@ def _permutation_invariant_training(
     """
     _deprecated_root_import_func("permutation_invariant_training", "audio")
     return permutation_invariant_training(
-        preds=preds, target=target, metric_func=metric_func, eval_func=eval_func, **kwargs
+        preds=preds, target=target, metric_func=metric_func, eval_func=eval_func, **kwargs,
     )
 
 

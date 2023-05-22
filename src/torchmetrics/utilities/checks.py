@@ -40,12 +40,12 @@ def _check_same_shape(preds: Tensor, target: Tensor) -> None:
     """Check that predictions and target have the same shape, else raise error."""
     if preds.shape != target.shape:
         raise RuntimeError(
-            f"Predictions and targets are expected to have the same shape, but got {preds.shape} and {target.shape}."
+            f"Predictions and targets are expected to have the same shape, but got {preds.shape} and {target.shape}.",
         )
 
 
 def _basic_input_validation(
-    preds: Tensor, target: Tensor, threshold: float, multiclass: Optional[bool], ignore_index: Optional[int]
+    preds: Tensor, target: Tensor, threshold: float, multiclass: Optional[bool], ignore_index: Optional[int],
 ) -> None:
     """Perform basic validation of inputs that does not require deducing any information of the type of inputs."""
     # Skip all other checks if both preds and target are empty tensors
@@ -92,7 +92,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
             )
         if preds_float and target.numel() > 0 and target.max() > 1:
             raise ValueError(
-                "If `preds` and `target` are of shape (N, ...) and `preds` are floats, `target` should be binary."
+                "If `preds` and `target` are of shape (N, ...) and `preds` are floats, `target` should be binary.",
             )
 
         # Get the case
@@ -112,7 +112,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
         if preds.shape[2:] != target.shape[1:]:
             raise ValueError(
                 "If `preds` have one dimension more than `target`, the shape of `preds` should be"
-                " (N, C, ...), and the shape of `target` should be (N, ...)."
+                " (N, C, ...), and the shape of `target` should be (N, ...).",
             )
 
         implied_classes = preds.shape[1] if preds.numel() > 0 else 0
@@ -121,7 +121,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
     else:
         raise ValueError(
             "Either `preds` and `target` both should have the (same) shape (N, ...), or `target` should be (N, ...)"
-            " and `preds` should be (N, C, ...)."
+            " and `preds` should be (N, C, ...).",
         )
 
     return case, implied_classes
@@ -134,13 +134,13 @@ def _check_num_classes_binary(num_classes: int, multiclass: Optional[bool]) -> N
     if num_classes == 2 and not multiclass:
         raise ValueError(
             "Your data is binary and `num_classes=2`, but `multiclass` is not True."
-            " Set it to True if you want to transform binary data to multi-class format."
+            " Set it to True if you want to transform binary data to multi-class format.",
         )
     if num_classes == 1 and multiclass:
         raise ValueError(
             "You have binary data and have set `multiclass=True`, but `num_classes` is 1."
             " Either set `multiclass=None`(default) or set `num_classes=2`"
-            " to transform binary data to multi-class format."
+            " to transform binary data to multi-class format.",
         )
 
 
@@ -156,7 +156,7 @@ def _check_num_classes_mc(
         raise ValueError(
             "You have set `num_classes=1`, but predictions are integers."
             " If you want to convert (multi-dimensional) multi-class data with 2 classes"
-            " to binary/multi-label, set `multiclass=False`."
+            " to binary/multi-label, set `multiclass=False`.",
         )
     if num_classes > 1:
         if multiclass is False and implied_classes != num_classes:
@@ -165,7 +165,7 @@ def _check_num_classes_mc(
                 " (from shape of inputs) does not match `num_classes`. If you are trying to"
                 " transform multi-dim multi-class data with 2 classes to multi-label, `num_classes`"
                 " should be either None or the product of the size of extra dimensions (...)."
-                " See Input Types in Metrics documentation."
+                " See Input Types in Metrics documentation.",
             )
         if target.numel() > 0 and num_classes <= target.max():
             raise ValueError("The highest label in `target` should be smaller than `num_classes`.")
@@ -179,7 +179,7 @@ def _check_num_classes_ml(num_classes: int, multiclass: Optional[bool], implied_
         raise ValueError(
             "Your have set `multiclass=True`, but `num_classes` is not equal to 2."
             " If you are trying to transform multi-label data to 2 class multi-dimensional"
-            " multi-class, you should set `num_classes` to either 2 or None."
+            " multi-class, you should set `num_classes` to either 2 or None.",
         )
     if not multiclass and num_classes != implied_classes:
         raise ValueError("The implied number of classes (from shape of inputs) does not match num_classes.")
@@ -197,7 +197,7 @@ def _check_top_k(top_k: int, case: str, implied_classes: int, multiclass: Option
     if case == DataType.MULTILABEL and multiclass:
         raise ValueError(
             "If you want to transform multi-label data to 2 class multi-dimensional"
-            "multi-class data using `multiclass=True`, you can not use `top_k`."
+            "multi-class data using `multiclass=True`, you can not use `top_k`.",
         )
     if top_k >= implied_classes:
         raise ValueError("The `top_k` has to be strictly smaller than the `C` dimension of `preds`.")
@@ -275,11 +275,11 @@ def _check_classification_inputs(
         if multiclass is False and implied_classes != 2:
             raise ValueError(
                 "You have set `multiclass=False`, but have more than 2 classes in your data,"
-                " based on the C dimension of `preds`."
+                " based on the C dimension of `preds`.",
             )
         if target.max() >= implied_classes:
             raise ValueError(
-                "The highest label in `target` should be smaller than the size of the `C` dimension of `preds`."
+                "The highest label in `target` should be smaller than the size of the `C` dimension of `preds`.",
             )
 
     # Check that num_classes is consistent
@@ -574,7 +574,7 @@ def _check_retrieval_inputs(
         )
 
     preds, target = _check_retrieval_target_and_prediction_types(
-        preds, target, allow_non_binary_target=allow_non_binary_target
+        preds, target, allow_non_binary_target=allow_non_binary_target,
     )
 
     return indexes.long().flatten(), preds, target

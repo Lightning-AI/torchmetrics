@@ -89,7 +89,7 @@ class TestDevianceScore(MetricTester):
     def test_deviance_scores_differentiability(self, preds, targets, power):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
-            preds, targets, metric_module=TweedieDevianceScore, metric_functional=tweedie_deviance_score
+            preds, targets, metric_module=TweedieDevianceScore, metric_functional=tweedie_deviance_score,
         )
 
     # Tweedie Deviance Score half + cpu does not work for power=[1,2] due to missing support in torch.log
@@ -133,12 +133,12 @@ def test_error_on_invalid_inputs(metric_class=TweedieDevianceScore):
 
     metric = metric_class(power=1)
     with pytest.raises(
-        ValueError, match="For power=1, 'preds' has to be strictly positive and 'targets' cannot be negative."
+        ValueError, match="For power=1, 'preds' has to be strictly positive and 'targets' cannot be negative.",
     ):
         metric(torch.tensor([-1.0, 2.0, 3.0]), torch.rand(3))
 
     with pytest.raises(
-        ValueError, match="For power=1, 'preds' has to be strictly positive and 'targets' cannot be negative."
+        ValueError, match="For power=1, 'preds' has to be strictly positive and 'targets' cannot be negative.",
     ):
         metric(torch.rand(3), torch.tensor([-1.0, 2.0, 3.0]))
 

@@ -144,10 +144,10 @@ class TestNDCG(RetrievalMetricTester):
         **_concat_tests(
             _errors_test_class_metric_parameters_with_nonbinary,
             _errors_test_class_metric_parameters_k,
-        )
+        ),
     )
     def test_arguments_class_metric(
-        self, indexes: Tensor, preds: Tensor, target: Tensor, message: str, metric_args: dict
+        self, indexes: Tensor, preds: Tensor, target: Tensor, message: str, metric_args: dict,
     ):
         """Test that specific errors are raised for incorrect input."""
         if target.is_floating_point():
@@ -168,7 +168,7 @@ class TestNDCG(RetrievalMetricTester):
         **_concat_tests(
             _errors_test_functional_metric_parameters_with_nonbinary,
             _errors_test_functional_metric_parameters_k,
-        )
+        ),
     )
     def test_arguments_functional_metric(self, preds: Tensor, target: Tensor, message: str, metric_args: dict):
         """Test that specific errors are raised for incorrect input."""

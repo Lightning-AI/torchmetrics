@@ -79,13 +79,13 @@ class UserTokenizer:
             for sentence in sentences
         ]
         output_dict["input_ids"] = torch.cat(
-            [torch.cat([self.word2vec[word] for word in sentence]).unsqueeze(0) for sentence in tokenized_sentences]
+            [torch.cat([self.word2vec[word] for word in sentence]).unsqueeze(0) for sentence in tokenized_sentences],
         )
         output_dict["attention_mask"] = torch.cat(
             [
                 torch.tensor([1 if word != self.PAD_TOKEN else 0 for word in sentence]).unsqueeze(0)
                 for sentence in tokenized_sentences
-            ]
+            ],
         ).long()
 
         return output_dict
@@ -122,7 +122,7 @@ if __name__ == "__main__":
     model = get_user_model_encoder()
 
     bs = BERTScore(
-        model=model, user_tokenizer=tokenizer, user_forward_fn=user_forward_fn, max_length=_MAX_LEN, return_hash=False
+        model=model, user_tokenizer=tokenizer, user_forward_fn=user_forward_fn, max_length=_MAX_LEN, return_hash=False,
     )
     bs.update(_PREDS, _REFS)
     print(f"Predictions:\n {bs.preds_input_ids}\n {bs.preds_attention_mask}")

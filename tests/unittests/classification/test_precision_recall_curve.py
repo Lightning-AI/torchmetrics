@@ -172,7 +172,7 @@ def _sklearn_precision_recall_curve_multiclass(preds, target, ignore_index=None)
 
 
 @pytest.mark.parametrize(
-    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5]),
 )
 class TestMulticlassPrecisionRecallCurve(MetricTester):
     """Test class for `MulticlassPrecisionRecallCurve` metric."""
@@ -263,7 +263,7 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
             p1, r1, t1 = multiclass_precision_recall_curve(pred, true, num_classes=NUM_CLASSES, thresholds=None)
             for i, t in enumerate(t1):
                 p2, r2, t2 = multiclass_precision_recall_curve(
-                    pred, true, num_classes=NUM_CLASSES, thresholds=threshold_fn(t)
+                    pred, true, num_classes=NUM_CLASSES, thresholds=threshold_fn(t),
                 )
 
                 assert torch.allclose(p1[i], p2[i])
@@ -292,7 +292,7 @@ def _sklearn_precision_recall_curve_multilabel(preds, target, ignore_index=None)
 
 
 @pytest.mark.parametrize(
-    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]),
 )
 class TestMultilabelPrecisionRecallCurve(MetricTester):
     """Test class for `MultilabelPrecisionRecallCurve` metric."""
@@ -383,7 +383,7 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
             p1, r1, t1 = multilabel_precision_recall_curve(pred, true, num_labels=NUM_CLASSES, thresholds=None)
             for i, t in enumerate(t1):
                 p2, r2, t2 = multilabel_precision_recall_curve(
-                    pred, true, num_labels=NUM_CLASSES, thresholds=threshold_fn(t)
+                    pred, true, num_labels=NUM_CLASSES, thresholds=threshold_fn(t),
                 )
 
                 assert torch.allclose(p1[i], p2[i])

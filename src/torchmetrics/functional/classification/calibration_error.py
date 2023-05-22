@@ -27,7 +27,7 @@ from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
 def _binning_bucketize(
-    confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor
+    confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Compute calibration bins using ``torch.bucketize``. Use for pytorch >= 1.6.
 
@@ -121,13 +121,13 @@ def _binary_calibration_error_arg_validation(
 
 
 def _binary_calibration_error_tensor_validation(
-    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
+    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None,
 ) -> None:
     _binary_confusion_matrix_tensor_validation(preds, target, ignore_index)
     if not preds.is_floating_point():
         raise ValueError(
             "Expected argument `preds` to be floating tensor with probabilities/logits"
-            f" but got tensor with dtype {preds.dtype}"
+            f" but got tensor with dtype {preds.dtype}",
         )
 
 
@@ -198,7 +198,7 @@ def binary_calibration_error(
         _binary_calibration_error_arg_validation(n_bins, norm, ignore_index)
         _binary_calibration_error_tensor_validation(preds, target, ignore_index)
     preds, target = _binary_confusion_matrix_format(
-        preds, target, threshold=0.0, ignore_index=ignore_index, convert_to_labels=False
+        preds, target, threshold=0.0, ignore_index=ignore_index, convert_to_labels=False,
     )
     confidences, accuracies = _binary_calibration_error_update(preds, target)
     return _ce_compute(confidences, accuracies, n_bins, norm)
@@ -222,13 +222,13 @@ def _multiclass_calibration_error_arg_validation(
 
 
 def _multiclass_calibration_error_tensor_validation(
-    preds: Tensor, target: Tensor, num_classes: int, ignore_index: Optional[int] = None
+    preds: Tensor, target: Tensor, num_classes: int, ignore_index: Optional[int] = None,
 ) -> None:
     _multiclass_confusion_matrix_tensor_validation(preds, target, num_classes, ignore_index)
     if not preds.is_floating_point():
         raise ValueError(
             "Expected argument `preds` to be floating tensor with probabilities/logits"
-            f" but got tensor with dtype {preds.dtype}"
+            f" but got tensor with dtype {preds.dtype}",
         )
 
 

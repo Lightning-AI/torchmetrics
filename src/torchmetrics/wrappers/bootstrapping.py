@@ -100,7 +100,7 @@ class BootStrapper(Metric):
         super().__init__(**kwargs)
         if not isinstance(base_metric, Metric):
             raise ValueError(
-                "Expected base metric to be an instance of torchmetrics.Metric" f" but received {base_metric}"
+                "Expected base metric to be an instance of torchmetrics.Metric" f" but received {base_metric}",
             )
 
         self.metrics = ModuleList([deepcopy(base_metric) for _ in range(num_bootstraps)])
@@ -115,7 +115,7 @@ class BootStrapper(Metric):
         if sampling_strategy not in allowed_sampling:
             raise ValueError(
                 f"Expected argument ``sampling_strategy`` to be one of {allowed_sampling}"
-                f" but recieved {sampling_strategy}"
+                f" but recieved {sampling_strategy}",
             )
         self.sampling_strategy = sampling_strategy
 
@@ -157,7 +157,7 @@ class BootStrapper(Metric):
         return output_dict
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

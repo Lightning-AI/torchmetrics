@@ -77,7 +77,7 @@ def test_error_on_wrong_keys():
         {
             "Classification": BinaryAccuracy(),
             "Regression": MeanSquaredError(),
-        }
+        },
     )
 
     # Classification preds, but not regression preds
@@ -90,7 +90,7 @@ def test_error_on_wrong_keys():
     wrong_key_multitask_metrics = MultitaskWrapper(
         {
             "Classification": BinaryAccuracy(),
-        }
+        },
     )
 
     with pytest.raises(
@@ -99,7 +99,7 @@ def test_error_on_wrong_keys():
             "Expected arguments `task_preds` and `task_targets` to have the same keys as the wrapped `task_metrics`. "
             "Found task_preds.keys() = dict_keys(['Classification']), task_targets.keys() = "
             "dict_keys(['Classification', 'Regression']) and self.task_metrics.keys() = "
-            "odict_keys(['Classification', 'Regression'])"
+            "odict_keys(['Classification', 'Regression'])",
         ),
     ):
         multitask_metrics.update(wrong_key_preds, _multitask_targets)
@@ -109,7 +109,7 @@ def test_error_on_wrong_keys():
         match=re.escape(
             "Expected arguments `task_preds` and `task_targets` to have the same keys as the wrapped `task_metrics`. "
             "Found task_preds.keys() = dict_keys(['Classification', 'Regression']), task_targets.keys() = "
-            "dict_keys(['Classification']) and self.task_metrics.keys() = odict_keys(['Classification', 'Regression'])"
+            "dict_keys(['Classification']) and self.task_metrics.keys() = odict_keys(['Classification', 'Regression'])",
         ),
     ):
         multitask_metrics.update(_multitask_preds, wrong_key_targets)
@@ -119,7 +119,7 @@ def test_error_on_wrong_keys():
         match=re.escape(
             "Expected arguments `task_preds` and `task_targets` to have the same keys as the wrapped `task_metrics`. "
             "Found task_preds.keys() = dict_keys(['Classification', 'Regression']), task_targets.keys() = "
-            "dict_keys(['Classification', 'Regression']) and self.task_metrics.keys() = odict_keys(['Classification'])"
+            "dict_keys(['Classification', 'Regression']) and self.task_metrics.keys() = odict_keys(['Classification'])",
         ),
     ):
         wrong_key_multitask_metrics.update(_multitask_preds, _multitask_targets)
@@ -142,7 +142,7 @@ def test_metric_collection_multitask():
         {
             "Classification": MetricCollection([BinaryAccuracy(), BinaryF1Score()]),
             "Regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
-        }
+        },
     )
 
     assert _multitask_same_as_individual_tasks(classification_metric, regression_metric, multitask_metrics)
@@ -173,9 +173,9 @@ def test_nested_multitask_wrapper():
                 {
                     "Position": MeanSquaredError(),
                     "Size": MeanAbsoluteError(),
-                }
+                },
             ),
-        }
+        },
     )
 
     multitask_preds = {

@@ -305,18 +305,18 @@ class MulticlassStatScores(_AbstractStatScores):
         self.validate_args = validate_args
 
         self._create_state(
-            size=1 if (average == "micro" and top_k == 1) else num_classes, multidim_average=multidim_average
+            size=1 if (average == "micro" and top_k == 1) else num_classes, multidim_average=multidim_average,
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if self.validate_args:
             _multiclass_stat_scores_tensor_validation(
-                preds, target, self.num_classes, self.multidim_average, self.ignore_index
+                preds, target, self.num_classes, self.multidim_average, self.ignore_index,
             )
         preds, target = _multiclass_stat_scores_format(preds, target, self.top_k)
         tp, fp, tn, fn = _multiclass_stat_scores_update(
-            preds, target, self.num_classes, self.top_k, self.average, self.multidim_average, self.ignore_index
+            preds, target, self.num_classes, self.top_k, self.average, self.multidim_average, self.ignore_index,
         )
         self._update_state(tp, fp, tn, fn)
 
@@ -450,10 +450,10 @@ class MultilabelStatScores(_AbstractStatScores):
         """Update state with predictions and targets."""
         if self.validate_args:
             _multilabel_stat_scores_tensor_validation(
-                preds, target, self.num_labels, self.multidim_average, self.ignore_index
+                preds, target, self.num_labels, self.multidim_average, self.ignore_index,
             )
         preds, target = _multilabel_stat_scores_format(
-            preds, target, self.num_labels, self.threshold, self.ignore_index
+            preds, target, self.num_labels, self.threshold, self.ignore_index,
         )
         tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, self.multidim_average)
         self._update_state(tp, fp, tn, fn)
@@ -503,7 +503,7 @@ class StatScores:
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None  # noqa: S101  # needed for mypy
         kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
+            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args},
         )
         if task == ClassificationTask.BINARY:
             return BinaryStatScores(threshold, **kwargs)

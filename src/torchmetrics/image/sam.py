@@ -82,7 +82,7 @@ class SpectralAngleMapper(Metric):
         super().__init__(**kwargs)
         rank_zero_warn(
             "Metric `SpectralAngleMapper` will save all targets and predictions in the buffer."
-            " For large datasets, this may lead to a large memory footprint."
+            " For large datasets, this may lead to a large memory footprint.",
         )
 
         self.add_state("preds", default=[], dist_reduce_fx="cat")
@@ -102,7 +102,7 @@ class SpectralAngleMapper(Metric):
         return _sam_compute(preds, target, self.reduction)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

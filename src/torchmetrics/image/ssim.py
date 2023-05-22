@@ -170,7 +170,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         return similarity
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -312,14 +312,14 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
 
         if not (isinstance(kernel_size, (Sequence, int))):
             raise ValueError(
-                f"Argument `kernel_size` expected to be an sequence or an int, or a single int. Got {kernel_size}"
+                f"Argument `kernel_size` expected to be an sequence or an int, or a single int. Got {kernel_size}",
             )
         if isinstance(kernel_size, Sequence) and (
             len(kernel_size) not in (2, 3) or not all(isinstance(ks, int) for ks in kernel_size)
         ):
             raise ValueError(
                 "Argument `kernel_size` expected to be an sequence of size 2 or 3 where each element is an int, "
-                f"or a single int. Got {kernel_size}"
+                f"or a single int. Got {kernel_size}",
             )
 
         self.gaussian_kernel = gaussian_kernel
@@ -370,7 +370,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         return self.similarity / self.total
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

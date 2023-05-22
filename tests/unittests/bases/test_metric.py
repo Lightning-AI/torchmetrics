@@ -462,7 +462,7 @@ def test_specific_error_on_wrong_device():
     preds = torch.tensor(range(10), device="cuda", dtype=torch.float)
     target = torch.tensor(range(10), device="cuda", dtype=torch.float)
     with pytest.raises(
-        RuntimeError, match="This could be due to the metric class not being on the same device as input"
+        RuntimeError, match="This could be due to the metric class not being on the same device as input",
     ):
         _ = metric(preds, target)
 

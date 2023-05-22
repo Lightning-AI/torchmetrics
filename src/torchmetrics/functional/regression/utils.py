@@ -19,12 +19,12 @@ def _check_data_shape_to_num_outputs(preds: Tensor, target: Tensor, num_outputs:
     if preds.ndim > 2 or target.ndim > 2:
         raise ValueError(
             f"Expected both predictions and target to be either 1- or 2-dimensional tensors,"
-            f" but got {target.ndim} and {preds.ndim}."
+            f" but got {target.ndim} and {preds.ndim}.",
         )
     cond1 = num_outputs == 1 and not (preds.ndim == 1 or preds.shape[1] == 1)
     cond2 = num_outputs > 1 and num_outputs != preds.shape[1]
     if cond1 or cond2:
         raise ValueError(
             f"Expected argument `num_outputs` to match the second dimension of input, but got {num_outputs}"
-            f" and {preds.shape[1]}."
+            f" and {preds.shape[1]}.",
         )

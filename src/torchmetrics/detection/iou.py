@@ -130,7 +130,7 @@ class IntersectionOverUnion(Metric):
         if not _TORCHVISION_GREATER_EQUAL_0_8:
             raise ModuleNotFoundError(
                 f"Metric `{self._iou_type.upper()}` requires that `torchvision` version 0.8.0 or newer is installed."
-                " Please install with `pip install torchvision>=0.8` or `pip install torchmetrics[detection]`."
+                " Please install with `pip install torchvision>=0.8` or `pip install torchmetrics[detection]`.",
             )
 
         allowed_box_formats = ("xyxy", "xywh", "cxcywh")
@@ -224,7 +224,7 @@ class IntersectionOverUnion(Metric):
     def compute(self) -> dict:
         """Computes IoU based on inputs passed in to ``update`` previously."""
         aggregated_iou = dim_zero_cat(
-            [self._iou_compute_fn(iou, bool(lbl_eq)) for iou, lbl_eq in zip(self.results, self.labels_eq)]
+            [self._iou_compute_fn(iou, bool(lbl_eq)) for iou, lbl_eq in zip(self.results, self.labels_eq)],
         )
         results: Dict[str, Tensor] = {f"{self._iou_type}": aggregated_iou.mean()}
 
@@ -237,12 +237,12 @@ class IntersectionOverUnion(Metric):
                         class_results[cl].append(self._iou_compute_fn(masked_iou, False))
 
             results.update(
-                {f"{self._iou_type}/cl_{cl}": dim_zero_cat(class_results[cl]).mean() for cl in class_results}
+                {f"{self._iou_type}/cl_{cl}": dim_zero_cat(class_results[cl]).mean() for cl in class_results},
             )
         return results
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

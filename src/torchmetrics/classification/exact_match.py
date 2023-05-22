@@ -131,7 +131,7 @@ class MulticlassExactMatch(Metric):
         """Update metric states with predictions and targets."""
         if self.validate_args:
             _multiclass_stat_scores_tensor_validation(
-                preds, target, self.num_classes, self.multidim_average, self.ignore_index
+                preds, target, self.num_classes, self.multidim_average, self.ignore_index,
             )
         preds, target = _multiclass_stat_scores_format(preds, target, 1)
 
@@ -149,7 +149,7 @@ class MulticlassExactMatch(Metric):
         return _exact_match_reduce(correct, self.total)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -272,7 +272,7 @@ class MultilabelExactMatch(Metric):
         super().__init__(**kwargs)
         if validate_args:
             _multilabel_stat_scores_arg_validation(
-                num_labels, threshold, average=None, multidim_average=multidim_average, ignore_index=ignore_index
+                num_labels, threshold, average=None, multidim_average=multidim_average, ignore_index=ignore_index,
             )
         self.num_labels = num_labels
         self.threshold = threshold
@@ -295,10 +295,10 @@ class MultilabelExactMatch(Metric):
         """Update state with predictions and targets."""
         if self.validate_args:
             _multilabel_stat_scores_tensor_validation(
-                preds, target, self.num_labels, self.multidim_average, self.ignore_index
+                preds, target, self.num_labels, self.multidim_average, self.ignore_index,
             )
         preds, target = _multilabel_stat_scores_format(
-            preds, target, self.num_labels, self.threshold, self.ignore_index
+            preds, target, self.num_labels, self.threshold, self.ignore_index,
         )
         correct, total = _multilabel_exact_match_update(preds, target, self.num_labels, self.multidim_average)
         if self.multidim_average == "samplewise":
@@ -314,7 +314,7 @@ class MultilabelExactMatch(Metric):
         return _exact_match_reduce(correct, self.total)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -395,7 +395,7 @@ class ExactMatch:
         """Initialize task metric."""
         task = ClassificationTaskNoBinary.from_str(task)
         kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
+            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args},
         )
         if task == ClassificationTaskNoBinary.MULTICLASS:
             if not isinstance(num_classes, int):

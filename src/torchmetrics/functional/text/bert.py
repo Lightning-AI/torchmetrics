@@ -106,7 +106,7 @@ def _get_embeddings_and_idf_scale(
             else:
                 if user_forward_fn:
                     raise ValueError(
-                        "The option `all_layers=True` can be used only with default `transformers` models."
+                        "The option `all_layers=True` can be used only with default `transformers` models.",
                     )
                 out = model(batch["input_ids"], batch["attention_mask"], output_hidden_states=True)
                 out = torch.cat([o.unsqueeze(1) for o in out.hidden_states], dim=1)
@@ -141,7 +141,7 @@ def _get_scaled_precision_or_recall(cos_sim: Tensor, metric: str, idf_scale: Ten
 
 
 def _get_precision_recall_f1(
-    preds_embeddings: Tensor, target_embeddings: Tensor, preds_idf_scale: Tensor, target_idf_scale: Tensor
+    preds_embeddings: Tensor, target_embeddings: Tensor, preds_idf_scale: Tensor, target_idf_scale: Tensor,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Calculate precision, recall and F1 score over candidate and reference sentences.
 
@@ -337,20 +337,20 @@ def bert_score(
 
     if verbose and (not _TQDM_AVAILABLE):
         raise ModuleNotFoundError(
-            "An argument `verbose = True` requires `tqdm` package be installed. Install with `pip install tqdm`."
+            "An argument `verbose = True` requires `tqdm` package be installed. Install with `pip install tqdm`.",
         )
 
     if model is None:
         if not _TRANSFORMERS_AVAILABLE:
             raise ModuleNotFoundError(
                 "`bert_score` metric with default models requires `transformers` package be installed."
-                " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."
+                " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`.",
             )
         if model_name_or_path is None:
             warn(
                 "The argument `model_name_or_path` was not specified while it is required when default"
                 " `transformers` model are used."
-                f"It is, therefore, used the default recommended model - {_DEFAULT_MODEL}."
+                f"It is, therefore, used the default recommended model - {_DEFAULT_MODEL}.",
             )
         tokenizer = AutoTokenizer.from_pretrained(model_name_or_path or _DEFAULT_MODEL)
         model = AutoModel.from_pretrained(model_name_or_path or _DEFAULT_MODEL)
@@ -363,7 +363,7 @@ def bert_score(
         if num_layers and num_layers > model.config.num_hidden_layers:  # type: ignore
             raise ValueError(
                 f"num_layers={num_layers} is forbidden for {model_name_or_path}."  # type: ignore
-                f" Please use num_layers <= {model.config.num_hidden_layers}"
+                f" Please use num_layers <= {model.config.num_hidden_layers}",
             )
     except AttributeError:
         warn("It was not possible to retrieve the parameter `num_layers` from the model specification.")
@@ -409,14 +409,14 @@ def bert_score(
     preds_loader = DataLoader(preds_dataset, batch_size=batch_size, num_workers=num_threads)
 
     target_embeddings, target_idf_scale = _get_embeddings_and_idf_scale(
-        target_loader, target_dataset.max_length, model, device, num_layers, all_layers, idf, verbose, user_forward_fn
+        target_loader, target_dataset.max_length, model, device, num_layers, all_layers, idf, verbose, user_forward_fn,
     )
     preds_embeddings, preds_idf_scale = _get_embeddings_and_idf_scale(
-        preds_loader, preds_dataset.max_length, model, device, num_layers, all_layers, idf, verbose, user_forward_fn
+        preds_loader, preds_dataset.max_length, model, device, num_layers, all_layers, idf, verbose, user_forward_fn,
     )
 
     precision, recall, f1_score = _get_precision_recall_f1(
-        preds_embeddings, target_embeddings, preds_idf_scale, target_idf_scale
+        preds_embeddings, target_embeddings, preds_idf_scale, target_idf_scale,
     )
     # Sort predictions
     if len(precision.shape) == 1:  # i.e. when all_layers = False
@@ -430,7 +430,7 @@ def bert_score(
 
     if baseline is not None:
         precision, recall, f1_score = _rescale_metrics_with_baseline(
-            precision, recall, f1_score, baseline, num_layers, all_layers
+            precision, recall, f1_score, baseline, num_layers, all_layers,
         )
 
     output_dict = {

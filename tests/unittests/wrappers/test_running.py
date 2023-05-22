@@ -67,7 +67,7 @@ def test_forward():
     for i in range(10):
         assert compare_metric(i) == metric(i)
         assert metric.compute() == (i + max(i - 1, 0) + max(i - 2, 0)) / min(
-            i + 1, 3
+            i + 1, 3,
         ), f"Running mean is not correct in step {i}"
 
 
@@ -100,7 +100,7 @@ def test_advance_running(metric, preds, target, window):
     for i in range(10):  # using update
         p, t = preds[i], target[i]
         p_run, t_run = preds[max(i - (window - 1), 0) : i + 1, :].reshape(-1), target[
-            max(i - (window - 1), 0) : i + 1, :
+            max(i - (window - 1), 0) : i + 1, :,
         ].reshape(-1)
 
         running_metric.update(p, t)
@@ -115,7 +115,7 @@ def test_metric_collection(window):
         {
             "mse": Running(MeanSquaredError(), window=window),
             "msa": Running(MeanAbsoluteError(), window=window),
-        }
+        },
     )
     preds = torch.rand(10, 20)
     target = torch.rand(10, 20)
@@ -123,7 +123,7 @@ def test_metric_collection(window):
     for i in range(10):
         p, t = preds[i], target[i]
         p_run, t_run = preds[max(i - (window - 1), 0) : i + 1, :].reshape(-1), target[
-            max(i - (window - 1), 0) : i + 1, :
+            max(i - (window - 1), 0) : i + 1, :,
         ].reshape(-1)
         metric.update(p, t)
 

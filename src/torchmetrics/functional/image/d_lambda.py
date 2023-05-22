@@ -32,12 +32,12 @@ def _spectral_distortion_index_update(preds: Tensor, target: Tensor) -> Tuple[Te
     """
     if preds.dtype != target.dtype:
         raise TypeError(
-            f"Expected `ms` and `fused` to have the same data type. Got ms: {preds.dtype} and fused: {target.dtype}."
+            f"Expected `ms` and `fused` to have the same data type. Got ms: {preds.dtype} and fused: {target.dtype}.",
         )
     _check_same_shape(preds, target)
     if len(preds.shape) != 4:
         raise ValueError(
-            f"Expected `preds` and `target` to have BxCxHxW shape. Got preds: {preds.shape} and target: {target.shape}."
+            f"Expected `preds` and `target` to have BxCxHxW shape. Got preds: {preds.shape} and target: {target.shape}.",
         )
     return preds, target
 

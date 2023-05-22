@@ -17,7 +17,7 @@ from torch import Tensor
 
 
 def _input_validator(
-    preds: Sequence[Dict[str, Tensor]], targets: Sequence[Dict[str, Tensor]], iou_type: str = "bbox"
+    preds: Sequence[Dict[str, Tensor]], targets: Sequence[Dict[str, Tensor]], iou_type: str = "bbox",
 ) -> None:
     """Ensure the correct input format of `preds` and `targets`."""
     if iou_type == "bbox":
@@ -33,7 +33,7 @@ def _input_validator(
         raise ValueError(f"Expected argument `target` to be of type Sequence, but got {targets}")
     if len(preds) != len(targets):
         raise ValueError(
-            f"Expected argument `preds` and `target` to have the same length, but got {len(preds)} and {len(targets)}"
+            f"Expected argument `preds` and `target` to have the same length, but got {len(preds)} and {len(targets)}",
         )
 
     for k in [item_val_name, "scores", "labels"]:
@@ -59,14 +59,14 @@ def _input_validator(
         if item[item_val_name].size(0) != item["labels"].size(0):
             raise ValueError(
                 f"Input {item_val_name} and labels of sample {i} in targets have a"
-                f" different length (expected {item[item_val_name].size(0)} labels, got {item['labels'].size(0)})"
+                f" different length (expected {item[item_val_name].size(0)} labels, got {item['labels'].size(0)})",
             )
     for i, item in enumerate(preds):
         if not (item[item_val_name].size(0) == item["labels"].size(0) == item["scores"].size(0)):
             raise ValueError(
                 f"Input {item_val_name}, labels and scores of sample {i} in predictions have a"
                 f" different length (expected {item[item_val_name].size(0)} labels and scores,"
-                f" got {item['labels'].size(0)} labels and {item['scores'].size(0)})"
+                f" got {item['labels'].size(0)} labels and {item['scores'].size(0)})",
             )
 
 

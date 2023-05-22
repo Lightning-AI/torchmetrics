@@ -83,7 +83,7 @@ class SpearmanCorrCoef(Metric):
         super().__init__(**kwargs)
         rank_zero_warn(
             "Metric `SpearmanCorrcoef` will save all targets and predictions in the buffer."
-            " For large datasets, this may lead to large memory footprint."
+            " For large datasets, this may lead to large memory footprint.",
         )
         if not isinstance(num_outputs, int) and num_outputs < 1:
             raise ValueError("Expected argument `num_outputs` to be an int larger than 0, but got {num_outputs}")
@@ -105,7 +105,7 @@ class SpearmanCorrCoef(Metric):
         return _spearman_corrcoef_compute(preds, target)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

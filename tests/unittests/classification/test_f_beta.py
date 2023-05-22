@@ -103,7 +103,7 @@ class TestBinaryFBetaScore(MetricTester):
             target=target,
             metric_class=module,
             reference_metric=partial(
-                _sklearn_fbeta_score_binary, sk_fn=compare, ignore_index=ignore_index, multidim_average=multidim_average
+                _sklearn_fbeta_score_binary, sk_fn=compare, ignore_index=ignore_index, multidim_average=multidim_average,
             ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
@@ -123,7 +123,7 @@ class TestBinaryFBetaScore(MetricTester):
             target=target,
             metric_functional=functional,
             reference_metric=partial(
-                _sklearn_fbeta_score_binary, sk_fn=compare, ignore_index=ignore_index, multidim_average=multidim_average
+                _sklearn_fbeta_score_binary, sk_fn=compare, ignore_index=ignore_index, multidim_average=multidim_average,
             ),
             metric_args={
                 "threshold": THRESHOLD,
@@ -215,7 +215,7 @@ class TestMulticlassFBetaScore(MetricTester):
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_fbeta_score(
-        self, ddp, input, module, functional, compare, ignore_index, multidim_average, average
+        self, ddp, input, module, functional, compare, ignore_index, multidim_average, average,
     ):
         """Test class implementation of metric."""
         preds, target = input
@@ -250,7 +250,7 @@ class TestMulticlassFBetaScore(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multiclass_fbeta_score_functional(
-        self, input, module, functional, compare, ignore_index, multidim_average, average
+        self, input, module, functional, compare, ignore_index, multidim_average, average,
     ):
         """Test functional implementation of metric."""
         preds, target = input
@@ -461,7 +461,7 @@ class TestMultilabelFBetaScore(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multilabel_fbeta_score(
-        self, ddp, input, module, functional, compare, ignore_index, multidim_average, average
+        self, ddp, input, module, functional, compare, ignore_index, multidim_average, average,
     ):
         """Test class implementation of metric."""
         preds, target = input
@@ -497,7 +497,7 @@ class TestMultilabelFBetaScore(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multilabel_fbeta_score_functional(
-        self, input, module, functional, compare, ignore_index, multidim_average, average
+        self, input, module, functional, compare, ignore_index, multidim_average, average,
     ):
         """Test functional implementation of metric."""
         preds, target = input

@@ -158,7 +158,7 @@ class InfoLM(Metric):
     def update(self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str]]) -> None:
         """Update state with predictions and targets."""
         preds_input_ids, preds_attention_mask, target_input_ids, target_attention_mask = _infolm_update(
-            preds, target, self.tokenizer, self.max_length
+            preds, target, self.tokenizer, self.max_length,
         )
         self.preds_input_ids.append(preds_input_ids)
         self.preds_attention_mask.append(preds_attention_mask)
@@ -199,7 +199,7 @@ class InfoLM(Metric):
         return info_lm_score.mean()
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

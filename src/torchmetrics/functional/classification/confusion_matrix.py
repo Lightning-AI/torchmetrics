@@ -24,7 +24,7 @@ from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _confusion_matrix_reduce(
-    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None
+    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
 ) -> Tensor:
     """Reduce an un-normalized confusion matrix.
 
@@ -79,7 +79,7 @@ def _binary_confusion_matrix_arg_validation(
 
 
 def _binary_confusion_matrix_tensor_validation(
-    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
+    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None,
 ) -> None:
     """Validate tensor input.
 
@@ -99,7 +99,7 @@ def _binary_confusion_matrix_tensor_validation(
     if check:
         raise RuntimeError(
             f"Detected the following values in `target`: {unique_values} but expected only"
-            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}.",
         )
 
     # If preds is label tensor, also check that it only contains {0,1} values
@@ -108,7 +108,7 @@ def _binary_confusion_matrix_tensor_validation(
         if torch.any((unique_values != 0) & (unique_values != 1)):
             raise RuntimeError(
                 f"Detected the following values in `preds`: {unique_values} but expected only"
-                " the following values [0,1] since preds is a label tensor."
+                " the following values [0,1] since preds is a label tensor.",
             )
 
 
@@ -150,7 +150,7 @@ def _binary_confusion_matrix_update(preds: Tensor, target: Tensor) -> Tensor:
 
 
 def _binary_confusion_matrix_compute(
-    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None
+    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
 ) -> Tensor:
     """Reduces the confusion matrix to it's final form.
 
@@ -242,7 +242,7 @@ def _multiclass_confusion_matrix_arg_validation(
 
 
 def _multiclass_confusion_matrix_tensor_validation(
-    preds: Tensor, target: Tensor, num_classes: int, ignore_index: Optional[int] = None
+    preds: Tensor, target: Tensor, num_classes: int, ignore_index: Optional[int] = None,
 ) -> None:
     """Validate tensor input.
 
@@ -258,12 +258,12 @@ def _multiclass_confusion_matrix_tensor_validation(
         if preds.shape[1] != num_classes:
             raise ValueError(
                 "If `preds` have one dimension more than `target`, `preds.shape[1]` should be"
-                " equal to number of classes."
+                " equal to number of classes.",
             )
         if preds.shape[2:] != target.shape[1:]:
             raise ValueError(
                 "If `preds` have one dimension more than `target`, the shape of `preds` should be"
-                " (N, C, ...), and the shape of `target` should be (N, ...)."
+                " (N, C, ...), and the shape of `target` should be (N, ...).",
             )
     elif preds.ndim == target.ndim:
         if preds.shape != target.shape:
@@ -274,7 +274,7 @@ def _multiclass_confusion_matrix_tensor_validation(
     else:
         raise ValueError(
             "Either `preds` and `target` both should have the (same) shape (N, ...), or `target` should be (N, ...)"
-            " and `preds` should be (N, C, ...)."
+            " and `preds` should be (N, C, ...).",
         )
 
     num_unique_values = len(torch.unique(target))
@@ -283,7 +283,7 @@ def _multiclass_confusion_matrix_tensor_validation(
         raise RuntimeError(
             "Detected more unique values in `target` than `num_classes`. Expected only "
             f"{num_classes if ignore_index is None else num_classes + 1} but found "
-            f"{num_unique_values} in `target`."
+            f"{num_unique_values} in `target`.",
         )
 
     if not preds.is_floating_point():
@@ -291,7 +291,7 @@ def _multiclass_confusion_matrix_tensor_validation(
         if num_unique_values > num_classes:
             raise RuntimeError(
                 "Detected more unique values in `preds` than `num_classes`. Expected only "
-                f"{num_classes} but found {num_unique_values} in `preds`."
+                f"{num_classes} but found {num_unique_values} in `preds`.",
             )
 
 
@@ -329,7 +329,7 @@ def _multiclass_confusion_matrix_update(preds: Tensor, target: Tensor, num_class
 
 
 def _multiclass_confusion_matrix_compute(
-    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None
+    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
 ) -> Tensor:
     """Reduces the confusion matrix to it's final form.
 
@@ -430,7 +430,7 @@ def _multilabel_confusion_matrix_arg_validation(
 
 
 def _multilabel_confusion_matrix_tensor_validation(
-    preds: Tensor, target: Tensor, num_labels: int, ignore_index: Optional[int] = None
+    preds: Tensor, target: Tensor, num_labels: int, ignore_index: Optional[int] = None,
 ) -> None:
     """Validate tensor input.
 
@@ -445,7 +445,7 @@ def _multilabel_confusion_matrix_tensor_validation(
     if preds.shape[1] != num_labels:
         raise ValueError(
             "Expected both `target.shape[1]` and `preds.shape[1]` to be equal to the number of labels"
-            f" but got {preds.shape[1]} and expected {num_labels}"
+            f" but got {preds.shape[1]} and expected {num_labels}",
         )
 
     # Check that target only contains [0,1] values or value in ignore_index
@@ -457,7 +457,7 @@ def _multilabel_confusion_matrix_tensor_validation(
     if check:
         raise RuntimeError(
             f"Detected the following values in `target`: {unique_values} but expected only"
-            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}.",
         )
 
     # If preds is label tensor, also check that it only contains [0,1] values
@@ -466,7 +466,7 @@ def _multilabel_confusion_matrix_tensor_validation(
         if torch.any((unique_values != 0) & (unique_values != 1)):
             raise RuntimeError(
                 f"Detected the following values in `preds`: {unique_values} but expected only"
-                " the following values [0,1] since preds is a label tensor."
+                " the following values [0,1] since preds is a label tensor.",
             )
 
 
@@ -513,7 +513,7 @@ def _multilabel_confusion_matrix_update(preds: Tensor, target: Tensor, num_label
 
 
 def _multilabel_confusion_matrix_compute(
-    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None
+    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
 ) -> Tensor:
     """Reduces the confusion matrix to it's final form.
 

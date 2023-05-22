@@ -78,7 +78,7 @@ class TestMinkowskiDistance(MetricTester):
         )
 
     @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_9, reason="minkowski half + cpu not supported for older versions of pytorch"
+        not _TORCH_GREATER_EQUAL_1_9, reason="minkowski half + cpu not supported for older versions of pytorch",
     )
     def test_minkowski_distance_half_cpu(self, preds, target, ref_metric, p):
         """Test dtype support of the metric on CPU."""

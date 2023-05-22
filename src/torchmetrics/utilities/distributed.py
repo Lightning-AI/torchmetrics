@@ -85,7 +85,7 @@ def class_reduce(
         return fraction
 
     raise ValueError(
-        f"Reduction parameter {class_reduction} unknown." f" Choose between one of these: {valid_reduction}"
+        f"Reduction parameter {class_reduction} unknown." f" Choose between one of these: {valid_reduction}",
     )
 
 

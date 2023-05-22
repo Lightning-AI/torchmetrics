@@ -70,7 +70,7 @@ class MinMaxMetric(Metric):
         super().__init__(**kwargs)
         if not isinstance(base_metric, Metric):
             raise ValueError(
-                f"Expected base metric to be an instance of `torchmetrics.Metric` but received {base_metric}"
+                f"Expected base metric to be an instance of `torchmetrics.Metric` but received {base_metric}",
             )
         self._base_metric = base_metric
         self.min_val = torch.tensor(float("inf"))
@@ -89,7 +89,7 @@ class MinMaxMetric(Metric):
         val = self._base_metric.compute()
         if not self._is_suitable_val(val):
             raise RuntimeError(
-                f"Returned value from base metric should be a scalar (int, float or tensor of size 1, but got {val}"
+                f"Returned value from base metric should be a scalar (int, float or tensor of size 1, but got {val}",
             )
         self.max_val = val if self.max_val.to(val.device) < val else self.max_val.to(val.device)
         self.min_val = val if self.min_val.to(val.device) > val else self.min_val.to(val.device)
@@ -110,7 +110,7 @@ class MinMaxMetric(Metric):
         return False
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

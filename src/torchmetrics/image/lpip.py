@@ -115,7 +115,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         if not _LPIPS_AVAILABLE:
             raise ModuleNotFoundError(
                 "LPIPS metric requires that lpips is installed."
-                " Either install as `pip install torchmetrics[image]` or `pip install lpips`."
+                " Either install as `pip install torchmetrics[image]` or `pip install lpips`.",
             )
 
         valid_net_type = ("vgg", "alex", "squeeze")
@@ -146,7 +146,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         return _lpips_compute(self.sum_scores, self.total, self.reduction)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

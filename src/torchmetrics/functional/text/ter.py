@@ -341,7 +341,7 @@ def _shift_words(
 
     for pred_start, target_start, length in _find_shifted_pairs(pred_words, target_words):
         if _handle_corner_cases_during_shifting(
-            alignments, pred_errors, target_errors, pred_start, target_start, length
+            alignments, pred_errors, target_errors, pred_start, target_start, length,
         ):
             continue
 
@@ -406,7 +406,7 @@ def _translation_edit_rate(pred_words: List[str], target_words: List[str]) -> Te
     while True:
         # do shifts until they stop reducing the edit distance
         delta, new_input_words, checked_candidates = _shift_words(
-            input_words, target_words, cached_edit_distance, checked_candidates
+            input_words, target_words, cached_edit_distance, checked_candidates,
         )
         if checked_candidates >= _MAX_SHIFT_CANDIDATES or delta <= 0:
             break

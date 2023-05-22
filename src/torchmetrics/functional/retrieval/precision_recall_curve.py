@@ -22,7 +22,7 @@ from torchmetrics.utilities.data import _cumsum
 
 
 def retrieval_precision_recall_curve(
-    preds: Tensor, target: Tensor, max_k: Optional[int] = None, adaptive_k: bool = False
+    preds: Tensor, target: Tensor, max_k: Optional[int] = None, adaptive_k: bool = False,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Compute precision-recall pairs for different k (from 1 to `max_k`).
 

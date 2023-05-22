@@ -85,7 +85,7 @@ def perceptual_evaluation_speech_quality(
     if not _PESQ_AVAILABLE:
         raise ModuleNotFoundError(
             "PESQ metric requires that pesq is installed."
-            " Either install as `pip install torchmetrics[audio]` or `pip install pesq`."
+            " Either install as `pip install torchmetrics[audio]` or `pip install pesq`.",
         )
     if fs not in (8000, 16000):
         raise ValueError(f"Expected argument `fs` to either be 8000 or 16000 but got {fs}")

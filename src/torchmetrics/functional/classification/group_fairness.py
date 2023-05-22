@@ -82,14 +82,14 @@ def _binary_groups_stat_scores(
 
 
 def _groups_reduce(
-    group_stats: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]
+    group_stats: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]],
 ) -> Dict[str, torch.Tensor]:
     """Compute rates for all the group statistics."""
     return {f"group_{group}": torch.stack(stats) / torch.stack(stats).sum() for group, stats in enumerate(group_stats)}
 
 
 def _groups_stat_transform(
-    group_stats: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]
+    group_stats: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]],
 ) -> Dict[str, torch.Tensor]:
     """Transform group statistics by creating a tensor for each statistic."""
     return {
@@ -159,7 +159,7 @@ def binary_groups_stat_rates(
 
 
 def _compute_binary_demographic_parity(
-    tp: torch.Tensor, fp: torch.Tensor, tn: torch.Tensor, fn: torch.Tensor
+    tp: torch.Tensor, fp: torch.Tensor, tn: torch.Tensor, fn: torch.Tensor,
 ) -> Dict[str, torch.Tensor]:
     """Compute demographic parity based on the binary stats."""
     pos_rates = _safe_divide(tp + fp, tp + fp + tn + fn)
@@ -167,7 +167,7 @@ def _compute_binary_demographic_parity(
     max_pos_rate_id = torch.argmax(pos_rates)
 
     return {
-        f"DP_{min_pos_rate_id}_{max_pos_rate_id}": _safe_divide(pos_rates[min_pos_rate_id], pos_rates[max_pos_rate_id])
+        f"DP_{min_pos_rate_id}_{max_pos_rate_id}": _safe_divide(pos_rates[min_pos_rate_id], pos_rates[max_pos_rate_id]),
     }
 
 
@@ -237,7 +237,7 @@ def demographic_parity(
 
 
 def _compute_binary_equal_opportunity(
-    tp: torch.Tensor, fp: torch.Tensor, tn: torch.Tensor, fn: torch.Tensor
+    tp: torch.Tensor, fp: torch.Tensor, tn: torch.Tensor, fn: torch.Tensor,
 ) -> Dict[str, torch.Tensor]:
     """Compute equal opportunity based on the binary stats."""
     true_pos_rates = _safe_divide(tp, tp + fn)
@@ -246,8 +246,8 @@ def _compute_binary_equal_opportunity(
 
     return {
         f"EO_{min_pos_rate_id}_{max_pos_rate_id}": _safe_divide(
-            true_pos_rates[min_pos_rate_id], true_pos_rates[max_pos_rate_id]
-        )
+            true_pos_rates[min_pos_rate_id], true_pos_rates[max_pos_rate_id],
+        ),
     }
 
 
@@ -347,7 +347,7 @@ def binary_fairness(
     if task not in ["demographic_parity", "equal_opportunity", "all"]:
         raise ValueError(
             f"Expected argument `task` to either be ``demographic_parity``,"
-            f"``equal_opportunity`` or ``all`` but got {task}."
+            f"``equal_opportunity`` or ``all`` but got {task}.",
         )
 
     if task == "demographic_parity":

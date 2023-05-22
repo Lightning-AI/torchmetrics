@@ -44,7 +44,7 @@ _target[-1, 0] = float("nan")
 _input_with_nans = Input(preds=_preds, target=_target)
 
 _input_logits = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES), target=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES), target=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES),
 )
 
 
@@ -136,7 +136,7 @@ class TestTheilsU(MetricTester):
             nan_replace_value=nan_replace_value,
         )
         self.run_functional_metric_test(
-            preds, target, metric_functional=theils_u, reference_metric=reference_metric, metric_args=metric_args
+            preds, target, metric_functional=theils_u, reference_metric=reference_metric, metric_args=metric_args,
         )
 
     def test_theils_u_differentiability(self, preds, target, nan_strategy, nan_replace_value):

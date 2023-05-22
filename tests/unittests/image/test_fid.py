@@ -74,7 +74,7 @@ def test_fid_raises_errors_and_warnings():
             _ = FrechetInceptionDistance(feature=[1, 2])
     else:
         with pytest.raises(
-            ValueError, match="FrechetInceptionDistance metric requires that PyTorch is version 1.9.0 or higher."
+            ValueError, match="FrechetInceptionDistance metric requires that PyTorch is version 1.9.0 or higher.",
         ):
             _ = FrechetInceptionDistance()
 
@@ -205,7 +205,7 @@ def test_not_enough_samples():
     metric.update(img, real=True)
     metric.update(img, real=False)
     with pytest.raises(
-        RuntimeError, match="More than one sample is required for both the real and fake distributed to compute FID"
+        RuntimeError, match="More than one sample is required for both the real and fake distributed to compute FID",
     ):
         metric.compute()
 

@@ -109,7 +109,7 @@ class SignalDistortionRatio(Metric):
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         sdr_batch = signal_distortion_ratio(
-            preds, target, self.use_cg_iter, self.filter_length, self.zero_mean, self.load_diag
+            preds, target, self.use_cg_iter, self.filter_length, self.zero_mean, self.load_diag,
         )
 
         self.sum_sdr += sdr_batch.sum()
@@ -221,7 +221,7 @@ class ScaleInvariantSignalDistortionRatio(Metric):
         return self.sum_si_sdr / self.total
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

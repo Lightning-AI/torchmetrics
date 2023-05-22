@@ -399,7 +399,7 @@ _ml_target = torch.randint(2, (10, 3))
                     "MultilabelAveragePrecision_micro",
                     "MultilabelAUROC_macro",
                     "MultilabelAveragePrecision_macro",
-                ]
+                ],
             },
             _ml_preds,
             _ml_target,
@@ -550,7 +550,7 @@ def test_compute_on_different_dtype():
         [
             MulticlassConfusionMatrix(num_classes=3),
             MulticlassMatthewsCorrCoef(num_classes=3),
-        ]
+        ],
     )
     assert not m._groups_checked
     assert m.compute_groups == {0: ["MulticlassConfusionMatrix"], 1: ["MulticlassMatthewsCorrCoef"]}
@@ -597,13 +597,13 @@ def test_error_on_wrong_specified_compute_groups():
                 [
                     MulticlassAccuracy(num_classes=3, average="macro"),
                     MulticlassPrecision(num_classes=3, average="macro"),
-                ]
+                ],
             ),
             "micro": MetricCollection(
                 [
                     MulticlassAccuracy(num_classes=3, average="micro"),
                     MulticlassPrecision(num_classes=3, average="micro"),
-                ]
+                ],
             ),
         },
     ],

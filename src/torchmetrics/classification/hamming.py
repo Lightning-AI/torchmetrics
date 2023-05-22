@@ -110,7 +110,7 @@ class BinaryHammingDistance(BinaryStatScores):
         return _hamming_distance_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -260,7 +260,7 @@ class MulticlassHammingDistance(MulticlassStatScores):
         return _hamming_distance_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -406,11 +406,11 @@ class MultilabelHammingDistance(MultilabelStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _hamming_distance_reduce(
-            tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
+            tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True,
         )
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -492,7 +492,7 @@ class HammingDistance:
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None  # noqa: S101  # needed for mypy
         kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
+            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args},
         )
         if task == ClassificationTask.BINARY:
             return BinaryHammingDistance(threshold, **kwargs)

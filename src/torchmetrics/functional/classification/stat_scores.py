@@ -38,7 +38,7 @@ def _binary_stat_scores_arg_validation(
     allowed_multidim_average = ("global", "samplewise")
     if multidim_average not in allowed_multidim_average:
         raise ValueError(
-            f"Expected argument `multidim_average` to be one of {allowed_multidim_average}, but got {multidim_average}"
+            f"Expected argument `multidim_average` to be one of {allowed_multidim_average}, but got {multidim_average}",
         )
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
@@ -69,7 +69,7 @@ def _binary_stat_scores_tensor_validation(
     if check:
         raise RuntimeError(
             f"Detected the following values in `target`: {unique_values} but expected only"
-            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}.",
         )
 
     # If preds is label tensor, also check that it only contains [0,1] values
@@ -78,7 +78,7 @@ def _binary_stat_scores_tensor_validation(
         if torch.any((unique_values != 0) & (unique_values != 1)):
             raise RuntimeError(
                 f"Detected the following values in `preds`: {unique_values} but expected only"
-                " the following values [0,1] since `preds` is a label tensor."
+                " the following values [0,1] since `preds` is a label tensor.",
             )
 
     if multidim_average != "global" and preds.ndim < 2:
@@ -129,7 +129,7 @@ def _binary_stat_scores_update(
 
 
 def _binary_stat_scores_compute(
-    tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, multidim_average: Literal["global", "samplewise"] = "global"
+    tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor, multidim_average: Literal["global", "samplewise"] = "global",
 ) -> Tensor:
     """Stack statistics and compute support also."""
     return torch.stack([tp, fp, tn, fn, tp + fn], dim=0 if multidim_average == "global" else 1).squeeze()
@@ -231,7 +231,7 @@ def _multiclass_stat_scores_arg_validation(
         raise ValueError(f"Expected argument `top_k` to be an integer larger than or equal to 1, but got {top_k}")
     if top_k > num_classes:
         raise ValueError(
-            f"Expected argument `top_k` to be smaller or equal to `num_classes` but got {top_k} and {num_classes}"
+            f"Expected argument `top_k` to be smaller or equal to `num_classes` but got {top_k} and {num_classes}",
         )
     allowed_average = ("micro", "macro", "weighted", "none", None)
     if average not in allowed_average:
@@ -239,7 +239,7 @@ def _multiclass_stat_scores_arg_validation(
     allowed_multidim_average = ("global", "samplewise")
     if multidim_average not in allowed_multidim_average:
         raise ValueError(
-            f"Expected argument `multidim_average` to be one of {allowed_multidim_average}, but got {multidim_average}"
+            f"Expected argument `multidim_average` to be one of {allowed_multidim_average}, but got {multidim_average}",
         )
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
@@ -268,17 +268,17 @@ def _multiclass_stat_scores_tensor_validation(
         if preds.shape[1] != num_classes:
             raise ValueError(
                 "If `preds` have one dimension more than `target`, `preds.shape[1]` should be"
-                " equal to number of classes."
+                " equal to number of classes.",
             )
         if preds.shape[2:] != target.shape[1:]:
             raise ValueError(
                 "If `preds` have one dimension more than `target`, the shape of `preds` should be"
-                " (N, C, ...), and the shape of `target` should be (N, ...)."
+                " (N, C, ...), and the shape of `target` should be (N, ...).",
             )
         if multidim_average != "global" and preds.ndim < 3:
             raise ValueError(
                 "If `preds` have one dimension more than `target`, the shape of `preds` should "
-                " atleast 3D when multidim_average is set to `samplewise`"
+                " atleast 3D when multidim_average is set to `samplewise`",
             )
 
     elif preds.ndim == target.ndim:
@@ -290,12 +290,12 @@ def _multiclass_stat_scores_tensor_validation(
         if multidim_average != "global" and preds.ndim < 2:
             raise ValueError(
                 "When `preds` and `target` have the same shape, the shape of `preds` should "
-                " atleast 2D when multidim_average is set to `samplewise`"
+                " atleast 2D when multidim_average is set to `samplewise`",
             )
     else:
         raise ValueError(
             "Either `preds` and `target` both should have the (same) shape (N, ...), or `target` should be (N, ...)"
-            " and `preds` should be (N, C, ...)."
+            " and `preds` should be (N, C, ...).",
         )
 
     num_unique_values = len(torch.unique(target))
@@ -304,7 +304,7 @@ def _multiclass_stat_scores_tensor_validation(
         raise RuntimeError(
             "Detected more unique values in `target` than `num_classes`. Expected only"
             f" {num_classes if ignore_index is None else num_classes + 1} but found"
-            f" {num_unique_values} in `target`."
+            f" {num_unique_values} in `target`.",
         )
 
     if not preds.is_floating_point():
@@ -312,7 +312,7 @@ def _multiclass_stat_scores_tensor_validation(
         if len(unique_values) > num_classes:
             raise RuntimeError(
                 "Detected more unique values in `preds` than `num_classes`. Expected only"
-                f" {num_classes} but found {len(unique_values)} in `preds`."
+                f" {num_classes} but found {len(unique_values)} in `preds`.",
             )
 
 
@@ -366,10 +366,10 @@ def _multiclass_stat_scores_update(
             preds_oh = torch.movedim(select_topk(preds, topk=top_k, dim=1), 1, -1)
         else:
             preds_oh = torch.nn.functional.one_hot(
-                preds, num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
+                preds, num_classes + 1 if ignore_index is not None and not ignore_in else num_classes,
             )
         target_oh = torch.nn.functional.one_hot(
-            target, num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
+            target, num_classes + 1 if ignore_index is not None and not ignore_in else num_classes,
         )
         if ignore_index is not None:
             if 0 <= ignore_index <= num_classes - 1:
@@ -547,7 +547,7 @@ def multiclass_stat_scores(
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
     preds, target = _multiclass_stat_scores_format(preds, target, top_k)
     tp, fp, tn, fn = _multiclass_stat_scores_update(
-        preds, target, num_classes, top_k, average, multidim_average, ignore_index
+        preds, target, num_classes, top_k, average, multidim_average, ignore_index,
     )
     return _multiclass_stat_scores_compute(tp, fp, tn, fn, average, multidim_average)
 
@@ -577,7 +577,7 @@ def _multilabel_stat_scores_arg_validation(
     allowed_multidim_average = ("global", "samplewise")
     if multidim_average not in allowed_multidim_average:
         raise ValueError(
-            f"Expected argument `multidim_average` to be one of {allowed_multidim_average}, but got {multidim_average}"
+            f"Expected argument `multidim_average` to be one of {allowed_multidim_average}, but got {multidim_average}",
         )
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
@@ -604,7 +604,7 @@ def _multilabel_stat_scores_tensor_validation(
     if preds.shape[1] != num_labels:
         raise ValueError(
             "Expected both `target.shape[1]` and `preds.shape[1]` to be equal to the number of labels"
-            f" but got {preds.shape[1]} and expected {num_labels}"
+            f" but got {preds.shape[1]} and expected {num_labels}",
         )
 
     # Check that target only contains [0,1] values or value in ignore_index
@@ -616,7 +616,7 @@ def _multilabel_stat_scores_tensor_validation(
     if check:
         raise RuntimeError(
             f"Detected the following values in `target`: {unique_values} but expected only"
-            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}.",
         )
 
     # If preds is label tensor, also check that it only contains [0,1] values
@@ -625,7 +625,7 @@ def _multilabel_stat_scores_tensor_validation(
         if torch.any((unique_values != 0) & (unique_values != 1)):
             raise RuntimeError(
                 f"Detected the following values in `preds`: {unique_values} but expected only"
-                " the following values [0,1] since preds is a label tensor."
+                " the following values [0,1] since preds is a label tensor.",
             )
 
     if multidim_average != "global" and preds.ndim < 3:
@@ -633,7 +633,7 @@ def _multilabel_stat_scores_tensor_validation(
 
 
 def _multilabel_stat_scores_format(
-    preds: Tensor, target: Tensor, num_labels: int, threshold: float = 0.5, ignore_index: Optional[int] = None
+    preds: Tensor, target: Tensor, num_labels: int, threshold: float = 0.5, ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
@@ -657,7 +657,7 @@ def _multilabel_stat_scores_format(
 
 
 def _multilabel_stat_scores_update(
-    preds: Tensor, target: Tensor, multidim_average: Literal["global", "samplewise"] = "global"
+    preds: Tensor, target: Tensor, multidim_average: Literal["global", "samplewise"] = "global",
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """Compute the statistics."""
     sum_dim = [0, -1] if multidim_average == "global" else [-1]
@@ -808,7 +808,7 @@ def _del_column(data: Tensor, idx: int) -> Tensor:
 
 
 def _drop_negative_ignored_indices(
-    preds: Tensor, target: Tensor, ignore_index: int, mode: DataType
+    preds: Tensor, target: Tensor, ignore_index: int, mode: DataType,
 ) -> Tuple[Tensor, Tensor]:
     """Remove negative ignored indices.
 
@@ -954,7 +954,7 @@ def _stat_scores_update(
     if preds.ndim == 3:
         if not mdmc_reduce:
             raise ValueError(
-                "When your inputs are multi-dimensional multi-class, you have to set the `mdmc_reduce` parameter"
+                "When your inputs are multi-dimensional multi-class, you have to set the `mdmc_reduce` parameter",
             )
         if mdmc_reduce == "global":
             preds = torch.transpose(preds, 1, 2).reshape(-1, preds.shape[1])
@@ -1030,10 +1030,10 @@ def _reduce_stat_scores(
     weights = torch.ones_like(denominator) if weights is None else weights.float()
 
     numerator = torch.where(
-        zero_div_mask, tensor(zero_division, dtype=numerator.dtype, device=numerator.device), numerator
+        zero_div_mask, tensor(zero_division, dtype=numerator.dtype, device=numerator.device), numerator,
     )
     denominator = torch.where(
-        zero_div_mask | ignore_mask, tensor(1.0, dtype=denominator.dtype, device=denominator.device), denominator
+        zero_div_mask | ignore_mask, tensor(1.0, dtype=denominator.dtype, device=denominator.device), denominator,
     )
     weights = torch.where(ignore_mask, tensor(0.0, dtype=weights.dtype, device=weights.device), weights)
 
@@ -1095,12 +1095,12 @@ def stat_scores(
         if not isinstance(top_k, int):
             raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
         return multiclass_stat_scores(
-            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
+            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args,
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_stat_scores(
-            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
+            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args,
         )
     return None

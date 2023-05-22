@@ -105,7 +105,7 @@ class DistanceIntersectionOverUnion(IntersectionOverUnion):
         if not _TORCHVISION_GREATER_EQUAL_0_13:
             raise ModuleNotFoundError(
                 f"Metric `{self._iou_type.upper()}` requires that `torchvision` version 0.13.0 or newer is installed."
-                " Please install with `pip install torchvision>=0.13` or `pip install torchmetrics[detection]`."
+                " Please install with `pip install torchvision>=0.13` or `pip install torchmetrics[detection]`.",
             )
         super().__init__(box_format, iou_threshold, class_metrics, **kwargs)
 
@@ -118,7 +118,7 @@ class DistanceIntersectionOverUnion(IntersectionOverUnion):
         return _diou_compute(*args, **kwargs)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

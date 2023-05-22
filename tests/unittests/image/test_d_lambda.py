@@ -44,7 +44,7 @@ for size, channel, p, dtype in [
             preds=preds,
             target=target,
             p=p,
-        )
+        ),
     )
 
 

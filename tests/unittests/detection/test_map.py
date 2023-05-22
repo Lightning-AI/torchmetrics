@@ -107,7 +107,7 @@ _inputs = Input(
                         [356.62, 95.47, 372.33, 147.55],
                         [464.08, 105.09, 495.74, 146.99],
                         [276.11, 103.84, 291.44, 150.72],
-                    ]
+                    ],
                 ),
                 "scores": Tensor([0.546, 0.3, 0.407, 0.611, 0.335, 0.805, 0.953]),
                 "labels": IntTensor([4, 1, 0, 0, 0, 0, 0]),
@@ -124,7 +124,7 @@ _inputs = Input(
                         [61.34, 55.23, 77.14, 79.57],
                         [41.17, 45.78, 60.99, 78.48],
                         [56.18, 44.80, 64.42, 56.25],
-                    ]
+                    ],
                 ),
                 "scores": Tensor([0.532, 0.204, 0.782, 0.202, 0.883, 0.271, 0.561, 0.204, 0.349]),
                 "labels": IntTensor([49, 49, 49, 49, 49, 49, 49, 49, 49]),
@@ -142,7 +142,7 @@ _inputs = Input(
                     [
                         [13.00, 22.75, 548.98, 632.42],
                         [1.66, 3.32, 270.26, 275.23],
-                    ]
+                    ],
                 ),
                 "labels": IntTensor([2, 2]),
             },  # coco image id 73
@@ -158,7 +158,7 @@ _inputs = Input(
                         [356.62, 95.47, 372.33, 147.55],
                         [462.08, 105.09, 493.74, 146.99],
                         [277.11, 103.84, 292.44, 150.72],
-                    ]
+                    ],
                 ),
                 "labels": IntTensor([4, 1, 0, 0, 0, 0, 0]),
             },  # coco image id 74
@@ -175,7 +175,7 @@ _inputs = Input(
                         [62.34, 55.23, 78.14, 79.57],
                         [44.17, 45.78, 63.99, 78.48],
                         [58.18, 44.80, 66.42, 56.25],
-                    ]
+                    ],
                 ),
                 "labels": IntTensor([49, 49, 49, 49, 49, 49, 49, 49, 49, 49]),
             },  # coco image id 987 category_id 49
@@ -198,7 +198,7 @@ _inputs2 = Input(
                 "boxes": Tensor([[258.0, 41.0, 606.0, 285.0]]),
                 "scores": Tensor([0.536]),
                 "labels": IntTensor([0]),
-            }
+            },
         ],
     ],
     target=[
@@ -206,13 +206,13 @@ _inputs2 = Input(
             {
                 "boxes": Tensor([[214.0, 41.0, 562.0, 285.0]]),
                 "labels": IntTensor([0]),
-            }
+            },
         ],
         [
             {
                 "boxes": Tensor([]),
                 "labels": IntTensor([]),
-            }
+            },
         ],
     ],
 )
@@ -238,7 +238,7 @@ _inputs3 = Input(
             {
                 "boxes": Tensor([[214.0, 41.0, 562.0, 285.0]]),
                 "labels": IntTensor([0]),
-            }
+            },
         ],
         [
             {
@@ -424,7 +424,7 @@ def test_empty_ground_truths():
                 "boxes": Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
                 "scores": Tensor([0.5]),
                 "labels": IntTensor([4]),
-            }
+            },
         ],
         [{"boxes": Tensor([]), "labels": IntTensor([])}],
     )
@@ -442,7 +442,7 @@ def test_empty_ground_truths_xywh():
                 "boxes": Tensor([[214.1500, 41.2900, 348.2600, 243.7800]]),
                 "scores": Tensor([0.5]),
                 "labels": IntTensor([4]),
-            }
+            },
         ],
         [{"boxes": Tensor([]), "labels": IntTensor([])}],
     )
@@ -472,7 +472,7 @@ def test_empty_ground_truths_cxcywh():
                 "boxes": Tensor([[388.2800, 163.1800, 348.2600, 243.7800]]),
                 "scores": Tensor([0.5]),
                 "labels": IntTensor([4]),
-            }
+            },
         ],
         [{"boxes": Tensor([]), "labels": IntTensor([])}],
     )

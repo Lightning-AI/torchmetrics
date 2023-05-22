@@ -82,7 +82,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         rank_zero_warn(
             "Metric `UniversalImageQualityIndex` will save all targets and"
             " predictions in buffer. For large datasets this may lead"
-            " to large memory footprint."
+            " to large memory footprint.",
         )
 
         self.add_state("preds", default=[], dist_reduce_fx="cat")
@@ -103,7 +103,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         return _ergas_compute(preds, target, self.ratio, self.reduction)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

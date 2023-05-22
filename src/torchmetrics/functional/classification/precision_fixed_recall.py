@@ -130,7 +130,7 @@ def binary_precision_at_fixed_recall(
     preds, target, thresholds = _binary_precision_recall_curve_format(preds, target, thresholds, ignore_index)
     state = _binary_precision_recall_curve_update(preds, target, thresholds)
     return _binary_recall_at_fixed_precision_compute(
-        state, thresholds, min_precision=min_recall, reduce_fn=_precision_at_recall
+        state, thresholds, min_precision=min_recall, reduce_fn=_precision_at_recall,
     )
 
 
@@ -211,11 +211,11 @@ def multiclass_precision_at_fixed_recall(
         _multiclass_recall_at_fixed_precision_arg_validation(num_classes, min_recall, thresholds, ignore_index)
         _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index)
     preds, target, thresholds = _multiclass_precision_recall_curve_format(
-        preds, target, num_classes, thresholds, ignore_index
+        preds, target, num_classes, thresholds, ignore_index,
     )
     state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
     return _multiclass_recall_at_fixed_precision_arg_compute(
-        state, num_classes, thresholds, min_precision=min_recall, reduce_fn=_precision_at_recall
+        state, num_classes, thresholds, min_precision=min_recall, reduce_fn=_precision_at_recall,
     )
 
 
@@ -295,11 +295,11 @@ def multilabel_precision_at_fixed_recall(
         _multilabel_recall_at_fixed_precision_arg_validation(num_labels, min_recall, thresholds, ignore_index)
         _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index)
     preds, target, thresholds = _multilabel_precision_recall_curve_format(
-        preds, target, num_labels, thresholds, ignore_index
+        preds, target, num_labels, thresholds, ignore_index,
     )
     state = _multilabel_precision_recall_curve_update(preds, target, num_labels, thresholds)
     return _multilabel_recall_at_fixed_precision_arg_compute(
-        state, num_labels, thresholds, ignore_index, min_precision=min_recall, reduce_fn=_precision_at_recall
+        state, num_labels, thresholds, ignore_index, min_precision=min_recall, reduce_fn=_precision_at_recall,
     )
 
 
@@ -331,12 +331,12 @@ def precision_at_fixed_recall(
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         return multiclass_precision_at_fixed_recall(
-            preds, target, num_classes, min_recall, thresholds, ignore_index, validate_args
+            preds, target, num_classes, min_recall, thresholds, ignore_index, validate_args,
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_precision_at_fixed_recall(
-            preds, target, num_labels, min_recall, thresholds, ignore_index, validate_args
+            preds, target, num_labels, min_recall, thresholds, ignore_index, validate_args,
         )
     return None

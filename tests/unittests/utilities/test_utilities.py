@@ -55,7 +55,7 @@ def test_class_reduce():
     assert torch.allclose(class_reduce(num, denom, weights, "micro"), torch.sum(num) / torch.sum(denom))
     assert torch.allclose(class_reduce(num, denom, weights, "macro"), torch.mean(num / denom))
     assert torch.allclose(
-        class_reduce(num, denom, weights, "weighted"), torch.sum(num / denom * (weights / torch.sum(weights)))
+        class_reduce(num, denom, weights, "weighted"), torch.sum(num / denom * (weights / torch.sum(weights))),
     )
     assert torch.allclose(class_reduce(num, denom, weights, "none"), num / denom)
 
@@ -67,7 +67,7 @@ def test_onehot():
         [
             torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
             torch.cat([torch.zeros((5, 5), dtype=int), torch.eye(5, dtype=int)]),
-        ]
+        ],
     )
 
     assert test_tensor.shape == (2, 5)
@@ -91,7 +91,7 @@ def test_to_categorical():
         [
             torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
             torch.cat([torch.zeros((5, 5), dtype=int), torch.eye(5, dtype=int)]),
-        ]
+        ],
     ).to(torch.float)
 
     expected = tensor([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
@@ -173,7 +173,7 @@ def test_recursive_allclose(input, expected):
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU")
 @pytest.mark.xfail(sys.platform == "win32", reason="test will only fail on non-windows systems")
 @pytest.mark.skipif(
-    not _TORCH_GREATER_EQUAL_1_13, reason="earlier versions was silently non-deterministic, even in deterministic mode"
+    not _TORCH_GREATER_EQUAL_1_13, reason="earlier versions was silently non-deterministic, even in deterministic mode",
 )
 def test_cumsum_still_not_supported():
     """Make sure that cumsum on gpu and deterministic mode still fails.
@@ -193,7 +193,7 @@ def test_custom_cumsum():
     x = torch.arange(100).float().cuda()
     if sys.platform != "win32":
         with pytest.warns(
-            TorchMetricsUserWarning, match="You are trying to use a metric in deterministic mode on GPU that.*"
+            TorchMetricsUserWarning, match="You are trying to use a metric in deterministic mode on GPU that.*",
         ):
             res = _cumsum(x, dim=0).cpu()
     else:

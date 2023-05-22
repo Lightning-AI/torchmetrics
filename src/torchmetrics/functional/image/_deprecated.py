@@ -93,7 +93,7 @@ def _peak_signal_noise_ratio(
     """
     _deprecated_root_import_func("peak_signal_noise_ratio", "image")
     return peak_signal_noise_ratio(
-        preds=preds, target=target, data_range=data_range, base=base, reduction=reduction, dim=dim
+        preds=preds, target=target, data_range=data_range, base=base, reduction=reduction, dim=dim,
     )
 
 
@@ -112,7 +112,7 @@ def _relative_average_spectral_error(preds: Tensor, target: Tensor, window_size:
 
 
 def _root_mean_squared_error_using_sliding_window(
-    preds: Tensor, target: Tensor, window_size: int = 8, return_rmse_map: bool = False
+    preds: Tensor, target: Tensor, window_size: int = 8, return_rmse_map: bool = False,
 ) -> Union[Optional[Tensor], Tuple[Optional[Tensor], Tensor]]:
     """Wrapper for deprecated import.
 
@@ -125,7 +125,7 @@ def _root_mean_squared_error_using_sliding_window(
     """
     _deprecated_root_import_func("root_mean_squared_error_using_sliding_window", "image")
     return root_mean_squared_error_using_sliding_window(
-        preds=preds, target=target, window_size=window_size, return_rmse_map=return_rmse_map
+        preds=preds, target=target, window_size=window_size, return_rmse_map=return_rmse_map,
     )
 
 
@@ -251,5 +251,5 @@ def _universal_image_quality_index(
     """
     _deprecated_root_import_func("universal_image_quality_index", "image")
     return universal_image_quality_index(
-        preds=preds, target=target, kernel_size=kernel_size, sigma=sigma, reduction=reduction, data_range=data_range
+        preds=preds, target=target, kernel_size=kernel_size, sigma=sigma, reduction=reduction, data_range=data_range,
     )

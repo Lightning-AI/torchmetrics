@@ -63,7 +63,7 @@ class TestBinaryCalibrationError(MetricTester):
             target=target,
             metric_class=BinaryCalibrationError,
             reference_metric=partial(
-                _netcal_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
+                _netcal_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index,
             ),
             metric_args={
                 "n_bins": n_bins,
@@ -85,7 +85,7 @@ class TestBinaryCalibrationError(MetricTester):
             target=target,
             metric_functional=binary_calibration_error,
             reference_metric=partial(
-                _netcal_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
+                _netcal_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index,
             ),
             metric_args={
                 "n_bins": n_bins,
@@ -152,7 +152,7 @@ def _netcal_multiclass_calibration_error(preds, target, n_bins, norm, ignore_ind
 
 
 @pytest.mark.parametrize(
-    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5]),
 )
 class TestMulticlassCalibrationError(MetricTester):
     """Test class for `MulticlassCalibrationError` metric."""
@@ -172,7 +172,7 @@ class TestMulticlassCalibrationError(MetricTester):
             target=target,
             metric_class=MulticlassCalibrationError,
             reference_metric=partial(
-                _netcal_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
+                _netcal_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index,
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,
@@ -195,7 +195,7 @@ class TestMulticlassCalibrationError(MetricTester):
             target=target,
             metric_functional=multiclass_calibration_error,
             reference_metric=partial(
-                _netcal_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
+                _netcal_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index,
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,

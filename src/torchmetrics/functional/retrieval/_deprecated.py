@@ -67,7 +67,7 @@ def _retrieval_normalized_dcg(preds: Tensor, target: Tensor, top_k: Optional[int
 
 
 def _retrieval_precision(
-    preds: Tensor, target: Tensor, top_k: Optional[int] = None, adaptive_k: bool = False
+    preds: Tensor, target: Tensor, top_k: Optional[int] = None, adaptive_k: bool = False,
 ) -> Tensor:
     """Wrapper for deprecated import.
 
@@ -82,7 +82,7 @@ def _retrieval_precision(
 
 
 def _retrieval_precision_recall_curve(
-    preds: Tensor, target: Tensor, max_k: Optional[int] = None, adaptive_k: bool = False
+    preds: Tensor, target: Tensor, max_k: Optional[int] = None, adaptive_k: bool = False,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Wrapper for deprecated import.
 

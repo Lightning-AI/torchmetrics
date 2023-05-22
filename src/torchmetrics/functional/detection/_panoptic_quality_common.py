@@ -82,7 +82,7 @@ def _parse_categories(things: Collection[int], stuffs: Collection[int]) -> Tuple
         raise TypeError(f"Expected argument `stuffs` to contain `int` categories, but got {stuffs}")
     if things_parsed & stuffs_parsed:
         raise ValueError(
-            f"Expected arguments `things` and `stuffs` to have distinct keys, but got {things} and {stuffs}"
+            f"Expected arguments `things` and `stuffs` to have distinct keys, but got {things} and {stuffs}",
         )
     if not (things_parsed | stuffs_parsed):
         raise ValueError("At least one of `things` and `stuffs` must be non-empty.")
@@ -102,17 +102,17 @@ def _validate_inputs(preds: Tensor, target: torch.Tensor) -> None:
         raise TypeError(f"Expected argument `target` to be of type `torch.Tensor`, but got {type(target)}")
     if preds.shape != target.shape:
         raise ValueError(
-            f"Expected argument `preds` and `target` to have the same shape, but got {preds.shape} and {target.shape}"
+            f"Expected argument `preds` and `target` to have the same shape, but got {preds.shape} and {target.shape}",
         )
     if preds.dim() < 3:
         raise ValueError(
             "Expected argument `preds` to have at least one spatial dimension (B, *spatial_dims, 2), "
-            f"got {preds.shape}"
+            f"got {preds.shape}",
         )
     if preds.shape[-1] != 2:
         raise ValueError(
             "Expected argument `preds` to have exactly 2 channels in the last dimension (category, instance), "
-            f"got {preds.shape} instead"
+            f"got {preds.shape} instead",
         )
 
 
@@ -228,7 +228,7 @@ def _calculate_iou(
     if pred_color[0] != target_color[0]:
         raise ValueError(
             "Attempting to compute IoU on segments with different category ID: "
-            f"pred {pred_color[0]}, target {target_color[0]}"
+            f"pred {pred_color[0]}, target {target_color[0]}",
         )
     if pred_color == void_color:
         raise ValueError("Attempting to compute IoU on a void segment.")

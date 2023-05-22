@@ -158,7 +158,7 @@ class PearsonCorrCoef(Metric):
         if (self.num_outputs == 1 and self.mean_x.numel() > 1) or (self.num_outputs > 1 and self.mean_x.ndim > 1):
             # multiple devices, need further reduction
             _, _, var_x, var_y, corr_xy, n_total = _final_aggregation(
-                self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total
+                self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total,
             )
         else:
             var_x = self.var_x
@@ -168,7 +168,7 @@ class PearsonCorrCoef(Metric):
         return _pearson_corrcoef_compute(var_x, var_y, corr_xy, n_total)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

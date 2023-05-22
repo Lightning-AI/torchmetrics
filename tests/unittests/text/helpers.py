@@ -31,7 +31,7 @@ NUM_BATCHES = 2
 
 
 def _assert_all_close_regardless_of_order(
-    pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Optional[str] = None
+    pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Optional[str] = None,
 ) -> None:
     """Recursively asserting that two results are within a certain tolerance regardless of the order."""
     # single output compare
@@ -45,7 +45,7 @@ def _assert_all_close_regardless_of_order(
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
         assert np.allclose(
-            pl_result[key].detach().cpu().numpy().mean(-1), sk_result.mean(-1), atol=atol, equal_nan=True
+            pl_result[key].detach().cpu().numpy().mean(-1), sk_result.mean(-1), atol=atol, equal_nan=True,
         )
     else:
         raise ValueError("Unknown format for comparison")
@@ -410,7 +410,7 @@ class TextTester(MetricTester):
         """
         metric_args = metric_args or {}
         _assert_half_support(
-            metric_module(**metric_args), metric_functional, preds, targets, device="cpu", **kwargs_update
+            metric_module(**metric_args), metric_functional, preds, targets, device="cpu", **kwargs_update,
         )
 
     @staticmethod
@@ -435,7 +435,7 @@ class TextTester(MetricTester):
         """
         metric_args = metric_args or {}
         _assert_half_support(
-            metric_module(**metric_args), metric_functional, preds, targets, device="cuda", **kwargs_update
+            metric_module(**metric_args), metric_functional, preds, targets, device="cuda", **kwargs_update,
         )
 
     @staticmethod

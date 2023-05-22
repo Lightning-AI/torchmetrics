@@ -118,12 +118,12 @@ class InceptionScore(Metric):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ModuleNotFoundError(
                     "InceptionScore metric requires that `Torch-fidelity` is installed."
-                    " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`."
+                    " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`.",
                 )
             valid_int_input = ("logits_unbiased", 64, 192, 768, 2048)
             if feature not in valid_int_input:
                 raise ValueError(
-                    f"Integer input to argument `feature` must be one of {valid_int_input}," f" but got {feature}."
+                    f"Integer input to argument `feature` must be one of {valid_int_input}," f" but got {feature}.",
                 )
 
             self.inception = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
@@ -170,7 +170,7 @@ class InceptionScore(Metric):
         return kl.mean(), kl.std()
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

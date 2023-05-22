@@ -33,7 +33,7 @@ class _RetrievalFallOut(RetrievalFallOut):
     ) -> None:
         _deprecated_root_import_class("RetrievalFallOut", "retrieval")
         return super().__init__(
-            empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs
+            empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs,
         )
 
 
@@ -58,7 +58,7 @@ class _RetrievalHitRate(RetrievalHitRate):
     ) -> None:
         _deprecated_root_import_class("RetrievalHitRate", "retrieval")
         return super().__init__(
-            empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs
+            empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs,
         )
 
 
@@ -83,7 +83,7 @@ class _RetrievalMAP(RetrievalMAP):
     ) -> None:
         _deprecated_root_import_class("RetrievalMAP", "retrieval")
         return super().__init__(
-            empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs
+            empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs,
         )
 
 
@@ -108,7 +108,7 @@ class _RetrievalRecall(RetrievalRecall):
     ) -> None:
         _deprecated_root_import_class("RetrievalRecall", "retrieval")
         return super().__init__(
-            empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs
+            empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs,
         )
 
 
@@ -155,7 +155,7 @@ class _RetrievalNormalizedDCG(RetrievalNormalizedDCG):
     ) -> None:
         _deprecated_root_import_class("RetrievalNormalizedDCG", "retrieval")
         return super().__init__(
-            empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs
+            empty_target_action=empty_target_action, ignore_index=ignore_index, top_k=top_k, **kwargs,
         )
 
 

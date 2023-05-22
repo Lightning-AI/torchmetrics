@@ -162,7 +162,7 @@ def _sklearn_avg_precision_multiclass(preds, target, average="macro", ignore_ind
 
 
 @pytest.mark.parametrize(
-    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5]),
 )
 class TestMulticlassAveragePrecision(MetricTester):
     """Test class for `MulticlassAveragePrecision` metric."""
@@ -259,7 +259,7 @@ class TestMulticlassAveragePrecision(MetricTester):
             pred = torch.tensor(np.round(pred.numpy(), 2)) + 1e-6  # rounding will simulate binning
             ap1 = multiclass_average_precision(pred, true, num_classes=NUM_CLASSES, average=average, thresholds=None)
             ap2 = multiclass_average_precision(
-                pred, true, num_classes=NUM_CLASSES, average=average, thresholds=torch.linspace(0, 1, 100)
+                pred, true, num_classes=NUM_CLASSES, average=average, thresholds=torch.linspace(0, 1, 100),
             )
             assert torch.allclose(ap1, ap2)
 
@@ -280,7 +280,7 @@ def _sklearn_avg_precision_multilabel(preds, target, average="macro", ignore_ind
 
 
 @pytest.mark.parametrize(
-    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]),
 )
 class TestMultilabelAveragePrecision(MetricTester):
     """Test class for `MultilabelAveragePrecision` metric."""
@@ -377,7 +377,7 @@ class TestMultilabelAveragePrecision(MetricTester):
             pred = torch.tensor(np.round(pred.numpy(), 1)) + 1e-6  # rounding will simulate binning
             ap1 = multilabel_average_precision(pred, true, num_labels=NUM_CLASSES, average=average, thresholds=None)
             ap2 = multilabel_average_precision(
-                pred, true, num_labels=NUM_CLASSES, average=average, thresholds=torch.linspace(0, 1, 100)
+                pred, true, num_labels=NUM_CLASSES, average=average, thresholds=torch.linspace(0, 1, 100),
             )
             assert torch.allclose(ap1, ap2)
 

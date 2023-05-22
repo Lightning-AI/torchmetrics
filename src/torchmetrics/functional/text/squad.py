@@ -84,14 +84,14 @@ def _compute_exact_match_score(prediction: str, ground_truth: str) -> Tensor:
 
 
 def _metric_max_over_ground_truths(
-    metric_fn: Callable[[str, str], Tensor], prediction: str, ground_truths: List[str]
+    metric_fn: Callable[[str, str], Tensor], prediction: str, ground_truths: List[str],
 ) -> Tensor:
     """Calculate maximum score for a predicted answer with all reference answers."""
     return max(metric_fn(prediction, truth) for truth in ground_truths)  # type: ignore[type-var]
 
 
 def _squad_input_check(
-    preds: PREDS_TYPE, targets: TARGETS_TYPE
+    preds: PREDS_TYPE, targets: TARGETS_TYPE,
 ) -> Tuple[Dict[str, str], List[Dict[str, List[Dict[str, List[Dict[str, Any]]]]]]]:
     """Check for types and convert the input to necessary format to compute the input."""
     if isinstance(preds, Dict):
@@ -105,7 +105,7 @@ def _squad_input_check(
         if "prediction_text" not in pred_keys or "id" not in pred_keys:
             raise KeyError(
                 "Expected keys in a single prediction are 'prediction_text' and 'id'."
-                "Please make sure that 'prediction_text' maps to the answer string and 'id' maps to the key string."
+                "Please make sure that 'prediction_text' maps to the answer string and 'id' maps to the key string.",
             )
 
     for target in targets:
@@ -115,7 +115,7 @@ def _squad_input_check(
                 "Expected keys in a single target are 'answers' and 'id'."
                 "Please make sure that 'answers' maps to a `SQuAD` format dictionary and 'id' maps to the key string.\n"
                 "SQuAD Format: "
-                f"{SQuAD_FORMAT}"
+                f"{SQuAD_FORMAT}",
             )
 
         answers: Dict[str, Union[List[str], List[int]]] = target["answers"]  # type: ignore[assignment]
@@ -124,7 +124,7 @@ def _squad_input_check(
                 "Expected keys in a 'answers' are 'text'."
                 "Please make sure that 'answer' maps to a `SQuAD` format dictionary.\n"
                 "SQuAD Format: "
-                f"{SQuAD_FORMAT}"
+                f"{SQuAD_FORMAT}",
             )
 
     preds_dict = {prediction["id"]: prediction["prediction_text"] for prediction in preds}

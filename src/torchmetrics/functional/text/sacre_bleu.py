@@ -127,7 +127,7 @@ class _SacreBLEUTokenizer:
 
     @classmethod
     def tokenize(
-        cls, line: str, tokenize: Literal["none", "13a", "zh", "intl", "char"], lowercase: bool = False
+        cls, line: str, tokenize: Literal["none", "13a", "zh", "intl", "char"], lowercase: bool = False,
     ) -> Sequence[str]:
         tokenize_fn = getattr(cls, cls._TOKENIZE_FN[tokenize])
         tokenized_line = tokenize_fn(line)
@@ -326,14 +326,14 @@ def sacre_bleu_score(
 
     if tokenize not in _SacreBLEUTokenizer._TOKENIZE_FN.keys():
         raise ValueError(
-            f"Unsupported tokenizer selected. Please, choose one of {list(_SacreBLEUTokenizer._TOKENIZE_FN.keys())}"
+            f"Unsupported tokenizer selected. Please, choose one of {list(_SacreBLEUTokenizer._TOKENIZE_FN.keys())}",
         )
     if len(preds) != len(target):
         raise ValueError(f"Corpus has different size {len(preds)} != {len(target)}")
     if tokenize == "intl" and not _REGEX_AVAILABLE:
         raise ModuleNotFoundError(
             "`'intl'` tokenization requires that `regex` is installed."
-            " Use `pip install regex` or `pip install torchmetrics[text]`."
+            " Use `pip install regex` or `pip install torchmetrics[text]`.",
         )
 
     if weights is not None and len(weights) != n_gram:

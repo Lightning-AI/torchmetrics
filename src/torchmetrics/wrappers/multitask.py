@@ -109,7 +109,7 @@ class MultitaskWrapper(Metric):
             if not (isinstance(metric, (Metric, MetricCollection))):
                 raise TypeError(
                     "Expected each task's metric to be a Metric or a MetricCollection. "
-                    f"Found a metric of type {type(metric)}"
+                    f"Found a metric of type {type(metric)}",
                 )
 
     def update(self, task_preds: Dict[str, Tensor], task_targets: Dict[str, Tensor]) -> None:
@@ -123,7 +123,7 @@ class MultitaskWrapper(Metric):
             raise ValueError(
                 "Expected arguments `task_preds` and `task_targets` to have the same keys as the wrapped `task_metrics`"
                 f". Found task_preds.keys() = {task_preds.keys()}, task_targets.keys() = {task_targets.keys()} "
-                f"and self.task_metrics.keys() = {self.task_metrics.keys()}"
+                f"and self.task_metrics.keys() = {self.task_metrics.keys()}",
             )
 
         for task_name, metric in self.task_metrics.items():
@@ -161,7 +161,7 @@ class MultitaskWrapper(Metric):
         return compute
 
     def plot(
-        self, val: Optional[Union[Dict, Sequence[Dict]]] = None, axes: Optional[Sequence[_AX_TYPE]] = None
+        self, val: Optional[Union[Dict, Sequence[Dict]]] = None, axes: Optional[Sequence[_AX_TYPE]] = None,
     ) -> Sequence[_PLOT_OUT_TYPE]:
         """Plot a single or multiple values from the metric.
 
@@ -237,7 +237,7 @@ class MultitaskWrapper(Metric):
             if len(axes) != len(self.task_metrics):
                 raise ValueError(
                     "Expected argument `axes` to be a Sequence of the same length as the number of tasks."
-                    f"Found len(axes) = {len(axes)} and {len(self.task_metrics)} tasks"
+                    f"Found len(axes) = {len(axes)} and {len(self.task_metrics)} tasks",
                 )
 
         val = val if val is not None else self.compute()
@@ -251,7 +251,7 @@ class MultitaskWrapper(Metric):
             else:
                 raise TypeError(
                     "Expected argument `val` to be None or of type Dict or Sequence[Dict]. "
-                    f"Found type(val)= {type(val)}"
+                    f"Found type(val)= {type(val)}",
                 )
             fig_axs.append((f, a))
         return fig_axs

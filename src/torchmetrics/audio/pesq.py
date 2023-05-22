@@ -99,7 +99,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
         if not _PESQ_AVAILABLE:
             raise ModuleNotFoundError(
                 "PerceptualEvaluationSpeechQuality metric requires that `pesq` is installed."
-                " Either install as `pip install torchmetrics[audio]` or `pip install pesq`."
+                " Either install as `pip install torchmetrics[audio]` or `pip install pesq`.",
             )
         if fs not in (8000, 16000):
             raise ValueError(f"Expected argument `fs` to either be 8000 or 16000 but got {fs}")
@@ -117,7 +117,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         pesq_batch = perceptual_evaluation_speech_quality(
-            preds, target, self.fs, self.mode, False, self.n_processes
+            preds, target, self.fs, self.mode, False, self.n_processes,
         ).to(self.sum_pesq.device)
 
         self.sum_pesq += pesq_batch.sum()

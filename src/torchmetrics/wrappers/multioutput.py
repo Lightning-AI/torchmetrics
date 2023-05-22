@@ -93,10 +93,10 @@ class MultioutputWrapper(Metric):
         args_kwargs_by_output = []
         for i in range(len(self.metrics)):
             selected_args = apply_to_collection(
-                args, Tensor, torch.index_select, dim=self.output_dim, index=torch.tensor(i, device=self.device)
+                args, Tensor, torch.index_select, dim=self.output_dim, index=torch.tensor(i, device=self.device),
             )
             selected_kwargs = apply_to_collection(
-                kwargs, Tensor, torch.index_select, dim=self.output_dim, index=torch.tensor(i, device=self.device)
+                kwargs, Tensor, torch.index_select, dim=self.output_dim, index=torch.tensor(i, device=self.device),
             )
             if self.remove_nans:
                 args_kwargs = selected_args + tuple(selected_kwargs.values())
@@ -149,7 +149,7 @@ class MultioutputWrapper(Metric):
         return compute
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

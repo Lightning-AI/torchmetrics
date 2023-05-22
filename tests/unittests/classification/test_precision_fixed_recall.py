@@ -78,7 +78,7 @@ class TestBinaryPrecisionAtFixedRecall(MetricTester):
             target=target,
             metric_class=BinaryPrecisionAtFixedRecall,
             reference_metric=partial(
-                _sklearn_precision_at_fixed_recall_binary, min_recall=min_recall, ignore_index=ignore_index
+                _sklearn_precision_at_fixed_recall_binary, min_recall=min_recall, ignore_index=ignore_index,
             ),
             metric_args={
                 "min_recall": min_recall,
@@ -99,7 +99,7 @@ class TestBinaryPrecisionAtFixedRecall(MetricTester):
             target=target,
             metric_functional=binary_precision_at_fixed_recall,
             reference_metric=partial(
-                _sklearn_precision_at_fixed_recall_binary, min_recall=min_recall, ignore_index=ignore_index
+                _sklearn_precision_at_fixed_recall_binary, min_recall=min_recall, ignore_index=ignore_index,
             ),
             metric_args={
                 "min_recall": min_recall,
@@ -157,7 +157,7 @@ class TestBinaryPrecisionAtFixedRecall(MetricTester):
             pred = torch.tensor(np.round(pred.numpy(), 1)) + 1e-6  # rounding will simulate binning
             r1, _ = binary_precision_at_fixed_recall(pred, true, min_recall=min_recall, thresholds=None)
             r2, _ = binary_precision_at_fixed_recall(
-                pred, true, min_recall=min_recall, thresholds=torch.linspace(0, 1, 100)
+                pred, true, min_recall=min_recall, thresholds=torch.linspace(0, 1, 100),
             )
             assert torch.allclose(r1, r2)
 
@@ -180,7 +180,7 @@ def _sklearn_precision_at_fixed_recall_multiclass(preds, target, min_recall, ign
 
 
 @pytest.mark.parametrize(
-    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5]),
 )
 class TestMulticlassPrecisionAtFixedRecall(MetricTester):
     """Test class for `MulticlassPrecisionAtFixedRecall` metric."""
@@ -199,7 +199,7 @@ class TestMulticlassPrecisionAtFixedRecall(MetricTester):
             target=target,
             metric_class=MulticlassPrecisionAtFixedRecall,
             reference_metric=partial(
-                _sklearn_precision_at_fixed_recall_multiclass, min_recall=min_recall, ignore_index=ignore_index
+                _sklearn_precision_at_fixed_recall_multiclass, min_recall=min_recall, ignore_index=ignore_index,
             ),
             metric_args={
                 "min_recall": min_recall,
@@ -221,7 +221,7 @@ class TestMulticlassPrecisionAtFixedRecall(MetricTester):
             target=target,
             metric_functional=multiclass_precision_at_fixed_recall,
             reference_metric=partial(
-                _sklearn_precision_at_fixed_recall_multiclass, min_recall=min_recall, ignore_index=ignore_index
+                _sklearn_precision_at_fixed_recall_multiclass, min_recall=min_recall, ignore_index=ignore_index,
             ),
             metric_args={
                 "min_recall": min_recall,
@@ -280,10 +280,10 @@ class TestMulticlassPrecisionAtFixedRecall(MetricTester):
         for pred, true in zip(preds, target):
             pred = torch.tensor(np.round(pred.numpy(), 1)) + 1e-6  # rounding will simulate binning
             r1, _ = multiclass_precision_at_fixed_recall(
-                pred, true, num_classes=NUM_CLASSES, min_recall=min_recall, thresholds=None
+                pred, true, num_classes=NUM_CLASSES, min_recall=min_recall, thresholds=None,
             )
             r2, _ = multiclass_precision_at_fixed_recall(
-                pred, true, num_classes=NUM_CLASSES, min_recall=min_recall, thresholds=torch.linspace(0, 1, 100)
+                pred, true, num_classes=NUM_CLASSES, min_recall=min_recall, thresholds=torch.linspace(0, 1, 100),
             )
             assert all(torch.allclose(r1[i], r2[i]) for i in range(len(r1)))
 
@@ -298,7 +298,7 @@ def _sklearn_precision_at_fixed_recall_multilabel(preds, target, min_recall, ign
 
 
 @pytest.mark.parametrize(
-    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]),
 )
 class TestMultilabelPrecisionAtFixedRecall(MetricTester):
     """Test class for `MultilabelPrecisionAtFixedRecall` metric."""
@@ -317,7 +317,7 @@ class TestMultilabelPrecisionAtFixedRecall(MetricTester):
             target=target,
             metric_class=MultilabelPrecisionAtFixedRecall,
             reference_metric=partial(
-                _sklearn_precision_at_fixed_recall_multilabel, min_recall=min_recall, ignore_index=ignore_index
+                _sklearn_precision_at_fixed_recall_multilabel, min_recall=min_recall, ignore_index=ignore_index,
             ),
             metric_args={
                 "min_recall": min_recall,
@@ -339,7 +339,7 @@ class TestMultilabelPrecisionAtFixedRecall(MetricTester):
             target=target,
             metric_functional=multilabel_precision_at_fixed_recall,
             reference_metric=partial(
-                _sklearn_precision_at_fixed_recall_multilabel, min_recall=min_recall, ignore_index=ignore_index
+                _sklearn_precision_at_fixed_recall_multilabel, min_recall=min_recall, ignore_index=ignore_index,
             ),
             metric_args={
                 "min_recall": min_recall,
@@ -398,10 +398,10 @@ class TestMultilabelPrecisionAtFixedRecall(MetricTester):
         for pred, true in zip(preds, target):
             pred = torch.tensor(np.round(pred.numpy(), 1)) + 1e-6  # rounding will simulate binning
             r1, _ = multilabel_precision_at_fixed_recall(
-                pred, true, num_labels=NUM_CLASSES, min_recall=min_recall, thresholds=None
+                pred, true, num_labels=NUM_CLASSES, min_recall=min_recall, thresholds=None,
             )
             r2, _ = multilabel_precision_at_fixed_recall(
-                pred, true, num_labels=NUM_CLASSES, min_recall=min_recall, thresholds=torch.linspace(0, 1, 100)
+                pred, true, num_labels=NUM_CLASSES, min_recall=min_recall, thresholds=torch.linspace(0, 1, 100),
             )
             assert all(torch.allclose(r1[i], r2[i]) for i in range(len(r1)))
 

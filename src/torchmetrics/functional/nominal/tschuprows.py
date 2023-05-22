@@ -72,7 +72,7 @@ def _tschuprows_t_compute(confmat: Tensor, bias_correction: bool) -> Tensor:
 
     if bias_correction:
         phi_squared_corrected, rows_corrected, cols_corrected = _compute_bias_corrected_values(
-            phi_squared, n_rows, n_cols, cm_sum
+            phi_squared, n_rows, n_cols, cm_sum,
         )
         if torch.min(rows_corrected, cols_corrected) == 1:
             _unable_to_use_bias_correction_warning(metric_name="Tschuprow's T")
@@ -184,6 +184,6 @@ def tschuprows_t_matrix(
         num_classes = len(torch.cat([x, y]).unique())
         confmat = _tschuprows_t_update(x, y, num_classes, nan_strategy, nan_replace_value)
         tschuprows_t_matrix_value[i, j] = tschuprows_t_matrix_value[j, i] = _tschuprows_t_compute(
-            confmat, bias_correction
+            confmat, bias_correction,
         )
     return tschuprows_t_matrix_value

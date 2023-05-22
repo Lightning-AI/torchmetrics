@@ -62,10 +62,10 @@ def _fairlearn_binary(preds, target, groups, ignore_index):
 
     return {
         f"DP_{pd.to_numeric(mf_group['dp']).idxmin()}_{pd.to_numeric(mf_group['dp']).idxmax()}": torch.tensor(
-            ratios["dp"], dtype=torch.float
+            ratios["dp"], dtype=torch.float,
         ),
         f"EO_{pd.to_numeric(mf_group['eo']).idxmin()}_{pd.to_numeric(mf_group['eo']).idxmax()}": torch.tensor(
-            ratios["eo"], dtype=torch.float
+            ratios["eo"], dtype=torch.float,
         ),
     }
 
@@ -79,12 +79,12 @@ def _assert_tensor(pl_result: Dict[str, Tensor], key: Optional[str] = None) -> N
 
 
 def _assert_allclose(
-    pl_result: Dict[str, Tensor], sk_result: Dict[str, Tensor], atol: float = 1e-8, key: Optional[str] = None
+    pl_result: Dict[str, Tensor], sk_result: Dict[str, Tensor], atol: float = 1e-8, key: Optional[str] = None,
 ) -> None:
     if isinstance(pl_result, dict) and key is None:
         for (pl_key, pl_val), (sk_key, sk_val) in zip(pl_result.items(), sk_result.items()):
             assert np.allclose(
-                pl_val.detach().cpu().numpy(), sk_val.numpy(), atol=atol, equal_nan=True
+                pl_val.detach().cpu().numpy(), sk_val.numpy(), atol=atol, equal_nan=True,
             ), f"{pl_key} != {sk_key}"
     else:
         _core_assert_allclose(pl_result, sk_result, atol, key)
@@ -133,7 +133,7 @@ class BinaryFairnessTester(MetricTester):
             if metric.is_differentiable and metric_functional is not None:
                 # check for numerical correctness
                 assert torch.autograd.gradcheck(
-                    partial(metric_functional, **metric_args), (preds[0, :2].double(), target[0, :2])
+                    partial(metric_functional, **metric_args), (preds[0, :2].double(), target[0, :2]),
                 )
 
             # reset as else it will carry over to other tests

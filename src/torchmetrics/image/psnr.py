@@ -153,7 +153,7 @@ class PeakSignalNoiseRatio(Metric):
         return _psnr_compute(sum_squared_error, total, data_range, base=self.base, reduction=self.reduction)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

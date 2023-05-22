@@ -36,7 +36,7 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
     if model_name != "google/bert_uncased_L-2_H-128_A-2":
         raise ValueError(
             "`model_name` is expected to be 'google/bert_uncased_L-2_H-128_A-2' as this model was used for the result "
-            "generation."
+            "generation.",
         )
     precomputed_result = {
         "kl_divergence": torch.tensor([-3.2250, -0.1784, -0.1784, -2.2182]),
@@ -53,7 +53,7 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
                 "ab_divergence": torch.tensor([5.9517, 0.5222, 0.5222, 7.0017]),
                 "l1_distance": torch.tensor([0.9679, 0.1877, 0.1877, 0.9561]),
                 "l_infinity_distance": torch.tensor([0.0789, 0.0869, 0.0869, 0.2324]),
-            }
+            },
         )
     elif len(preds) == 4:
         precomputed_result.update(
@@ -62,7 +62,7 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
                 "ab_divergence": torch.tensor([5.9565, 0.5222, 0.5222, 7.1950]),
                 "l1_distance": torch.tensor([0.9591, 0.1877, 0.1877, 1.0823]),
                 "l_infinity_distance": torch.tensor([0.0777, 0.0869, 0.0869, 0.2614]),
-            }
+            },
         )
     else:
         raise ValueError("Invalid batch provided.")

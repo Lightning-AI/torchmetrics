@@ -139,7 +139,7 @@ def _sklearn_multiclass_hinge_loss(preds, target, multiclass_mode, ignore_index)
 
 
 @pytest.mark.parametrize(
-    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5]),
 )
 class TestMulticlassHingeLoss(MetricTester):
     """Test class for `MulticlassHingeLoss` metric."""
@@ -158,7 +158,7 @@ class TestMulticlassHingeLoss(MetricTester):
             target=target,
             metric_class=MulticlassHingeLoss,
             reference_metric=partial(
-                _sklearn_multiclass_hinge_loss, multiclass_mode=multiclass_mode, ignore_index=ignore_index
+                _sklearn_multiclass_hinge_loss, multiclass_mode=multiclass_mode, ignore_index=ignore_index,
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,
@@ -179,7 +179,7 @@ class TestMulticlassHingeLoss(MetricTester):
             target=target,
             metric_functional=multiclass_hinge_loss,
             reference_metric=partial(
-                _sklearn_multiclass_hinge_loss, multiclass_mode=multiclass_mode, ignore_index=ignore_index
+                _sklearn_multiclass_hinge_loss, multiclass_mode=multiclass_mode, ignore_index=ignore_index,
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,

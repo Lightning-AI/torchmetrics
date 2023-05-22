@@ -171,7 +171,7 @@ class TestMeanError(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_mean_error_class(
-        self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args, ddp
+        self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args, ddp,
     ):
         """Test class implementation of metric."""
         self.run_class_metric_test(
@@ -184,7 +184,7 @@ class TestMeanError(MetricTester):
         )
 
     def test_mean_error_functional(
-        self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args
+        self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args,
     ):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
@@ -196,7 +196,7 @@ class TestMeanError(MetricTester):
         )
 
     def test_mean_error_differentiability(
-        self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args
+        self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args,
     ):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
@@ -234,7 +234,7 @@ class TestMeanError(MetricTester):
 
 
 @pytest.mark.parametrize(
-    "metric_class", [MeanSquaredError, MeanAbsoluteError, MeanSquaredLogError, MeanAbsolutePercentageError]
+    "metric_class", [MeanSquaredError, MeanAbsoluteError, MeanSquaredLogError, MeanAbsolutePercentageError],
 )
 def test_error_on_different_shape(metric_class):
     """Test that error is raised on different shapes of input."""

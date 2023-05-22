@@ -109,7 +109,7 @@ class BinaryHingeLoss(Metric):
         if self.validate_args:
             _binary_hinge_loss_tensor_validation(preds, target, self.ignore_index)
         preds, target = _binary_confusion_matrix_format(
-            preds, target, threshold=0.0, ignore_index=self.ignore_index, convert_to_labels=False
+            preds, target, threshold=0.0, ignore_index=self.ignore_index, convert_to_labels=False,
         )
         measures, total = _binary_hinge_loss_update(preds, target, self.squared)
         self.measures += measures
@@ -120,7 +120,7 @@ class BinaryHingeLoss(Metric):
         return _hinge_loss_compute(self.measures, self.total)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -268,7 +268,7 @@ class MulticlassHingeLoss(Metric):
         return _hinge_loss_compute(self.measures, self.total)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

@@ -110,7 +110,7 @@ def _get_ties(x: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
 
 
 def _get_metric_metadata(
-    preds: Tensor, target: Tensor, variant: _MetricVariant
+    preds: Tensor, target: Tensor, variant: _MetricVariant,
 ) -> Tuple[
     Tensor,
     Tensor,
@@ -286,7 +286,7 @@ def _kendall_corrcoef_compute(
     con_min_dis_pairs = concordant_pairs - discordant_pairs
 
     tau = _calculate_tau(
-        preds, target, concordant_pairs, discordant_pairs, con_min_dis_pairs, n_total, preds_ties, target_ties, variant
+        preds, target, concordant_pairs, discordant_pairs, con_min_dis_pairs, n_total, preds_ties, target_ties, variant,
     )
     p_value = (
         _calculate_p_value(
@@ -396,10 +396,10 @@ def kendall_rank_corrcoef(
     _alternative = _TestAlternative.from_str(str(alternative)) if t_test else None
 
     _preds, _target = _kendall_corrcoef_update(
-        preds, target, [], [], num_outputs=1 if preds.ndim == 1 else preds.shape[-1]
+        preds, target, [], [], num_outputs=1 if preds.ndim == 1 else preds.shape[-1],
     )
     tau, p_value = _kendall_corrcoef_compute(
-        dim_zero_cat(_preds), dim_zero_cat(_target), _variant, _alternative  # type: ignore[arg-type]  # todo
+        dim_zero_cat(_preds), dim_zero_cat(_target), _variant, _alternative,  # type: ignore[arg-type]  # todo
     )
 
     if p_value is not None:

@@ -27,19 +27,19 @@ from unittests.helpers.testers import MetricTester
 ciou = torch.Tensor(
     [
         [-0.2669985],
-    ]
+    ],
 )
 ciou_dontrespect = torch.Tensor(
     [
         [0.6078202],
-    ]
+    ],
 )
 box_ciou = torch.Tensor(
     [
         [0.6883, -0.2072, -0.3352],
         [-0.2217, 0.4881, -0.1913],
         [-0.3971, -0.1543, 0.5606],
-    ]
+    ],
 )
 
 
@@ -53,7 +53,7 @@ class TestCompleteIntersectionOverUnion(MetricTester, BaseTestIntersectionOverUn
     data: Dict[str, TestCaseData] = {
         "iou_variant": TestCaseData(data=_inputs, result={CompleteIntersectionOverUnion._iou_type: ciou}),
         "iou_variant_respect": TestCaseData(
-            data=_inputs, result={CompleteIntersectionOverUnion._iou_type: ciou_dontrespect}
+            data=_inputs, result={CompleteIntersectionOverUnion._iou_type: ciou_dontrespect},
         ),
         "fn_iou_variant": TestCaseData(data=_box_inputs, result=box_ciou),
     }

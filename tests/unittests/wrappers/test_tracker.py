@@ -38,12 +38,12 @@ def test_raises_error_on_wrong_input():
         MetricTracker(MeanAbsoluteError(), maximize=2)
 
     with pytest.raises(
-        ValueError, match="The len of argument `maximize` should match the length of the metric collection"
+        ValueError, match="The len of argument `maximize` should match the length of the metric collection",
     ):
         MetricTracker(MetricCollection([MeanAbsoluteError(), MeanSquaredError()]), maximize=[False, False, False])
 
     with pytest.raises(
-        ValueError, match="Argument `maximize` should be a single bool when `metric` is a single Metric"
+        ValueError, match="Argument `maximize` should be a single bool when `metric` is a single Metric",
     ):
         MetricTracker(MeanAbsoluteError(), maximize=[False])
 
@@ -80,7 +80,7 @@ def test_raises_error_if_increment_not_called(method, method_input):
                     MulticlassAccuracy(num_classes=10),
                     MulticlassPrecision(num_classes=10),
                     MulticlassRecall(num_classes=10),
-                ]
+                ],
             ),
             (torch.randint(10, (50,)), torch.randint(10, (50,))),
             True,
@@ -91,7 +91,7 @@ def test_raises_error_if_increment_not_called(method, method_input):
                     MulticlassAccuracy(num_classes=10),
                     MulticlassPrecision(num_classes=10),
                     MulticlassRecall(num_classes=10),
-                ]
+                ],
             ),
             (torch.randint(10, (50,)), torch.randint(10, (50,))),
             [True, True, True],
@@ -196,7 +196,7 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
                 {
                     "mse": MultioutputWrapper(MeanSquaredError(), num_outputs=2),
                     "mae": MultioutputWrapper(MeanAbsoluteError(), num_outputs=2),
-                }
+                },
             ),
             dict,
         ),

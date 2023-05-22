@@ -108,11 +108,11 @@ class BLEUScore(Metric):
     def compute(self) -> Tensor:
         """Calculate BLEU score."""
         return _bleu_score_compute(
-            self.preds_len, self.target_len, self.numerator, self.denominator, self.n_gram, self.weights, self.smooth
+            self.preds_len, self.target_len, self.numerator, self.denominator, self.n_gram, self.weights, self.smooth,
         )
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

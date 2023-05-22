@@ -114,7 +114,7 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
     def test_ergas_half_gpu(self, reduction, preds, target, ratio):
         """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
-            preds, target, ErrorRelativeGlobalDimensionlessSynthesis, error_relative_global_dimensionless_synthesis
+            preds, target, ErrorRelativeGlobalDimensionlessSynthesis, error_relative_global_dimensionless_synthesis,
         )
 
 

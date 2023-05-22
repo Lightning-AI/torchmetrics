@@ -26,19 +26,19 @@ from unittests.helpers.testers import MetricTester
 iou = torch.Tensor(
     [
         [0.40733114],
-    ]
+    ],
 )
 iou_dontrespect = torch.Tensor(
     [
         [0.6165285],
-    ]
+    ],
 )
 box_iou = torch.Tensor(
     [
         [0.6898, 0.0000, 0.0000],
         [0.0000, 0.5086, 0.0000],
         [0.0000, 0.0000, 0.5654],
-    ]
+    ],
 )
 
 _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)

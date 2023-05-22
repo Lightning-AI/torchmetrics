@@ -24,7 +24,7 @@ class _ModifiedPanopticQuality(ModifiedPanopticQuality):
     ) -> None:
         _deprecated_root_import_class("ModifiedPanopticQuality", "detection")
         return super().__init__(
-            things=things, stuffs=stuffs, allow_unknown_preds_category=allow_unknown_preds_category, **kwargs
+            things=things, stuffs=stuffs, allow_unknown_preds_category=allow_unknown_preds_category, **kwargs,
         )
 
 
@@ -56,5 +56,5 @@ class _PanopticQuality(PanopticQuality):
     ) -> None:
         _deprecated_root_import_class("PanopticQuality", "detection")
         return super().__init__(
-            things=things, stuffs=stuffs, allow_unknown_preds_category=allow_unknown_preds_category, **kwargs
+            things=things, stuffs=stuffs, allow_unknown_preds_category=allow_unknown_preds_category, **kwargs,
         )

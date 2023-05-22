@@ -84,7 +84,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
             self.rmse_map = torch.zeros(_img_shape, dtype=target.dtype, device=target.device)
 
         self.rmse_val_sum, self.rmse_map, self.total_images = _rmse_sw_update(
-            preds, target, self.window_size, self.rmse_val_sum, self.rmse_map, self.total_images
+            preds, target, self.window_size, self.rmse_val_sum, self.rmse_map, self.total_images,
         )
 
     def compute(self) -> Optional[Tensor]:
@@ -94,7 +94,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
         return rmse
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

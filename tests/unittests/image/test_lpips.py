@@ -67,7 +67,7 @@ class TestLPIPS(MetricTester):
     def test_lpips_differentiability(self):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
-            preds=_inputs.img1, target=_inputs.img2, metric_module=LearnedPerceptualImagePatchSimilarity
+            preds=_inputs.img1, target=_inputs.img2, metric_module=LearnedPerceptualImagePatchSimilarity,
         )
 
     # LPIPS half + cpu does not work due to missing support in torch.min for older version of torch

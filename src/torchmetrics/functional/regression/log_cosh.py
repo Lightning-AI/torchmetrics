@@ -88,6 +88,6 @@ def log_cosh_error(preds: Tensor, target: Tensor) -> Tensor:
         tensor([0.9176, 0.4277, 0.2194])
     """
     sum_log_cosh_error, n_obs = _log_cosh_error_update(
-        preds, target, num_outputs=1 if preds.ndim == 1 else preds.shape[-1]
+        preds, target, num_outputs=1 if preds.ndim == 1 else preds.shape[-1],
     )
     return _log_cosh_error_compute(sum_log_cosh_error, n_obs)

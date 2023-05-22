@@ -115,7 +115,7 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
         return _binary_average_precision_compute(state, self.thresholds)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -252,7 +252,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            num_classes=num_classes, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs
+            num_classes=num_classes, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs,
         )
         if validate_args:
             _multiclass_average_precision_arg_validation(num_classes, average, thresholds, ignore_index)
@@ -265,7 +265,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         return _multiclass_average_precision_compute(state, self.num_classes, self.average, self.thresholds)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -404,7 +404,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            num_labels=num_labels, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs
+            num_labels=num_labels, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs,
         )
         if validate_args:
             _multilabel_average_precision_arg_validation(num_labels, average, thresholds, ignore_index)
@@ -415,11 +415,11 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multilabel_average_precision_compute(
-            state, self.num_labels, self.average, self.thresholds, self.ignore_index
+            state, self.num_labels, self.average, self.thresholds, self.ignore_index,
         )
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

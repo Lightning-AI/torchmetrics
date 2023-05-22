@@ -42,7 +42,7 @@ preds = [
         # where H and W are the image height and width, respectively,
         # with boolean masks. This is only required when iou_type is `segm`.
         "masks": BoolTensor([mask_pred]),
-    }
+    },
 ]
 
 # Target should be a list of elements, where each element is a dict
@@ -61,7 +61,7 @@ target = [
         "boxes": Tensor([[214.0, 41.0, 562.0, 285.0]]),
         "labels": IntTensor([0]),
         "masks": BoolTensor([mask_tgt]),
-    }
+    },
 ]
 
 if __name__ == "__main__":

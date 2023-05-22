@@ -78,7 +78,7 @@ def _binary_specificity_at_sensitivity_arg_validation(
     _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
     if not isinstance(min_sensitivity, float) and not (0 <= min_sensitivity <= 1):
         raise ValueError(
-            f"Expected argument `min_sensitivity` to be an float in the [0,1] range, but got {min_sensitivity}"
+            f"Expected argument `min_sensitivity` to be an float in the [0,1] range, but got {min_sensitivity}",
         )
 
 
@@ -174,7 +174,7 @@ def _multiclass_specificity_at_sensitivity_arg_validation(
     _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
     if not isinstance(min_sensitivity, float) and not (0 <= min_sensitivity <= 1):
         raise ValueError(
-            f"Expected argument `min_sensitivity` to be an float in the [0,1] range, but got {min_sensitivity}"
+            f"Expected argument `min_sensitivity` to be an float in the [0,1] range, but got {min_sensitivity}",
         )
 
 
@@ -274,11 +274,11 @@ def multiclass_specificity_at_sensitivity(
         _multiclass_specificity_at_sensitivity_arg_validation(num_classes, min_sensitivity, thresholds, ignore_index)
         _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index)
     preds, target, thresholds = _multiclass_precision_recall_curve_format(
-        preds, target, num_classes, thresholds, ignore_index
+        preds, target, num_classes, thresholds, ignore_index,
     )
     state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
     return _multiclass_specificity_at_sensitivity_compute(
-        state, num_classes, thresholds, min_sensitivity
+        state, num_classes, thresholds, min_sensitivity,
     )  # type: ignore
 
 
@@ -291,7 +291,7 @@ def _multilabel_specificity_at_sensitivity_arg_validation(
     _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
     if not isinstance(min_sensitivity, float) and not (0 <= min_sensitivity <= 1):
         raise ValueError(
-            f"Expected argument `min_sensitivity` to be an float in the [0,1] range, but got {min_sensitivity}"
+            f"Expected argument `min_sensitivity` to be an float in the [0,1] range, but got {min_sensitivity}",
         )
 
 
@@ -396,7 +396,7 @@ def multilabel_specificity_at_sensitivity(
         _multilabel_specificity_at_sensitivity_arg_validation(num_labels, min_sensitivity, thresholds, ignore_index)
         _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index)
     preds, target, thresholds = _multilabel_precision_recall_curve_format(
-        preds, target, num_labels, thresholds, ignore_index
+        preds, target, num_labels, thresholds, ignore_index,
     )
     state = _multilabel_precision_recall_curve_update(preds, target, num_labels, thresholds)
     return _multilabel_specificity_at_sensitivity_compute(state, num_labels, thresholds, ignore_index, min_sensitivity)
@@ -426,18 +426,18 @@ def specicity_at_sensitivity(
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
         return binary_specificity_at_sensitivity(  # type: ignore
-            preds, target, min_sensitivity, thresholds, ignore_index, validate_args
+            preds, target, min_sensitivity, thresholds, ignore_index, validate_args,
         )
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         return multiclass_specificity_at_sensitivity(  # type: ignore
-            preds, target, num_classes, min_sensitivity, thresholds, ignore_index, validate_args
+            preds, target, num_classes, min_sensitivity, thresholds, ignore_index, validate_args,
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_specificity_at_sensitivity(  # type: ignore
-            preds, target, num_labels, min_sensitivity, thresholds, ignore_index, validate_args
+            preds, target, num_labels, min_sensitivity, thresholds, ignore_index, validate_args,
         )
     raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

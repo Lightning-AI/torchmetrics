@@ -26,19 +26,19 @@ from unittests.helpers.testers import MetricTester
 diou = torch.Tensor(
     [
         [0.06653749],
-    ]
+    ],
 )
 diou_dontrespect = torch.Tensor(
     [
         [0.6080749],
-    ]
+    ],
 )
 box_diou = torch.Tensor(
     [
         [0.6883, -0.2043, -0.3351],
         [-0.2214, 0.4886, -0.1913],
         [-0.3971, -0.1510, 0.5609],
-    ]
+    ],
 )
 
 _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_13)
@@ -51,7 +51,7 @@ class TestDistanceIntersectionOverUnion(MetricTester, BaseTestIntersectionOverUn
     data: Dict[str, TestCaseData] = {
         "iou_variant": TestCaseData(data=_inputs, result={DistanceIntersectionOverUnion._iou_type: diou}),
         "iou_variant_respect": TestCaseData(
-            data=_inputs, result={DistanceIntersectionOverUnion._iou_type: diou_dontrespect}
+            data=_inputs, result={DistanceIntersectionOverUnion._iou_type: diou_dontrespect},
         ),
         "fn_iou_variant": TestCaseData(data=_box_inputs, result=box_diou),
     }

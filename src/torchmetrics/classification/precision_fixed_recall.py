@@ -131,11 +131,11 @@ class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
             else self.confmat
         )
         return _binary_recall_at_fixed_precision_compute(
-            state, self.thresholds, self.min_recall, reduce_fn=_precision_at_recall
+            state, self.thresholds, self.min_recall, reduce_fn=_precision_at_recall,
         )
 
     def plot(  # type: ignore[override]
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -262,7 +262,7 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            num_classes=num_classes, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs
+            num_classes=num_classes, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs,
         )
         if validate_args:
             _multiclass_recall_at_fixed_precision_arg_validation(num_classes, min_recall, thresholds, ignore_index)
@@ -277,11 +277,11 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
             else self.confmat
         )
         return _multiclass_recall_at_fixed_precision_arg_compute(
-            state, self.num_classes, self.thresholds, self.min_recall, reduce_fn=_precision_at_recall
+            state, self.num_classes, self.thresholds, self.min_recall, reduce_fn=_precision_at_recall,
         )
 
     def plot(  # type: ignore[override]
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -409,7 +409,7 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            num_labels=num_labels, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs
+            num_labels=num_labels, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs,
         )
         if validate_args:
             _multilabel_recall_at_fixed_precision_arg_validation(num_labels, min_recall, thresholds, ignore_index)
@@ -424,11 +424,11 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
             else self.confmat
         )
         return _multilabel_recall_at_fixed_precision_arg_compute(
-            state, self.num_labels, self.thresholds, self.ignore_index, self.min_recall, reduce_fn=_precision_at_recall
+            state, self.num_labels, self.thresholds, self.ignore_index, self.min_recall, reduce_fn=_precision_at_recall,
         )
 
     def plot(  # type: ignore[override]
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -502,12 +502,12 @@ class PrecisionAtFixedRecall:
             if not isinstance(num_classes, int):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassPrecisionAtFixedRecall(
-                num_classes, min_recall, thresholds, ignore_index, validate_args, **kwargs
+                num_classes, min_recall, thresholds, ignore_index, validate_args, **kwargs,
             )
         if task == ClassificationTask.MULTILABEL:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelPrecisionAtFixedRecall(
-                num_labels, min_recall, thresholds, ignore_index, validate_args, **kwargs
+                num_labels, min_recall, thresholds, ignore_index, validate_args, **kwargs,
             )
         return None  # type: ignore[return-value]

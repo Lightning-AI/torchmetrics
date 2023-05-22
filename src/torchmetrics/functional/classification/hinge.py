@@ -43,7 +43,7 @@ def _binary_hinge_loss_tensor_validation(preds: Tensor, target: Tensor, ignore_i
     if not preds.is_floating_point():
         raise ValueError(
             "Expected argument `preds` to be floating tensor with probabilities/logits"
-            f" but got tensor with dtype {preds.dtype}"
+            f" but got tensor with dtype {preds.dtype}",
         )
 
 
@@ -115,7 +115,7 @@ def binary_hinge_loss(
         _binary_hinge_loss_arg_validation(squared, ignore_index)
         _binary_hinge_loss_tensor_validation(preds, target, ignore_index)
     preds, target = _binary_confusion_matrix_format(
-        preds, target, threshold=0.0, ignore_index=ignore_index, convert_to_labels=False
+        preds, target, threshold=0.0, ignore_index=ignore_index, convert_to_labels=False,
     )
     measures, total = _binary_hinge_loss_update(preds, target, squared)
     return _hinge_loss_compute(measures, total)
@@ -136,13 +136,13 @@ def _multiclass_hinge_loss_arg_validation(
 
 
 def _multiclass_hinge_loss_tensor_validation(
-    preds: Tensor, target: Tensor, num_classes: int, ignore_index: Optional[int] = None
+    preds: Tensor, target: Tensor, num_classes: int, ignore_index: Optional[int] = None,
 ) -> None:
     _multiclass_confusion_matrix_tensor_validation(preds, target, num_classes, ignore_index)
     if not preds.is_floating_point():
         raise ValueError(
             "Expected argument `preds` to be floating tensor with probabilities/logits"
-            f" but got tensor with dtype {preds.dtype}"
+            f" but got tensor with dtype {preds.dtype}",
         )
 
 

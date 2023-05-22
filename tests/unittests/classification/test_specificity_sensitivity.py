@@ -97,7 +97,7 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
             target=target,
             metric_class=BinarySpecificityAtSensitivity,
             reference_metric=partial(
-                _sklearn_specificity_at_sensitivity_binary, min_sensitivity=min_sensitivity, ignore_index=ignore_index
+                _sklearn_specificity_at_sensitivity_binary, min_sensitivity=min_sensitivity, ignore_index=ignore_index,
             ),
             metric_args={
                 "min_sensitivity": min_sensitivity,
@@ -118,7 +118,7 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
             target=target,
             metric_functional=binary_specificity_at_sensitivity,
             reference_metric=partial(
-                _sklearn_specificity_at_sensitivity_binary, min_sensitivity=min_sensitivity, ignore_index=ignore_index
+                _sklearn_specificity_at_sensitivity_binary, min_sensitivity=min_sensitivity, ignore_index=ignore_index,
             ),
             metric_args={
                 "min_sensitivity": min_sensitivity,
@@ -176,7 +176,7 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
             pred = torch.tensor(np.round(pred.numpy(), 1)) + 1e-6  # rounding will simulate binning
             r1, _ = binary_specificity_at_sensitivity(pred, true, min_sensitivity=min_sensitivity, thresholds=None)
             r2, _ = binary_specificity_at_sensitivity(
-                pred, true, min_sensitivity=min_sensitivity, thresholds=torch.linspace(0, 1, 100)
+                pred, true, min_sensitivity=min_sensitivity, thresholds=torch.linspace(0, 1, 100),
             )
             assert torch.allclose(r1, r2)
 
@@ -199,7 +199,7 @@ def _sklearn_specificity_at_sensitivity_multiclass(preds, target, min_sensitivit
 
 
 @pytest.mark.parametrize(
-    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5]),
 )
 class TestMulticlassSpecificityAtSensitivity(MetricTester):
     """Test class for `MulticlassSpecificityAtSensitivity` metric."""
@@ -303,7 +303,7 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
         for pred, true in zip(preds, target):
             pred = torch.tensor(np.round(pred.detach().numpy(), 1)) + 1e-6  # rounding will simulate binning
             r1, _ = multiclass_specificity_at_sensitivity(
-                pred, true, num_classes=NUM_CLASSES, min_sensitivity=min_sensitivity, thresholds=None
+                pred, true, num_classes=NUM_CLASSES, min_sensitivity=min_sensitivity, thresholds=None,
             )
             r2, _ = multiclass_specificity_at_sensitivity(
                 pred,
@@ -325,7 +325,7 @@ def _sklearn_specificity_at_sensitivity_multilabel(preds, target, min_sensitivit
 
 
 @pytest.mark.parametrize(
-    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]),
 )
 class TestMultilabelSpecificityAtSensitivity(MetricTester):
     """Test class for `MultilabelSpecificityAtSensitivity` metric."""
@@ -429,7 +429,7 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
         for pred, true in zip(preds, target):
             pred = torch.tensor(np.round(pred.detach().numpy(), 1)) + 1e-6  # rounding will simulate binning
             r1, _ = multilabel_specificity_at_sensitivity(
-                pred, true, num_labels=NUM_CLASSES, min_sensitivity=min_sensitivity, thresholds=None
+                pred, true, num_labels=NUM_CLASSES, min_sensitivity=min_sensitivity, thresholds=None,
             )
             r2, _ = multilabel_specificity_at_sensitivity(
                 pred,

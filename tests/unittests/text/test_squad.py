@@ -45,7 +45,7 @@ def test_score_fn(preds, targets, exact_match, f1):
             _inputs_squad_batch_match.targets,
             _inputs_squad_batch_match.exact_match,
             _inputs_squad_batch_match.f1,
-        )
+        ),
     ],
 )
 def test_accumulation(preds, targets, exact_match, f1):
@@ -89,7 +89,7 @@ def _test_score_ddp_fn(rank, world_size, preds, targets, exact_match, f1):
             _inputs_squad_batch_match.targets,
             _inputs_squad_batch_match.exact_match,
             _inputs_squad_batch_match.f1,
-        )
+        ),
     ],
 )
 @pytest.mark.skipif(not dist.is_available(), reason="test requires torch distributed")

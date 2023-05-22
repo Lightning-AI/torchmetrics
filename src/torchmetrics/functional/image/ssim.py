@@ -36,7 +36,7 @@ def _ssim_check_inputs(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     if len(preds.shape) not in (4, 5):
         raise ValueError(
             "Expected `preds` and `target` to have BxCxHxW or BxCxDxHxW shape."
-            f" Got preds: {preds.shape} and target: {target.shape}."
+            f" Got preds: {preds.shape} and target: {target.shape}.",
         )
     return preds, target
 
@@ -82,20 +82,20 @@ def _ssim_update(
     if len(kernel_size) != len(target.shape) - 2:
         raise ValueError(
             f"`kernel_size` has dimension {len(kernel_size)}, but expected to be two less that target dimensionality,"
-            f" which is: {len(target.shape)}"
+            f" which is: {len(target.shape)}",
         )
     if len(kernel_size) not in (2, 3):
         raise ValueError(
-            f"Expected `kernel_size` dimension to be 2 or 3. `kernel_size` dimensionality: {len(kernel_size)}"
+            f"Expected `kernel_size` dimension to be 2 or 3. `kernel_size` dimensionality: {len(kernel_size)}",
         )
     if len(sigma) != len(target.shape) - 2:
         raise ValueError(
             f"`kernel_size` has dimension {len(kernel_size)}, but expected to be two less that target dimensionality,"
-            f" which is: {len(target.shape)}"
+            f" which is: {len(target.shape)}",
         )
     if len(sigma) not in (2, 3):
         raise ValueError(
-            f"Expected `kernel_size` dimension to be 2 or 3. `kernel_size` dimensionality: {len(kernel_size)}"
+            f"Expected `kernel_size` dimension to be 2 or 3. `kernel_size` dimensionality: {len(kernel_size)}",
         )
 
     if return_full_image and return_contrast_sensitivity:
@@ -139,7 +139,7 @@ def _ssim_update(
 
     if not gaussian_kernel:
         kernel = torch.ones((channel, 1, *kernel_size), dtype=dtype, device=device) / torch.prod(
-            torch.tensor(kernel_size, dtype=dtype, device=device)
+            torch.tensor(kernel_size, dtype=dtype, device=device),
         )
 
     input_list = torch.cat((preds, target, preds * preds, target * target, preds * target))  # (5 * B, C, H, W)
@@ -173,7 +173,7 @@ def _ssim_update(
         else:
             contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
         return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), contrast_sensitivity.reshape(
-            contrast_sensitivity.shape[0], -1
+            contrast_sensitivity.shape[0], -1,
         ).mean(-1)
 
     if return_full_image:
@@ -377,24 +377,24 @@ def _multiscale_ssim_update(
     if preds.size()[-1] < 2 ** len(betas) or preds.size()[-2] < 2 ** len(betas):
         raise ValueError(
             f"For a given number of `betas` parameters {len(betas)}, the image height and width dimensions must be"
-            f" larger than or equal to {2 ** len(betas)}."
+            f" larger than or equal to {2 ** len(betas)}.",
         )
 
     _betas_div = max(1, (len(betas) - 1)) ** 2
     if preds.size()[-2] // _betas_div <= kernel_size[0] - 1:
         raise ValueError(
             f"For a given number of `betas` parameters {len(betas)} and kernel size {kernel_size[0]},"
-            f" the image height must be larger than {(kernel_size[0] - 1) * _betas_div}."
+            f" the image height must be larger than {(kernel_size[0] - 1) * _betas_div}.",
         )
     if preds.size()[-1] // _betas_div <= kernel_size[1] - 1:
         raise ValueError(
             f"For a given number of `betas` parameters {len(betas)} and kernel size {kernel_size[1]},"
-            f" the image width must be larger than {(kernel_size[1] - 1) * _betas_div}."
+            f" the image width must be larger than {(kernel_size[1] - 1) * _betas_div}.",
         )
 
     for _ in range(len(betas)):
         sim, contrast_sensitivity = _get_normalized_sim_and_cs(
-            preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, normalize=normalize
+            preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, normalize=normalize,
         )
         mcs_list.append(contrast_sensitivity)
 
@@ -514,6 +514,6 @@ def multiscale_structural_similarity_index_measure(
 
     preds, target = _ssim_check_inputs(preds, target)
     mcs_per_image = _multiscale_ssim_update(
-        preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, betas, normalize
+        preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, betas, normalize,
     )
     return _multiscale_ssim_compute(mcs_per_image, reduction)

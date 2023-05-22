@@ -52,7 +52,7 @@ from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
     [
         # Audio
         pytest.param(
-            partial(PermutationInvariantTraining, scale_invariant_signal_noise_ratio), id="PermutationInvariantTraining"
+            partial(PermutationInvariantTraining, scale_invariant_signal_noise_ratio), id="PermutationInvariantTraining",
         ),
         ScaleInvariantSignalDistortionRatio,
         ScaleInvariantSignalNoiseRatio,

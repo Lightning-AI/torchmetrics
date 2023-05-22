@@ -90,7 +90,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
         if not _PYSTOI_AVAILABLE:
             raise ModuleNotFoundError(
                 "STOI metric requires that `pystoi` is installed."
-                " Either install as `pip install torchmetrics[audio]` or `pip install pystoi`."
+                " Either install as `pip install torchmetrics[audio]` or `pip install pystoi`.",
             )
         self.fs = fs
         self.extended = extended
@@ -101,7 +101,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         stoi_batch = short_time_objective_intelligibility(preds, target, self.fs, self.extended, False).to(
-            self.sum_stoi.device
+            self.sum_stoi.device,
         )
 
         self.sum_stoi += stoi_batch.sum()

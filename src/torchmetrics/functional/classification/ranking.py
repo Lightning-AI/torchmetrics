@@ -38,7 +38,7 @@ def _ranking_reduce(score: Tensor, n_elements: int) -> Tensor:
 
 
 def _multilabel_ranking_tensor_validation(
-    preds: Tensor, target: Tensor, num_labels: int, ignore_index: Optional[int] = None
+    preds: Tensor, target: Tensor, num_labels: int, ignore_index: Optional[int] = None,
 ) -> None:
     _multilabel_confusion_matrix_tensor_validation(preds, target, num_labels, ignore_index)
     if not preds.is_floating_point():
@@ -102,7 +102,7 @@ def multilabel_coverage_error(
         _multilabel_confusion_matrix_arg_validation(num_labels, threshold=0.0, ignore_index=ignore_index)
         _multilabel_ranking_tensor_validation(preds, target, num_labels, ignore_index)
     preds, target = _multilabel_confusion_matrix_format(
-        preds, target, num_labels, threshold=0.0, ignore_index=ignore_index, should_threshold=False
+        preds, target, num_labels, threshold=0.0, ignore_index=ignore_index, should_threshold=False,
     )
     coverage, total = _multilabel_coverage_error_update(preds, target)
     return _ranking_reduce(coverage, total)
@@ -174,7 +174,7 @@ def multilabel_ranking_average_precision(
         _multilabel_confusion_matrix_arg_validation(num_labels, threshold=0.0, ignore_index=ignore_index)
         _multilabel_ranking_tensor_validation(preds, target, num_labels, ignore_index)
     preds, target = _multilabel_confusion_matrix_format(
-        preds, target, num_labels, threshold=0.0, ignore_index=ignore_index, should_threshold=False
+        preds, target, num_labels, threshold=0.0, ignore_index=ignore_index, should_threshold=False,
     )
     score, n_elements = _multilabel_ranking_average_precision_update(preds, target)
     return _ranking_reduce(score, n_elements)
@@ -257,7 +257,7 @@ def multilabel_ranking_loss(
         _multilabel_confusion_matrix_arg_validation(num_labels, threshold=0.0, ignore_index=ignore_index)
         _multilabel_ranking_tensor_validation(preds, target, num_labels, ignore_index)
     preds, target = _multilabel_confusion_matrix_format(
-        preds, target, num_labels, threshold=0.0, ignore_index=ignore_index, should_threshold=False
+        preds, target, num_labels, threshold=0.0, ignore_index=ignore_index, should_threshold=False,
     )
     loss, n_elements = _multilabel_ranking_loss_update(preds, target)
     return _ranking_reduce(loss, n_elements)

@@ -177,13 +177,13 @@ class BERTScore(Metric):
             if not _TRANSFORMERS_AVAILABLE:
                 raise ModuleNotFoundError(
                     "`BERTScore` metric with default tokenizers requires `transformers` package be installed."
-                    " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."
+                    " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`.",
                 )
             if model_name_or_path is None:
                 warn(
                     "The argument `model_name_or_path` was not specified while it is required when the default"
                     " `transformers` model is used."
-                    f" It will use the default recommended model - {_DEFAULT_MODEL!r}."
+                    f" It will use the default recommended model - {_DEFAULT_MODEL!r}.",
                 )
             self.tokenizer = AutoTokenizer.from_pretrained(self.model_name_or_path)
             self.user_tokenizer = False
@@ -258,7 +258,7 @@ class BERTScore(Metric):
         )
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

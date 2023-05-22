@@ -94,7 +94,7 @@ def _parse_requirements(strs: Union[str, Iterable[str]]) -> Iterator[_Requiremen
 
 
 def _load_requirements(
-    path_dir: str, file_name: str = "requirements.txt", unfreeze: bool = not _FREEZE_REQUIREMENTS
+    path_dir: str, file_name: str = "requirements.txt", unfreeze: bool = not _FREEZE_REQUIREMENTS,
 ) -> List[str]:
     """Load requirements from a file.
 

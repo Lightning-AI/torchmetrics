@@ -107,13 +107,13 @@ class Metric(Module, ABC):
         self.compute_on_cpu = kwargs.pop("compute_on_cpu", False)
         if not isinstance(self.compute_on_cpu, bool):
             raise ValueError(
-                f"Expected keyword argument `compute_on_cpu` to be an `bool` but got {self.compute_on_cpu}"
+                f"Expected keyword argument `compute_on_cpu` to be an `bool` but got {self.compute_on_cpu}",
             )
 
         self.dist_sync_on_step = kwargs.pop("dist_sync_on_step", False)
         if not isinstance(self.dist_sync_on_step, bool):
             raise ValueError(
-                f"Expected keyword argument `dist_sync_on_step` to be an `bool` but got {self.dist_sync_on_step}"
+                f"Expected keyword argument `dist_sync_on_step` to be an `bool` but got {self.dist_sync_on_step}",
             )
 
         self.process_group = kwargs.pop("process_group", None)
@@ -121,7 +121,7 @@ class Metric(Module, ABC):
         self.dist_sync_fn = kwargs.pop("dist_sync_fn", None)
         if self.dist_sync_fn is not None and not callable(self.dist_sync_fn):
             raise ValueError(
-                f"Expected keyword argument `dist_sync_fn` to be an callable function but got {self.dist_sync_fn}"
+                f"Expected keyword argument `dist_sync_fn` to be an callable function but got {self.dist_sync_fn}",
             )
 
         self.distributed_available_fn = kwargs.pop("distributed_available_fn", None) or jit_distributed_available
@@ -129,7 +129,7 @@ class Metric(Module, ABC):
         self.sync_on_compute = kwargs.pop("sync_on_compute", True)
         if not isinstance(self.sync_on_compute, bool):
             raise ValueError(
-                f"Expected keyword argument `sync_on_compute` to be a `bool` but got {self.sync_on_compute}"
+                f"Expected keyword argument `sync_on_compute` to be a `bool` but got {self.sync_on_compute}",
             )
 
         if kwargs:
@@ -254,7 +254,7 @@ class Metric(Module, ABC):
         if self._is_synced:
             raise TorchMetricsUserError(
                 "The Metric shouldn't be synced when performing ``forward``. "
-                "HINT: Did you forget to call ``unsync`` ?."
+                "HINT: Did you forget to call ``unsync`` ?.",
             )
 
         if self.full_state_update or self.full_state_update is None or self.dist_sync_on_step:
@@ -424,7 +424,7 @@ class Metric(Module, ABC):
                             " This could be due to the metric class not being on the same device as input."
                             f" Instead of `metric={self.__class__.__name__}(...)` try to do"
                             f" `metric={self.__class__.__name__}(...).to(device)` where"
-                            " device corresponds to the device of the input."
+                            " device corresponds to the device of the input.",
                         ) from err
                     raise err
 
@@ -737,7 +737,7 @@ class Metric(Module, ABC):
                 setattr(this, key, [fn(cur_v) for cur_v in current_val])
             else:
                 raise TypeError(
-                    "Expected metric state to be either a Tensor" f"or a list of Tensor, but encountered {current_val}"
+                    "Expected metric state to be either a Tensor" f"or a list of Tensor, but encountered {current_val}",
                 )
 
         # make sure to update the device attribute
@@ -773,7 +773,7 @@ class Metric(Module, ABC):
                 If set to ``True``, detaching will not be performed.
         """
         destination: Dict[str, Union[torch.Tensor, List, Any]] = super().state_dict(
-            destination=destination, prefix=prefix, keep_vars=keep_vars  # type: ignore[arg-type]
+            destination=destination, prefix=prefix, keep_vars=keep_vars,  # type: ignore[arg-type]
         )
         # Register metric states to be part of the state_dict
         for key in self._defaults:
@@ -804,7 +804,7 @@ class Metric(Module, ABC):
             if name in state_dict:
                 setattr(self, key, state_dict.pop(name))
         super()._load_from_state_dict(
-            state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs
+            state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs,
         )
 
     def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:

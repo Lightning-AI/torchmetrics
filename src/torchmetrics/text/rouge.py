@@ -114,7 +114,7 @@ class ROUGEScore(Metric):
         if use_stemmer or "rougeLsum" in rouge_keys:
             if not _NLTK_AVAILABLE:
                 raise ModuleNotFoundError(
-                    "Stemmer and/or `rougeLsum` requires that `nltk` is installed. Use `pip install nltk`."
+                    "Stemmer and/or `rougeLsum` requires that `nltk` is installed. Use `pip install nltk`.",
                 )
             import nltk
 
@@ -126,7 +126,7 @@ class ROUGEScore(Metric):
 
         if accumulate not in ALLOWED_ACCUMULATE_VALUES:
             raise ValueError(
-                f"Got unknown accumulate value {accumulate}. Expected to be one of {ALLOWED_ACCUMULATE_VALUES}"
+                f"Got unknown accumulate value {accumulate}. Expected to be one of {ALLOWED_ACCUMULATE_VALUES}",
             )
 
         self.rouge_keys = rouge_keys
@@ -142,7 +142,7 @@ class ROUGEScore(Metric):
                 self.add_state(f"{rouge_key}_{score}", [], dist_reduce_fx=None)
 
     def update(
-        self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str], Sequence[Sequence[str]]]
+        self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str], Sequence[Sequence[str]]],
     ) -> None:
         """Update state with predictions and targets."""
         if isinstance(target, list) and all(isinstance(tgt, str) for tgt in target):
@@ -191,7 +191,7 @@ class ROUGEScore(Metric):
         return hash(tuple(hash_vals))
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

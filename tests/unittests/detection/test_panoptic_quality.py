@@ -36,7 +36,7 @@ _INPUTS_0 = Input(
             [[0, 0], [0, 0], [6, 0], [0, 1], [1, 0]],
             [[0, 0], [7, 0], [6, 0], [1, 0], [1, 0]],
             [[0, 0], [7, 0], [7, 0], [7, 0], [7, 0]],
-        ]
+        ],
     )
     .reshape((1, 1, 5, 5, 2))
     .repeat(2, 1, 1, 1, 1),
@@ -47,7 +47,7 @@ _INPUTS_0 = Input(
             [[0, 1], [0, 1], [6, 0], [1, 0], [1, 0]],
             [[0, 1], [7, 0], [7, 0], [1, 0], [1, 0]],
             [[0, 1], [7, 0], [7, 0], [7, 0], [7, 0]],
-        ]
+        ],
     )
     .reshape((1, 1, 5, 5, 2))
     .repeat(2, 1, 1, 1, 1),
@@ -163,7 +163,7 @@ def test_error_on_wrong_input():
 
     preds = torch.randint(low=0, high=9, size=(1, 64, 64, 8))
     with pytest.raises(
-        ValueError, match="Expected argument `preds` to have exactly 2 channels in the last dimension.*"
+        ValueError, match="Expected argument `preds` to have exactly 2 channels in the last dimension.*",
     ):
         metric.update(preds, preds)
 

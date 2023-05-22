@@ -121,7 +121,7 @@ def multiclass_exact_match(
 
 
 def _multilabel_exact_match_update(
-    preds: Tensor, target: Tensor, num_labels: int, multidim_average: Literal["global", "samplewise"] = "global"
+    preds: Tensor, target: Tensor, num_labels: int, multidim_average: Literal["global", "samplewise"] = "global",
 ) -> Tuple[Tensor, Tensor]:
     """Compute the statistics."""
     if multidim_average == "global":
@@ -248,6 +248,6 @@ def exact_match(
     if task == ClassificationTaskNoBinary.MULTILABEL:
         assert num_labels is not None  # noqa: S101  # needed for mypy
         return multilabel_exact_match(
-            preds, target, num_labels, threshold, multidim_average, ignore_index, validate_args
+            preds, target, num_labels, threshold, multidim_average, ignore_index, validate_args,
         )
     raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

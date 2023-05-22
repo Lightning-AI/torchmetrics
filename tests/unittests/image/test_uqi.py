@@ -44,7 +44,7 @@ for size, channel, coef, multichannel, dtype in [
             preds=preds,
             target=preds * coef,
             multichannel=multichannel,
-        )
+        ),
     )
 
 
@@ -106,14 +106,14 @@ class TestUQI(MetricTester):
     def test_uqi_half_cpu(self, preds, target, multichannel, kernel_size):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
-            preds, target, UniversalImageQualityIndex, universal_image_quality_index, {"data_range": 1.0}
+            preds, target, UniversalImageQualityIndex, universal_image_quality_index, {"data_range": 1.0},
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_uqi_half_gpu(self, preds, target, multichannel, kernel_size):
         """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
-            preds, target, UniversalImageQualityIndex, universal_image_quality_index, {"data_range": 1.0}
+            preds, target, UniversalImageQualityIndex, universal_image_quality_index, {"data_range": 1.0},
         )
 
 
@@ -172,9 +172,9 @@ def test_uqi_unequal_kernel_size():
                     [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0],
                     [0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0],
                     [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
-                ]
-            ]
-        ]
+                ],
+            ],
+        ],
     )
     target = torch.tensor(
         [
@@ -187,9 +187,9 @@ def test_uqi_unequal_kernel_size():
                     [1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0],
                     [0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0],
                     [0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0],
-                ]
-            ]
-        ]
+                ],
+            ],
+        ],
     )
     # kernel order matters
     torch.allclose(universal_image_quality_index(preds, target, kernel_size=(3, 5)), torch.tensor(0.10662283))

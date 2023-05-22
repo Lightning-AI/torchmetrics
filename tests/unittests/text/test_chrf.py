@@ -23,7 +23,7 @@ def _sacrebleu_chrf_fn(
     whitespace: bool,
 ) -> Tensor:
     sacrebleu_chrf = CHRF(
-        char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace, eps_smoothing=True
+        char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace, eps_smoothing=True,
     )
     # Sacrebleu CHRF expects different format of input
     targets = [[target[i] for target in targets] for i in range(len(targets[0]))]
@@ -60,7 +60,7 @@ class TestCHRFScore(TextTester):
             "whitespace": whitespace,
         }
         nltk_metric = partial(
-            _sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
+            _sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace,
         )
 
         self.run_class_metric_test(
@@ -81,7 +81,7 @@ class TestCHRFScore(TextTester):
             "whitespace": whitespace,
         }
         nltk_metric = partial(
-            _sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
+            _sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace,
         )
 
         self.run_functional_metric_test(

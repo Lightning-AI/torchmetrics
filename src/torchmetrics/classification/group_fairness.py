@@ -132,7 +132,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
             groups: Tensor with group identifiers. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
         """
         group_stats = _binary_groups_stat_scores(
-            preds, target, groups, self.num_groups, self.threshold, self.ignore_index, self.validate_args
+            preds, target, groups, self.num_groups, self.threshold, self.ignore_index, self.validate_args,
         )
 
         self._update_states(group_stats)
@@ -219,7 +219,7 @@ class BinaryFairness(_AbstractGroupStatScores):
         if task not in ["demographic_parity", "equal_opportunity", "all"]:
             raise ValueError(
                 f"Expected argument `task` to either be ``demographic_parity``,"
-                f"``equal_opportunity`` or ``all`` but got {task}."
+                f"``equal_opportunity`` or ``all`` but got {task}.",
             )
 
         if validate_args:
@@ -249,7 +249,7 @@ class BinaryFairness(_AbstractGroupStatScores):
             target = torch.zeros(preds.shape)
 
         group_stats = _binary_groups_stat_scores(
-            preds, target, groups, self.num_groups, self.threshold, self.ignore_index, self.validate_args
+            preds, target, groups, self.num_groups, self.threshold, self.ignore_index, self.validate_args,
         )
 
         self._update_states(group_stats)
@@ -272,7 +272,7 @@ class BinaryFairness(_AbstractGroupStatScores):
         return None
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

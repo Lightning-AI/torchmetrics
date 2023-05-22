@@ -114,11 +114,11 @@ class _InformationMeasure:
             raise ValueError(f"Parameter `beta` is expected to be defined for {information_measure}.")
         if self.information_measure == _IMEnum.ALPHA_DIVERGENCE and (not isinstance(alpha, float) or alpha in [0, 1]):
             raise ValueError(
-                f"Parameter `alpha` is expected to be float differened from 0 and 1 for {information_measure}."
+                f"Parameter `alpha` is expected to be float differened from 0 and 1 for {information_measure}.",
             )
         if self.information_measure == _IMEnum.BETA_DIVERGENCE and (not isinstance(beta, float) or beta in [0, -1]):
             raise ValueError(
-                f"Parameter `beta` is expected to be float differened from 0 and -1 for {information_measure}."
+                f"Parameter `beta` is expected to be float differened from 0 and -1 for {information_measure}.",
             )
         if self.information_measure == _IMEnum.AB_DIVERGENCE and (
             alpha is None
@@ -127,7 +127,7 @@ class _InformationMeasure:
         ):
             raise ValueError(
                 "Parameters `alpha`, `beta` and their sum are expected to be differened from 0 for "
-                f"{information_measure}."
+                f"{information_measure}.",
             )
         if self.information_measure == _IMEnum.RENYI_DIVERGENCE and (not isinstance(alpha, float) or alpha == 1):
             raise ValueError(f"Parameter `alpha` is expected to be float differened from 1 for {information_measure}.")
@@ -286,7 +286,7 @@ class _InformationMeasure:
 
 
 def _get_dataloader(
-    input_ids: Tensor, attention_mask: Tensor, idf: bool, batch_size: int, num_workers: int
+    input_ids: Tensor, attention_mask: Tensor, idf: bool, batch_size: int, num_workers: int,
 ) -> DataLoader:
     """Prepare dataloader.
 
@@ -352,7 +352,7 @@ def _get_token_mask(input_ids: Tensor, pad_token_id: int, sep_token_id: int, cls
 
 
 def _get_batch_distribution(
-    model: PreTrainedModel, batch: Dict[str, Tensor], temperature: float, idf: bool, special_tokens_map: Dict[str, int]
+    model: PreTrainedModel, batch: Dict[str, Tensor], temperature: float, idf: bool, special_tokens_map: Dict[str, int],
 ) -> Tensor:
     """Calculate a discrete probability distribution for a batch of examples. See `InfoLM`_ for details.
 
@@ -512,7 +512,7 @@ def _infolm_compute(
     """
     preds_distribution = _get_data_distribution(model, preds_dataloader, temperature, idf, special_tokens_map, verbose)
     target_distribution = _get_data_distribution(
-        model, target_dataloader, temperature, idf, special_tokens_map, verbose
+        model, target_dataloader, temperature, idf, special_tokens_map, verbose,
     )
     # Sort preds and target sentences
     preds_distribution = preds_distribution[preds_dataloader.dataset.sorting_indices]
@@ -613,7 +613,7 @@ def infolm(
     special_tokens_map = _get_special_tokens_map(tokenizer)
 
     preds_input_ids, preds_attention_mask, target_input_ids, target_attention_mask = _infolm_update(
-        preds, target, tokenizer, max_length
+        preds, target, tokenizer, max_length,
     )
     preds_dataloader = _get_dataloader(preds_input_ids, preds_attention_mask, idf, batch_size, num_threads)
     target_dataloader = _get_dataloader(target_input_ids, target_attention_mask, idf, batch_size, num_threads)

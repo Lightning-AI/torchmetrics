@@ -20,7 +20,7 @@ from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_dista
 
 
 def _pairwise_manhattan_distance_update(
-    x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
+    x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
     """Calculate the pairwise manhattan similarity matrix.
 

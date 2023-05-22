@@ -84,7 +84,7 @@ class Running(Metric):
         super().__init__()
         if not isinstance(base_metric, Metric):
             raise ValueError(
-                f"Expected argument `metric` to be an instance of `torchmetrics.Metric` but got {base_metric}"
+                f"Expected argument `metric` to be an instance of `torchmetrics.Metric` but got {base_metric}",
             )
         if not (isinstance(window, int) and window > 0):
             raise ValueError(f"Expected argument `window` to be a positive integer but got {window}")
@@ -93,14 +93,14 @@ class Running(Metric):
 
         if base_metric.full_state_update is not False:
             raise ValueError(
-                f"Expected attribute `full_state_update` set to `False` but got {base_metric.full_state_update}"
+                f"Expected attribute `full_state_update` set to `False` but got {base_metric.full_state_update}",
             )
         self._num_vals_seen = 0
 
         for key in base_metric._defaults:
             for i in range(window):
                 self.add_state(
-                    name=key + f"_{i}", default=base_metric._defaults[key], dist_reduce_fx=base_metric._reductions[key]
+                    name=key + f"_{i}", default=base_metric._defaults[key], dist_reduce_fx=base_metric._reductions[key],
                 )
 
     def update(self, *args: Any, **kwargs: Any) -> None:
@@ -137,7 +137,7 @@ class Running(Metric):
         self._num_vals_seen = 0
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

@@ -156,7 +156,7 @@ class KendallRankCorrCoef(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         tau, p_value = _kendall_corrcoef_compute(
-            preds, target, self.variant, self.alternative  # type: ignore[arg-type]  # todo
+            preds, target, self.variant, self.alternative,  # type: ignore[arg-type]  # todo
         )
 
         if p_value is not None:
@@ -164,7 +164,7 @@ class KendallRankCorrCoef(Metric):
         return tau
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

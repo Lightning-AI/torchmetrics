@@ -100,7 +100,7 @@ class BinaryAccuracy(BinaryStatScores):
         return _accuracy_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -247,7 +247,7 @@ class MulticlassAccuracy(MulticlassStatScores):
         return _accuracy_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -392,11 +392,11 @@ class MultilabelAccuracy(MultilabelStatScores):
         """Compute accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(
-            tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
+            tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True,
         )
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -482,7 +482,7 @@ class Accuracy:
         task = ClassificationTask.from_str(task)
 
         kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
+            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args},
         )
 
         if task == ClassificationTask.BINARY:
@@ -490,7 +490,7 @@ class Accuracy:
         if task == ClassificationTask.MULTICLASS:
             if not isinstance(num_classes, int):
                 raise ValueError(
-                    f"Optional arg `num_classes` must be type `int` when task is {task}. Got {type(num_classes)}"
+                    f"Optional arg `num_classes` must be type `int` when task is {task}. Got {type(num_classes)}",
                 )
             if not isinstance(top_k, int):
                 raise ValueError(f"Optional arg `top_k` must be type `int` when task is {task}. Got {type(top_k)}")
@@ -498,7 +498,7 @@ class Accuracy:
         if task == ClassificationTask.MULTILABEL:
             if not isinstance(num_labels, int):
                 raise ValueError(
-                    f"Optional arg `num_labels` must be type `int` when task is {task}. Got {type(num_labels)}"
+                    f"Optional arg `num_labels` must be type `int` when task is {task}. Got {type(num_labels)}",
                 )
             return MultilabelAccuracy(num_labels, threshold, average, **kwargs)
         raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

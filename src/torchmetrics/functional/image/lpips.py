@@ -280,7 +280,7 @@ class _LPIPS(nn.Module):
         if pretrained:
             if model_path is None:
                 model_path = os.path.abspath(
-                    os.path.join(inspect.getfile(self.__init__), "..", f"lpips_models/{net}.pth")  # type: ignore[misc]
+                    os.path.join(inspect.getfile(self.__init__), "..", f"lpips_models/{net}.pth"),  # type: ignore[misc]
                 )
 
             self.load_state_dict(torch.load(model_path, map_location="cpu"), strict=False)
@@ -289,7 +289,7 @@ class _LPIPS(nn.Module):
             self.eval()
 
     def forward(
-        self, in0: Tensor, in1: Tensor, retperlayer: bool = False, normalize: bool = False
+        self, in0: Tensor, in1: Tensor, retperlayer: bool = False, normalize: bool = False,
     ) -> Union[int, Tuple[int, List[Tensor]]]:
         if normalize:  # turn on this flag if input is [0,1] so it can be adjusted to [-1, +1]
             in0 = 2 * in0 - 1
@@ -340,7 +340,7 @@ def _lpips_update(img1: Tensor, img2: Tensor, net: nn.Module, normalize: bool) -
             "Expected both input arguments to be normalized tensors with shape [N, 3, H, W]."
             f" Got input with shape {img1.shape} and {img2.shape} and values in range"
             f" {[img1.min(), img1.max()]} and {[img2.min(), img2.max()]} when all values are"
-            f" expected to be in the {[0,1] if normalize else [-1,1]} range."
+            f" expected to be in the {[0,1] if normalize else [-1,1]} range.",
         )
     loss = net(img1, img2, normalize=normalize).squeeze()
     return loss, img1.shape[0]

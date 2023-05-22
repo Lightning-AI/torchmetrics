@@ -108,7 +108,7 @@ class TweedieDevianceScore(Metric):
         return _tweedie_deviance_score_compute(self.sum_deviance_score, self.num_observations)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

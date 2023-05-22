@@ -131,7 +131,7 @@ def _uniform_filter(inputs: Tensor, window_size: int) -> Tensor:
 
 
 def _gaussian_kernel_3d(
-    channel: int, kernel_size: Sequence[int], sigma: Sequence[float], dtype: torch.dtype, device: torch.device
+    channel: int, kernel_size: Sequence[int], sigma: Sequence[float], dtype: torch.dtype, device: torch.device,
 ) -> Tensor:
     """Compute 3D gaussian kernel.
 
@@ -170,7 +170,7 @@ def _reflection_pad_3d(inputs: Tensor, pad_h: int, pad_w: int, pad_d: int) -> Te
     else:
         rank_zero_warn(
             "An older version of pyTorch is used."
-            " For optimal speed, please upgrade to at least PyTorch v1.10 or higher."
+            " For optimal speed, please upgrade to at least PyTorch v1.10 or higher.",
         )
         for dim, pad in enumerate([pad_h, pad_w, pad_d]):
             inputs = _single_dimension_pad(inputs, dim + 2, pad, outer_pad=1)

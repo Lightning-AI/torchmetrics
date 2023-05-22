@@ -99,7 +99,7 @@ class _SignalDistortionRatio(SignalDistortionRatio):
     ) -> None:
         _deprecated_root_import_class("SignalDistortionRatio", "audio")
         return super().__init__(
-            use_cg_iter=use_cg_iter, filter_length=filter_length, zero_mean=zero_mean, load_diag=load_diag, **kwargs
+            use_cg_iter=use_cg_iter, filter_length=filter_length, zero_mean=zero_mean, load_diag=load_diag, **kwargs,
         )
 
 

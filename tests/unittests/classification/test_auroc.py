@@ -147,7 +147,7 @@ def _sklearn_auroc_multiclass(preds, target, average="macro", ignore_index=None)
 
 
 @pytest.mark.parametrize(
-    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5]),
 )
 class TestMulticlassAUROC(MetricTester):
     """Test class for `MulticlassAUROC` metric."""
@@ -245,7 +245,7 @@ class TestMulticlassAUROC(MetricTester):
             pred = torch.tensor(np.round(pred.numpy(), 2)) + 1e-6  # rounding will simulate binning
             ap1 = multiclass_auroc(pred, true, num_classes=NUM_CLASSES, average=average, thresholds=None)
             ap2 = multiclass_auroc(
-                pred, true, num_classes=NUM_CLASSES, average=average, thresholds=torch.linspace(0, 1, 100)
+                pred, true, num_classes=NUM_CLASSES, average=average, thresholds=torch.linspace(0, 1, 100),
             )
             assert torch.allclose(ap1, ap2)
 
@@ -275,7 +275,7 @@ def _sklearn_auroc_multilabel(preds, target, average="macro", ignore_index=None)
 
 
 @pytest.mark.parametrize(
-    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]),
 )
 class TestMultilabelAUROC(MetricTester):
     """Test class for `MultilabelAUROC` metric."""
@@ -373,7 +373,7 @@ class TestMultilabelAUROC(MetricTester):
             pred = torch.tensor(np.round(pred.numpy(), 1)) + 1e-6  # rounding will simulate binning
             ap1 = multilabel_auroc(pred, true, num_labels=NUM_CLASSES, average=average, thresholds=None)
             ap2 = multilabel_auroc(
-                pred, true, num_labels=NUM_CLASSES, average=average, thresholds=torch.linspace(0, 1, 100)
+                pred, true, num_labels=NUM_CLASSES, average=average, thresholds=torch.linspace(0, 1, 100),
             )
             assert torch.allclose(ap1, ap2)
 

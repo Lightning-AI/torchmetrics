@@ -58,7 +58,7 @@ def _clip_score_update(
 
     if len(text) != len(images):
         raise ValueError(
-            f"Expected the number of images and text examples to be the same but got {len(images)} and {len(text)}"
+            f"Expected the number of images and text examples to be the same but got {len(images)} and {len(text)}",
         )
     device = images[0].device
     processed_input = processor(text=text, images=[i.cpu() for i in images], return_tensors="pt", padding=True)
@@ -67,7 +67,7 @@ def _clip_score_update(
     img_features = img_features / img_features.norm(p=2, dim=-1, keepdim=True)
 
     txt_features = model.get_text_features(
-        processed_input["input_ids"].to(device), processed_input["attention_mask"].to(device)
+        processed_input["input_ids"].to(device), processed_input["attention_mask"].to(device),
     )
     txt_features = txt_features / txt_features.norm(p=2, dim=-1, keepdim=True)
 
@@ -91,7 +91,7 @@ def _get_model_and_processor(
 
     raise ModuleNotFoundError(
         "`clip_score` metric requires `transformers` package be installed."
-        " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[multimodal]`."
+        " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[multimodal]`.",
     )
 
 

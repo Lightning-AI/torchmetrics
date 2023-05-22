@@ -53,7 +53,7 @@ def _error_on_missing_matplotlib() -> None:
     """Raise error if matplotlib is not installed."""
     if not _MATPLOTLIB_AVAILABLE:
         raise ModuleNotFoundError(
-            "Plot function expects `matplotlib` to be installed. Please install with `pip install matplotlib`"
+            "Plot function expects `matplotlib` to be installed. Please install with `pip install matplotlib`",
         )
 
 
@@ -153,12 +153,12 @@ def plot_single_or_multi_val(
         if lower_bound is not None and not higher_is_better:
             ax.set_xlim(xlim[0] - factor, xlim[1])
             ax.text(
-                xlim[0], lower_bound, s="Optimal \n value", horizontalalignment="center", verticalalignment="center"
+                xlim[0], lower_bound, s="Optimal \n value", horizontalalignment="center", verticalalignment="center",
             )
         if upper_bound is not None and higher_is_better:
             ax.set_xlim(xlim[0] - factor, xlim[1])
             ax.text(
-                xlim[0], upper_bound, s="Optimal \n value", horizontalalignment="center", verticalalignment="center"
+                xlim[0], upper_bound, s="Optimal \n value", horizontalalignment="center", verticalalignment="center",
             )
     return fig, ax
 
@@ -225,7 +225,7 @@ def plot_confusion_matrix(
     if labels is not None and confmat.ndim != 3 and len(labels) != n_classes:
         raise ValueError(
             "Expected number of elements in arg `labels` to match number of labels in confmat but "
-            f"got {len(labels)} and {n_classes}"
+            f"got {len(labels)} and {n_classes}",
         )
     if confmat.ndim == 3:
         fig_label = labels or np.arange(nb)
@@ -312,7 +312,7 @@ def plot_curve(
             ax.legend()
     else:
         raise ValueError(
-            f"Unknown format for argument `x` and `y`. Expected either list or tensors but got {type(x)} and {type(y)}."
+            f"Unknown format for argument `x` and `y`. Expected either list or tensors but got {type(x)} and {type(y)}.",
         )
     ax.grid(True)
     ax.set_title(name)

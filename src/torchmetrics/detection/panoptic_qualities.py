@@ -139,11 +139,11 @@ class PanopticQuality(Metric):
         """
         _validate_inputs(preds, target)
         flatten_preds = _prepocess_inputs(
-            self.things, self.stuffs, preds, self.void_color, self.allow_unknown_preds_category
+            self.things, self.stuffs, preds, self.void_color, self.allow_unknown_preds_category,
         )
         flatten_target = _prepocess_inputs(self.things, self.stuffs, target, self.void_color, True)
         iou_sum, true_positives, false_positives, false_negatives = _panoptic_quality_update(
-            flatten_preds, flatten_target, self.cat_id_to_continuous_id, self.void_color
+            flatten_preds, flatten_target, self.cat_id_to_continuous_id, self.void_color,
         )
         self.iou_sum += iou_sum
         self.true_positives += true_positives
@@ -155,7 +155,7 @@ class PanopticQuality(Metric):
         return _panoptic_quality_compute(self.iou_sum, self.true_positives, self.false_positives, self.false_negatives)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -314,7 +314,7 @@ class ModifiedPanopticQuality(Metric):
         """
         _validate_inputs(preds, target)
         flatten_preds = _prepocess_inputs(
-            self.things, self.stuffs, preds, self.void_color, self.allow_unknown_preds_category
+            self.things, self.stuffs, preds, self.void_color, self.allow_unknown_preds_category,
         )
         flatten_target = _prepocess_inputs(self.things, self.stuffs, target, self.void_color, True)
         iou_sum, true_positives, false_positives, false_negatives = _panoptic_quality_update(
@@ -334,7 +334,7 @@ class ModifiedPanopticQuality(Metric):
         return _panoptic_quality_compute(self.iou_sum, self.true_positives, self.false_positives, self.false_negatives)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

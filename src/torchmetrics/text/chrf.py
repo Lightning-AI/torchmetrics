@@ -45,7 +45,7 @@ _DICT_STATES_NAMES = (
 )
 
 _DICT_STATES_TYPES = Tuple[
-    Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor]
+    Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor],
 ]
 
 
@@ -167,7 +167,7 @@ class CHRFScore(Metric):
     def _convert_states_to_dicts(self) -> _DICT_STATES_TYPES:
         """Convert global metric states to the n-gram dictionaries to be passed in ``_chrf_score_update``."""
         n_grams_dicts: Dict[str, Dict[int, Tensor]] = dict(
-            zip(_DICT_STATES_NAMES, _prepare_n_grams_dicts(self.n_char_order, self.n_word_order))
+            zip(_DICT_STATES_NAMES, _prepare_n_grams_dicts(self.n_char_order, self.n_word_order)),
         )
 
         for (n_gram_level, n_gram_order), text in self._get_text_n_gram_iterator():
@@ -204,7 +204,7 @@ class CHRFScore(Metric):
         return itertools.product(zip(_N_GRAM_LEVELS, [self.n_char_order, self.n_word_order]), _TEXT_LEVELS)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

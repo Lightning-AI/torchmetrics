@@ -56,7 +56,7 @@ def _ensure_nltk_punkt_is_downloaded() -> None:
         except ValueError:
             raise OSError(
                 "`nltk` resource `punkt` is not available on a disk and cannot be downloaded as a machine is not "
-                "connected to the internet."
+                "connected to the internet.",
             )
 
 
@@ -93,7 +93,7 @@ def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> Dict[s
 
 
 def _lcs(
-    pred_tokens: Sequence[str], target_tokens: Sequence[str], return_full_table: bool = False
+    pred_tokens: Sequence[str], target_tokens: Sequence[str], return_full_table: bool = False,
 ) -> Union[int, Sequence[Sequence[int]]]:
     """DP algorithm to compute the length of the longest common subsequence.
 
@@ -115,7 +115,7 @@ def _lcs(
 
 
 def _backtracked_lcs(
-    lcs_table: Sequence[Sequence[int]], pred_tokens: Sequence[str], target_tokens: Sequence[str]
+    lcs_table: Sequence[Sequence[int]], pred_tokens: Sequence[str], target_tokens: Sequence[str],
 ) -> Sequence[int]:
     """Backtrack LCS table.
 
