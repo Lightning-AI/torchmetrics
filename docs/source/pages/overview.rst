@@ -282,7 +282,8 @@ inside your LightningModule. In most cases we just have to replace ``self.log`` 
             # metrics are logged with keys: val_Accuracy, val_Precision and val_Recall
             output = self.valid_metric.compute()
             self.log_dict(output)
-            self.valid_metrics.reset()  # remember to reset metrics at the end of the epoch
+            # remember to reset metrics at the end of the epoch
+            self.valid_metrics.reset()
 
 .. note::
 
