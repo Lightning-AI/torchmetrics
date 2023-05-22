@@ -42,6 +42,7 @@ def _specificity_reduce(
     fn: Tensor,
     average: Optional[Literal["binary", "micro", "macro", "weighted", "none"]],
     multidim_average: Literal["global", "samplewise"] = "global",
+    multilabel: bool = False,
 ) -> Tensor:
     if average == "binary":
         return _safe_divide(tn, tn + fp)
@@ -51,7 +52,7 @@ def _specificity_reduce(
         return _safe_divide(tn, tn + fp)
 
     specificity_score = _safe_divide(tn, tn + fp)
-    return _score_average(specificity_score, tp, fp, fn, average)
+    return _score_average(specificity_score, tp, fp, fn, average, multilabel)
 
 
 def binary_specificity(
@@ -330,7 +331,7 @@ def multilabel_specificity(
         _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
-    return _specificity_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average)
+    return _specificity_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True)
 
 
 def specificity(

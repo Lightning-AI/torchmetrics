@@ -57,7 +57,12 @@ def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
 
 
 def _score_average(
-    scores: Tensor, tp: Tensor, fp: Tensor, fn: Tensor, average: Optional[Literal["macro", "weighted", "none"]]
+    scores: Tensor,
+    tp: Tensor,
+    fp: Tensor,
+    fn: Tensor,
+    average: Optional[Literal["macro", "weighted", "none"]],
+    multilabel: bool = False,
 ) -> Tensor:
     """Average the scores based on the average method after accounting for micro average.
 
@@ -67,6 +72,7 @@ def _score_average(
         fp: tensor of false positives
         fn: tensor of false negatives
         average: method to average the scores
+        multilabel: wheather the task is multilabel or not
 
     """
     if average is None or average == "none":
@@ -75,7 +81,8 @@ def _score_average(
         weights = tp + fn
     else:
         weights = torch.ones_like(scores)
-        weights[tp + fp + fn == 0] = 0.0
+        if not multilabel:
+            weights[tp + fp + fn == 0] = 0.0
     return _safe_divide(weights * scores, weights.sum(-1, keepdim=True)).sum(-1)
 
 
