@@ -14,17 +14,24 @@
 from torchmetrics.functional.audio.pit import permutation_invariant_training, pit_permutate
 from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
 from torchmetrics.functional.audio.snr import (
+    _PESQ_AVAILABLE,
+    _PESQ_AVAILABLE:,
+    _PYSTOI_AVAILABLE,
+    "perceptual_evaluation_speech_quality",
+    =,
+    [],
+    __all__,
+    __all__.append,
     complex_scale_invariant_signal_noise_ratio,
+    from,
+    if,
+    import,
+    perceptual_evaluation_speech_quality,
     scale_invariant_signal_noise_ratio,
     signal_noise_ratio,
-from torchmetrics.utilities.imports import _PESQ_AVAILABLE, _PYSTOI_AVAILABLE
-
-__all__ = []
-
-if _PESQ_AVAILABLE:
-    from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
-
-    __all__.append("perceptual_evaluation_speech_quality")
+    torchmetrics.functional.audio.pesq,
+    torchmetrics.utilities.imports,
+)
 
 if _PYSTOI_AVAILABLE:
     from torchmetrics.functional.audio.stoi import short_time_objective_intelligibility
