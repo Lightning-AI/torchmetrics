@@ -256,6 +256,8 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
+        ValueError:
+            If ``zero_mean`` is not an bool
         TypeError:
             If ``preds`` is not the shape (..., frequency, time, 2) (after being converted to real if it is complex).
             If ``preds`` and ``target`` does not have the same shape.
@@ -285,6 +287,8 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
+        if not isinstance(zero_mean, bool):
+            raise ValueError(f"Expected argument `zero_mean` to be an bool, but got {zero_mean}")
         self.zero_mean = zero_mean
 
         self.add_state("sum", default=tensor(0.0), dist_reduce_fx="sum")
