@@ -178,7 +178,9 @@ _multilabel_randint_input = lambda: torch.randint(2, (10, 3))
 _audio_input = lambda: torch.randn(8000)
 _image_input = lambda: torch.rand([8, 3, 16, 16])
 _panoptic_input = lambda: torch.multinomial(
-    torch.tensor([1, 1, 0, 0, 0, 0, 1, 1]).float(), 40, replacement=True,
+    torch.tensor([1, 1, 0, 0, 0, 0, 1, 1]).float(),
+    40,
+    replacement=True,
 ).reshape(1, 5, 4, 2)
 _nominal_input = lambda: torch.randint(0, 4, (100,))
 _text_input_1 = lambda: ["this is the prediction", "there is an other sample"]
@@ -281,7 +283,10 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
         ),
         pytest.param(SignalDistortionRatio, _audio_input, _audio_input, id="signal_distortion_ratio"),
         pytest.param(
-            ScaleInvariantSignalDistortionRatio, _rand_input, _rand_input, id="scale_invariant_signal_distortion_ratio",
+            ScaleInvariantSignalDistortionRatio,
+            _rand_input,
+            _rand_input,
+            id="scale_invariant_signal_distortion_ratio",
         ),
         pytest.param(SignalNoiseRatio, _rand_input, _rand_input, id="signal_noise_ratio"),
         pytest.param(ScaleInvariantSignalNoiseRatio, _rand_input, _rand_input, id="scale_invariant_signal_noise_ratio"),
@@ -473,7 +478,10 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
         pytest.param(TweedieDevianceScore, _rand_input, _rand_input, id="tweedie deviance score"),
         pytest.param(WeightedMeanAbsolutePercentageError, _rand_input, _rand_input, id="weighted mape"),
         pytest.param(
-            partial(BootStrapper, base_metric=BinaryAccuracy()), _rand_input, _binary_randint_input, id="bootstrapper",
+            partial(BootStrapper, base_metric=BinaryAccuracy()),
+            _rand_input,
+            _binary_randint_input,
+            id="bootstrapper",
         ),
         pytest.param(
             partial(ClasswiseWrapper, metric=MulticlassAccuracy(num_classes=3, average=None)),
@@ -482,7 +490,10 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             id="classwise wrapper",
         ),
         pytest.param(
-            partial(MinMaxMetric, base_metric=BinaryAccuracy()), _rand_input, _binary_randint_input, id="minmax wrapper",
+            partial(MinMaxMetric, base_metric=BinaryAccuracy()),
+            _rand_input,
+            _binary_randint_input,
+            id="minmax wrapper",
         ),
         pytest.param(
             partial(MultioutputWrapper, base_metric=MeanSquaredError(), num_outputs=3),
@@ -689,17 +700,33 @@ def test_plot_methods_special_text_metrics():
     [
         pytest.param(RetrievalMRR, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval mrr"),
         pytest.param(
-            RetrievalPrecision, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval precision",
+            RetrievalPrecision,
+            _rand_input,
+            _binary_randint_input,
+            _binary_randint_input,
+            id="retrieval precision",
         ),
         pytest.param(
-            RetrievalRPrecision, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval r precision",
+            RetrievalRPrecision,
+            _rand_input,
+            _binary_randint_input,
+            _binary_randint_input,
+            id="retrieval r precision",
         ),
         pytest.param(RetrievalRecall, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval recall"),
         pytest.param(
-            RetrievalFallOut, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval fallout",
+            RetrievalFallOut,
+            _rand_input,
+            _binary_randint_input,
+            _binary_randint_input,
+            id="retrieval fallout",
         ),
         pytest.param(
-            RetrievalHitRate, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval hitrate",
+            RetrievalHitRate,
+            _rand_input,
+            _binary_randint_input,
+            _binary_randint_input,
+            id="retrieval hitrate",
         ),
         pytest.param(RetrievalMAP, _rand_input, _binary_randint_input, _binary_randint_input, id="retrieval map"),
         pytest.param(

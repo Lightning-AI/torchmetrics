@@ -131,7 +131,11 @@ def _uniform_filter(inputs: Tensor, window_size: int) -> Tensor:
 
 
 def _gaussian_kernel_3d(
-    channel: int, kernel_size: Sequence[int], sigma: Sequence[float], dtype: torch.dtype, device: torch.device,
+    channel: int,
+    kernel_size: Sequence[int],
+    sigma: Sequence[float],
+    dtype: torch.dtype,
+    device: torch.device,
 ) -> Tensor:
     """Compute 3D gaussian kernel.
 

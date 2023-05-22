@@ -34,13 +34,16 @@ Input = namedtuple("Input", ["preds", "target"])
 _single_inputs1 = Input(preds=torch.rand(NUM_BATCHES, BATCH_SIZE), target=torch.rand(NUM_BATCHES, BATCH_SIZE))
 _single_inputs2 = Input(preds=torch.randn(NUM_BATCHES, BATCH_SIZE), target=torch.randn(NUM_BATCHES, BATCH_SIZE))
 _single_inputs3 = Input(
-    preds=torch.randint(-10, 10, (NUM_BATCHES, BATCH_SIZE)), target=torch.randint(-10, 10, (NUM_BATCHES, BATCH_SIZE)),
+    preds=torch.randint(-10, 10, (NUM_BATCHES, BATCH_SIZE)),
+    target=torch.randint(-10, 10, (NUM_BATCHES, BATCH_SIZE)),
 )
 _multi_inputs1 = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM), target=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
 )
 _multi_inputs2 = Input(
-    preds=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM), target=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
+    preds=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
+    target=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
 )
 _multi_inputs3 = Input(
     preds=torch.randint(-10, 10, (NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),

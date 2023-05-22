@@ -172,7 +172,10 @@ class _SpectralDistortionIndex(SpectralDistortionIndex):
     """
 
     def __init__(
-        self, p: int = 1, reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean", **kwargs: Any,
+        self,
+        p: int = 1,
+        reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
+        **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("SpectralDistortionIndex", "image")
         return super().__init__(p=p, reduction=reduction, **kwargs)
@@ -254,5 +257,9 @@ class _UniversalImageQualityIndex(UniversalImageQualityIndex):
     ) -> None:
         _deprecated_root_import_class("UniversalImageQualityIndex", "image")
         return super().__init__(
-            kernel_size=kernel_size, sigma=sigma, reduction=reduction, data_range=data_range, **kwargs,
+            kernel_size=kernel_size,
+            sigma=sigma,
+            reduction=reduction,
+            data_range=data_range,
+            **kwargs,
         )

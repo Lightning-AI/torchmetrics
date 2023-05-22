@@ -58,7 +58,11 @@ def poly_kernel(f1: Tensor, f2: Tensor, degree: int = 3, gamma: Optional[float] 
 
 
 def poly_mmd(
-    f_real: Tensor, f_fake: Tensor, degree: int = 3, gamma: Optional[float] = None, coef: float = 1.0,
+    f_real: Tensor,
+    f_fake: Tensor,
+    degree: int = 3,
+    gamma: Optional[float] = None,
+    coef: float = 1.0,
 ) -> Tensor:
     """Adapted from `KID Score`_."""
     k_11 = poly_kernel(f_real, f_real, degree, gamma, coef)
@@ -282,7 +286,9 @@ class KernelInceptionDistance(Metric):
             super().reset()
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

@@ -22,7 +22,9 @@ from torchmetrics.utilities.compute import _safe_matmul
 
 
 def _pairwise_cosine_similarity_update(
-    x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None,
+    x: Tensor,
+    y: Optional[Tensor] = None,
+    zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
     """Calculate the pairwise cosine similarity matrix.
 

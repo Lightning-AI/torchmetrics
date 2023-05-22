@@ -92,7 +92,9 @@ class TestBinaryHammingDistance(MetricTester):
             target=target,
             metric_class=BinaryHammingDistance,
             reference_metric=partial(
-                _sklearn_hamming_distance_binary, ignore_index=ignore_index, multidim_average=multidim_average,
+                _sklearn_hamming_distance_binary,
+                ignore_index=ignore_index,
+                multidim_average=multidim_average,
             ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
@@ -112,7 +114,9 @@ class TestBinaryHammingDistance(MetricTester):
             target=target,
             metric_functional=binary_hamming_distance,
             reference_metric=partial(
-                _sklearn_hamming_distance_binary, ignore_index=ignore_index, multidim_average=multidim_average,
+                _sklearn_hamming_distance_binary,
+                ignore_index=ignore_index,
+                multidim_average=multidim_average,
             ),
             metric_args={
                 "threshold": THRESHOLD,

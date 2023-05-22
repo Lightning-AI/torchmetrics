@@ -96,11 +96,17 @@ class RelativeSquaredError(Metric):
     def compute(self) -> Tensor:
         """Computes relative squared error over state."""
         return _relative_squared_error_compute(
-            self.sum_squared_error, self.sum_error, self.residual, self.total, squared=self.squared,
+            self.sum_squared_error,
+            self.sum_error,
+            self.residual,
+            self.total,
+            squared=self.squared,
         )
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

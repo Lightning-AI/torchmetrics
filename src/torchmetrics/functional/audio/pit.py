@@ -97,7 +97,11 @@ def _find_best_perm_by_exhaustive_method(
 
 
 def permutation_invariant_training(
-    preds: Tensor, target: Tensor, metric_func: Callable, eval_func: Literal["max", "min"] = "max", **kwargs: Any,
+    preds: Tensor,
+    target: Tensor,
+    metric_func: Callable,
+    eval_func: Literal["max", "min"] = "max",
+    **kwargs: Any,
 ) -> Tuple[Tensor, Tensor]:
     """Calculate `Permutation invariant training`_ (PIT).
 
@@ -149,7 +153,9 @@ def permutation_invariant_training(
         for preds_idx in range(spk_num):  # we have spk_num speeches in preds in each sample
             if metric_mtx is not None:
                 metric_mtx[:, target_idx, preds_idx] = metric_func(
-                    preds[:, preds_idx, ...], target[:, target_idx, ...], **kwargs,
+                    preds[:, preds_idx, ...],
+                    target[:, target_idx, ...],
+                    **kwargs,
                 )
             else:
                 first_ele = metric_func(preds[:, preds_idx, ...], target[:, target_idx, ...], **kwargs)

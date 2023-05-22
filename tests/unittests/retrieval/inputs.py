@@ -54,7 +54,8 @@ _input_retrieval_scores_with_ignore_index = Input(
     indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE)),
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)).masked_fill(
-        mask=torch.randn(NUM_BATCHES, BATCH_SIZE) > 0.5, value=-100,
+        mask=torch.randn(NUM_BATCHES, BATCH_SIZE) > 0.5,
+        value=-100,
     ),
 )
 

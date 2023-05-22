@@ -46,9 +46,15 @@ _PUNCTUATIONS = set("!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~")
 
 
 def _prepare_n_grams_dicts(
-    n_char_order: int, n_word_order: int,
+    n_char_order: int,
+    n_word_order: int,
 ) -> Tuple[
-    Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor],
+    Dict[int, Tensor],
+    Dict[int, Tensor],
+    Dict[int, Tensor],
+    Dict[int, Tensor],
+    Dict[int, Tensor],
+    Dict[int, Tensor],
 ]:
     """Prepare dictionaries with default zero values for total ref, hypothesis and matching chraracter and word n-grams.
 
@@ -144,7 +150,11 @@ def _ngram_counts(char_or_word_list: List[str], n_gram_order: int) -> Dict[int, 
 
 
 def _get_n_grams_counts_and_total_ngrams(
-    sentence: str, n_char_order: int, n_word_order: int, lowercase: bool, whitespace: bool,
+    sentence: str,
+    n_char_order: int,
+    n_word_order: int,
+    lowercase: bool,
+    whitespace: bool,
 ) -> Tuple[
     Dict[int, Dict[Tuple[str, ...], Tensor]],
     Dict[int, Dict[Tuple[str, ...], Tensor]],
@@ -168,7 +178,10 @@ def _get_n_grams_counts_and_total_ngrams(
     """
 
     def _char_and_word_ngrams_counts(
-        sentence: str, n_char_order: int, n_word_order: int, lowercase: bool,
+        sentence: str,
+        n_char_order: int,
+        n_word_order: int,
+        lowercase: bool,
     ) -> Tuple[Dict[int, Dict[Tuple[str, ...], Tensor]], Dict[int, Dict[Tuple[str, ...], Tensor]]]:
         """Get a dictionary of dictionaries with a counts of given n-grams."""
         if lowercase:
@@ -185,7 +198,10 @@ def _get_n_grams_counts_and_total_ngrams(
         return total_n_grams
 
     char_n_grams_counts, word_n_grams_counts = _char_and_word_ngrams_counts(
-        sentence, n_char_order, n_word_order, lowercase,
+        sentence,
+        n_char_order,
+        n_word_order,
+        lowercase,
     )
     total_char_n_grams = _get_total_ngrams(char_n_grams_counts)
     total_word_n_grams = _get_total_ngrams(word_n_grams_counts)
@@ -264,7 +280,10 @@ def _calculate_fscore(
     """
 
     def _get_n_gram_fscore(
-        matching_n_grams: Dict[int, Tensor], ref_n_grams: Dict[int, Tensor], hyp_n_grams: Dict[int, Tensor], beta: float,
+        matching_n_grams: Dict[int, Tensor],
+        ref_n_grams: Dict[int, Tensor],
+        hyp_n_grams: Dict[int, Tensor],
+        beta: float,
     ) -> Dict[int, Tensor]:
         """Get n-gram level f-score."""
         precision: Dict[int, Tensor] = {

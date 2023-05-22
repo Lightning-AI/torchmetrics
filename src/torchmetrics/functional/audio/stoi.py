@@ -26,7 +26,11 @@ else:
 
 
 def short_time_objective_intelligibility(
-    preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_same_device: bool = False,
+    preds: Tensor,
+    target: Tensor,
+    fs: int,
+    extended: bool = False,
+    keep_same_device: bool = False,
 ) -> Tensor:
     r"""Calculate STOI (Short-Time Objective Intelligibility) metric for evaluating speech signals.
 

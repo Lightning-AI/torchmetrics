@@ -122,7 +122,11 @@ if __name__ == "__main__":
     model = get_user_model_encoder()
 
     bs = BERTScore(
-        model=model, user_tokenizer=tokenizer, user_forward_fn=user_forward_fn, max_length=_MAX_LEN, return_hash=False,
+        model=model,
+        user_tokenizer=tokenizer,
+        user_forward_fn=user_forward_fn,
+        max_length=_MAX_LEN,
+        return_hash=False,
     )
     bs.update(_PREDS, _REFS)
     print(f"Predictions:\n {bs.preds_input_ids}\n {bs.preds_attention_mask}")

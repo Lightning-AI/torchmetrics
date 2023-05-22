@@ -22,7 +22,12 @@ from torchmetrics.functional.image.rmse_sw import _rmse_sw_compute, _rmse_sw_upd
 
 
 def _rase_update(
-    preds: Tensor, target: Tensor, window_size: int, rmse_map: Tensor, target_sum: Tensor, total_images: Tensor,
+    preds: Tensor,
+    target: Tensor,
+    window_size: int,
+    rmse_map: Tensor,
+    target_sum: Tensor,
+    total_images: Tensor,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Calculate the sum of RMSE map values for the batch of examples and update intermediate states.
 
@@ -39,7 +44,12 @@ def _rase_update(
         Updated total number of already processed images
     """
     _, rmse_map, total_images = _rmse_sw_update(
-        preds, target, window_size, rmse_val_sum=None, rmse_map=rmse_map, total_images=total_images,
+        preds,
+        target,
+        window_size,
+        rmse_val_sum=None,
+        rmse_map=rmse_map,
+        total_images=total_images,
     )
     target_sum += torch.sum(_uniform_filter(target, window_size) / (window_size**2), dim=0)
     return rmse_map, target_sum, total_images

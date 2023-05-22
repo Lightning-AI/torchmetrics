@@ -127,7 +127,10 @@ class _SacreBLEUTokenizer:
 
     @classmethod
     def tokenize(
-        cls, line: str, tokenize: Literal["none", "13a", "zh", "intl", "char"], lowercase: bool = False,
+        cls,
+        line: str,
+        tokenize: Literal["none", "13a", "zh", "intl", "char"],
+        lowercase: bool = False,
     ) -> Sequence[str]:
         tokenize_fn = getattr(cls, cls._TOKENIZE_FN[tokenize])
         tokenized_line = tokenize_fn(line)

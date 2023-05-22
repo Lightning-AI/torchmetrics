@@ -121,7 +121,9 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
         return _binary_auroc_compute(state, self.thresholds, self.max_fpr)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -253,7 +255,11 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            num_classes=num_classes, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs,
+            num_classes=num_classes,
+            thresholds=thresholds,
+            ignore_index=ignore_index,
+            validate_args=False,
+            **kwargs,
         )
         if validate_args:
             _multiclass_auroc_arg_validation(num_classes, average, thresholds, ignore_index)
@@ -266,7 +272,9 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         return _multiclass_auroc_compute(state, self.num_classes, self.average, self.thresholds)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -400,7 +408,11 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            num_labels=num_labels, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs,
+            num_labels=num_labels,
+            thresholds=thresholds,
+            ignore_index=ignore_index,
+            validate_args=False,
+            **kwargs,
         )
         if validate_args:
             _multilabel_auroc_arg_validation(num_labels, average, thresholds, ignore_index)
@@ -413,7 +425,9 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         return _multilabel_auroc_compute(state, self.num_labels, self.average, self.thresholds, self.ignore_index)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

@@ -206,11 +206,18 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            num_classes=num_classes, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs,
+            num_classes=num_classes,
+            thresholds=thresholds,
+            ignore_index=ignore_index,
+            validate_args=False,
+            **kwargs,
         )
         if validate_args:
             _multiclass_specificity_at_sensitivity_arg_validation(
-                num_classes, min_sensitivity, thresholds, ignore_index,
+                num_classes,
+                min_sensitivity,
+                thresholds,
+                ignore_index,
             )
         self.validate_args = validate_args
         self.min_sensitivity = min_sensitivity
@@ -219,7 +226,10 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
         """Compute metric."""
         state = [_cat(self.preds), _cat(self.target)] if self.thresholds is None else self.confmat  # type: ignore
         return _multiclass_specificity_at_sensitivity_compute(
-            state, self.num_classes, self.thresholds, self.min_sensitivity,  # type: ignore
+            state,
+            self.num_classes,
+            self.thresholds,
+            self.min_sensitivity,  # type: ignore
         )
 
 
@@ -305,7 +315,11 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            num_labels=num_labels, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs,
+            num_labels=num_labels,
+            thresholds=thresholds,
+            ignore_index=ignore_index,
+            validate_args=False,
+            **kwargs,
         )
         if validate_args:
             _multilabel_specificity_at_sensitivity_arg_validation(num_labels, min_sensitivity, thresholds, ignore_index)
@@ -316,7 +330,11 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
         """Compute metric."""
         state = [_cat(self.preds), _cat(self.target)] if self.thresholds is None else self.confmat  # type: ignore
         return _multilabel_specificity_at_sensitivity_compute(
-            state, self.num_labels, self.thresholds, self.ignore_index, self.min_sensitivity,  # type: ignore
+            state,
+            self.num_labels,
+            self.thresholds,
+            self.ignore_index,
+            self.min_sensitivity,  # type: ignore
         )
 
 
@@ -351,12 +369,22 @@ class SpecificityAtSensitivity:
             if not isinstance(num_classes, int):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassSpecificityAtSensitivity(
-                num_classes, min_sensitivity, thresholds, ignore_index, validate_args, **kwargs,
+                num_classes,
+                min_sensitivity,
+                thresholds,
+                ignore_index,
+                validate_args,
+                **kwargs,
             )
         if task == ClassificationTask.MULTILABEL:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelSpecificityAtSensitivity(
-                num_labels, min_sensitivity, thresholds, ignore_index, validate_args, **kwargs,
+                num_labels,
+                min_sensitivity,
+                thresholds,
+                ignore_index,
+                validate_args,
+                **kwargs,
             )
         return None  # type: ignore[return-value]

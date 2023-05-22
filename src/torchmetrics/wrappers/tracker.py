@@ -182,7 +182,8 @@ class MetricTracker(ModuleList):
             metric.reset()
 
     def best_metric(
-        self, return_step: bool = False,
+        self,
+        return_step: bool = False,
     ) -> Union[
         None,
         float,
@@ -268,7 +269,9 @@ class MetricTracker(ModuleList):
             raise ValueError(f"`{method}` cannot be called before `.increment()` has been called.")
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

@@ -152,7 +152,14 @@ class TestBERTScore(TextTester):
         )
 
     def test_bertscore_differentiability(
-        self, preds, targets, num_layers, all_layers, idf, rescale_with_baseline, metric_key,
+        self,
+        preds,
+        targets,
+        num_layers,
+        all_layers,
+        idf,
+        rescale_with_baseline,
+        metric_key,
     ):
         """Test the bertscore differentiability."""
         metric_args = {

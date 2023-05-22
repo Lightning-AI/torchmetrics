@@ -161,7 +161,9 @@ class MultitaskWrapper(Metric):
         return compute
 
     def plot(
-        self, val: Optional[Union[Dict, Sequence[Dict]]] = None, axes: Optional[Sequence[_AX_TYPE]] = None,
+        self,
+        val: Optional[Union[Dict, Sequence[Dict]]] = None,
+        axes: Optional[Sequence[_AX_TYPE]] = None,
     ) -> Sequence[_PLOT_OUT_TYPE]:
         """Plot a single or multiple values from the metric.
 

@@ -62,7 +62,8 @@ def _sklearn_ranking(preds, target, fn, ignore_index):
     ],
 )
 @pytest.mark.parametrize(
-    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]),
+    "input",
+    (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5]),
 )
 class TestMultilabelRanking(MetricTester):
     """Test class for `MultilabelRanking` metric."""

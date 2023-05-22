@@ -178,7 +178,12 @@ class _SacreBLEUScore(SacreBLEUScore):
     ) -> None:
         _deprecated_root_import_class("SacreBLEUScore", "text")
         return super().__init__(
-            n_gram=n_gram, smooth=smooth, tokenize=tokenize, lowercase=lowercase, weights=weights, **kwargs,
+            n_gram=n_gram,
+            smooth=smooth,
+            tokenize=tokenize,
+            lowercase=lowercase,
+            weights=weights,
+            **kwargs,
         )
 
 

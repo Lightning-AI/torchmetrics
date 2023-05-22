@@ -53,7 +53,8 @@ class TestCompleteIntersectionOverUnion(MetricTester, BaseTestIntersectionOverUn
     data: Dict[str, TestCaseData] = {
         "iou_variant": TestCaseData(data=_inputs, result={CompleteIntersectionOverUnion._iou_type: ciou}),
         "iou_variant_respect": TestCaseData(
-            data=_inputs, result={CompleteIntersectionOverUnion._iou_type: ciou_dontrespect},
+            data=_inputs,
+            result={CompleteIntersectionOverUnion._iou_type: ciou_dontrespect},
         ),
         "fn_iou_variant": TestCaseData(data=_box_inputs, result=box_ciou),
     }

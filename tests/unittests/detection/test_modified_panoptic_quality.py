@@ -156,7 +156,8 @@ def test_error_on_wrong_input():
 
     preds = torch.randint(low=0, high=9, size=(1, 64, 64, 8))
     with pytest.raises(
-        ValueError, match="Expected argument `preds` to have exactly 2 channels in the last dimension.*",
+        ValueError,
+        match="Expected argument `preds` to have exactly 2 channels in the last dimension.*",
     ):
         metric.update(preds, preds)
 

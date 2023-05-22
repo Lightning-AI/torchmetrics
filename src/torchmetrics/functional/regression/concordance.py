@@ -62,6 +62,14 @@ def concordance_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
     mean_x, mean_y, var_x = _temp.clone(), _temp.clone(), _temp.clone()
     var_y, corr_xy, nb = _temp.clone(), _temp.clone(), _temp.clone()
     mean_x, mean_y, var_x, var_y, corr_xy, nb = _pearson_corrcoef_update(
-        preds, target, mean_x, mean_y, var_x, var_y, corr_xy, nb, num_outputs=1 if preds.ndim == 1 else preds.shape[-1],
+        preds,
+        target,
+        mean_x,
+        mean_y,
+        var_x,
+        var_y,
+        corr_xy,
+        nb,
+        num_outputs=1 if preds.ndim == 1 else preds.shape[-1],
     )
     return _concordance_corrcoef_compute(mean_x, mean_y, var_x, var_y, corr_xy, nb)

@@ -80,7 +80,8 @@ def _binary_clf_curve(
 
 
 def _adjust_threshold_arg(
-    thresholds: Optional[Union[int, List[float], Tensor]] = None, device: Optional[torch.device] = None,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    device: Optional[torch.device] = None,
 ) -> Optional[Tensor]:
     """Convert threshold arg for list and int to tensor format."""
     if isinstance(thresholds, int):
@@ -121,7 +122,9 @@ def _binary_precision_recall_curve_arg_validation(
 
 
 def _binary_precision_recall_curve_tensor_validation(
-    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None,
+    preds: Tensor,
+    target: Tensor,
+    ignore_index: Optional[int] = None,
 ) -> None:
     """Validate tensor input.
 
@@ -367,7 +370,10 @@ def _multiclass_precision_recall_curve_arg_validation(
 
 
 def _multiclass_precision_recall_curve_tensor_validation(
-    preds: Tensor, target: Tensor, num_classes: int, ignore_index: Optional[int] = None,
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    ignore_index: Optional[int] = None,
 ) -> None:
     """Validate tensor input.
 
@@ -629,7 +635,11 @@ def multiclass_precision_recall_curve(
         _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
         _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index)
     preds, target, thresholds = _multiclass_precision_recall_curve_format(
-        preds, target, num_classes, thresholds, ignore_index,
+        preds,
+        target,
+        num_classes,
+        thresholds,
+        ignore_index,
     )
     state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
     return _multiclass_precision_recall_curve_compute(state, num_classes, thresholds)
@@ -650,7 +660,10 @@ def _multilabel_precision_recall_curve_arg_validation(
 
 
 def _multilabel_precision_recall_curve_tensor_validation(
-    preds: Tensor, target: Tensor, num_labels: int, ignore_index: Optional[int] = None,
+    preds: Tensor,
+    target: Tensor,
+    num_labels: int,
+    ignore_index: Optional[int] = None,
 ) -> None:
     """Validate tensor input.
 
@@ -856,7 +869,11 @@ def multilabel_precision_recall_curve(
         _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
         _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index)
     preds, target, thresholds = _multilabel_precision_recall_curve_format(
-        preds, target, num_labels, thresholds, ignore_index,
+        preds,
+        target,
+        num_labels,
+        thresholds,
+        ignore_index,
     )
     state = _multilabel_precision_recall_curve_update(preds, target, num_labels, thresholds)
     return _multilabel_precision_recall_curve_compute(state, num_labels, thresholds, ignore_index)

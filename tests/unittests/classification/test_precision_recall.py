@@ -114,7 +114,13 @@ class TestBinaryPrecisionRecall(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     def test_binary_precision_recall_functional(
-        self, input, module, functional, compare, ignore_index, multidim_average,
+        self,
+        input,
+        module,
+        functional,
+        compare,
+        ignore_index,
+        multidim_average,
     ):
         """Test functional implementation of metric."""
         preds, target = input
@@ -218,7 +224,15 @@ class TestMulticlassPrecisionRecall(MetricTester):
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_precision_recall(
-        self, ddp, input, module, functional, compare, ignore_index, multidim_average, average,
+        self,
+        ddp,
+        input,
+        module,
+        functional,
+        compare,
+        ignore_index,
+        multidim_average,
+        average,
     ):
         """Test class implementation of metric."""
         preds, target = input
@@ -253,7 +267,14 @@ class TestMulticlassPrecisionRecall(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multiclass_precision_recall_functional(
-        self, input, module, functional, compare, ignore_index, multidim_average, average,
+        self,
+        input,
+        module,
+        functional,
+        compare,
+        ignore_index,
+        multidim_average,
+        average,
     ):
         """Test functional implementation of metric."""
         preds, target = input
@@ -327,7 +348,8 @@ _mc_k_preds = tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
 
 
 @pytest.mark.parametrize(
-    ("metric_class", "metric_fn"), [(MulticlassPrecision, multiclass_precision), (MulticlassRecall, multiclass_recall)],
+    ("metric_class", "metric_fn"),
+    [(MulticlassPrecision, multiclass_precision), (MulticlassRecall, multiclass_recall)],
 )
 @pytest.mark.parametrize(
     ("k", "preds", "target", "average", "expected_prec", "expected_recall"),
@@ -455,7 +477,15 @@ class TestMultilabelPrecisionRecall(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multilabel_precision_recall(
-        self, ddp, input, module, functional, compare, ignore_index, multidim_average, average,
+        self,
+        ddp,
+        input,
+        module,
+        functional,
+        compare,
+        ignore_index,
+        multidim_average,
+        average,
     ):
         """Test class implementation of metric."""
         preds, target = input
@@ -491,7 +521,14 @@ class TestMultilabelPrecisionRecall(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multilabel_precision_recall_functional(
-        self, input, module, functional, compare, ignore_index, multidim_average, average,
+        self,
+        input,
+        module,
+        functional,
+        compare,
+        ignore_index,
+        multidim_average,
+        average,
     ):
         """Test functional implementation of metric."""
         preds, target = input

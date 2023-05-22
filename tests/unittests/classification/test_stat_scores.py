@@ -84,7 +84,9 @@ class TestBinaryStatScores(MetricTester):
             target=target,
             metric_class=BinaryStatScores,
             reference_metric=partial(
-                _sklearn_stat_scores_binary, ignore_index=ignore_index, multidim_average=multidim_average,
+                _sklearn_stat_scores_binary,
+                ignore_index=ignore_index,
+                multidim_average=multidim_average,
             ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
@@ -104,7 +106,9 @@ class TestBinaryStatScores(MetricTester):
             target=target,
             metric_functional=binary_stat_scores,
             reference_metric=partial(
-                _sklearn_stat_scores_binary, ignore_index=ignore_index, multidim_average=multidim_average,
+                _sklearn_stat_scores_binary,
+                ignore_index=ignore_index,
+                multidim_average=multidim_average,
             ),
             metric_args={
                 "threshold": THRESHOLD,
@@ -339,7 +343,8 @@ def test_top_k_multiclass(k, preds, target, average, expected):
 
     assert torch.allclose(class_metric.compute().long(), expected.T)
     assert torch.allclose(
-        multiclass_stat_scores(preds, target, top_k=k, average=average, num_classes=3).long(), expected.T,
+        multiclass_stat_scores(preds, target, top_k=k, average=average, num_classes=3).long(),
+        expected.T,
     )
 
 
@@ -352,7 +357,12 @@ def test_top_k_ignore_index_multiclass():
 
     res_without = multiclass_stat_scores(preds_without, target_without, num_classes=3, average="micro", top_k=2)
     res_with = multiclass_stat_scores(
-        preds_with, target_with, num_classes=3, average="micro", top_k=2, ignore_index=-100,
+        preds_with,
+        target_with,
+        num_classes=3,
+        average="micro",
+        top_k=2,
+        ignore_index=-100,
     )
 
     assert torch.allclose(res_without, res_with)

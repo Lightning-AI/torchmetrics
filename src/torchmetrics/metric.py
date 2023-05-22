@@ -773,7 +773,9 @@ class Metric(Module, ABC):
                 If set to ``True``, detaching will not be performed.
         """
         destination: Dict[str, Union[torch.Tensor, List, Any]] = super().state_dict(
-            destination=destination, prefix=prefix, keep_vars=keep_vars,  # type: ignore[arg-type]
+            destination=destination,
+            prefix=prefix,
+            keep_vars=keep_vars,  # type: ignore[arg-type]
         )
         # Register metric states to be part of the state_dict
         for key in self._defaults:
@@ -804,7 +806,13 @@ class Metric(Module, ABC):
             if name in state_dict:
                 setattr(self, key, state_dict.pop(name))
         super()._load_from_state_dict(
-            state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs,
+            state_dict,
+            prefix,
+            local_metadata,
+            True,
+            missing_keys,
+            unexpected_keys,
+            error_msgs,
         )
 
     def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:

@@ -17,7 +17,9 @@ from torch import Tensor
 
 
 def _input_validator(
-    preds: Sequence[Dict[str, Tensor]], targets: Sequence[Dict[str, Tensor]], iou_type: str = "bbox",
+    preds: Sequence[Dict[str, Tensor]],
+    targets: Sequence[Dict[str, Tensor]],
+    iou_type: str = "bbox",
 ) -> None:
     """Ensure the correct input format of `preds` and `targets`."""
     if iou_type == "bbox":

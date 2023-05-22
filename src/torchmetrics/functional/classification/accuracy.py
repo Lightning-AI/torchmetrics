@@ -265,7 +265,13 @@ def multiclass_accuracy(
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
     preds, target = _multiclass_stat_scores_format(preds, target, top_k)
     tp, fp, tn, fn = _multiclass_stat_scores_update(
-        preds, target, num_classes, top_k, average, multidim_average, ignore_index,
+        preds,
+        target,
+        num_classes,
+        top_k,
+        average,
+        multidim_average,
+        ignore_index,
     )
     return _accuracy_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average)
 
@@ -420,7 +426,14 @@ def accuracy(
         if not isinstance(top_k, int):
             raise ValueError(f"Optional arg `top_k` must be type `int` when task is {task}. Got {type(top_k)}")
         return multiclass_accuracy(
-            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args,
+            preds,
+            target,
+            num_classes,
+            average,
+            top_k,
+            multidim_average,
+            ignore_index,
+            validate_args,
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
@@ -428,6 +441,13 @@ def accuracy(
                 f"Optional arg `num_labels` must be type `int` when task is {task}. Got {type(num_labels)}",
             )
         return multilabel_accuracy(
-            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args,
+            preds,
+            target,
+            num_labels,
+            threshold,
+            average,
+            multidim_average,
+            ignore_index,
+            validate_args,
         )
     raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

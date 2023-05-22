@@ -101,15 +101,24 @@ BATCH = {
 }
 
 _inputs_squad_exact_match = SquadInput(
-    preds=SAMPLE_1["preds"], targets=SAMPLE_1["targets"], exact_match=SAMPLE_1["exact_match"], f1=SAMPLE_1["f1"],
+    preds=SAMPLE_1["preds"],
+    targets=SAMPLE_1["targets"],
+    exact_match=SAMPLE_1["exact_match"],
+    f1=SAMPLE_1["f1"],
 )
 
 _inputs_squad_exact_mismatch = SquadInput(
-    preds=SAMPLE_2["preds"], targets=SAMPLE_2["targets"], exact_match=SAMPLE_2["exact_match"], f1=SAMPLE_2["f1"],
+    preds=SAMPLE_2["preds"],
+    targets=SAMPLE_2["targets"],
+    exact_match=SAMPLE_2["exact_match"],
+    f1=SAMPLE_2["f1"],
 )
 
 _inputs_squad_batch_match = SquadInput(
-    preds=BATCH["preds"], targets=BATCH["targets"], exact_match=BATCH["exact_match"], f1=BATCH["f1"],
+    preds=BATCH["preds"],
+    targets=BATCH["targets"],
+    exact_match=BATCH["exact_match"],
+    f1=BATCH["f1"],
 )
 
 # single reference

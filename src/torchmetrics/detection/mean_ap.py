@@ -451,7 +451,11 @@ class MeanAveragePrecision(Metric):
         return compute_iou(det, gt, self.iou_type).to(self.device)
 
     def __evaluate_image_gt_no_preds(
-        self, gt: Tensor, gt_label_mask: Tensor, area_range: Tuple[int, int], nb_iou_thrs: int,
+        self,
+        gt: Tensor,
+        gt_label_mask: Tensor,
+        area_range: Tuple[int, int],
+        nb_iou_thrs: int,
     ) -> Dict[str, Any]:
         """Evaluate images with a ground truth but no predictions."""
         # GTs
@@ -475,7 +479,13 @@ class MeanAveragePrecision(Metric):
         }
 
     def __evaluate_image_preds_no_gt(
-        self, det: Tensor, idx: int, det_label_mask: Tensor, max_det: int, area_range: Tuple[int, int], nb_iou_thrs: int,
+        self,
+        det: Tensor,
+        idx: int,
+        det_label_mask: Tensor,
+        max_det: int,
+        area_range: Tuple[int, int],
+        nb_iou_thrs: int,
     ) -> Dict[str, Any]:
         """Evaluate images with a prediction but no ground truth."""
         # GTs
@@ -508,7 +518,12 @@ class MeanAveragePrecision(Metric):
         }
 
     def _evaluate_image(
-        self, idx: int, class_id: int, area_range: Tuple[int, int], max_det: int, ious: dict,
+        self,
+        idx: int,
+        class_id: int,
+        area_range: Tuple[int, int],
+        max_det: int,
+        ious: dict,
     ) -> Optional[dict]:
         """Perform evaluation for single class and image.
 
@@ -595,7 +610,8 @@ class MeanAveragePrecision(Metric):
         det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
         ar = det_ignore_area.reshape((1, nb_det))
         det_ignore = torch.logical_or(
-            det_ignore, torch.logical_and(det_matches == 0, torch.repeat_interleave(ar, nb_iou_thrs, 0)),
+            det_ignore,
+            torch.logical_and(det_matches == 0, torch.repeat_interleave(ar, nb_iou_thrs, 0)),
         )
 
         return {
@@ -608,7 +624,12 @@ class MeanAveragePrecision(Metric):
 
     @staticmethod
     def _find_best_gt_match(
-        thr: int, gt_matches: Tensor, idx_iou: float, gt_ignore: Tensor, ious: Tensor, idx_det: int,
+        thr: int,
+        gt_matches: Tensor,
+        idx_iou: float,
+        gt_ignore: Tensor,
+        ious: Tensor,
+        idx_det: int,
     ) -> int:
         """Return id of best ground truth match with current detection.
 
@@ -914,7 +935,9 @@ class MeanAveragePrecision(Metric):
         return list_merged
 
     def plot(
-        self, val: Optional[Union[Dict[str, Tensor], Sequence[Dict[str, Tensor]]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Dict[str, Tensor], Sequence[Dict[str, Tensor]]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

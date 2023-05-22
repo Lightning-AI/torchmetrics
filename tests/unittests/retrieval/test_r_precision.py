@@ -141,7 +141,12 @@ class TestRPrecision(RetrievalMetricTester):
         ),
     )
     def test_arguments_class_metric(
-        self, indexes: Tensor, preds: Tensor, target: Tensor, message: str, metric_args: dict,
+        self,
+        indexes: Tensor,
+        preds: Tensor,
+        target: Tensor,
+        message: str,
+        metric_args: dict,
     ):
         """Test that specific errors are raised for incorrect input."""
         self.run_metric_class_arguments_test(

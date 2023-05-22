@@ -103,6 +103,10 @@ def test_ms_ssim_contrast_sensitivity():
     preds = torch.rand(1, 1, 50, 50, 50)
     target = torch.rand(1, 1, 50, 50, 50)
     out = multiscale_structural_similarity_index_measure(
-        preds, target, data_range=1.0, kernel_size=3, betas=(1.0, 0.5, 0.25),
+        preds,
+        target,
+        data_range=1.0,
+        kernel_size=3,
+        betas=(1.0, 0.5, 0.25),
     )
     assert isinstance(out, torch.Tensor)

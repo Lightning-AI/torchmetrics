@@ -289,7 +289,11 @@ class _LPIPS(nn.Module):
             self.eval()
 
     def forward(
-        self, in0: Tensor, in1: Tensor, retperlayer: bool = False, normalize: bool = False,
+        self,
+        in0: Tensor,
+        in1: Tensor,
+        retperlayer: bool = False,
+        normalize: bool = False,
     ) -> Union[int, Tuple[int, List[Tensor]]]:
         if normalize:  # turn on this flag if input is [0,1] so it can be adjusted to [-1, +1]
             in0 = 2 * in0 - 1

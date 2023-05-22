@@ -159,7 +159,10 @@ def binary_groups_stat_rates(
 
 
 def _compute_binary_demographic_parity(
-    tp: torch.Tensor, fp: torch.Tensor, tn: torch.Tensor, fn: torch.Tensor,
+    tp: torch.Tensor,
+    fp: torch.Tensor,
+    tn: torch.Tensor,
+    fn: torch.Tensor,
 ) -> Dict[str, torch.Tensor]:
     """Compute demographic parity based on the binary stats."""
     pos_rates = _safe_divide(tp + fp, tp + fp + tn + fn)
@@ -237,7 +240,10 @@ def demographic_parity(
 
 
 def _compute_binary_equal_opportunity(
-    tp: torch.Tensor, fp: torch.Tensor, tn: torch.Tensor, fn: torch.Tensor,
+    tp: torch.Tensor,
+    fp: torch.Tensor,
+    tn: torch.Tensor,
+    fn: torch.Tensor,
 ) -> Dict[str, torch.Tensor]:
     """Compute equal opportunity based on the binary stats."""
     true_pos_rates = _safe_divide(tp, tp + fn)
@@ -246,7 +252,8 @@ def _compute_binary_equal_opportunity(
 
     return {
         f"EO_{min_pos_rate_id}_{max_pos_rate_id}": _safe_divide(
-            true_pos_rates[min_pos_rate_id], true_pos_rates[max_pos_rate_id],
+            true_pos_rates[min_pos_rate_id],
+            true_pos_rates[max_pos_rate_id],
         ),
     }
 

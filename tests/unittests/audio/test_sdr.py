@@ -65,7 +65,8 @@ original_impl_compute_permutation = partial(_sdr_original_batch)
 
 
 @pytest.mark.skipif(  # TODO: figure out why tests leads to cuda errors on latest torch
-    _TORCH_GREATER_EQUAL_1_11 and torch.cuda.is_available(), reason="tests leads to cuda errors on latest torch",
+    _TORCH_GREATER_EQUAL_1_11 and torch.cuda.is_available(),
+    reason="tests leads to cuda errors on latest torch",
 )
 @pytest.mark.parametrize(
     "preds, target, ref_metric",

@@ -234,7 +234,13 @@ def multiclass_precision(
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
     preds, target = _multiclass_stat_scores_format(preds, target, top_k)
     tp, fp, tn, fn = _multiclass_stat_scores_update(
-        preds, target, num_classes, top_k, average, multidim_average, ignore_index,
+        preds,
+        target,
+        num_classes,
+        top_k,
+        average,
+        multidim_average,
+        ignore_index,
     )
     return _precision_recall_reduce("precision", tp, fp, tn, fn, average=average, multidim_average=multidim_average)
 
@@ -513,7 +519,13 @@ def multiclass_recall(
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
     preds, target = _multiclass_stat_scores_format(preds, target, top_k)
     tp, fp, tn, fn = _multiclass_stat_scores_update(
-        preds, target, num_classes, top_k, average, multidim_average, ignore_index,
+        preds,
+        target,
+        num_classes,
+        top_k,
+        average,
+        multidim_average,
+        ignore_index,
     )
     return _precision_recall_reduce("recall", tp, fp, tn, fn, average=average, multidim_average=multidim_average)
 
@@ -661,13 +673,27 @@ def precision(
         if not isinstance(top_k, int):
             raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
         return multiclass_precision(
-            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args,
+            preds,
+            target,
+            num_classes,
+            average,
+            top_k,
+            multidim_average,
+            ignore_index,
+            validate_args,
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_precision(
-            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args,
+            preds,
+            target,
+            num_labels,
+            threshold,
+            average,
+            multidim_average,
+            ignore_index,
+            validate_args,
         )
     raise ValueError(
         f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}",
@@ -718,12 +744,26 @@ def recall(
         if not isinstance(top_k, int):
             raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
         return multiclass_recall(
-            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args,
+            preds,
+            target,
+            num_classes,
+            average,
+            top_k,
+            multidim_average,
+            ignore_index,
+            validate_args,
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_recall(
-            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args,
+            preds,
+            target,
+            num_labels,
+            threshold,
+            average,
+            multidim_average,
+            ignore_index,
+            validate_args,
         )
     raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

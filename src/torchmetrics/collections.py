@@ -290,7 +290,10 @@ class MetricCollection(ModuleDict):
         return self._compute_and_reduce("compute")
 
     def _compute_and_reduce(
-        self, method_name: Literal["compute", "forward"], *args: Any, **kwargs: Any,
+        self,
+        method_name: Literal["compute", "forward"],
+        *args: Any,
+        **kwargs: Any,
     ) -> Dict[str, Any]:
         """Compute result from collection and reduce into a single dictionary.
 
@@ -354,7 +357,9 @@ class MetricCollection(ModuleDict):
             m.persistent(mode)
 
     def add_metrics(
-        self, metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]], *additional_metrics: Metric,
+        self,
+        metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]],
+        *additional_metrics: Metric,
     ) -> None:
         """Add new metrics to Metric Collection."""
         if isinstance(metrics, Metric):

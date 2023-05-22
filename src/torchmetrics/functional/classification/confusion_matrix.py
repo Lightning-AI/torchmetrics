@@ -24,7 +24,8 @@ from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _confusion_matrix_reduce(
-    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
+    confmat: Tensor,
+    normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
 ) -> Tensor:
     """Reduce an un-normalized confusion matrix.
 
@@ -79,7 +80,9 @@ def _binary_confusion_matrix_arg_validation(
 
 
 def _binary_confusion_matrix_tensor_validation(
-    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None,
+    preds: Tensor,
+    target: Tensor,
+    ignore_index: Optional[int] = None,
 ) -> None:
     """Validate tensor input.
 
@@ -150,7 +153,8 @@ def _binary_confusion_matrix_update(preds: Tensor, target: Tensor) -> Tensor:
 
 
 def _binary_confusion_matrix_compute(
-    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
+    confmat: Tensor,
+    normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
 ) -> Tensor:
     """Reduces the confusion matrix to it's final form.
 
@@ -242,7 +246,10 @@ def _multiclass_confusion_matrix_arg_validation(
 
 
 def _multiclass_confusion_matrix_tensor_validation(
-    preds: Tensor, target: Tensor, num_classes: int, ignore_index: Optional[int] = None,
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    ignore_index: Optional[int] = None,
 ) -> None:
     """Validate tensor input.
 
@@ -329,7 +336,8 @@ def _multiclass_confusion_matrix_update(preds: Tensor, target: Tensor, num_class
 
 
 def _multiclass_confusion_matrix_compute(
-    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
+    confmat: Tensor,
+    normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
 ) -> Tensor:
     """Reduces the confusion matrix to it's final form.
 
@@ -430,7 +438,10 @@ def _multilabel_confusion_matrix_arg_validation(
 
 
 def _multilabel_confusion_matrix_tensor_validation(
-    preds: Tensor, target: Tensor, num_labels: int, ignore_index: Optional[int] = None,
+    preds: Tensor,
+    target: Tensor,
+    num_labels: int,
+    ignore_index: Optional[int] = None,
 ) -> None:
     """Validate tensor input.
 
@@ -513,7 +524,8 @@ def _multilabel_confusion_matrix_update(preds: Tensor, target: Tensor, num_label
 
 
 def _multilabel_confusion_matrix_compute(
-    confmat: Tensor, normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
+    confmat: Tensor,
+    normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
 ) -> Tensor:
     """Reduces the confusion matrix to it's final form.
 

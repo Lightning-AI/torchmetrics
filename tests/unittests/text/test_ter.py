@@ -23,7 +23,10 @@ def _sacrebleu_ter_fn(
     case_sensitive: bool,
 ) -> Tensor:
     sacrebleu_ter = SacreTER(
-        normalized=normalized, no_punct=no_punct, asian_support=asian_support, case_sensitive=case_sensitive,
+        normalized=normalized,
+        no_punct=no_punct,
+        asian_support=asian_support,
+        case_sensitive=case_sensitive,
     )
     # Sacrebleu CHRF expects different format of input
     target = [[tgt[i] for tgt in target] for i in range(len(target[0]))]

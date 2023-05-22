@@ -31,7 +31,11 @@ def _compute_bleu_metric_nltk(preds, targets, weights, smoothing_function, **kwa
     preds_ = [pred.split() for pred in preds]
     targets_ = [[line.split() for line in target] for target in targets]
     return corpus_bleu(
-        list_of_references=targets_, hypotheses=preds_, weights=weights, smoothing_function=smoothing_function, **kwargs,
+        list_of_references=targets_,
+        hypotheses=preds_,
+        weights=weights,
+        smoothing_function=smoothing_function,
+        **kwargs,
     )
 
 

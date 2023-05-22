@@ -73,7 +73,10 @@ class SpectralDistortionIndex(Metric):
     target: List[Tensor]
 
     def __init__(
-        self, p: int = 1, reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean", **kwargs: Any,
+        self,
+        p: int = 1,
+        reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         rank_zero_warn(
@@ -105,7 +108,9 @@ class SpectralDistortionIndex(Metric):
         return _spectral_distortion_index_compute(preds, target, self.p, self.reduction)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

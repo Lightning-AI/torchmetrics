@@ -31,7 +31,9 @@ def _total_variation_update(img: Tensor) -> Tuple[Tensor, int]:
 
 
 def _total_variation_compute(
-    score: Tensor, num_elements: int, reduction: Literal["mean", "sum", "none", None],
+    score: Tensor,
+    num_elements: int,
+    reduction: Literal["mean", "sum", "none", None],
 ) -> Tensor:
     """Compute final total variation score."""
     if reduction == "mean":

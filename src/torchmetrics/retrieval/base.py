@@ -103,7 +103,11 @@ class RetrievalMetric(Metric, ABC):
             raise ValueError("Argument `indexes` cannot be None")
 
         indexes, preds, target = _check_retrieval_inputs(
-            indexes, preds, target, allow_non_binary_target=self.allow_non_binary_target, ignore_index=self.ignore_index,
+            indexes,
+            preds,
+            target,
+            allow_non_binary_target=self.allow_non_binary_target,
+            ignore_index=self.ignore_index,
         )
 
         self.indexes.append(indexes)
@@ -129,7 +133,8 @@ class RetrievalMetric(Metric, ABC):
 
         res = []
         for mini_preds, mini_target in zip(
-            torch.split(preds, split_sizes, dim=0), torch.split(target, split_sizes, dim=0),
+            torch.split(preds, split_sizes, dim=0),
+            torch.split(target, split_sizes, dim=0),
         ):
             if not mini_target.sum():
                 if self.empty_target_action == "error":

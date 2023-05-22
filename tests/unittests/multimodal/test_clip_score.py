@@ -114,7 +114,8 @@ class TestCLIPScore(MetricTester):
         """Test that an error is raised if not all images are [c, h, w] format."""
         metric = CLIPScore(model_name_or_path=model_name_or_path)
         with pytest.raises(
-            ValueError, match="Expected all images to be 3d but found image that has either more or less",
+            ValueError,
+            match="Expected all images to be 3d but found image that has either more or less",
         ):
             metric(torch.randint(255, (64, 64)), "28-year-old chef found dead in San Francisco mall")
 

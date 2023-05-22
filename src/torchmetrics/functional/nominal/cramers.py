@@ -72,7 +72,10 @@ def _cramers_v_compute(confmat: Tensor, bias_correction: bool) -> Tensor:
 
     if bias_correction:
         phi_squared_corrected, rows_corrected, cols_corrected = _compute_bias_corrected_values(
-            phi_squared, n_rows, n_cols, cm_sum,
+            phi_squared,
+            n_rows,
+            n_cols,
+            cm_sum,
         )
         if torch.min(rows_corrected, cols_corrected) == 1:
             _unable_to_use_bias_correction_warning(metric_name="Cramer's V")

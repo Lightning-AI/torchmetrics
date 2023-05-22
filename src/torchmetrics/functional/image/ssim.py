@@ -173,7 +173,8 @@ def _ssim_update(
         else:
             contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
         return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), contrast_sensitivity.reshape(
-            contrast_sensitivity.shape[0], -1,
+            contrast_sensitivity.shape[0],
+            -1,
         ).mean(-1)
 
     if return_full_image:
@@ -394,7 +395,15 @@ def _multiscale_ssim_update(
 
     for _ in range(len(betas)):
         sim, contrast_sensitivity = _get_normalized_sim_and_cs(
-            preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, normalize=normalize,
+            preds,
+            target,
+            gaussian_kernel,
+            sigma,
+            kernel_size,
+            data_range,
+            k1,
+            k2,
+            normalize=normalize,
         )
         mcs_list.append(contrast_sensitivity)
 
@@ -514,6 +523,15 @@ def multiscale_structural_similarity_index_measure(
 
     preds, target = _ssim_check_inputs(preds, target)
     mcs_per_image = _multiscale_ssim_update(
-        preds, target, gaussian_kernel, sigma, kernel_size, data_range, k1, k2, betas, normalize,
+        preds,
+        target,
+        gaussian_kernel,
+        sigma,
+        kernel_size,
+        data_range,
+        k1,
+        k2,
+        betas,
+        normalize,
     )
     return _multiscale_ssim_compute(mcs_per_image, reduction)

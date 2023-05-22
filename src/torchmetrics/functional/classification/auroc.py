@@ -284,7 +284,11 @@ def multiclass_auroc(
         _multiclass_auroc_arg_validation(num_classes, average, thresholds, ignore_index)
         _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index)
     preds, target, thresholds = _multiclass_precision_recall_curve_format(
-        preds, target, num_classes, thresholds, ignore_index,
+        preds,
+        target,
+        num_classes,
+        thresholds,
+        ignore_index,
     )
     state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
     return _multiclass_auroc_compute(state, num_classes, average, thresholds)
@@ -415,7 +419,11 @@ def multilabel_auroc(
         _multilabel_auroc_arg_validation(num_labels, average, thresholds, ignore_index)
         _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index)
     preds, target, thresholds = _multilabel_precision_recall_curve_format(
-        preds, target, num_labels, thresholds, ignore_index,
+        preds,
+        target,
+        num_labels,
+        thresholds,
+        ignore_index,
     )
     state = _multilabel_precision_recall_curve_update(preds, target, num_labels, thresholds)
     return _multilabel_auroc_compute(state, num_labels, average, thresholds, ignore_index)

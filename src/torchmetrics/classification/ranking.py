@@ -103,7 +103,12 @@ class MultilabelCoverageError(Metric):
         if self.validate_args:
             _multilabel_ranking_tensor_validation(preds, target, self.num_labels, self.ignore_index)
         preds, target = _multilabel_confusion_matrix_format(
-            preds, target, self.num_labels, threshold=0.0, ignore_index=self.ignore_index, should_threshold=False,
+            preds,
+            target,
+            self.num_labels,
+            threshold=0.0,
+            ignore_index=self.ignore_index,
+            should_threshold=False,
         )
         measure, n_elements = _multilabel_coverage_error_update(preds, target)
         self.measure += measure
@@ -114,7 +119,9 @@ class MultilabelCoverageError(Metric):
         return _ranking_reduce(self.measure, self.total)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -221,7 +228,12 @@ class MultilabelRankingAveragePrecision(Metric):
         if self.validate_args:
             _multilabel_ranking_tensor_validation(preds, target, self.num_labels, self.ignore_index)
         preds, target = _multilabel_confusion_matrix_format(
-            preds, target, self.num_labels, threshold=0.0, ignore_index=self.ignore_index, should_threshold=False,
+            preds,
+            target,
+            self.num_labels,
+            threshold=0.0,
+            ignore_index=self.ignore_index,
+            should_threshold=False,
         )
         measure, n_elements = _multilabel_ranking_average_precision_update(preds, target)
         self.measure += measure
@@ -232,7 +244,9 @@ class MultilabelRankingAveragePrecision(Metric):
         return _ranking_reduce(self.measure, self.total)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -341,7 +355,12 @@ class MultilabelRankingLoss(Metric):
         if self.validate_args:
             _multilabel_ranking_tensor_validation(preds, target, self.num_labels, self.ignore_index)
         preds, target = _multilabel_confusion_matrix_format(
-            preds, target, self.num_labels, threshold=0.0, ignore_index=self.ignore_index, should_threshold=False,
+            preds,
+            target,
+            self.num_labels,
+            threshold=0.0,
+            ignore_index=self.ignore_index,
+            should_threshold=False,
         )
         measure, n_elements = _multilabel_ranking_loss_update(preds, target)
         self.measure += measure
@@ -352,7 +371,9 @@ class MultilabelRankingLoss(Metric):
         return _ranking_reduce(self.measure, self.total)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

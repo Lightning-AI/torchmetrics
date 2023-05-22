@@ -38,12 +38,14 @@ def test_raises_error_on_wrong_input():
         MetricTracker(MeanAbsoluteError(), maximize=2)
 
     with pytest.raises(
-        ValueError, match="The len of argument `maximize` should match the length of the metric collection",
+        ValueError,
+        match="The len of argument `maximize` should match the length of the metric collection",
     ):
         MetricTracker(MetricCollection([MeanAbsoluteError(), MeanSquaredError()]), maximize=[False, False, False])
 
     with pytest.raises(
-        ValueError, match="Argument `maximize` should be a single bool when `metric` is a single Metric",
+        ValueError,
+        match="Argument `maximize` should be a single bool when `metric` is a single Metric",
     ):
         MetricTracker(MeanAbsoluteError(), maximize=[False])
 

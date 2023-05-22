@@ -141,7 +141,10 @@ def _get_scaled_precision_or_recall(cos_sim: Tensor, metric: str, idf_scale: Ten
 
 
 def _get_precision_recall_f1(
-    preds_embeddings: Tensor, target_embeddings: Tensor, preds_idf_scale: Tensor, target_idf_scale: Tensor,
+    preds_embeddings: Tensor,
+    target_embeddings: Tensor,
+    preds_idf_scale: Tensor,
+    target_idf_scale: Tensor,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Calculate precision, recall and F1 score over candidate and reference sentences.
 
@@ -409,14 +412,33 @@ def bert_score(
     preds_loader = DataLoader(preds_dataset, batch_size=batch_size, num_workers=num_threads)
 
     target_embeddings, target_idf_scale = _get_embeddings_and_idf_scale(
-        target_loader, target_dataset.max_length, model, device, num_layers, all_layers, idf, verbose, user_forward_fn,
+        target_loader,
+        target_dataset.max_length,
+        model,
+        device,
+        num_layers,
+        all_layers,
+        idf,
+        verbose,
+        user_forward_fn,
     )
     preds_embeddings, preds_idf_scale = _get_embeddings_and_idf_scale(
-        preds_loader, preds_dataset.max_length, model, device, num_layers, all_layers, idf, verbose, user_forward_fn,
+        preds_loader,
+        preds_dataset.max_length,
+        model,
+        device,
+        num_layers,
+        all_layers,
+        idf,
+        verbose,
+        user_forward_fn,
     )
 
     precision, recall, f1_score = _get_precision_recall_f1(
-        preds_embeddings, target_embeddings, preds_idf_scale, target_idf_scale,
+        preds_embeddings,
+        target_embeddings,
+        preds_idf_scale,
+        target_idf_scale,
     )
     # Sort predictions
     if len(precision.shape) == 1:  # i.e. when all_layers = False
@@ -430,7 +452,12 @@ def bert_score(
 
     if baseline is not None:
         precision, recall, f1_score = _rescale_metrics_with_baseline(
-            precision, recall, f1_score, baseline, num_layers, all_layers,
+            precision,
+            recall,
+            f1_score,
+            baseline,
+            num_layers,
+            all_layers,
         )
 
     output_dict = {

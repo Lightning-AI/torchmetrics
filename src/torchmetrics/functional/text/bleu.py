@@ -198,7 +198,14 @@ def bleu_score(
     target_len = tensor(0.0)
 
     preds_len, target_len = _bleu_score_update(
-        preds_, target_, numerator, denominator, preds_len, target_len, n_gram, _tokenize_fn,
+        preds_,
+        target_,
+        numerator,
+        denominator,
+        preds_len,
+        target_len,
+        n_gram,
+        _tokenize_fn,
     )
 
     return _bleu_score_compute(preds_len, target_len, numerator, denominator, n_gram, weights, smooth)

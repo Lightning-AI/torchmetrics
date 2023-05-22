@@ -125,7 +125,10 @@ class TestSpearmanCorrCoef(MetricTester):
         """Test dtype support of the metric on CPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_cpu(
-            preds, target, partial(SpearmanCorrCoef, num_outputs=num_outputs), spearman_corrcoef,
+            preds,
+            target,
+            partial(SpearmanCorrCoef, num_outputs=num_outputs),
+            spearman_corrcoef,
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
@@ -133,7 +136,10 @@ class TestSpearmanCorrCoef(MetricTester):
         """Test dtype support of the metric on GPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_gpu(
-            preds, target, partial(SpearmanCorrCoef, num_outputs=num_outputs), spearman_corrcoef,
+            preds,
+            target,
+            partial(SpearmanCorrCoef, num_outputs=num_outputs),
+            spearman_corrcoef,
         )
 
 

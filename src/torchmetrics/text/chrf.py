@@ -45,7 +45,12 @@ _DICT_STATES_NAMES = (
 )
 
 _DICT_STATES_TYPES = Tuple[
-    Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor],
+    Dict[int, Tensor],
+    Dict[int, Tensor],
+    Dict[int, Tensor],
+    Dict[int, Tensor],
+    Dict[int, Tensor],
+    Dict[int, Tensor],
 ]
 
 
@@ -204,7 +209,9 @@ class CHRFScore(Metric):
         return itertools.product(zip(_N_GRAM_LEVELS, [self.n_char_order, self.n_word_order]), _TEXT_LEVELS)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

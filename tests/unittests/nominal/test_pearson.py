@@ -38,7 +38,8 @@ _input_default = Input(
 )
 
 _input_logits = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES), target=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES),
 )
 
 # No testing with replacing NaN's values is done as not supported in SciPy
@@ -105,7 +106,10 @@ class TestPearsonsContingencyCoefficient(MetricTester):
     def test_pearsons_t_functional(self, preds, target):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
-            preds, target, metric_functional=pearsons_contingency_coefficient, reference_metric=_pd_pearsons_t,
+            preds,
+            target,
+            metric_functional=pearsons_contingency_coefficient,
+            reference_metric=_pd_pearsons_t,
         )
 
     def test_pearsons_t_differentiability(self, preds, target):

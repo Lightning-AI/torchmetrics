@@ -393,7 +393,11 @@ class MultilabelConfusionMatrix(Metric):
         if self.validate_args:
             _multilabel_confusion_matrix_tensor_validation(preds, target, self.num_labels, self.ignore_index)
         preds, target = _multilabel_confusion_matrix_format(
-            preds, target, self.num_labels, self.threshold, self.ignore_index,
+            preds,
+            target,
+            self.num_labels,
+            self.threshold,
+            self.ignore_index,
         )
         confmat = _multilabel_confusion_matrix_update(preds, target, self.num_labels)
         self.confmat += confmat

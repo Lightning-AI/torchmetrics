@@ -84,14 +84,17 @@ def _compute_exact_match_score(prediction: str, ground_truth: str) -> Tensor:
 
 
 def _metric_max_over_ground_truths(
-    metric_fn: Callable[[str, str], Tensor], prediction: str, ground_truths: List[str],
+    metric_fn: Callable[[str, str], Tensor],
+    prediction: str,
+    ground_truths: List[str],
 ) -> Tensor:
     """Calculate maximum score for a predicted answer with all reference answers."""
     return max(metric_fn(prediction, truth) for truth in ground_truths)  # type: ignore[type-var]
 
 
 def _squad_input_check(
-    preds: PREDS_TYPE, targets: TARGETS_TYPE,
+    preds: PREDS_TYPE,
+    targets: TARGETS_TYPE,
 ) -> Tuple[Dict[str, str], List[Dict[str, List[Dict[str, List[Dict[str, Any]]]]]]]:
     """Check for types and convert the input to necessary format to compute the input."""
     if isinstance(preds, Dict):

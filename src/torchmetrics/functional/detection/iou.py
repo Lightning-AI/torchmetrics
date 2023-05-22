@@ -27,7 +27,10 @@ __doctest_requires__ = {("intersection_over_union",): ["torchvision"]}
 
 
 def _iou_update(
-    preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float], replacement_val: float = 0,
+    preds: torch.Tensor,
+    target: torch.Tensor,
+    iou_threshold: Optional[float],
+    replacement_val: float = 0,
 ) -> torch.Tensor:
     iou = box_iou(preds, target)
     if iou_threshold is not None:

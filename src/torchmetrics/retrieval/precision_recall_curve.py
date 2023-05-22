@@ -169,7 +169,11 @@ class RetrievalPrecisionRecallCurve(Metric):
             raise ValueError("Argument `indexes` cannot be None")
 
         indexes, preds, target = _check_retrieval_inputs(
-            indexes, preds, target, allow_non_binary_target=self.allow_non_binary_target, ignore_index=self.ignore_index,
+            indexes,
+            preds,
+            target,
+            allow_non_binary_target=self.allow_non_binary_target,
+            ignore_index=self.ignore_index,
         )
 
         self.indexes.append(indexes)
@@ -198,7 +202,8 @@ class RetrievalPrecisionRecallCurve(Metric):
         precisions, recalls = [], []
 
         for mini_preds, mini_target in zip(
-            torch.split(preds, split_sizes, dim=0), torch.split(target, split_sizes, dim=0),
+            torch.split(preds, split_sizes, dim=0),
+            torch.split(target, split_sizes, dim=0),
         ):
             if not mini_target.sum():
                 if self.empty_target_action == "error":
@@ -354,7 +359,9 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
         return _retrieval_recall_at_fixed_precision(precisions, recalls, top_k, self.min_precision)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

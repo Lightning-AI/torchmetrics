@@ -97,7 +97,11 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            threshold=threshold, ignore_index=ignore_index, normalize=None, validate_args=validate_args, **kwargs,
+            threshold=threshold,
+            ignore_index=ignore_index,
+            normalize=None,
+            validate_args=validate_args,
+            **kwargs,
         )
 
     def compute(self) -> Tensor:
@@ -105,7 +109,9 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         return _jaccard_index_reduce(self.confmat, average="binary")
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -221,7 +227,11 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            num_classes=num_classes, ignore_index=ignore_index, normalize=None, validate_args=False, **kwargs,
+            num_classes=num_classes,
+            ignore_index=ignore_index,
+            normalize=None,
+            validate_args=False,
+            **kwargs,
         )
         if validate_args:
             _multiclass_jaccard_index_arg_validation(num_classes, ignore_index, average)
@@ -233,7 +243,9 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         return _jaccard_index_reduce(self.confmat, average=self.average, ignore_index=self.ignore_index)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -366,7 +378,9 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         return _jaccard_index_reduce(self.confmat, average=self.average)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

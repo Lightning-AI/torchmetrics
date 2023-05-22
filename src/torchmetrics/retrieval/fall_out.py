@@ -120,7 +120,8 @@ class RetrievalFallOut(RetrievalMetric):
 
         res = []
         for mini_preds, mini_target in zip(
-            torch.split(preds, split_sizes, dim=0), torch.split(target, split_sizes, dim=0),
+            torch.split(preds, split_sizes, dim=0),
+            torch.split(target, split_sizes, dim=0),
         ):
             if not (1 - mini_target).sum():
                 if self.empty_target_action == "error":
@@ -139,7 +140,9 @@ class RetrievalFallOut(RetrievalMetric):
         return retrieval_fall_out(preds, target, top_k=self.top_k)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

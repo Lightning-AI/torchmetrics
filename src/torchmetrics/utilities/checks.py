@@ -45,7 +45,11 @@ def _check_same_shape(preds: Tensor, target: Tensor) -> None:
 
 
 def _basic_input_validation(
-    preds: Tensor, target: Tensor, threshold: float, multiclass: Optional[bool], ignore_index: Optional[int],
+    preds: Tensor,
+    target: Tensor,
+    threshold: float,
+    multiclass: Optional[bool],
+    ignore_index: Optional[int],
 ) -> None:
     """Perform basic validation of inputs that does not require deducing any information of the type of inputs."""
     # Skip all other checks if both preds and target are empty tensors
@@ -574,7 +578,9 @@ def _check_retrieval_inputs(
         )
 
     preds, target = _check_retrieval_target_and_prediction_types(
-        preds, target, allow_non_binary_target=allow_non_binary_target,
+        preds,
+        target,
+        allow_non_binary_target=allow_non_binary_target,
     )
 
     return indexes.long().flatten(), preds, target

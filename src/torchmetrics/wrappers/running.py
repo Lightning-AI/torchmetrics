@@ -100,7 +100,9 @@ class Running(Metric):
         for key in base_metric._defaults:
             for i in range(window):
                 self.add_state(
-                    name=key + f"_{i}", default=base_metric._defaults[key], dist_reduce_fx=base_metric._reductions[key],
+                    name=key + f"_{i}",
+                    default=base_metric._defaults[key],
+                    dist_reduce_fx=base_metric._reductions[key],
                 )
 
     def update(self, *args: Any, **kwargs: Any) -> None:
@@ -137,7 +139,9 @@ class Running(Metric):
         self._num_vals_seen = 0
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

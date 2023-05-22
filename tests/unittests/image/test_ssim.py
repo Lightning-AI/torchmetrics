@@ -215,14 +215,22 @@ class TestSSIM(MetricTester):
     def test_ssim_half_cpu(self, preds, target, sigma):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
-            preds, target, StructuralSimilarityIndexMeasure, structural_similarity_index_measure, {"data_range": 1.0},
+            preds,
+            target,
+            StructuralSimilarityIndexMeasure,
+            structural_similarity_index_measure,
+            {"data_range": 1.0},
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_ssim_half_gpu(self, preds, target, sigma):
         """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
-            preds, target, StructuralSimilarityIndexMeasure, structural_similarity_index_measure, {"data_range": 1.0},
+            preds,
+            target,
+            StructuralSimilarityIndexMeasure,
+            structural_similarity_index_measure,
+            {"data_range": 1.0},
         )
 
 

@@ -153,12 +153,20 @@ def plot_single_or_multi_val(
         if lower_bound is not None and not higher_is_better:
             ax.set_xlim(xlim[0] - factor, xlim[1])
             ax.text(
-                xlim[0], lower_bound, s="Optimal \n value", horizontalalignment="center", verticalalignment="center",
+                xlim[0],
+                lower_bound,
+                s="Optimal \n value",
+                horizontalalignment="center",
+                verticalalignment="center",
             )
         if upper_bound is not None and higher_is_better:
             ax.set_xlim(xlim[0] - factor, xlim[1])
             ax.text(
-                xlim[0], upper_bound, s="Optimal \n value", horizontalalignment="center", verticalalignment="center",
+                xlim[0],
+                upper_bound,
+                s="Optimal \n value",
+                horizontalalignment="center",
+                verticalalignment="center",
             )
     return fig, ax
 
@@ -312,7 +320,8 @@ def plot_curve(
             ax.legend()
     else:
         raise ValueError(
-            f"Unknown format for argument `x` and `y`. Expected either list or tensors but got {type(x)} and {type(y)}.",
+            f"Unknown format for argument `x` and `y`."
+            f" Expected either list or tensors but got {type(x)} and {type(y)}.",
         )
     ax.grid(True)
     ax.set_title(name)

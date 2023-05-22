@@ -112,7 +112,9 @@ class RetrievalPrecision(RetrievalMetric):
         return retrieval_precision(preds, target, top_k=self.top_k, adaptive_k=self.adaptive_k)
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

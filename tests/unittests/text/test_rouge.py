@@ -125,7 +125,11 @@ class TestROUGEScore(TextTester):
         metric_args = {"use_stemmer": use_stemmer, "accumulate": accumulate}
         rouge_level, metric = pl_rouge_metric_key.split("_")
         rouge_metric = partial(
-            _compute_rouge_score, use_stemmer=use_stemmer, rouge_level=rouge_level, metric=metric, accumulate=accumulate,
+            _compute_rouge_score,
+            use_stemmer=use_stemmer,
+            rouge_level=rouge_level,
+            metric=metric,
+            accumulate=accumulate,
         )
         self.run_class_metric_test(
             ddp=ddp,
@@ -144,7 +148,11 @@ class TestROUGEScore(TextTester):
 
         rouge_level, metric = pl_rouge_metric_key.split("_")
         rouge_metric = partial(
-            _compute_rouge_score, use_stemmer=use_stemmer, rouge_level=rouge_level, metric=metric, accumulate=accumulate,
+            _compute_rouge_score,
+            use_stemmer=use_stemmer,
+            rouge_level=rouge_level,
+            metric=metric,
+            accumulate=accumulate,
         )
         self.run_functional_metric_test(
             preds,
@@ -217,7 +225,11 @@ def test_rouge_metric_normalizer_tokenizer(pl_rouge_metric_key):
     )
 
     scorer = ROUGEScore(
-        normalizer=normalizer, tokenizer=tokenizer, rouge_keys=rouge_level, accumulate="best", use_stemmer=False,
+        normalizer=normalizer,
+        tokenizer=tokenizer,
+        rouge_keys=rouge_level,
+        accumulate="best",
+        use_stemmer=False,
     )
     scorer.update(
         _inputs_single_sentence_single_reference.preds,

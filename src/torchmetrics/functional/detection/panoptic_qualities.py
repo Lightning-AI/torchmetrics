@@ -100,7 +100,10 @@ def panoptic_quality(
     flatten_preds = _prepocess_inputs(things, stuffs, preds, void_color, allow_unknown_preds_category)
     flatten_target = _prepocess_inputs(things, stuffs, target, void_color, True)
     iou_sum, true_positives, false_positives, false_negatives = _panoptic_quality_update(
-        flatten_preds, flatten_target, cat_id_to_continuous_id, void_color,
+        flatten_preds,
+        flatten_target,
+        cat_id_to_continuous_id,
+        void_color,
     )
     return _panoptic_quality_compute(iou_sum, true_positives, false_positives, false_negatives)
 

@@ -147,7 +147,9 @@ class BinaryPrecisionRecallCurve(Metric):
         else:
             self.register_buffer("thresholds", thresholds, persistent=False)
             self.add_state(
-                "confmat", default=torch.zeros(len(thresholds), 2, 2, dtype=torch.long), dist_reduce_fx="sum",
+                "confmat",
+                default=torch.zeros(len(thresholds), 2, 2, dtype=torch.long),
+                dist_reduce_fx="sum",
             )
 
     def update(self, preds: Tensor, target: Tensor) -> None:
@@ -323,7 +325,11 @@ class MulticlassPrecisionRecallCurve(Metric):
         if self.validate_args:
             _multiclass_precision_recall_curve_tensor_validation(preds, target, self.num_classes, self.ignore_index)
         preds, target, _ = _multiclass_precision_recall_curve_format(
-            preds, target, self.num_classes, self.thresholds, self.ignore_index,
+            preds,
+            target,
+            self.num_classes,
+            self.thresholds,
+            self.ignore_index,
         )
         state = _multiclass_precision_recall_curve_update(preds, target, self.num_classes, self.thresholds)
         if isinstance(state, Tensor):
@@ -502,7 +508,11 @@ class MultilabelPrecisionRecallCurve(Metric):
         if self.validate_args:
             _multilabel_precision_recall_curve_tensor_validation(preds, target, self.num_labels, self.ignore_index)
         preds, target, _ = _multilabel_precision_recall_curve_format(
-            preds, target, self.num_labels, self.thresholds, self.ignore_index,
+            preds,
+            target,
+            self.num_labels,
+            self.thresholds,
+            self.ignore_index,
         )
         state = _multilabel_precision_recall_curve_update(preds, target, self.num_labels, self.thresholds)
         if isinstance(state, Tensor):

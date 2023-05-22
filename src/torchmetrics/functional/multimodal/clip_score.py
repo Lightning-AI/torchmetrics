@@ -67,7 +67,8 @@ def _clip_score_update(
     img_features = img_features / img_features.norm(p=2, dim=-1, keepdim=True)
 
     txt_features = model.get_text_features(
-        processed_input["input_ids"].to(device), processed_input["attention_mask"].to(device),
+        processed_input["input_ids"].to(device),
+        processed_input["attention_mask"].to(device),
     )
     txt_features = txt_features / txt_features.norm(p=2, dim=-1, keepdim=True)
 

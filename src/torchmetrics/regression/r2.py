@@ -135,11 +135,18 @@ class R2Score(Metric):
     def compute(self) -> Tensor:
         """Compute r2 score over the metric states."""
         return _r2_score_compute(
-            self.sum_squared_error, self.sum_error, self.residual, self.total, self.adjusted, self.multioutput,
+            self.sum_squared_error,
+            self.sum_error,
+            self.residual,
+            self.total,
+            self.adjusted,
+            self.multioutput,
         )
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None,
+        self,
+        val: Optional[Union[Tensor, Sequence[Tensor]]] = None,
+        ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 

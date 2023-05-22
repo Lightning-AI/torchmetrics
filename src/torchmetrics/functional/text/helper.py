@@ -95,7 +95,9 @@ class _LevenshteinEditDistance:
         start_position, cached_edit_distance = self._find_cache(prediction_tokens)
         # Calculate the rest of the edit distance matrix
         edit_distance_int, edit_distance, trace = self._levenshtein_edit_distance(
-            prediction_tokens, start_position, cached_edit_distance,
+            prediction_tokens,
+            start_position,
+            cached_edit_distance,
         )
         # Update our cache with the newly calculated rows
         self._add_cache(prediction_tokens, edit_distance)
@@ -170,7 +172,9 @@ class _LevenshteinEditDistance:
         return edit_distance[-1][-1][0], edit_distance[len(cache) :], trace
 
     def _get_trace(
-        self, prediction_len: int, edit_distance: List[List[Tuple[int, _EditOperations]]],
+        self,
+        prediction_len: int,
+        edit_distance: List[List[Tuple[int, _EditOperations]]],
     ) -> Tuple[_EditOperations, ...]:
         """Get a trace of executed operations from the edit distance matrix.
 
@@ -362,7 +366,8 @@ def _flip_trace(trace: Tuple[_EditOperations, ...]) -> Tuple[_EditOperations, ..
     }
 
     def _replace_operation_or_retain(
-        operation: _EditOperations, _flip_operations: Dict[_EditOperations, _EditOperations],
+        operation: _EditOperations,
+        _flip_operations: Dict[_EditOperations, _EditOperations],
     ) -> _EditOperations:
         if operation in _flip_operations:
             return _flip_operations.get(operation)  # type: ignore
