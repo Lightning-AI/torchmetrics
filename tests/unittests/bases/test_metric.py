@@ -503,7 +503,7 @@ def test_no_iteration_allowed():
     """Test that no iteration of metric is allowed."""
     metric = DummyMetric()
     with pytest.raises(TypeError, match="'DummyMetric' object is not iterable"):  # noqa: PT012
-        for m in metric:
+        for _m in metric:
             continue
 
 
