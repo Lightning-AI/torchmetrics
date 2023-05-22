@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import namedtuple
+from typing import Any
 
 import pytest
 import torch
@@ -78,44 +79,44 @@ _binary_cases = (
             preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
             target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
         ),
-        id="input[single dim-labels]",
+        id="input[single_dim-labels]",
     ),
     pytest.param(
         Input(preds=torch.rand(NUM_BATCHES, BATCH_SIZE), target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE))),
-        id="input[single dim-probs]",
+        id="input[single_dim-probs]",
     ),
     pytest.param(
         Input(
             preds=_inv_sigmoid(torch.rand(NUM_BATCHES, BATCH_SIZE)),
             target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
         ),
-        id="input[single dim-logits]",
+        id="input[single_dim-logits]",
     ),
     pytest.param(
         Input(
             preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
             target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
         ),
-        id="input[multi dim-labels]",
+        id="input[multi_dim-labels]",
     ),
     pytest.param(
         Input(
             preds=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
             target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
         ),
-        id="input[multi dim-probs]",
+        id="input[multi_dim-probs]",
     ),
     pytest.param(
         Input(
             preds=_inv_sigmoid(torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
             target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
         ),
-        id="input[multi dim-logits]",
+        id="input[multi_dim-logits]",
     ),
 )
 
 
-def _multiclass_with_missing_class(*shape, num_classes=NUM_CLASSES):
+def _multiclass_with_missing_class(*shape: Any, num_classes=NUM_CLASSES):
     """Generate multiclass input where a class is missing.
 
     Args:
@@ -136,49 +137,49 @@ _multiclass_cases = (
             preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
             target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
         ),
-        id="input[single dim-labels]",
+        id="input[single_dim-labels]",
     ),
     pytest.param(
         Input(
             preds=torch.randn(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES).softmax(-1),
             target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
         ),
-        id="input[single dim-probs]",
+        id="input[single_dim-probs]",
     ),
     pytest.param(
         Input(
             preds=_logsoftmax(torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES), -1),
             target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
         ),
-        id="input[single dim-logits]",
+        id="input[single_dim-logits]",
     ),
     pytest.param(
         Input(
             preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
             target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
         ),
-        id="input[multi dim-labels]",
+        id="input[multi_dim-labels]",
     ),
     pytest.param(
         Input(
             preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM).softmax(-2),
             target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
         ),
-        id="input[multi dim-probs]",
+        id="input[multi_dim-probs]",
     ),
     pytest.param(
         Input(
             preds=_logsoftmax(torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM), -2),
             target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
         ),
-        id="input[multi dim-logits]",
+        id="input[multi_dim-logits]",
     ),
     pytest.param(
         Input(
             preds=_multiclass_with_missing_class(NUM_BATCHES, BATCH_SIZE, num_classes=NUM_CLASSES),
             target=_multiclass_with_missing_class(NUM_BATCHES, BATCH_SIZE, num_classes=NUM_CLASSES),
         ),
-        id="input[single dim-labels-missing class]",
+        id="input[single_dim-labels-missing_class]",
     ),
 )
 
@@ -189,42 +190,42 @@ _multilabel_cases = (
             preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)),
             target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)),
         ),
-        id="input[single dim-labels]",
+        id="input[single_dim-labels]",
     ),
     pytest.param(
         Input(
             preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES),
             target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)),
         ),
-        id="input[single dim-probs]",
+        id="input[single_dim-probs]",
     ),
     pytest.param(
         Input(
             preds=_inv_sigmoid(torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)),
             target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)),
         ),
-        id="input[single dim-logits]",
+        id="input[single_dim-logits]",
     ),
     pytest.param(
         Input(
             preds=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)),
             target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)),
         ),
-        id="input[multi dim-labels]",
+        id="input[multi_dim-labels]",
     ),
     pytest.param(
         Input(
             preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM),
             target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)),
         ),
-        id="input[multi dim-probs]",
+        id="input[multi_dim-probs]",
     ),
     pytest.param(
         Input(
             preds=_inv_sigmoid(torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)),
             target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, EXTRA_DIM)),
         ),
-        id="input[multi dim-logits]",
+        id="input[multi_dim-logits]",
     ),
 )
 
@@ -236,7 +237,7 @@ _group_cases = (
             target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
             groups=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
         ),
-        id="input[single dim-labels]",
+        id="input[single_dim-labels]",
     ),
     pytest.param(
         GroupInput(
@@ -244,7 +245,7 @@ _group_cases = (
             target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
             groups=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
         ),
-        id="input[single dim-probs]",
+        id="input[single_dim-probs]",
     ),
     pytest.param(
         GroupInput(
@@ -252,7 +253,7 @@ _group_cases = (
             target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
             groups=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
         ),
-        id="input[single dim-logits]",
+        id="input[single_dim-logits]",
     ),
 )
 

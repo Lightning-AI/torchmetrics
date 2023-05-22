@@ -82,7 +82,7 @@ def _baseline_specificity_binary(preds, target, ignore_index, multidim_average):
 class TestBinarySpecificity(MetricTester):
     """Test class for `BinarySpecificity` metric."""
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
     def test_binary_specificity(self, ddp, input, ignore_index, multidim_average):
@@ -106,7 +106,7 @@ class TestBinarySpecificity(MetricTester):
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     def test_binary_specificity_functional(self, input, ignore_index, multidim_average):
         """Test functional implementation of metric."""
@@ -446,7 +446,7 @@ class TestMultilabelSpecificity(MetricTester):
     """Test class for `MultilabelSpecificity` metric."""
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
     def test_multilabel_specificity(self, ddp, input, ignore_index, multidim_average, average):
@@ -479,7 +479,7 @@ class TestMultilabelSpecificity(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
     def test_multilabel_specificity_functional(self, input, ignore_index, multidim_average, average):

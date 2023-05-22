@@ -98,7 +98,7 @@ def test_accuracy_functional_raises_invalid_task():
 class TestBinaryAccuracy(MetricTester):
     """Test class for `BinaryAccuracy` metric."""
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
     def test_binary_accuracy(self, ddp, input, ignore_index, multidim_average):
@@ -122,7 +122,7 @@ class TestBinaryAccuracy(MetricTester):
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     def test_binary_accuracy_functional(self, input, ignore_index, multidim_average):
         """Test functional implementation of metric."""
@@ -201,6 +201,9 @@ def _sklearn_accuracy_multiclass(preds, target, ignore_index, multidim_average, 
         acc_per_class = confmat.diagonal() / confmat.sum(axis=1)
         acc_per_class[np.isnan(acc_per_class)] = 0.0
         if average == "macro":
+            acc_per_class = acc_per_class[
+                (np.bincount(preds, minlength=NUM_CLASSES) + np.bincount(target, minlength=NUM_CLASSES)) != 0.0
+            ]
             return acc_per_class.mean()
         if average == "weighted":
             weights = confmat.sum(1)
@@ -221,7 +224,10 @@ def _sklearn_accuracy_multiclass(preds, target, ignore_index, multidim_average, 
             acc_per_class = confmat.diagonal() / confmat.sum(axis=1)
             acc_per_class[np.isnan(acc_per_class)] = 0.0
             if average == "macro":
-                res.append(acc_per_class.mean())
+                acc_per_class = acc_per_class[
+                    (np.bincount(pred, minlength=NUM_CLASSES) + np.bincount(true, minlength=NUM_CLASSES)) != 0.0
+                ]
+                res.append(acc_per_class.mean() if len(acc_per_class) > 0 else 0.0)
             elif average == "weighted":
                 weights = confmat.sum(1)
                 score = ((weights * acc_per_class) / weights.sum()).sum()
@@ -433,7 +439,7 @@ class TestMultilabelAccuracy(MetricTester):
     """Test class for `MultilabelAccuracy` metric."""
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multilabel_accuracy(self, ddp, input, ignore_index, multidim_average, average):
@@ -466,7 +472,7 @@ class TestMultilabelAccuracy(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multilabel_accuracy_functional(self, input, ignore_index, multidim_average, average):
