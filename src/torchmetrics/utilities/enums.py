@@ -44,9 +44,11 @@ class EnumStr(StrEnum):
         """
         try:
             me = super().from_str(value.replace("-", "_"), source=source)
-        except ValueError:
+        except ValueError as err:
             _allowed_im = [m.lower() for m in cls._member_names_]
-            raise ValueError(f"Invalid {cls._name()}: expected one of {cls._allowed_matches(source)}, but got {value}.")
+            raise ValueError(
+                f"Invalid {cls._name()}: expected one of {cls._allowed_matches(source)}, but got {value}."
+            ) from err
         return cls(me)
 
 
