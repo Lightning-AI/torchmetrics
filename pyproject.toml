@@ -87,6 +87,7 @@ extend-select = [
     "Q",  # see: https://pypi.org/project/flake8-quotes
     "EXE",  # see: https://pypi.org/project/flake8-executable
     "ISC",  # see: https://pypi.org/project/flake8-implicit-str-concat
+    "PIE",  # see: https://pypi.org/project/flake8-pie
 ]
 ignore = [
     "E731",  # Do not assign a lambda expression, use a def
