@@ -3,10 +3,10 @@ from typing import Sequence
 
 import pytest
 from torch import Tensor, tensor
-
 from torchmetrics.functional.text.ter import translation_edit_rate
 from torchmetrics.text.ter import TranslationEditRate
 from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
+
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 

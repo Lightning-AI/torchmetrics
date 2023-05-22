@@ -18,7 +18,6 @@ import pytest
 import torch
 from torch.nn import Module
 from torch.utils.data import Dataset
-
 from torchmetrics.image.fid import FrechetInceptionDistance
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
 
