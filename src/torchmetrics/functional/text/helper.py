@@ -193,7 +193,7 @@ class _LevenshteinEditDistance:
 
         while i > 0 or j > 0:
             operation = edit_distance[i][j][1]
-            trace = (operation,) + trace
+            trace = (operation, *trace)
             if operation in (_EditOperations.OP_SUBSTITUTE, _EditOperations.OP_NOTHING):
                 i -= 1
                 j -= 1
