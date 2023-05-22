@@ -75,8 +75,6 @@ select = [
     "D",  # see: https://pypi.org/project/pydocstyle
     "N",  # see: https://pypi.org/project/pep8-naming
     "S",  # see: https://pypi.org/project/flake8-bandit
-    "T10",  # see: https://pypi.org/project/flake8-debugger/
-    "Q",  # see: https://pypi.org/project/flake8-quotes/
 ]
 extend-select = [
     "C4",  # see: https://pypi.org/project/flake8-comprehensions
@@ -85,6 +83,8 @@ extend-select = [
     "SIM",  # see: https://pypi.org/project/flake8-simplify
     "YTT",  # see: https://pypi.org/project/flake8-2020
     "ANN",  # see: https://pypi.org/project/flake8-annotations
+    "T10",  # see: https://pypi.org/project/flake8-debugger/
+    "Q",  # see: https://pypi.org/project/flake8-quotes/
 ]
 ignore = [
     "E731",  # Do not assign a lambda expression, use a def
