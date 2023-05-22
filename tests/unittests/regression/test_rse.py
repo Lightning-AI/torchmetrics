@@ -143,6 +143,6 @@ def test_error_on_multidim_tensors(metric_class=RelativeSquaredError):
     metric = metric_class()
     with pytest.raises(
         ValueError,
-        match=r"Expected both prediction and target to be 1D or 2D tensors," r" but received tensors with dimension .",
+        match=r"Expected both prediction and target to be 1D or 2D tensors, but received tensors with dimension .",
     ):
         metric(torch.randn(10, 20, 5), torch.randn(10, 20, 5))

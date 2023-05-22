@@ -737,7 +737,7 @@ class Metric(Module, ABC):
                 setattr(this, key, [fn(cur_v) for cur_v in current_val])
             else:
                 raise TypeError(
-                    "Expected metric state to be either a Tensor" f"or a list of Tensor, but encountered {current_val}"
+                    f"Expected metric state to be either a Tensor or a list of Tensor, but encountered {current_val}"
                 )
 
         # make sure to update the device attribute
