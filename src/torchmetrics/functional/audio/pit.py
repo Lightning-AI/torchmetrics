@@ -20,6 +20,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
 
 # _ps_dict: cache of permutations
@@ -200,7 +201,9 @@ def permutation_invariant_training(
     # find best
     if spk_num < 3 or not _SCIPY_AVAILABLE:
         if spk_num >= 3 and not _SCIPY_AVAILABLE:
-            warn(f"In pit metric for speaker-num {spk_num}>3, we recommend installing scipy for better performance")
+            rank_zero_warn(
+                f"In pit metric for speaker-num {spk_num}>3, we recommend installing scipy for better performance"
+            )
 
         best_metric, best_perm = _find_best_perm_by_exhaustive_method(metric_mtx, eval_op)
     else:
