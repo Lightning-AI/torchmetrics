@@ -598,15 +598,15 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
 def test_plot_methods(metric_class: object, preds: Callable, target: Callable, num_vals: int):
     """Test the plot method of metrics that only output a single tensor scalar."""
     metric = metric_class()
-    input = (lambda: (preds(),)) if target is None else lambda: (preds(), target())
+    inputs = (lambda: (preds(),)) if target is None else lambda: (preds(), target())
 
     if num_vals == 1:
-        metric.update(*input())
+        metric.update(*inputs())
         fig, ax = metric.plot()
     else:
         vals = []
         for _ in range(num_vals):
-            val = metric(*input())
+            val = metric(*inputs())
             vals.append(val[0] if isinstance(val, tuple) else val)
         fig, ax = metric.plot(vals)
 

@@ -664,14 +664,14 @@ class Metric(Module, ABC):
         """Return the device of the metric."""
         return self._device
 
-    def type(self, dst_type: Union[str, torch.dtype]) -> "Metric":
+    def type(self, dst_type: Union[str, torch.dtype]) -> "Metric":  # noqa: A003
         """Override default and prevent dtype casting.
 
         Please use `metric.set_dtype(dtype)` instead.
         """
         return self
 
-    def float(self) -> "Metric":
+    def float(self) -> "Metric":  # noqa: A003
         """Override default and prevent dtype casting.
 
         Please use `metric.set_dtype(dtype)` instead.

@@ -72,7 +72,7 @@ def _sklearn_fbeta_score_binary(preds, target, sk_fn, ignore_index, multidim_ave
     return np.stack(res)
 
 
-@pytest.mark.parametrize("input", _binary_cases)
+@pytest.mark.parametrize("inputs", _binary_cases)
 @pytest.mark.parametrize(
     "module, functional, compare",
     [
@@ -87,9 +87,9 @@ class TestBinaryFBetaScore(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
-    def test_binary_fbeta_score(self, ddp, input, module, functional, compare, ignore_index, multidim_average):
+    def test_binary_fbeta_score(self, ddp, inputs, module, functional, compare, ignore_index, multidim_average):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
@@ -110,9 +110,9 @@ class TestBinaryFBetaScore(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    def test_binary_fbeta_score_functional(self, input, module, functional, compare, ignore_index, multidim_average):
+    def test_binary_fbeta_score_functional(self, inputs, module, functional, compare, ignore_index, multidim_average):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
@@ -132,9 +132,9 @@ class TestBinaryFBetaScore(MetricTester):
             },
         )
 
-    def test_binary_fbeta_score_differentiability(self, input, module, functional, compare):
+    def test_binary_fbeta_score_differentiability(self, inputs, module, functional, compare):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -144,9 +144,9 @@ class TestBinaryFBetaScore(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_fbeta_score_half_cpu(self, input, module, functional, compare, dtype):
+    def test_binary_fbeta_score_half_cpu(self, inputs, module, functional, compare, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
 
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -161,9 +161,9 @@ class TestBinaryFBetaScore(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_fbeta_score_half_gpu(self, input, module, functional, compare, dtype):
+    def test_binary_fbeta_score_half_gpu(self, inputs, module, functional, compare, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -194,7 +194,7 @@ def _sklearn_fbeta_score_multiclass(preds, target, sk_fn, ignore_index, multidim
     return np.stack(res, 0)
 
 
-@pytest.mark.parametrize("input", _multiclass_cases)
+@pytest.mark.parametrize("inputs", _multiclass_cases)
 @pytest.mark.parametrize(
     "module, functional, compare",
     [
@@ -215,10 +215,10 @@ class TestMulticlassFBetaScore(MetricTester):
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multiclass_fbeta_score(
-        self, ddp, input, module, functional, compare, ignore_index, multidim_average, average
+        self, ddp, inputs, module, functional, compare, ignore_index, multidim_average, average
     ):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and target.ndim < 3:
@@ -250,10 +250,10 @@ class TestMulticlassFBetaScore(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multiclass_fbeta_score_functional(
-        self, input, module, functional, compare, ignore_index, multidim_average, average
+        self, inputs, module, functional, compare, ignore_index, multidim_average, average
     ):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and target.ndim < 3:
@@ -278,9 +278,9 @@ class TestMulticlassFBetaScore(MetricTester):
             },
         )
 
-    def test_multiclass_fbeta_score_differentiability(self, input, module, functional, compare):
+    def test_multiclass_fbeta_score_differentiability(self, inputs, module, functional, compare):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -290,9 +290,9 @@ class TestMulticlassFBetaScore(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_fbeta_score_half_cpu(self, input, module, functional, compare, dtype):
+    def test_multiclass_fbeta_score_half_cpu(self, inputs, module, functional, compare, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
 
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -307,9 +307,9 @@ class TestMulticlassFBetaScore(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_fbeta_score_half_gpu(self, input, module, functional, compare, dtype):
+    def test_multiclass_fbeta_score_half_gpu(self, inputs, module, functional, compare, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -440,7 +440,7 @@ def _sklearn_fbeta_score_multilabel(preds, target, sk_fn, ignore_index, multidim
     return _sklearn_fbeta_score_multilabel_local(preds, target, sk_fn, ignore_index, average)
 
 
-@pytest.mark.parametrize("input", _multilabel_cases)
+@pytest.mark.parametrize("inputs", _multilabel_cases)
 @pytest.mark.parametrize(
     "module, functional, compare",
     [
@@ -461,10 +461,10 @@ class TestMultilabelFBetaScore(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multilabel_fbeta_score(
-        self, ddp, input, module, functional, compare, ignore_index, multidim_average, average
+        self, ddp, inputs, module, functional, compare, ignore_index, multidim_average, average
     ):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 4:
@@ -497,10 +497,10 @@ class TestMultilabelFBetaScore(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multilabel_fbeta_score_functional(
-        self, input, module, functional, compare, ignore_index, multidim_average, average
+        self, inputs, module, functional, compare, ignore_index, multidim_average, average
     ):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 4:
@@ -526,9 +526,9 @@ class TestMultilabelFBetaScore(MetricTester):
             },
         )
 
-    def test_multilabel_fbeta_score_differentiability(self, input, module, functional, compare):
+    def test_multilabel_fbeta_score_differentiability(self, inputs, module, functional, compare):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -538,9 +538,9 @@ class TestMultilabelFBetaScore(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_fbeta_score_half_cpu(self, input, module, functional, compare, dtype):
+    def test_multilabel_fbeta_score_half_cpu(self, inputs, module, functional, compare, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
 
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -555,9 +555,9 @@ class TestMultilabelFBetaScore(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_fbeta_score_half_gpu(self, input, module, functional, compare, dtype):
+    def test_multilabel_fbeta_score_half_gpu(self, inputs, module, functional, compare, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
