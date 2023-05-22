@@ -18,9 +18,9 @@ import pytest
 import speechmetrics
 import torch
 from torch import Tensor
-
 from torchmetrics.audio import ScaleInvariantSignalDistortionRatio
 from torchmetrics.functional.audio import scale_invariant_signal_distortion_ratio
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester

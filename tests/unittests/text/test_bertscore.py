@@ -17,11 +17,11 @@ from typing import Sequence
 
 import pytest
 from torch import Tensor
-from typing_extensions import Literal
-
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.text.bert import BERTScore
 from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from typing_extensions import Literal
+
 from unittests.text.helpers import TextTester, skip_on_connection_issues
 from unittests.text.inputs import _inputs_single_reference
 

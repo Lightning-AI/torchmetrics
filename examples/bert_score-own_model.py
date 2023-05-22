@@ -22,7 +22,6 @@ from typing import Dict, List, Union
 import torch
 from torch import Tensor, nn
 from torch.nn import Module
-
 from torchmetrics.text.bert import BERTScore
 
 _NUM_LAYERS = 2

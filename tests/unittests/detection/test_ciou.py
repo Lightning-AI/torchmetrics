@@ -16,11 +16,11 @@ from typing import Callable, Dict
 import pytest
 import torch
 from torch import Tensor
-
 from torchmetrics import Metric
 from torchmetrics.detection.ciou import CompleteIntersectionOverUnion
 from torchmetrics.functional.detection.ciou import complete_intersection_over_union
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_13
+
 from unittests.detection.base_iou_test import BaseTestIntersectionOverUnion, TestCaseData, _box_inputs, _inputs
 from unittests.helpers.testers import MetricTester
 
