@@ -86,6 +86,7 @@ extend-select = [
     "T10",  # see: https://pypi.org/project/flake8-debugger/
     "TID",  # see: https://pypi.org/project/flake8-tidy-imports/
     "Q",  # see: https://pypi.org/project/flake8-quotes/
+    "RUF",  # Ruff-specific rules
     "PLE",  # see: https://pypi.org/project/pylint/
 ]
 ignore = [
