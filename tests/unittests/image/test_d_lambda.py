@@ -32,7 +32,7 @@ Input = namedtuple("Input", ["preds", "target", "p"])
 
 _inputs = []
 for size, channel, p, dtype in [
-    (12, 10, 1, torch.float),
+    (12, 3, 1, torch.float),
     (13, 1, 3, torch.float32),
     (14, 1, 4, torch.double),
     (15, 3, 1, torch.float64),
