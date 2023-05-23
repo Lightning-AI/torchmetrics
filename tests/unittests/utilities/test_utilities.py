@@ -153,7 +153,7 @@ def test_check_full_state_update_fn(capsys, metric_class, expected):
 
 
 @pytest.mark.parametrize(
-    ("input", "expected"),
+    ("inputs", "expected"),
     [
         ((torch.ones(2), torch.ones(2)), True),
         ((torch.rand(2), torch.rand(2)), False),
@@ -163,9 +163,9 @@ def test_check_full_state_update_fn(capsys, metric_class, expected):
         (({f"{i}": torch.rand(2) for i in range(2)}, {f"{i}": torch.rand(2) for i in range(2)}), False),
     ],
 )
-def test_recursive_allclose(input, expected):
+def test_recursive_allclose(inputs, expected):
     """Test the recursive allclose works as expected."""
-    res = _allclose_recursive(*input)
+    res = _allclose_recursive(*inputs)
     assert res == expected
 
 

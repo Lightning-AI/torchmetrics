@@ -77,6 +77,7 @@ select = [
     "S",  # see: https://pypi.org/project/flake8-bandit
 ]
 extend-select = [
+    "A",  # see: https://pypi.org/project/flake8-builtins
     "B",  # see: https://pypi.org/project/flake8-bugbear
     "C4",  # see: https://pypi.org/project/flake8-comprehensions
     "PT",  # see: https://pypi.org/project/flake8-pytest-style

@@ -42,15 +42,15 @@ def _sklearn_jaccard_index_binary(preds, target, ignore_index=None):
     return sk_jaccard_index(y_true=target, y_pred=preds)
 
 
-@pytest.mark.parametrize("input", _binary_cases)
+@pytest.mark.parametrize("inputs", _binary_cases)
 class TestBinaryJaccardIndex(MetricTester):
     """Test class for `BinaryJaccardIndex` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_binary_jaccard_index(self, input, ddp, ignore_index):
+    def test_binary_jaccard_index(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
@@ -66,9 +66,9 @@ class TestBinaryJaccardIndex(MetricTester):
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_binary_jaccard_index_functional(self, input, ignore_index):
+    def test_binary_jaccard_index_functional(self, inputs, ignore_index):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
@@ -82,9 +82,9 @@ class TestBinaryJaccardIndex(MetricTester):
             },
         )
 
-    def test_binary_jaccard_index_differentiability(self, input):
+    def test_binary_jaccard_index_differentiability(self, inputs):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -94,9 +94,9 @@ class TestBinaryJaccardIndex(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_jaccard_index_dtype_cpu(self, input, dtype):
+    def test_binary_jaccard_index_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -110,9 +110,9 @@ class TestBinaryJaccardIndex(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_jaccard_index_dtype_gpu(self, input, dtype):
+    def test_binary_jaccard_index_dtype_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -138,16 +138,16 @@ def _sklearn_jaccard_index_multiclass(preds, target, ignore_index=None, average=
     return sk_jaccard_index(y_true=target, y_pred=preds, average=average)
 
 
-@pytest.mark.parametrize("input", _multiclass_cases)
+@pytest.mark.parametrize("inputs", _multiclass_cases)
 class TestMulticlassJaccardIndex(MetricTester):
     """Test class for `MulticlassJaccardIndex` metric."""
 
     @pytest.mark.parametrize("average", ["macro", "micro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multiclass_jaccard_index(self, input, ddp, ignore_index, average):
+    def test_multiclass_jaccard_index(self, inputs, ddp, ignore_index, average):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
@@ -165,9 +165,9 @@ class TestMulticlassJaccardIndex(MetricTester):
 
     @pytest.mark.parametrize("average", ["macro", "micro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_multiclass_jaccard_index_functional(self, input, ignore_index, average):
+    def test_multiclass_jaccard_index_functional(self, inputs, ignore_index, average):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
@@ -182,9 +182,9 @@ class TestMulticlassJaccardIndex(MetricTester):
             },
         )
 
-    def test_multiclass_jaccard_index_differentiability(self, input):
+    def test_multiclass_jaccard_index_differentiability(self, inputs):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -194,9 +194,9 @@ class TestMulticlassJaccardIndex(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_jaccard_index_dtype_cpu(self, input, dtype):
+    def test_multiclass_jaccard_index_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -208,9 +208,9 @@ class TestMulticlassJaccardIndex(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_jaccard_index_dtype_gpu(self, input, dtype):
+    def test_multiclass_jaccard_index_dtype_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -251,16 +251,16 @@ def _sklearn_jaccard_index_multilabel(preds, target, ignore_index=None, average=
     return ((scores * weights) / weights.sum()).sum()
 
 
-@pytest.mark.parametrize("input", _multilabel_cases)
+@pytest.mark.parametrize("inputs", _multilabel_cases)
 class TestMultilabelJaccardIndex(MetricTester):
     """Test class for `MultilabelJaccardIndex` metric."""
 
     @pytest.mark.parametrize("average", ["macro", "micro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multilabel_jaccard_index(self, input, ddp, ignore_index, average):
+    def test_multilabel_jaccard_index(self, inputs, ddp, ignore_index, average):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
@@ -278,9 +278,9 @@ class TestMultilabelJaccardIndex(MetricTester):
 
     @pytest.mark.parametrize("average", ["macro", "micro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    def test_multilabel_jaccard_index_functional(self, input, ignore_index, average):
+    def test_multilabel_jaccard_index_functional(self, inputs, ignore_index, average):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
@@ -295,9 +295,9 @@ class TestMultilabelJaccardIndex(MetricTester):
             },
         )
 
-    def test_multilabel_jaccard_index_differentiability(self, input):
+    def test_multilabel_jaccard_index_differentiability(self, inputs):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -307,9 +307,9 @@ class TestMultilabelJaccardIndex(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_jaccard_index_dtype_cpu(self, input, dtype):
+    def test_multilabel_jaccard_index_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -323,9 +323,9 @@ class TestMultilabelJaccardIndex(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_jaccard_index_dtype_gpu(self, input, dtype):
+    def test_multilabel_jaccard_index_dtype_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,

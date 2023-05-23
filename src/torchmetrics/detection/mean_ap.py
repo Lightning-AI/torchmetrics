@@ -44,19 +44,19 @@ else:
 log = logging.getLogger(__name__)
 
 
-def compute_area(input: List[Any], iou_type: str = "bbox") -> Tensor:
+def compute_area(inputs: List[Any], iou_type: str = "bbox") -> Tensor:
     """Compute area of input depending on the specified iou_type.
 
     Default output for empty input is :class:`~torch.Tensor`
     """
-    if len(input) == 0:
+    if len(inputs) == 0:
         return Tensor([])
 
     if iou_type == "bbox":
-        return box_area(torch.stack(input))
+        return box_area(torch.stack(inputs))
     if iou_type == "segm":
-        input = [{"size": i[0], "counts": i[1]} for i in input]
-        area = torch.tensor(mask_utils.area(input).astype("float"))
+        inputs = [{"size": i[0], "counts": i[1]} for i in inputs]
+        area = torch.tensor(mask_utils.area(inputs).astype("float"))
         return area
 
     raise Exception(f"IOU type {iou_type} is not supported")
