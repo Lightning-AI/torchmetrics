@@ -18,7 +18,6 @@ import pytest
 import torch
 from torch.nn import Module
 from torch.utils.data import Dataset
-
 from torchmetrics.image.inception import InceptionScore
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
