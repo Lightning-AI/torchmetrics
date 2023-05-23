@@ -66,8 +66,8 @@ Additionally you may want to set the class properties: `is_differentiable`, `hig
         full_state_update: bool = True
 
 Finally, from torchmetrics v1.0.0 onwards, we also support plotting of metrics through the `.plot` method. By default
-thie method will raise `NotImplementedError` but can be implemented by the user to provide a custom plot for the metric.
-For any metrics that returns a simle scalar tensor, or a dict of scalar tensors the internal `._plot` method can be
+this method will raise `NotImplementedError` but can be implemented by the user to provide a custom plot for the metric.
+For any metrics that returns a simple scalar tensor, or a dict of scalar tensors the internal `._plot` method can be
 used, that provides the common plotting functionality for most metrics in torchmetrics.
 
 .. testcode::
