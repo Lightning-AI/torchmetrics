@@ -83,8 +83,8 @@ used, that provides the common plotting functionality for most metrics in torchm
         ) -> _PLOT_OUT_TYPE:
             return self._plot(val, ax)
 
-If the metric returns a more complex output, a custom implementation of the `plot` method is required.
-
+If the metric returns a more complex output, a custom implementation of the `plot` method is required. For more details
+on the plotting API, see the :ref:`plotting` page.
 
 Internal implementation details
 -------------------------------
