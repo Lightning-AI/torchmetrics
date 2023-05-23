@@ -2,7 +2,7 @@
 
 .. testsetup:: *
 
-    from typing import Optional, Sequence
+    from typing import Optional, Sequence, Union
     from torch import Tensor
 
 *********************
