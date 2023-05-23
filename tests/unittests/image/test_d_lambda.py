@@ -32,7 +32,7 @@ Input = namedtuple("Input", ["preds", "target", "p"])
 
 _inputs = []
 for size, channel, p, dtype in [
-    (12, 3, 1, torch.float),
+    (12, 10, 1, torch.float),
     (13, 1, 3, torch.float32),
     (14, 1, 4, torch.double),
     (15, 3, 1, torch.float64),
@@ -152,3 +152,11 @@ def test_d_lambda_invalid_type():
     target_t = torch.rand((1, 1, 16, 16), dtype=torch.float64)
     with pytest.raises(TypeError, match="Expected `ms` and `fused` to have the same data type.*"):
         spectral_distortion_index(preds_t, target_t, p=1)
+
+
+def test_d_lambda_different_sizes():
+    """Since d lambda is reference free, it can accept different number of targets and preds."""
+    preds = torch.rand(1, 1, 32, 32)
+    target = torch.rand(1, 1, 16, 16)
+    out = spectral_distortion_index(preds, target, p=1)
+    assert isinstance(out, torch.Tensor)
