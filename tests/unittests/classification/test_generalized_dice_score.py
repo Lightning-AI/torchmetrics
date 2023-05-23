@@ -21,7 +21,6 @@ from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from sklearn.metrics import f1_score as sk_f1_score
 from sklearn.metrics import generalized_dice_score as sk_generalized_dice_score
 from torch import Tensor
-
 from torchmetrics.classification.generalized_dice import (
     BinaryGeneralizedDiceScore,
     MulticlassGeneralizedDiceScore,
@@ -32,6 +31,7 @@ from torchmetrics.functional.classification.generalized_dice import (
     multiclass_generalized_dice_score,
     multilabel_generalized_dice_score,
 )
+
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
