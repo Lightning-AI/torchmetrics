@@ -275,7 +275,7 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
     """
 
     is_differentiable = True
-    sum: Tensor
+    ci_snr_sum: Tensor
     num: Tensor
     higher_is_better = True
     plot_lower_bound: Optional[float] = None
@@ -291,19 +291,19 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
             raise ValueError(f"Expected argument `zero_mean` to be an bool, but got {zero_mean}")
         self.zero_mean = zero_mean
 
-        self.add_state("sum", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("ci_snr_sum", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("num", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         v = complex_scale_invariant_signal_noise_ratio(preds=preds, target=target, zero_mean=self.zero_mean)
 
-        self.sum += v.sum()
+        self.ci_snr_sum += v.sum()
         self.num += v.numel()
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return self.sum / self.num
+        return self.ci_snr_sum / self.num
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
