@@ -1120,7 +1120,7 @@ class CompositionalMetric(Metric):
 
     def __repr__(self) -> str:
         """Return a representation of the compositional metric, including the two inputs it was formed from."""
-        _op_metrics = f"(\n  {self.op.__name__}(\n    {repr(self.metric_a)},\n    {repr(self.metric_b)}\n  )\n)"
+        _op_metrics = f"(\n  {self.op.__name__}(\n    {self.metric_a!r},\n    {self.metric_b!r}\n  )\n)"
         return self.__class__.__name__ + _op_metrics
 
     def _wrap_compute(self, compute: Callable) -> Callable:
