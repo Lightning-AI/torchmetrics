@@ -427,8 +427,8 @@ class MeanAveragePrecision(Metric):
                 Maximum number of evaluated detection bounding boxes
         """
         # if self.iou_type == "bbox":
-        gt = self.groundtruths[idx].detach().to(self.device)
-        det = self.detections[idx].detach().to(self.device)
+        gt = self.groundtruths[idx]
+        det = self.detections[idx]
 
         gt_label_mask = (self.groundtruth_labels[idx] == class_id).nonzero().squeeze(1).detach().to(self.device)
         det_label_mask = (self.detection_labels[idx] == class_id).nonzero().squeeze(1).detach().to(self.device)
@@ -526,8 +526,8 @@ class MeanAveragePrecision(Metric):
                 IoU results for image and class.
         """
 
-        gt = self.groundtruths[idx].detach().to(self.device)
-        det = self.detections[idx].detach().to(self.device)
+        gt = self.groundtruths[idx]
+        det = self.detections[idx]
         gt_label_mask = (self.groundtruth_labels[idx] == class_id).nonzero().squeeze(1).detach().to(self.device)
         det_label_mask = (self.detection_labels[idx] == class_id).nonzero().squeeze(1).detach().to(self.device)
 
