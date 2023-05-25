@@ -580,15 +580,17 @@ class MeanAveragePrecision(Metric):
 
         _zero_tensor = torch.tensor(0, dtype=torch.bool, device=self.device)
         _one_tensor = torch.tensor(1, dtype=torch.bool, device=self.device)
+
+        thrs = torch.tensor(self.iou_thresholds, device=self.device)
         if torch.numel(ious) > 0:
-            for idx_iou, t in enumerate(self.iou_thresholds):
-                for idx_det, _ in enumerate(det):
-                    m = MeanAveragePrecision._find_best_gt_match(t, gt_matches, idx_iou, gt_ignore, ious, idx_det)
-                    if m == -1:
-                        continue
-                    det_ignore[idx_iou, idx_det] = gt_ignore[m]
-                    det_matches[idx_iou, idx_det] = 1
-                    gt_matches[idx_iou, m] = 1
+            for idx_det, _ in enumerate(det):
+                match_idx, matches = MeanAveragePrecision._find_best_gt_match(thrs, gt_matches, gt_ignore,
+                                                                              ious, idx_det)
+                if match_idx == -1:
+                    continue
+                det_ignore[matches[0], idx_det] = gt_ignore[match_idx]
+                det_matches[matches[0], idx_det] = 1
+                gt_matches[matches[0], match_idx] = 1
 
         # set unmatched detections outside of area range to ignore
         det_areas = compute_area(det, device=self.device, iou_type=self.iou_type)
@@ -608,8 +610,8 @@ class MeanAveragePrecision(Metric):
 
     @staticmethod
     def _find_best_gt_match(
-        thr: int, gt_matches: Tensor, idx_iou: float, gt_ignore: Tensor, ious: Tensor, idx_det: int
-    ) -> int:
+        thrs: Tensor, gt_matches: Tensor, gt_ignore: Tensor, ious: Tensor, idx_det: int
+    ) -> Tuple[int, Optional[Tuple[Tensor, Tensor]]]:
         """Return id of best ground truth match with current detection.
 
         Args:
@@ -626,14 +628,17 @@ class MeanAveragePrecision(Metric):
             idx_det:
                 Id of current detection.
         """
-        previously_matched = gt_matches[idx_iou]
+        previously_matched = gt_matches[thrs.numpy()]
         # Remove previously matched or ignored gts
         remove_mask = previously_matched | gt_ignore
         gt_ious = ious[idx_det] * ~remove_mask
-        match_idx = gt_ious.argmax().item()
-        if gt_ious[match_idx] > thr:
-            return match_idx
-        return -1
+
+        matches = gt_ious.where(gt_ious > thrs.unsqueeze(-1),
+                                torch.tensor(-1, dtype=gt_ious.dtype, device=gt_ious.device))
+        match_idx = matches.argmax().item()
+        if torch.any(matches > -1):
+            return match_idx, (matches > -1).nonzero(as_tuple=True)
+        return -1, None
 
     def _summarize(
         self,
