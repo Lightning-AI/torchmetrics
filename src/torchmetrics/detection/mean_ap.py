@@ -615,12 +615,10 @@ class MeanAveragePrecision(Metric):
         """Return id of best ground truth match with current detection.
 
         Args:
-            thr:
-                Current threshold value.
+            thrs:
+                All thresholds as a Tensor.
             gt_matches:
                 Tensor showing if a ground truth matches for threshold ``t`` exists.
-            idx_iou:
-                Id of threshold ``t``.
             gt_ignore:
                 Tensor showing if ground truth should be ignored.
             ious:
@@ -628,7 +626,7 @@ class MeanAveragePrecision(Metric):
             idx_det:
                 Id of current detection.
         """
-        previously_matched = gt_matches[thrs.numpy()]
+        previously_matched = gt_matches[thrs.cpu().numpy()]
         # Remove previously matched or ignored gts
         remove_mask = previously_matched | gt_ignore
         gt_ious = ious[idx_det] * ~remove_mask
