@@ -524,7 +524,6 @@ class MeanAveragePrecision(Metric):
             ious:
                 IoU results for image and class.
         """
-
         gt = self.groundtruths[idx]
         det = self.detections[idx]
         gt_label_mask = (self.groundtruth_labels[idx] == class_id).nonzero().squeeze(1).detach().to(self.device)
@@ -567,8 +566,11 @@ class MeanAveragePrecision(Metric):
         if len(det) > max_det:
             det = det[:max_det]
         # load computed ious
-        ious = ious[idx, class_id][:, gtind] if len(ious[idx, class_id]) > 0 \
+        ious = (
+            ious[idx, class_id][:, gtind]
+            if len(ious[idx, class_id]) > 0
             else ious[idx, class_id].detach().to(self.device)
+        )
 
         nb_gt = len(gt)
         nb_det = len(det)
@@ -583,8 +585,9 @@ class MeanAveragePrecision(Metric):
         thrs = torch.tensor(self.iou_thresholds, device=self.device)
         if torch.numel(ious) > 0:
             for idx_det, _ in enumerate(det):
-                match_idx, matches = MeanAveragePrecision._find_best_gt_match(thrs, gt_matches, gt_ignore,
-                                                                              ious, idx_det)
+                match_idx, matches = MeanAveragePrecision._find_best_gt_match(
+                    thrs, gt_matches, gt_ignore, ious, idx_det
+                )
                 if match_idx == -1:
                     continue
                 det_ignore[matches[0], idx_det] = gt_ignore[match_idx]
@@ -630,8 +633,9 @@ class MeanAveragePrecision(Metric):
         remove_mask = previously_matched | gt_ignore
         gt_ious = ious[idx_det] * ~remove_mask
 
-        matches = gt_ious.where(gt_ious > thrs.unsqueeze(-1),
-                                torch.tensor(-1, dtype=gt_ious.dtype, device=gt_ious.device))
+        matches = gt_ious.where(
+            gt_ious > thrs.unsqueeze(-1), torch.tensor(-1, dtype=gt_ious.dtype, device=gt_ious.device)
+        )
         match_idx = matches.argmax().item()
         if torch.any(matches > -1):
             return match_idx, (matches > -1).nonzero(as_tuple=True)
@@ -711,9 +715,13 @@ class MeanAveragePrecision(Metric):
         nb_bbox_areas = len(self.bbox_area_ranges)
         nb_max_det_thrs = len(self.max_detection_thresholds)
         nb_imgs = len(img_ids)
-        precision = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs)).detach().to(self.device)
+        precision = (
+            -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs)).detach().to(self.device)
+        )
         recall = -torch.ones((nb_iou_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs)).detach().to(self.device)
-        scores = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs)).detach().to(self.device)
+        scores = (
+            -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs)).detach().to(self.device)
+        )
 
         # move tensors if necessary
         rec_thresholds_tensor = torch.tensor(self.rec_thresholds).detach().to(self.device)

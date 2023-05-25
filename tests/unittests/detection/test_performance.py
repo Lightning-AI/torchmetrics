@@ -1,8 +1,8 @@
+import numpy as np
 import pytest
 import torch
-import numpy as np
-
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+
 from unittests.benchmark.benchmark_setup import run_mean_ap_benchmark, run_speed_benchmark
 
 _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)

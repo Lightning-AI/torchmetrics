@@ -2,8 +2,8 @@ import time
 from typing import Dict, Union
 
 import torch
-
 from torchmetrics.detection import MeanAveragePrecision
+
 from unittests.helpers import seed_all
 
 seed_all(42)
@@ -13,7 +13,7 @@ total_time = {}
 class UpdateTime:
     """Custom clock."""
 
-    def __init__(self, step_name: str):
+    def __init__(self, step_name: str) -> None:
         """Create timer.
 
         Args:
@@ -49,7 +49,7 @@ def run_mean_ap_benchmark(device: Union[str, int] = "cuda") -> Dict[str, float]:
     mean_ap = MeanAveragePrecision()
     mean_ap.to(device=torch.device(device))
 
-    for batch_idx in range(64):
+    for _batch_idx in range(64):
         detections = [generate(100, 10) for _ in range(10)]
         targets = [generate(10, 10) for _ in range(10)]
         mean_ap.update(detections, targets)
@@ -65,7 +65,7 @@ def run_speed_benchmark(device: Union[str, int] = "cuda") -> Dict[str, float]:
         mean_ap = MeanAveragePrecision()
         mean_ap.to(device=torch.device(device))
 
-    for batch_idx in range(100):
+    for _batch_idx in range(100):
         with UpdateTime("update"):
             detections = [generate(100) for _ in range(10)]
             targets = [generate(10) for _ in range(10)]
