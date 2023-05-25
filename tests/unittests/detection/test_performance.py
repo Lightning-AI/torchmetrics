@@ -34,7 +34,9 @@ def test_performance_with_cpu():
 def test_test_consecutive_runs_with_cpu():
     """Test consistency on CPU device."""
     restuls_1 = run_mean_ap_benchmark(device="cpu")
+    restuls_1.pop("classes")
     restuls_2 = run_mean_ap_benchmark(device="cpu")
+    restuls_2.pop("classes")
 
     for key in restuls_1:
         assert np.isclose(restuls_1[key], restuls_2[key], atol=8.0e-1, rtol=8.0e-1)

@@ -52,10 +52,10 @@ def compute_area(input: List[Tensor], device: torch.device, iou_type: str = "bbo
         return Tensor([])
 
     if iou_type == "bbox":
-        return box_area(torch.stack(input).to(device))
-    if iou_type == "segm":
+        return box_area(torch.stack(input).detach().to(device))
+    elif iou_type == "segm":
         input = [{"size": i[0], "counts": i[1]} for i in input]
-        area = torch.tensor(mask_utils.area(input).astype("float")).to(device)
+        area = torch.tensor(mask_utils.area(input).astype("float")).detach().to(device)
 
         return area
 
@@ -70,8 +70,8 @@ def compute_iou(
 ) -> Tensor:
     """Compute IOU between detections and ground-truth using the specified iou_type."""
     if iou_type == "bbox":
-        return box_iou(torch.stack(det).to(device), torch.stack(gt).to(device))
-    if iou_type == "segm":
+        return box_iou(torch.stack(det).detach().to(device), torch.stack(gt).detach().to(device))
+    elif iou_type == "segm":
         return _segm_iou(det, gt, device)
     raise Exception(f"IOU type {iou_type} is not supported")
 
@@ -396,14 +396,14 @@ class MeanAveragePrecision(Metric):
 
     def _get_safe_item_values(self, item: Dict[str, Any]) -> Union[Tensor, Tuple]:
         if self.iou_type == "bbox":
-            boxes = _fix_empty_tensors(item["boxes"]).to(self.device)
+            boxes = _fix_empty_tensors(item["boxes"]).detach().to(self.device)
             if boxes.numel() > 0:
                 boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
             return boxes
         if self.iou_type == "segm":
             masks = []
 
-            for i in item["masks"].to(self.device):
+            for i in item["masks"].detach().to(self.device):
                 rle = mask_utils.encode(np.asfortranarray(i))
                 masks.append((tuple(rle["size"]), rle["counts"]))
             return tuple(masks)
@@ -427,11 +427,11 @@ class MeanAveragePrecision(Metric):
                 Maximum number of evaluated detection bounding boxes
         """
         # if self.iou_type == "bbox":
-        gt = self.groundtruths[idx].to(self.device)
-        det = self.detections[idx].to(self.device)
+        gt = self.groundtruths[idx].detach().to(self.device)
+        det = self.detections[idx].detach().to(self.device)
 
-        gt_label_mask = (self.groundtruth_labels[idx] == class_id).nonzero().squeeze(1).to(self.device)
-        det_label_mask = (self.detection_labels[idx] == class_id).nonzero().squeeze(1).to(self.device)
+        gt_label_mask = (self.groundtruth_labels[idx] == class_id).nonzero().squeeze(1).detach().to(self.device)
+        det_label_mask = (self.detection_labels[idx] == class_id).nonzero().squeeze(1).detach().to(self.device)
 
         if len(gt_label_mask) == 0 or len(det_label_mask) == 0:
             return Tensor([])
@@ -440,7 +440,7 @@ class MeanAveragePrecision(Metric):
         det = [det[i] for i in det_label_mask]
 
         # Sort by scores and use only max detections
-        scores = self.detection_scores[idx].to(self.device)
+        scores = self.detection_scores[idx].detach().to(self.device)
         scores_filtered = scores[self.detection_labels[idx] == class_id]
         inds = torch.argsort(scores_filtered, descending=True)
 
@@ -449,7 +449,7 @@ class MeanAveragePrecision(Metric):
         if len(det) > max_det:
             det = det[:max_det]
 
-        return compute_iou(det, gt, self.device, self.iou_type).to(self.device)
+        return compute_iou(det, gt, self.device, self.iou_type)
 
     def __evaluate_image_gt_no_preds(
         self, gt: Tensor, gt_label_mask: Tensor, area_range: Tuple[int, int], nb_iou_thrs: int
@@ -460,8 +460,8 @@ class MeanAveragePrecision(Metric):
         nb_gt = len(gt)
         areas = compute_area(gt, device=self.device, iou_type=self.iou_type)
         ignore_area = (areas < area_range[0]) | (areas > area_range[1])
-        gt_ignore, _ = torch.sort(ignore_area.to(torch.uint8).to(self.device))
-        gt_ignore = gt_ignore.to(torch.bool).to(self.device)
+        gt_ignore, _ = torch.sort(ignore_area.to(torch.uint8).detach().to(self.device))
+        gt_ignore = gt_ignore.to(torch.bool).detach().to(self.device)
 
         # Detections
         nb_det = 0
@@ -486,9 +486,9 @@ class MeanAveragePrecision(Metric):
 
         # Detections
 
-        scores = self.detection_scores[idx].to(self.device)
+        scores = self.detection_scores[idx].detach().to(self.device)
         scores_filtered = scores[det_label_mask]
-        scores_sorted, dtind = torch.sort(scores_filtered.to(self.device), descending=True)
+        scores_sorted, dtind = torch.sort(scores_filtered.detach().to(self.device), descending=True)
 
         det = [det[i] for i in det_label_mask]
         det = [det[i] for i in dtind]
@@ -497,8 +497,8 @@ class MeanAveragePrecision(Metric):
         nb_det = len(det)
         det_areas = compute_area(det, device=self.device, iou_type=self.iou_type)
         det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
-        ar = torch.clone(det_ignore_area.reshape((1, nb_det))).detach()
-        det_ignore = torch.repeat_interleave(ar.to(self.device), nb_iou_thrs, 0)
+        ar = torch.clone(det_ignore_area.reshape((1, nb_det))).detach().to(self.device)
+        det_ignore = torch.repeat_interleave(ar, nb_iou_thrs, 0)
 
         return {
             "dtMatches": torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device),
@@ -526,10 +526,10 @@ class MeanAveragePrecision(Metric):
                 IoU results for image and class.
         """
 
-        gt = self.groundtruths[idx].to(self.device)
-        det = self.detections[idx].to(self.device)
-        gt_label_mask = (self.groundtruth_labels[idx] == class_id).nonzero().squeeze(1).to(self.device)
-        det_label_mask = (self.detection_labels[idx] == class_id).nonzero().squeeze(1).to(self.device)
+        gt = self.groundtruths[idx].detach().to(self.device)
+        det = self.detections[idx].detach().to(self.device)
+        gt_label_mask = (self.groundtruth_labels[idx] == class_id).nonzero().squeeze(1).detach().to(self.device)
+        det_label_mask = (self.detection_labels[idx] == class_id).nonzero().squeeze(1).detach().to(self.device)
 
         # No Gt and No predictions --> ignore image
         if len(gt_label_mask) == 0 and len(det_label_mask) == 0:
@@ -555,41 +555,45 @@ class MeanAveragePrecision(Metric):
         ignore_area = torch.logical_or(areas < area_range[0], areas > area_range[1])
 
         # sort dt highest score first, sort gt ignore last
-        ignore_area_sorted, gtind = torch.sort(ignore_area.to(torch.uint8).to(self.device))
+        ignore_area_sorted, gtind = torch.sort(ignore_area.to(torch.uint8).detach().to(self.device))
         # Convert to uint8 temporarily and back to bool, because "Sort currently does not support bool dtype on CUDA"
 
-        ignore_area_sorted = ignore_area_sorted.to(torch.bool).to(self.device)
+        ignore_area_sorted = ignore_area_sorted.to(torch.bool).detach().to(self.device)
 
         gt = [gt[i] for i in gtind]
-        scores = self.detection_scores[idx].to(self.device)
+        scores = self.detection_scores[idx].detach().to(self.device)
         scores_filtered = scores[det_label_mask]
-        scores_sorted, dtind = torch.sort(scores_filtered.to(self.device), descending=True)
+        scores_sorted, dtind = torch.sort(scores_filtered.detach().to(self.device), descending=True)
         det = [det[i] for i in dtind]
         if len(det) > max_det:
             det = det[:max_det]
         # load computed ious
-        ious = ious[idx, class_id][:, gtind] if len(ious[idx, class_id]) > 0 else ious[idx, class_id].to(self.device)
+        ious = ious[idx, class_id][:, gtind] if len(ious[idx, class_id]) > 0 \
+            else ious[idx, class_id].detach().to(self.device)
 
         nb_gt = len(gt)
         nb_det = len(det)
         gt_matches = torch.zeros((nb_iou_thrs, nb_gt), dtype=torch.bool, device=self.device)
         gt_ignore = ignore_area_sorted
+        det_ignore = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device)
+        det_matches = torch.zeros((nb_iou_thrs, nb_det), dtype=torch.bool, device=self.device)
 
-        iou_thresholds = torch.tensor(self.iou_thresholds, device=self.device)
+        _zero_tensor = torch.tensor(0, dtype=torch.bool, device=self.device)
+        _one_tensor = torch.tensor(1, dtype=torch.bool, device=self.device)
         if torch.numel(ious) > 0:
-            best_matches = self._find_best_gt_matches(iou_thresholds, gt_matches, gt_ignore, ious)
-            _zero_tensor = torch.tensor(0, dtype=torch.bool, device=self.device)
-            _one_tensor = torch.tensor(1, dtype=torch.bool, device=self.device)
-            det_ignore = torch.where(best_matches != -1, gt_ignore[best_matches.clamp(max=gt_ignore.shape[0] - 1)],
-                                     _zero_tensor)
-            det_matches = torch.where(best_matches != -1, _one_tensor, _zero_tensor)
-            for idx in range(nb_iou_thrs):
-                gt_matches[idx, best_matches[idx].clamp(0, max=gt_matches.shape[1] - 1).unique()] = 1
+            for idx_iou, t in enumerate(self.iou_thresholds):
+                for idx_det, _ in enumerate(det):
+                    m = MeanAveragePrecision._find_best_gt_match(t, gt_matches, idx_iou, gt_ignore, ious, idx_det)
+                    if m == -1:
+                        continue
+                    det_ignore[idx_iou, idx_det] = gt_ignore[m]
+                    det_matches[idx_iou, idx_det] = 1
+                    gt_matches[idx_iou, m] = 1
 
         # set unmatched detections outside of area range to ignore
         det_areas = compute_area(det, device=self.device, iou_type=self.iou_type)
         det_ignore_area = (det_areas < area_range[0]) | (det_areas > area_range[1])
-        ar = torch.clone(det_ignore_area.reshape((1, nb_det))).detach()
+        ar = torch.clone(det_ignore_area.reshape((1, nb_det))).detach().to(self.device)
         det_ignore = torch.logical_or(
             det_ignore, torch.logical_and(det_matches == 0, torch.repeat_interleave(ar, nb_iou_thrs, 0))
         )
@@ -603,25 +607,33 @@ class MeanAveragePrecision(Metric):
         }
 
     @staticmethod
-    def _find_best_gt_matches(thr: Tensor, gt_matches: Tensor, gt_ignore: Tensor, ious: Tensor) -> Tensor:
-        """Return matrix of indices of best ground truth match with current detection.
+    def _find_best_gt_match(
+        thr: int, gt_matches: Tensor, idx_iou: float, gt_ignore: Tensor, ious: Tensor, idx_det: int
+    ) -> int:
+        """Return id of best ground truth match with current detection.
 
         Args:
             thr:
                 Current threshold value.
             gt_matches:
                 Tensor showing if a ground truth matches for threshold ``t`` exists.
+            idx_iou:
+                Id of threshold ``t``.
             gt_ignore:
                 Tensor showing if ground truth should be ignored.
             ious:
                 IoUs for all combinations of detection and ground truth.
+            idx_det:
+                Id of current detection.
         """
-        remove_mask = gt_matches | gt_ignore
-        gt_ious = torch.einsum("cw,dw->cdw", ~remove_mask, ious).max(-1).values
-        best_gt_matches = gt_ious.where(
-            gt_ious > thr.unsqueeze(-1), torch.tensor(-1, dtype=gt_ious.dtype, device=gt_ious.device)
-        )
-        return best_gt_matches.long()
+        previously_matched = gt_matches[idx_iou]
+        # Remove previously matched or ignored gts
+        remove_mask = previously_matched | gt_ignore
+        gt_ious = ious[idx_det] * ~remove_mask
+        match_idx = gt_ious.argmax().item()
+        if gt_ious[match_idx] > thr:
+            return match_idx
+        return -1
 
     def _summarize(
         self,
@@ -697,12 +709,12 @@ class MeanAveragePrecision(Metric):
         nb_bbox_areas = len(self.bbox_area_ranges)
         nb_max_det_thrs = len(self.max_detection_thresholds)
         nb_imgs = len(img_ids)
-        precision = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs)).to(self.device)
-        recall = -torch.ones((nb_iou_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs)).to(self.device)
-        scores = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs)).to(self.device)
+        precision = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs)).detach().to(self.device)
+        recall = -torch.ones((nb_iou_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs)).detach().to(self.device)
+        scores = -torch.ones((nb_iou_thrs, nb_rec_thrs, nb_classes, nb_bbox_areas, nb_max_det_thrs)).detach().to(self.device)
 
         # move tensors if necessary
-        rec_thresholds_tensor = torch.tensor(self.rec_thresholds).to(self.device)
+        rec_thresholds_tensor = torch.tensor(self.rec_thresholds).detach().to(self.device)
 
         # retrieve E at each category, area range, and max number of detections
         for idx_cls, _ in enumerate(class_ids):
@@ -805,7 +817,7 @@ class MeanAveragePrecision(Metric):
         for idx, (tp, fp) in enumerate(zip(tp_sum, fp_sum)):
             nd = len(tp)
             rc = tp / npig
-            pr = tp / (fp + tp) if (fp + tp > 0).all() else torch.zeros((nd,)).to(recall.device)
+            pr = tp / (fp + tp + torch.finfo(torch.float64).eps)
             prec = torch.zeros((nb_rec_thrs,)).to(recall.device)
             score = torch.zeros((nb_rec_thrs,)).to(recall.device)
 
