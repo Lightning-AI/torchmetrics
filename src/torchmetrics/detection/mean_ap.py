@@ -626,7 +626,7 @@ class MeanAveragePrecision(Metric):
             idx_det:
                 Id of current detection.
         """
-        previously_matched = gt_matches[thrs.cpu().numpy()]
+        previously_matched = gt_matches[thrs.detach().cpu().numpy()]
         # Remove previously matched or ignored gts
         remove_mask = previously_matched | gt_ignore
         gt_ious = ious[idx_det] * ~remove_mask
