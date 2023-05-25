@@ -13,13 +13,14 @@
 # limitations under the License.
 from collections import namedtuple
 from functools import partial
+from typing import Any
 
 import pytest
 import torch
 from kornia.losses import total_variation as kornia_total_variation
-
 from torchmetrics.functional.image.tv import total_variation
 from torchmetrics.image.tv import TotalVariation
+
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -30,7 +31,7 @@ seed_all(42)
 class TotalVariationTester(TotalVariation):
     """Tester class for `TotalVariation` metric overriding its update method."""
 
-    def update(self, img, *args):
+    def update(self, img, *args: Any):
         """Update metric."""
         super().update(img=img)
 

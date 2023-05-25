@@ -23,11 +23,12 @@ if module_available("lightning"):
 else:
     from pytorch_lightning import LightningModule, Trainer
 
-from integrations.helpers import no_warning_call
-from integrations.lightning.boring_model import BoringModel
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import SumMetric
 from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision
+
+from integrations.helpers import no_warning_call
+from integrations.lightning.boring_model import BoringModel
 
 
 class DiffMetric(SumMetric):
@@ -118,13 +119,13 @@ def test_metrics_reset(tmpdir):
 
             return loss
 
-        def training_step(self, batch, batch_idx, *args, **kwargs):
+        def training_step(self, batch, batch_idx):
             return self._step("train", batch)
 
-        def validation_step(self, batch, batch_idx, *args, **kwargs):
+        def validation_step(self, batch, batch_idx):
             return self._step("val", batch)
 
-        def test_step(self, batch, batch_idx, *args, **kwargs):
+        def test_step(self, batch, batch_idx):
             return self._step("test", batch)
 
         def _assert_epoch_end(self, stage):

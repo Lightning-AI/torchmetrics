@@ -20,10 +20,10 @@ import numpy as np
 import pytest
 import torch
 from torch import tensor
-
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import MaxMetric, MeanMetric, MinMetric, SumMetric
 from torchmetrics.audio import (
+    ComplexScaleInvariantSignalNoiseRatio,
     ScaleInvariantSignalDistortionRatio,
     ScaleInvariantSignalNoiseRatio,
     ShortTimeObjectiveIntelligibility,
@@ -124,6 +124,7 @@ from torchmetrics.regression import (
     MinkowskiDistance,
     PearsonCorrCoef,
     R2Score,
+    RelativeSquaredError,
     SpearmanCorrCoef,
     SymmetricMeanAbsolutePercentageError,
     TweedieDevianceScore,
@@ -159,7 +160,14 @@ from torchmetrics.text import (
     WordInfoPreserved,
 )
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
-from torchmetrics.wrappers import BootStrapper, ClasswiseWrapper, MetricTracker, MinMaxMetric, MultioutputWrapper
+from torchmetrics.wrappers import (
+    BootStrapper,
+    ClasswiseWrapper,
+    MetricTracker,
+    MinMaxMetric,
+    MultioutputWrapper,
+    Running,
+)
 
 _rand_input = lambda: torch.rand(10)
 _binary_randint_input = lambda: torch.randint(2, (10,))
@@ -276,6 +284,12 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             ScaleInvariantSignalDistortionRatio, _rand_input, _rand_input, id="scale_invariant_signal_distortion_ratio"
         ),
         pytest.param(SignalNoiseRatio, _rand_input, _rand_input, id="signal_noise_ratio"),
+        pytest.param(
+            ComplexScaleInvariantSignalNoiseRatio,
+            lambda: torch.randn(10, 3, 5, 2),
+            lambda: torch.randn(10, 3, 5, 2),
+            id="complex scale invariant signal noise ratio",
+        ),
         pytest.param(ScaleInvariantSignalNoiseRatio, _rand_input, _rand_input, id="scale_invariant_signal_noise_ratio"),
         pytest.param(
             partial(ShortTimeObjectiveIntelligibility, fs=8000, extended=False),
@@ -459,6 +473,7 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
         pytest.param(partial(MinkowskiDistance, p=3), _rand_input, _rand_input, id="minkowski distance"),
         pytest.param(PearsonCorrCoef, _rand_input, _rand_input, id="pearson corr coef"),
         pytest.param(R2Score, _rand_input, _rand_input, id="r2 score"),
+        pytest.param(RelativeSquaredError, _rand_input, _rand_input, id="relative squared error"),
         pytest.param(SpearmanCorrCoef, _rand_input, _rand_input, id="spearman corr coef"),
         pytest.param(SymmetricMeanAbsolutePercentageError, _rand_input, _rand_input, id="symmetric mape"),
         pytest.param(TweedieDevianceScore, _rand_input, _rand_input, id="tweedie deviance score"),
@@ -480,6 +495,12 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             _multilabel_rand_input,
             _multilabel_rand_input,
             id="multioutput wrapper",
+        ),
+        pytest.param(
+            partial(Running, base_metric=MeanSquaredError(), window=3),
+            _rand_input,
+            _rand_input,
+            id="running metric wrapper",
         ),
         pytest.param(Dice, _multiclass_randint_input, _multiclass_randint_input, id="dice"),
         pytest.param(
@@ -583,15 +604,15 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
 def test_plot_methods(metric_class: object, preds: Callable, target: Callable, num_vals: int):
     """Test the plot method of metrics that only output a single tensor scalar."""
     metric = metric_class()
-    input = (lambda: (preds(),)) if target is None else lambda: (preds(), target())
+    inputs = (lambda: (preds(),)) if target is None else lambda: (preds(), target())
 
     if num_vals == 1:
-        metric.update(*input())
+        metric.update(*inputs())
         fig, ax = metric.plot()
     else:
         vals = []
         for _ in range(num_vals):
-            val = metric(*input())
+            val = metric(*inputs())
             vals.append(val[0] if isinstance(val, tuple) else val)
         fig, ax = metric.plot(vals)
 
@@ -720,10 +741,12 @@ def test_plot_methods_special_text_metrics():
 @pytest.mark.parametrize("num_vals", [1, 2])
 def test_plot_methods_retrieval(metric_class, preds, target, indexes, num_vals):
     """Test the plot method for retrieval metrics by themselves, since retrieval metrics requires an extra argument."""
-    if num_vals != 1 and metric_class == RetrievalPrecisionRecallCurve:  # curves does not support multiple step plot
-        pytest.skip("curve objects does not support plotting multiple steps")
-
     metric = metric_class()
+
+    if num_vals != 1 and isinstance(metric, RetrievalPrecisionRecallCurve):
+        pytest.skip("curve objects does not support plotting multiple steps")
+    if num_vals != 1 and isinstance(metric, BinaryFairness):
+        pytest.skip("randomness in input leads to different keys for  `BinaryFairness` metric and breaks plotting")
 
     if num_vals == 1:
         metric.update(preds(), target(), indexes())
@@ -806,6 +829,14 @@ def test_plot_method_collection(together, num_vals):
         assert isinstance(fig_ax, list)
         assert all(isinstance(f[0], plt.Figure) for f in fig_ax)
         assert all(isinstance(f[1], matplotlib.axes.Axes) for f in fig_ax)
+
+    # test ax arg
+    fig, ax = plt.subplots(nrows=len(m_collection), ncols=1)
+    m_collection.plot(ax=ax.tolist())
+
+    fig, ax = plt.subplots(nrows=len(m_collection) + 1, ncols=1)
+    with pytest.raises(ValueError, match="Expected argument `ax` to be a sequence of matplotlib axis objects with.*"):
+        m_collection.plot(ax=ax.tolist())
 
 
 @pytest.mark.parametrize(

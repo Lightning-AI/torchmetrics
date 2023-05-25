@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
+import torch.distributed as dist
 from torch import IntTensor, Tensor
 
 from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
@@ -43,21 +44,19 @@ else:
 log = logging.getLogger(__name__)
 
 
-def compute_area(input: List[Tensor], device: torch.device, iou_type: str = "bbox") -> Tensor:
+def compute_area(inputs: List[Tensor], device: torch.device, iou_type: str = "bbox") -> Tensor:
     """Compute area of input depending on the specified iou_type.
 
     Default output for empty input is :class:`~torch.Tensor`
     """
-    if len(input) == 0:
+    if len(inputs) == 0:
         return Tensor([])
 
     if iou_type == "bbox":
-        return box_area(torch.stack(input).detach().to(device))
-    elif iou_type == "segm":
-        input = [{"size": i[0], "counts": i[1]} for i in input]
-        area = torch.tensor(mask_utils.area(input).astype("float")).detach().to(device)
-
-        return area
+        return box_area(torch.stack(inputs).detach().to(device))
+    if iou_type == "segm":
+        inputs = [{"size": i[0], "counts": i[1]} for i in inputs]
+        return torch.tensor(mask_utils.area(inputs).astype("float")).detach().to(device)
 
     raise Exception(f"IOU type {iou_type} is not supported")
 
@@ -71,7 +70,7 @@ def compute_iou(
     """Compute IOU between detections and ground-truth using the specified iou_type."""
     if iou_type == "bbox":
         return box_iou(torch.stack(det).detach().to(device), torch.stack(gt).detach().to(device))
-    elif iou_type == "segm":
+    if iou_type == "segm":
         return _segm_iou(det, gt, device)
     raise Exception(f"IOU type {iou_type} is not supported")
 
@@ -873,6 +872,47 @@ class MeanAveragePrecision(Metric):
         metrics[f"mar_{self.max_detection_thresholds[-1]}_per_class"] = mar_max_dets_per_class_values
         metrics.classes = torch.tensor(classes, dtype=torch.int)
         return metrics
+
+    def _apply(self, fn: Callable) -> torch.nn.Module:
+        """Custom apply function.
+
+        Excludes the detections and groundtruths from the casting when the iou_type is set to `segm` as the state is
+        no longer a tensor but a tuple.
+        """
+        if self.iou_type == "segm":
+            this = super()._apply(fn, exclude_state=("detections", "groundtruths"))
+        else:
+            this = super()._apply(fn)
+        return this
+
+    def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, process_group: Optional[Any] = None) -> None:
+        """Custom sync function.
+
+        For the iou_type `segm` the detections and groundtruths are no longer tensors but tuples. Therefore, we need
+        to gather the list of tuples and then convert it back to a list of tuples.
+
+        """
+        super()._sync_dist(dist_sync_fn=dist_sync_fn, process_group=process_group)
+
+        if self.iou_type == "segm":
+            self.detections = self._gather_tuple_list(self.detections, process_group)
+            self.groundtruths = self._gather_tuple_list(self.groundtruths, process_group)
+
+    @staticmethod
+    def _gather_tuple_list(list_to_gather: List[Tuple], process_group: Optional[Any] = None) -> List[Any]:
+        """Gather a list of tuples over multiple devices."""
+        world_size = dist.get_world_size(group=process_group)
+        dist.barrier(group=process_group)
+
+        list_gathered = [None for _ in range(world_size)]
+        dist.all_gather_object(list_gathered, list_to_gather, group=process_group)
+
+        list_merged = []
+        for idx in range(len(list_gathered[0])):
+            for rank in range(world_size):
+                list_merged.append(list_gathered[rank][idx])
+
+        return list_merged
 
     def plot(
         self, val: Optional[Union[Dict[str, Tensor], Sequence[Dict[str, Tensor]]]] = None, ax: Optional[_AX_TYPE] = None

@@ -17,9 +17,9 @@ from functools import partial
 import pytest
 import torch
 from sklearn.metrics import r2_score as sk_r2score
-
 from torchmetrics.functional import r2_score
 from torchmetrics.regression import R2Score
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -137,7 +137,7 @@ def test_error_on_multidim_tensors(metric_class=R2Score):
     metric = metric_class()
     with pytest.raises(
         ValueError,
-        match=r"Expected both prediction and target to be 1D or 2D tensors," r" but received tensors with dimension .",
+        match=r"Expected both prediction and target to be 1D or 2D tensors, but received tensors with dimension .",
     ):
         metric(torch.randn(10, 20, 5), torch.randn(10, 20, 5))
 
@@ -161,11 +161,11 @@ def test_warning_on_too_large_adjusted(metric_class=R2Score):
 
     with pytest.warns(
         UserWarning,
-        match="More independent regressions than data points in" " adjusted r2 score. Falls back to standard r2 score.",
+        match="More independent regressions than data points in adjusted r2 score. Falls back to standard r2 score.",
     ):
         metric(torch.randn(10), torch.randn(10))
 
-    with pytest.warns(UserWarning, match="Division by zero in adjusted r2 score. Falls back to" " standard r2 score."):
+    with pytest.warns(UserWarning, match="Division by zero in adjusted r2 score. Falls back to standard r2 score."):
         metric(torch.randn(11), torch.randn(11))
 
 

@@ -13,7 +13,11 @@
 # limitations under the License.
 from torchmetrics.audio.pit import PermutationInvariantTraining
 from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio, SignalDistortionRatio
-from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio, SignalNoiseRatio
+from torchmetrics.audio.snr import (
+    ComplexScaleInvariantSignalNoiseRatio,
+    ScaleInvariantSignalNoiseRatio,
+    SignalNoiseRatio,
+)
 from torchmetrics.utilities.imports import _PESQ_AVAILABLE, _PYSTOI_AVAILABLE
 
 __all__ = [
@@ -22,14 +26,15 @@ __all__ = [
     "SignalDistortionRatio",
     "ScaleInvariantSignalNoiseRatio",
     "SignalNoiseRatio",
+    "ComplexScaleInvariantSignalNoiseRatio",
 ]
 
 if _PESQ_AVAILABLE:
-    from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality  # noqa: F401
+    from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
 
     __all__.append("PerceptualEvaluationSpeechQuality")
 
 if _PYSTOI_AVAILABLE:
-    from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility  # noqa: F401
+    from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
 
     __all__.append("ShortTimeObjectiveIntelligibility")

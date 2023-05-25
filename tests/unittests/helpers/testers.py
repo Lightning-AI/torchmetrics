@@ -21,10 +21,10 @@ import numpy as np
 import pytest
 import torch
 from torch import Tensor, tensor
-
 from torchmetrics import Metric
 from torchmetrics.detection.mean_ap import MAPMetricResults
 from torchmetrics.utilities.data import _flatten, apply_to_collection
+
 from unittests import NUM_PROCESSES
 
 
@@ -449,7 +449,7 @@ class MetricTester:
         metric_args: Optional[dict] = None,
         dtype: torch.dtype = torch.half,
         **kwargs_update: Any,
-    ):
+    ) -> None:
         """Test if a metric can be used with half precision tensors on cpu.
 
         Args:
@@ -482,7 +482,7 @@ class MetricTester:
         metric_args: Optional[dict] = None,
         dtype: torch.dtype = torch.half,
         **kwargs_update: Any,
-    ):
+    ) -> None:
         """Test if a metric can be used with half precision tensors on gpu.
 
         Args:
@@ -513,7 +513,7 @@ class MetricTester:
         metric_module: Metric,
         metric_functional: Optional[Callable] = None,
         metric_args: Optional[dict] = None,
-    ):
+    ) -> None:
         """Test if a metric is differentiable or not.
 
         Args:
@@ -549,17 +549,15 @@ class DummyMetric(Metric):
     name = "Dummy"
     full_state_update: Optional[bool] = True
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.add_state("x", tensor(0.0), dist_reduce_fx="sum")
 
     def update(self):
         """Update state."""
-        pass
 
     def compute(self):
         """Compute value."""
-        pass
 
 
 class DummyListMetric(Metric):
@@ -568,12 +566,13 @@ class DummyListMetric(Metric):
     name = "DummyList"
     full_state_update: Optional[bool] = True
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.add_state("x", [], dist_reduce_fx="cat")
 
-    def update(self, x=torch.tensor(1)):
+    def update(self, x=None):
         """Update state."""
+        x = torch.tensor(1) if x is None else x
         self.x.append(x)
 
     def compute(self):
@@ -611,6 +610,14 @@ class DummyMetricMultiOutput(DummyMetricSum):
     def compute(self):
         """Compute value."""
         return [self.x, self.x]
+
+
+class DummyMetricMultiOutputDict(DummyMetricSum):
+    """DummyMetricMultiOutput for testing core components."""
+
+    def compute(self):
+        """Compute value."""
+        return {"output1": self.x, "output2": self.x}
 
 
 def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:

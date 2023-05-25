@@ -1,13 +1,14 @@
 from copy import deepcopy
 from functools import partial
+from typing import Any
 
 import pytest
 import torch
 from torch import Tensor
-
 from torchmetrics.classification import BinaryAccuracy, BinaryConfusionMatrix, MulticlassAccuracy
 from torchmetrics.regression import MeanSquaredError
 from torchmetrics.wrappers import MinMaxMetric
+
 from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -23,7 +24,7 @@ class TestingMinMaxMetric(MinMaxMetric):
         output_dict = super().compute()
         return [output_dict["raw"], output_dict["min"], output_dict["max"]]
 
-    def forward(self, *args, **kwargs):
+    def forward(self, *args: Any, **kwargs: Any):
         """Compute output for batch."""
         self.update(*args, **kwargs)
         return self.compute()

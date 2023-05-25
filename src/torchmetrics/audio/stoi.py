@@ -77,8 +77,8 @@ class ShortTimeObjectiveIntelligibility(Metric):
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
-    plot_lower_bound: float = -20.0
-    plot_upper_bound: float = 5.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,

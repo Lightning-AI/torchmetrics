@@ -100,6 +100,7 @@ from torchmetrics.functional.regression import (
     minkowski_distance,
     pearson_corrcoef,
     r2_score,
+    relative_squared_error,
     spearman_corrcoef,
     symmetric_mean_absolute_percentage_error,
     tweedie_deviance_score,
@@ -132,8 +133,8 @@ from torchmetrics.functional.text._deprecated import _word_information_preserved
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
-    from torchmetrics.functional.text._deprecated import _bert_score as bert_score  # noqa: F401
-    from torchmetrics.functional.text._deprecated import _infolm as infolm  # noqa: F401
+    from torchmetrics.functional.text._deprecated import _bert_score as bert_score
+    from torchmetrics.functional.text._deprecated import _infolm as infolm
 
 __all__ = [
     "accuracy",
@@ -190,6 +191,7 @@ __all__ = [
     "r2_score",
     "recall",
     "relative_average_spectral_error",
+    "relative_squared_error",
     "retrieval_average_precision",
     "retrieval_fall_out",
     "retrieval_hit_rate",

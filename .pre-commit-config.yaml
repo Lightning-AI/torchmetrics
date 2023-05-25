@@ -50,13 +50,6 @@ repos:
 #      - id: docformatter
 #        args: [--in-place, --wrap-summaries=115, --wrap-descriptions=120]
 
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        name: imports
-        require_serial: false
-
   - repo: https://github.com/psf/black
     rev: 23.3.0
     hooks:
@@ -85,6 +78,8 @@ repos:
           - pep8-naming
           - flake8-pytest-style
           - flake8-bandit
+          - flake8-builtins
+          - flake8-bugbear
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.0.260

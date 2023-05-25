@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from operator import neg, pos
+from typing import Any
 
 import pytest
 import torch
 from torch import tensor
-
 from torchmetrics.metric import CompositionalMetric, Metric
 
 
@@ -30,7 +30,7 @@ class DummyMetric(Metric):
         self.add_state("_num_updates", tensor(0), dist_reduce_fx="sum")
         self._val_to_return = val_to_return
 
-    def update(self, *args, **kwargs) -> None:
+    def update(self, *args: Any, **kwargs: Any) -> None:
         """Compute state."""
         self._num_updates += 1
 

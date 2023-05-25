@@ -18,7 +18,6 @@ import pytest
 import torch
 from torch.nn import Module
 from torch.utils.data import Dataset
-
 from torchmetrics.image.fid import FrechetInceptionDistance
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
 
@@ -103,10 +102,10 @@ class _ImgDataset(Dataset):
     def __init__(self, imgs) -> None:
         self.imgs = imgs
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx) -> torch.Tensor:
         return self.imgs[idx]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.imgs.shape[0]
 
 

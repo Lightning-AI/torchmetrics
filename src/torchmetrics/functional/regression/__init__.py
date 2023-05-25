@@ -25,6 +25,7 @@ from torchmetrics.functional.regression.minkowski import minkowski_distance
 from torchmetrics.functional.regression.mse import mean_squared_error
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.functional.regression.r2 import r2_score
+from torchmetrics.functional.regression.rse import relative_squared_error
 from torchmetrics.functional.regression.spearman import spearman_corrcoef
 from torchmetrics.functional.regression.symmetric_mape import symmetric_mean_absolute_percentage_error
 from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
@@ -45,6 +46,7 @@ __all__ = [
     "mean_absolute_percentage_error",
     "minkowski_distance",
     "r2_score",
+    "relative_squared_error",
     "spearman_corrcoef",
     "symmetric_mean_absolute_percentage_error",
     "tweedie_deviance_score",

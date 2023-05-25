@@ -102,7 +102,7 @@ def _r2_score_compute(
         )
 
     if adjusted < 0 or not isinstance(adjusted, int):
-        raise ValueError("`adjusted` parameter should be an integer larger or" " equal to 0.")
+        raise ValueError("`adjusted` parameter should be an integer larger or equal to 0.")
 
     if adjusted != 0:
         if adjusted > n_obs - 1:
@@ -112,7 +112,7 @@ def _r2_score_compute(
                 UserWarning,
             )
         elif adjusted == n_obs - 1:
-            rank_zero_warn("Division by zero in adjusted r2 score. Falls back to" " standard r2 score.", UserWarning)
+            rank_zero_warn("Division by zero in adjusted r2 score. Falls back to standard r2 score.", UserWarning)
         else:
             return 1 - (1 - r2) * (n_obs - 1) / (n_obs - adjusted - 1)
     return r2

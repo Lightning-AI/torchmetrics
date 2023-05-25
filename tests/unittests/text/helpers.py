@@ -21,8 +21,8 @@ import pytest
 import torch
 from torch import Tensor
 from torch.multiprocessing import set_start_method
-
 from torchmetrics import Metric
+
 from unittests import NUM_PROCESSES
 from unittests.helpers.testers import MetricTester, _assert_allclose, _assert_requires_grad, _assert_tensor
 
@@ -182,7 +182,7 @@ def _functional_test(
     device: str = "cpu",
     fragment_kwargs: bool = False,
     key: str = None,
-    **kwargs_update,
+    **kwargs_update: Any,
 ):
     """Comparison between functional metric and reference metric.
 
@@ -228,7 +228,7 @@ def _assert_half_support(
     preds: TEXT_METRIC_INPUT,
     targets: TEXT_METRIC_INPUT,
     device: str = "cpu",
-    **kwargs_update,
+    **kwargs_update: Any,
 ):
     """Test if an metric can be used with half precision tensors.
 
@@ -269,7 +269,7 @@ class TextTester(MetricTester):
         metric_args: dict = None,
         fragment_kwargs: bool = False,
         key: str = None,
-        **kwargs_update,
+        **kwargs_update: Any,
     ):
         """Core method that should be used for testing functions. Call this inside testing method.
 
@@ -315,7 +315,7 @@ class TextTester(MetricTester):
         check_scriptable: bool = True,
         key: str = None,
         ignore_order: bool = None,
-        **kwargs_update,
+        **kwargs_update: Any,
     ):
         """Core method that should be used for testing class. Call this inside testing methods.
 
@@ -395,8 +395,8 @@ class TextTester(MetricTester):
         metric_module: Metric,
         metric_functional: Callable,
         metric_args: dict = None,
-        **kwargs_update,
-    ):
+        **kwargs_update: Any,
+    ) -> None:
         """Test if a metric can be used with half precision tensors on cpu.
 
         Args:
@@ -420,8 +420,8 @@ class TextTester(MetricTester):
         metric_module: Metric,
         metric_functional: Callable,
         metric_args: dict = None,
-        **kwargs_update,
-    ):
+        **kwargs_update: Any,
+    ) -> None:
         """Test if a metric can be used with half precision tensors on gpu.
 
         Args:
@@ -446,7 +446,7 @@ class TextTester(MetricTester):
         metric_functional: Callable,
         metric_args: dict = None,
         key: str = None,
-    ):
+    ) -> None:
         """Test if a metric is differentiable or not.
 
         Args:
