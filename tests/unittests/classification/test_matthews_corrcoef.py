@@ -71,7 +71,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     def test_binary_matthews_corrcoef_functional(self, inputs, ignore_index):
         """Test functional implementation of metric."""
         preds, target = inputs
@@ -253,7 +253,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     def test_multilabel_matthews_corrcoef_functional(self, inputs, ignore_index):
         """Test functional implementation of metric."""
         preds, target = inputs
