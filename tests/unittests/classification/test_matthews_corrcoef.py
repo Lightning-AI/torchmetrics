@@ -316,3 +316,34 @@ def test_zero_case_in_multiclass():
     # Example where neither 1 or 2 is present in the target tensor
     out = multiclass_matthews_corrcoef(torch.tensor([0, 1, 2]), torch.tensor([0, 0, 0]), 3)
     assert out == 0.0
+
+
+@pytest.mark.parametrize(
+    ("metric_fn", "preds", "target", "expected"),
+    [
+        (binary_matthews_corrcoef, torch.zeros(10), torch.zeros(10), -1.0),
+        (binary_matthews_corrcoef, torch.ones(10), torch.ones(10), 1.0),
+        (
+            binary_matthews_corrcoef,
+            torch.tensor([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+            torch.tensor([0, 0, 0, 0, 0, 1, 1, 1, 1, 1]),
+            0.0,
+        ),
+        (
+            partial(multilabel_matthews_corrcoef, num_labels=NUM_CLASSES),
+            torch.zeros(10, NUM_CLASSES).long(),
+            torch.zeros(10, NUM_CLASSES).long(),
+            -1.0,
+        ),
+        (
+            partial(multilabel_matthews_corrcoef, num_labels=NUM_CLASSES),
+            torch.ones(10, NUM_CLASSES).long(),
+            torch.ones(10, NUM_CLASSES).long(),
+            1.0,
+        ),
+    ],
+)
+def test_corner_cases(metric_fn, preds, target, expected):
+    """Test the corner cases of perfect classifiers or completely random classifiers that they work as expected."""
+    out = metric_fn(preds, target)
+    assert out == expected
