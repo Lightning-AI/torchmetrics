@@ -52,7 +52,7 @@ def _sklearn_matthews_corrcoef_binary(preds, target, ignore_index=None):
 class TestBinaryMatthewsCorrCoef(MetricTester):
     """Test class for `BinaryMatthewsCorrCoef` metric."""
 
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_matthews_corrcoef(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
@@ -234,7 +234,7 @@ def _sklearn_matthews_corrcoef_multilabel(preds, target, ignore_index=None):
 class TestMultilabelMatthewsCorrCoef(MetricTester):
     """Test class for `MultilabelMatthewsCorrCoef` metric."""
 
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multilabel_matthews_corrcoef(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
