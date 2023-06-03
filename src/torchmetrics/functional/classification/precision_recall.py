@@ -43,6 +43,7 @@ def _precision_recall_reduce(
     fn: Tensor,
     average: Optional[Literal["binary", "micro", "macro", "weighted", "none"]],
     multidim_average: Literal["global", "samplewise"] = "global",
+    multilabel: bool = False,
 ) -> Tensor:
     different_stat = fp if stat == "precision" else fn  # this is what differs between the two scores
     if average == "binary":
@@ -56,7 +57,12 @@ def _precision_recall_reduce(
     score = _safe_divide(tp, tp + different_stat)
     if average is None or average == "none":
         return score
-    weights = tp + fn if average == "weighted" else torch.ones_like(score)
+    if average == "weighted":
+        weights = tp + fn
+    else:
+        weights = torch.ones_like(score)
+        if not multilabel:
+            weights[tp + fp + fn == 0] = 0.0
     return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
@@ -336,7 +342,9 @@ def multilabel_precision(
         _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
-    return _precision_recall_reduce("precision", tp, fp, tn, fn, average=average, multidim_average=multidim_average)
+    return _precision_recall_reduce(
+        "precision", tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True
+    )
 
 
 def binary_recall(
@@ -615,7 +623,9 @@ def multilabel_recall(
         _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
-    return _precision_recall_reduce("recall", tp, fp, tn, fn, average=average, multidim_average=multidim_average)
+    return _precision_recall_reduce(
+        "recall", tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True
+    )
 
 
 def precision(

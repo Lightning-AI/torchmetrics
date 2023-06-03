@@ -82,7 +82,12 @@ def _hamming_distance_reduce(
     score = 1 - _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else 1 - _safe_divide(tp, tp + fn)
     if average is None or average == "none":
         return score
-    weights = tp + fn if average == "weighted" else torch.ones_like(score)
+    if average == "weighted":
+        weights = tp + fn
+    else:
+        weights = torch.ones_like(score)
+        if not multilabel:
+            weights[tp + fp + fn == 0] = 0.0
     return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
