@@ -20,9 +20,9 @@ import pytest
 import torch
 from pycocotools import mask
 from torch import IntTensor, Tensor
-
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+
 from unittests.detection import _SAMPLE_DETECTION_SEGMENTATION
 from unittests.helpers.testers import MetricTester
 
@@ -494,12 +494,12 @@ def test_empty_preds_cxcywh():
 _gpu_test_condition = not torch.cuda.is_available()
 
 
-def _move_to_gpu(input):
-    for x in input:
+def _move_to_gpu(inputs):
+    for x in inputs:
         for key in x:
             if torch.is_tensor(x[key]):
                 x[key] = x[key].to("cuda")
-    return input
+    return inputs
 
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")

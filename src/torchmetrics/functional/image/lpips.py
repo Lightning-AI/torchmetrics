@@ -67,10 +67,10 @@ class SqueezeNet(torch.nn.Module):
         slices = []
         feature_ranges = [range(2), range(2, 5), range(5, 8), range(8, 10), range(10, 11), range(11, 12), range(12, 13)]
         for feature_range in feature_ranges:
-            slice = torch.nn.Sequential()
+            seq = torch.nn.Sequential()
             for i in feature_range:
-                slice.add_module(str(i), pretrained_features[i])
-            slices.append(slice)
+                seq.add_module(str(i), pretrained_features[i])
+            slices.append(seq)
 
         self.slices = nn.ModuleList(slices)
         if not requires_grad:
@@ -82,8 +82,8 @@ class SqueezeNet(torch.nn.Module):
         squeeze_output = namedtuple("squeeze_output", ["relu1", "relu2", "relu3", "relu4", "relu5", "relu6", "relu7"])
 
         relus = []
-        for slice in self.slices:
-            x = slice(x)
+        for slice_ in self.slices:
+            x = slice_(x)
             relus.append(x)
         return squeeze_output(*relus)
 

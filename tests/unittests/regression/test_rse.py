@@ -17,9 +17,9 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-
 from torchmetrics.functional import relative_squared_error
 from torchmetrics.regression import RelativeSquaredError
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -143,6 +143,6 @@ def test_error_on_multidim_tensors(metric_class=RelativeSquaredError):
     metric = metric_class()
     with pytest.raises(
         ValueError,
-        match=r"Expected both prediction and target to be 1D or 2D tensors," r" but received tensors with dimension .",
+        match=r"Expected both prediction and target to be 1D or 2D tensors, but received tensors with dimension .",
     ):
         metric(torch.randn(10, 20, 5), torch.randn(10, 20, 5))

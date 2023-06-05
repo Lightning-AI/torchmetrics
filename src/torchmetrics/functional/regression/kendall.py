@@ -224,8 +224,8 @@ def _calculate_p_value(
 def _kendall_corrcoef_update(
     preds: Tensor,
     target: Tensor,
-    concat_preds: List[Tensor] = [],
-    concat_target: List[Tensor] = [],
+    concat_preds: Optional[List[Tensor]] = None,
+    concat_target: Optional[List[Tensor]] = None,
     num_outputs: int = 1,
 ) -> Tuple[List[Tensor], List[Tensor]]:
     """Update variables required to compute Kendall rank correlation coefficient.
@@ -240,6 +240,8 @@ def _kendall_corrcoef_update(
     Raises:
         RuntimeError: If ``preds`` and ``target`` do not have the same shape
     """
+    concat_preds = concat_preds or []
+    concat_target = concat_target or []
     # Data checking
     _check_same_shape(preds, target)
     _check_data_shape_to_num_outputs(preds, target, num_outputs)

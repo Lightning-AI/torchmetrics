@@ -44,19 +44,19 @@ else:
 log = logging.getLogger(__name__)
 
 
-def compute_area(input: List[Any], iou_type: str = "bbox") -> Tensor:
+def compute_area(inputs: List[Any], iou_type: str = "bbox") -> Tensor:
     """Compute area of input depending on the specified iou_type.
 
     Default output for empty input is :class:`~torch.Tensor`
     """
-    if len(input) == 0:
+    if len(inputs) == 0:
         return Tensor([])
 
     if iou_type == "bbox":
-        return box_area(torch.stack(input))
+        return box_area(torch.stack(inputs))
     if iou_type == "segm":
-        input = [{"size": i[0], "counts": i[1]} for i in input]
-        area = torch.tensor(mask_utils.area(input).astype("float"))
+        inputs = [{"size": i[0], "counts": i[1]} for i in inputs]
+        area = torch.tensor(mask_utils.area(inputs).astype("float"))
         return area
 
     raise Exception(f"IOU type {iou_type} is not supported")
@@ -904,12 +904,11 @@ class MeanAveragePrecision(Metric):
     def _gather_tuple_list(list_to_gather: List[Tuple], process_group: Optional[Any] = None) -> List[Any]:
         """Gather a list of tuples over multiple devices."""
         world_size = dist.get_world_size(group=process_group)
-        list_gathered = [None] * world_size
+        dist.barrier(group=process_group)
+
+        list_gathered = [None for _ in range(world_size)]
         dist.all_gather_object(list_gathered, list_to_gather, group=process_group)
 
-        for rank in range(1, world_size):
-            if list_gathered[rank] != list_gathered[0]:
-                raise ValueError(f"Rank {rank} and Rank 0 have different values for the list to gather.")
         list_merged = []
         for idx in range(len(list_gathered[0])):
             for rank in range(world_size):

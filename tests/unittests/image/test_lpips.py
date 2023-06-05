@@ -18,9 +18,9 @@ import pytest
 import torch
 from lpips import LPIPS as LPIPS_reference  # noqa: N811
 from torch import Tensor
-
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
+
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 

@@ -20,10 +20,10 @@ import numpy as np
 import pytest
 import torch
 from torch import tensor
-
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import MaxMetric, MeanMetric, MinMetric, SumMetric
 from torchmetrics.audio import (
+    ComplexScaleInvariantSignalNoiseRatio,
     ScaleInvariantSignalDistortionRatio,
     ScaleInvariantSignalNoiseRatio,
     ShortTimeObjectiveIntelligibility,
@@ -284,6 +284,12 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             ScaleInvariantSignalDistortionRatio, _rand_input, _rand_input, id="scale_invariant_signal_distortion_ratio"
         ),
         pytest.param(SignalNoiseRatio, _rand_input, _rand_input, id="signal_noise_ratio"),
+        pytest.param(
+            ComplexScaleInvariantSignalNoiseRatio,
+            lambda: torch.randn(10, 3, 5, 2),
+            lambda: torch.randn(10, 3, 5, 2),
+            id="complex scale invariant signal noise ratio",
+        ),
         pytest.param(ScaleInvariantSignalNoiseRatio, _rand_input, _rand_input, id="scale_invariant_signal_noise_ratio"),
         pytest.param(
             partial(ShortTimeObjectiveIntelligibility, fs=8000, extended=False),
@@ -598,15 +604,15 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
 def test_plot_methods(metric_class: object, preds: Callable, target: Callable, num_vals: int):
     """Test the plot method of metrics that only output a single tensor scalar."""
     metric = metric_class()
-    input = (lambda: (preds(),)) if target is None else lambda: (preds(), target())
+    inputs = (lambda: (preds(),)) if target is None else lambda: (preds(), target())
 
     if num_vals == 1:
-        metric.update(*input())
+        metric.update(*inputs())
         fig, ax = metric.plot()
     else:
         vals = []
         for _ in range(num_vals):
-            val = metric(*input())
+            val = metric(*inputs())
             vals.append(val[0] if isinstance(val, tuple) else val)
         fig, ax = metric.plot(vals)
 

@@ -100,7 +100,7 @@ class BootStrapper(Metric):
         super().__init__(**kwargs)
         if not isinstance(base_metric, Metric):
             raise ValueError(
-                "Expected base metric to be an instance of torchmetrics.Metric" f" but received {base_metric}"
+                f"Expected base metric to be an instance of torchmetrics.Metric but received {base_metric}"
             )
 
         self.metrics = ModuleList([deepcopy(base_metric) for _ in range(num_bootstraps)])

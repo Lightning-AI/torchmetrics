@@ -20,7 +20,6 @@ from scipy.special import expit as sigmoid
 from sklearn.metrics import coverage_error as sk_coverage_error
 from sklearn.metrics import label_ranking_average_precision_score as sk_label_ranking
 from sklearn.metrics import label_ranking_loss as sk_label_ranking_loss
-
 from torchmetrics.classification.ranking import (
     MultilabelCoverageError,
     MultilabelRankingAveragePrecision,
@@ -32,6 +31,7 @@ from torchmetrics.functional.classification.ranking import (
     multilabel_ranking_loss,
 )
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
+
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _multilabel_cases
 from unittests.helpers import seed_all
@@ -62,16 +62,16 @@ def _sklearn_ranking(preds, target, fn, ignore_index):
     ],
 )
 @pytest.mark.parametrize(
-    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "inputs", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelRanking(MetricTester):
     """Test class for `MultilabelRanking` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multilabel_ranking(self, input, metric, functional_metric, ref_metric, ddp, ignore_index):
+    def test_multilabel_ranking(self, inputs, metric, functional_metric, ref_metric, ddp, ignore_index):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
@@ -87,9 +87,9 @@ class TestMultilabelRanking(MetricTester):
         )
 
     @pytest.mark.parametrize("ignore_index", [None])
-    def test_multilabel_ranking_functional(self, input, metric, functional_metric, ref_metric, ignore_index):
+    def test_multilabel_ranking_functional(self, inputs, metric, functional_metric, ref_metric, ignore_index):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
@@ -103,9 +103,9 @@ class TestMultilabelRanking(MetricTester):
             },
         )
 
-    def test_multilabel_ranking_differentiability(self, input, metric, functional_metric, ref_metric):
+    def test_multilabel_ranking_differentiability(self, inputs, metric, functional_metric, ref_metric):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -115,9 +115,9 @@ class TestMultilabelRanking(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_ranking_dtype_cpu(self, input, metric, functional_metric, ref_metric, dtype):
+    def test_multilabel_ranking_dtype_cpu(self, inputs, metric, functional_metric, ref_metric, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         if dtype == torch.half and functional_metric == multilabel_ranking_average_precision:
@@ -140,9 +140,9 @@ class TestMultilabelRanking(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_ranking_dtype_gpu(self, input, metric, functional_metric, ref_metric, dtype):
+    def test_multilabel_ranking_dtype_gpu(self, inputs, metric, functional_metric, ref_metric, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
