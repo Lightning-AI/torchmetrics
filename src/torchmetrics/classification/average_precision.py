@@ -158,7 +158,7 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
 
 
 class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
-    r"""Compute the average precision (AP) score for binary tasks.
+    r"""Compute the average precision (AP) score for multiclass tasks.
 
     The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
     difference in recall from the previous threshold as weight:
@@ -307,7 +307,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
 
 
 class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
-    r"""Compute the average precision (AP) score for binary tasks.
+    r"""Compute the average precision (AP) score for multilabel tasks.
 
     The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
     difference in recall from the previous threshold as weight:
