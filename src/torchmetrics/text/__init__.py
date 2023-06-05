@@ -27,8 +27,8 @@ from torchmetrics.text.wip import WordInfoPreserved
 from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 
 if _TRANSFORMERS_AVAILABLE:
-    from torchmetrics.text.bert import BERTScore  # noqa: F401
-    from torchmetrics.text.infolm import InfoLM  # noqa: F401
+    from torchmetrics.text.bert import BERTScore
+    from torchmetrics.text.infolm import InfoLM
 
 
 __all__ = [

@@ -19,10 +19,10 @@ import torch
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import roc_auc_score as sk_roc_auc_score
-
 from torchmetrics.classification.auroc import BinaryAUROC, MulticlassAUROC, MultilabelAUROC
 from torchmetrics.functional.classification.auroc import binary_auroc, multiclass_auroc, multilabel_auroc
 from torchmetrics.functional.classification.roc import binary_roc
+
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
@@ -40,16 +40,16 @@ def _sklearn_auroc_binary(preds, target, max_fpr=None, ignore_index=None):
     return sk_roc_auc_score(target, preds, max_fpr=max_fpr)
 
 
-@pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
+@pytest.mark.parametrize("inputs", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinaryAUROC(MetricTester):
     """Test class for `BinaryAUROC` metric."""
 
     @pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_binary_auroc(self, input, ddp, max_fpr, ignore_index):
+    def test_binary_auroc(self, inputs, ddp, max_fpr, ignore_index):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
@@ -67,9 +67,9 @@ class TestBinaryAUROC(MetricTester):
 
     @pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    def test_binary_auroc_functional(self, input, max_fpr, ignore_index):
+    def test_binary_auroc_functional(self, inputs, max_fpr, ignore_index):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
@@ -84,9 +84,9 @@ class TestBinaryAUROC(MetricTester):
             },
         )
 
-    def test_binary_auroc_differentiability(self, input):
+    def test_binary_auroc_differentiability(self, inputs):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -96,9 +96,9 @@ class TestBinaryAUROC(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_auroc_dtype_cpu(self, input, dtype):
+    def test_binary_auroc_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
 
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -113,9 +113,9 @@ class TestBinaryAUROC(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_auroc_dtype_gpu(self, input, dtype):
+    def test_binary_auroc_dtype_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -126,9 +126,9 @@ class TestBinaryAUROC(MetricTester):
         )
 
     @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
-    def test_binary_auroc_threshold_arg(self, input, threshold_fn):
+    def test_binary_auroc_threshold_arg(self, inputs, threshold_fn):
         """Test that different types of `thresholds` argument lead to same result."""
-        preds, target = input
+        preds, target = inputs
 
         for pred, true in zip(preds, target):
             _, _, t = binary_roc(pred, true, thresholds=None)
@@ -147,7 +147,7 @@ def _sklearn_auroc_multiclass(preds, target, average="macro", ignore_index=None)
 
 
 @pytest.mark.parametrize(
-    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "inputs", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassAUROC(MetricTester):
     """Test class for `MulticlassAUROC` metric."""
@@ -155,9 +155,9 @@ class TestMulticlassAUROC(MetricTester):
     @pytest.mark.parametrize("average", ["macro", "weighted"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multiclass_auroc(self, input, average, ddp, ignore_index):
+    def test_multiclass_auroc(self, inputs, average, ddp, ignore_index):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
@@ -176,9 +176,9 @@ class TestMulticlassAUROC(MetricTester):
 
     @pytest.mark.parametrize("average", ["macro", "weighted"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    def test_multiclass_auroc_functional(self, input, average, ignore_index):
+    def test_multiclass_auroc_functional(self, inputs, average, ignore_index):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
@@ -194,9 +194,9 @@ class TestMulticlassAUROC(MetricTester):
             },
         )
 
-    def test_multiclass_auroc_differentiability(self, input):
+    def test_multiclass_auroc_differentiability(self, inputs):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -206,9 +206,9 @@ class TestMulticlassAUROC(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_auroc_dtype_cpu(self, input, dtype):
+    def test_multiclass_auroc_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
 
         if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
@@ -223,9 +223,9 @@ class TestMulticlassAUROC(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_auroc_dtype_gpu(self, input, dtype):
+    def test_multiclass_auroc_dtype_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -236,9 +236,9 @@ class TestMulticlassAUROC(MetricTester):
         )
 
     @pytest.mark.parametrize("average", ["macro", "weighted", None])
-    def test_multiclass_auroc_threshold_arg(self, input, average):
+    def test_multiclass_auroc_threshold_arg(self, inputs, average):
         """Test that different types of `thresholds` argument lead to same result."""
-        preds, target = input
+        preds, target = inputs
         if (preds < 0).any():
             preds = preds.softmax(dim=-1)
         for pred, true in zip(preds, target):
@@ -275,7 +275,7 @@ def _sklearn_auroc_multilabel(preds, target, average="macro", ignore_index=None)
 
 
 @pytest.mark.parametrize(
-    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "inputs", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelAUROC(MetricTester):
     """Test class for `MultilabelAUROC` metric."""
@@ -283,9 +283,9 @@ class TestMultilabelAUROC(MetricTester):
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multilabel_auroc(self, input, ddp, average, ignore_index):
+    def test_multilabel_auroc(self, inputs, ddp, average, ignore_index):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
@@ -304,9 +304,9 @@ class TestMultilabelAUROC(MetricTester):
 
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    def test_multilabel_auroc_functional(self, input, average, ignore_index):
+    def test_multilabel_auroc_functional(self, inputs, average, ignore_index):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
@@ -322,9 +322,9 @@ class TestMultilabelAUROC(MetricTester):
             },
         )
 
-    def test_multiclass_auroc_differentiability(self, input):
+    def test_multiclass_auroc_differentiability(self, inputs):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -334,9 +334,9 @@ class TestMultilabelAUROC(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_auroc_dtype_cpu(self, input, dtype):
+    def test_multilabel_auroc_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
 
         if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
@@ -351,9 +351,9 @@ class TestMultilabelAUROC(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_auroc_dtype_gpu(self, input, dtype):
+    def test_multiclass_auroc_dtype_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -364,9 +364,9 @@ class TestMultilabelAUROC(MetricTester):
         )
 
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
-    def test_multilabel_auroc_threshold_arg(self, input, average):
+    def test_multilabel_auroc_threshold_arg(self, inputs, average):
         """Test that different types of `thresholds` argument lead to same result."""
-        preds, target = input
+        preds, target = inputs
         if (preds < 0).any():
             preds = sigmoid(preds)
         for pred, true in zip(preds, target):

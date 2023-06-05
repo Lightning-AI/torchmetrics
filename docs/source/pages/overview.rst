@@ -256,7 +256,8 @@ inside your LightningModule. In most cases we just have to replace ``self.log`` 
     from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall
 
     class MyModule(LightningModule):
-        def __init__(self, num_classes):
+        def __init__(self, num_classes: int):
+            super().__init__()
             metrics = MetricCollection([
                 MulticlassAccuracy(num_classes), MulticlassPrecision(num_classes), MulticlassRecall(num_classes)
             ])
@@ -281,6 +282,8 @@ inside your LightningModule. In most cases we just have to replace ``self.log`` 
             # metrics are logged with keys: val_Accuracy, val_Precision and val_Recall
             output = self.valid_metric.compute()
             self.log_dict(output)
+            # remember to reset metrics at the end of the epoch
+            self.valid_metrics.reset()
 
 .. note::
 
@@ -369,13 +372,22 @@ that will alter how metric states are stored and synced.
 If you are running metrics on GPU and are encountering that you are running out of GPU VRAM then the following
 argument can help:
 
-- ``compute_on_cpu`` will automatically move the metric states to cpu after calling ``update``, making sure that
+- ``compute_on_cpu``: will automatically move the metric states to cpu after calling ``update``, making sure that
   GPU memory is not filling up. The consequence will be that the ``compute`` method will be called on CPU instead
   of GPU. Only applies to metric states that are lists.
+
+- ``compute_with_cache``: This argument indicates if the result after calling the ``compute`` method should be cached.
+  By default this is ``True`` meaning that repeated calls to ``compute`` (with no change to the metric state inbetween)
+  does not recompute the metric but just returns the cache. By setting it to ``False`` the metric will be recomputed
+  every time ``compute`` is called, but it can also help clean up a bit of memory.
 
 If you are running in a distributed environment, TorchMetrics will automatically take care of the distributed
 synchronization for you. However, the following three keyword arguments can be given to any metric class for
 further control over the distributed aggregation:
+
+- ``sync_on_compute``: This argument is an ``bool`` that indicates if the metrics should automatically sync between
+  devices whenever the ``compute`` method is called. By default this is ``True``, but by setting this to ``False``
+  you can manually control when the synchronization happens.
 
 - ``dist_sync_on_step``: This argument is ``bool`` that indicates if the metric should synchronize between
   different devices every time ``forward`` is called. Setting this to ``True`` is in general not recommended

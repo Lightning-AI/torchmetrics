@@ -18,7 +18,6 @@ from typing import Any
 
 import pytest
 import torch
-
 from torchmetrics import Metric, MetricCollection
 from torchmetrics.classification import (
     BinaryAccuracy,
@@ -35,8 +34,9 @@ from torchmetrics.classification import (
     MultilabelAveragePrecision,
 )
 from torchmetrics.utilities.checks import _allclose_recursive
+
 from unittests.helpers import seed_all
-from unittests.helpers.testers import DummyMetricDiff, DummyMetricSum
+from unittests.helpers.testers import DummyMetricDiff, DummyMetricMultiOutputDict, DummyMetricSum
 
 seed_all(42)
 
@@ -618,3 +618,13 @@ def test_nested_collections(input_collections):
     assert "valmetrics/macro_MulticlassPrecision" in val
     assert "valmetrics/micro_MulticlassAccuracy" in val
     assert "valmetrics/micro_MulticlassPrecision" in val
+
+
+def test_double_nested_collections():
+    """Test that double nested collections gets flattened to a single collection."""
+    collection1 = MetricCollection([DummyMetricMultiOutputDict()], prefix="prefix1_", postfix="_postfix1")
+    collection2 = MetricCollection([collection1], prefix="prefix2_", postfix="_postfix2")
+    x = torch.randn(10).sum()
+    val = collection2(x)
+    assert "prefix2_prefix1_output1_postfix1_postfix2" in val
+    assert "prefix2_prefix1_output2_postfix1_postfix2" in val

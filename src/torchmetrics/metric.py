@@ -73,7 +73,8 @@ class Metric(Module, ABC):
                 custom implementation that calls ``torch.distributed.all_gather`` internally.
             - distributed_available_fn: function that checks if the distributed backend is available.
                 Defaults to a check of ``torch.distributed.is_available()`` and ``torch.distributed.is_initialized()``.
-            - sync_on_compute: If metric state should synchronize when ``compute`` is called. Default is ``True``-
+            - sync_on_compute: If metric state should synchronize when ``compute`` is called. Default is ``True``
+            - compute_with_cache: If results from ``compute`` should be cached. Default is ``False``
     """
 
     __jit_ignored_attributes__ = ["device"]
@@ -130,6 +131,11 @@ class Metric(Module, ABC):
         if not isinstance(self.sync_on_compute, bool):
             raise ValueError(
                 f"Expected keyword argument `sync_on_compute` to be a `bool` but got {self.sync_on_compute}"
+            )
+        self.compute_with_cache = kwargs.pop("compute_with_cache", True)
+        if not isinstance(self.compute_with_cache, bool):
+            raise ValueError(
+                f"Expected keyword argument `compute_with_cache` to be a `bool` but got {self.compute_with_cache}"
             )
 
         if kwargs:
@@ -559,10 +565,12 @@ class Metric(Module, ABC):
                 should_sync=self._to_sync,
                 should_unsync=self._should_unsync,
             ):
-                value = compute(*args, **kwargs)
-                self._computed = _squeeze_if_scalar(value)
+                value = _squeeze_if_scalar(compute(*args, **kwargs))
 
-            return self._computed
+            if self.compute_with_cache:
+                self._computed = value
+
+            return value
 
         return wrapped_func
 
@@ -664,14 +672,14 @@ class Metric(Module, ABC):
         """Return the device of the metric."""
         return self._device
 
-    def type(self, dst_type: Union[str, torch.dtype]) -> "Metric":
+    def type(self, dst_type: Union[str, torch.dtype]) -> "Metric":  # noqa: A003
         """Override default and prevent dtype casting.
 
         Please use `metric.set_dtype(dtype)` instead.
         """
         return self
 
-    def float(self) -> "Metric":
+    def float(self) -> "Metric":  # noqa: A003
         """Override default and prevent dtype casting.
 
         Please use `metric.set_dtype(dtype)` instead.
@@ -737,7 +745,7 @@ class Metric(Module, ABC):
                 setattr(this, key, [fn(cur_v) for cur_v in current_val])
             else:
                 raise TypeError(
-                    "Expected metric state to be either a Tensor" f"or a list of Tensor, but encountered {current_val}"
+                    f"Expected metric state to be either a Tensor or a list of Tensor, but encountered {current_val}"
                 )
 
         # make sure to update the device attribute
@@ -1043,7 +1051,6 @@ class CompositionalMetric(Metric):
 
     def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, process_group: Optional[Any] = None) -> None:
         """No syncing required here. syncing will be done in metric_a and metric_b."""
-        pass
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Redirect the call to the input which the conposition was formed from."""
@@ -1113,7 +1120,7 @@ class CompositionalMetric(Metric):
 
     def __repr__(self) -> str:
         """Return a representation of the compositional metric, including the two inputs it was formed from."""
-        _op_metrics = f"(\n  {self.op.__name__}(\n    {repr(self.metric_a)},\n    {repr(self.metric_b)}\n  )\n)"
+        _op_metrics = f"(\n  {self.op.__name__}(\n    {self.metric_a!r},\n    {self.metric_b!r}\n  )\n)"
         return self.__class__.__name__ + _op_metrics
 
     def _wrap_compute(self, compute: Callable) -> Callable:
