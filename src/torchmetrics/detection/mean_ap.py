@@ -245,7 +245,7 @@ class MeanAveragePrecision(Metric):
         ModuleNotFoundError:
             If ``torchvision`` is not installed or version installed is lower than 0.8.0
         ModuleNotFoundError:
-            If ``iou_type`` is equal to ``seqm`` and ``pycocotools`` is not installed
+            If ``iou_type`` is equal to ``segm`` and ``pycocotools`` is not installed
         ValueError:
             If ``class_metrics`` is not a boolean
         ValueError:
