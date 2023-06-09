@@ -17,7 +17,7 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.srmr import speech_reverberation_modulation_energy_ratio
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _GAMMATONE_AVAILABEL, _TORCHAUDIO_AVAILABEL
+from torchmetrics.utilities.imports import _GAMMATONE_AVAILABEL, _MATPLOTLIB_AVAILABLE, _TORCHAUDIO_AVAILABEL
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 __doctest_requires__ = {"SpeechReverberationModulationEnergyRatio": ["torchaudio", "gammatone"]}
@@ -28,7 +28,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 class SpeechReverberationModulationEnergyRatio(Metric):
     """Calculate `Speech-to-Reverberation Modulation Energy Ratio`_ (SRMR).
-    
+
     SRMR is a non-intrusive metric for speech quality and intelligibility based on
     a modulation spectral representation of the speech signal.
     This code is translated from `SRMRToolbox`_ and `SRMRpy`_, and tested against `SRMRpy`_.
@@ -92,9 +92,11 @@ class SpeechReverberationModulationEnergyRatio(Metric):
     ) -> None:
         super().__init__(**kwargs)
         if not _TORCHAUDIO_AVAILABEL or not _GAMMATONE_AVAILABEL:
-            raise ModuleNotFoundError("SpeechReverberationModulationEnergyRatio requires you to have `gammatone` and"
+            raise ModuleNotFoundError(
+                "SpeechReverberationModulationEnergyRatio requires you to have `gammatone` and"
                 " `torchaudio` installed. Either install as ``pip install torchmetrics[audio]`` or"
-                " ``pip install gammatone torchaudio``.")
+                " ``pip install gammatone torchaudio``."
+            )
         self.fs = fs
         self.n_cochlear_filters = n_cochlear_filters
         self.low_freq = low_freq
@@ -107,7 +109,7 @@ class SpeechReverberationModulationEnergyRatio(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor) -> None:
-        """Update state with predictions"""
+        """Update state with predictions."""
         metric_val_batch = speech_reverberation_modulation_energy_ratio(
             preds, self.fs, self.n_cochlear_filters, self.low_freq, self.min_cf, self.max_cf, self.norm, self.fast
         ).to(self.sum.device)
