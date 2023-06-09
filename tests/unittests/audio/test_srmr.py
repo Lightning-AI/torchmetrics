@@ -15,7 +15,7 @@ from functools import partial
 
 import pytest
 import torch
-from srmrpy import srmr as srmrpy_srmr
+from srmrpy2 import srmr as srmrpy_srmr
 from torch import Tensor
 from torchmetrics.audio import SpeechReverberationModulationEnergyRatio
 from torchmetrics.functional.audio import speech_reverberation_modulation_energy_ratio
