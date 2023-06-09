@@ -31,7 +31,7 @@ class SpeechReverberationModulationEnergyRatio(Metric):
     
     SRMR is a non-intrusive metric for speech quality and intelligibility based on
     a modulation spectral representation of the speech signal.
-    This code is translated from `SRMRToolbox`_ and `SRMRpy`_, and tested against `SRMRpy`_.
+    This code is translated from `SRMRToolbox`_ and `SRMRpy`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 

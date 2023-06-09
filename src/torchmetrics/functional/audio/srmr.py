@@ -174,7 +174,7 @@ def speech_reverberation_modulation_energy_ratio(
 
     SRMR is a non-intrusive metric for speech quality and intelligibility based on
     a modulation spectral representation of the speech signal.
-    This code is translated from `SRMRToolbox`_ and `SRMRpy`_, and tested against `SRMRpy`_.
+    This code is translated from `SRMRToolbox`_ and `SRMRpy`_.
 
     Args:
         preds: shape ``(..., time)``
@@ -270,5 +270,6 @@ def speech_reverberation_modulation_energy_ratio(
         score = _cal_srmr_score(BW[b], avg_energy[b], cutoffs=cutoffs)
         temp.append(score)
     score = torch.stack(temp)
+    score = score.reshape(*shape[:-1])
 
     return score

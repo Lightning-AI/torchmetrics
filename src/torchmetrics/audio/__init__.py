@@ -14,7 +14,8 @@
 from torchmetrics.audio.pit import PermutationInvariantTraining
 from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio, SignalDistortionRatio
 from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio, SignalNoiseRatio
-from torchmetrics.utilities.imports import _PESQ_AVAILABLE, _PYSTOI_AVAILABLE
+from torchmetrics.utilities.imports import _PESQ_AVAILABLE, _PYSTOI_AVAILABLE, \
+    _GAMMATONE_AVAILABEL, _TORCHAUDIO_AVAILABEL
 
 __all__ = [
     "PermutationInvariantTraining",
@@ -33,3 +34,9 @@ if _PYSTOI_AVAILABLE:
     from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
 
     __all__.append("ShortTimeObjectiveIntelligibility")
+
+if _GAMMATONE_AVAILABEL and _TORCHAUDIO_AVAILABEL:
+    from torchmetrics.audio.srmr import SpeechReverberationModulationEnergyRatio
+
+    __all__.append("SpeechReverberationModulationEnergyRatio")
+
