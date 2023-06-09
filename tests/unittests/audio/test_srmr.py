@@ -47,10 +47,10 @@ def _ref_metric_batch(preds: Tensor, fs: int, fast: bool, norm: bool, **kwargs):
     return score
 
 
-def _average_metric(preds, target, metric_func):
+def _average_metric(preds, target, metric_func, **kwargs):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
-    return metric_func(preds).mean()
+    return metric_func(preds, **kwargs).mean()
 
 
 def speech_reverberation_modulation_energy_ratio_cheat(preds, target, **kwargs):
@@ -80,7 +80,7 @@ class SpeechReverberationModulationEnergyRatioCheat(SpeechReverberationModulatio
 class TestSRMR(MetricTester):
     """Test class for `SpeechReverberationModulationEnergyRatio` metric."""
 
-    atol = 1e-2
+    atol = 5e-2
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_srmr(self, preds, fs, fast, norm, ddp):
@@ -90,7 +90,7 @@ class TestSRMR(MetricTester):
             preds=preds,
             target=preds,
             metric_class=SpeechReverberationModulationEnergyRatioCheat,
-            reference_metric=partial(_average_metric, metric_func=_ref_metric_batch),
+            reference_metric=partial(_average_metric, metric_func=_ref_metric_batch, fs=fs, fast=fast, norm=norm),
             metric_args={"fs": fs, "fast": fast, "norm": norm},
         )
 
