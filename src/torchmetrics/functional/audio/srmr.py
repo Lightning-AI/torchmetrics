@@ -17,7 +17,7 @@
 
 from functools import lru_cache
 from math import ceil
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -69,7 +69,7 @@ def _compute_modulation_filterbank_and_cutoffs(
     for k in range(1, n):
         cfs[k] = cfs[k - 1] * spacing_factor
 
-    def _make_modulation_filter(w0:Tensor, q:int) -> Tensor:
+    def _make_modulation_filter(w0: Tensor, q: int) -> Tensor:
         w0 = torch.tan(w0 / 2)
         b0 = w0 / q
         b = torch.tensor([b0, 0, -b0], dtype=torch.float64)
@@ -108,10 +108,10 @@ def _hilbert(x: Tensor, n: int = None) -> Tensor:
 
     if n % 2 == 0:
         h[0] = h[n // 2] = 1
-        h[1:n // 2] = 2
+        h[1 : n // 2] = 2
     else:
         h[0] = 1
-        h[1:(n + 1) // 2] = 2
+        h[1 : (n + 1) // 2] = 2
 
     y = torch.fft.ifft(x_fft * h, dim=-1)
     y = y[..., : x.shape[-1]]
@@ -259,10 +259,7 @@ def speech_reverberation_modulation_energy_ratio(
 
     # Computing modulation filterbank with Q = 2 and 8 channels
     if max_cf is None:
-        if norm:
-            max_cf = 30
-        else:
-            max_cf = 128
+        max_cf = 30 if norm else 128
     _, mf, cutoffs, _ = _compute_modulation_filterbank_and_cutoffs(
         min_cf, max_cf, n=8, fs=mfs, q=2, device=preds.device
     )
