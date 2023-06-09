@@ -58,9 +58,11 @@ def _make_erb_filters(fs: int, num_freqs: int, cutoff: float, device: torch.devi
 
 
 @lru_cache(maxsize=100)
-def _compute_modulation_filterbank_and_cutoffs(min_cf: float, max_cf: float, n: int, Q: int, fs: float, q: int, device: torch.device) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+def _compute_modulation_filterbank_and_cutoffs(
+    min_cf: float, max_cf: float, n: int, Q: int, fs: float, q: int, device: torch.device
+) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     # this function is translated from the SRMRpy packaged
-    spacing_factor = (max_cf / min_cf)**(1.0 / (n - 1))
+    spacing_factor = (max_cf / min_cf) ** (1.0 / (n - 1))
     cfs = torch.zeros(n, dtype=torch.float64)
     cfs[0] = min_cf
     for k in range(1, n):
@@ -104,10 +106,10 @@ def _hilbert(x: Tensor, N: int = None):  # type:ignore
     h = torch.zeros(N, dtype=x.dtype, device=x.device, requires_grad=False)
     assert N % 2 == 0, N
     h[0] = h[N // 2] = 1
-    h[1:N // 2] = 2
+    h[1 : N // 2] = 2
 
     y = torch.fft.ifft(x_fft * h, dim=-1)
-    y = y[..., :x.shape[-1]]
+    y = y[..., : x.shape[-1]]
     return y
 
 
@@ -144,7 +146,7 @@ def _erb_filterbank(wave: Tensor, coefs: Tensor) -> Tensor:
 def _normalize_energy(energy: Tensor, drange: float = 30.0) -> Tensor:  # type:ignore
     peak_energy = torch.mean(energy, dim=1, keepdim=True).max(dim=2, keepdim=True).values
     peak_energy = peak_energy.max(dim=3, keepdim=True).values
-    min_energy = peak_energy * 10.0**(-drange / 10.0)
+    min_energy = peak_energy * 10.0 ** (-drange / 10.0)
     energy = torch.where(energy < min_energy, min_energy, energy)
     energy = torch.where(energy > peak_energy, peak_energy, energy)
     return energy
