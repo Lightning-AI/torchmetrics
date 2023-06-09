@@ -32,10 +32,7 @@ preds = torch.rand(1, 2, 8000)
 def _ref_metric_batch(preds: Tensor, fs: int, fast: bool, norm: bool, **kwargs: Dict[str, Any]):
     # shape: preds [BATCH_SIZE, Time]
     shape = preds.shape
-    if len(shape) == 1:
-        preds = preds.reshape(1, -1)  # [B, time]
-    else:
-        preds = preds.reshape(-1, shape[-1])  # [B, time]
+    preds = preds.reshape(1, -1) if len(shape) == 1 else preds.reshape(-1, shape[-1])
     n_batch, time = preds.shape
 
     preds = preds.detach().cpu().numpy()

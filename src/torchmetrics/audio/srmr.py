@@ -72,13 +72,13 @@ class SpeechReverberationModulationEnergyRatio(Metric):
         tensor(0.3354)
     """
 
-    sum: Tensor
+    msum: Tensor
     total: Tensor
     full_state_update: bool = False
     is_differentiable: bool = True
     higher_is_better: bool = True
-    plot_lower_bound: float = None
-    plot_upper_bound: float = None
+    plot_lower_bound: Optional[float] = None
+    plot_upper_bound: Optional[float] = None
 
     def __init__(
         self,
@@ -106,21 +106,21 @@ class SpeechReverberationModulationEnergyRatio(Metric):
         self.norm = norm
         self.fast = fast
 
-        self.add_state("sum", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("msum", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor) -> None:
         """Update state with predictions."""
         metric_val_batch = speech_reverberation_modulation_energy_ratio(
             preds, self.fs, self.n_cochlear_filters, self.low_freq, self.min_cf, self.max_cf, self.norm, self.fast
-        ).to(self.sum.device)
+        ).to(self.msum.device)
 
-        self.sum += metric_val_batch.sum()
+        self.msum += metric_val_batch.sum()
         self.total += metric_val_batch.numel()
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return self.sum / self.total
+        return self.msum / self.total
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
