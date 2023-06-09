@@ -26,10 +26,10 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-preds = torch.rand(1, 2, 8000)
+preds = torch.rand(2, 2, 8000)
 
 
-def _ref_metric_batch(preds: Tensor, fs: int, fast: bool, norm: bool, **kwargs: Dict[str, Any]):
+def _ref_metric_batch(preds: Tensor, target:Tensor, fs: int, fast: bool, norm: bool, **kwargs: Dict[str, Any]):
     # shape: preds [BATCH_SIZE, Time]
     shape = preds.shape
     preds = preds.reshape(1, -1) if len(shape) == 1 else preds.reshape(-1, shape[-1])
@@ -48,7 +48,7 @@ def _ref_metric_batch(preds: Tensor, fs: int, fast: bool, norm: bool, **kwargs: 
 def _average_metric(preds, target, metric_func, **kwargs: Dict[str, Any]):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
-    return metric_func(preds, **kwargs).mean()
+    return metric_func(preds, target, **kwargs).mean()
 
 
 def _speech_reverberation_modulation_energy_ratio_cheat(preds, target, **kwargs: Dict[str, Any]):
@@ -99,7 +99,7 @@ class TestSRMR(MetricTester):
             target=preds,
             metric_functional=_speech_reverberation_modulation_energy_ratio_cheat,
             reference_metric=_ref_metric_batch,
-            metric_args={"fs": fs, "fast": fast, "norm": norm},
+            **{"fs": fs, "fast": fast, "norm": norm},
         )
 
     def test_srmr_differentiability(self, preds, fs, fast, norm):
