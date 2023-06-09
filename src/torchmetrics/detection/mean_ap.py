@@ -27,7 +27,6 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import (
     _MATPLOTLIB_AVAILABLE,
     _PYCOCOTOOLS_AVAILABLE,
-    _TORCHVISION_AVAILABLE,
     _TORCHVISION_GREATER_EQUAL_0_8,
 )
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -37,9 +36,9 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
-    from torchvision.ops import box_area, box_convert, box_iou
+    from torchvision.ops import box_convert
 else:
-    box_convert = box_iou = box_area = None
+    box_convert = None
     __doctest_skip__ = ["MeanAveragePrecision.plot", "MeanAveragePrecision"]
 
 
@@ -81,21 +80,20 @@ class MAPMetricResults:
         return getattr(self, key)
 
 
-# noinspection PyMethodMayBeStatic
 class WriteToLog:
     """Logging class to move logs to log.debug()."""
 
-    def write(self, buf: str) -> None:  # skipcq: PY-D0003, PYL-R0201
+    def write(self, buf: str) -> None:
         """Write to log.debug() instead of stdout."""
         for line in buf.rstrip().splitlines():
             log.debug(line.rstrip())
 
-    def flush(self) -> None:  # skipcq: PY-D0003, PYL-R0201
+    def flush(self) -> None:
         """Flush the logger."""
         for handler in log.handlers:
             handler.flush()
 
-    def close(self) -> None:  # skipcq: PY-D0003, PYL-R0201
+    def close(self) -> None:
         """Close the logger."""
         for handler in log.handlers:
             handler.close()

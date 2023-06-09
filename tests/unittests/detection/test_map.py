@@ -11,20 +11,165 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import json
 from collections import namedtuple
+from copy import deepcopy
+from functools import partial
 
 import numpy as np
 import pytest
 import torch
 from pycocotools import mask
+from pycocotools.coco import COCO
+from pycocotools.cocoeval import COCOeval
 from torch import IntTensor, Tensor
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
-from unittests.detection import _SAMPLE_DETECTION_SEGMENTATION
+from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL, _SAMPLE_DETECTION_SEGMENTATION
 from unittests.helpers.testers import MetricTester
+
+
+def _generate_inputs(iou_type):
+    """Generates inputs for the MAP metric."""
+    gt = COCO(_DETECTION_VAL)
+    dt = gt.loadRes(_DETECTION_BBOX if iou_type == "bbox" else _DETECTION_SEGM)
+    img_ids = sorted(gt.getImgIds())
+    img_ids = img_ids[0:100]
+
+    gt_dataset = gt.dataset["annotations"]
+    dt_dataset = dt.dataset["annotations"]
+
+    preds = {}
+    for p in dt_dataset:
+        if p["image_id"] not in preds:
+            preds[p["image_id"]] = {"boxes" if iou_type == "bbox" else "masks": [], "scores": [], "labels": []}
+        if iou_type == "bbox":
+            preds[p["image_id"]]["boxes"].append(p["bbox"])
+        else:
+            preds[p["image_id"]]["masks"].append(gt.annToMask(p))
+        preds[p["image_id"]]["scores"].append(p["score"])
+        preds[p["image_id"]]["labels"].append(p["category_id"])
+    missing_pred = set(img_ids) - set(preds.keys())
+    for i in missing_pred:
+        preds[i] = {"boxes" if iou_type == "bbox" else "masks": [], "scores": [], "labels": []}
+
+    target = {}
+    for t in gt_dataset:
+        if t["image_id"] not in img_ids:
+            continue
+        if t["image_id"] not in target:
+            target[t["image_id"]] = {"boxes" if iou_type == "bbox" else "masks": [], "labels": []}
+        if iou_type == "bbox":
+            target[t["image_id"]]["boxes"].append(t["bbox"])
+        else:
+            target[t["image_id"]]["masks"].append(gt.annToMask(t))
+        target[t["image_id"]]["labels"].append(t["category_id"])
+
+    if iou_type == "bbox":
+        preds = [
+            {
+                "boxes": torch.tensor(p["boxes"]),
+                "scores": torch.tensor(p["scores"]),
+                "labels": torch.tensor(p["labels"]),
+            }
+            for p in preds.values()
+        ]
+        target = [{"boxes": torch.tensor(t["boxes"]), "labels": torch.tensor(t["labels"])} for t in target.values()]
+    else:
+        preds = [
+            {
+                "masks": torch.tensor(p["masks"]),
+                "scores": torch.tensor(p["scores"]),
+                "labels": torch.tensor(p["labels"]),
+            }
+            for p in preds.values()
+        ]
+        target = [{"masks": torch.tensor(t["masks"]), "labels": torch.tensor(t["labels"])} for t in target.values()]
+
+    # create 10 batches of 10 preds/targets each
+    preds = [preds[10 * i : 10 * (i + 1)] for i in range(10)]
+    target = [target[10 * i : 10 * (i + 1)] for i in range(10)]
+
+    return preds, target
+
+
+_bbox_input = _generate_inputs("bbox")
+_segm_input = _generate_inputs("segm")
+
+
+def _compare_fn(preds, target, iou_type, class_metrics=True):
+    """Taken from https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoEvalDemo.ipynb."""
+    gt = COCO(_DETECTION_VAL)
+    dt = gt.loadRes(_DETECTION_BBOX if iou_type == "bbox" else _DETECTION_SEGM)
+    img_ids = sorted(gt.getImgIds())
+    img_ids = img_ids[0:100]
+    coco_eval = COCOeval(gt, dt, iou_type)
+    coco_eval.params.imgIds = img_ids
+    coco_eval.evaluate()
+    coco_eval.accumulate()
+    coco_eval.summarize()
+    global_stats = deepcopy(coco_eval.stats)
+
+    map_per_class_values = torch.Tensor([-1])
+    mar_100_per_class_values = torch.Tensor([-1])
+    classes = Tensor(np.unique([x["category_id"] for x in gt.dataset["annotations"]]))
+    if class_metrics:
+        map_per_class_list = []
+        mar_100_per_class_list = []
+        for class_id in classes.tolist():
+            coco_eval.params.catIds = [class_id]
+            coco_eval.evaluate()
+            coco_eval.accumulate()
+            coco_eval.summarize()
+            class_stats = coco_eval.stats
+            map_per_class_list.append(torch.Tensor([class_stats[0]]))
+            mar_100_per_class_list.append(torch.Tensor([class_stats[8]]))
+
+        map_per_class_values = torch.Tensor(map_per_class_list)
+        mar_100_per_class_values = torch.Tensor(mar_100_per_class_list)
+
+    return {
+        "map": Tensor([global_stats[0]]),
+        "map_50": Tensor([global_stats[1]]),
+        "map_75": Tensor([global_stats[2]]),
+        "map_small": Tensor([global_stats[3]]),
+        "map_medium": Tensor([global_stats[4]]),
+        "map_large": Tensor([global_stats[5]]),
+        "mar_1": Tensor([global_stats[6]]),
+        "mar_10": Tensor([global_stats[7]]),
+        "mar_100": Tensor([global_stats[8]]),
+        "mar_small": Tensor([global_stats[9]]),
+        "mar_medium": Tensor([global_stats[10]]),
+        "mar_large": Tensor([global_stats[11]]),
+        "map_per_class": map_per_class_values,
+        "mar_100_per_class": mar_100_per_class_values,
+        "classes": classes,
+    }
+
+
+_pytest_condition = not (_PYCOCOTOOLS_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
+
+
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 and pycocotools is installed")
+@pytest.mark.parametrize("iou_type", ["bbox", "segm"])
+class TestMAPNew(MetricTester):
+    """Test map metric."""
+
+    # @pytest.mark.parametrize("ddp", [False, True])
+    def test_map(self, iou_type):
+        """Test modular implementation for correctness."""
+        preds, target = _segm_input if iou_type == "segm" else _bbox_input
+        self.run_class_metric_test(
+            ddp=False,
+            preds=preds,
+            target=target,
+            metric_class=MeanAveragePrecision,
+            reference_metric=partial(_compare_fn, iou_type=iou_type),
+            metric_args={"iou_type": iou_type},
+            check_batch=False,
+        )
+
 
 Input = namedtuple("Input", ["preds", "target"])
 
@@ -424,7 +569,7 @@ def _compare_fn_segm(preds, target) -> dict:
     }
 
 
-_pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
+_pytest_condition = not _TORCHVISION_GREATER_EQUAL_0_8
 
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
@@ -855,7 +1000,7 @@ def test_order():
 
 def test_corner_case():
     """Issue: https://github.com/Lightning-AI/torchmetrics/issues/1184."""
-    metric = MeanAveragePrecision(iou_thresholds=[0.5], class_metrics=True)
+    metric = MeanAveragePrecision(iou_thresholds=[0.501], class_metrics=True)
     preds = [
         {
             "boxes": torch.Tensor(
