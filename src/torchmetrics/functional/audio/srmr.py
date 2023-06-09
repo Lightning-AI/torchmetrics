@@ -21,6 +21,7 @@ from typing import *
 import torch
 from torch import Tensor
 from torch.nn.functional import pad
+
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import _GAMMATONE_AVAILABEL, _TORCHAUDIO_AVAILABEL
 
@@ -195,7 +196,7 @@ def speech_reverberation_modulation_energy_ratio(
     .. note:: using this metrics requires you to have ``gammatone`` and ``torchaudio`` installed.
         Either install as ``pip install torchmetrics[audio]`` or ``pip install torchaudio``
         and ``pip install git+https://github.com/detly/gammatone``.
-        
+
     Returns:
         Tensor: srmr value, shape ``(...)``
 
@@ -237,7 +238,7 @@ def speech_reverberation_modulation_energy_ratio(
     wIncS = 0.064
     # Computing gammatone envelopes
     if fast:
-        rank_zero_warn(f"`fast=True` may slow down the speed of SRMR metric on GPU.")
+        rank_zero_warn("`fast=True` may slow down the speed of SRMR metric on GPU.")
         mfs = 400.0
         temp = []
         preds_np = preds.detach().cpu().numpy()
@@ -290,7 +291,7 @@ def speech_reverberation_modulation_energy_ratio(
         temp.append(score)
     score = torch.stack(temp)
 
-    if len(shape) > 1: # recover original shape
+    if len(shape) > 1:  # recover original shape
         score = score.reshape(*shape[:-1])
 
     return score
