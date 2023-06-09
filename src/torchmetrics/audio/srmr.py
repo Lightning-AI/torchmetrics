@@ -69,7 +69,7 @@ class SpeechReverberationModulationEnergyRatio(Metric):
         >>> preds = torch.randn(8000)
         >>> srmr = SpeechReverberationModulationEnergyRatio(8000)
         >>> srmr(preds)
-        tensor(2.2076)
+        tensor(0.3354)
     """
 
     sum: Tensor
