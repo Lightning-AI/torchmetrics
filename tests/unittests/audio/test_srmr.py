@@ -53,12 +53,12 @@ def _average_metric(preds, target, metric_func, **kwargs):
     return metric_func(preds, **kwargs).mean()
 
 
-def speech_reverberation_modulation_energy_ratio_cheat(preds, target, **kwargs):
+def _speech_reverberation_modulation_energy_ratio_cheat(preds, target, **kwargs):
     # cheat the MetricTester as the speech_reverberation_modulation_energy_ratio doesn't need target
     return speech_reverberation_modulation_energy_ratio(preds, **kwargs)
 
 
-class SpeechReverberationModulationEnergyRatioCheat(SpeechReverberationModulationEnergyRatio):
+class _SpeechReverberationModulationEnergyRatioCheat(SpeechReverberationModulationEnergyRatio):
     # cheat the MetricTester as SpeechReverberationModulationEnergyRatioCheat doesn't need target
     def update(self, preds: Tensor, target: Tensor) -> None:
         super().update(preds=preds)
@@ -89,7 +89,7 @@ class TestSRMR(MetricTester):
             ddp,
             preds=preds,
             target=preds,
-            metric_class=SpeechReverberationModulationEnergyRatioCheat,
+            metric_class=_SpeechReverberationModulationEnergyRatioCheat,
             reference_metric=partial(_average_metric, metric_func=_ref_metric_batch, fs=fs, fast=fast, norm=norm),
             metric_args={"fs": fs, "fast": fast, "norm": norm},
         )
@@ -99,7 +99,7 @@ class TestSRMR(MetricTester):
         self.run_functional_metric_test(
             preds=preds,
             target=preds,
-            metric_functional=speech_reverberation_modulation_energy_ratio_cheat,
+            metric_functional=_speech_reverberation_modulation_energy_ratio_cheat,
             reference_metric=_ref_metric_batch,
             metric_args={"fs": fs, "fast": fast, "norm": norm},
         )
@@ -133,7 +133,7 @@ class TestSRMR(MetricTester):
         self.run_precision_test_gpu(
             preds=preds,
             target=preds,
-            metric_module=SpeechReverberationModulationEnergyRatioCheat,
-            metric_functional=speech_reverberation_modulation_energy_ratio_cheat,
+            metric_module=_SpeechReverberationModulationEnergyRatioCheat,
+            metric_functional=_speech_reverberation_modulation_energy_ratio_cheat,
             metric_args={"fs": fs, "fast": fast, "norm": norm},
         )

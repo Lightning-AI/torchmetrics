@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Note: without special mention, the functions in this file are mainly translated from the SRMRpy package for batched processing with pytorch
+# Note: without special mention, the functions in this file are mainly translated from
+# the SRMRpy package for batched processing with pytorch
 
 from functools import lru_cache
 from math import ceil
@@ -68,7 +69,7 @@ def _compute_modulation_filterbank_and_cutoffs(
     for k in range(1, n):
         cfs[k] = cfs[k - 1] * spacing_factor
 
-    def _make_modulation_filter(w0:Tensor, q:int) -> Tensor:  # type:ignore
+    def _make_modulation_filter(w0:Tensor, q:int) -> Tensor:
         w0 = torch.tan(w0 / 2)
         b0 = w0 / q
         b = torch.tensor([b0, 0, -b0], dtype=torch.float64)
@@ -77,7 +78,7 @@ def _compute_modulation_filterbank_and_cutoffs(
 
     mfb = torch.stack([_make_modulation_filter(w0, q) for w0 in 2 * torch.pi * cfs / fs], dim=0)
 
-    def _calc_cutoffs(cfs: Tensor, fs: float, q: int) -> Tuple[Tensor, Tensor]:  # type:ignore
+    def _calc_cutoffs(cfs: Tensor, fs: float, q: int) -> Tuple[Tensor, Tensor]:
         # Calculates cutoff frequencies (3 dB) for 2nd order bandpass
         w0 = 2 * torch.pi * cfs / fs
         b0 = torch.tan(w0 / 2) / q
@@ -91,7 +92,7 @@ def _compute_modulation_filterbank_and_cutoffs(
     return cfs, mfb, l, r
 
 
-def _hilbert(x: Tensor, n: int = None) -> Tensor:  # type:ignore
+def _hilbert(x: Tensor, n: int = None) -> Tensor:
     if x.is_complex():
         raise ValueError("x must be real.")
     if n is None:
@@ -138,12 +139,10 @@ def _erb_filterbank(wave: Tensor, coefs: Tensor) -> Tensor:
     y2 = lfilter(y1, bs, as2, batching=True)
     y3 = lfilter(y2, bs, as3, batching=True)
     y4 = lfilter(y3, bs, as4, batching=True)
-    output = y4 / gain.reshape(1, -1, 1)
-
-    return output
+    return y4 / gain.reshape(1, -1, 1)
 
 
-def _normalize_energy(energy: Tensor, drange: float = 30.0) -> Tensor:  # type:ignore
+def _normalize_energy(energy: Tensor, drange: float = 30.0) -> Tensor:
     peak_energy = torch.mean(energy, dim=1, keepdim=True).max(dim=2, keepdim=True).values
     peak_energy = peak_energy.max(dim=3, keepdim=True).values
     min_energy = peak_energy * 10.0 ** (-drange / 10.0)
@@ -152,7 +151,7 @@ def _normalize_energy(energy: Tensor, drange: float = 30.0) -> Tensor:  # type:i
     return energy
 
 
-def _cal_srmr_score(bw: Tensor, avg_energy: Tensor, cutoffs: Tensor) -> Tensor:  # type:ignore
+def _cal_srmr_score(bw: Tensor, avg_energy: Tensor, cutoffs: Tensor) -> Tensor:
     if (cutoffs[4] <= bw) and (cutoffs[5] > bw):
         kstar = 5
     elif (cutoffs[5] <= bw) and (cutoffs[6] > bw):
@@ -256,7 +255,10 @@ def speech_reverberation_modulation_energy_ratio(
 
     # Computing modulation filterbank with Q = 2 and 8 channels
     if max_cf is None:
-        max_cf = 30 if norm else 128
+        if norm:
+            max_cf = 30
+        else:
+            max_cf = 128
     _, mf, cutoffs, _ = _compute_modulation_filterbank_and_cutoffs(
         min_cf, max_cf, n=8, fs=mfs, q=2, device=preds.device
     )
