@@ -42,7 +42,7 @@ class SpeechReverberationModulationEnergyRatio(Metric):
     - ``srmr`` (:class:`~torch.Tensor`): float scaler tensor
 
     .. note:: using this metrics requires you to have ``gammatone`` and ``torchaudio`` installed.
-        Either install as ``pip install torchmetrics[audio]`` or ``pip install torchaudio`` 
+        Either install as ``pip install torchmetrics[audio]`` or ``pip install torchaudio``
         and ``pip install git+https://github.com/detly/gammatone``.
 
     Args:

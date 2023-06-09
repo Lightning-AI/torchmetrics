@@ -193,7 +193,7 @@ def speech_reverberation_modulation_energy_ratio(
             setting `fast=True` may slow down the speed for calculating this metric on GPU.
 
     .. note:: using this metrics requires you to have ``gammatone`` and ``torchaudio`` installed.
-        Either install as ``pip install torchmetrics[audio]`` or ``pip install torchaudio`` 
+        Either install as ``pip install torchmetrics[audio]`` or ``pip install torchaudio``
         and ``pip install git+https://github.com/detly/gammatone``.
 
     Raises:
