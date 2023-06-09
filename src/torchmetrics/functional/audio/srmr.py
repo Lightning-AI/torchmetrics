@@ -193,7 +193,8 @@ def speech_reverberation_modulation_energy_ratio(
             setting `fast=True` may slow down the speed for calculating this metric on GPU.
 
     .. note:: using this metrics requires you to have ``gammatone`` and ``torchaudio`` installed.
-        Either install as ``pip install torchmetrics[audio]`` or ``pip install gammatone torchaudio``.
+        Either install as ``pip install torchmetrics[audio]`` or ``pip install torchaudio`` 
+        and ``pip install git+https://github.com/detly/gammatone``.
 
     Raises:
         ModuleNotFoundError:
@@ -205,8 +206,8 @@ def speech_reverberation_modulation_energy_ratio(
     if not _TORCHAUDIO_AVAILABEL or not _GAMMATONE_AVAILABEL:
         raise ModuleNotFoundError(
             "speech_reverberation_modulation_energy_ratio requires you to have `gammatone` and"
-            " `torchaudio` installed. Either install as ``pip install torchmetrics[audio]`` or"
-            " ``pip install gammatone torchaudio``."
+            " `torchaudio` installed. Either install as ``pip install torchmetrics[audio]`` or "
+            "``pip install torchaudio`` and ``pip install git+https://github.com/detly/gammatone``"
         )
 
     shape = preds.shape
@@ -263,7 +264,7 @@ def speech_reverberation_modulation_energy_ratio(
     if norm:
         energy = _normalize_energy(energy)
 
-    erbs = torch.flipud(_calc_erbs(low_freq, fs, n_cochlear_filters, device=x.device))
+    erbs = torch.flipud(_calc_erbs(low_freq, fs, n_cochlear_filters, device=preds.device))
 
     avg_energy = torch.mean(energy, dim=-1)
     total_energy = torch.sum(avg_energy.reshape(n_batch, -1), dim=-1)

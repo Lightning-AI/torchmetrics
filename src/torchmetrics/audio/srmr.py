@@ -42,7 +42,8 @@ class SpeechReverberationModulationEnergyRatio(Metric):
     - ``srmr`` (:class:`~torch.Tensor`): float scaler tensor
 
     .. note:: using this metrics requires you to have ``gammatone`` and ``torchaudio`` installed.
-        Either install as ``pip install torchmetrics[audio]`` or ``pip install gammatone torchaudio``.
+        Either install as ``pip install torchmetrics[audio]`` or ``pip install torchaudio`` 
+        and ``pip install git+https://github.com/detly/gammatone``.
 
     Args:
         preds: shape ``(..., time)``
@@ -93,9 +94,9 @@ class SpeechReverberationModulationEnergyRatio(Metric):
         super().__init__(**kwargs)
         if not _TORCHAUDIO_AVAILABEL or not _GAMMATONE_AVAILABEL:
             raise ModuleNotFoundError(
-                "SpeechReverberationModulationEnergyRatio requires you to have `gammatone` and"
-                " `torchaudio` installed. Either install as ``pip install torchmetrics[audio]`` or"
-                " ``pip install gammatone torchaudio``."
+                "speech_reverberation_modulation_energy_ratio requires you to have `gammatone` and"
+                " `torchaudio` installed. Either install as ``pip install torchmetrics[audio]`` or "
+                "``pip install torchaudio`` and ``pip install git+https://github.com/detly/gammatone``"
             )
         self.fs = fs
         self.n_cochlear_filters = n_cochlear_filters
