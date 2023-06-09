@@ -106,7 +106,7 @@ def _hilbert(x: Tensor, n: int = None):  # type:ignore
     h = torch.zeros(n, dtype=x.dtype, device=x.device, requires_grad=False)
     assert n % 2 == 0, n
     h[0] = h[n // 2] = 1
-    h[1:n // 2] = 2
+    h[1 : n // 2] = 2
 
     y = torch.fft.ifft(x_fft * h, dim=-1)
     y = y[..., : x.shape[-1]]
