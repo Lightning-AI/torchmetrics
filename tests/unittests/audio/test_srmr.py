@@ -70,11 +70,11 @@ class SpeechReverberationModulationEnergyRatioCheat(SpeechReverberationModulatio
         (preds, 8000, False, False),
         (preds, 8000, False, True),
         (preds, 8000, True, False),
-        # (preds, 8000, True, True),
+        (preds, 8000, True, True),
         (preds, 16000, False, False),
-        # (preds, 16000, False, True),
-        # (preds, 16000, True, False),
-        # (preds, 16000, True, True),
+        (preds, 16000, False, True),
+        (preds, 16000, True, False),
+        (preds, 16000, True, True),
     ],
 )
 class TestSRMR(MetricTester):
