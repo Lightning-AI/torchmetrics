@@ -17,13 +17,24 @@
 from functools import lru_cache
 from math import ceil
 from typing import *
+from torchmetrics.utilities.imports import _GAMMATONE_AVAILABEL, _TORCHAUDIO_AVAILABEL
 
 import torch
-from gammatone.fftweight import fft_gtgram
-from gammatone.filters import centre_freqs, make_erb_filters
+
 from torch import Tensor
 from torch.nn.functional import pad
-from torchaudio.functional.filtering import lfilter
+if _TORCHAUDIO_AVAILABEL:
+    from torchaudio.functional.filtering import lfilter
+else:
+    lfilter = None
+    __doctest_skip__ = ["speech_reverberation_modulation_energy_ratio"]
+
+if _GAMMATONE_AVAILABEL:
+    from gammatone.fftweight import fft_gtgram
+    from gammatone.filters import centre_freqs, make_erb_filters
+else:
+    fft_gtgram, centre_freqs, make_erb_filters = None, None, None
+    __doctest_skip__ = ["speech_reverberation_modulation_energy_ratio"]
 
 
 @lru_cache(maxsize=100)
@@ -31,7 +42,7 @@ def _calc_erbs(low_freq: float, fs: int, n_filters: int, device: torch.device) -
     ear_q = 9.26449  # Glasberg and Moore Parameters
     min_bw = 24.7
     order = 1
-    erbs = ((centre_freqs(fs, n_filters, low_freq) / ear_q) ** order + min_bw**order) ** (1 / order)
+    erbs = ((centre_freqs(fs, n_filters, low_freq) / ear_q)**order + min_bw**order)**(1 / order)
     erbs = torch.tensor(erbs, device=device)
     return erbs
 
@@ -45,11 +56,9 @@ def _make_erb_filters(fs: int, num_freqs: int, cutoff: float, device: torch.devi
 
 
 @lru_cache(maxsize=100)
-def _compute_modulation_filterbank_and_cutoffs(
-    min_cf: float, max_cf: float, n: int, Q: int, fs: float, q: int, device: torch.device
-) -> Union[Tensor, Tensor, Tensor, Tensor]:
+def _compute_modulation_filterbank_and_cutoffs(min_cf: float, max_cf: float, n: int, Q: int, fs: float, q: int, device: torch.device) -> Union[Tensor, Tensor, Tensor, Tensor]:
     # this function is translated from the SRMRpy packaged
-    spacing_factor = (max_cf / min_cf) ** (1.0 / (n - 1))
+    spacing_factor = (max_cf / min_cf)**(1.0 / (n - 1))
     cfs = torch.zeros(n, dtype=torch.float64)
     cfs[0] = min_cf
     for k in range(1, n):
@@ -93,10 +102,10 @@ def _hilbert(x: Tensor, N: int = None):
     h = torch.zeros(N, dtype=x.dtype, device=x.device, requires_grad=False)
     assert N % 2 == 0, N
     h[0] = h[N // 2] = 1
-    h[1 : N // 2] = 2
+    h[1:N // 2] = 2
 
     y = torch.fft.ifft(x_fft * h, dim=-1)
-    y = y[..., : x.shape[-1]]
+    y = y[..., :x.shape[-1]]
     return y
 
 
@@ -133,49 +142,69 @@ def _erb_filterbank(wave: Tensor, coefs: Tensor) -> Tensor:
 def _normalize_energy(energy: Tensor, drange: float = 30.0) -> Tensor:
     peak_energy = torch.mean(energy, dim=1, keepdim=True).max(dim=2, keepdim=True).values
     peak_energy = peak_energy.max(dim=3, keepdim=True).values
-    min_energy = peak_energy * 10.0 ** (-drange / 10.0)
+    min_energy = peak_energy * 10.0**(-drange / 10.0)
     energy = torch.where(energy < min_energy, min_energy, energy)
     energy = torch.where(energy > peak_energy, peak_energy, energy)
     return energy
 
 
 def _cal_srmr_score(BW: Tensor, avg_energy: Tensor, cutoffs: Tensor) -> Tensor:
-    if (cutoffs[4] < BW) and (cutoffs[5] >= BW):
+    if (cutoffs[4] <= BW) and (cutoffs[5] > BW):
         Kstar = 5
-    elif (cutoffs[5] < BW) and (cutoffs[6] >= BW):
+    elif (cutoffs[5] <= BW) and (cutoffs[6] > BW):
         Kstar = 6
-    elif (cutoffs[6] < BW) and (cutoffs[7] >= BW):
+    elif (cutoffs[6] <= BW) and (cutoffs[7] > BW):
         Kstar = 7
-    elif cutoffs[7] < BW:
+    elif cutoffs[7] <= BW:
         Kstar = 8
     return torch.sum(avg_energy[:, :4]) / torch.sum(avg_energy[:, 4:Kstar])
 
 
-def srmr(
+def speech_reverberation_modulation_energy_ratio(
     preds: Tensor,
     fs: int,
     n_cochlear_filters: int = 23,
     low_freq: float = 125,
     min_cf: float = 4,
-    max_cf: float = 128,
+    max_cf: Optional[float] = 128,
     norm: bool = False,
     fast: bool = False,
 ) -> Tensor:
-    """The speech-to-reverberation modulation energy ratio (SRMR) metric.
+    """Calculate `Speech-to-Reverberation Modulation Energy Ratio`_ (SRMR).
+
+    SRMR is a non-intrusive metric for speech quality and intelligibility based on
+    a modulation spectral representation of the speech signal.
+    This code is translated from `SRMRToolbox`_ and `SRMRpy`_, and tested against `SRMRpy`_.
 
     Args:
-        preds: shape [..., time]
+        preds: shape ``(..., time)``
         fs: the sampling rate
         n_cochlear_filters: Number of filters in the acoustic filterbank
-        low_freq: _description_.
-        min_cf: Center frequency of the first modulation filter
-        max_cf: Center frequency of the last modulation filter
+        low_freq: determines the frequency cutoff for the corresponding gammatone filterbank.
+        min_cf: Center frequency in Hz of the first modulation filter.
+        max_cf: Center frequency in Hz of the last modulation filter. If None is given,
+            then 30 Hz will be used for `norm==False`, otherwise 128 Hz will be used.
         norm: Use modulation spectrum energy normalization
-        fast: Use the faster version based on the gammatonegram
+        fast: Use the faster version based on the gammatonegram.
+            Note: this argument is inherited from `SRMRpy`_. As the translated code is based to pytorch,
+            setting `fast=True` may slow down the speed for calculating this metric on GPU.
+
+    .. note:: using this metrics requires you to have ``gammatone`` and ``torchaudio`` installed.
+        Either install as ``pip install torchmetrics[audio]`` or ``pip install gammatone torchaudio``.
+
+    Raises:
+        ModuleNotFoundError:
+            If ``gammatone`` or ``torchaudio`` package is not installed
 
     Returns:
-        Tensor: the computed srmr metric, shape [...]
+        Tensor: srmr value, shape ``(...)``
     """
+
+    if not _TORCHAUDIO_AVAILABEL or not _GAMMATONE_AVAILABEL:
+        raise ModuleNotFoundError("speech_reverberation_modulation_energy_ratio requires you to have `gammatone` and"
+            " `torchaudio` installed. Either install as ``pip install torchmetrics[audio]`` or"
+            " ``pip install gammatone torchaudio``.")
+
     shape = preds.shape
     if len(shape) == 1:
         preds = preds.reshape(1, -1)  # [B, time]
@@ -210,20 +239,18 @@ def srmr(
     wInc = ceil(wIncS * mfs)
 
     # Computing modulation filterbank with Q = 2 and 8 channels
-    _, MF, cutoffs, _ = _compute_modulation_filterbank_and_cutoffs(
-        min_cf, max_cf, n=8, Q=2, fs=mfs, q=2, device=preds.device
-    )
+    if max_cf is None:
+        max_cf = 30 if norm else 128
+    _, MF, cutoffs, _ = _compute_modulation_filterbank_and_cutoffs(min_cf, max_cf, n=8, Q=2, fs=mfs, q=2, device=preds.device)
 
     n_frames = int(1 + (time - wLength) // wInc)
     w = torch.hamming_window(wLength + 1, dtype=torch.float64, device=preds.device)[:-1]
-    mod_out = lfilter(
-        gt_env.unsqueeze(-2).expand(-1, -1, MF.shape[0], -1), MF[:, 1, :], MF[:, 0, :], clamp=False, batching=True
-    )  # [B, N_filters, 8, time]
+    mod_out = lfilter(gt_env.unsqueeze(-2).expand(-1, -1, MF.shape[0], -1), MF[:, 1, :], MF[:, 0, :], clamp=False, batching=True)  # [B, N_filters, 8, time]
     # pad signal if it's shorter than window or it is not multiple of wInc
     padding = (0, max(ceil(time / wInc) * wInc - time, wLength - time))
     mod_out_pad = pad(mod_out, pad=padding, mode="constant", value=0)
     mod_out_frame = mod_out_pad.unfold(-1, wLength, wInc)
-    energy = ((mod_out_frame[..., :n_frames, :] * w) ** 2).sum(dim=-1)  # [B, N_filters, 8, n_frames]
+    energy = ((mod_out_frame[..., :n_frames, :] * w)**2).sum(dim=-1)  # [B, N_filters, 8, n_frames]
 
     if norm:
         energy = _normalize_energy(energy)
