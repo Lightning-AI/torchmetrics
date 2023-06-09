@@ -16,7 +16,7 @@
 
 from functools import lru_cache
 from math import ceil
-from typing import *
+from typing import Tuple, Optional
 
 import torch
 from torch import Tensor
@@ -68,7 +68,7 @@ def _compute_modulation_filterbank_and_cutoffs(
     for k in range(1, n):
         cfs[k] = cfs[k - 1] * spacing_factor
 
-    def _make_modulation_filter(w0, q):  # type:ignore
+    def _make_modulation_filter(w0:Tensor, q:int) -> Tensor:  # type:ignore
         w0 = torch.tan(w0 / 2)
         b0 = w0 / q
         b = torch.tensor([b0, 0, -b0], dtype=torch.float64)
@@ -91,7 +91,7 @@ def _compute_modulation_filterbank_and_cutoffs(
     return cfs, mfb, l, r
 
 
-def _hilbert(x: Tensor, n: int = None):  # type:ignore
+def _hilbert(x: Tensor, n: int = None) -> Tensor:  # type:ignore
     if x.is_complex():
         raise ValueError("x must be real.")
     if n is None:
