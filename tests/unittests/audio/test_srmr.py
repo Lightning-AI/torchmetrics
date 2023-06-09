@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Dict, Any
+from typing import Any, Dict
+
 import pytest
 import torch
 from srmrpy2 import srmr as srmrpy_srmr
@@ -28,7 +29,7 @@ seed_all(42)
 preds = torch.rand(1, 2, 8000)
 
 
-def _ref_metric_batch(preds: Tensor, fs: int, fast: bool, norm: bool, **kwargs:Dict[str, Any]):
+def _ref_metric_batch(preds: Tensor, fs: int, fast: bool, norm: bool, **kwargs: Dict[str, Any]):
     # shape: preds [BATCH_SIZE, Time]
     shape = preds.shape
     if len(shape) == 1:
@@ -47,13 +48,13 @@ def _ref_metric_batch(preds: Tensor, fs: int, fast: bool, norm: bool, **kwargs:D
     return score
 
 
-def _average_metric(preds, target, metric_func, **kwargs:Dict[str, Any]):
+def _average_metric(preds, target, metric_func, **kwargs: Dict[str, Any]):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     return metric_func(preds, **kwargs).mean()
 
 
-def _speech_reverberation_modulation_energy_ratio_cheat(preds, target, **kwargs:Dict[str, Any]):
+def _speech_reverberation_modulation_energy_ratio_cheat(preds, target, **kwargs: Dict[str, Any]):
     # cheat the MetricTester as the speech_reverberation_modulation_energy_ratio doesn't need target
     return speech_reverberation_modulation_energy_ratio(preds, **kwargs)
 
