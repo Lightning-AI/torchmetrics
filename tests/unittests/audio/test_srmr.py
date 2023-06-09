@@ -15,10 +15,10 @@ from functools import partial
 
 import pytest
 import torch
-from speechmetrics.absolute.srmr.srmr import srmr as speechmetrics_srmr
 from torch import Tensor
 from torchmetrics.audio import SpeechReverberationModulationEnergyRatio
 from torchmetrics.functional.audio import speech_reverberation_modulation_energy_ratio
+from srmrpy import srmr as srmrpy_srmr
 
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -28,7 +28,7 @@ seed_all(42)
 preds = torch.rand(1, 2, 8000)
 
 
-def _ref_metric_batch(preds: Tensor, fs: int, fast: bool, norm: bool):
+def _ref_metric_batch(preds: Tensor, fs: int, fast: bool, norm: bool, **kwargs):
     # shape: preds [BATCH_SIZE, Time]
     shape = preds.shape
     if len(shape) == 1:
@@ -40,11 +40,11 @@ def _ref_metric_batch(preds: Tensor, fs: int, fast: bool, norm: bool):
     preds = preds.detach().cpu().numpy()
     score = []
     for b in range(preds.shape[0]):
-        val, _ = speechmetrics_srmr(preds[b, ...], fs=fs, fast=fast, norm=norm)
+        val, _ = srmrpy_srmr(preds[b, ...], fs=fs, fast=fast, norm=norm)
         score.append(val)
-
+    score = torch.tensor(score)
     score = score.reshape(*shape[:-1])
-    return torch.tensor(score)
+    return score
 
 
 def _average_metric(preds, target, metric_func):
@@ -99,7 +99,7 @@ class TestSRMR(MetricTester):
         self.run_functional_metric_test(
             preds=preds,
             target=preds,
-            metric_class=speech_reverberation_modulation_energy_ratio_cheat,
+            metric_functional=speech_reverberation_modulation_energy_ratio_cheat,
             reference_metric=_ref_metric_batch,
             metric_args={"fs": fs, "fast": fast, "norm": norm},
         )
