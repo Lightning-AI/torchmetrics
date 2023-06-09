@@ -82,14 +82,14 @@ def _compute_modulation_filterbank_and_cutoffs(
         # Calculates cutoff frequencies (3 dB) for 2nd order bandpass
         w0 = 2 * torch.pi * cfs / fs
         b0 = torch.tan(w0 / 2) / q
-        l = cfs - (b0 * fs / (2 * torch.pi))
-        r = cfs + (b0 * fs / (2 * torch.pi))
-        return l, r
+        ll = cfs - (b0 * fs / (2 * torch.pi))
+        rr = cfs + (b0 * fs / (2 * torch.pi))
+        return ll, rr
 
     cfs = cfs.to(device=device)
     mfb = mfb.to(device=device)
-    l, r = _calc_cutoffs(cfs, fs, q)
-    return cfs, mfb, l, r
+    ll, rr = _calc_cutoffs(cfs, fs, q)
+    return cfs, mfb, ll, rr
 
 
 def _hilbert(x: Tensor, n: int = None) -> Tensor:
@@ -223,10 +223,7 @@ def speech_reverberation_modulation_energy_ratio(
         )
 
     shape = preds.shape
-    if len(shape) == 1:
-        preds = preds.reshape(1, -1)  # [B, time]
-    else:
-        preds = preds.reshape(-1, shape[-1])  # [B, time]
+    preds = preds.reshape(1, -1) if len(shape) == 1 else preds.reshape(-1, shape[-1])
     n_batch, time = preds.shape
     # convert int type to float
     if not torch.is_floating_point(preds):
@@ -259,10 +256,7 @@ def speech_reverberation_modulation_energy_ratio(
 
     # Computing modulation filterbank with Q = 2 and 8 channels
     if max_cf is None:
-        if norm:
-            max_cf = 30
-        else:
-            max_cf = 128
+        max_cf = 30 if norm else 128
     _, mf, cutoffs, _ = _compute_modulation_filterbank_and_cutoffs(
         min_cf, max_cf, n=8, fs=mfs, q=2, device=preds.device
     )
