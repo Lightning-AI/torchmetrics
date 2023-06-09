@@ -21,7 +21,7 @@ from typing import *
 import torch
 from torch import Tensor
 from torch.nn.functional import pad
-
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import _GAMMATONE_AVAILABEL, _TORCHAUDIO_AVAILABEL
 
 if _TORCHAUDIO_AVAILABEL:
@@ -229,12 +229,14 @@ def speech_reverberation_modulation_energy_ratio(
     wIncS = 0.064
     # Computing gammatone envelopes
     if fast:
+        rank_zero_warn(f"`fast=True` may slow down the speed of SRMR metric on GPU.")
         mfs = 400.0
         temp = []
+        preds_np = preds.detach().cpu().numpy()
         for b in range(n_batch):
-            gt_env_b = fft_gtgram(preds[b].numpy(), fs, 0.010, 0.0025, n_cochlear_filters, low_freq)
+            gt_env_b = fft_gtgram(preds_np[b], fs, 0.010, 0.0025, n_cochlear_filters, low_freq)
             temp.append(torch.tensor(gt_env_b))
-        gt_env = torch.stack(temp, dim=0)
+        gt_env = torch.stack(temp, dim=0).to(device=preds.device)
     else:
         fcoefs = _make_erb_filters(fs, n_cochlear_filters, low_freq, device=preds.device)  # [N_filters, 10]
         gt_env = torch.abs(_hilbert(_erb_filterbank(preds, fcoefs)))  # [B, N_filters, time]

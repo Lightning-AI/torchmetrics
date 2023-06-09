@@ -25,7 +25,7 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-preds = torch.rand(1, 4, 8000)
+preds = torch.rand(1, 2, 8000)
 
 
 def _ref_metric_batch(preds: Tensor, fs: int, fast: bool, norm: bool):
