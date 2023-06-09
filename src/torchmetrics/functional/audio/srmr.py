@@ -92,7 +92,7 @@ def _compute_modulation_filterbank_and_cutoffs(
     return cfs, mfb, ll, rr
 
 
-def _hilbert(x: Tensor, n: int = None) -> Tensor:
+def _hilbert(x: Tensor, n: Optional[int] = None) -> Tensor:
     if x.is_complex():
         raise ValueError("x must be real.")
     if n is None:
