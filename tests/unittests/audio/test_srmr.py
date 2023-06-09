@@ -15,21 +15,20 @@ from functools import partial
 
 import pytest
 import torch
+from speechmetrics.absolute.srmr.srmr import srmr as speechmetrics_srmr
 from torch import Tensor
 from torchmetrics.audio import SpeechReverberationModulationEnergyRatio
 from torchmetrics.functional.audio import speech_reverberation_modulation_energy_ratio
 
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
-from speechmetrics.absolute.srmr.srmr import srmr as speechmetrics_srmr
-
 
 seed_all(42)
 
-preds=torch.rand(1, 4, 8000)
+preds = torch.rand(1, 4, 8000)
 
 
-def _ref_metric_batch(preds: Tensor, fs: int, fast: bool, norm:bool):
+def _ref_metric_batch(preds: Tensor, fs: int, fast: bool, norm: bool):
     # shape: preds [BATCH_SIZE, Time]
     shape = preds.shape
     if len(shape) == 1:
@@ -41,7 +40,7 @@ def _ref_metric_batch(preds: Tensor, fs: int, fast: bool, norm:bool):
     preds = preds.detach().cpu().numpy()
     score = []
     for b in range(preds.shape[0]):
-        val,_ = speechmetrics_srmr(preds[b, ...], fs=fs,fast=fast, norm=norm)
+        val, _ = speechmetrics_srmr(preds[b, ...], fs=fs, fast=fast, norm=norm)
         score.append(val)
 
     score = score.reshape(*shape[:-1])
@@ -53,7 +52,8 @@ def _average_metric(preds, target, metric_func):
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     return metric_func(preds).mean()
 
-def speech_reverberation_modulation_energy_ratio_cheat(preds, target,**kwargs):
+
+def speech_reverberation_modulation_energy_ratio_cheat(preds, target, **kwargs):
     # cheat the MetricTester as the speech_reverberation_modulation_energy_ratio doesn't need target
     return speech_reverberation_modulation_energy_ratio(preds, **kwargs)
 
@@ -89,7 +89,7 @@ class TestSRMR(MetricTester):
             ddp,
             preds=preds,
             target=preds,
-            metric_class= SpeechReverberationModulationEnergyRatioCheat,
+            metric_class=SpeechReverberationModulationEnergyRatioCheat,
             reference_metric=partial(_average_metric, metric_func=_ref_metric_batch),
             metric_args={"fs": fs, "fast": fast, "norm": norm},
         )
@@ -106,7 +106,7 @@ class TestSRMR(MetricTester):
 
     def test_srmr_differentiability(self, preds, fs, fast, norm):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        if fast == True:
+        if fast is True:
             pytest.xfail("SRMR metric is not differentiable when `fast=True`")
 
         self.run_differentiability_test(
@@ -131,4 +131,3 @@ class TestSRMR(MetricTester):
             metric_functional=speech_reverberation_modulation_energy_ratio_cheat,
             metric_args={"fs": fs, "fast": fast, "norm": norm},
         )
-
