@@ -17,7 +17,7 @@
 
 from functools import lru_cache
 from math import ceil
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -69,7 +69,7 @@ def _compute_modulation_filterbank_and_cutoffs(
     for k in range(1, n):
         cfs[k] = cfs[k - 1] * spacing_factor
 
-    def _make_modulation_filter(w0:Tensor, q:int) -> Tensor:
+    def _make_modulation_filter(w0: Tensor, q: int) -> Tensor:
         w0 = torch.tan(w0 / 2)
         b0 = w0 / q
         b = torch.tensor([b0, 0, -b0], dtype=torch.float64)
@@ -108,10 +108,10 @@ def _hilbert(x: Tensor, n: int = None) -> Tensor:
 
     if n % 2 == 0:
         h[0] = h[n // 2] = 1
-        h[1:n // 2] = 2
+        h[1 : n // 2] = 2
     else:
         h[0] = 1
-        h[1:(n + 1) // 2] = 2
+        h[1 : (n + 1) // 2] = 2
 
     y = torch.fft.ifft(x_fft * h, dim=-1)
     y = y[..., : x.shape[-1]]
