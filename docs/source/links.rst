@@ -116,6 +116,7 @@
 .. _sdr ref2: https://arxiv.org/abs/2110.06440
 .. _Scale-invariant signal-to-distortion ratio: https://arxiv.org/abs/1811.02508
 .. _Scale-invariant signal-to-noise ratio: https://arxiv.org/abs/1711.00541
+.. _Complex scale-invariant signal-to-noise ratio: https://arxiv.org/abs/2011.09162
 .. _Signal-to-noise ratio: https://arxiv.org/abs/1811.02508
 .. _Speech-to-Reverberation Modulation Energy Ratio: https://ieeexplore.ieee.org/document/5547575
 .. _SRMRToolbox: https://github.com/MuSAELab/SRMRToolbox

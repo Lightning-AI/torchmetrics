@@ -53,11 +53,11 @@ def _ensure_nltk_punkt_is_downloaded() -> None:
     except LookupError:
         try:
             nltk.download("punkt", quiet=True, force=False, halt_on_error=False, raise_on_error=True)
-        except ValueError:
+        except ValueError as err:
             raise OSError(
                 "`nltk` resource `punkt` is not available on a disk and cannot be downloaded as a machine is not "
                 "connected to the internet."
-            )
+            ) from err
 
 
 def _split_sentence(x: str) -> Sequence[str]:
