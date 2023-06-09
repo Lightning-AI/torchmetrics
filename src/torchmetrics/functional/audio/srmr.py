@@ -58,7 +58,9 @@ def _make_erb_filters(fs: int, num_freqs: int, cutoff: float, device: torch.devi
 
 
 @lru_cache(maxsize=100)
-def _compute_modulation_filterbank_and_cutoffs(min_cf: float, max_cf: float, n: int, Q: int, fs: float, q: int, device: torch.device) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+def _compute_modulation_filterbank_and_cutoffs(
+    min_cf: float, max_cf: float, n: int, fs: float, q: int, device: torch.device
+) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     # this function is translated from the SRMRpy packaged
     spacing_factor = (max_cf / min_cf)**(1.0 / (n - 1))
     cfs = torch.zeros(n, dtype=torch.float64)
@@ -66,45 +68,45 @@ def _compute_modulation_filterbank_and_cutoffs(min_cf: float, max_cf: float, n: 
     for k in range(1, n):
         cfs[k] = cfs[k - 1] * spacing_factor
 
-    def _make_modulation_filter(w0, Q):  # type:ignore
-        W0 = torch.tan(w0 / 2)
-        B0 = W0 / Q
-        b = torch.tensor([B0, 0, -B0], dtype=torch.float64)
-        a = torch.tensor([(1 + B0 + W0**2), (2 * W0**2 - 2), (1 - B0 + W0**2)], dtype=torch.float64)
+    def _make_modulation_filter(w0, q):  # type:ignore
+        w0 = torch.tan(w0 / 2)
+        b0 = w0 / q
+        b = torch.tensor([b0, 0, -b0], dtype=torch.float64)
+        a = torch.tensor([(1 + b0 + w0**2), (2 * w0**2 - 2), (1 - b0 + w0**2)], dtype=torch.float64)
         return torch.stack([b, a], dim=0)
 
-    mfb = torch.stack([_make_modulation_filter(w0, Q) for w0 in 2 * torch.pi * cfs / fs], dim=0)
+    mfb = torch.stack([_make_modulation_filter(w0, q) for w0 in 2 * torch.pi * cfs / fs], dim=0)
 
     def _calc_cutoffs(cfs: Tensor, fs: float, q: int) -> Tuple[Tensor, Tensor]:  # type:ignore
         # Calculates cutoff frequencies (3 dB) for 2nd order bandpass
         w0 = 2 * torch.pi * cfs / fs
-        B0 = torch.tan(w0 / 2) / q
-        L = cfs - (B0 * fs / (2 * torch.pi))
-        R = cfs + (B0 * fs / (2 * torch.pi))
-        return L, R
+        b0 = torch.tan(w0 / 2) / q
+        l = cfs - (b0 * fs / (2 * torch.pi))
+        r = cfs + (b0 * fs / (2 * torch.pi))
+        return l, r
 
     cfs = cfs.to(device=device)
     mfb = mfb.to(device=device)
-    L, R = _calc_cutoffs(cfs, fs, q)
-    return cfs, mfb, L, R
+    l, r = _calc_cutoffs(cfs, fs, q)
+    return cfs, mfb, l, r
 
 
-def _hilbert(x: Tensor, N: int = None):  # type:ignore
+def _hilbert(x: Tensor, n: int = None):  # type:ignore
     if x.is_complex():
         raise ValueError("x must be real.")
-    if N is None:
-        N = x.shape[-1]
+    if n is None:
+        n = x.shape[-1]
         # Make N multiple of 16 to make sure the transform will be fast
-        if N % 16:
-            N = ceil(N / 16) * 16
-    if N <= 0:
+        if n % 16:
+            n = ceil(n / 16) * 16
+    if n <= 0:
         raise ValueError("N must be positive.")
 
-    x_fft = torch.fft.fft(x, n=N, dim=-1)
-    h = torch.zeros(N, dtype=x.dtype, device=x.device, requires_grad=False)
-    assert N % 2 == 0, N
-    h[0] = h[N // 2] = 1
-    h[1:N // 2] = 2
+    x_fft = torch.fft.fft(x, n=n, dim=-1)
+    h = torch.zeros(n, dtype=x.dtype, device=x.device, requires_grad=False)
+    assert n % 2 == 0, n
+    h[0] = h[n // 2] = 1
+    h[1:n // 2] = 2
 
     y = torch.fft.ifft(x_fft * h, dim=-1)
     y = y[..., :x.shape[-1]]
@@ -126,16 +128,16 @@ def _erb_filterbank(wave: Tensor, coefs: Tensor) -> Tensor:
     wave = wave.expand(-1, coefs.shape[0], -1)  # [B, N, time]
 
     gain = coefs[:, 9]
-    As1 = coefs[:, (0, 1, 5)]  # A0, A11, A2
-    As2 = coefs[:, (0, 2, 5)]  # A0, A12, A2
-    As3 = coefs[:, (0, 3, 5)]  # A0, A13, A2
-    As4 = coefs[:, (0, 4, 5)]  # A0, A14, A2
-    Bs = coefs[:, 6:9]  # B0, B1, B2
+    as1 = coefs[:, (0, 1, 5)]  # A0, A11, A2
+    as2 = coefs[:, (0, 2, 5)]  # A0, A12, A2
+    as3 = coefs[:, (0, 3, 5)]  # A0, A13, A2
+    as4 = coefs[:, (0, 4, 5)]  # A0, A14, A2
+    bs = coefs[:, 6:9]  # B0, B1, B2
 
-    y1 = lfilter(wave, Bs, As1, batching=True)
-    y2 = lfilter(y1, Bs, As2, batching=True)
-    y3 = lfilter(y2, Bs, As3, batching=True)
-    y4 = lfilter(y3, Bs, As4, batching=True)
+    y1 = lfilter(wave, bs, as1, batching=True)
+    y2 = lfilter(y1, bs, as2, batching=True)
+    y3 = lfilter(y2, bs, as3, batching=True)
+    y4 = lfilter(y3, bs, as4, batching=True)
     output = y4 / gain.reshape(1, -1, 1)
 
     return output
@@ -150,16 +152,16 @@ def _normalize_energy(energy: Tensor, drange: float = 30.0) -> Tensor:  # type:i
     return energy
 
 
-def _cal_srmr_score(BW: Tensor, avg_energy: Tensor, cutoffs: Tensor) -> Tensor:  # type:ignore
-    if (cutoffs[4] <= BW) and (cutoffs[5] > BW):
-        Kstar = 5
-    elif (cutoffs[5] <= BW) and (cutoffs[6] > BW):
-        Kstar = 6
-    elif (cutoffs[6] <= BW) and (cutoffs[7] > BW):
-        Kstar = 7
-    elif cutoffs[7] <= BW:
-        Kstar = 8
-    return torch.sum(avg_energy[:, :4]) / torch.sum(avg_energy[:, 4:Kstar])
+def _cal_srmr_score(bw: Tensor, avg_energy: Tensor, cutoffs: Tensor) -> Tensor:  # type:ignore
+    if (cutoffs[4] <= bw) and (cutoffs[5] > bw):
+        kstar = 5
+    elif (cutoffs[5] <= bw) and (cutoffs[6] > bw):
+        kstar = 6
+    elif (cutoffs[6] <= bw) and (cutoffs[7] > bw):
+        kstar = 7
+    elif cutoffs[7] <= bw:
+        kstar = 8
+    return torch.sum(avg_energy[:, :4]) / torch.sum(avg_energy[:, 4:kstar])
 
 
 def speech_reverberation_modulation_energy_ratio(
@@ -232,8 +234,8 @@ def speech_reverberation_modulation_energy_ratio(
     val_norm = torch.where(max_vals > 1, max_vals, 1)
     preds = preds / val_norm
 
-    wLengthS = 0.256
-    wIncS = 0.064
+    w_length_s = 0.256
+    w_inc_s = 0.064
     # Computing gammatone envelopes
     if fast:
         rank_zero_warn("`fast=True` may slow down the speed of SRMR metric on GPU.")
@@ -249,25 +251,25 @@ def speech_reverberation_modulation_energy_ratio(
         gt_env = torch.abs(_hilbert(_erb_filterbank(preds, fcoefs)))  # [B, N_filters, time]
         mfs = fs
 
-    wLength = ceil(wLengthS * mfs)
-    wInc = ceil(wIncS * mfs)
+    w_length = ceil(w_length_s * mfs)
+    w_inc = ceil(w_inc_s * mfs)
 
     # Computing modulation filterbank with Q = 2 and 8 channels
     if max_cf is None:
         max_cf = 30 if norm else 128
-    _, MF, cutoffs, _ = _compute_modulation_filterbank_and_cutoffs(
-        min_cf, max_cf, n=8, Q=2, fs=mfs, q=2, device=preds.device
+    _, mf, cutoffs, _ = _compute_modulation_filterbank_and_cutoffs(
+        min_cf, max_cf, n=8, fs=mfs, q=2, device=preds.device
     )
 
-    n_frames = int(1 + (time - wLength) // wInc)
-    w = torch.hamming_window(wLength + 1, dtype=torch.float64, device=preds.device)[:-1]
+    n_frames = int(1 + (time - w_length) // w_inc)
+    w = torch.hamming_window(w_length + 1, dtype=torch.float64, device=preds.device)[:-1]
     mod_out = lfilter(
-        gt_env.unsqueeze(-2).expand(-1, -1, MF.shape[0], -1), MF[:, 1, :], MF[:, 0, :], clamp=False, batching=True
+        gt_env.unsqueeze(-2).expand(-1, -1, mf.shape[0], -1), mf[:, 1, :], mf[:, 0, :], clamp=False, batching=True
     )  # [B, N_filters, 8, time]
     # pad signal if it's shorter than window or it is not multiple of wInc
-    padding = (0, max(ceil(time / wInc) * wInc - time, wLength - time))
+    padding = (0, max(ceil(time / w_inc) * w_inc - time, w_length - time))
     mod_out_pad = pad(mod_out, pad=padding, mode="constant", value=0)
-    mod_out_frame = mod_out_pad.unfold(-1, wLength, wInc)
+    mod_out_frame = mod_out_pad.unfold(-1, w_length, w_inc)
     energy = ((mod_out_frame[..., :n_frames, :] * w) ** 2).sum(dim=-1)  # [B, N_filters, 8, n_frames]
 
     if norm:
@@ -277,15 +279,15 @@ def speech_reverberation_modulation_energy_ratio(
 
     avg_energy = torch.mean(energy, dim=-1)
     total_energy = torch.sum(avg_energy.reshape(n_batch, -1), dim=-1)
-    AC_energy = torch.sum(avg_energy, dim=2)
-    AC_perc = AC_energy * 100 / total_energy.reshape(-1, 1)
-    AC_perc_cumsum = AC_perc.flip(-1).cumsum(-1)
-    K90perc_idx = torch.nonzero((AC_perc_cumsum > 90).cumsum(-1) == 1)[:, 1]
-    BW = erbs[K90perc_idx]
+    ac_energy = torch.sum(avg_energy, dim=2)
+    ac_perc = ac_energy * 100 / total_energy.reshape(-1, 1)
+    ac_perc_cumsum = ac_perc.flip(-1).cumsum(-1)
+    k90perc_idx = torch.nonzero((ac_perc_cumsum > 90).cumsum(-1) == 1)[:, 1]
+    bw = erbs[k90perc_idx]
 
     temp = []
     for b in range(n_batch):
-        score = _cal_srmr_score(BW[b], avg_energy[b], cutoffs=cutoffs)
+        score = _cal_srmr_score(bw[b], avg_energy[b], cutoffs=cutoffs)
         temp.append(score)
     score = torch.stack(temp)
 
