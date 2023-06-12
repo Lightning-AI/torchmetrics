@@ -58,7 +58,7 @@ jobs:
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that MacOS jobs take much more than orger OS
-    timeout-minutes: 90
+    timeout-minutes: 120
 
     steps:
     - uses: actions/checkout@v3
@@ -138,6 +138,7 @@ jobs:
     - name: Unittests
       uses: ./.github/actions/unittesting
       if: ${{ needs.check-diff.outputs.test-dirs != '' }}
+      timeout-minutes: 90
       with:
         requires: ${{ matrix.requires }}
         codecov-token: ${{ secrets.CODECOV_TOKEN }}
