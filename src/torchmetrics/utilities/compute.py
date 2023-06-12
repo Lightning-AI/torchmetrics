@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -55,7 +55,9 @@ def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
     return num / denom
 
 
-def _adjust_weights_safe_divide(score: Tensor, average: Optional[str], multilabel: bool, tp: Tensor, fp: Tensor, fn: Tensor) -> Tensor:
+def _adjust_weights_safe_divide(
+    score: Tensor, average: Optional[str], multilabel: bool, tp: Tensor, fp: Tensor, fn: Tensor
+) -> Tensor:
     if average is None or average == "none":
         return score
     if average == "weighted":
