@@ -231,7 +231,7 @@ def speech_reverberation_modulation_energy_ratio(
 
     # norm values in preds to [-1, 1], as lfilter requires an input in this range
     max_vals = preds.abs().max(dim=-1, keepdim=True).values
-    val_norm = torch.where(max_vals > 1, max_vals, 1.0)
+    val_norm = torch.where(max_vals > 1, max_vals, torch.tensor(1.0, dtype=max_vals.dtype))
     preds = preds / val_norm
 
     w_length_s = 0.256
