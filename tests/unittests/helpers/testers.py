@@ -22,7 +22,6 @@ import pytest
 import torch
 from torch import Tensor, tensor
 from torchmetrics import Metric
-from torchmetrics.detection.mean_ap import MAPMetricResults
 from torchmetrics.utilities.data import _flatten, apply_to_collection
 
 from unittests import NUM_PROCESSES
@@ -54,9 +53,6 @@ def _assert_tensor(tm_result: Any, key: Optional[str] = None) -> None:
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
         assert isinstance(tm_result[key], Tensor)
-    elif isinstance(tm_result, MAPMetricResults):
-        for val_index in [a for a in dir(tm_result) if not a.startswith("__")]:
-            assert isinstance(tm_result[val_index], Tensor)
     else:
         assert isinstance(tm_result, Tensor)
 

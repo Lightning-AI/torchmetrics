@@ -57,31 +57,6 @@ else:
 log = logging.getLogger(__name__)
 
 
-@dataclass
-class MAPMetricResults:
-    """Dataclass to wrap the final mAP results."""
-
-    map: Tensor  # noqa: A003
-    map_50: Tensor
-    map_75: Tensor
-    map_small: Tensor
-    map_medium: Tensor
-    map_large: Tensor
-    mar_1: Tensor
-    mar_10: Tensor
-    mar_100: Tensor
-    mar_small: Tensor
-    mar_medium: Tensor
-    mar_large: Tensor
-    map_per_class: Tensor
-    mar_100_per_class: Tensor
-    classes: Tensor
-
-    def __getitem__(self, key: str) -> Union[Tensor, List[Tensor]]:
-        """Enables accessing the results via `result['map']` instead of `result.map`."""
-        return getattr(self, key)
-
-
 class WriteToLog:
     """Logging class to move logs to log.debug()."""
 
@@ -421,25 +396,23 @@ class MeanAveragePrecision(Metric):
             map_per_class_values: Tensor = torch.tensor([-1], dtype=torch.float32)
             mar_100_per_class_values: Tensor = torch.tensor([-1], dtype=torch.float32)
 
-        metrics = MAPMetricResults(
-            map=torch.tensor([stats[0]], dtype=torch.float32),
-            map_50=torch.tensor([stats[1]], dtype=torch.float32),
-            map_75=torch.tensor([stats[2]], dtype=torch.float32),
-            map_small=torch.tensor([stats[3]], dtype=torch.float32),
-            map_medium=torch.tensor([stats[4]], dtype=torch.float32),
-            map_large=torch.tensor([stats[5]], dtype=torch.float32),
-            mar_1=torch.tensor([stats[6]], dtype=torch.float32),
-            mar_10=torch.tensor([stats[7]], dtype=torch.float32),
-            mar_100=torch.tensor([stats[8]], dtype=torch.float32),
-            mar_small=torch.tensor([stats[9]], dtype=torch.float32),
-            mar_medium=torch.tensor([stats[10]], dtype=torch.float32),
-            mar_large=torch.tensor([stats[11]], dtype=torch.float32),
-            map_per_class=map_per_class_values,
-            mar_100_per_class=mar_100_per_class_values,
-            classes=torch.tensor(self._get_classes(), dtype=torch.int32),
-        )
-
-        return metrics.__dict__
+        return {
+            "map": torch.tensor([stats[0]], dtype=torch.float32),
+            "map_50": torch.tensor([stats[1]], dtype=torch.float32),
+            "map_75": torch.tensor([stats[2]], dtype=torch.float32),
+            "map_small": torch.tensor([stats[3]], dtype=torch.float32),
+            "map_medium": torch.tensor([stats[4]], dtype=torch.float32),
+            "map_large": torch.tensor([stats[5]], dtype=torch.float32),
+            "mar_1": torch.tensor([stats[6]], dtype=torch.float32),
+            "mar_10": torch.tensor([stats[7]], dtype=torch.float32),
+            "mar_100": torch.tensor([stats[8]], dtype=torch.float32),
+            "mar_small": torch.tensor([stats[9]], dtype=torch.float32),
+            "mar_medium": torch.tensor([stats[10]], dtype=torch.float32),
+            "mar_large": torch.tensor([stats[11]], dtype=torch.float32),
+            "map_per_class": map_per_class_values,
+            "mar_100_per_class": mar_100_per_class_values,
+            "classes": torch.tensor(self._get_classes(), dtype=torch.int32),
+        }
 
     @staticmethod
     def coco_to_tm(
