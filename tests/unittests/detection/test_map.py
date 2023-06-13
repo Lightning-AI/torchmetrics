@@ -39,65 +39,9 @@ def _generate_coco_inputs(iou_type):
     https://github.com/cocodataset/cocoapi/tree/master/results
     and should therefore correspond directly to the result on the webpage
     """
-    gt = COCO(_DETECTION_VAL)
-    dt = gt.loadRes(_DETECTION_BBOX if iou_type == "bbox" else _DETECTION_SEGM)
-    img_ids = sorted(gt.getImgIds())
-    img_ids = img_ids[0:100]
-
-    gt_dataset = gt.dataset["annotations"]
-    dt_dataset = dt.dataset["annotations"]
-
-    preds = {}
-    for p in dt_dataset:
-        if p["image_id"] not in preds:
-            preds[p["image_id"]] = {"boxes" if iou_type == "bbox" else "masks": [], "scores": [], "labels": []}
-        if iou_type == "bbox":
-            preds[p["image_id"]]["boxes"].append(p["bbox"])
-        else:
-            preds[p["image_id"]]["masks"].append(gt.annToMask(p))
-        preds[p["image_id"]]["scores"].append(p["score"])
-        preds[p["image_id"]]["labels"].append(p["category_id"])
-    missing_pred = set(img_ids) - set(preds.keys())
-    for i in missing_pred:
-        preds[i] = {"boxes" if iou_type == "bbox" else "masks": [], "scores": [], "labels": []}
-
-    target = {}
-    for t in gt_dataset:
-        if t["image_id"] not in img_ids:
-            continue
-        if t["image_id"] not in target:
-            target[t["image_id"]] = {
-                "boxes" if iou_type == "bbox" else "masks": [],
-                "labels": [],
-                "iscrowd": [],
-                "area": [],
-            }
-        if iou_type == "bbox":
-            target[t["image_id"]]["boxes"].append(t["bbox"])
-        else:
-            target[t["image_id"]]["masks"].append(gt.annToMask(t))
-        target[t["image_id"]]["labels"].append(t["category_id"])
-        target[t["image_id"]]["iscrowd"].append(t["iscrowd"])
-        target[t["image_id"]]["area"].append(t["area"])
-
-    batched_preds, batched_target = [], []
-    for key in target:
-        name = "boxes" if iou_type == "bbox" else "masks"
-        batched_preds.append(
-            {
-                name: torch.tensor(preds[key]["boxes"]) if iou_type == "bbox" else torch.tensor(preds[key]["masks"]),
-                "scores": torch.tensor(preds[key]["scores"]),
-                "labels": torch.tensor(preds[key]["labels"]),
-            }
-        )
-        batched_target.append(
-            {
-                name: torch.tensor(target[key]["boxes"]) if iou_type == "bbox" else torch.tensor(target[key]["masks"]),
-                "labels": torch.tensor(target[key]["labels"]),
-                "iscrowd": torch.tensor(target[key]["iscrowd"]),
-                "area": torch.tensor(target[key]["area"]),
-            }
-        )
+    batched_preds, batched_target = MeanAveragePrecision.coco_to_tm(
+        _DETECTION_BBOX if iou_type == "bbox" else _DETECTION_SEGM, _DETECTION_VAL, iou_type
+    )
 
     # create 10 batches of 10 preds/targets each
     batched_preds = [batched_preds[10 * i : 10 * (i + 1)] for i in range(10)]
@@ -124,85 +68,9 @@ def _compare_again_coco_fn(preds, target, iou_type, class_metrics=True):
     map_per_class_values = torch.Tensor([-1])
     mar_100_per_class_values = torch.Tensor([-1])
     classes = torch.tensor(
-        [
-            1.0,
-            2.0,
-            3.0,
-            4.0,
-            5.0,
-            6.0,
-            7.0,
-            8.0,
-            9.0,
-            10.0,
-            11.0,
-            13.0,
-            14.0,
-            15.0,
-            16.0,
-            17.0,
-            18.0,
-            20.0,
-            21.0,
-            22.0,
-            23.0,
-            24.0,
-            25.0,
-            27.0,
-            28.0,
-            31.0,
-            32.0,
-            33.0,
-            34.0,
-            35.0,
-            36.0,
-            37.0,
-            38.0,
-            39.0,
-            40.0,
-            41.0,
-            42.0,
-            43.0,
-            44.0,
-            46.0,
-            47.0,
-            48.0,
-            49.0,
-            50.0,
-            51.0,
-            52.0,
-            53.0,
-            54.0,
-            55.0,
-            56.0,
-            57.0,
-            58.0,
-            59.0,
-            60.0,
-            61.0,
-            62.0,
-            63.0,
-            64.0,
-            65.0,
-            67.0,
-            70.0,
-            72.0,
-            73.0,
-            74.0,
-            75.0,
-            77.0,
-            78.0,
-            79.0,
-            80.0,
-            81.0,
-            82.0,
-            84.0,
-            85.0,
-            86.0,
-            88.0,
-            90.0,
-        ]
+        list(set(torch.arange(91).tolist()) - {0, 12, 19, 26, 29, 30, 45, 66, 68, 69, 71, 76, 83, 87, 89})
     )
+
     if class_metrics:
         map_per_class_list = []
         mar_100_per_class_list = []
