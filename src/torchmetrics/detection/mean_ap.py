@@ -13,10 +13,7 @@
 # limitations under the License.
 import json
 import logging
-import sys
-from dataclasses import dataclass
-from types import TracebackType
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
@@ -24,7 +21,7 @@ from torch import Tensor
 from torch import distributed as dist
 from typing_extensions import Literal
 
-from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
+from torchmetrics.detection.helpers import _fix_empty_tensors, _HidePrints, _input_validator
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import (
     _MATPLOTLIB_AVAILABLE,
@@ -54,48 +51,6 @@ else:
     __doctest_skip__ = ["MeanAveragePrecision.plot", "MeanAveragePrecision"]
 
 
-log = logging.getLogger(__name__)
-
-
-class WriteToLog:
-    """Logging class to move logs to log.debug()."""
-
-    def write(self, buf: str) -> None:
-        """Write to log.debug() instead of stdout."""
-        for line in buf.rstrip().splitlines():
-            log.debug(line.rstrip())
-
-    def flush(self) -> None:
-        """Flush the logger."""
-        for handler in log.handlers:
-            handler.flush()
-
-    def close(self) -> None:
-        """Close the logger."""
-        for handler in log.handlers:
-            handler.close()
-
-
-class _HidePrints:
-    """Internal helper context to suppress the default output of the pycocotools package."""
-
-    def __init__(self) -> None:
-        """Initialize the context."""
-        self._original_stdout = None
-
-    def __enter__(self) -> None:
-        """Redirect stdout to log.debug()."""
-        self._original_stdout = sys.stdout  # type: ignore
-        sys.stdout = WriteToLog()  # type: ignore
-
-    def __exit__(
-        self, exc_type: Optional[Type[BaseException]], exc_val: Optional[BaseException], exc_t: Optional[TracebackType]
-    ) -> None:  # type: ignore
-        """Restore stdout."""
-        sys.stdout.close()
-        sys.stdout = self._original_stdout  # type: ignore
-
-
 class MeanAveragePrecision(Metric):
     r"""Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection predictions.
 
@@ -103,8 +58,12 @@ class MeanAveragePrecision(Metric):
         \text{mAP} = \frac{1}{n} \sum_{i=1}^{n} AP_i
 
     where :math:`AP_i` is the average precision for class :math:`i` and :math:`n` is the number of classes. The average
-    precision is defined as the area under the precision-recall curve. If argument `class_metrics` is set to ``True``,
-    the metric will also return the mAP/mAR per class.
+    precision is defined as the area under the precision-recall curve. For object detection the recall and precision are
+    defined based on the intersection of union (IoU) between the predicted bounding boxes and the ground truth bounding
+    boxes e.g. if two boxes have an IoU > t (with t being some threshold) they are considered a match and therefore
+    considered a true positive. The precision is then defined as the number of true positives divided by the number of
+    all detected boxes and the recall is defined as the number of true positives divided by the number of all ground
+    boxes.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -141,21 +100,25 @@ class MeanAveragePrecision(Metric):
 
     - ``map_dict``: A dictionary containing the following key-values:
 
-        - map: (:class:`~torch.Tensor`)
-        - map_small: (:class:`~torch.Tensor`)
-        - map_medium:(:class:`~torch.Tensor`)
-        - map_large: (:class:`~torch.Tensor`)
-        - mar_1: (:class:`~torch.Tensor`)
-        - mar_10: (:class:`~torch.Tensor`)
-        - mar_100: (:class:`~torch.Tensor`)
-        - mar_small: (:class:`~torch.Tensor`)
-        - mar_medium: (:class:`~torch.Tensor`)
-        - mar_large: (:class:`~torch.Tensor`)
-        - map_50: (:class:`~torch.Tensor`) (-1 if 0.5 not in the list of iou thresholds)
-        - map_75: (:class:`~torch.Tensor`) (-1 if 0.75 not in the list of iou thresholds)
-        - map_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled)
-        - mar_100_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled)
-        - classes (:class:`~torch.Tensor`)
+        - map: (:class:`~torch.Tensor`), global mean average precision
+        - map_small: (:class:`~torch.Tensor`), mean average precision for small objects
+        - map_medium:(:class:`~torch.Tensor`), mean average precision for medium objects
+        - map_large: (:class:`~torch.Tensor`), mean average precision for large objects
+        - mar_1: (:class:`~torch.Tensor`), mean average recall for 1 detection per image
+        - mar_10: (:class:`~torch.Tensor`), mean average recall for 10 detections per image
+        - mar_100: (:class:`~torch.Tensor`), mean average recall for 100 detections per image
+        - mar_small: (:class:`~torch.Tensor`), mean average recall for small objects
+        - mar_medium: (:class:`~torch.Tensor`), mean average recall for medium objects
+        - mar_large: (:class:`~torch.Tensor`), mean average recall for large objects
+        - map_50: (:class:`~torch.Tensor`) (-1 if 0.5 not in the list of iou thresholds), mean average precision at
+            IoU=0.50
+        - map_75: (:class:`~torch.Tensor`) (-1 if 0.75 not in the list of iou thresholds), mean average precision at
+            IoU=0.75
+        - map_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled), mean average precision per
+            observed class
+        - mar_100_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled), mean average recall for 100
+            detections per image per observed class
+        - classes (:class:`~torch.Tensor`), list of all observed classes
 
     For an example on how to use this metric check the `torchmetrics mAP example`_.
 
@@ -165,23 +128,16 @@ class MeanAveragePrecision(Metric):
         The default properties are also accessible via fields and will raise an ``AttributeError`` if not available.
 
     .. note::
-        This metric is following the mAP implementation of
-        `pycocotools <https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools>`_,
-        a standard implementation for the mAP metric for object detection.
-
-    .. note::
-        This metric requires you to have `torchvision` version 0.8.0 or newer installed
-        (with corresponding version 1.7.0 of torch or newer). This metric requires `pycocotools`
-        installed when iou_type is `segm`. Please install with ``pip install torchvision`` or
-        ``pip install torchmetrics[detection]``.
+        This metric utilizes the official `pycocotools` implementation as its backend. This means that the metric
+        requires you to have `pycocotools` installed. In addition we require `torchvision` version 0.8.0 or newer.
+        Please install with ``pip install torchmetrics[detection]``.
 
     Args:
         box_format:
             Input format of given boxes. Supported formats are ``[`xyxy`, `xywh`, `cxcywh`]``.
         iou_type:
             Type of input (either masks or bounding-boxes) used for computing IOU.
-            Supported IOU types are ``["bbox", "segm"]``.
-            If using ``"segm"``, masks should be provided (see :meth:`update`).
+            Supported IOU types are ``["bbox", "segm"]``. If using ``"segm"``, masks should be provided in input.
         iou_thresholds:
             IoU thresholds for evaluation. If set to ``None`` it corresponds to the stepped range ``[0.5,...,0.95]``
             with step ``0.05``. Else provide a list of floats.
@@ -197,27 +153,21 @@ class MeanAveragePrecision(Metric):
 
     Raises:
         ModuleNotFoundError:
-            If ``torchvision`` is not installed or version installed is lower than 0.8.0
+            If ``pycocotools`` is not installed
         ModuleNotFoundError:
-            If ``iou_type`` is equal to ``segm`` and ``pycocotools`` is not installed
+            If ``torchvision`` is not installed or version installed is lower than 0.8.0
+        ValueError:
+            If ``box_format`` is not one of ``"xyxy"``, ``"xywh"`` or ``"cxcywh"``
+        ValueError:
+            If ``iou_type`` is not one of ``"bbox"`` or ``"segm"``
+        ValueError:
+            If ``iou_thresholds`` is not None or a list of floats
+        ValueError:
+            If ``rec_thresholds`` is not None or a list of floats
+        ValueError:
+            If ``max_detection_thresholds`` is not None or a list of ints
         ValueError:
             If ``class_metrics`` is not a boolean
-        ValueError:
-            If ``preds`` is not of type (:class:`~List[Dict[str, Tensor]]`)
-        ValueError:
-            If ``target`` is not of type ``List[Dict[str, Tensor]]``
-        ValueError:
-            If ``preds`` and ``target`` are not of the same length
-        ValueError:
-            If any of ``preds.boxes``, ``preds.scores`` and ``preds.labels`` are not of the same length
-        ValueError:
-            If any of ``target.boxes`` and ``target.labels`` are not of the same length
-        ValueError:
-            If any box is not type float and of length 4
-        ValueError:
-            If any class is not type int and of length 1
-        ValueError:
-            If any score is not type float and of length 1
 
     Example:
         >>> from torch import tensor
@@ -282,7 +232,7 @@ class MeanAveragePrecision(Metric):
         super().__init__(**kwargs)
 
         if not _PYCOCOTOOLS_AVAILABLE:
-            raise ImportError(
+            raise ModuleNotFoundError(
                 "`MAP` metric requires that `pycocotools` installed."
                 " Please install with `pip install pycocotools` or `pip install torchmetrics[detection]`"
             )
@@ -335,7 +285,26 @@ class MeanAveragePrecision(Metric):
         self.add_state("groundtruth_area", default=[], dist_reduce_fx=None)
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
-        """Update metric state."""
+        """Update metric state.
+
+        Raises:
+            ValueError:
+                If ``preds`` is not of type (:class:`~List[Dict[str, Tensor]]`)
+            ValueError:
+                If ``target`` is not of type ``List[Dict[str, Tensor]]``
+            ValueError:
+                If ``preds`` and ``target`` are not of the same length
+            ValueError:
+                If any of ``preds.boxes``, ``preds.scores`` and ``preds.labels`` are not of the same length
+            ValueError:
+                If any of ``target.boxes`` and ``target.labels`` are not of the same length
+            ValueError:
+                If any box is not type float and of length 4
+            ValueError:
+                If any class is not type int and of length 1
+            ValueError:
+                If any score is not type float and of length 1
+        """
         _input_validator(preds, target, iou_type=self.iou_type)
 
         for item in preds:
@@ -420,7 +389,10 @@ class MeanAveragePrecision(Metric):
         coco_target: str,
         iou_type: Literal["bbox", "segm"] = "bbox",
     ) -> Tuple[List[Dict[str, Tensor]], List[Dict[str, Tensor]]]:
-        """Convert coco format to the input format of the map metric.
+        """Utility function for converting .json coco format files to the input format of this metric.
+
+        The function accepts a file for the predictions and a file for the target in coco format and converts them to
+        a list of dictionaries containing the boxes, labels and scores in the input format of this metric.
 
         Args:
             coco_preds: Path to the json file containing the predictions in coco format
@@ -430,6 +402,17 @@ class MeanAveragePrecision(Metric):
         Returns:
             preds: List of dictionaries containing the predictions in the input format of this metric
             target: List of dictionaries containing the targets in the input format of this metric
+
+        Example:
+            >>> # File formats are defined at https://cocodataset.org/#format-data
+            >>> # Example files can be found at
+            >>> # https://github.com/cocodataset/cocoapi/tree/master/results
+            >>> from torchmetrics.detection import MeanAveragePrecision
+            >>> preds, target = MeanAveragePrecision.coco_to_tm(
+            ...   "instances_val2014_fakebbox100_results.json.json",
+            ...   "val2014_fake_eval_res.txt.json"
+            ...   iou_type="bbox"
+            ... )  # doctest: +SKIP
 
         """
         gt = COCO(coco_target)
@@ -495,10 +478,35 @@ class MeanAveragePrecision(Metric):
         return batched_preds, batched_target
 
     def tm_to_coco(self, name: str = "tm_map_input") -> None:
-        """Write the input to the map metric to a json file in coco format.
+        """Utility function for converting the input for this metric to coco format and saving it to a json file.
+
+        This function should be used after calling `.update(...)` or `.forward(...)` on all data that should be written
+        to the file, as the input is then internally cached. The function then converts to information to coco format
+        a writes it to json files.
 
         Args:
             name: Name of the output file, which will be appended with "_preds.json" and "_target.json"
+
+        Example:
+            >>> from torch import tensor
+            >>> from torchmetrics.detection import MeanAveragePrecision
+            >>> preds = [
+            ...   dict(
+            ...     boxes=tensor([[258.0, 41.0, 606.0, 285.0]]),
+            ...     scores=tensor([0.536]),
+            ...     labels=tensor([0]),
+            ...   )
+            ... ]
+            >>> target = [
+            ...   dict(
+            ...     boxes=tensor([[214.0, 41.0, 562.0, 285.0]]),
+            ...     labels=tensor([0]),
+            ...   )
+            ... ]
+            >>> metric = MeanAveragePrecision()
+            >>> metric.update(preds, target)
+            >>> metric.tm_to_coco("tm_map_input")  # doctest: +SKIP
+
         """
         target_dataset = self._get_coco_format(self.groundtruths, self.groundtruth_labels)
         preds_dataset = self._get_coco_format(self.detections, self.detection_labels, self.detection_scores)
