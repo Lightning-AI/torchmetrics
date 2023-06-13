@@ -412,31 +412,31 @@ class MeanAveragePrecision(Metric):
                     coco_eval.summarize()
                     class_stats = coco_eval.stats
 
-                map_per_class_list.append(torch.Tensor([class_stats[0]]))
-                mar_100_per_class_list.append(torch.Tensor([class_stats[8]]))
+                map_per_class_list.append(torch.tensor([class_stats[0]]))
+                mar_100_per_class_list.append(torch.tensor([class_stats[8]]))
 
-            map_per_class_values = torch.Tensor(map_per_class_list)
-            mar_100_per_class_values = torch.Tensor(mar_100_per_class_list)
+            map_per_class_values = torch.tensor(map_per_class_list, dtype=torch.float32)
+            mar_100_per_class_values = torch.tensor(mar_100_per_class_list, dtype=torch.float32)
         else:
-            map_per_class_values: Tensor = torch.Tensor([-1])
-            mar_100_per_class_values: Tensor = torch.Tensor([-1])
+            map_per_class_values: Tensor = torch.tensor([-1], dtype=torch.float32)
+            mar_100_per_class_values: Tensor = torch.tensor([-1], dtype=torch.float32)
 
         metrics = MAPMetricResults(
-            map=torch.Tensor([stats[0]]),
-            map_50=torch.Tensor([stats[1]]),
-            map_75=torch.Tensor([stats[2]]),
-            map_small=torch.Tensor([stats[3]]),
-            map_medium=torch.Tensor([stats[4]]),
-            map_large=torch.Tensor([stats[5]]),
-            mar_1=torch.Tensor([stats[6]]),
-            mar_10=torch.Tensor([stats[7]]),
-            mar_100=torch.Tensor([stats[8]]),
-            mar_small=torch.Tensor([stats[9]]),
-            mar_medium=torch.Tensor([stats[10]]),
-            mar_large=torch.Tensor([stats[11]]),
+            map=torch.tensor([stats[0]], dtype=torch.float32),
+            map_50=torch.tensor([stats[1]], dtype=torch.float32),
+            map_75=torch.tensor([stats[2]], dtype=torch.float32),
+            map_small=torch.tensor([stats[3]], dtype=torch.float32),
+            map_medium=torch.tensor([stats[4]], dtype=torch.float32),
+            map_large=torch.tensor([stats[5]], dtype=torch.float32),
+            mar_1=torch.tensor([stats[6]], dtype=torch.float32),
+            mar_10=torch.tensor([stats[7]], dtype=torch.float32),
+            mar_100=torch.tensor([stats[8]], dtype=torch.float32),
+            mar_small=torch.tensor([stats[9]], dtype=torch.float32),
+            mar_medium=torch.tensor([stats[10]], dtype=torch.float32),
+            mar_large=torch.tensor([stats[11]], dtype=torch.float32),
             map_per_class=map_per_class_values,
             mar_100_per_class=mar_100_per_class_values,
-            classes=torch.Tensor(self._get_classes()),
+            classes=torch.tensor(self._get_classes(), dtype=torch.int32),
         )
 
         return metrics.__dict__
