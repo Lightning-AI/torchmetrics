@@ -115,7 +115,7 @@ class _HidePrints:
 
     def __exit__(
         self, exc_type: Optional[Type[BaseException]], exc_val: Optional[BaseException], exc_t: Optional[TracebackType]
-    ) -> None:  # type: ignore
+    ) -> None:
         """Restore stdout."""
         sys.stdout.close()
         sys.stdout = self._original_stdout  # type: ignore
