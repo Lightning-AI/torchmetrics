@@ -23,15 +23,22 @@ from pycocotools import mask
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from torch import IntTensor, Tensor
-from torchmetrics.detection.mean_ap import MeanAveragePrecision
+from torchmetrics.detection.mean_ap import MeanAveragePrecision, _HidePrints
 from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL, _SAMPLE_DETECTION_SEGMENTATION
 from unittests.helpers.testers import MetricTester
 
+_pytest_condition = not (_PYCOCOTOOLS_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
 
-def _generate_inputs(iou_type):
-    """Generates inputs for the MAP metric."""
+
+def _generate_coco_inputs(iou_type):
+    """Generates inputs for the MAP metric.
+
+    The inputs are generated from the official COCO results json files:
+    https://github.com/cocodataset/cocoapi/tree/master/results
+    and should therefore correspond directly to the result on the webpage
+    """
     gt = COCO(_DETECTION_VAL)
     dt = gt.loadRes(_DETECTION_BBOX if iou_type == "bbox" else _DETECTION_SEGM)
     img_ids = sorted(gt.getImgIds())
@@ -59,69 +66,152 @@ def _generate_inputs(iou_type):
         if t["image_id"] not in img_ids:
             continue
         if t["image_id"] not in target:
-            target[t["image_id"]] = {"boxes" if iou_type == "bbox" else "masks": [], "labels": []}
+            target[t["image_id"]] = {
+                "boxes" if iou_type == "bbox" else "masks": [],
+                "labels": [],
+                "iscrowd": [],
+                "area": [],
+            }
         if iou_type == "bbox":
             target[t["image_id"]]["boxes"].append(t["bbox"])
         else:
             target[t["image_id"]]["masks"].append(gt.annToMask(t))
         target[t["image_id"]]["labels"].append(t["category_id"])
+        target[t["image_id"]]["iscrowd"].append(t["iscrowd"])
+        target[t["image_id"]]["area"].append(t["area"])
 
-    if iou_type == "bbox":
-        preds = [
+    batched_preds, batched_target = [], []
+    for key in target:
+        name = "boxes" if iou_type == "bbox" else "masks"
+        batched_preds.append(
             {
-                "boxes": torch.tensor(p["boxes"]),
-                "scores": torch.tensor(p["scores"]),
-                "labels": torch.tensor(p["labels"]),
+                name: torch.tensor(preds[key]["boxes"]) if iou_type == "bbox" else torch.tensor(preds[key]["masks"]),
+                "scores": torch.tensor(preds[key]["scores"]),
+                "labels": torch.tensor(preds[key]["labels"]),
             }
-            for p in preds.values()
-        ]
-        target = [{"boxes": torch.tensor(t["boxes"]), "labels": torch.tensor(t["labels"])} for t in target.values()]
-    else:
-        preds = [
+        )
+        batched_target.append(
             {
-                "masks": torch.tensor(p["masks"]),
-                "scores": torch.tensor(p["scores"]),
-                "labels": torch.tensor(p["labels"]),
+                name: torch.tensor(target[key]["boxes"]) if iou_type == "bbox" else torch.tensor(target[key]["masks"]),
+                "labels": torch.tensor(target[key]["labels"]),
+                "iscrowd": torch.tensor(target[key]["iscrowd"]),
+                "area": torch.tensor(target[key]["area"]),
             }
-            for p in preds.values()
-        ]
-        target = [{"masks": torch.tensor(t["masks"]), "labels": torch.tensor(t["labels"])} for t in target.values()]
+        )
 
     # create 10 batches of 10 preds/targets each
-    preds = [preds[10 * i : 10 * (i + 1)] for i in range(10)]
-    target = [target[10 * i : 10 * (i + 1)] for i in range(10)]
-
-    return preds, target
-
-
-_bbox_input = _generate_inputs("bbox")
-_segm_input = _generate_inputs("segm")
+    batched_preds = [batched_preds[10 * i : 10 * (i + 1)] for i in range(10)]
+    batched_target = [batched_target[10 * i : 10 * (i + 1)] for i in range(10)]
+    return batched_preds, batched_target
 
 
-def _compare_fn(preds, target, iou_type, class_metrics=True):
+_coco_bbox_input = _generate_coco_inputs("bbox")
+_coco_segm_input = _generate_coco_inputs("segm")
+
+
+def _compare_again_coco_fn(preds, target, iou_type, class_metrics=True):
     """Taken from https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoEvalDemo.ipynb."""
     gt = COCO(_DETECTION_VAL)
     dt = gt.loadRes(_DETECTION_BBOX if iou_type == "bbox" else _DETECTION_SEGM)
-    img_ids = sorted(gt.getImgIds())
-    img_ids = img_ids[0:100]
+
     coco_eval = COCOeval(gt, dt, iou_type)
-    coco_eval.params.imgIds = img_ids
-    coco_eval.evaluate()
-    coco_eval.accumulate()
-    coco_eval.summarize()
+    with _HidePrints():
+        coco_eval.evaluate()
+        coco_eval.accumulate()
+        coco_eval.summarize()
     global_stats = deepcopy(coco_eval.stats)
 
     map_per_class_values = torch.Tensor([-1])
     mar_100_per_class_values = torch.Tensor([-1])
-    classes = Tensor(np.unique([x["category_id"] for x in gt.dataset["annotations"]]))
+    classes = torch.tensor(
+        [
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+            5.0,
+            6.0,
+            7.0,
+            8.0,
+            9.0,
+            10.0,
+            11.0,
+            13.0,
+            14.0,
+            15.0,
+            16.0,
+            17.0,
+            18.0,
+            20.0,
+            21.0,
+            22.0,
+            23.0,
+            24.0,
+            25.0,
+            27.0,
+            28.0,
+            31.0,
+            32.0,
+            33.0,
+            34.0,
+            35.0,
+            36.0,
+            37.0,
+            38.0,
+            39.0,
+            40.0,
+            41.0,
+            42.0,
+            43.0,
+            44.0,
+            46.0,
+            47.0,
+            48.0,
+            49.0,
+            50.0,
+            51.0,
+            52.0,
+            53.0,
+            54.0,
+            55.0,
+            56.0,
+            57.0,
+            58.0,
+            59.0,
+            60.0,
+            61.0,
+            62.0,
+            63.0,
+            64.0,
+            65.0,
+            67.0,
+            70.0,
+            72.0,
+            73.0,
+            74.0,
+            75.0,
+            77.0,
+            78.0,
+            79.0,
+            80.0,
+            81.0,
+            82.0,
+            84.0,
+            85.0,
+            86.0,
+            88.0,
+            90.0,
+        ]
+    )
     if class_metrics:
         map_per_class_list = []
         mar_100_per_class_list = []
         for class_id in classes.tolist():
             coco_eval.params.catIds = [class_id]
-            coco_eval.evaluate()
-            coco_eval.accumulate()
-            coco_eval.summarize()
+            with _HidePrints():
+                coco_eval.evaluate()
+                coco_eval.accumulate()
+                coco_eval.summarize()
             class_stats = coco_eval.stats
             map_per_class_list.append(torch.Tensor([class_stats[0]]))
             mar_100_per_class_list.append(torch.Tensor([class_stats[8]]))
@@ -148,83 +238,29 @@ def _compare_fn(preds, target, iou_type, class_metrics=True):
     }
 
 
-_pytest_condition = not (_PYCOCOTOOLS_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
-
-
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 and pycocotools is installed")
 @pytest.mark.parametrize("iou_type", ["bbox", "segm"])
-class TestMAPNew(MetricTester):
-    """Test map metric."""
+@pytest.mark.parametrize("ddp", [False, True])
+class TestMAPUsingCOCOReference(MetricTester):
+    """Test map metric on the reference coco data."""
 
-    # @pytest.mark.parametrize("ddp", [False, True])
-    def test_map(self, iou_type):
+    atol = 1e-1
+
+    def test_map(self, iou_type, ddp):
         """Test modular implementation for correctness."""
-        preds, target = _segm_input if iou_type == "segm" else _bbox_input
+        preds, target = _coco_bbox_input if iou_type == "bbox" else _coco_segm_input
         self.run_class_metric_test(
-            ddp=False,
+            ddp=ddp,
             preds=preds,
             target=target,
             metric_class=MeanAveragePrecision,
-            reference_metric=partial(_compare_fn, iou_type=iou_type),
-            metric_args={"iou_type": iou_type},
+            reference_metric=partial(_compare_again_coco_fn, iou_type=iou_type, class_metrics=True),
+            metric_args={"iou_type": iou_type, "class_metrics": True},
             check_batch=False,
         )
 
 
 Input = namedtuple("Input", ["preds", "target"])
-
-
-def _create_inputs_masks() -> Input:
-    with open(_SAMPLE_DETECTION_SEGMENTATION) as fp:
-        inputs_json = json.load(fp)
-
-    _mask_unsqueeze_bool = lambda m: Tensor(mask.decode(m)).unsqueeze(0).bool()
-    _masks_stack_bool = lambda ms: Tensor(np.stack([mask.decode(m) for m in ms])).bool()
-
-    return Input(
-        preds=[
-            [
-                {
-                    "masks": _mask_unsqueeze_bool(inputs_json["preds"][0]),
-                    "scores": Tensor([0.236]),
-                    "labels": IntTensor([4]),
-                },
-                {
-                    "masks": _masks_stack_bool([inputs_json["preds"][1], inputs_json["preds"][2]]),
-                    "scores": Tensor([0.318, 0.726]),
-                    "labels": IntTensor([3, 2]),
-                },  # 73
-            ],
-            [
-                {
-                    "masks": _mask_unsqueeze_bool(inputs_json["preds"][0]),
-                    "scores": Tensor([0.236]),
-                    "labels": IntTensor([4]),
-                },
-                {
-                    "masks": _masks_stack_bool([inputs_json["preds"][1], inputs_json["preds"][2]]),
-                    "scores": Tensor([0.318, 0.726]),
-                    "labels": IntTensor([3, 2]),
-                },  # 73
-            ],
-        ],
-        target=[
-            [
-                {"masks": _mask_unsqueeze_bool(inputs_json["targets"][0]), "labels": IntTensor([4])},  # 42
-                {
-                    "masks": _masks_stack_bool([inputs_json["targets"][1], inputs_json["targets"][2]]),
-                    "labels": IntTensor([2, 2]),
-                },  # 73
-            ],
-            [
-                {"masks": _mask_unsqueeze_bool(inputs_json["targets"][0]), "labels": IntTensor([4])},  # 42
-                {
-                    "masks": _masks_stack_bool([inputs_json["targets"][1], inputs_json["targets"][2]]),
-                    "labels": IntTensor([2, 2]),
-                },  # 73
-            ],
-        ],
-    )
 
 
 _inputs = Input(
@@ -396,222 +432,6 @@ _inputs3 = Input(
 )
 
 
-_inputs4 = Input(
-    preds=[
-        [
-            {
-                "boxes": torch.Tensor([[258.15, 41.29, 606.41, 285.07]]),
-                "scores": torch.Tensor([0.236]),
-                "labels": torch.IntTensor([4]),
-            },  # coco image id 42
-            {
-                "boxes": torch.Tensor([[61.00, 22.75, 565.00, 632.42], [12.66, 3.32, 281.26, 275.23]]),
-                "scores": torch.Tensor([0.318, 0.726]),
-                "labels": torch.IntTensor([3, 2]),
-            },  # coco image id 73
-        ],
-        [
-            {
-                "boxes": torch.Tensor(
-                    [
-                        [87.87, 276.25, 384.29, 379.43],
-                        [0.00, 3.66, 142.15, 316.06],
-                        [296.55, 93.96, 314.97, 152.79],
-                        [328.94, 97.05, 342.49, 122.98],
-                        [356.62, 95.47, 372.33, 147.55],
-                        [464.08, 105.09, 495.74, 146.99],
-                        [276.11, 103.84, 291.44, 150.72],
-                    ]
-                ),
-                "scores": torch.Tensor([0.546, 0.3, 0.407, 0.611, 0.335, 0.805, 0.953]),
-                "labels": torch.IntTensor([4, 1, 0, 0, 0, 0, 0]),
-            },  # coco image id 74
-            {
-                "boxes": torch.Tensor([[0.00, 2.87, 601.00, 421.52]]),
-                "scores": torch.Tensor([0.423]),
-                "labels": torch.IntTensor([5]),
-            },  # coco image id 133
-        ],
-    ],
-    target=[
-        [
-            {
-                "boxes": torch.Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
-                "labels": torch.IntTensor([4]),
-            },  # coco image id 42
-            {
-                "boxes": torch.Tensor(
-                    [
-                        [13.00, 22.75, 548.98, 632.42],
-                        [1.66, 3.32, 270.26, 275.23],
-                    ]
-                ),
-                "labels": torch.IntTensor([2, 2]),
-            },  # coco image id 73
-        ],
-        [
-            {
-                "boxes": torch.Tensor(
-                    [
-                        [61.87, 276.25, 358.29, 379.43],
-                        [2.75, 3.66, 162.15, 316.06],
-                        [295.55, 93.96, 313.97, 152.79],
-                        [326.94, 97.05, 340.49, 122.98],
-                        [356.62, 95.47, 372.33, 147.55],
-                        [462.08, 105.09, 493.74, 146.99],
-                        [277.11, 103.84, 292.44, 150.72],
-                    ]
-                ),
-                "labels": torch.IntTensor([4, 1, 0, 0, 0, 0, 0]),
-            },  # coco image id 74
-            {
-                "boxes": torch.Tensor([[13.99, 2.87, 640.00, 421.52]]),
-                "labels": torch.IntTensor([5]),
-            },  # coco image id 133
-        ],
-    ],
-)
-
-
-def _compare_fn(preds, target) -> dict:
-    """Comparison function for map implementation.
-
-    Official pycocotools results calculated from a subset of https://github.com/cocodataset/cocoapi/tree/master/results
-        All classes
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.706
-        Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.901
-        Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.846
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.689
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.800
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.701
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.592
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.716
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.716
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.767
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.800
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.700
-
-        Class 0
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.725
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.780
-
-        Class 1
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.800
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.800
-
-        Class 2
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.454
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.450
-
-        Class 3
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = -1.000
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = -1.000
-
-        Class 4
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.650
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.650
-
-        Class 5
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.900
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.900
-    """
-    return {
-        "map": torch.Tensor([0.706]),
-        "map_50": torch.Tensor([0.901]),
-        "map_75": torch.Tensor([0.846]),
-        "map_small": torch.Tensor([0.689]),
-        "map_medium": torch.Tensor([0.800]),
-        "map_large": torch.Tensor([0.701]),
-        "mar_1": torch.Tensor([0.592]),
-        "mar_10": torch.Tensor([0.716]),
-        "mar_100": torch.Tensor([0.716]),
-        "mar_small": torch.Tensor([0.767]),
-        "mar_medium": torch.Tensor([0.800]),
-        "mar_large": torch.Tensor([0.700]),
-        "map_per_class": torch.Tensor([0.725, 0.800, 0.454, -1.000, 0.650, 0.900]),
-        "mar_100_per_class": torch.Tensor([0.780, 0.800, 0.450, -1.000, 0.650, 0.900]),
-    }
-
-
-def _compare_fn_segm(preds, target) -> dict:
-    """Comparison function for map implementation for instance segmentation.
-
-    Official pycocotools results calculated from a subset of https://github.com/cocodataset/cocoapi/tree/master/results
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.352
-        Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.752
-        Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.252
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.352
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.350
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.350
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.350
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.350
-    """
-    return {
-        "map": Tensor([0.352]),
-        "map_50": Tensor([0.752]),
-        "map_75": Tensor([0.252]),
-        "map_small": Tensor([-1]),
-        "map_medium": Tensor([-1]),
-        "map_large": Tensor([0.352]),
-        "mar_1": Tensor([0.35]),
-        "mar_10": Tensor([0.35]),
-        "mar_100": Tensor([0.35]),
-        "mar_small": Tensor([-1]),
-        "mar_medium": Tensor([-1]),
-        "mar_large": Tensor([0.35]),
-        "map_per_class": Tensor([0.4039604, -1.0, 0.3]),
-        "mar_100_per_class": Tensor([0.4, -1.0, 0.3]),
-        "classes": Tensor([2, 3, 4]),
-    }
-
-
-_pytest_condition = not _TORCHVISION_GREATER_EQUAL_0_8
-
-
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-class TestMAP(MetricTester):
-    """Test the MAP metric for object detection predictions.
-
-    Results are compared to original values from the pycocotools implementation. A subset of the first 10 fake
-    predictions of the official repo is used:
-    https://github.com/cocodataset/cocoapi/blob/master/results/instances_val2014_fakebbox100_results.json
-    """
-
-    atol = 1e-2
-
-    @pytest.mark.parametrize("ddp", [False, True])
-    def test_map_bbox(self, ddp):
-        """Test modular implementation for correctness."""
-        self.run_class_metric_test(
-            ddp=ddp,
-            preds=_inputs4.preds,
-            target=_inputs4.target,
-            metric_class=MeanAveragePrecision,
-            reference_metric=_compare_fn,
-            check_batch=False,
-            metric_args={"class_metrics": True},
-        )
-
-    @pytest.mark.parametrize("ddp", [False, True])
-    def test_map_segm(self, ddp):
-        """Test modular implementation for correctness."""
-        _inputs_masks = _create_inputs_masks()
-        self.run_class_metric_test(
-            ddp=ddp,
-            preds=_inputs_masks.preds,
-            target=_inputs_masks.target,
-            metric_class=MeanAveragePrecision,
-            reference_metric=_compare_fn_segm,
-            check_batch=False,
-            metric_args={"class_metrics": True, "iou_type": "segm"},
-        )
-
-
-# noinspection PyTypeChecker
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 def test_error_on_wrong_init():
     """Test class raises the expected errors."""
@@ -936,87 +756,3 @@ def test_device_changing():
     metric = metric.cpu()
     val = metric.compute()
     assert isinstance(val, dict)
-
-
-def test_order():
-    """Test that the ordering of input does not matter.
-
-    Issue: https://github.com/Lightning-AI/torchmetrics/issues/1774
-    """
-    targets = [
-        {
-            "boxes": torch.zeros((0, 4), dtype=torch.float32),
-            "labels": torch.zeros((0,), dtype=torch.long),
-        },
-        {
-            "boxes": torch.FloatTensor([[0.1, 0.1, 0.2, 0.2], [0.3, 0.3, 0.4, 0.4]]),
-            "labels": torch.LongTensor([1, 2]),
-        },
-    ]
-
-    preds = [
-        {
-            "boxes": torch.FloatTensor([[0.1, 0.1, 0.2, 0.2], [0.3, 0.3, 0.4, 0.4]]),
-            "labels": torch.LongTensor([1, 2]),
-            "scores": torch.FloatTensor([0.9, 0.8]),
-        },
-        {
-            "boxes": torch.FloatTensor([[0.1, 0.1, 0.2, 0.2], [0.3, 0.3, 0.4, 0.4]]),
-            "labels": torch.LongTensor([1, 2]),
-            "scores": torch.FloatTensor([0.9, 0.8]),
-        },
-    ]
-    metric = MeanAveragePrecision(box_format="xyxy", iou_type="bbox")
-    metrics = metric(preds, targets)
-    assert metrics["map_50"] == torch.tensor([0.5])
-
-    targets = [
-        {
-            "boxes": torch.FloatTensor([[0.1, 0.1, 0.2, 0.2], [0.3, 0.3, 0.4, 0.4]]),
-            "labels": torch.LongTensor([1, 2]),
-        },
-        {
-            "boxes": torch.zeros((0, 4), dtype=torch.float32),
-            "labels": torch.zeros((0,), dtype=torch.long),
-        },
-    ]
-
-    preds = [
-        {
-            "boxes": torch.FloatTensor([[0.1, 0.1, 0.2, 0.2], [0.3, 0.3, 0.4, 0.4]]),
-            "labels": torch.LongTensor([1, 2]),
-            "scores": torch.FloatTensor([0.9, 0.8]),
-        },
-        {
-            "boxes": torch.FloatTensor([[0.1, 0.1, 0.2, 0.2], [0.3, 0.3, 0.4, 0.4]]),
-            "labels": torch.LongTensor([1, 2]),
-            "scores": torch.FloatTensor([0.9, 0.8]),
-        },
-    ]
-    metric = MeanAveragePrecision(box_format="xyxy", iou_type="bbox")
-    metrics = metric(preds, targets)
-    assert metrics["map_50"] == torch.tensor([0.5])
-
-
-def test_corner_case():
-    """Issue: https://github.com/Lightning-AI/torchmetrics/issues/1184."""
-    metric = MeanAveragePrecision(iou_thresholds=[0.501], class_metrics=True)
-    preds = [
-        {
-            "boxes": torch.Tensor(
-                [[0, 0, 20, 20], [30, 30, 50, 50], [70, 70, 90, 90], [100, 100, 120, 120]]
-            ),  # FP  # FP
-            "scores": torch.Tensor([0.6, 0.6, 0.6, 0.6]),
-            "labels": torch.IntTensor([0, 1, 2, 3]),
-        }
-    ]
-
-    targets = [
-        {
-            "boxes": torch.Tensor([[0, 0, 20, 20], [30, 30, 50, 50]]),
-            "labels": torch.IntTensor([0, 1]),
-        }
-    ]
-    metric.update(preds, targets)
-    res = metric.compute()
-    assert res["map"] == torch.tensor([0.5])

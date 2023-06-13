@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import json
 import logging
 import sys
 from dataclasses import dataclass
@@ -21,6 +22,7 @@ import numpy as np
 import torch
 from torch import Tensor
 from torch import distributed as dist
+from typing_extensions import Literal
 
 from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
 from torchmetrics.metric import Metric
@@ -99,7 +101,7 @@ class WriteToLog:
             handler.close()
 
 
-class HidePrints:
+class _HidePrints:
     """Internal helper context to suppress the default output of the pycocotools package."""
 
     def __init__(self) -> None:
@@ -153,6 +155,12 @@ class MeanAveragePrecision(Metric):
           classes for the boxes.
         - masks: :class:`~torch.bool` of shape ``(num_boxes, image_height, image_width)`` containing boolean masks.
           Only required when `iou_type="segm"`.
+        - iscrowd: :class:`~torch.IntTensor` of shape ``(num_boxes)`` containing 0/1 values indicating whether
+            the bounding box/masks indicate a crowd of objects. Value is optional, and if not provided it will
+            automatically be set to 0.
+        - area: :class:`~torch.FloatTensor` of shape ``(num_boxes)`` containing the area of the object. Value if
+            optional, and if not provided will be automatically calculated based on the bounding box/masks provided.
+            Only affects which samples contribute to the `map_small`, `map_medium`, `map_large` values
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
@@ -283,11 +291,13 @@ class MeanAveragePrecision(Metric):
     detection_labels: List[Tensor]
     groundtruths: List[Tensor]
     groundtruth_labels: List[Tensor]
+    groundtruth_crowds: List[Tensor]
+    groundtruth_area: List[Tensor]
 
     def __init__(
         self,
         box_format: str = "xyxy",
-        iou_type: str = "bbox",
+        iou_type: Literal["bbox", "segm"] = "bbox",
         iou_thresholds: Optional[List[float]] = None,
         rec_thresholds: Optional[List[float]] = None,
         max_detection_thresholds: Optional[List[int]] = None,
@@ -346,6 +356,8 @@ class MeanAveragePrecision(Metric):
         self.add_state("detection_labels", default=[], dist_reduce_fx=None)
         self.add_state("groundtruths", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
+        self.add_state("groundtruth_crowds", default=[], dist_reduce_fx=None)
+        self.add_state("groundtruth_area", default=[], dist_reduce_fx=None)
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
         """Update metric state."""
@@ -362,8 +374,181 @@ class MeanAveragePrecision(Metric):
             groundtruths = self._get_safe_item_values(item)
             self.groundtruths.append(groundtruths)
             self.groundtruth_labels.append(item["labels"])
+            self.groundtruth_crowds.append(item.get("iscrowd", torch.zeros_like(item["labels"])))
+            self.groundtruth_area.append(item.get("area", -1 * torch.zeros_like(item["labels"])))
+
+    def compute(self) -> dict:
+        """Computes the metric."""
+        coco_target, coco_preds = COCO(), COCO()
+
+        coco_target.dataset = self._get_coco_format(
+            self.groundtruths, self.groundtruth_labels, crowds=self.groundtruth_crowds, area=self.groundtruth_area
+        )
+        coco_preds.dataset = self._get_coco_format(self.detections, self.detection_labels, scores=self.detection_scores)
+
+        with _HidePrints():
+            coco_target.createIndex()
+            coco_preds.createIndex()
+
+            coco_eval = COCOeval(coco_target, coco_preds, iouType=self.iou_type)
+            coco_eval.params.iouThrs = np.array(self.iou_thresholds, dtype=np.float64)
+            coco_eval.params.recThrs = np.array(self.rec_thresholds, dtype=np.float64)
+            coco_eval.params.maxDets = self.max_detection_thresholds
+
+            coco_eval.evaluate()
+            coco_eval.accumulate()
+            coco_eval.summarize()
+            stats = coco_eval.stats
+
+        # if class mode is enabled, evaluate metrics per class
+        if self.class_metrics:
+            map_per_class_list = []
+            mar_100_per_class_list = []
+            for class_id in torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist():
+                coco_eval.params.catIds = [class_id]
+                with _HidePrints():
+                    coco_eval.evaluate()
+                    coco_eval.accumulate()
+                    coco_eval.summarize()
+                    class_stats = coco_eval.stats
+
+                map_per_class_list.append(torch.Tensor([class_stats[0]]))
+                mar_100_per_class_list.append(torch.Tensor([class_stats[8]]))
+
+            map_per_class_values = torch.Tensor(map_per_class_list)
+            mar_100_per_class_values = torch.Tensor(mar_100_per_class_list)
+        else:
+            map_per_class_values: Tensor = torch.Tensor([-1])
+            mar_100_per_class_values: Tensor = torch.Tensor([-1])
+
+        metrics = MAPMetricResults(
+            map=torch.Tensor([stats[0]]),
+            map_50=torch.Tensor([stats[1]]),
+            map_75=torch.Tensor([stats[2]]),
+            map_small=torch.Tensor([stats[3]]),
+            map_medium=torch.Tensor([stats[4]]),
+            map_large=torch.Tensor([stats[5]]),
+            mar_1=torch.Tensor([stats[6]]),
+            mar_10=torch.Tensor([stats[7]]),
+            mar_100=torch.Tensor([stats[8]]),
+            mar_small=torch.Tensor([stats[9]]),
+            mar_medium=torch.Tensor([stats[10]]),
+            mar_large=torch.Tensor([stats[11]]),
+            map_per_class=map_per_class_values,
+            mar_100_per_class=mar_100_per_class_values,
+            classes=torch.Tensor(self._get_classes()),
+        )
+
+        return metrics.__dict__
+
+    @staticmethod
+    def coco_to_tm(
+        coco_preds: str,
+        coco_target: str,
+        iou_type: Literal["bbox", "segm"] = "bbox",
+    ) -> Tuple[List[Dict[str, Tensor]], List[Dict[str, Tensor]]]:
+        """Convert coco format to the input format of the map metric.
+
+        Args:
+            coco_preds: Path to the json file containing the predictions in coco format
+            coco_target: Path to the json file containing the targets in coco format
+            iou_type: Type of input, either `bbox` for bounding boxes or `segm` for segmentation masks
+
+        Returns:
+            preds: List of dictionaries containing the predictions in the input format of this metric
+            target: List of dictionaries containing the targets in the input format of this metric
+
+        """
+        gt = COCO(coco_target)
+        dt = gt.loadRes(coco_preds)
+
+        gt_dataset = gt.dataset["annotations"]
+        dt_dataset = dt.dataset["annotations"]
+
+        target = {}
+        for t in gt_dataset:
+            if t["image_id"] not in target:
+                target[t["image_id"]] = {
+                    "boxes" if iou_type == "bbox" else "masks": [],
+                    "labels": [],
+                    "iscrowd": [],
+                    "area": [],
+                }
+            if iou_type == "bbox":
+                target[t["image_id"]]["boxes"].append(t["bbox"])
+            else:
+                target[t["image_id"]]["masks"].append(gt.annToMask(t))
+            target[t["image_id"]]["labels"].append(t["category_id"])
+            target[t["image_id"]]["iscrowd"].append(t["iscrowd"])
+            target[t["image_id"]]["area"].append(t["area"])
+
+        preds = {}
+        for p in dt_dataset:
+            if p["image_id"] not in preds:
+                preds[p["image_id"]] = {"boxes" if iou_type == "bbox" else "masks": [], "scores": [], "labels": []}
+            if iou_type == "bbox":
+                preds[p["image_id"]]["boxes"].append(p["bbox"])
+            else:
+                preds[p["image_id"]]["masks"].append(gt.annToMask(p))
+            preds[p["image_id"]]["scores"].append(p["score"])
+            preds[p["image_id"]]["labels"].append(p["category_id"])
+        for k in target:  # add empty predictions for images without predictions
+            if k not in preds:
+                preds[k] = {"boxes" if iou_type == "bbox" else "masks": [], "scores": [], "labels": []}
+
+        batched_preds, batched_target = [], []
+        for key in target:
+            name = "boxes" if iou_type == "bbox" else "masks"
+            batched_preds.append(
+                {
+                    name: torch.tensor(preds[key]["boxes"])
+                    if iou_type == "bbox"
+                    else torch.tensor(preds[key]["masks"]),
+                    "scores": torch.tensor(preds[key]["scores"]),
+                    "labels": torch.tensor(preds[key]["labels"]),
+                }
+            )
+            batched_target.append(
+                {
+                    name: torch.tensor(target[key]["boxes"])
+                    if iou_type == "bbox"
+                    else torch.tensor(target[key]["masks"]),
+                    "labels": torch.tensor(target[key]["labels"]),
+                    "iscrowd": torch.tensor(target[key]["iscrowd"]),
+                    "area": torch.tensor(target[key]["area"]),
+                }
+            )
+
+        return batched_preds, batched_target
+
+    def tm_to_coco(self, name: str = "tm_map_input") -> None:
+        """Write the input to the map metric to a json file in coco format.
+
+        Args:
+            name: Name of the output file, which will be appended with "_preds.json" and "_target.json"
+        """
+        target_dataset = self._get_coco_format(self.groundtruths, self.groundtruth_labels)
+        preds_dataset = self._get_coco_format(self.detections, self.detection_labels, self.detection_scores)
+
+        preds_json = json.dumps(preds_dataset["annotations"], indent=4)
+        target_json = json.dumps(target_dataset, indent=4)
+
+        with open(f"{name}_preds.json", "w") as f:
+            f.write(preds_json)
+
+        with open(f"{name}_target.json", "w") as f:
+            f.write(target_json)
 
     def _get_safe_item_values(self, item: Dict[str, Any]) -> Union[Tensor, Tuple]:
+        """Convert and return the boxes or masks from the item depending on the iou_type.
+
+        Args:
+            item: input dictionary containing the boxes or masks
+
+        Returns:
+            boxes or masks depending on the iou_type
+
+        """
         if self.iou_type == "bbox":
             boxes = _fix_empty_tensors(item["boxes"])
             if boxes.numel() > 0:
@@ -383,67 +568,13 @@ class MeanAveragePrecision(Metric):
             return torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist()
         return []
 
-    def compute(self) -> dict:
-        """Computes the metric."""
-        coco_target, coco_preds = COCO(), COCO()
-
-        coco_target.dataset = self._get_coco_format(self.groundtruths, self.groundtruth_labels)
-        coco_preds.dataset = self._get_coco_format(self.detections, self.detection_labels, self.detection_scores)
-
-        with HidePrints():
-            coco_target.createIndex()
-            coco_preds.createIndex()
-
-            coco_eval = COCOeval(coco_target, coco_preds, iouType=self.iou_type)
-            coco_eval.params.iouThrs = np.array(self.iou_thresholds, dtype=np.float64)
-            coco_eval.params.recThrs = np.array(self.rec_thresholds, dtype=np.float64)
-            coco_eval.params.maxDets = self.max_detection_thresholds
-
-            coco_eval.evaluate()
-            coco_eval.accumulate()
-            coco_eval.summarize()
-            stats = coco_eval.stats
-
-        map_per_class_values: Tensor = torch.Tensor([-1])
-        mar_100_per_class_values: Tensor = torch.Tensor([-1])
-        # if class mode is enabled, evaluate metrics per class
-        if self.class_metrics:
-            map_per_class_list = []
-            mar_100_per_class_list = []
-            for class_id in torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist():
-                coco_eval.params.catIds = [class_id]
-                with HidePrints():
-                    coco_eval.evaluate()
-                    coco_eval.accumulate()
-                    coco_eval.summarize()
-                    class_stats = coco_eval.stats
-
-                map_per_class_list.append(torch.Tensor([class_stats[0]]))
-                mar_100_per_class_list.append(torch.Tensor([class_stats[8]]))
-            map_per_class_values = torch.Tensor(map_per_class_list)
-            mar_100_per_class_values = torch.Tensor(mar_100_per_class_list)
-
-        metrics = MAPMetricResults(
-            map=torch.Tensor([stats[0]]),
-            map_50=torch.Tensor([stats[1]]),
-            map_75=torch.Tensor([stats[2]]),
-            map_small=torch.Tensor([stats[3]]),
-            map_medium=torch.Tensor([stats[4]]),
-            map_large=torch.Tensor([stats[5]]),
-            mar_1=torch.Tensor([stats[6]]),
-            mar_10=torch.Tensor([stats[7]]),
-            mar_100=torch.Tensor([stats[8]]),
-            mar_small=torch.Tensor([stats[9]]),
-            mar_medium=torch.Tensor([stats[10]]),
-            mar_large=torch.Tensor([stats[11]]),
-            map_per_class=map_per_class_values,
-            mar_100_per_class=mar_100_per_class_values,
-            classes=torch.Tensor(self._get_classes()),
-        )
-        return metrics.__dict__
-
     def _get_coco_format(
-        self, boxes: List[torch.Tensor], labels: List[torch.Tensor], scores: Optional[List[torch.Tensor]] = None
+        self,
+        boxes: List[torch.Tensor],
+        labels: List[torch.Tensor],
+        scores: Optional[List[torch.Tensor]] = None,
+        crowds: Optional[List[torch.Tensor]] = None,
+        area: Optional[List[torch.Tensor]] = None,
     ) -> Dict:
         """Transforms and returns all cached targets or predictions in COCO format.
 
@@ -479,13 +610,18 @@ class MeanAveragePrecision(Metric):
 
                 stat = image_box if self.iou_type == "bbox" else {"size": image_box[0], "counts": image_box[1]}
 
+                if area is not None and area[image_id][k].cpu().tolist() > 0:
+                    area_stat = area[image_id][k].cpu().tolist()
+                else:
+                    area_stat = image_box[2] * image_box[3] if self.iou_type == "bbox" else mask_utils.area(stat)
+
                 annotation = {
                     "id": annotation_id,
                     "image_id": image_id,
                     "bbox" if self.iou_type == "bbox" else "segmentation": stat,
-                    "area": image_box[2] * image_box[3] if self.iou_type == "bbox" else mask_utils.area(stat),
+                    "area": area_stat,
                     "category_id": image_label,
-                    "iscrowd": 0,
+                    "iscrowd": crowds[image_id][k].cpu().tolist() if crowds is not None else 0,
                 }
 
                 if scores is not None:
@@ -501,49 +637,6 @@ class MeanAveragePrecision(Metric):
 
         classes = [{"id": i, "name": str(i)} for i in self._get_classes()]
         return {"images": images, "annotations": annotations, "categories": classes}
-
-    # specialized syncronization and apply functions for this metric
-
-    def _apply(self, fn: Callable) -> torch.nn.Module:
-        """Custom apply function.
-
-        Excludes the detections and groundtruths from the casting when the iou_type is set to `segm` as the state is
-        no longer a tensor but a tuple.
-        """
-        if self.iou_type == "segm":
-            this = super()._apply(fn, exclude_state=("detections", "groundtruths"))
-        else:
-            this = super()._apply(fn)
-        return this
-
-    def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, process_group: Optional[Any] = None) -> None:
-        """Custom sync function.
-
-        For the iou_type `segm` the detections and groundtruths are no longer tensors but tuples. Therefore, we need
-        to gather the list of tuples and then convert it back to a list of tuples.
-
-        """
-        super()._sync_dist(dist_sync_fn=dist_sync_fn, process_group=process_group)
-
-        if self.iou_type == "segm":
-            self.detections = self._gather_tuple_list(self.detections, process_group)
-            self.groundtruths = self._gather_tuple_list(self.groundtruths, process_group)
-
-    @staticmethod
-    def _gather_tuple_list(list_to_gather: List[Tuple], process_group: Optional[Any] = None) -> List[Any]:
-        """Gather a list of tuples over multiple devices."""
-        world_size = dist.get_world_size(group=process_group)
-        dist.barrier(group=process_group)
-
-        list_gathered = [None for _ in range(world_size)]
-        dist.all_gather_object(list_gathered, list_to_gather, group=process_group)
-
-        list_merged = []
-        for idx in range(len(list_gathered[0])):
-            for rank in range(world_size):
-                list_merged.append(list_gathered[rank][idx])
-
-        return list_merged
 
     def plot(
         self, val: Optional[Union[Dict[str, Tensor], Sequence[Dict[str, Tensor]]]] = None, ax: Optional[_AX_TYPE] = None
@@ -602,3 +695,57 @@ class MeanAveragePrecision(Metric):
             >>> fig_, ax_ = metric.plot(vals)
         """
         return self._plot(val, ax)
+
+    # --------------------
+    # specialized syncronization and apply functions for this metric
+    # --------------------
+
+    def _apply(self, fn: Callable) -> torch.nn.Module:
+        """Custom apply function.
+
+        Excludes the detections and groundtruths from the casting when the iou_type is set to `segm` as the state is
+        no longer a tensor but a tuple.
+        """
+        if self.iou_type == "segm":
+            this = super()._apply(fn, exclude_state=("detections", "groundtruths"))
+        else:
+            this = super()._apply(fn)
+        return this
+
+    def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, process_group: Optional[Any] = None) -> None:
+        """Custom sync function.
+
+        For the iou_type `segm` the detections and groundtruths are no longer tensors but tuples. Therefore, we need
+        to gather the list of tuples and then convert it back to a list of tuples.
+
+        """
+        super()._sync_dist(dist_sync_fn=dist_sync_fn, process_group=process_group)
+
+        if self.iou_type == "segm":
+            self.detections = self._gather_tuple_list(self.detections, process_group)
+            self.groundtruths = self._gather_tuple_list(self.groundtruths, process_group)
+
+    @staticmethod
+    def _gather_tuple_list(list_to_gather: List[Tuple], process_group: Optional[Any] = None) -> List[Any]:
+        """Gather a list of tuples over multiple devices.
+
+        Args:
+            list_to_gather: input list of tuples that should be gathered across devices
+            process_group: process group to gather the list of tuples
+
+        Returns:
+            list of tuples gathered across devices
+
+        """
+        world_size = dist.get_world_size(group=process_group)
+        dist.barrier(group=process_group)
+
+        list_gathered = [None for _ in range(world_size)]
+        dist.all_gather_object(list_gathered, list_to_gather, group=process_group)
+
+        list_merged = []
+        for idx in range(len(list_gathered[0])):
+            for rank in range(world_size):
+                list_merged.append(list_gathered[rank][idx])
+
+        return list_merged
