@@ -90,11 +90,11 @@ class MeanAveragePrecision(Metric):
         - masks: :class:`~torch.bool` of shape ``(num_boxes, image_height, image_width)`` containing boolean masks.
           Only required when `iou_type="segm"`.
         - iscrowd: :class:`~torch.IntTensor` of shape ``(num_boxes)`` containing 0/1 values indicating whether
-            the bounding box/masks indicate a crowd of objects. Value is optional, and if not provided it will
-            automatically be set to 0.
+          the bounding box/masks indicate a crowd of objects. Value is optional, and if not provided it will
+          automatically be set to 0.
         - area: :class:`~torch.FloatTensor` of shape ``(num_boxes)`` containing the area of the object. Value if
-            optional, and if not provided will be automatically calculated based on the bounding box/masks provided.
-            Only affects which samples contribute to the `map_small`, `map_medium`, `map_large` values
+          optional, and if not provided will be automatically calculated based on the bounding box/masks provided.
+          Only affects which samples contribute to the `map_small`, `map_medium`, `map_large` values
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
@@ -111,13 +111,13 @@ class MeanAveragePrecision(Metric):
         - mar_medium: (:class:`~torch.Tensor`), mean average recall for medium objects
         - mar_large: (:class:`~torch.Tensor`), mean average recall for large objects
         - map_50: (:class:`~torch.Tensor`) (-1 if 0.5 not in the list of iou thresholds), mean average precision at
-            IoU=0.50
+          IoU=0.50
         - map_75: (:class:`~torch.Tensor`) (-1 if 0.75 not in the list of iou thresholds), mean average precision at
-            IoU=0.75
+          IoU=0.75
         - map_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled), mean average precision per
-            observed class
+          observed class
         - mar_100_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled), mean average recall for 100
-            detections per image per observed class
+          detections per image per observed class
         - classes (:class:`~torch.Tensor`), list of all observed classes
 
     For an example on how to use this metric check the `torchmetrics mAP example`_.
