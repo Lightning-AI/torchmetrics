@@ -38,7 +38,12 @@ if _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_convert
 else:
     box_convert = None
-    __doctest_skip__ = ["MeanAveragePrecision.plot", "MeanAveragePrecision"]
+    __doctest_skip__ = [
+        "MeanAveragePrecision.plot",
+        "MeanAveragePrecision",
+        "MeanAveragePrecision.tm_to_coco",
+        "MeanAveragePrecision.coco_to_tm",
+    ]
 
 
 if _PYCOCOTOOLS_AVAILABLE:
@@ -48,7 +53,12 @@ if _PYCOCOTOOLS_AVAILABLE:
 else:
     COCO, COCOeval = None, None
     mask_utils = None
-    __doctest_skip__ = ["MeanAveragePrecision.plot", "MeanAveragePrecision"]
+    __doctest_skip__ = [
+        "MeanAveragePrecision.plot",
+        "MeanAveragePrecision",
+        "MeanAveragePrecision.tm_to_coco",
+        "MeanAveragePrecision.coco_to_tm",
+    ]
 
 
 class MeanAveragePrecision(Metric):
