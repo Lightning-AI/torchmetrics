@@ -1,3 +1,5 @@
+.. _plotting:
+
 .. testsetup:: *
 
     import torch

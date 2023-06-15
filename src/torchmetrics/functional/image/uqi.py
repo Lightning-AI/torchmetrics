@@ -112,7 +112,7 @@ def _uqi_compute(
     sigma_pred_target = output_list[4] - mu_pred_target
 
     upper = 2 * sigma_pred_target
-    lower = sigma_pred_sq + sigma_target_sq
+    lower = sigma_pred_sq + sigma_target_sq + torch.finfo(sigma_pred_sq.dtype).eps
 
     uqi_idx = ((2 * mu_pred_target) * upper) / ((mu_pred_sq + mu_target_sq) * lower)
     uqi_idx = uqi_idx[..., pad_h:-pad_h, pad_w:-pad_w]

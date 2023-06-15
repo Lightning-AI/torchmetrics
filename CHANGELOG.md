@@ -209,7 +209,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `ax` plotting logging in `MetricCollection ([#1783](https://github.com/Lightning-AI/torchmetrics/pull/1783))
 
 
-- Fixed lookup for punkt sources being downloaded in `RougeScore` [#1789](https://github.com/Lightning-AI/torchmetrics/pull/1789)
+- Fixed lookup for punkt sources being downloaded in `RougeScore` ([#1789](https://github.com/Lightning-AI/torchmetrics/pull/1789))
+
+
+- Fixed integration with lightning for `CompositionalMetric` ([#1761](https://github.com/Lightning-AI/torchmetrics/pull/1761))
+
+
+- Fixed several bugs in `SpectralDistortionIndex` metric ([#1808](https://github.com/Lightning-AI/torchmetrics/pull/1808))
+
+
+- Fixed bug for corner cases in `MatthewsCorrCoef` ([#1812](https://github.com/Lightning-AI/torchmetrics/pull/1812))
+
+
+- Fixed support for half precision in `PearsonCorrCoef` ([#1819](https://github.com/Lightning-AI/torchmetrics/pull/1819))
 
 
 ## [0.11.4] - 2023-03-10

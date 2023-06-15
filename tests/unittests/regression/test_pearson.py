@@ -100,8 +100,6 @@ class TestPearsonCorrCoef(MetricTester):
             metric_functional=pearson_corrcoef,
         )
 
-    # Pearson half + cpu does not work due to missing support in torch.sqrt
-    @pytest.mark.xfail(reason="PearsonCorrCoef metric does not support cpu + half precision")
     def test_pearson_corrcoef_half_cpu(self, preds, target):
         """Test dtype support of the metric on CPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
