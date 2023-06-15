@@ -109,7 +109,6 @@ class TestSRMR(MetricTester):
         else:
             pytest.xfail("differentiable test for SRMR metric is skipped as it is too slow")
 
-
     def test_srmr_half_cpu(self, preds, fs, fast, norm):
         """Test dtype support of the metric on CPU."""
         pytest.xfail("SRMR metric does not support cpu + half precision")
