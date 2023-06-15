@@ -57,12 +57,11 @@ class BinaryConfusionMatrix(Metric):
       element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-    .. note::
-       Additional dimension ``...`` will be flattened into the batch dimension.
-
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``bcm`` (:class:`~torch.Tensor`): A tensor containing a ``(2, 2)`` matrix
+    - ``confusion_matrix`` (:class:`~torch.Tensor`): A tensor containing a ``(2, 2)`` matrix
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
         threshold: Threshold for transforming probability to binary (0,1) predictions
@@ -179,27 +178,9 @@ class MulticlassConfusionMatrix(Metric):
       element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-    .. note::
-       Additional dimension ``...`` will be flattened into the batch dimension.
-
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``bcm`` (:class:`~torch.Tensor`): A tensor containing a ``(2, 2)`` matrix
-
-    ---
-
-    As input to 'update' the metric accepts the following input:
-
-    - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
-      we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
-      an int tensor.
-    - ``target`` (int tensor): ``(N, ...)``
-
-    Additional dimension ``...`` will be flattened into the batch dimension.
-
-    As output of 'compute' the metric returns the following output:
-
-    - ``confusion matrix``: [num_classes, num_classes] matrix
+    - ``confusion_matrix``: [num_classes, num_classes] matrix
 
     Args:
         num_classes: Integer specifing the number of classes
@@ -321,8 +302,6 @@ class MultilabelConfusionMatrix(Metric):
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
-
-    Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output of 'compute' the metric returns the following output:
 
