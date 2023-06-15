@@ -97,6 +97,8 @@ class SpeechReverberationModulationEnergyRatio(Metric):
                 " `torchaudio` installed. Either install as ``pip install torchmetrics[audio]`` or "
                 "``pip install torchaudio`` and ``pip install git+https://github.com/detly/gammatone``"
             )
+        if not (isinstance(fs, int) and fs > 0):
+             raise ValueError(f"Expected argument `fs` to be an int larger than 0, but got {fs}")
         self.fs = fs
         self.n_cochlear_filters = n_cochlear_filters
         self.low_freq = low_freq
