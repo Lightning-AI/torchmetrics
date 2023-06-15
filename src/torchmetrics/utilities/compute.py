@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -53,6 +53,20 @@ def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
     num = num if num.is_floating_point() else num.float()
     denom = denom if denom.is_floating_point() else denom.float()
     return num / denom
+
+
+def _adjust_weights_safe_divide(
+    score: Tensor, average: Optional[str], multilabel: bool, tp: Tensor, fp: Tensor, fn: Tensor
+) -> Tensor:
+    if average is None or average == "none":
+        return score
+    if average == "weighted":
+        weights = tp + fn
+    else:
+        weights = torch.ones_like(score)
+        if not multilabel:
+            weights[tp + fp + fn == 0] = 0.0
+    return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
 def _auc_format_inputs(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
