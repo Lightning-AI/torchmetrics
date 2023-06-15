@@ -1086,17 +1086,21 @@ class CompositionalMetric(Metric):
         )
 
         if val_a is None:
-            return None
+            self._forward_cache = None
+            return self._forward_cache
 
         if val_b is None:
             if isinstance(self.metric_b, Metric):
-                return None
+                self._forward_cache = None
+                return self._forward_cache
 
             # Unary op
-            return self.op(val_a)
+            self._forward_cache = self.op(val_a)
+            return self._forward_cache
 
         # Binary op
-        return self.op(val_a, val_b)
+        self._forward_cache = self.op(val_a, val_b)
+        return self._forward_cache
 
     def reset(self) -> None:
         """Redirect the call to the input which the conposition was formed from."""
