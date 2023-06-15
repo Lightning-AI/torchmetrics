@@ -46,7 +46,6 @@ class SpeechReverberationModulationEnergyRatio(Metric):
         and ``pip install git+https://github.com/detly/gammatone``.
 
     Args:
-        preds: shape ``(..., time)``
         fs: the sampling rate
         n_cochlear_filters: Number of filters in the acoustic filterbank
         low_freq: determines the frequency cutoff for the corresponding gammatone filterbank.
