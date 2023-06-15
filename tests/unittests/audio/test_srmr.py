@@ -109,17 +109,6 @@ class TestSRMR(MetricTester):
         else:
             pytest.xfail("differentiable test for SRMR metric is skipped as it is too slow")
 
-        # self.run_differentiability_test(
-        #     preds=preds[..., [0], :4000],
-        #     target=preds[..., [0], :4000],
-        #     metric_module=SpeechReverberationModulationEnergyRatioCheat,
-        #     metric_functional=speech_reverberation_modulation_energy_ratio_cheat,
-        #     metric_args={
-        #         "fs": fs,
-        #         "fast": fast,
-        #         "norm": norm
-        #     },
-        # )
 
     def test_srmr_half_cpu(self, preds, fs, fast, norm):
         """Test dtype support of the metric on CPU."""
