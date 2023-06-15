@@ -291,7 +291,7 @@ def speech_reverberation_modulation_energy_ratio(
         temp.append(score)
     score = torch.stack(temp)
 
-    if len(shape) > 1:  # recover original shape
-        score = score.reshape(*shape[:-1])
+    score = score.reshape(*shape[:-1]) if len(shape) > 1 else score  # recover original shape
+        
 
     return score
