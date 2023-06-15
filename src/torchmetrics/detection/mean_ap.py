@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import contextlib
+import io
 import json
-import logging
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
@@ -21,7 +22,7 @@ from torch import Tensor
 from torch import distributed as dist
 from typing_extensions import Literal
 
-from torchmetrics.detection.helpers import _fix_empty_tensors, _HidePrints, _input_validator
+from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import (
     _MATPLOTLIB_AVAILABLE,
@@ -340,7 +341,7 @@ class MeanAveragePrecision(Metric):
         )
         coco_preds.dataset = self._get_coco_format(self.detections, self.detection_labels, scores=self.detection_scores)
 
-        with _HidePrints():
+        with contextlib.redirect_stdout(io.StringIO()):
             coco_target.createIndex()
             coco_preds.createIndex()
 
@@ -360,7 +361,7 @@ class MeanAveragePrecision(Metric):
             mar_100_per_class_list = []
             for class_id in torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist():
                 coco_eval.params.catIds = [class_id]
-                with _HidePrints():
+                with contextlib.redirect_stdout(io.StringIO()):
                     coco_eval.evaluate()
                     coco_eval.accumulate()
                     coco_eval.summarize()
@@ -425,8 +426,9 @@ class MeanAveragePrecision(Metric):
             ... )  # doctest: +SKIP
 
         """
-        gt = COCO(coco_target)
-        dt = gt.loadRes(coco_preds)
+        with contextlib.redirect_stdout(io.StringIO()):
+            gt = COCO(coco_target)
+            dt = gt.loadRes(coco_preds)
 
         gt_dataset = gt.dataset["annotations"]
         dt_dataset = dt.dataset["annotations"]
@@ -697,11 +699,7 @@ class MeanAveragePrecision(Metric):
         Excludes the detections and groundtruths from the casting when the iou_type is set to `segm` as the state is
         no longer a tensor but a tuple.
         """
-        if self.iou_type == "segm":
-            this = super()._apply(fn, exclude_state=("detections", "groundtruths"))
-        else:
-            this = super()._apply(fn)
-        return this
+        return super()._apply(fn, exclude_state=("detections", "groundtruths") if self.iou_type == "segm" else "")
 
     def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, process_group: Optional[Any] = None) -> None:
         """Custom sync function.

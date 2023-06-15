@@ -11,10 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import logging
-import sys
-from types import TracebackType
-from typing import Dict, Optional, Sequence, Type
+from typing import Dict, Sequence
 
 from torch import Tensor
 
@@ -78,44 +75,3 @@ def _fix_empty_tensors(boxes: Tensor) -> Tensor:
     if boxes.numel() == 0 and boxes.ndim == 1:
         return boxes.unsqueeze(0)
     return boxes
-
-
-class _WriteToLog:
-    """Logging class to move logs to log.debug()."""
-
-    _log = logging.getLogger(__name__)
-
-    def write(self, buf: str) -> None:
-        """Write to log.debug() instead of stdout."""
-        for line in buf.rstrip().splitlines():
-            self._log.debug(line.rstrip())
-
-    def flush(self) -> None:
-        """Flush the logger."""
-        for handler in self._log.handlers:
-            handler.flush()
-
-    def close(self) -> None:
-        """Close the logger."""
-        for handler in self._log.handlers:
-            handler.close()
-
-
-class _HidePrints:
-    """Internal helper context to suppress the default output of the pycocotools package."""
-
-    def __init__(self) -> None:
-        """Initialize the context."""
-        self._original_stdout = None
-
-    def __enter__(self) -> None:
-        """Redirect stdout to log.debug()."""
-        self._original_stdout = sys.stdout  # type: ignore
-        sys.stdout = _WriteToLog()  # type: ignore
-
-    def __exit__(
-        self, exc_type: Optional[Type[BaseException]], exc_val: Optional[BaseException], exc_t: Optional[TracebackType]
-    ) -> None:
-        """Restore stdout."""
-        sys.stdout.close()
-        sys.stdout = self._original_stdout  # type: ignore

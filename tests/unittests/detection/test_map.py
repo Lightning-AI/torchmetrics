@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
+import contextlib
+import io
 from collections import namedtuple
 from copy import deepcopy
 from functools import partial
@@ -23,7 +24,7 @@ from pycocotools import mask
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from torch import IntTensor, Tensor
-from torchmetrics.detection.mean_ap import MeanAveragePrecision, _HidePrints
+from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL, _SAMPLE_DETECTION_SEGMENTATION
@@ -52,14 +53,17 @@ def _generate_coco_inputs(iou_type):
 _coco_bbox_input = _generate_coco_inputs("bbox")
 _coco_segm_input = _generate_coco_inputs("segm")
 
+with contextlib.redirect_stdout(io.StringIO()):
+    gt = COCO(_DETECTION_VAL)
+    dt_box = gt.loadRes(_DETECTION_BBOX)
+    dt_segm = gt.loadRes(_DETECTION_SEGM)
+
 
 def _compare_again_coco_fn(preds, target, iou_type, class_metrics=True):
     """Taken from https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoEvalDemo.ipynb."""
-    gt = COCO(_DETECTION_VAL)
-    dt = gt.loadRes(_DETECTION_BBOX if iou_type == "bbox" else _DETECTION_SEGM)
-
+    dt = dt_box if iou_type == "bbox" else dt_segm
     coco_eval = COCOeval(gt, dt, iou_type)
-    with _HidePrints():
+    with contextlib.redirect_stdout(io.StringIO()):
         coco_eval.evaluate()
         coco_eval.accumulate()
         coco_eval.summarize()
@@ -76,7 +80,7 @@ def _compare_again_coco_fn(preds, target, iou_type, class_metrics=True):
         mar_100_per_class_list = []
         for class_id in classes.tolist():
             coco_eval.params.catIds = [class_id]
-            with _HidePrints():
+            with contextlib.redirect_stdout(io.StringIO()):
                 coco_eval.evaluate()
                 coco_eval.accumulate()
                 coco_eval.summarize()
