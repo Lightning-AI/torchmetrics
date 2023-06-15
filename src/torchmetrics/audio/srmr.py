@@ -16,8 +16,8 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.srmr import (
-    speech_reverberation_modulation_energy_ratio,
     _srmr_arg_validate,
+    speech_reverberation_modulation_energy_ratio,
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _GAMMATONE_AVAILABEL, _MATPLOTLIB_AVAILABLE, _TORCHAUDIO_AVAILABEL
