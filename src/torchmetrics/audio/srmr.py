@@ -98,10 +98,12 @@ class SpeechReverberationModulationEnergyRatio(Metric):
                 "``pip install torchaudio`` and ``pip install git+https://github.com/detly/gammatone``"
             )
         if not (isinstance(fs, int) and fs > 0):
-             raise ValueError(f"Expected argument `fs` to be an int larger than 0, but got {fs}")
+            raise ValueError(f"Expected argument `fs` to be an int larger than 0, but got {fs}")
         self.fs = fs
         if not (isinstance(n_cochlear_filters, int) and n_cochlear_filters > 0):
-             raise ValueError(f"Expected argument `n_cochlear_filters` to be an int larger than 0, but got {n_cochlear_filters}")
+            raise ValueError(
+                f"Expected argument `n_cochlear_filters` to be an int larger than 0, but got {n_cochlear_filters}"
+            )
         self.n_cochlear_filters = n_cochlear_filters
         self.low_freq = low_freq
         self.min_cf = min_cf
