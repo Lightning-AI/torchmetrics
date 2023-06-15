@@ -15,7 +15,10 @@ from typing import Any, Optional, Sequence, Union
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.srmr import speech_reverberation_modulation_energy_ratio
+from torchmetrics.functional.audio.srmr import (
+    speech_reverberation_modulation_energy_ratio,
+    _srmr_arg_validate,
+)
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _GAMMATONE_AVAILABEL, _MATPLOTLIB_AVAILABLE, _TORCHAUDIO_AVAILABEL
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -97,13 +100,17 @@ class SpeechReverberationModulationEnergyRatio(Metric):
                 " `torchaudio` installed. Either install as ``pip install torchmetrics[audio]`` or "
                 "``pip install torchaudio`` and ``pip install git+https://github.com/detly/gammatone``"
             )
-        if not (isinstance(fs, int) and fs > 0):
-            raise ValueError(f"Expected argument `fs` to be an int larger than 0, but got {fs}")
+        _srmr_arg_validate(
+            fs=fs,
+            n_cochlear_filters=n_cochlear_filters,
+            low_freq=low_freq,
+            min_cf=min_cf,
+            max_cf=max_cf,
+            norm=norm,
+            fast=fast,
+        )
+
         self.fs = fs
-        if not (isinstance(n_cochlear_filters, int) and n_cochlear_filters > 0):
-            raise ValueError(
-                f"Expected argument `n_cochlear_filters` to be an int larger than 0, but got {n_cochlear_filters}"
-            )
         self.n_cochlear_filters = n_cochlear_filters
         self.low_freq = low_freq
         self.min_cf = min_cf

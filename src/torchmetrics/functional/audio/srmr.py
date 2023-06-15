@@ -221,7 +221,15 @@ def speech_reverberation_modulation_energy_ratio(
             " `torchaudio` installed. Either install as ``pip install torchmetrics[audio]`` or "
             "``pip install torchaudio`` and ``pip install git+https://github.com/detly/gammatone``"
         )
-
+    _srmr_arg_validate(
+        fs=fs,
+        n_cochlear_filters=n_cochlear_filters,
+        low_freq=low_freq,
+        min_cf=min_cf,
+        max_cf=max_cf,
+        norm=norm,
+        fast=fast,
+    )
     shape = preds.shape
     preds = preds.reshape(1, -1) if len(shape) == 1 else preds.reshape(-1, shape[-1])
     n_batch, time = preds.shape
@@ -294,3 +302,28 @@ def speech_reverberation_modulation_energy_ratio(
     score = score.reshape(*shape[:-1]) if len(shape) > 1 else score  # recover original shape
 
     return score
+
+
+def _srmr_arg_validate(
+    fs: int,
+    n_cochlear_filters: int = 23,
+    low_freq: float = 125,
+    min_cf: float = 4,
+    max_cf: Optional[float] = 128,
+    norm: bool = False,
+    fast: bool = False,
+):
+    if not (isinstance(fs, int) and fs > 0):
+        raise ValueError(f"Expected argument `fs` to be an int larger than 0, but got {fs}")
+    if not (isinstance(n_cochlear_filters, int) and n_cochlear_filters > 0):
+        raise ValueError(f"Expected argument `n_cochlear_filters` to be an int larger than 0, but got {n_cochlear_filters}")
+    if not ((isinstance(low_freq, float) or isinstance(low_freq, int)) and low_freq > 0):
+        raise ValueError(f"Expected argument `low_freq` to be a float larger than 0, but got {low_freq}")
+    if not ((isinstance(min_cf, float) or isinstance(min_cf, int)) and min_cf > 0):
+        raise ValueError(f"Expected argument `min_cf` to be a float larger than 0, but got {min_cf}")
+    if max_cf is not None and not ((isinstance(max_cf, float) or isinstance(max_cf, int)) and max_cf > 0):
+        raise ValueError(f"Expected argument `max_cf` to be a float larger than 0, but got {max_cf}")
+    if not isinstance(norm, bool):
+        raise ValueError(f"Expected argument `norm` to be a bool value")
+    if not isinstance(fast, bool):
+        raise ValueError(f"Expected argument `fast` to be a bool value")
