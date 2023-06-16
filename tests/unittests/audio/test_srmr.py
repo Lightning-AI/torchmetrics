@@ -98,8 +98,8 @@ class TestSRMR(MetricTester):
             preds=preds,
             target=preds,
             metric_functional=_speech_reverberation_modulation_energy_ratio_cheat,
-            reference_metric=_ref_metric_batch,
-            **{"fs": fs, "fast": fast, "norm": norm},
+            reference_metric=partial(_ref_metric_batch, fs=fs, fast=fast, norm=norm),
+            metric_args={"fs": fs, "fast": fast, "norm": norm},
         )
 
     def test_srmr_differentiability(self, preds, fs, fast, norm):

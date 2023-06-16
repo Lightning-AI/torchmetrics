@@ -312,7 +312,19 @@ def _srmr_arg_validate(
     max_cf: Optional[float] = 128,
     norm: bool = False,
     fast: bool = False,
-):
+) -> None:
+    """Validate the arguments for speech_reverberation_modulation_energy_ratio.
+
+    Args:
+        fs: the sampling rate
+        n_cochlear_filters: Number of filters in the acoustic filterbank
+        low_freq: determines the frequency cutoff for the corresponding gammatone filterbank.
+        min_cf: Center frequency in Hz of the first modulation filter.
+        max_cf: Center frequency in Hz of the last modulation filter. If None is given,
+        norm: Use modulation spectrum energy normalization
+        fast: Use the faster version based on the gammatonegram.
+
+    """
     if not (isinstance(fs, int) and fs > 0):
         raise ValueError(f"Expected argument `fs` to be an int larger than 0, but got {fs}")
     if not (isinstance(n_cochlear_filters, int) and n_cochlear_filters > 0):
