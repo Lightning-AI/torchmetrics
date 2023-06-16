@@ -29,6 +29,7 @@ from torchmetrics.audio import (
     ShortTimeObjectiveIntelligibility,
     SignalDistortionRatio,
     SignalNoiseRatio,
+    SpeechReverberationModulationEnergyRatio,
 )
 from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
 from torchmetrics.audio.pit import PermutationInvariantTraining
@@ -296,6 +297,12 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             _audio_input,
             _audio_input,
             id="short_time_objective_intelligibility",
+        ),
+        pytest.param(
+            partial(SpeechReverberationModulationEnergyRatio, fs=8000),
+            _audio_input,
+            None,
+            id="speech_reverberation_modulation_energy_ratio",
         ),
         pytest.param(
             partial(PermutationInvariantTraining, metric_func=scale_invariant_signal_noise_ratio, eval_func="max"),
