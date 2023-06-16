@@ -31,7 +31,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_tensor_validation,
     _multilabel_stat_scores_update,
 )
-from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.compute import _adjust_weights_safe_divide, _safe_divide
 from torchmetrics.utilities.enums import ClassificationTask
 
 
@@ -83,10 +83,7 @@ def _accuracy_reduce(
         return _safe_divide(tp, tp + fn)
 
     score = _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else _safe_divide(tp, tp + fn)
-    if average is None or average == "none":
-        return score
-    weights = tp + fn if average == "weighted" else torch.ones_like(score)
-    return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
+    return _adjust_weights_safe_divide(score, average, multilabel, tp, fp, fn)
 
 
 def binary_accuracy(

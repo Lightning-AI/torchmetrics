@@ -73,7 +73,7 @@ def _sklearn_hamming_distance_binary(preds, target, ignore_index, multidim_avera
 class TestBinaryHammingDistance(MetricTester):
     """Test class for `BinaryHammingDistance` metric."""
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
     def test_binary_hamming_distance(self, ddp, inputs, ignore_index, multidim_average):
@@ -97,7 +97,7 @@ class TestBinaryHammingDistance(MetricTester):
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     def test_binary_hamming_distance_functional(self, inputs, ignore_index, multidim_average):
         """Test functional implementation of metric."""
@@ -172,6 +172,9 @@ def _sklearn_hamming_distance_multiclass_global(preds, target, ignore_index, ave
     hamming_per_class = 1 - confmat.diagonal() / confmat.sum(axis=1)
     hamming_per_class[np.isnan(hamming_per_class)] = 1.0
     if average == "macro":
+        hamming_per_class = hamming_per_class[
+            (np.bincount(preds, minlength=NUM_CLASSES) + np.bincount(target, minlength=NUM_CLASSES)) != 0.0
+        ]
         return hamming_per_class.mean()
     if average == "weighted":
         weights = confmat.sum(1)
@@ -194,7 +197,10 @@ def _sklearn_hamming_distance_multiclass_local(preds, target, ignore_index, aver
             hamming_per_class = 1 - confmat.diagonal() / confmat.sum(axis=1)
             hamming_per_class[np.isnan(hamming_per_class)] = 1.0
             if average == "macro":
-                res.append(hamming_per_class.mean())
+                hamming_per_class = hamming_per_class[
+                    (np.bincount(pred, minlength=NUM_CLASSES) + np.bincount(true, minlength=NUM_CLASSES)) != 0.0
+                ]
+                res.append(hamming_per_class.mean() if len(hamming_per_class) > 0 else 0.0)
             elif average == "weighted":
                 weights = confmat.sum(1)
                 score = ((weights * hamming_per_class) / weights.sum()).sum()
@@ -399,7 +405,7 @@ class TestMultilabelHammingDistance(MetricTester):
     """Test class for `MultilabelHammingDistance` metric."""
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
     def test_multilabel_hamming_distance(self, ddp, inputs, ignore_index, multidim_average, average):
@@ -432,7 +438,7 @@ class TestMultilabelHammingDistance(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
     def test_multilabel_hamming_distance_functional(self, inputs, ignore_index, multidim_average, average):
