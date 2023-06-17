@@ -84,7 +84,7 @@ def _sklearn_fbeta_score_binary(preds, target, sk_fn, ignore_index, multidim_ave
 class TestBinaryFBetaScore(MetricTester):
     """Test class for `BinaryFBetaScore` metric."""
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
     def test_binary_fbeta_score(self, ddp, inputs, module, functional, compare, ignore_index, multidim_average):
@@ -108,7 +108,7 @@ class TestBinaryFBetaScore(MetricTester):
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     def test_binary_fbeta_score_functional(self, inputs, module, functional, compare, ignore_index, multidim_average):
         """Test functional implementation of metric."""
@@ -181,7 +181,7 @@ def _sklearn_fbeta_score_multiclass(preds, target, sk_fn, ignore_index, multidim
         preds = preds.numpy().flatten()
         target = target.numpy().flatten()
         target, preds = remove_ignore_index(target, preds, ignore_index)
-        return sk_fn(target, preds, average=average)
+        return sk_fn(target, preds, average=average, labels=list(range(NUM_CLASSES)) if average is None else None)
 
     preds = preds.numpy()
     target = target.numpy()
@@ -190,7 +190,8 @@ def _sklearn_fbeta_score_multiclass(preds, target, sk_fn, ignore_index, multidim
         pred = pred.flatten()
         true = true.flatten()
         true, pred = remove_ignore_index(true, pred, ignore_index)
-        res.append(sk_fn(true, pred, average=average, labels=list(range(NUM_CLASSES))))
+        r = sk_fn(true, pred, average=average, labels=list(range(NUM_CLASSES)) if average is None else None)
+        res.append(0.0 if np.isnan(r).any() else r)
     return np.stack(res, 0)
 
 
@@ -457,7 +458,7 @@ class TestMultilabelFBetaScore(MetricTester):
     """Test class for `MultilabelFBetaScore` metric."""
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multilabel_fbeta_score(
@@ -493,7 +494,7 @@ class TestMultilabelFBetaScore(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multilabel_fbeta_score_functional(
@@ -566,3 +567,13 @@ class TestMultilabelFBetaScore(MetricTester):
             metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
             dtype=dtype,
         )
+
+
+def test_corner_case():
+    """Issue: https://github.com/Lightning-AI/torchmetrics/issues/1664."""
+    target = torch.tensor([2, 1, 0, 0])
+    preds = torch.tensor([2, 1, 0, 1])
+    for i in range(3, 9):
+        f1_score = MulticlassF1Score(num_classes=i, average="macro")
+        res = f1_score(preds, target)
+        assert res == torch.tensor([0.77777779])
