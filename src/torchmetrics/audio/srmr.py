@@ -20,12 +20,17 @@ from torchmetrics.functional.audio.srmr import (
     speech_reverberation_modulation_energy_ratio,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _GAMMATONE_AVAILABEL, _MATPLOTLIB_AVAILABLE, _TORCHAUDIO_AVAILABEL
+from torchmetrics.utilities.imports import (
+    _GAMMATONE_AVAILABEL,
+    _MATPLOTLIB_AVAILABLE,
+    _TORCHAUDIO_AVAILABEL,
+    _TORCHAUDIO_GREATER_EQUAL_0_10,
+)
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 __doctest_requires__ = {"SpeechReverberationModulationEnergyRatio": ["torchaudio", "gammatone"]}
 
-if not (_MATPLOTLIB_AVAILABLE and _GAMMATONE_AVAILABEL and _TORCHAUDIO_AVAILABEL):
+if not (_MATPLOTLIB_AVAILABLE and _GAMMATONE_AVAILABEL and _TORCHAUDIO_AVAILABEL and _TORCHAUDIO_GREATER_EQUAL_0_10):
     __doctest_skip__ = ["SpeechReverberationModulationEnergyRatio.plot"]
 
 

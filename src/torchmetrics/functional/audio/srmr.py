@@ -30,51 +30,8 @@ from torchmetrics.utilities.imports import (
     _TORCHAUDIO_GREATER_EQUAL_0_10,
 )
 
-if _TORCHAUDIO_AVAILABEL:
-    if _TORCHAUDIO_GREATER_EQUAL_0_10:
-        from torchaudio.functional.filtering import lfilter
-    else:
-        from torchaudio.functional.filtering import lfilter as _lfilter
-
-        def lfilter(
-            waveform: Tensor,
-            a_coeffs: Tensor,
-            b_coeffs: Tensor,
-            clamp: bool = True,
-            batching: bool = True,
-        ) -> Tensor:
-            """Perform an IIR filter by evaluating difference equation.
-
-            Note:
-                To avoid numerical problems, small filter order is preferred.
-                Using double precision could also minimize numerical precision errors.
-
-            Args:
-                waveform: audio waveform of dimension of `(..., time)`.  Must be normalized to -1 to 1.
-                a_coeffs: denominator coefficients of difference equation of dimension of either
-                    1D with shape `(num_order + 1)` or 2D with shape `(num_filters, num_order + 1)`.
-                    Lower delays coefficients are first, e.g. ``[a0, a1, a2, ...]``.
-                    Must be same size as b_coeffs (pad with 0's as necessary).
-                b_coeffs: numerator coefficients of difference equation of dimension of either
-                    1D with shape `(num_order + 1)` or 2D with shape `(num_filters, num_order + 1)`.
-                    Lower delays coefficients are first, e.g. ``[b0, b1, b2, ...]``.
-                    Must be same size as a_coeffs (pad with 0's as necessary).
-                clamp: If ``True``, clamp the output signal to be in the range [-1, 1]
-                batching: inputs are batched or not
-
-            Returns:
-                Tensor: filtered waveform with dimension of `(..., num_filters, time)`
-            """
-            rank_zero_warn("torchaudio version is too slow, which may slow down the speed of SRMR metric on GPU.")
-            if batching is False:
-                return _lfilter(waveform, a_coeffs, b_coeffs, clamp)
-            outs = []
-            for b in range(waveform.shape[0]):
-                out = _lfilter(waveform[b], a_coeffs[b], b_coeffs[b], clamp)
-                outs.append(out)
-            out = torch.stack(outs, dim=0)
-            return out
-
+if _TORCHAUDIO_AVAILABEL and _TORCHAUDIO_GREATER_EQUAL_0_10:
+    from torchaudio.functional.filtering import lfilter
 else:
     lfilter = None
     __doctest_skip__ = ["speech_reverberation_modulation_energy_ratio"]
