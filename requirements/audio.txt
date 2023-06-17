@@ -5,3 +5,4 @@
 pesq @ git+https://github.com/ludlows/python-pesq
 pystoi <=0.3.3
 torchaudio
+gammatone @ https://github.com/detly/gammatone/archive/master.zip#egg=Gammatone
