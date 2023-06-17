@@ -43,9 +43,8 @@ if _TORCHAUDIO_AVAILABEL:
             clamp: bool = True,
             batching: bool = True,
         ) -> Tensor:
-            rank_zero_warn("torchaudio version is too slow, "
-                           "which may slow down the speed of SRMR metric on GPU.")
-            if batching == False:
+            rank_zero_warn("torchaudio version is too slow, " "which may slow down the speed of SRMR metric on GPU.")
+            if batching is False:
                 return _lfilter(waveform, a_coeffs, b_coeffs, clamp)
             else:
                 outs = []
@@ -54,6 +53,7 @@ if _TORCHAUDIO_AVAILABEL:
                     outs.append(out)
                 out = torch.stack(outs, dim=0)
                 return out
+
 else:
     lfilter = None
     __doctest_skip__ = ["speech_reverberation_modulation_energy_ratio"]
