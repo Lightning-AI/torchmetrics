@@ -5,7 +5,7 @@ https://github.com/andrewekhalel/sewar/blob/ac76e7bc75732fde40bb0d3908f4b6863400
 
 Reference: https://ieeexplore.ieee.org/abstract/document/1576816
 """
-from typing import Any, Literal, Optional, Tuple
+from typing import Any, Optional, Tuple
 
 from torch import Tensor, tensor
 
@@ -17,31 +17,25 @@ class VIF(Metric):
 
     def __init__(
             self,
-            reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
             sigma_n_sq: float = 2.0,
             data_range: Optional[Tuple[float, float]] = None,
             **kwargs: Any
     ):
         super().__init__(**kwargs)
-        valid_reduction = ("elementwise_mean", "sum", "none", None)
-        if reduction not in valid_reduction:
-            raise ValueError(f"Argument `reduction` must be one of {valid_reduction}, but got {reduction}")
 
         self.add_state("vif_score", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")
 
         self.sigma_n_sq = sigma_n_sq
         self.data_range = data_range
-        self.reduction = reduction
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         vif_score = visual_information_fidelity(preds=preds,
                                                 target=target,
                                                 data_range=self.data_range,
-                                                sigma_n_sq=self.sigma_n_sq,
-                                                reduction=self.reduction)
+                                                sigma_n_sq=self.sigma_n_sq)
         self.vif_score += vif_score
-        self.total += preds.size(1)
+        self.total += preds.size(0)
 
     def compute(self) -> Any:
         return self.vif_score / self.total
