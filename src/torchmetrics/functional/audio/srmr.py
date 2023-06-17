@@ -24,10 +24,36 @@ from torch import Tensor
 from torch.nn.functional import pad
 
 from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.imports import _GAMMATONE_AVAILABEL, _TORCHAUDIO_AVAILABEL
+from torchmetrics.utilities.imports import (
+    _GAMMATONE_AVAILABEL,
+    _TORCHAUDIO_AVAILABEL,
+    _TORCHAUDIO_GREATER_EQUAL_0_10,
+)
 
 if _TORCHAUDIO_AVAILABEL:
-    from torchaudio.functional.filtering import lfilter
+    if _TORCHAUDIO_GREATER_EQUAL_0_10:
+        from torchaudio.functional.filtering import lfilter
+    else:
+        from torchaudio.functional.filtering import lfilter as _lfilter
+
+        def lfilter(
+            waveform: Tensor,
+            a_coeffs: Tensor,
+            b_coeffs: Tensor,
+            clamp: bool = True,
+            batching: bool = True,
+        ) -> Tensor:
+            rank_zero_warn("torchaudio version is too slow, "
+                           "which may slow down the speed of SRMR metric on GPU.")
+            if batching == False:
+                return _lfilter(waveform, a_coeffs, b_coeffs, clamp)
+            else:
+                outs = []
+                for b in range(waveform.shape[0]):
+                    out = _lfilter(waveform[b], a_coeffs[b], b_coeffs[b], clamp)
+                    outs.append(out)
+                out = torch.stack(outs, dim=0)
+                return out
 else:
     lfilter = None
     __doctest_skip__ = ["speech_reverberation_modulation_energy_ratio"]
@@ -239,7 +265,11 @@ def speech_reverberation_modulation_energy_ratio(
 
     # norm values in preds to [-1, 1], as lfilter requires an input in this range
     max_vals = preds.abs().max(dim=-1, keepdim=True).values
-    val_norm = torch.where(max_vals > 1, max_vals, torch.tensor(1.0, dtype=max_vals.dtype))
+    val_norm = torch.where(
+        max_vals > 1,
+        max_vals,
+        torch.tensor(1.0, dtype=max_vals.dtype, device=max_vals.device),
+    )
     preds = preds / val_norm
 
     w_length_s = 0.256
