@@ -68,13 +68,12 @@ if _TORCHAUDIO_AVAILABEL:
             rank_zero_warn("torchaudio version is too slow, which may slow down the speed of SRMR metric on GPU.")
             if batching is False:
                 return _lfilter(waveform, a_coeffs, b_coeffs, clamp)
-            else:
-                outs = []
-                for b in range(waveform.shape[0]):
-                    out = _lfilter(waveform[b], a_coeffs[b], b_coeffs[b], clamp)
-                    outs.append(out)
-                out = torch.stack(outs, dim=0)
-                return out
+            outs = []
+            for b in range(waveform.shape[0]):
+                out = _lfilter(waveform[b], a_coeffs[b], b_coeffs[b], clamp)
+                outs.append(out)
+            out = torch.stack(outs, dim=0)
+            return out
 
 else:
     lfilter = None
