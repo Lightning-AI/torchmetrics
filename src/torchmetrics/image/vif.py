@@ -13,7 +13,9 @@ from torchmetrics.functional.image.vif import visual_information_fidelity
 
 
 class VIF(Metric):
-    def __init__(self, sigma_n_sq: float = 2.0, data_range: Optional[Tuple[float, float]] = None, **kwargs: Any) -> None:
+    def __init__(
+        self, sigma_n_sq: float = 2.0, data_range: Optional[Tuple[float, float]] = None, **kwargs: Any
+    ) -> None:
         super().__init__(**kwargs)
 
         self.add_state("vif_score", default=tensor(0.0), dist_reduce_fx="sum")
