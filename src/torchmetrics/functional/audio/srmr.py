@@ -16,7 +16,7 @@
 # the SRMRpy package for batched processing with pytorch
 
 from functools import lru_cache
-from math import ceil
+from math import ceil, pi
 from typing import Optional, Tuple
 
 import torch
@@ -76,14 +76,14 @@ def _compute_modulation_filterbank_and_cutoffs(
         a = torch.tensor([(1 + b0 + w0**2), (2 * w0**2 - 2), (1 - b0 + w0**2)], dtype=torch.float64)
         return torch.stack([b, a], dim=0)
 
-    mfb = torch.stack([_make_modulation_filter(w0, q) for w0 in 2 * torch.pi * cfs / fs], dim=0)
+    mfb = torch.stack([_make_modulation_filter(w0, q) for w0 in 2 * pi * cfs / fs], dim=0)
 
     def _calc_cutoffs(cfs: Tensor, fs: float, q: int) -> Tuple[Tensor, Tensor]:
         # Calculates cutoff frequencies (3 dB) for 2nd order bandpass
-        w0 = 2 * torch.pi * cfs / fs
+        w0 = 2 * pi * cfs / fs
         b0 = torch.tan(w0 / 2) / q
-        ll = cfs - (b0 * fs / (2 * torch.pi))
-        rr = cfs + (b0 * fs / (2 * torch.pi))
+        ll = cfs - (b0 * fs / (2 * pi))
+        rr = cfs + (b0 * fs / (2 * pi))
         return ll, rr
 
     cfs = cfs.to(device=device)
