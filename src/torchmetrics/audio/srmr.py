@@ -28,9 +28,9 @@ from torchmetrics.utilities.imports import (
 )
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-__doctest_requires__ = {"SpeechReverberationModulationEnergyRatio": ["torchaudio", "gammatone"]}
-
-if not (_MATPLOTLIB_AVAILABLE and _GAMMATONE_AVAILABEL and _TORCHAUDIO_AVAILABEL and _TORCHAUDIO_GREATER_EQUAL_0_10):
+if not (_GAMMATONE_AVAILABEL and _TORCHAUDIO_AVAILABEL and _TORCHAUDIO_GREATER_EQUAL_0_10):
+    __doctest_skip__ = ["SpeechReverberationModulationEnergyRatio", "SpeechReverberationModulationEnergyRatio.plot"]
+elif not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["SpeechReverberationModulationEnergyRatio.plot"]
 
 
