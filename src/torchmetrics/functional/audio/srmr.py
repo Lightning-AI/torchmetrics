@@ -219,11 +219,11 @@ def speech_reverberation_modulation_energy_ratio(
         >>> speech_reverberation_modulation_energy_ratio(preds, 8000)
         tensor([0.3354], dtype=torch.float64)
     """
-    if not _TORCHAUDIO_AVAILABEL or not _GAMMATONE_AVAILABEL:
+    if not _TORCHAUDIO_AVAILABEL or not _TORCHAUDIO_GREATER_EQUAL_0_10 or not _GAMMATONE_AVAILABEL:
         raise ModuleNotFoundError(
             "speech_reverberation_modulation_energy_ratio requires you to have `gammatone` and"
-            " `torchaudio` installed. Either install as ``pip install torchmetrics[audio]`` or "
-            "``pip install torchaudio`` and ``pip install git+https://github.com/detly/gammatone``"
+            " `torchaudio>=0.10` installed. Either install as ``pip install torchmetrics[audio]`` or "
+            "``pip install torchaudio>=0.10`` and ``pip install git+https://github.com/detly/gammatone``"
         )
     _srmr_arg_validate(
         fs=fs,

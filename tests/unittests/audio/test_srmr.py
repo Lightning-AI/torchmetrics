@@ -20,6 +20,7 @@ from srmrpy import srmr as srmrpy_srmr
 from torch import Tensor
 from torchmetrics.audio import SpeechReverberationModulationEnergyRatio
 from torchmetrics.functional.audio import speech_reverberation_modulation_energy_ratio
+from torchmetrics.utilities.imports import _TORCHAUDIO_GREATER_EQUAL_0_10
 
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -62,6 +63,7 @@ class _SpeechReverberationModulationEnergyRatioCheat(SpeechReverberationModulati
         super().update(preds=preds)
 
 
+@pytest.mark.skipif(not _TORCHAUDIO_GREATER_EQUAL_0_10, reason="torchaudio>=0.10.0 is required")
 @pytest.mark.parametrize(
     "preds, fs, fast, norm",
     [
