@@ -29,10 +29,10 @@ from torchmetrics.audio import (
     ShortTimeObjectiveIntelligibility,
     SignalDistortionRatio,
     SignalNoiseRatio,
-    SpeechReverberationModulationEnergyRatio,
 )
 from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
 from torchmetrics.audio.pit import PermutationInvariantTraining
+from torchmetrics.audio.srmr import SpeechReverberationModulationEnergyRatio
 from torchmetrics.classification import (
     BinaryAccuracy,
     BinaryAUROC,
