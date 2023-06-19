@@ -13,9 +13,9 @@
 # limitations under the License.
 from functools import partial
 
+import numpy as np
 import pytest
 import torch
-from statsmodels.stats.inter_rater import aggregate_raters
 from statsmodels.stats.inter_rater import fleiss_kappa as sk_fleiss_kappa
 from torchmetrics.functional.nominal.fleiss_kappa import fleiss_kappa
 from torchmetrics.nominal.fleiss_kappa import FleissKappa
@@ -28,10 +28,14 @@ NUM_CATEGORIES = NUM_CLASSES
 
 
 def _compare_func(preds, target, mode):
-    if mode == "counts":
+    if mode == "probs":
+        counts = np.zeros((preds.shape[0], preds.shape[1]))
         preds = preds.argmax(dim=1)
-        target = target.argmax(dim=1)
-    return sk_fleiss_kappa(aggregate_raters(preds))
+        for participant in range(preds.shape[0]):
+            for rater in range(preds.shape[1]):
+                counts[participant, preds[participant, rater]] += 1
+        return sk_fleiss_kappa(counts)
+    return sk_fleiss_kappa(preds)
 
 
 def wrapped_fleiss_kappa(preds, target, mode):
@@ -91,11 +95,10 @@ class TestFleissKappa(MetricTester):
 
     def test_fleiss_kappa_differentiability(self, preds, target, mode):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        metric_args = {"num_classes": NUM_CLASSES}
         self.run_differentiability_test(
             preds,
             target,
             metric_module=WrappedFleissKappa,
             metric_functional=wrapped_fleiss_kappa,
-            metric_args=metric_args,
+            metric_args={"mode": mode},
         )

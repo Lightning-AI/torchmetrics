@@ -28,6 +28,7 @@ class FleissKappa(Metric):
         super().__init__(**kwargs)
         if mode not in ["counts", "probs"]:
             raise ValueError("Argument ``mode`` must be one of 'counts' or 'probs'.")
+        self.mode = mode
         self.add_state("counts", default=[], dist_reduce_fx="cat")
 
     def update(self, ratings: Tensor) -> None:
