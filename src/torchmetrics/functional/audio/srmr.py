@@ -151,6 +151,13 @@ def _erb_filterbank(wave: Tensor, coefs: Tensor) -> Tensor:
 
 
 def _normalize_energy(energy: Tensor, drange: float = 30.0) -> Tensor:
+    """Normalize energy to a dynamic range of 30 dB.
+
+    Args:
+        energy: shape [B, N_filters, 8, n_frames]
+        drange: dynamic range in dB
+
+    """
     peak_energy = torch.mean(energy, dim=1, keepdim=True).max(dim=2, keepdim=True).values
     peak_energy = peak_energy.max(dim=3, keepdim=True).values
     min_energy = peak_energy * 10.0 ** (-drange / 10.0)
@@ -160,6 +167,7 @@ def _normalize_energy(energy: Tensor, drange: float = 30.0) -> Tensor:
 
 
 def _cal_srmr_score(bw: Tensor, avg_energy: Tensor, cutoffs: Tensor) -> Tensor:
+    """Calculate srmr score."""
     if (cutoffs[4] <= bw) and (cutoffs[5] > bw):
         kstar = 5
     elif (cutoffs[5] <= bw) and (cutoffs[6] > bw):
@@ -168,6 +176,8 @@ def _cal_srmr_score(bw: Tensor, avg_energy: Tensor, cutoffs: Tensor) -> Tensor:
         kstar = 7
     elif cutoffs[7] <= bw:
         kstar = 8
+    else:
+        raise ValueError("Something wrong with the cutoffs compared to bw values.")
     return torch.sum(avg_energy[:, :4]) / torch.sum(avg_energy[:, 4:kstar])
 
 
