@@ -66,7 +66,8 @@ def _jaccard_index_reduce(
         return confmat[1, 1] / (confmat[0, 1] + confmat[1, 0] + confmat[1, 1])
 
     ignore_index_cond = ignore_index is not None and 0 <= ignore_index <= confmat.shape[0]
-    if confmat.ndim == 3:  # multilabel
+    multilabel = confmat.ndim == 3
+    if multilabel:
         num = confmat[:, 1, 1]
         denom = confmat[:, 1, 1] + confmat[:, 0, 1] + confmat[:, 1, 0]
     else:  # multiclass
@@ -87,6 +88,8 @@ def _jaccard_index_reduce(
         weights = torch.ones_like(jaccard)
         if ignore_index_cond:
             weights[ignore_index] = 0.0
+        if not multilabel:
+            weights[confmat.sum(1) + confmat.sum(0) == 0] = 0.0
     return ((weights * jaccard) / weights.sum()).sum()
 
 

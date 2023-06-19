@@ -383,7 +383,9 @@ class MultilabelSpecificity(MultilabelStatScores):
     def compute(self) -> Tensor:
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
-        return _specificity_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
+        return _specificity_reduce(
+            tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
+        )
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
