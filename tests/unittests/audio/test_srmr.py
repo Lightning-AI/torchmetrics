@@ -18,8 +18,8 @@ import pytest
 import torch
 from srmrpy import srmr as srmrpy_srmr
 from torch import Tensor
-from torchmetrics.audio import SpeechReverberationModulationEnergyRatio
-from torchmetrics.functional.audio import speech_reverberation_modulation_energy_ratio
+from torchmetrics.audio.srmr import SpeechReverberationModulationEnergyRatio
+from torchmetrics.functional.audio.srmr import speech_reverberation_modulation_energy_ratio
 from torchmetrics.utilities.imports import _TORCHAUDIO_GREATER_EQUAL_0_10
 
 from unittests.helpers import seed_all
