@@ -60,7 +60,15 @@ def _fleiss_kappa_compute(counts: Tensor) -> torch.Tensor:
 
 
 def fleiss_kappa(ratings: Tensor, mode: Literal["counts", "probs"] = "counts") -> Tensor:
-    """Calculatees Fleiss Kappa.
+    r"""Calculatees `Fleiss kappa`_ a statistical measure for inter agreement between raters.
+
+    .. math::
+        \kappa = \frac{\bar{p} - \bar{p_e}}{1 - \bar{p_e}}
+
+    where :math:`\bar{p}` is the mean of the agreement probability over all raters and :math:`\bar{p_e}` is the mean
+    agreement probability over all raters if they were randomly assigned. If the raters are in complete agreement then
+    the score 1 is returned, if there is no agreement among the raters (other than what would be expected by chance)
+    then a score smaller than 0 is returned.
 
     Args:
         ratings: Ratings of shape [n_samples, n_categories] or [n_samples, n_categories, n_raters] depedenent on `mode`.

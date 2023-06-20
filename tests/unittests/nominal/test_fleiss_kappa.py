@@ -51,12 +51,21 @@ class WrappedFleissKappa(FleissKappa):
         super().update(preds)
 
 
+def _random_counts(high, size):
+    """Generate random counts matrix that is fully ranked. Interface is similar to torch.randint."""
+    x = torch.randint(high=high, size=size)
+    x_sum = x.sum(-1)
+    x_total = x_sum.max()
+    x[:, :, -1] = x_total - (x_sum - x[:, :, -1])
+    return x
+
+
 @pytest.mark.parametrize(
     "preds, target, mode",
     [  # target is not used in any of the functions
         (
-            torch.randint(high=NUM_RATERS, size=(NUM_BATCHES, BATCH_SIZE, NUM_CATEGORIES)),
-            torch.randint(high=NUM_RATERS, size=(NUM_BATCHES, BATCH_SIZE, NUM_CATEGORIES)),
+            _random_counts(high=NUM_RATERS, size=(NUM_BATCHES, BATCH_SIZE, NUM_CATEGORIES)),
+            _random_counts(high=NUM_RATERS, size=(NUM_BATCHES, BATCH_SIZE, NUM_CATEGORIES)),
             "counts",
         ),
         (
