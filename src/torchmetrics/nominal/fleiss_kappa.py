@@ -39,9 +39,9 @@ class FleissKappa(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``ratings`` (:class:`~torch.Tensor`): Ratings of shape [n_samples, n_categories] or [n_samples, n_categories,
-      n_raters] depedenent on `mode`. If `mode` is `counts`, `ratings` must be integer and contain the number of raters
-      that chose each category. If `mode` is `probs`, `ratings` must be floating point and contain the probability/
+    - ``ratings`` (:class:`~torch.Tensor`): Ratings of shape ``[n_samples, n_categories]`` or ``[n_samples, n_categories,
+      n_raters]`` depedenent on ``mode``. If ``mode`` is ``counts``, ``ratings`` must be integer and contain the number of raters
+      that chose each category. If ``mode`` is ``probs``, ``ratings`` must be floating point and contain the probability/
       logits that each rater chose each category.
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
