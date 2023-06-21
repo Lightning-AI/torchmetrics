@@ -82,7 +82,7 @@ repos:
           - flake8-bugbear
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.260
+    rev: v0.0.274
     hooks:
       - id: ruff
         args: ["--fix"]
