@@ -330,7 +330,7 @@ class MeanAveragePrecision(Metric):
             self.groundtruths.append(groundtruths)
             self.groundtruth_labels.append(item["labels"])
             self.groundtruth_crowds.append(item.get("iscrowd", torch.zeros_like(item["labels"])))
-            self.groundtruth_area.append(item.get("area", -1 * torch.zeros_like(item["labels"])))
+            self.groundtruth_area.append(item.get("area", torch.zeros_like(item["labels"])))
 
     def compute(self) -> dict:
         """Computes the metric."""
@@ -359,7 +359,7 @@ class MeanAveragePrecision(Metric):
         if self.class_metrics:
             map_per_class_list = []
             mar_100_per_class_list = []
-            for class_id in torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist():
+            for class_id in self._get_classes():
                 coco_eval.params.catIds = [class_id]
                 with contextlib.redirect_stdout(io.StringIO()):
                     coco_eval.evaluate()
@@ -469,21 +469,21 @@ class MeanAveragePrecision(Metric):
             name = "boxes" if iou_type == "bbox" else "masks"
             batched_preds.append(
                 {
-                    name: torch.tensor(preds[key]["boxes"])
+                    name: torch.tensor(np.array(preds[key]["boxes"]), dtype=torch.float32)
                     if iou_type == "bbox"
-                    else torch.tensor(preds[key]["masks"]),
-                    "scores": torch.tensor(preds[key]["scores"]),
-                    "labels": torch.tensor(preds[key]["labels"]),
+                    else torch.tensor(np.array(preds[key]["masks"]), dtype=torch.uint8),
+                    "scores": torch.tensor(preds[key]["scores"], dtype=torch.float32),
+                    "labels": torch.tensor(preds[key]["labels"], dtype=torch.int32),
                 }
             )
             batched_target.append(
                 {
-                    name: torch.tensor(target[key]["boxes"])
+                    name: torch.tensor(target[key]["boxes"], dtype=torch.float32)
                     if iou_type == "bbox"
-                    else torch.tensor(target[key]["masks"]),
-                    "labels": torch.tensor(target[key]["labels"]),
-                    "iscrowd": torch.tensor(target[key]["iscrowd"]),
-                    "area": torch.tensor(target[key]["area"]),
+                    else torch.tensor(np.array(target[key]["masks"]), dtype=torch.uint8),
+                    "labels": torch.tensor(target[key]["labels"], dtype=torch.int32),
+                    "iscrowd": torch.tensor(target[key]["iscrowd"], dtype=torch.int32),
+                    "area": torch.tensor(target[key]["area"], dtype=torch.float32),
                 }
             )
 

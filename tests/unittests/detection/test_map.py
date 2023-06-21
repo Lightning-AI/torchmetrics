@@ -53,17 +53,13 @@ def _generate_coco_inputs(iou_type):
 _coco_bbox_input = _generate_coco_inputs("bbox")
 _coco_segm_input = _generate_coco_inputs("segm")
 
-with contextlib.redirect_stdout(io.StringIO()):
-    gt = COCO(_DETECTION_VAL)
-    dt_box = gt.loadRes(_DETECTION_BBOX)
-    dt_segm = gt.loadRes(_DETECTION_SEGM)
-
 
 def _compare_again_coco_fn(preds, target, iou_type, class_metrics=True):
     """Taken from https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoEvalDemo.ipynb."""
-    dt = dt_box if iou_type == "bbox" else dt_segm
-    coco_eval = COCOeval(gt, dt, iou_type)
     with contextlib.redirect_stdout(io.StringIO()):
+        gt = COCO(_DETECTION_VAL)
+        dt = gt.loadRes(_DETECTION_BBOX) if iou_type == "bbox" else gt.loadRes(_DETECTION_SEGM)
+        coco_eval = COCOeval(gt, dt, iou_type)
         coco_eval.evaluate()
         coco_eval.accumulate()
         coco_eval.summarize()
@@ -116,6 +112,7 @@ def _compare_again_coco_fn(preds, target, iou_type, class_metrics=True):
 class TestMAPUsingCOCOReference(MetricTester):
     """Test map metric on the reference coco data."""
 
+    # the aggregated metrics pass with atol < 1e-2, but class_metrics=True only passes with atol=1e-1
     atol = 1e-1
 
     def test_map(self, iou_type, ddp):

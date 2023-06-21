@@ -149,7 +149,12 @@ def _class_test(
     for i in range(rank, num_batches, world_size):
         batch_kwargs_update = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
-        batch_result = metric(preds[i], target[i], **batch_kwargs_update)
+        if (dist_sync_on_step and check_dist_sync_on_step == 0 and rank == 0) or (
+            check_batch and not dist_sync_on_step
+        ):
+            batch_result = metric(preds[i], target[i], **batch_kwargs_update)
+        else:
+            metric.update(preds[i], target[i], **batch_kwargs_update)
 
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
             if isinstance(preds, Tensor):
