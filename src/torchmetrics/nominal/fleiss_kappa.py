@@ -127,7 +127,7 @@ class FleissKappa(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.nominal import PearsonsContingencyCoefficient
+            >>> from torchmetrics.nominal import FleissKappa
             >>> metric = FleissKappa(mode="probs")
             >>> values = [ ]
             >>> for _ in range(10):
