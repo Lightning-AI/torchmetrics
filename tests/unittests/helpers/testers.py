@@ -149,12 +149,8 @@ def _class_test(
     for i in range(rank, num_batches, world_size):
         batch_kwargs_update = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
-        if (dist_sync_on_step and check_dist_sync_on_step == 0 and rank == 0) or (
-            check_batch and not dist_sync_on_step
-        ):
-            batch_result = metric(preds[i], target[i], **batch_kwargs_update)
-        else:
-            metric.update(preds[i], target[i], **batch_kwargs_update)
+        # compute batch stats and aggregate for global stats
+        batch_result = metric(preds[i], target[i], **batch_kwargs_update)
 
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
             if isinstance(preds, Tensor):
@@ -376,6 +372,7 @@ class MetricTester:
         check_batch: bool = True,
         fragment_kwargs: bool = False,
         check_scriptable: bool = True,
+        atol: Optional[float] = None,
         **kwargs_update: Any,
     ):
         """Core method that should be used for testing class. Call this inside testing methods.
@@ -394,9 +391,12 @@ class MetricTester:
                 calculated across devices for each batch (and not just at the end)
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
             check_scriptable: bool indicating if metric should also be tested if it can be scripted
+            atol: absolute tolerance used for comparison of results, if None will use self.atol
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
+
         """
+        atol = atol or self.atol
         metric_args = metric_args or {}
         if ddp:
             if sys.platform == "win32":
@@ -413,7 +413,7 @@ class MetricTester:
                     metric_args=metric_args,
                     check_dist_sync_on_step=check_dist_sync_on_step,
                     check_batch=check_batch,
-                    atol=self.atol,
+                    atol=atol,
                     fragment_kwargs=fragment_kwargs,
                     check_scriptable=check_scriptable,
                     **kwargs_update,
@@ -434,7 +434,7 @@ class MetricTester:
                 metric_args=metric_args,
                 check_dist_sync_on_step=check_dist_sync_on_step,
                 check_batch=check_batch,
-                atol=self.atol,
+                atol=atol,
                 device=device,
                 fragment_kwargs=fragment_kwargs,
                 check_scriptable=check_scriptable,

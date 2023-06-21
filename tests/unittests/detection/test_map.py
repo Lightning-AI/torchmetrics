@@ -54,12 +54,18 @@ _coco_bbox_input = _generate_coco_inputs("bbox")
 _coco_segm_input = _generate_coco_inputs("segm")
 
 
-def _compare_again_coco_fn(preds, target, iou_type, class_metrics=True):
+def _compare_again_coco_fn(preds, target, iou_type, iou_thresholds=None, rec_thresholds=None, class_metrics=True):
     """Taken from https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoEvalDemo.ipynb."""
     with contextlib.redirect_stdout(io.StringIO()):
         gt = COCO(_DETECTION_VAL)
         dt = gt.loadRes(_DETECTION_BBOX) if iou_type == "bbox" else gt.loadRes(_DETECTION_SEGM)
+
         coco_eval = COCOeval(gt, dt, iou_type)
+        if iou_thresholds is not None:
+            coco_eval.params.iouThrs = np.array(iou_thresholds, dtype=np.float64)
+        if rec_thresholds is not None:
+            coco_eval.params.recThrs = np.array(rec_thresholds, dtype=np.float64)
+
         coco_eval.evaluate()
         coco_eval.accumulate()
         coco_eval.summarize()
@@ -112,11 +118,35 @@ def _compare_again_coco_fn(preds, target, iou_type, class_metrics=True):
 class TestMAPUsingCOCOReference(MetricTester):
     """Test map metric on the reference coco data."""
 
-    # the aggregated metrics pass with atol < 1e-2, but class_metrics=True only passes with atol=1e-1
-    atol = 1e-1
-
-    def test_map(self, iou_type, ddp):
+    @pytest.mark.parametrize("iou_thresholds", [None, [0.25, 0.5, 0.75]])
+    @pytest.mark.parametrize("rec_thresholds", [None, [0.25, 0.5, 0.75]])
+    def test_map(self, iou_type, iou_thresholds, rec_thresholds, ddp):
         """Test modular implementation for correctness."""
+        preds, target = _coco_bbox_input if iou_type == "bbox" else _coco_segm_input
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=MeanAveragePrecision,
+            reference_metric=partial(
+                _compare_again_coco_fn,
+                iou_type=iou_type,
+                iou_thresholds=iou_thresholds,
+                rec_thresholds=rec_thresholds,
+                class_metrics=False,
+            ),
+            metric_args={
+                "iou_type": iou_type,
+                "iou_thresholds": iou_thresholds,
+                "rec_thresholds": rec_thresholds,
+                "class_metrics": False,
+            },
+            check_batch=False,
+            atol=1e-2,
+        )
+
+    def test_map_classwise(self, iou_type, ddp):
+        """Test modular implementation for correctness with classwise=True. Needs bigger atol to be stable."""
         preds, target = _coco_bbox_input if iou_type == "bbox" else _coco_segm_input
         self.run_class_metric_test(
             ddp=ddp,
@@ -126,6 +156,7 @@ class TestMAPUsingCOCOReference(MetricTester):
             reference_metric=partial(_compare_again_coco_fn, iou_type=iou_type, class_metrics=True),
             metric_args={"iou_type": iou_type, "class_metrics": True},
             check_batch=False,
+            atol=1e-1,
         )
 
 
