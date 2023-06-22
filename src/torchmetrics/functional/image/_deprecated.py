@@ -239,7 +239,6 @@ def _universal_image_quality_index(
     kernel_size: Sequence[int] = (11, 11),
     sigma: Sequence[float] = (1.5, 1.5),
     reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
-    data_range: Optional[float] = None,
 ) -> Tensor:
     """Wrapper for deprecated import.
 
@@ -251,5 +250,9 @@ def _universal_image_quality_index(
     """
     _deprecated_root_import_func("universal_image_quality_index", "image")
     return universal_image_quality_index(
-        preds=preds, target=target, kernel_size=kernel_size, sigma=sigma, reduction=reduction, data_range=data_range
+        preds=preds,
+        target=target,
+        kernel_size=kernel_size,
+        sigma=sigma,
+        reduction=reduction,
     )

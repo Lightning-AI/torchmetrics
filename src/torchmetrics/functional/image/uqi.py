@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Sequence, Tuple, Union
+from typing import Optional, Sequence, Tuple
 
 import torch
 from torch import Tensor
@@ -50,8 +50,7 @@ def _uqi_compute(
     kernel_size: Sequence[int] = (11, 11),
     sigma: Sequence[float] = (1.5, 1.5),
     reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
-    data_range: Optional[float] = None,
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+) -> Tensor:
     """Compute Universal Image Quality Index.
 
     Args:
@@ -64,8 +63,6 @@ def _uqi_compute(
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
-
-        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
 
     Example:
         >>> preds = torch.rand([16, 1, 16, 16])
@@ -85,9 +82,6 @@ def _uqi_compute(
 
     if any(y <= 0 for y in sigma):
         raise ValueError(f"Expected `sigma` to have positive number. Got {sigma}.")
-
-    if data_range is None:
-        data_range = max(preds.max() - preds.min(), target.max() - target.min())
 
     device = preds.device
     channel = preds.size(1)
@@ -126,7 +120,6 @@ def universal_image_quality_index(
     kernel_size: Sequence[int] = (11, 11),
     sigma: Sequence[float] = (1.5, 1.5),
     reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
-    data_range: Optional[float] = None,
 ) -> Tensor:
     """Universal Image Quality Index.
 
@@ -140,8 +133,6 @@ def universal_image_quality_index(
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
-
-        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
 
     Return:
         Tensor with UniversalImageQualityIndex score
@@ -174,4 +165,4 @@ def universal_image_quality_index(
         doi: 10.1109/TIP.2003.819861.
     """
     preds, target = _uqi_update(preds, target)
-    return _uqi_compute(preds, target, kernel_size, sigma, reduction, data_range)
+    return _uqi_compute(preds, target, kernel_size, sigma, reduction)

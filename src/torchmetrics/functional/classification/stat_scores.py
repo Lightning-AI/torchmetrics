@@ -120,7 +120,7 @@ def _binary_stat_scores_update(
     multidim_average: Literal["global", "samplewise"] = "global",
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """Compute the statistics."""
-    sum_dim = [0, 1] if multidim_average == "global" else 1
+    sum_dim = [0, 1] if multidim_average == "global" else [1]
     tp = ((target == preds) & (target == 1)).sum(sum_dim).squeeze()
     fn = ((target != preds) & (target == 1)).sum(sum_dim).squeeze()
     fp = ((target != preds) & (target == 0)).sum(sum_dim).squeeze()
@@ -1103,4 +1103,4 @@ def stat_scores(
         return multilabel_stat_scores(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    return None
+    raise ValueError(f"Unsupported task `{task}`")
