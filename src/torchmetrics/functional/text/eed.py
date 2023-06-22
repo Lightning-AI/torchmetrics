@@ -211,9 +211,7 @@ def _preprocess_en(sentence: str) -> str:
         sentence = sentence.replace(pattern, replacement)
 
     # add space to beginning and end of string
-    sentence = " " + sentence + " "
-
-    return sentence
+    return " " + sentence + " "
 
 
 def _preprocess_ja(sentence: str) -> str:

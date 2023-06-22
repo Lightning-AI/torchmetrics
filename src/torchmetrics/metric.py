@@ -16,7 +16,7 @@ import inspect
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, Dict, Generator, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, ClassVar, Dict, Generator, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -77,8 +77,8 @@ class Metric(Module, ABC):
             - compute_with_cache: If results from ``compute`` should be cached. Default is ``False``
     """
 
-    __jit_ignored_attributes__ = ["device"]
-    __jit_unused_properties__ = [
+    __jit_ignored_attributes__: ClassVar[List[str]] = ["device"]
+    __jit_unused_properties__: ClassVar[List[str]] = [
         "is_differentiable",
         "higher_is_better",
         "plot_lower_bound",

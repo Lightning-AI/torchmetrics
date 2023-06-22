@@ -59,15 +59,15 @@ def _class_test(
     metric_class: Metric,
     ref_metric: Callable,
     dist_sync_on_step: bool,
-    metric_args: dict = None,
+    metric_args: Optional[dict] = None,
     check_dist_sync_on_step: bool = True,
     check_batch: bool = True,
     atol: float = 1e-8,
     device: str = "cpu",
     fragment_kwargs: bool = False,
     check_scriptable: bool = True,
-    key: str = None,
-    ignore_order: bool = None,
+    key: Optional[str] = None,
+    ignore_order: Optional[bool] = None,
     **kwargs_update: Any,
 ):
     """Comparison between class metric and reference metric.
@@ -177,11 +177,11 @@ def _functional_test(
     targets: TEXT_METRIC_INPUT,
     metric_functional: Callable,
     ref_metric: Callable,
-    metric_args: dict = None,
+    metric_args: Optional[dict] = None,
     atol: float = 1e-8,
     device: str = "cpu",
     fragment_kwargs: bool = False,
-    key: str = None,
+    key: Optional[str] = None,
     **kwargs_update: Any,
 ):
     """Comparison between functional metric and reference metric.
@@ -266,9 +266,9 @@ class TextTester(MetricTester):
         targets: TEXT_METRIC_INPUT,
         metric_functional: Callable,
         reference_metric: Callable,
-        metric_args: dict = None,
+        metric_args: Optional[dict] = None,
         fragment_kwargs: bool = False,
-        key: str = None,
+        key: Optional[str] = None,
         **kwargs_update: Any,
     ):
         """Core method that should be used for testing functions. Call this inside testing method.
@@ -308,13 +308,13 @@ class TextTester(MetricTester):
         metric_class: Metric,
         reference_metric: Callable,
         dist_sync_on_step: bool = False,
-        metric_args: dict = None,
+        metric_args: Optional[dict] = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,
         fragment_kwargs: bool = False,
         check_scriptable: bool = True,
-        key: str = None,
-        ignore_order: bool = None,
+        key: Optional[str] = None,
+        ignore_order: Optional[bool] = None,
         **kwargs_update: Any,
     ):
         """Core method that should be used for testing class. Call this inside testing methods.
@@ -394,7 +394,7 @@ class TextTester(MetricTester):
         targets: TEXT_METRIC_INPUT,
         metric_module: Metric,
         metric_functional: Callable,
-        metric_args: dict = None,
+        metric_args: Optional[dict] = None,
         **kwargs_update: Any,
     ) -> None:
         """Test if a metric can be used with half precision tensors on cpu.
@@ -419,7 +419,7 @@ class TextTester(MetricTester):
         targets: TEXT_METRIC_INPUT,
         metric_module: Metric,
         metric_functional: Callable,
-        metric_args: dict = None,
+        metric_args: Optional[dict] = None,
         **kwargs_update: Any,
     ) -> None:
         """Test if a metric can be used with half precision tensors on gpu.
@@ -444,8 +444,8 @@ class TextTester(MetricTester):
         targets: TEXT_METRIC_INPUT,
         metric_module: Metric,
         metric_functional: Callable,
-        metric_args: dict = None,
-        key: str = None,
+        metric_args: Optional[dict] = None,
+        key: Optional[str] = None,
     ) -> None:
         """Test if a metric is differentiable or not.
 

@@ -14,7 +14,7 @@
 # this is just a bypass for this module name collision with build-in one
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, Dict, Hashable, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Hashable, Iterable, Iterator, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -187,7 +187,7 @@ class MetricCollection(ModuleDict):
         """
         # Use compute groups if already initialized and checked
         if self._groups_checked:
-            for _, cg in self._groups.items():
+            for cg in self._groups.values():
                 # only update the first member
                 m0 = getattr(self, cg[0])
                 m0.update(*args, **m0._filter_kwargs(**kwargs))
@@ -196,7 +196,7 @@ class MetricCollection(ModuleDict):
                 self._compute_groups_create_state_ref()
                 self._state_is_copy = False
         else:  # the first update always do per metric to form compute groups
-            for _, m in self.items(keep_base=True, copy_state=False):
+            for m in self.values(copy_state=False):
                 m_kwargs = m._filter_kwargs(**kwargs)
                 m.update(*args, **m_kwargs)
 
@@ -274,7 +274,7 @@ class MetricCollection(ModuleDict):
                 of just passed by reference
         """
         if not self._state_is_copy:
-            for _, cg in self._groups.items():
+            for cg in self._groups.values():
                 m0 = getattr(self, cg[0])
                 for i in range(1, len(cg)):
                     mi = getattr(self, cg[i])
@@ -327,7 +327,7 @@ class MetricCollection(ModuleDict):
 
     def reset(self) -> None:
         """Call reset for each metric sequentially."""
-        for _, m in self.items(keep_base=True, copy_state=False):
+        for m in self.values(copy_state=False):
             m.reset()
         if self._enable_compute_groups and self._groups_checked:
             # reset state reference
@@ -350,7 +350,7 @@ class MetricCollection(ModuleDict):
 
     def persistent(self, mode: bool = True) -> None:
         """Change if metric states should be saved to its state_dict after initialization."""
-        for _, m in self.items(keep_base=True, copy_state=False):
+        for m in self.values(copy_state=False):
             m.persistent(mode)
 
     def add_metrics(
@@ -459,6 +459,10 @@ class MetricCollection(ModuleDict):
             od[self._set_name(k)] = v
         return od
 
+    def __iter__(self) -> Iterator[str]:
+        """Return an iterator over the keys of the MetricDict."""
+        return iter(self.keys())
+
     # TODO: redefine this as native python dict
     def keys(self, keep_base: bool = False) -> Iterable[Hashable]:
         r"""Return an iterable of the ModuleDict key.
@@ -525,7 +529,7 @@ class MetricCollection(ModuleDict):
         Arguments:
             dst_type (type or string): the desired type.
         """
-        for _, m in self.items(keep_base=True, copy_state=False):
+        for m in self.values(copy_state=False):
             m.set_dtype(dst_type)
         return self
 
