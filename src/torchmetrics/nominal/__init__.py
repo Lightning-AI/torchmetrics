@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.nominal.cramers import CramersV
+from torchmetrics.nominal.fleiss_kappa import FleissKappa
 from torchmetrics.nominal.pearson import PearsonsContingencyCoefficient
 from torchmetrics.nominal.theils_u import TheilsU
 from torchmetrics.nominal.tschuprows import TschuprowsT
 
 __all__ = [
     "CramersV",
+    "FleissKappa",
     "PearsonsContingencyCoefficient",
     "TheilsU",
     "TschuprowsT",
