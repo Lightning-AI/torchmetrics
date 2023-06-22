@@ -41,7 +41,7 @@ def _fleiss_kappa_update(ratings: Tensor, mode: Literal["counts", "probs"] = "co
     return ratings
 
 
-def _fleiss_kappa_compute(counts: Tensor) -> torch.Tensor:
+def _fleiss_kappa_compute(counts: Tensor) -> Tensor:
     """Computes fleiss kappa from counts matrix.
 
     Args:
