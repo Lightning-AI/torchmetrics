@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any, ClassVar, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -101,7 +101,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     fake_features: List[Tensor]
 
     # due to the use of named tuple in the backbone the net variable cannot be scripted
-    __jit_ignored_attributes__ = ["net"]
+    __jit_ignored_attributes__: ClassVar[List[str]] = ["net"]
 
     def __init__(
         self,
