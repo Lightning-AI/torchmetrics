@@ -193,12 +193,6 @@ def test_metric_collection_prefix_postfix_args(prefix, postfix):
     for k in new_metric_collection.keys(keep_base=False):
         assert "new_prefix_" in k
 
-    for k in new_metric_collection:
-        assert "new_prefix_" not in k
-
-    for k in new_metric_collection.keys(keep_base=True):
-        assert "new_prefix_" not in k
-
     for k in new_metric_collection.keys(keep_base=True):
         assert "new_prefix_" not in k
 
