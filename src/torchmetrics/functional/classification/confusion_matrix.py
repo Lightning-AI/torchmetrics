@@ -99,7 +99,7 @@ def _binary_confusion_matrix_tensor_validation(
     if check:
         raise RuntimeError(
             f"Detected the following values in `target`: {unique_values} but expected only"
-            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+            f" the following values {[0, 1] if ignore_index is None else [ignore_index]}."
         )
 
     # If preds is label tensor, also check that it only contains {0,1} values
@@ -457,7 +457,7 @@ def _multilabel_confusion_matrix_tensor_validation(
     if check:
         raise RuntimeError(
             f"Detected the following values in `target`: {unique_values} but expected only"
-            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+            f" the following values {[0, 1] if ignore_index is None else [ignore_index]}."
         )
 
     # If preds is label tensor, also check that it only contains [0,1] values
