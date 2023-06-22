@@ -120,14 +120,13 @@ def _uniform_filter(inputs: Tensor, window_size: int) -> Tensor:
     inputs = _reflection_pad_2d(inputs, window_size // 2, window_size % 2)
     kernel_weight, kernel_bias = _uniform_weight_bias_conv2d(inputs, window_size)
     # Iterate over channels
-    inputs = torch.cat(
+    return torch.cat(
         [
             F.conv2d(inputs[:, channel].unsqueeze(1), kernel_weight, kernel_bias, padding=0)
             for channel in range(inputs.shape[1])
         ],
         dim=1,
     )
-    return inputs
 
 
 def _gaussian_kernel_3d(

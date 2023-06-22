@@ -381,7 +381,7 @@ class MatthewsCorrCoef:
 
     def __new__(
         cls,
-        task: Literal["binary", "multiclass", "multilabel"] = None,
+        task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
@@ -402,4 +402,4 @@ class MatthewsCorrCoef:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelMatthewsCorrCoef(num_labels, threshold, **kwargs)
-        return None
+        raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

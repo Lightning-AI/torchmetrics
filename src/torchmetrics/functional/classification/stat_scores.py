@@ -69,7 +69,7 @@ def _binary_stat_scores_tensor_validation(
     if check:
         raise RuntimeError(
             f"Detected the following values in `target`: {unique_values} but expected only"
-            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+            f" the following values {[0, 1] if ignore_index is None else [ignore_index]}."
         )
 
     # If preds is label tensor, also check that it only contains [0,1] values
@@ -616,7 +616,7 @@ def _multilabel_stat_scores_tensor_validation(
     if check:
         raise RuntimeError(
             f"Detected the following values in `target`: {unique_values} but expected only"
-            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+            f" the following values {[0, 1] if ignore_index is None else [ignore_index]}."
         )
 
     # If preds is label tensor, also check that it only contains [0,1] values
@@ -899,7 +899,7 @@ def _stat_scores_update(
     threshold: float = 0.5,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
-    mode: DataType = None,
+    mode: Optional[DataType] = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """Calculate true positives, false positives, true negatives, false negatives.
 
