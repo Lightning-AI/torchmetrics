@@ -427,9 +427,7 @@ def _roc_update(
     num_classes: Optional[int] = None,
     pos_label: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, int, Optional[int]]:
-    """Updates and returns variables required to compute the Receiver Operating Characteristic.
-
-    """
+    """Updates and returns variables required to compute the Receiver Operating Characteristic."""
 
     return _precision_recall_curve_update(preds, target, num_classes, pos_label)
 
@@ -440,10 +438,10 @@ def _roc_compute_single_class(
     pos_label: int,
     sample_weights: Optional[Sequence] = None,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Computes Receiver Operating Characteristic for single class inputs. Returns tensor with false positive
-    rates, tensor with true positive rates, tensor with thresholds used for computing false- and true-postive
-    rates.
+    """Computes Receiver Operating Characteristic for single class inputs.
 
+    Returns tensor with false positive rates, tensor with true positive rates, tensor with thresholds used for computing
+    false- and true-postive rates.
     """
 
     fps, tps, thresholds = _binary_clf_curve(
@@ -483,9 +481,10 @@ def _roc_compute_multi_class(
     num_classes: int,
     sample_weights: Optional[Sequence] = None,
 ) -> Tuple[List[Tensor], List[Tensor], List[Tensor]]:
-    """Computes Receiver Operating Characteristic for multi class inputs. Returns tensor with false positive rates,
-    tensor with true positive rates, tensor with thresholds used for computing false- and true-postive rates.
+    """Computes Receiver Operating Characteristic for multi class inputs.
 
+    Returns tensor with false positive rates, tensor with true positive rates, tensor with thresholds used for computing
+    false- and true-postive rates.
     """
 
     fpr, tpr, thresholds = [], [], []

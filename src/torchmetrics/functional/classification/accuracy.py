@@ -433,8 +433,7 @@ def _accuracy_update(
     mode: DataType,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """Updates and returns stat scores (true positives, false positives, true negatives, false negatives) required
-    to compute accuracy.
-    """
+    to compute accuracy."""
 
     if mode == DataType.MULTILABEL and top_k:
         raise ValueError("You can not use the `top_k` parameter to calculate accuracy for multi-label inputs.")
@@ -527,8 +526,7 @@ def _subset_accuracy_update(
     top_k: Optional[int],
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute subset accuracy.
-    """
+    """Updates and returns variables required to compute subset accuracy."""
 
     preds, target = _input_squeeze(preds, target)
     preds, target, mode = _input_format_classification(
@@ -555,8 +553,7 @@ def _subset_accuracy_update(
 
 
 def _subset_accuracy_compute(correct: Tensor, total: Tensor) -> Tensor:
-    """Computes subset accuracy from number of correct observations and total number of observations.
-    """
+    """Computes subset accuracy from number of correct observations and total number of observations."""
 
     return correct.float() / total
 

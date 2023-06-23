@@ -143,7 +143,7 @@ class _SacreBLEUTokenizer:
         Return:
             the tokenized line
         """
-        for (_re, repl) in cls._REGEX:
+        for _re, repl in cls._REGEX:
             line = _re.sub(repl, line)
         # no leading or trailing spaces, single space within words
         return " ".join(line.split())
@@ -252,7 +252,7 @@ class _SacreBLEUTokenizer:
         Return:
             The tokenized string.
         """
-        for (_re, repl) in cls._INT_REGEX:
+        for _re, repl in cls._INT_REGEX:
             line = _re.sub(repl, line)
 
         return " ".join(line.split())

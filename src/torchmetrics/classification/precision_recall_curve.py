@@ -528,8 +528,7 @@ class PrecisionRecallCurve(Metric):
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-        """
+        """Update state with predictions and targets."""
         preds, target, num_classes, pos_label = _precision_recall_curve_update(
             preds, target, self.num_classes, self.pos_label
         )
@@ -539,8 +538,7 @@ class PrecisionRecallCurve(Metric):
         self.pos_label = pos_label
 
     def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-        """Compute the precision-recall curve.
-        """
+        """Compute the precision-recall curve."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         if not self.num_classes:

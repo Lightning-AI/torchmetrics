@@ -168,9 +168,7 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
 
     steps = 5
     for i in range(steps):
-
         if metric._is_synced:
-
             with pytest.raises(TorchMetricsUserError, match="The Metric shouldn't be synced when performing"):
                 metric(i)
 

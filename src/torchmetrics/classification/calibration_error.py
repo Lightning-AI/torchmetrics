@@ -316,16 +316,14 @@ class CalibrationError(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
         """Computes top-level confidences and accuracies for the input probabilities and appends them to internal
-        state.
-        """
+        state."""
         confidences, accuracies = _ce_update(preds, target)
 
         self.confidences.append(confidences)
         self.accuracies.append(accuracies)
 
     def compute(self) -> Tensor:
-        """Computes calibration error across all confidences and accuracies.
-        """
+        """Computes calibration error across all confidences and accuracies."""
         confidences = dim_zero_cat(self.confidences)
         accuracies = dim_zero_cat(self.accuracies)
         return _ce_compute(confidences, accuracies, self.bin_boundaries.to(self.device), norm=self.norm)

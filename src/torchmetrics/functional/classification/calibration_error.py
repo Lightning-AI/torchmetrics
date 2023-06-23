@@ -317,9 +317,7 @@ def multiclass_calibration_error(
 
 def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     """Given a predictions and targets tensor, computes the confidences of the top-1 prediction and records their
-    correctness.
-
-    """
+    correctness."""
     _, _, mode = _input_format_classification(preds, target)
 
     if mode == DataType.BINARY:

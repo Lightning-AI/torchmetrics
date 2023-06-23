@@ -353,21 +353,11 @@ class JaccardIndex(ConfusionMatrix):
         if self.multilabel:
             return torch.stack(
                 [
-                    _jaccard_from_confmat(
-                        confmat,
-                        2,
-                        self.average,
-                        self.ignore_index,
-                        self.absent_score
-                    )[1]
+                    _jaccard_from_confmat(confmat, 2, self.average, self.ignore_index, self.absent_score)[1]
                     for confmat in self.confmat
                 ]
             )
         else:
             return _jaccard_from_confmat(
-                self.confmat,
-                self.num_classes,
-                self.average,
-                self.ignore_index,
-                self.absent_score
+                self.confmat, self.num_classes, self.average, self.ignore_index, self.absent_score
             )

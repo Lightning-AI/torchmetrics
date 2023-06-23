@@ -37,7 +37,6 @@ def _safe_xlogy(x: Tensor, y: Tensor) -> Tensor:
         >>> x = torch.zeros(1)
         >>> _safe_xlogy(x, 1/x)
         tensor([0.])
-
     """
     res = x * torch.log(y)
     res[x == 0] = 0.0

@@ -108,7 +108,7 @@ class TestTotalVariation(MetricTester):
 
 
 def test_correct_args():
-    """that that arguments have the right type and sizes."""
+    """That that arguments have the right type and sizes."""
     with pytest.raises(ValueError, match="Expected argument `reduction`.*"):
         _ = TotalVariation(reduction="diff")
 

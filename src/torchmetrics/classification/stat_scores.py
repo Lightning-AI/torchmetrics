@@ -627,8 +627,7 @@ class StatScores(Metric):
             self.add_state(s, default=default(), dist_reduce_fx=reduce_fn)
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-        """
+        """Update state with predictions and targets."""
         tp, fp, tn, fn = _stat_scores_update(
             preds,
             target,
@@ -662,8 +661,6 @@ class StatScores(Metric):
         return tp, fp, tn, fn
 
     def compute(self) -> Tensor:
-        """Computes the stat scores based on inputs passed in to ``update`` previously.
-
-        """
+        """Computes the stat scores based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._get_final_stats()
         return _stat_scores_compute(tp, fp, tn, fn)

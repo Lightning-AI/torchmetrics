@@ -368,7 +368,7 @@ class TestMultilabelAveragePrecision(MetricTester):
 )
 @pytest.mark.parametrize("thresholds", [None, 100, [0.3, 0.5, 0.7, 0.9], torch.linspace(0, 1, 10)])
 def test_valid_input_thresholds(metric, thresholds):
-    """test valid formats of the threshold argument."""
+    """Test valid formats of the threshold argument."""
     with pytest.warns(None) as record:
         metric(thresholds=thresholds)
     assert len(record) == 0

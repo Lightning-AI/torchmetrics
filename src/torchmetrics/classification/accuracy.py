@@ -27,14 +27,15 @@ from torchmetrics.functional.classification.accuracy import (
     _subset_accuracy_update,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.enums import AverageMethod
 
 from torchmetrics.classification.stat_scores import (  # isort:skip
     BinaryStatScores,
     MulticlassStatScores,
-    MultilabelStatScores, StatScores,
+    MultilabelStatScores,
+    StatScores,
 )
-from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.enums import AverageMethod
 
 
 class BinaryAccuracy(BinaryStatScores):
@@ -459,8 +460,7 @@ class Accuracy(StatScores):
             self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-        """
+        """Update state with predictions and targets."""
         mode = _mode(preds, target, self.threshold, self.top_k, self.num_classes, self.multiclass, self.ignore_index)
 
         if not self.mode:

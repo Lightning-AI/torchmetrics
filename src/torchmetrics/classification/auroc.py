@@ -439,8 +439,7 @@ class AUROC(Metric):
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-        """
+        """Update state with predictions and targets."""
         preds, target, mode = _auroc_update(preds, target)
 
         self.preds.append(preds)

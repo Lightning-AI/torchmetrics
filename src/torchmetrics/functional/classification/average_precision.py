@@ -408,9 +408,7 @@ def _average_precision_update(
     pos_label: Optional[int] = None,
     average: Optional[str] = "macro",
 ) -> Tuple[Tensor, Tensor, int, Optional[int]]:
-    """Format the predictions and target based on the ``num_classes``, ``pos_label`` and ``average`` parameter.
-
-    """
+    """Format the predictions and target based on the ``num_classes``, ``pos_label`` and ``average`` parameter."""
     preds, target, num_classes, pos_label = _precision_recall_curve_update(preds, target, num_classes, pos_label)
     if average == "micro" and preds.ndim != target.ndim:
         raise ValueError("Cannot use `micro` average with multi-class input")

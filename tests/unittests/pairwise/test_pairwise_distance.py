@@ -47,7 +47,7 @@ _inputs2 = Input(
 
 
 def _sk_metric(x, y, sk_fn, reduction):
-    """comparison function."""
+    """Comparison function."""
     x = x.view(-1, extra_dim).numpy()
     y = y.view(-1, extra_dim).numpy()
     res = sk_fn(x, y)
@@ -76,12 +76,12 @@ def _sk_metric(x, y, sk_fn, reduction):
 )
 @pytest.mark.parametrize("reduction", ["sum", "mean", None])
 class TestPairwise(MetricTester):
-    """test pairwise implementations."""
+    """Test pairwise implementations."""
 
     atol = 1e-4
 
     def test_pairwise_functional(self, x, y, metric_functional, sk_fn, reduction):
-        """test functional pairwise implementations."""
+        """Test functional pairwise implementations."""
         self.run_functional_metric_test(
             preds=x,
             target=y,
@@ -91,14 +91,14 @@ class TestPairwise(MetricTester):
         )
 
     def test_pairwise_half_cpu(self, x, y, metric_functional, sk_fn, reduction):
-        """test half precision support on cpu."""
+        """Test half precision support on cpu."""
         if metric_functional == pairwise_euclidean_distance:
             pytest.xfail("pairwise_euclidean_distance metric does not support cpu + half precision")
         self.run_precision_test_cpu(x, y, None, metric_functional, metric_args={"reduction": reduction})
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_pairwise_half_gpu(self, x, y, metric_functional, sk_fn, reduction):
-        """test half precision support on gpu."""
+        """Test half precision support on gpu."""
         self.run_precision_test_gpu(x, y, None, metric_functional, metric_args={"reduction": reduction})
 
 
@@ -127,7 +127,7 @@ def test_error_on_wrong_shapes(metric):
     ],
 )
 def test_precison_case(metric_functional, sk_fn):
-    """test that metrics are robust towars cases where high precision is needed."""
+    """Test that metrics are robust towars cases where high precision is needed."""
     x = torch.tensor([[772.0, 112.0], [772.20001, 112.0]])
     res1 = metric_functional(x, zero_diagonal=False)
     res2 = sk_fn(x)

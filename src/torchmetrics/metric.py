@@ -699,7 +699,7 @@ class Metric(Module, ABC):
         )
 
     def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
-        """filter kwargs such that they match the update signature of the metric."""
+        """Filter kwargs such that they match the update signature of the metric."""
 
         # filter all parameters based on update signature except those of
         # type VAR_POSITIONAL (*args) and VAR_KEYWORD (**kwargs)
@@ -899,7 +899,6 @@ class CompositionalMetric(Metric):
             self.metric_b.update(*args, **self.metric_b._filter_kwargs(**kwargs))
 
     def compute(self) -> Any:
-
         # also some parsing for kwargs?
         if isinstance(self.metric_a, Metric):
             val_a = self.metric_a.compute()
@@ -918,7 +917,6 @@ class CompositionalMetric(Metric):
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Any:
-
         val_a = (
             self.metric_a(*args, **self.metric_a._filter_kwargs(**kwargs))
             if isinstance(self.metric_a, Metric)

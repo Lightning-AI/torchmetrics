@@ -7,22 +7,22 @@ from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
 
 
 def compare_mean(values, weights):
-    """reference implementation for mean aggregation."""
+    """Reference implementation for mean aggregation."""
     return np.average(values.numpy(), weights=weights)
 
 
 def compare_sum(values, weights):
-    """reference implementation for sum aggregation."""
+    """Reference implementation for sum aggregation."""
     return np.sum(values.numpy())
 
 
 def compare_min(values, weights):
-    """reference implementation for min aggregation."""
+    """Reference implementation for min aggregation."""
     return np.min(values.numpy())
 
 
 def compare_max(values, weights):
-    """reference implementation for max aggregation."""
+    """Reference implementation for max aggregation."""
     return np.max(values.numpy())
 
 
@@ -32,7 +32,7 @@ class WrappedMinMetric(MinMetric):
     """Wrapped min metric."""
 
     def update(self, values, weights):
-        """only pass values on."""
+        """Only pass values on."""
         super().update(values)
 
 
@@ -40,7 +40,7 @@ class WrappedMaxMetric(MaxMetric):
     """Wrapped max metric."""
 
     def update(self, values, weights):
-        """only pass values on."""
+        """Only pass values on."""
         super().update(values)
 
 
@@ -48,7 +48,7 @@ class WrappedSumMetric(SumMetric):
     """Wrapped min metric."""
 
     def update(self, values, weights):
-        """only pass values on."""
+        """Only pass values on."""
         super().update(values)
 
 
@@ -56,7 +56,7 @@ class WrappedCatMetric(CatMetric):
     """Wrapped cat metric."""
 
     def update(self, values, weights):
-        """only pass values on."""
+        """Only pass values on."""
         super().update(values)
 
 
@@ -83,7 +83,7 @@ class TestAggregation(MetricTester):
     @pytest.mark.parametrize("ddp", [False, True])
     @pytest.mark.parametrize("dist_sync_on_step", [False])
     def test_aggreagation(self, ddp, dist_sync_on_step, metric_class, compare_fn, values, weights):
-        """test modular implementation."""
+        """Test modular implementation."""
         self.run_class_metric_test(
             ddp=ddp,
             dist_sync_on_step=dist_sync_on_step,
@@ -104,7 +104,7 @@ _case2 = torch.tensor([1.0, 2.0, float("nan"), 4.0, 5.0])
 @pytest.mark.parametrize("nan_strategy", ["error", "warn"])
 @pytest.mark.parametrize("metric_class", [MinMetric, MaxMetric, SumMetric, MeanMetric, CatMetric])
 def test_nan_error(value, nan_strategy, metric_class):
-    """test correct errors are raised."""
+    """Test correct errors are raised."""
     metric = metric_class(nan_strategy=nan_strategy)
     if nan_strategy == "error":
         with pytest.raises(RuntimeError, match="Encounted `nan` values in tensor"):
@@ -141,7 +141,7 @@ def test_nan_error(value, nan_strategy, metric_class):
     ],
 )
 def test_nan_expected(metric_class, nan_strategy, value, expected):
-    """test that nan values are handled correctly."""
+    """Test that nan values are handled correctly."""
     metric = metric_class(nan_strategy=nan_strategy)
     metric.update(value.clone())
     out = metric.compute()
@@ -150,7 +150,7 @@ def test_nan_expected(metric_class, nan_strategy, value, expected):
 
 @pytest.mark.parametrize("metric_class", [MinMetric, MaxMetric, SumMetric, MeanMetric, CatMetric])
 def test_error_on_wrong_nan_strategy(metric_class):
-    """test error raised on wrong nan_strategy argument."""
+    """Test error raised on wrong nan_strategy argument."""
     with pytest.raises(ValueError, match="Arg `nan_strategy` should either .*"):
         metric_class(nan_strategy=[])
 
@@ -160,7 +160,7 @@ def test_error_on_wrong_nan_strategy(metric_class):
     "weights, expected", [(1, 11.5), (torch.ones(2, 1, 1), 11.5), (torch.tensor([1, 2]).reshape(2, 1, 1), 13.5)]
 )
 def test_mean_metric_broadcasting(weights, expected):
-    """check that weight broadcasting works for mean metric."""
+    """Check that weight broadcasting works for mean metric."""
     values = torch.arange(24).reshape(2, 3, 4)
     avg = MeanMetric()
 

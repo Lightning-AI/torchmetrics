@@ -53,7 +53,6 @@ def _binary_hinge_loss_update(
     target: Tensor,
     squared: bool,
 ) -> Tuple[Tensor, Tensor]:
-
     target = target.bool()
     margin = torch.zeros_like(preds)
     margin[target] = preds[target]
@@ -257,8 +256,7 @@ def _check_shape_and_type_consistency_hinge(
     preds: Tensor,
     target: Tensor,
 ) -> DataType:
-    """Checks shape and type of ``preds`` and ``target`` and returns mode of the input tensors.
-    """
+    """Checks shape and type of ``preds`` and ``target`` and returns mode of the input tensors."""
 
     if target.ndim > 1:
         raise ValueError(
@@ -290,8 +288,7 @@ def _hinge_update(
     squared: bool = False,
     multiclass_mode: Optional[Union[str, MulticlassMode]] = None,
 ) -> Tuple[Tensor, Tensor]:
-    """Updates and returns sum over Hinge loss scores for each observation and the total number of observations.
-    """
+    """Updates and returns sum over Hinge loss scores for each observation and the total number of observations."""
     preds, target = _input_squeeze(preds, target)
 
     mode = _check_shape_and_type_consistency_hinge(preds, target)

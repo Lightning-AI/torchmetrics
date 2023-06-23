@@ -58,7 +58,7 @@ def _sample_checker(old_samples, new_samples, op: operator, threshold: int):
 
 @pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
 def test_bootstrap_sampler(sampling_strategy):
-    """make sure that the bootstrap sampler works as intended."""
+    """Make sure that the bootstrap sampler works as intended."""
     old_samples = torch.randn(20, 2)
 
     # make sure that the new samples are only made up of old samples
@@ -102,7 +102,6 @@ def test_bootstrap(device, sampling_strategy, metric, sk_metric):
         bootstrapper.update(p, t)
 
         for i, o in enumerate(bootstrapper.out):
-
             collected_preds[i].append(o[0])
             collected_target[i].append(o[1])
 

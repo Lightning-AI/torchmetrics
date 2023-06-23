@@ -43,13 +43,11 @@ def compute_area(input: List[Any], iou_type: str = "bbox") -> Tensor:
     Default output for empty input is torch.Tensor([])
     """
     if len(input) == 0:
-
         return torch.Tensor([])
 
     if iou_type == "bbox":
         return box_area(torch.stack(input))
     elif iou_type == "segm":
-
         input = [{"size": i[0], "counts": i[1]} for i in input]
         area = torch.tensor(mask_utils.area(input).astype("float"))
 
@@ -389,7 +387,6 @@ class MeanAveragePrecision(Metric):
         _input_validator(preds, target, iou_type=self.iou_type)
 
         for item in preds:
-
             detections = self._get_safe_item_values(item)
 
             self.detections.append(detections)
@@ -416,7 +413,6 @@ class MeanAveragePrecision(Metric):
             setattr(self, key, current_to_cpu)
 
     def _get_safe_item_values(self, item: Dict[str, Any]) -> Union[Tensor, Tuple]:
-
         if self.iou_type == "bbox":
             boxes = _fix_empty_tensors(item["boxes"])
             if boxes.numel() > 0:
@@ -860,7 +856,6 @@ class MeanAveragePrecision(Metric):
             diff_zero = torch.zeros((1,), device=pr.device)
             diff = torch.ones((1,), device=pr.device)
             while not torch.all(diff == 0):
-
                 diff = torch.clamp(torch.cat(((pr[1:] - pr[:-1]), diff_zero), 0), min=0)
                 pr += diff
 

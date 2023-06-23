@@ -81,7 +81,7 @@ def _bleu_score_update(
     target_: Sequence[Sequence[Sequence[str]]] = [[tokenizer(line) if line else [] for line in t] for t in target]
     preds_: Sequence[Sequence[str]] = [tokenizer(line) if line else [] for line in preds]
 
-    for (pred, targets) in zip(preds_, target_):
+    for pred, targets in zip(preds_, target_):
         preds_len += len(pred)
         target_len_list = [len(tgt) for tgt in targets]
         target_len_diff = [abs(len(pred) - x) for x in target_len_list]

@@ -66,7 +66,8 @@ class _LevenshteinEditDistance:
     values to hasten the calculation.
 
     The implementation follows the implemenation from
-    https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/lib_ter.py, where the most of this implementation
+    https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/lib_ter.py,
+    where the most of this implementation
     is adapted and copied from.
     """
 

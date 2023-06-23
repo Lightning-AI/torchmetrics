@@ -303,9 +303,7 @@ def _jaccard_from_confmat(
     ignore_index: Optional[int] = None,
     absent_score: float = 0.0,
 ) -> Tensor:
-    """Computes the intersection over union from confusion matrix.
-
-    """
+    """Computes the intersection over union from confusion matrix."""
     allowed_average = ["micro", "macro", "weighted", "none", None]
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
@@ -323,12 +321,7 @@ def _jaccard_from_confmat(
         scores = scores.where(union != 0, torch.tensor(absent_score, dtype=scores.dtype, device=scores.device))
 
         if ignore_index is not None and 0 <= ignore_index < num_classes:
-            scores = torch.cat(
-                [
-                    scores[:ignore_index],
-                    scores[ignore_index + 1 :]
-                ]
-            )
+            scores = torch.cat([scores[:ignore_index], scores[ignore_index + 1 :]])
         return scores
 
     if average == "macro":

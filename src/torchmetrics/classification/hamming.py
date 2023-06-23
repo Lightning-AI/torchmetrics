@@ -408,8 +408,7 @@ class HammingDistance(Metric):
         self.threshold = threshold
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-        """
+        """Update state with predictions and targets."""
         correct, total = _hamming_distance_update(preds, target, self.threshold)
 
         self.correct += correct

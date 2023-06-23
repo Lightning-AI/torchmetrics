@@ -35,7 +35,7 @@ _inputs = Input(
 
 
 def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, normalize: bool, reduction: str = "mean") -> Tensor:
-    """comparison function for tm implementation."""
+    """Comparison function for tm implementation."""
     ref = LPIPS_reference(net=net_type)
     res = ref(img1, img2, normalize=normalize).detach().cpu().numpy()
     if reduction == "mean":
@@ -51,7 +51,7 @@ class TestLPIPS(MetricTester):
     @pytest.mark.parametrize("normalize", [False, True])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_lpips(self, net_type, normalize, ddp):
-        """test modular implementation for correctness."""
+        """Test modular implementation for correctness."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=_inputs.img1,
@@ -65,7 +65,7 @@ class TestLPIPS(MetricTester):
         )
 
     def test_lpips_differentiability(self):
-        """test for differentiability of LPIPS metric."""
+        """Test for differentiability of LPIPS metric."""
         self.run_differentiability_test(
             preds=_inputs.img1, target=_inputs.img2, metric_module=LearnedPerceptualImagePatchSimilarity
         )
@@ -73,12 +73,12 @@ class TestLPIPS(MetricTester):
     # LPIPS half + cpu does not work due to missing support in torch.min
     @pytest.mark.xfail(reason="LPIPS metric does not support cpu + half precision")
     def test_lpips_half_cpu(self):
-        """test for half + cpu support."""
+        """Test for half + cpu support."""
         self.run_precision_test_cpu(_inputs.img1, _inputs.img2, LearnedPerceptualImagePatchSimilarity)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_lpips_half_gpu(self):
-        """test for half + gpu support."""
+        """Test for half + gpu support."""
         self.run_precision_test_gpu(_inputs.img1, _inputs.img2, LearnedPerceptualImagePatchSimilarity)
 
 
@@ -103,7 +103,7 @@ def test_error_on_wrong_init():
     ],
 )
 def test_error_on_wrong_update(inp1, inp2):
-    """test error is raised on wrong input to update method."""
+    """Test error is raised on wrong input to update method."""
     metric = LearnedPerceptualImagePatchSimilarity()
     with pytest.raises(ValueError, match="Expected both input arguments to be normalized tensors .*"):
         metric(inp1, inp2)

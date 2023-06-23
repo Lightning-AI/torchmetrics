@@ -267,8 +267,7 @@ class CohenKappa(Metric):
         self.add_state("confmat", default=torch.zeros(num_classes, num_classes, dtype=torch.long), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-        """
+        """Update state with predictions and targets."""
         confmat = _cohen_kappa_update(preds, target, self.num_classes, self.threshold)
         self.confmat += confmat
 

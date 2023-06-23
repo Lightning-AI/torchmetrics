@@ -437,8 +437,7 @@ class ROC(Metric):
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-        """
+        """Update state with predictions and targets."""
         preds, target, num_classes, pos_label = _roc_update(preds, target, self.num_classes, self.pos_label)
         self.preds.append(preds)
         self.target.append(target)
@@ -446,8 +445,7 @@ class ROC(Metric):
         self.pos_label = pos_label
 
     def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-        """Compute the receiver operating characteristic.
-        """
+        """Compute the receiver operating characteristic."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         if not self.num_classes:

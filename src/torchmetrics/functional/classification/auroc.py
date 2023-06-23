@@ -420,8 +420,8 @@ def multilabel_auroc(
 
 def _auroc_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, DataType]:
     """Updates and returns variables required to compute Area Under the Receiver Operating Characteristic Curve.
-    Validates the inputs and returns the mode of the inputs.
 
+    Validates the inputs and returns the mode of the inputs.
     """
 
     # use _input_format_classification for validating the input and get the mode of data

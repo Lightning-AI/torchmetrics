@@ -50,7 +50,7 @@ class NoTrainInceptionV3(FeatureExtractorInceptionV3):
         self.eval()
 
     def train(self, mode: bool) -> "NoTrainInceptionV3":
-        """the inception network should not be able to be switched away from evaluation mode."""
+        """The inception network should not be able to be switched away from evaluation mode."""
         return super().train(False)
 
     def forward(self, x: Tensor) -> Tensor:
