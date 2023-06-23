@@ -55,6 +55,7 @@ from torchmetrics.image import (  # noqa: E402
     StructuralSimilarityIndexMeasure,
     TotalVariation,
     UniversalImageQualityIndex,
+    MemorizationInformedFrechetInceptionDistance,
 )
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.nominal import CramersV  # noqa: E402
@@ -146,6 +147,7 @@ __all__ = [
     "MeanMetric",
     "MeanSquaredError",
     "MeanSquaredLogError",
+    "MemorizationInformedFrechetInceptionDistance",
     "Metric",
     "MetricCollection",
     "MetricTracker",

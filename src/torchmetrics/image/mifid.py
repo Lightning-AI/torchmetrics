@@ -1,3 +1,16 @@
+# Copyright The Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from numpy.lib.type_check import real
 from copy import deepcopy
 from typing import Any, List, Optional, Union
@@ -7,41 +20,27 @@ from torch.nn import Module
 from torchmetrics.image.fid import NoTrainInceptionV3, _compute_fid
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
+from torchmetrics.utilities.data import dim_zero_cat
 
-# Implementation functions inspired by https://github.com/jybai/generative-memorization-benchmark/blob/main/src/competition_scoring.py
-def _normalize_rows(x: Tensor):
-    """
-    function that normalizes each row of the matrix x to have unit length.
 
-    Args:
-     ``x``: A PyTorch tensor of shape (n, m)
-
-    Returns:
-     ``x``: The normalized (by row) PyTorch tensor.
-    """
-    return x / torch.norm(x, dim=1, keepdim=True)
-
-def _distance_thresholding(d: Tensor, eps=0.1):
-    if d < eps:
-        return d
-    else:
-        return 1
-
-def _compute_cosine_distance(features1: Tensor, features2: Tensor):
+def _compute_cosine_distance(features1: Tensor, features2: Tensor, eps: float = 0.1):
     features1_nozero = features1[torch.sum(features1, dim=1) != 0]
     features2_nozero = features2[torch.sum(features2, dim=1) != 0]
-    norm_f1 = _normalize_rows(features1_nozero)
-    norm_f2 = _normalize_rows(features2_nozero)
+
+    # normalize
+    norm_f1 = features1_nozero / torch.norm(features1_nozero, dim=1, keepdim=True)
+    norm_f2 = features2_nozero / torch.norm(features2_nozero, dim=1, keepdim=True)
 
     d = 1.0 - torch.abs(torch.matmul(norm_f1, norm_f2.t()))
-    mean_min_d = torch.mean(torch.min(d, dim=1).values)
+    mean_min_d = torch.mean(d.min(dim=1).values)
+    mean_min_d = mean_min_d if mean_min_d > eps else eps * torch.ones_like(mean_min_d)
     return mean_min_d
+
 
 def _mifid_compute(mu1: Tensor, sigma1: Tensor, features1: Tensor, mu2: Tensor, sigma2: Tensor, features2: Tensor):
     fid_value = _compute_fid(mu1, sigma1, mu2, sigma2)
     distance = _compute_cosine_distance(features1, features2)
-    distance_thr = _distance_thresholding(distance, eps=0.1)
-    mifid = fid_value / (distance_thr + 10e-15)
+    mifid = fid_value / (distance + 10e-15)
     return mifid
 
 class MemorizationInformedFrechetInceptionDistance(Metric):
@@ -91,49 +90,48 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
             raise ValueError("Argument `normalize` expected to be a bool")
         self.normalize = normalize
 
-        self.add_state("real_features_stacked", torch.zeros((0, num_features)).double(), dist_reduce_fx="cat")
-        self.add_state("fake_features_stacked", torch.zeros((0, num_features)).double(), dist_reduce_fx="cat")
+        # states for extracted features
+        self.add_state("real_features", [], dist_reduce_fx=None)
+        self.add_state("fake_features", [], dist_reduce_fx=None)
 
-    def update(self, imgs: Tensor, real: bool) -> None:  # type: ignore
+    def update(self, imgs: Tensor, real: bool) -> None:
         """Update the state with extracted features."""
         imgs = (imgs * 255).byte() if self.normalize else imgs
         features = self.inception(imgs)
         self.orig_dtype = features.dtype
         features = features.double()
 
-        if features.dim() == 1:
-            features = features.unsqueeze(0)
         if real:
-            self.real_features_stacked = torch.cat((self.real_features_stacked, features), dim=0)
+            self.real_features.append(features)
         else:
-            self.fake_features_stacked = torch.cat((self.fake_features_stacked, features), dim=0)
+            self.fake_features.append(features)
 
     def compute(self) -> Tensor:
         """Calculate FID score based on accumulated extracted features from the two distributions."""
+        real_features = dim_zero_cat(self.real_features)
+        fake_features = dim_zero_cat(self.fake_features)
 
-        mean_real = torch.mean(self.real_features_stacked, dim=0).unsqueeze(0)
-        mean_fake = torch.mean(self.fake_features_stacked, dim=0).unsqueeze(0)
+        mean_real = torch.mean(real_features, dim=0).unsqueeze(0)
+        mean_fake = torch.mean(fake_features, dim=0).unsqueeze(0)
 
-        cov_real = torch.cov(self.real_features_stacked.t())
-        cov_fake = torch.cov(self.fake_features_stacked.t())
+        cov_real = torch.cov(real_features.t())
+        cov_fake = torch.cov(fake_features.t())
 
         return _mifid_compute(
             mean_real.squeeze(0),
             cov_real,
-            self.real_features_stacked,
+            real_features,
             mean_fake.squeeze(0),
             cov_fake,
-            self.fake_features_stacked,
+            fake_features,
         ).to(self.orig_dtype)
 
-    def to(self, device):
-        self.inception = self.inception.to(device)
-        return super().to(device)
-
     def reset(self) -> None:
+        """Reset metric states."""
         if not self.reset_real_features:
-            real_features_stacked = deepcopy(self.real_features_stacked)
+            # remove temporarily to avoid resetting
+            value = self._defaults.pop("real_features")
             super().reset()
-            self.real_features_stacked = real_features_stacked
+            self._defaults["real_features"] = value
         else:
             super().reset()
