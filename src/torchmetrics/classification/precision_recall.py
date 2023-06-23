@@ -17,9 +17,20 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
-from torchmetrics.functional.classification.precision_recall import _precision_recall_reduce
+from torchmetrics.classification.stat_scores import (
+    BinaryStatScores,
+    MulticlassStatScores,
+    MultilabelStatScores,
+    StatScores,
+)
+from torchmetrics.functional.classification.precision_recall import (
+    _precision_compute,
+    _precision_recall_reduce,
+    _recall_compute,
+)
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.enums import AverageMethod
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryPrecision(BinaryStatScores):
@@ -592,8 +603,17 @@ class MultilabelRecall(MultilabelStatScores):
         )
 
 
-class Precision:
-    r"""Computes `Precision`_:
+class Precision(StatScores):
+    r"""Precision.
+
+    .. note::
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Computes `Precision`_:
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
 
@@ -609,17 +629,20 @@ class Precision:
         >>> import torch
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
-        >>> precision = Precision(task="multiclass", average='macro', num_classes=3)
+        >>> precision = Precision(average='macro', num_classes=3)
         >>> precision(preds, target)
         tensor(0.1667)
-        >>> precision = Precision(task="multiclass", average='micro', num_classes=3)
+        >>> precision = Precision(average='micro')
         >>> precision(preds, target)
         tensor(0.2500)
     """
+    is_differentiable = False
+    higher_is_better = True
+    full_state_update: bool = False
 
     def __new__(
         cls,
-        task: Literal["binary", "multiclass", "multilabel"],
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
@@ -628,26 +651,88 @@ class Precision:
         top_k: Optional[int] = 1,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        multiclass: Optional[bool] = None,
+        mdmc_average: Optional[str] = None,
         **kwargs: Any,
     ) -> Metric:
-        assert multidim_average is not None
-        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
-        if task == "binary":
-            return BinaryPrecision(threshold, **kwargs)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            assert isinstance(top_k, int)
-            return MulticlassPrecision(num_classes, top_k, average, **kwargs)
-        if task == "multilabel":
-            assert isinstance(num_labels, int)
-            return MultilabelPrecision(num_labels, threshold, average, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        if task is not None:
+            assert multidim_average is not None
+            kwargs.update(
+                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+            )
+            if task == "binary":
+                return BinaryPrecision(threshold, **kwargs)
+            if task == "multiclass":
+                assert isinstance(num_classes, int)
+                assert isinstance(top_k, int)
+                return MulticlassPrecision(num_classes, top_k, average, **kwargs)
+            if task == "multilabel":
+                assert isinstance(num_labels, int)
+                return MultilabelPrecision(num_labels, threshold, average, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        else:
+            rank_zero_warn(
+                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
+                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+                " and the general order of arguments may change, such that this metric will just function as an single"
+                " entrypoint to calling the three specialized versions.",
+                DeprecationWarning,
+            )
+        return super().__new__(cls)
+
+    def __init__(
+        self,
+        num_classes: Optional[int] = None,
+        threshold: float = 0.5,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        multiclass: Optional[bool] = None,
+        **kwargs: Any,
+    ) -> None:
+        allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
+        if average not in allowed_average:
+            raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
+
+        _reduce_options = (AverageMethod.WEIGHTED, AverageMethod.NONE, None)
+        if "reduce" not in kwargs:
+            kwargs["reduce"] = AverageMethod.MACRO if average in _reduce_options else average
+        if "mdmc_reduce" not in kwargs:
+            kwargs["mdmc_reduce"] = mdmc_average
+
+        super().__init__(
+            threshold=threshold,
+            top_k=top_k,
+            num_classes=num_classes,
+            multiclass=multiclass,
+            ignore_index=ignore_index,
+            **kwargs,
         )
 
+        self.average = average
 
-class Recall:
-    r"""Computes `Recall`_:
+    def compute(self) -> Tensor:
+        """Computes the precision score based on inputs passed in to ``update`` previously.
+        """
+        tp, fp, _, fn = self._get_final_stats()
+        return _precision_compute(tp, fp, fn, self.average, self.mdmc_reduce)
+
+
+class Recall(StatScores):
+    r"""Recall.
+
+    .. note::
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Computes `Recall`_:
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 
@@ -663,17 +748,20 @@ class Recall:
         >>> import torch
         >>> preds  = torch.tensor([2, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
-        >>> recall = Recall(task="multiclass", average='macro', num_classes=3)
+        >>> recall = Recall(average='macro', num_classes=3)
         >>> recall(preds, target)
         tensor(0.3333)
-        >>> recall = Recall(task="multiclass", average='micro', num_classes=3)
+        >>> recall = Recall(average='micro')
         >>> recall(preds, target)
         tensor(0.2500)
     """
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
 
     def __new__(
         cls,
-        task: Literal["binary", "multiclass", "multilabel"],
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
@@ -682,19 +770,73 @@ class Recall:
         top_k: Optional[int] = 1,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        mdmc_average: Optional[str] = None,
+        multiclass: Optional[bool] = None,
         **kwargs: Any,
     ) -> Metric:
-        assert multidim_average is not None
-        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
-        if task == "binary":
-            return BinaryRecall(threshold, **kwargs)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            assert isinstance(top_k, int)
-            return MulticlassRecall(num_classes, top_k, average, **kwargs)
-        if task == "multilabel":
-            assert isinstance(num_labels, int)
-            return MultilabelRecall(num_labels, threshold, average, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        if task is not None:
+            assert multidim_average is not None
+            kwargs.update(
+                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+            )
+            if task == "binary":
+                return BinaryRecall(threshold, **kwargs)
+            if task == "multiclass":
+                assert isinstance(num_classes, int)
+                assert isinstance(top_k, int)
+                return MulticlassRecall(num_classes, top_k, average, **kwargs)
+            if task == "multilabel":
+                assert isinstance(num_labels, int)
+                return MultilabelRecall(num_labels, threshold, average, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        else:
+            rank_zero_warn(
+                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
+                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+                " and the general order of arguments may change, such that this metric will just function as an single"
+                " entrypoint to calling the three specialized versions.",
+                DeprecationWarning,
+            )
+        return super().__new__(cls)
+
+    def __init__(
+        self,
+        num_classes: Optional[int] = None,
+        threshold: float = 0.5,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+        mdmc_average: Optional[str] = None,
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        multiclass: Optional[bool] = None,
+        **kwargs: Any,
+    ) -> None:
+        allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
+        if average not in allowed_average:
+            raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
+
+        _reduce_options = (AverageMethod.WEIGHTED, AverageMethod.NONE, None)
+        if "reduce" not in kwargs:
+            kwargs["reduce"] = AverageMethod.MACRO if average in _reduce_options else average
+        if "mdmc_reduce" not in kwargs:
+            kwargs["mdmc_reduce"] = mdmc_average
+
+        super().__init__(
+            threshold=threshold,
+            top_k=top_k,
+            num_classes=num_classes,
+            multiclass=multiclass,
+            ignore_index=ignore_index,
+            **kwargs,
         )
+
+        self.average = average
+
+    def compute(self) -> Tensor:
+        """Computes the recall score based on inputs passed in to ``update`` previously.
+
+        """
+        tp, fp, _, fn = self._get_final_stats()
+        return _recall_compute(tp, fp, fn, self.average, self.mdmc_reduce)

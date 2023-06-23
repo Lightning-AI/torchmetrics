@@ -296,6 +296,59 @@ def multilabel_jaccard_index(
     return _jaccard_index_reduce(confmat, average=average)
 
 
+def _jaccard_from_confmat(
+    confmat: Tensor,
+    num_classes: int,
+    average: Optional[str] = "macro",
+    ignore_index: Optional[int] = None,
+    absent_score: float = 0.0,
+) -> Tensor:
+    """Computes the intersection over union from confusion matrix.
+
+    """
+    allowed_average = ["micro", "macro", "weighted", "none", None]
+    if average not in allowed_average:
+        raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
+
+    # Remove the ignored class index from the scores.
+    if ignore_index is not None and 0 <= ignore_index < num_classes:
+        confmat[ignore_index] = 0.0
+
+    if average == "none" or average is None:
+        intersection = torch.diag(confmat)
+        union = confmat.sum(0) + confmat.sum(1) - intersection
+
+        # If this class is absent in both target AND pred (union == 0), then use the absent_score for this class.
+        scores = intersection.float() / union.float()
+        scores = scores.where(union != 0, torch.tensor(absent_score, dtype=scores.dtype, device=scores.device))
+
+        if ignore_index is not None and 0 <= ignore_index < num_classes:
+            scores = torch.cat(
+                [
+                    scores[:ignore_index],
+                    scores[ignore_index + 1 :]
+                ]
+            )
+        return scores
+
+    if average == "macro":
+        scores = _jaccard_from_confmat(
+            confmat, num_classes, average="none", ignore_index=ignore_index, absent_score=absent_score
+        )
+        return torch.mean(scores)
+
+    if average == "micro":
+        intersection = torch.sum(torch.diag(confmat))
+        union = torch.sum(torch.sum(confmat, dim=1) + torch.sum(confmat, dim=0) - torch.diag(confmat))
+        return intersection.float() / union.float()
+
+    weights = torch.sum(confmat, dim=1).float() / torch.sum(confmat).float()
+    scores = _jaccard_from_confmat(
+        confmat, num_classes, average="none", ignore_index=ignore_index, absent_score=absent_score
+    )
+    return torch.sum(weights * scores)
+
+
 def jaccard_index(
     preds: Tensor,
     target: Tensor,

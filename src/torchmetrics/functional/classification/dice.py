@@ -38,6 +38,15 @@ def _dice_compute(
         average: Defines the reduction that is applied
         mdmc_average: Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
             ``average`` parameter)
+
+    Example:
+        >>> from torchmetrics.functional.classification.stat_scores import _stat_scores_update
+        >>> from torchmetrics.functional.classification.dice import _dice_compute
+        >>> preds  = torch.tensor([2, 0, 2, 1])
+        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='micro')
+        >>> _dice_compute(tp, fp, fn, average='micro', mdmc_average=None)
+        tensor(0.2500)
     """
     numerator = 2 * tp
     denominator = 2 * tp + fp + fn

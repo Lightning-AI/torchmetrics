@@ -14,12 +14,17 @@
 from typing import Any, Optional
 
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 from typing_extensions import Literal
 
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
-from torchmetrics.functional.classification.hamming import _hamming_distance_reduce
+from torchmetrics.functional.classification.hamming import (
+    _hamming_distance_compute,
+    _hamming_distance_reduce,
+    _hamming_distance_update,
+)
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryHammingDistance(BinaryStatScores):
@@ -312,8 +317,17 @@ class MultilabelHammingDistance(MultilabelStatScores):
         )
 
 
-class HammingDistance:
-    r"""Computes the average `Hamming distance`_ (also known as Hamming loss):
+class HammingDistance(Metric):
+    r"""Hamming distance.
+
+    .. note::
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Computes the average `Hamming distance`_ (also known as Hamming loss):
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -330,14 +344,19 @@ class HammingDistance:
     Legacy Example:
         >>> target = torch.tensor([[0, 1], [1, 1]])
         >>> preds = torch.tensor([[0, 1], [0, 1]])
-        >>> hamming_distance = HammingDistance(task="multilabel", num_labels=2)
+        >>> hamming_distance = HammingDistance()
         >>> hamming_distance(preds, target)
         tensor(0.2500)
     """
+    is_differentiable: bool = False
+    higher_is_better: bool = False
+    full_state_update: bool = False
+    correct: Tensor
+    total: Tensor
 
     def __new__(
         cls,
-        task: Literal["binary", "multiclass", "multilabel"],
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
@@ -348,18 +367,54 @@ class HammingDistance:
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
+        if task is not None:
+            assert multidim_average is not None
+            kwargs.update(
+                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+            )
+            if task == "binary":
+                return BinaryHammingDistance(threshold, **kwargs)
+            if task == "multiclass":
+                assert isinstance(num_classes, int)
+                assert isinstance(top_k, int)
+                return MulticlassHammingDistance(num_classes, top_k, average, **kwargs)
+            if task == "multilabel":
+                assert isinstance(num_labels, int)
+                return MultilabelHammingDistance(num_labels, threshold, average, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        else:
+            rank_zero_warn(
+                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
+                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+                " and the general order of arguments may change, such that this metric will just function as an single"
+                " entrypoint to calling the three specialized versions.",
+                DeprecationWarning,
+            )
+        return super().__new__(cls)
 
-        assert multidim_average is not None
-        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
-        if task == "binary":
-            return BinaryHammingDistance(threshold, **kwargs)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            assert isinstance(top_k, int)
-            return MulticlassHammingDistance(num_classes, top_k, average, **kwargs)
-        if task == "multilabel":
-            assert isinstance(num_labels, int)
-            return MultilabelHammingDistance(num_labels, threshold, average, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )
+    def __init__(
+        self,
+        threshold: float = 0.5,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(**kwargs)
+
+        self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
+        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
+
+        self.threshold = threshold
+
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        """Update state with predictions and targets.
+        """
+        correct, total = _hamming_distance_update(preds, target, self.threshold)
+
+        self.correct += correct
+        self.total += total
+
+    def compute(self) -> Tensor:
+        """Computes hamming distance based on inputs passed in to ``update`` previously."""
+        return _hamming_distance_compute(self.correct, self.total)

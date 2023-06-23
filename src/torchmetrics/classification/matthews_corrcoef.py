@@ -18,8 +18,13 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.classification import BinaryConfusionMatrix, MulticlassConfusionMatrix, MultilabelConfusionMatrix
-from torchmetrics.functional.classification.matthews_corrcoef import _matthews_corrcoef_reduce
+from torchmetrics.functional.classification.matthews_corrcoef import (
+    _matthews_corrcoef_compute,
+    _matthews_corrcoef_reduce,
+    _matthews_corrcoef_update,
+)
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
@@ -215,8 +220,17 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
         return _matthews_corrcoef_reduce(self.confmat)
 
 
-class MatthewsCorrCoef:
-    r"""Calculates `Matthews correlation coefficient`_ . This metric measures the general correlation or quality of
+class MatthewsCorrCoef(Metric):
+    r"""Matthews correlation coefficient.
+
+    .. note::
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Calculates `Matthews correlation coefficient`_ . This metric measures the general correlation or quality of
     a classification.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
@@ -227,30 +241,67 @@ class MatthewsCorrCoef:
     Legacy Example:
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> matthews_corrcoef = MatthewsCorrCoef(task='binary')
+        >>> matthews_corrcoef = MatthewsCorrCoef(num_classes=2)
         >>> matthews_corrcoef(preds, target)
         tensor(0.5774)
     """
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = False
+    confmat: Tensor
 
     def __new__(
         cls,
-        task: Literal["binary", "multiclass", "multilabel"] = None,
+        num_classes: int,
+        task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
         threshold: float = 0.5,
-        num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
-        if task == "binary":
-            return BinaryMatthewsCorrCoef(threshold, **kwargs)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            return MulticlassMatthewsCorrCoef(num_classes, **kwargs)
-        if task == "multilabel":
-            assert isinstance(num_labels, int)
-            return MultilabelMatthewsCorrCoef(num_labels, threshold, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )
+        if task is not None:
+            kwargs.update(dict(ignore_index=ignore_index, validate_args=validate_args))
+            if task == "binary":
+                return BinaryMatthewsCorrCoef(threshold, **kwargs)
+            if task == "multiclass":
+                assert isinstance(num_classes, int)
+                return MulticlassMatthewsCorrCoef(num_classes, **kwargs)
+            if task == "multilabel":
+                assert isinstance(num_labels, int)
+                return MultilabelMatthewsCorrCoef(num_labels, threshold, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        else:
+            rank_zero_warn(
+                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
+                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+                " and the general order of arguments may change, such that this metric will just function as an single"
+                " entrypoint to calling the three specialized versions.",
+                DeprecationWarning,
+            )
+        return super().__new__(cls)
+
+    def __init__(
+        self,
+        num_classes: int,
+        threshold: float = 0.5,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(**kwargs)
+        self.num_classes = num_classes
+        self.threshold = threshold
+
+        self.add_state("confmat", default=torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
+
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        """Update state with predictions and targets.
+        """
+        confmat = _matthews_corrcoef_update(preds, target, self.num_classes, self.threshold)
+        self.confmat += confmat
+
+    def compute(self) -> Tensor:
+        """Computes matthews correlation coefficient."""
+        return _matthews_corrcoef_compute(self.confmat)

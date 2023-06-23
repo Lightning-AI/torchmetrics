@@ -14,17 +14,27 @@
 from typing import Any, Optional
 
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.classification.accuracy import _accuracy_reduce
+from torchmetrics.functional.classification.accuracy import (
+    _accuracy_compute,
+    _accuracy_reduce,
+    _accuracy_update,
+    _check_subset_validity,
+    _mode,
+    _subset_accuracy_compute,
+    _subset_accuracy_update,
+)
 from torchmetrics.metric import Metric
 
 from torchmetrics.classification.stat_scores import (  # isort:skip
     BinaryStatScores,
     MulticlassStatScores,
-    MultilabelStatScores,
+    MultilabelStatScores, StatScores,
 )
+from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.enums import AverageMethod
 
 
 class BinaryAccuracy(BinaryStatScores):
@@ -312,8 +322,17 @@ class MultilabelAccuracy(MultilabelStatScores):
         )
 
 
-class Accuracy:
-    r"""Computes `Accuracy`_
+class Accuracy(StatScores):
+    r"""Accuracy.
+
+    .. note::
+        From v0.10 an ``'binary_*'``, ``'multiclass_*'``, ``'multilabel_*'`` version now exist of each classification
+        metric. Moving forward we recommend using these versions. This base metric will still work as it did
+        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
+        and the general order of arguments may change, such that this metric will just function as an single
+        entrypoint to calling the three specialized versions.
+
+    Computes Accuracy_:
 
     .. math::
         \text{Accuracy} = \frac{1}{N}\sum_i^N 1(y_i = \hat{y}_i)
@@ -329,40 +348,168 @@ class Accuracy:
         >>> import torch
         >>> target = torch.tensor([0, 1, 2, 3])
         >>> preds = torch.tensor([0, 2, 1, 3])
-        >>> accuracy = Accuracy(task="multiclass", num_classes=4)
+        >>> accuracy = Accuracy()
         >>> accuracy(preds, target)
         tensor(0.5000)
 
         >>> target = torch.tensor([0, 1, 2])
         >>> preds = torch.tensor([[0.1, 0.9, 0], [0.3, 0.1, 0.6], [0.2, 0.5, 0.3]])
-        >>> accuracy = Accuracy(task="multiclass", num_classes=3, top_k=2)
+        >>> accuracy = Accuracy(top_k=2)
         >>> accuracy(preds, target)
         tensor(0.6667)
     """
+    is_differentiable = False
+    higher_is_better = True
+    full_state_update: bool = False
+    correct: Tensor
+    total: Tensor
 
     def __new__(
         cls,
-        task: Literal["binary", "multiclass", "multilabel"],
+        task: Literal["binary", "multiclass", "multilabel"] = None,
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
-        multidim_average: Literal["global", "samplewise"] = "global",
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
         top_k: Optional[int] = 1,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        mdmc_average: Optional[str] = None,
+        multiclass: Optional[bool] = None,
+        subset_accuracy: bool = False,
         **kwargs: Any,
     ) -> Metric:
-        kwargs.update(dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args))
-        if task == "binary":
-            return BinaryAccuracy(threshold, **kwargs)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            assert isinstance(top_k, int)
-            return MulticlassAccuracy(num_classes, top_k, average, **kwargs)
-        if task == "multilabel":
-            assert isinstance(num_labels, int)
-            return MultilabelAccuracy(num_labels, threshold, average, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+        if task is not None:
+            assert multidim_average is not None
+            kwargs.update(
+                dict(multidim_average=multidim_average, ignore_index=ignore_index, validate_args=validate_args)
+            )
+            if task == "binary":
+                return BinaryAccuracy(threshold, **kwargs)
+            if task == "multiclass":
+                assert isinstance(num_classes, int)
+                assert isinstance(top_k, int)
+                return MulticlassAccuracy(num_classes, top_k, average, **kwargs)
+            if task == "multilabel":
+                assert isinstance(num_labels, int)
+                return MultilabelAccuracy(num_labels, threshold, average, **kwargs)
+            raise ValueError(
+                f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+            )
+        else:
+            rank_zero_warn(
+                "From v0.10 an `'Binary*'`, `'Multiclass*', `'Multilabel*'` version now exist of each classification"
+                " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
+                " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
+                " and the general order of arguments may change, such that this metric will just function as an single"
+                " entrypoint to calling the three specialized versions.",
+                DeprecationWarning,
+            )
+        return super().__new__(cls)
+
+    def __init__(
+        self,
+        task: Literal["binary", "multiclass", "multilabel"] = None,
+        threshold: float = 0.5,
+        num_classes: Optional[int] = None,
+        num_labels: Optional[int] = None,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+        multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+        top_k: Optional[int] = None,
+        ignore_index: Optional[int] = None,
+        validate_args: bool = True,
+        mdmc_average: Optional[str] = None,
+        multiclass: Optional[bool] = None,
+        subset_accuracy: bool = False,
+        **kwargs: Any,
+    ) -> None:
+        allowed_average = ["micro", "macro", "weighted", "samples", "none", None]
+        if average not in allowed_average:
+            raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
+
+        _reduce_options = (AverageMethod.WEIGHTED, AverageMethod.NONE, None)
+        if "reduce" not in kwargs:
+            kwargs["reduce"] = AverageMethod.MACRO if average in _reduce_options else average
+        if "mdmc_reduce" not in kwargs:
+            kwargs["mdmc_reduce"] = mdmc_average
+
+        super().__init__(
+            threshold=threshold,
+            top_k=top_k,
+            num_classes=num_classes,
+            multiclass=multiclass,
+            ignore_index=ignore_index,
+            **kwargs,
         )
+
+        if top_k is not None and (not isinstance(top_k, int) or top_k <= 0):
+            raise ValueError(f"The `top_k` should be an integer larger than 0, got {top_k}")
+
+        self.average = average
+        self.threshold = threshold
+        self.top_k = top_k
+        self.subset_accuracy = subset_accuracy
+        self.mode: DataType = None  # type: ignore
+        self.multiclass = multiclass
+        self.ignore_index = ignore_index
+
+        if self.subset_accuracy:
+            self.add_state("correct", default=tensor(0), dist_reduce_fx="sum")
+            self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
+
+    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
+        """Update state with predictions and targets.
+        """
+        mode = _mode(preds, target, self.threshold, self.top_k, self.num_classes, self.multiclass, self.ignore_index)
+
+        if not self.mode:
+            self.mode = mode
+        elif self.mode != mode:
+            raise ValueError(f"You can not use {mode} inputs with {self.mode} inputs.")
+
+        if self.subset_accuracy and not _check_subset_validity(self.mode):
+            self.subset_accuracy = False
+
+        if self.subset_accuracy:
+            correct, total = _subset_accuracy_update(
+                preds, target, threshold=self.threshold, top_k=self.top_k, ignore_index=self.ignore_index
+            )
+            self.correct += correct
+            self.total += total
+        else:
+            if not self.mode:
+                raise RuntimeError("You have to have determined mode.")
+            tp, fp, tn, fn = _accuracy_update(
+                preds,
+                target,
+                reduce=self.reduce,
+                mdmc_reduce=self.mdmc_reduce,
+                threshold=self.threshold,
+                num_classes=self.num_classes,
+                top_k=self.top_k,
+                multiclass=self.multiclass,
+                ignore_index=self.ignore_index,
+                mode=self.mode,
+            )
+
+            # Update states
+            if self.reduce != "samples" and self.mdmc_reduce != "samplewise":
+                self.tp += tp
+                self.fp += fp
+                self.tn += tn
+                self.fn += fn
+            else:
+                self.tp.append(tp)
+                self.fp.append(fp)
+                self.tn.append(tn)
+                self.fn.append(fn)
+
+    def compute(self) -> Tensor:
+        """Computes accuracy based on inputs passed in to ``update`` previously."""
+        if not self.mode:
+            raise RuntimeError("You have to have determined mode.")
+        if self.subset_accuracy:
+            return _subset_accuracy_compute(self.correct, self.total)
+        tp, fp, tn, fn = self._get_final_stats()
+        return _accuracy_compute(tp, fp, tn, fn, self.average, self.mdmc_reduce, self.mode)
