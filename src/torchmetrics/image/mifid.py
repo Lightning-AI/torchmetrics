@@ -11,16 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from numpy.lib.type_check import real
 from copy import deepcopy
 from typing import Any, List, Optional, Union
+
 import torch
+from numpy.lib.type_check import real
 from torch import Tensor
 from torch.nn import Module
+
 from torchmetrics.image.fid import NoTrainInceptionV3, _compute_fid
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 
 def _compute_cosine_distance(features1: Tensor, features2: Tensor, eps: float = 0.1):
@@ -43,6 +45,7 @@ def _mifid_compute(mu1: Tensor, sigma1: Tensor, features1: Tensor, mu2: Tensor, 
     mifid = fid_value / (distance + 10e-15)
     return mifid
 
+
 class MemorizationInformedFrechetInceptionDistance(Metric):
     higher_is_better: bool = False
     is_differentiable: bool = False
@@ -61,7 +64,6 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         super().__init__(**kwargs)
 
         if isinstance(feature, int):
-            num_features = feature
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ModuleNotFoundError(
                     "MemorizationInformedFrechetInceptionDistance metric requires that `Torch-fidelity` is installed."
@@ -78,7 +80,7 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         elif isinstance(feature, Module):
             self.inception = feature
             dummy_image = torch.randint(0, 255, (1, 3, 299, 299), dtype=torch.uint8, device=self.inception.device)
-            num_features = self.inception(dummy_image).shape[-1]
+            self.inception(dummy_image).shape[-1]
         else:
             raise TypeError("Got unknown input to argument `feature`")
 

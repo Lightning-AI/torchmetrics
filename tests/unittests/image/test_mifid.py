@@ -16,19 +16,19 @@ from __future__ import absolute_import, division, print_function
 import csv
 import gzip
 import os
-import pickle
 import pathlib
+import pickle
 import shutil
 import sys
 import urllib
 import warnings
+from functools import partial
 
 import numpy as np
 import tensorflow as tf
+from PIL import Image
 from scipy import linalg
 from tqdm import tqdm, tqdm_notebook
-from PIL import Image
-from functools import partial
 
 model_params = {
     'Inception': {

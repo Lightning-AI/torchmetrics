@@ -46,6 +46,7 @@ from torchmetrics.collections import MetricCollection  # noqa: E402
 from torchmetrics.detection import PanopticQuality  # noqa: E402
 from torchmetrics.image import (  # noqa: E402
     ErrorRelativeGlobalDimensionlessSynthesis,
+    MemorizationInformedFrechetInceptionDistance,
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
     RelativeAverageSpectralError,
@@ -55,7 +56,6 @@ from torchmetrics.image import (  # noqa: E402
     StructuralSimilarityIndexMeasure,
     TotalVariation,
     UniversalImageQualityIndex,
-    MemorizationInformedFrechetInceptionDistance,
 )
 from torchmetrics.metric import Metric  # noqa: E402
 from torchmetrics.nominal import CramersV  # noqa: E402
