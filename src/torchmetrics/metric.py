@@ -869,7 +869,9 @@ class Metric(Module, ABC):
         """Construct compositional metric using the logical and operator."""
         return CompositionalMetric(torch.bitwise_and, self, other)
 
-    def __eq__(self, other: Union["Metric", int, builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[override]
+    def __eq__(
+        self, other: Union["Metric", int, builtins.float, Tensor]  # type: ignore[override]
+    ) -> "CompositionalMetric":
         """Construct compositional metric using the equal operator."""
         return CompositionalMetric(torch.eq, self, other)
 
@@ -906,7 +908,9 @@ class Metric(Module, ABC):
         return CompositionalMetric(torch.mul, self, other)
 
     # Fixme: this shall return bool instead of Metric
-    def __ne__(self, other: Union["Metric", int, builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[override]
+    def __ne__(
+        self, other: Union["Metric", int, builtins.float, Tensor]  # type: ignore[override]
+    ) -> "CompositionalMetric":
         """Construct compositional metric using the not equal operator."""
         return CompositionalMetric(torch.ne, self, other)
 
