@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# It is needed to distinguish between native float and Metric's' function called float.
+# later, this function was used instead of the built-in float type...
 import builtins
 import functools
 import inspect
