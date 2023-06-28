@@ -1,17 +1,19 @@
-from numpy.lib.type_check import real
 from copy import deepcopy
 from typing import Any, List, Optional, Union
+
 import torch
+from numpy.lib.type_check import real
 from torch import Tensor
 from torch.nn import Module
+
 from torchmetrics.image.fid import NoTrainInceptionV3, _compute_fid
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
+
 # Implementation functions inspired by https://github.com/jybai/generative-memorization-benchmark/blob/main/src/competition_scoring.py
 def _normalize_rows(x: Tensor):
-    """
-    function that normalizes each row of the matrix x to have unit length.
+    """Function that normalizes each row of the matrix x to have unit length.
 
     Args:
      ``x``: A PyTorch tensor of shape (n, m)
@@ -21,11 +23,13 @@ def _normalize_rows(x: Tensor):
     """
     return x / torch.norm(x, dim=1, keepdim=True)
 
+
 def _distance_thresholding(d: Tensor, eps=0.1):
     if d < eps:
         return d
     else:
         return 1
+
 
 def _compute_cosine_distance(features1: Tensor, features2: Tensor):
     features1_nozero = features1[torch.sum(features1, dim=1) != 0]
@@ -34,15 +38,15 @@ def _compute_cosine_distance(features1: Tensor, features2: Tensor):
     norm_f2 = _normalize_rows(features2_nozero)
 
     d = 1.0 - torch.abs(torch.matmul(norm_f1, norm_f2.t()))
-    mean_min_d = torch.mean(torch.min(d, dim=1).values)
-    return mean_min_d
+    return torch.mean(torch.min(d, dim=1).values)
+
 
 def _mifid_compute(mu1: Tensor, sigma1: Tensor, features1: Tensor, mu2: Tensor, sigma2: Tensor, features2: Tensor):
     fid_value = _compute_fid(mu1, sigma1, mu2, sigma2)
     distance = _compute_cosine_distance(features1, features2)
     distance_thr = _distance_thresholding(distance, eps=0.1)
-    mifid = fid_value / (distance_thr + 10e-15)
-    return mifid
+    return fid_value / (distance_thr + 10e-15)
+
 
 class MemorizationInformedFrechetInceptionDistance(Metric):
     higher_is_better: bool = False
@@ -110,7 +114,6 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
 
     def compute(self) -> Tensor:
         """Calculate FID score based on accumulated extracted features from the two distributions."""
-
         mean_real = torch.mean(self.real_features_stacked, dim=0).unsqueeze(0)
         mean_fake = torch.mean(self.fake_features_stacked, dim=0).unsqueeze(0)
 
