@@ -85,7 +85,10 @@ class MetricCollection(ModuleDict):
         ValueError:
             If ``postfix`` is set and it is not a string.
 
-    Example (input as list):
+    Example::
+        In the most basic case, the metrics can be passed in as a list or tuple. The keys of the output dict will be
+        the same as the class name of the metric:
+
         >>> from torch import tensor
         >>> from pprint import pprint
         >>> from torchmetrics import MetricCollection
@@ -101,7 +104,10 @@ class MetricCollection(ModuleDict):
          'MulticlassPrecision': tensor(0.0667),
          'MulticlassRecall': tensor(0.1111)}
 
-    Example (input as arguments):
+    Example::
+        Alternatively, metrics can be passed in as arguments. The keys of the output dict will be the same as the
+        class name of the metric:
+
         >>> metrics = MetricCollection(MulticlassAccuracy(num_classes=3, average='micro'),
         ...                            MulticlassPrecision(num_classes=3, average='macro'),
         ...                            MulticlassRecall(num_classes=3, average='macro'))
@@ -110,7 +116,10 @@ class MetricCollection(ModuleDict):
          'MulticlassPrecision': tensor(0.0667),
          'MulticlassRecall': tensor(0.1111)}
 
-    Example (input as dict):
+    Example::
+        If multiple of the same metric class (with different parameters) should be chained together, metrics can be
+        passed in as a dict and the output dict will have the same keys as the input dict:
+
         >>> metrics = MetricCollection({'micro_recall': MulticlassRecall(num_classes=3, average='micro'),
         ...                             'macro_recall': MulticlassRecall(num_classes=3, average='macro')})
         >>> same_metric = metrics.clone()
@@ -119,20 +128,10 @@ class MetricCollection(ModuleDict):
         >>> pprint(same_metric(preds, target))
         {'macro_recall': tensor(0.1111), 'micro_recall': tensor(0.1250)}
 
-    Example (specification of compute groups):
-        >>> metrics = MetricCollection(
-        ...     MulticlassRecall(num_classes=3, average='macro'),
-        ...     MulticlassPrecision(num_classes=3, average='macro'),
-        ...     MeanSquaredError(),
-        ...     compute_groups=[['MulticlassRecall', 'MulticlassPrecision'], ['MeanSquaredError']]
-        ... )
-        >>> metrics.update(preds, target)
-        >>> pprint(metrics.compute())
-        {'MeanSquaredError': tensor(2.3750), 'MulticlassPrecision': tensor(0.0667), 'MulticlassRecall': tensor(0.1111)}
-        >>> pprint(metrics.compute_groups)
-        {0: ['MulticlassRecall', 'MulticlassPrecision'], 1: ['MeanSquaredError']}
+    Example::
+        Metric collections can also be nested up to a single time. The output of the collection will still be a single
+        dict with the prefix and postfix arguments from the nested collection:
 
-    Example (nested metric collections):
         >>> metrics = MetricCollection([
         ...     MetricCollection([
         ...         MulticlassAccuracy(num_classes=3, average='macro'),
@@ -148,6 +147,23 @@ class MetricCollection(ModuleDict):
          'valmetrics/MulticlassAccuracy_micro': tensor(0.1250),
          'valmetrics/MulticlassPrecision_macro': tensor(0.0667),
          'valmetrics/MulticlassPrecision_micro': tensor(0.1250)}
+
+    Example::
+        The `compute_groups` argument allow you to specify which metrics should share metric state. By default, this
+        will automatically be derived but can also be set manually.
+
+        >>> metrics = MetricCollection(
+        ...     MulticlassRecall(num_classes=3, average='macro'),
+        ...     MulticlassPrecision(num_classes=3, average='macro'),
+        ...     MeanSquaredError(),
+        ...     compute_groups=[['MulticlassRecall', 'MulticlassPrecision'], ['MeanSquaredError']]
+        ... )
+        >>> metrics.update(preds, target)
+        >>> pprint(metrics.compute())
+        {'MeanSquaredError': tensor(2.3750), 'MulticlassPrecision': tensor(0.0667), 'MulticlassRecall': tensor(0.1111)}
+        >>> pprint(metrics.compute_groups)
+        {0: ['MulticlassRecall', 'MulticlassPrecision'], 1: ['MeanSquaredError']}
+
     """
 
     _groups: Dict[int, List[str]]
