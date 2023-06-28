@@ -50,16 +50,14 @@ def _calc_erbs(low_freq: float, fs: int, n_filters: int, device: torch.device) -
     min_bw = 24.7
     order = 1
     erbs = ((centre_freqs(fs, n_filters, low_freq) / ear_q) ** order + min_bw**order) ** (1 / order)
-    erbs = torch.tensor(erbs, device=device)
-    return erbs
+    return torch.tensor(erbs, device=device)
 
 
 @lru_cache(maxsize=100)
 def _make_erb_filters(fs: int, num_freqs: int, cutoff: float, device: torch.device) -> Tensor:
     cfs = centre_freqs(fs, num_freqs, cutoff)
     fcoefs = make_erb_filters(fs, cfs)
-    fcoefs = torch.tensor(fcoefs, device=device)
-    return fcoefs
+    return torch.tensor(fcoefs, device=device)
 
 
 @lru_cache(maxsize=100)
@@ -118,8 +116,7 @@ def _hilbert(x: Tensor, n: Optional[int] = None) -> Tensor:
         h[1 : (n + 1) // 2] = 2
 
     y = torch.fft.ifft(x_fft * h, dim=-1)
-    y = y[..., : x.shape[-1]]
-    return y
+    return y[..., : x.shape[-1]]
 
 
 def _erb_filterbank(wave: Tensor, coefs: Tensor) -> Tensor:
@@ -162,8 +159,7 @@ def _normalize_energy(energy: Tensor, drange: float = 30.0) -> Tensor:
     peak_energy = peak_energy.max(dim=3, keepdim=True).values
     min_energy = peak_energy * 10.0 ** (-drange / 10.0)
     energy = torch.where(energy < min_energy, min_energy, energy)
-    energy = torch.where(energy > peak_energy, peak_energy, energy)
-    return energy
+    return torch.where(energy > peak_energy, peak_energy, energy)
 
 
 def _cal_srmr_score(bw: Tensor, avg_energy: Tensor, cutoffs: Tensor) -> Tensor:
@@ -317,9 +313,8 @@ def speech_reverberation_modulation_energy_ratio(
         temp.append(score)
     score = torch.stack(temp)
 
-    score = score.reshape(*shape[:-1]) if len(shape) > 1 else score  # recover original shape
+    return score.reshape(*shape[:-1]) if len(shape) > 1 else score  # recover original shape
 
-    return score
 
 
 def _srmr_arg_validate(

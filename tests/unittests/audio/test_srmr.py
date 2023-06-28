@@ -42,8 +42,7 @@ def _ref_metric_batch(preds: Tensor, target: Tensor, fs: int, fast: bool, norm: 
         val, _ = srmrpy_srmr(preds[b, ...], fs=fs, fast=fast, norm=norm)
         score.append(val)
     score = torch.tensor(score)
-    score = score.reshape(*shape[:-1])
-    return score
+    return score.reshape(*shape[:-1])
 
 
 def _average_metric(preds, target, metric_func, **kwargs: Dict[str, Any]):
