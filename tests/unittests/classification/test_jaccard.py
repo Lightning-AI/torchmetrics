@@ -131,7 +131,7 @@ def _sklearn_jaccard_index_multiclass(preds, target, ignore_index=None, average=
     preds = preds.flatten()
     target = target.flatten()
     target, preds = remove_ignore_index(target, preds, ignore_index)
-    if ignore_index is not None and 0 <= ignore_index <= NUM_CLASSES:
+    if ignore_index is not None and 0 <= ignore_index < NUM_CLASSES:
         labels = [i for i in range(NUM_CLASSES) if i != ignore_index]
         res = sk_jaccard_index(y_true=target, y_pred=preds, average=average, labels=labels)
         return np.insert(res, ignore_index, 0.0) if average is None else res
