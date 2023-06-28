@@ -25,7 +25,6 @@ from sklearn.metrics import mean_squared_error as sk_mean_squared_error
 from sklearn.metrics import mean_squared_log_error as sk_mean_squared_log_error
 from sklearn.metrics._regression import _check_reg_targets
 from sklearn.utils import check_consistent_length
-
 from torchmetrics.functional import (
     mean_absolute_error,
     mean_absolute_percentage_error,
@@ -42,6 +41,7 @@ from torchmetrics.regression import (
     WeightedMeanAbsolutePercentageError,
 )
 from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -69,7 +69,7 @@ def _baseline_symmetric_mape(
     sample_weight: Optional[np.ndarray] = None,
     multioutput: str = "uniform_average",
 ):
-    r"""Symmetric mean absolute percentage error regression loss (SMAPE_):
+    r"""Symmetric mean absolute percentage error regression loss (SMAPE_).
 
     .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n\frac{max(|   y_i - \hat{y_i} |}{| y_i | + | \hat{y_i} |, \epsilon)}
 
@@ -115,7 +115,7 @@ def _baseline_symmetric_mape(
     return np.average(output_errors, weights=multioutput)
 
 
-def sk_weighted_mean_abs_percentage_error(target, preds):
+def _sk_weighted_mean_abs_percentage_error(target, preds):
     return np.sum(np.abs(target - preds)) / np.sum(np.abs(target))
 
 
@@ -161,7 +161,7 @@ def _multi_target_ref_metric(preds, target, sk_fn, metric_args):
         (
             WeightedMeanAbsolutePercentageError,
             weighted_mean_absolute_percentage_error,
-            sk_weighted_mean_abs_percentage_error,
+            _sk_weighted_mean_abs_percentage_error,
             {},
         ),
     ],
@@ -173,7 +173,7 @@ class TestMeanError(MetricTester):
     def test_mean_error_class(
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args, ddp
     ):
-        # todo: `metric_functional` is unused
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -186,7 +186,7 @@ class TestMeanError(MetricTester):
     def test_mean_error_functional(
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args
     ):
-        # todo: `metric_class` is unused
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
             target=target,
@@ -198,6 +198,7 @@ class TestMeanError(MetricTester):
     def test_mean_error_differentiability(
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args
     ):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -207,6 +208,7 @@ class TestMeanError(MetricTester):
         )
 
     def test_mean_error_half_cpu(self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args):
+        """Test dtype support of the metric on CPU."""
         if metric_class == MeanSquaredLogError:
             # MeanSquaredLogError half + cpu does not work due to missing support in torch.log
             pytest.xfail("MeanSquaredLogError metric does not support cpu + half precision")
@@ -227,6 +229,7 @@ class TestMeanError(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_mean_error_half_gpu(self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(preds, target, metric_class, metric_functional)
 
 
@@ -234,6 +237,7 @@ class TestMeanError(MetricTester):
     "metric_class", [MeanSquaredError, MeanAbsoluteError, MeanSquaredLogError, MeanAbsolutePercentageError]
 )
 def test_error_on_different_shape(metric_class):
+    """Test that error is raised on different shapes of input."""
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))

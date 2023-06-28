@@ -11,13 +11,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.audio.pit import PermutationInvariantTraining  # noqa: F401
-from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio, SignalDistortionRatio  # noqa: F401
-from torchmetrics.audio.snr import ScaleInvariantSignalNoiseRatio, SignalNoiseRatio  # noqa: F401
+from torchmetrics.audio.pit import PermutationInvariantTraining
+from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio, SignalDistortionRatio
+from torchmetrics.audio.snr import (
+    ComplexScaleInvariantSignalNoiseRatio,
+    ScaleInvariantSignalNoiseRatio,
+    SignalNoiseRatio,
+)
 from torchmetrics.utilities.imports import _PESQ_AVAILABLE, _PYSTOI_AVAILABLE
 
+__all__ = [
+    "PermutationInvariantTraining",
+    "ScaleInvariantSignalDistortionRatio",
+    "SignalDistortionRatio",
+    "ScaleInvariantSignalNoiseRatio",
+    "SignalNoiseRatio",
+    "ComplexScaleInvariantSignalNoiseRatio",
+]
+
 if _PESQ_AVAILABLE:
-    from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality  # noqa: F401
+    from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
+
+    __all__.append("PerceptualEvaluationSpeechQuality")
 
 if _PYSTOI_AVAILABLE:
-    from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility  # noqa: F401
+    from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
+
+    __all__.append("ShortTimeObjectiveIntelligibility")

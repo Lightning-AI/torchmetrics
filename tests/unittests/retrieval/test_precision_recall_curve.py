@@ -13,15 +13,15 @@
 # limitations under the License.
 
 from functools import partial
-from typing import Callable, Tuple, Union
+from typing import Callable, Optional, Tuple, Union
 
 import numpy as np
 import pytest
 import torch
 from numpy import array
 from torch import Tensor, tensor
+from torchmetrics.retrieval import RetrievalPrecisionRecallCurve
 
-from torchmetrics import RetrievalPrecisionRecallCurve
 from unittests.helpers import seed_all
 from unittests.helpers.testers import Metric, MetricTester
 from unittests.retrieval.helpers import _default_metric_class_input_arguments, get_group_indexes
@@ -34,10 +34,10 @@ seed_all(42)
 def _compute_precision_recall_curve(
     preds: Union[Tensor, array],
     target: Union[Tensor, array],
-    indexes: Union[Tensor, array] = None,
-    max_k: int = None,
+    indexes: Optional[Union[Tensor, array]] = None,
+    max_k: Optional[int] = None,
     adaptive_k: bool = False,
-    ignore_index: int = None,
+    ignore_index: Optional[int] = None,
     empty_target_action: str = "skip",
     reverse: bool = False,
 ) -> Tuple[Tensor, Tensor, Tensor]:
@@ -125,6 +125,7 @@ class RetrievalPrecisionRecallCurveTester(MetricTester):
         metric_args: dict,
         reverse: bool = False,
     ):
+        """Test class implementation of metric."""
         _ref_metric_adapted = partial(reference_metric, reverse=reverse, **metric_args)
 
         super().run_class_metric_test(
@@ -161,6 +162,7 @@ class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
         max_k,
         adaptive_k,
     ):
+        """Test class implementation of metric."""
         metric_args = {
             "max_k": max_k,
             "adaptive_k": adaptive_k,

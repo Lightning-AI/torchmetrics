@@ -20,9 +20,9 @@ import pytest
 import torch
 from dython.nominal import theils_u as dython_theils_u
 from lightning_utilities.core.imports import compare_version
-
 from torchmetrics.functional.nominal.theils_u import theils_u, theils_u_matrix
 from torchmetrics.nominal import TheilsU
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers.testers import MetricTester
 
@@ -50,6 +50,7 @@ _input_logits = Input(
 
 @pytest.fixture()
 def theils_u_matrix_input():
+    """Define input in matrix format for the metric."""
     matrix = torch.cat(
         [
             torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES * BATCH_SIZE, 1), dtype=torch.float),
@@ -87,9 +88,6 @@ def _dython_theils_u_matrix(matrix, nan_strategy, nan_replace_value):
 
 
 @pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
-@pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
-    torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
-)
 @pytest.mark.parametrize(
     "preds, target",
     [
@@ -106,6 +104,7 @@ class TestTheilsU(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_theils_u(self, ddp, preds, target, nan_strategy, nan_replace_value):
+        """Test class implementation of metric."""
         metric_args = {
             "nan_strategy": nan_strategy,
             "nan_replace_value": nan_replace_value,
@@ -126,6 +125,7 @@ class TestTheilsU(MetricTester):
         )
 
     def test_theils_u_functional(self, preds, target, nan_strategy, nan_replace_value):
+        """Test functional implementation of metric."""
         metric_args = {
             "nan_strategy": nan_strategy,
             "nan_replace_value": nan_replace_value,
@@ -140,6 +140,7 @@ class TestTheilsU(MetricTester):
         )
 
     def test_theils_u_differentiability(self, preds, target, nan_strategy, nan_replace_value):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {
             "nan_strategy": nan_strategy,
             "nan_replace_value": nan_replace_value,
@@ -155,11 +156,9 @@ class TestTheilsU(MetricTester):
 
 
 @pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
-@pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
-    torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
-)
 @pytest.mark.parametrize(("nan_strategy", "nan_replace_value"), [("replace", 1.0), ("drop", None)])
 def test_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value):
+    """Test matrix version of metric works as expected."""
     tm_score = theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
     reference_score = _dython_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
     assert torch.allclose(tm_score, reference_score, atol=1e-6)

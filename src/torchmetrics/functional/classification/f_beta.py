@@ -31,7 +31,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_tensor_validation,
     _multilabel_stat_scores_update,
 )
-from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.compute import _adjust_weights_safe_divide, _safe_divide
 from torchmetrics.utilities.enums import ClassificationTask
 
 
@@ -43,6 +43,7 @@ def _fbeta_reduce(
     beta: float,
     average: Optional[Literal["binary", "micro", "macro", "weighted", "none"]],
     multidim_average: Literal["global", "samplewise"] = "global",
+    multilabel: bool = False,
 ) -> Tensor:
     beta2 = beta**2
     if average == "binary":
@@ -54,10 +55,7 @@ def _fbeta_reduce(
         return _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
 
     fbeta_score = _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
-    if average is None or average == "none":
-        return fbeta_score
-    weights = tp + fn if average == "weighted" else torch.ones_like(fbeta_score)
-    return _safe_divide(weights * fbeta_score, weights.sum(-1, keepdim=True)).sum(-1)
+    return _adjust_weights_safe_divide(fbeta_score, average, multilabel, tp, fp, fn)
 
 
 def _binary_fbeta_score_arg_validation(
@@ -375,7 +373,7 @@ def multilabel_fbeta_score(
         _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
-    return _fbeta_reduce(tp, fp, tn, fn, beta, average=average, multidim_average=multidim_average)
+    return _fbeta_reduce(tp, fp, tn, fn, beta, average=average, multidim_average=multidim_average, multilabel=True)
 
 
 def binary_f1_score(
@@ -694,17 +692,20 @@ def fbeta_score(
         tensor(0.3333)
     """
     task = ClassificationTask.from_str(task)
-    assert multidim_average is not None
+    assert multidim_average is not None  # noqa: S101  # needed for mypy
     if task == ClassificationTask.BINARY:
         return binary_fbeta_score(preds, target, beta, threshold, multidim_average, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
-        assert isinstance(num_classes, int)
-        assert isinstance(top_k, int)
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
+        if not isinstance(top_k, int):
+            raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
         return multiclass_fbeta_score(
             preds, target, beta, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
     if task == ClassificationTask.MULTILABEL:
-        assert isinstance(num_labels, int)
+        if not isinstance(num_labels, int):
+            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_fbeta_score(
             preds, target, beta, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
@@ -742,17 +743,20 @@ def f1_score(
         tensor(0.3333)
     """
     task = ClassificationTask.from_str(task)
-    assert multidim_average is not None
+    assert multidim_average is not None  # noqa: S101  # needed for mypy
     if task == ClassificationTask.BINARY:
         return binary_f1_score(preds, target, threshold, multidim_average, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
-        assert isinstance(num_classes, int)
-        assert isinstance(top_k, int)
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
+        if not isinstance(top_k, int):
+            raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
         return multiclass_f1_score(
             preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
     if task == ClassificationTask.MULTILABEL:
-        assert isinstance(num_labels, int)
+        if not isinstance(num_labels, int):
+            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_f1_score(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )

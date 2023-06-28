@@ -14,19 +14,41 @@
 import pickle
 import sys
 from functools import partial, wraps
-from typing import Any, Callable, Optional, Sequence, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Union
 
+import numpy as np
 import pytest
 import torch
 from torch import Tensor
 from torch.multiprocessing import set_start_method
-
 from torchmetrics import Metric
+
 from unittests import NUM_PROCESSES
 from unittests.helpers.testers import MetricTester, _assert_allclose, _assert_requires_grad, _assert_tensor
 
 TEXT_METRIC_INPUT = Union[Sequence[str], Sequence[Sequence[str]], Sequence[Sequence[Sequence[str]]]]
 NUM_BATCHES = 2
+
+
+def _assert_all_close_regardless_of_order(
+    pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Optional[str] = None
+) -> None:
+    """Recursively asserting that two results are within a certain tolerance regardless of the order."""
+    # single output compare
+    if isinstance(pl_result, Tensor):
+        assert np.allclose(pl_result.detach().cpu().numpy().mean(-1), sk_result.mean(-1), atol=atol, equal_nan=True)
+    # multi output compare
+    elif isinstance(pl_result, Sequence):
+        for pl_res, sk_res in zip(pl_result, sk_result):
+            _assert_allclose(pl_res, sk_res, atol=atol)
+    elif isinstance(pl_result, Dict):
+        if key is None:
+            raise KeyError("Provide Key for Dict based metric results.")
+        assert np.allclose(
+            pl_result[key].detach().cpu().numpy().mean(-1), sk_result.mean(-1), atol=atol, equal_nan=True
+        )
+    else:
+        raise ValueError("Unknown format for comparison")
 
 
 def _class_test(
@@ -37,17 +59,18 @@ def _class_test(
     metric_class: Metric,
     ref_metric: Callable,
     dist_sync_on_step: bool,
-    metric_args: dict = None,
+    metric_args: Optional[dict] = None,
     check_dist_sync_on_step: bool = True,
     check_batch: bool = True,
     atol: float = 1e-8,
     device: str = "cpu",
     fragment_kwargs: bool = False,
     check_scriptable: bool = True,
-    key: str = None,
+    key: Optional[str] = None,
+    ignore_order: Optional[bool] = None,
     **kwargs_update: Any,
 ):
-    """Utility function doing the actual comparison between class metric and reference metric.
+    """Comparison between class metric and reference metric.
 
     Args:
         rank: rank of current process
@@ -69,6 +92,7 @@ def _class_test(
         check_scriptable: bool indicating if metric should also be tested if it can be scripted
         key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output against
             the ref_metric.
+        ignore_order: Ignore order of prediction accross processes when DDP is used.
         kwargs_update: Additional keyword arguments that will be passed with preds and
             targets when running update on the metric.
     """
@@ -107,7 +131,10 @@ def _class_test(
             }
 
             sk_batch_result = ref_metric(ddp_preds, ddp_targets, **ddp_kwargs_upd)
-            _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
+            if ignore_order:
+                _assert_all_close_regardless_of_order(batch_result, sk_batch_result, atol=atol, key=key)
+            else:
+                _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
 
         elif check_batch and not metric.dist_sync_on_step:
             batch_kwargs_update = {
@@ -115,7 +142,10 @@ def _class_test(
                 for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
             }
             sk_batch_result = ref_metric(preds[i], targets[i], **batch_kwargs_update)
-            _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
+            if ignore_order:
+                _assert_all_close_regardless_of_order(batch_result, sk_batch_result, atol=atol, key=key)
+            else:
+                _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
 
     # check that metrics are hashable
     assert hash(metric)
@@ -136,7 +166,10 @@ def _class_test(
     }
     sk_result = ref_metric(total_preds, total_targets, **total_kwargs_update)
     # assert after aggregation
-    _assert_allclose(result, sk_result, atol=atol, key=key)
+    if ignore_order:
+        _assert_all_close_regardless_of_order(result, sk_result, atol=atol, key=key)
+    else:
+        _assert_allclose(result, sk_result, atol=atol, key=key)
 
 
 def _functional_test(
@@ -144,14 +177,14 @@ def _functional_test(
     targets: TEXT_METRIC_INPUT,
     metric_functional: Callable,
     ref_metric: Callable,
-    metric_args: dict = None,
+    metric_args: Optional[dict] = None,
     atol: float = 1e-8,
     device: str = "cpu",
     fragment_kwargs: bool = False,
-    key: str = None,
-    **kwargs_update,
+    key: Optional[str] = None,
+    **kwargs_update: Any,
 ):
-    """Utility function doing the actual comparison between functional metric and reference metric.
+    """Comparison between functional metric and reference metric.
 
     Args:
         preds: torch tensor with predictions
@@ -195,7 +228,7 @@ def _assert_half_support(
     preds: TEXT_METRIC_INPUT,
     targets: TEXT_METRIC_INPUT,
     device: str = "cpu",
-    **kwargs_update,
+    **kwargs_update: Any,
 ):
     """Test if an metric can be used with half precision tensors.
 
@@ -233,12 +266,12 @@ class TextTester(MetricTester):
         targets: TEXT_METRIC_INPUT,
         metric_functional: Callable,
         reference_metric: Callable,
-        metric_args: dict = None,
+        metric_args: Optional[dict] = None,
         fragment_kwargs: bool = False,
-        key: str = None,
-        **kwargs_update,
+        key: Optional[str] = None,
+        **kwargs_update: Any,
     ):
-        """Main method that should be used for testing functions. Call this inside testing method.
+        """Core method that should be used for testing functions. Call this inside testing method.
 
         Args:
             preds: torch tensor with predictions
@@ -275,15 +308,16 @@ class TextTester(MetricTester):
         metric_class: Metric,
         reference_metric: Callable,
         dist_sync_on_step: bool = False,
-        metric_args: dict = None,
+        metric_args: Optional[dict] = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,
         fragment_kwargs: bool = False,
         check_scriptable: bool = True,
-        key: str = None,
-        **kwargs_update,
+        key: Optional[str] = None,
+        ignore_order: Optional[bool] = None,
+        **kwargs_update: Any,
     ):
-        """Main method that should be used for testing class. Call this inside testing methods.
+        """Core method that should be used for testing class. Call this inside testing methods.
 
         Args:
             ddp: bool, if running in ddp mode or not
@@ -302,6 +336,7 @@ class TextTester(MetricTester):
             check_scriptable: bool indicating if metric should also be tested if it can be scripted
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
                 against the ref_metric.
+            ignore_order: Ignore order of prediction accross processes when DDP is used.
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
         """
@@ -326,6 +361,7 @@ class TextTester(MetricTester):
                     fragment_kwargs=fragment_kwargs,
                     check_scriptable=check_scriptable,
                     key=key,
+                    ignore_order=ignore_order,
                     **kwargs_update,
                 ),
                 [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)],
@@ -358,9 +394,9 @@ class TextTester(MetricTester):
         targets: TEXT_METRIC_INPUT,
         metric_module: Metric,
         metric_functional: Callable,
-        metric_args: dict = None,
-        **kwargs_update,
-    ):
+        metric_args: Optional[dict] = None,
+        **kwargs_update: Any,
+    ) -> None:
         """Test if a metric can be used with half precision tensors on cpu.
 
         Args:
@@ -383,9 +419,9 @@ class TextTester(MetricTester):
         targets: TEXT_METRIC_INPUT,
         metric_module: Metric,
         metric_functional: Callable,
-        metric_args: dict = None,
-        **kwargs_update,
-    ):
+        metric_args: Optional[dict] = None,
+        **kwargs_update: Any,
+    ) -> None:
         """Test if a metric can be used with half precision tensors on gpu.
 
         Args:
@@ -408,9 +444,9 @@ class TextTester(MetricTester):
         targets: TEXT_METRIC_INPUT,
         metric_module: Metric,
         metric_functional: Callable,
-        metric_args: dict = None,
-        key: str = None,
-    ):
+        metric_args: Optional[dict] = None,
+        key: Optional[str] = None,
+    ) -> None:
         """Test if a metric is differentiable or not.
 
         Args:
@@ -436,7 +472,7 @@ class TextTester(MetricTester):
 
 
 def skip_on_connection_issues(reason: str = "Unable to load checkpoints from HuggingFace `transformers`."):
-    """Wrapper which handles download related tests if they fail due to connection issues.
+    """Handle download related tests if they fail due to connection issues.
 
     The tests run normally if no connection issue arises, and they're marked as skipped otherwise.
     """

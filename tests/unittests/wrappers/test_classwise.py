@@ -1,8 +1,8 @@
 import pytest
 import torch
-
-from torchmetrics import ClasswiseWrapper, MetricCollection
+from torchmetrics import MetricCollection
 from torchmetrics.classification import MulticlassAccuracy, MulticlassRecall
+from torchmetrics.wrappers import ClasswiseWrapper
 
 
 def test_raises_error_on_wrong_input():

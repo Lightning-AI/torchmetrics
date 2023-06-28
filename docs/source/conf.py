@@ -79,7 +79,7 @@ _transform_changelog(
 
 # If your documentation needs a minimal Sphinx version, state it here.
 
-needs_sphinx = "4.0"
+needs_sphinx = "6.2"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -106,6 +106,7 @@ extensions = [
 
 # Set that source code from plotting is always included
 plot_include_source = True
+plot_html_show_source_link = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -137,7 +138,7 @@ master_doc = "index"
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -301,7 +302,6 @@ def package_list_from_file(file):
 # define mapping from PyPI names to python imports
 PACKAGE_MAPPING = {
     "PyYAML": "yaml",
-    "pytorch-lightning": "pytorch_lightning",
 }
 MOCK_PACKAGES = []
 if SPHINX_MOCK_REQUIREMENTS:
@@ -404,11 +404,14 @@ doctest_global_setup = """
 import os
 import torch
 
+from torch import Tensor
 from torchmetrics import Metric
 
 """
 coverage_skip_undoc_in_source = True
 
+# jstor and sciencedirect cannot be accessed from python, but links work fine in a local doc
 linkcheck_ignore = [
-    "https://www.jstor.org/stable/2332303"  # jstor cannot be accessed from python, but link work fine in a local doc
+    "https://www.jstor.org/stable/2332303",
+    "https://www.sciencedirect.com/science/article/pii/S0047259X08000456",
 ]

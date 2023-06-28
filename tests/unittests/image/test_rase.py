@@ -19,10 +19,10 @@ import numpy as np
 import pytest
 import sewar
 import torch
-
-from torchmetrics import RelativeAverageSpectralError
 from torchmetrics.functional import relative_average_spectral_error
 from torchmetrics.functional.image.helper import _uniform_filter
+from torchmetrics.image import RelativeAverageSpectralError
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers.testers import MetricTester
 
@@ -41,7 +41,11 @@ for size, channel, window_size, dtype in [
 
 
 def _sewar_rase(preds, target, window_size):
-    """Custom implementation since sewar only supports single image and aggregation therefore needs adjustments."""
+    """Baseline implementation of metric.
+
+    This custom implementation is nessesary since sewar only supports single image and aggregation therefore needs
+    adjustments.
+    """
     target_sum = torch.sum(_uniform_filter(target, window_size) / (window_size**2), dim=0)
     target_mean = target_sum / target.shape[0]
     target_mean = target_mean.mean(0)  # mean over image channels
@@ -63,13 +67,13 @@ def _sewar_rase(preds, target, window_size):
 
 @pytest.mark.parametrize("preds, target, window_size", [(i.preds, i.target, i.window_size) for i in _inputs])
 class TestRelativeAverageSpectralError(MetricTester):
-    """Testing of Relative Average Spectral Error"""
+    """Testing of Relative Average Spectral Error."""
 
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [False])
     def test_rase(self, preds, target, window_size, ddp):
-        """Test class version of rase metric."""
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
@@ -81,7 +85,7 @@ class TestRelativeAverageSpectralError(MetricTester):
         )
 
     def test_rase_functional(self, preds, target, window_size):
-        """Test functional version of rase metric."""
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,

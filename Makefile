@@ -26,13 +26,13 @@ test: clean env data
 	cd tests && python -m coverage report
 
 docs: clean
-	pip install -e .
-	pip install --quiet -r requirements/docs.txt
+	FREEZE_REQUIREMENTS=1 pip install -e . --quiet -r requirements/docs.txt
+	# apt-get install -y texlive-latex-extra dvipng texlive-pictures texlive-fonts-recommended cm-super
 	python -m sphinx -b html -W --keep-going docs/source docs/build
 
 env:
-	pip install -e .
-	python ./requirements/adjust-versions.py requirements/image.txt
+	export FREEZE_REQUIREMENTS=1
+	pip install -e . -U
 	pip install -r requirements/devel.txt
 
 data:

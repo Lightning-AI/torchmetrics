@@ -66,7 +66,8 @@ def _jaccard_index_reduce(
         return confmat[1, 1] / (confmat[0, 1] + confmat[1, 0] + confmat[1, 1])
 
     ignore_index_cond = ignore_index is not None and 0 <= ignore_index <= confmat.shape[0]
-    if confmat.ndim == 3:  # multilabel
+    multilabel = confmat.ndim == 3
+    if multilabel:
         num = confmat[:, 1, 1]
         denom = confmat[:, 1, 1] + confmat[:, 0, 1] + confmat[:, 1, 0]
     else:  # multiclass
@@ -87,6 +88,8 @@ def _jaccard_index_reduce(
         weights = torch.ones_like(jaccard)
         if ignore_index_cond:
             weights[ignore_index] = 0.0
+        if not multilabel:
+            weights[confmat.sum(1) + confmat.sum(0) == 0] = 0.0
     return ((weights * jaccard) / weights.sum()).sum()
 
 
@@ -343,9 +346,11 @@ def jaccard_index(
     if task == ClassificationTask.BINARY:
         return binary_jaccard_index(preds, target, threshold, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
-        assert isinstance(num_classes, int)
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         return multiclass_jaccard_index(preds, target, num_classes, average, ignore_index, validate_args)
     if task == ClassificationTask.MULTILABEL:
-        assert isinstance(num_labels, int)
+        if not isinstance(num_labels, int):
+            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_jaccard_index(preds, target, num_labels, threshold, average, ignore_index, validate_args)
     raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

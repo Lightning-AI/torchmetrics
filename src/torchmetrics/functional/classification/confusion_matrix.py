@@ -99,7 +99,7 @@ def _binary_confusion_matrix_tensor_validation(
     if check:
         raise RuntimeError(
             f"Detected the following values in `target`: {unique_values} but expected only"
-            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+            f" the following values {[0, 1] if ignore_index is None else [ignore_index]}."
         )
 
     # If preds is label tensor, also check that it only contains {0,1} values
@@ -457,7 +457,7 @@ def _multilabel_confusion_matrix_tensor_validation(
     if check:
         raise RuntimeError(
             f"Detected the following values in `target`: {unique_values} but expected only"
-            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+            f" the following values {[0, 1] if ignore_index is None else [ignore_index]}."
         )
 
     # If preds is label tensor, also check that it only contains [0,1] values
@@ -608,7 +608,7 @@ def confusion_matrix(
 
     Legacy Example:
         >>> from torch import tensor
-        >>> from torchmetrics import ConfusionMatrix
+        >>> from torchmetrics.classification import ConfusionMatrix
         >>> target = tensor([1, 1, 0, 0])
         >>> preds = tensor([0, 1, 0, 0])
         >>> confmat = ConfusionMatrix(task="binary")
@@ -636,9 +636,11 @@ def confusion_matrix(
     if task == ClassificationTask.BINARY:
         return binary_confusion_matrix(preds, target, threshold, normalize, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
-        assert isinstance(num_classes, int)
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         return multiclass_confusion_matrix(preds, target, num_classes, normalize, ignore_index, validate_args)
     if task == ClassificationTask.MULTILABEL:
-        assert isinstance(num_labels, int)
+        if not isinstance(num_labels, int):
+            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_confusion_matrix(preds, target, num_labels, threshold, normalize, ignore_index, validate_args)
     return None

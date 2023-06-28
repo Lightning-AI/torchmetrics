@@ -2,7 +2,7 @@
 Quick Start
 ###########
 
-TorchMetrics is a collection of 90+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
+TorchMetrics is a collection of 100+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
 * A standardized interface to increase reproducibility
 * Reduces Boilerplate
@@ -86,7 +86,7 @@ The code below shows how to use the class-based interface:
     import torchmetrics
 
     # initialize metric
-    metric = torchmetrics.Accuracy(task="multiclass", num_classes=5)
+    metric = torchmetrics.classification.Accuracy(task="multiclass", num_classes=5)
 
     n_batches = 10
     for i in range(n_batches):

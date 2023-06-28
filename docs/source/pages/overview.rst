@@ -1,7 +1,7 @@
 .. testsetup:: *
 
     import torch
-    from pytorch_lightning.core.lightning import LightningModule
+    from lightning import LightningModule
 
 ##################
 Structure Overview
@@ -96,7 +96,7 @@ be moved to the same device as the input of the metric:
     print(out.device) # cuda:0
 
 However, when **properly defined** inside a :class:`~torch.nn.Module` or
-:class:`~pytorch_lightning.core.lightning.LightningModule` the metric will be automatically moved
+:class:`~lightning.LightningModule` the metric will be automatically moved
 to the same device as the module when using ``.to(device)``.  Being
 **properly defined** means that the metric is correctly identified as a child module of the
 model (check ``.children()`` attribute of the model). Therefore, metrics cannot be placed
@@ -129,32 +129,6 @@ the native `MetricCollection`_ module can also be used to wrap multiple metrics.
             val4 = self.metric4(preds, target)
 
 You can always check which device the metric is located on using the `.device` property.
-
-Metrics in Dataparallel (DP) mode
-=================================
-
-When using metrics in `Dataparallel (DP) <https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel>`_
-mode, one should be aware DP will both create and clean-up replicas of Metric objects during a single forward pass.
-This has the consequence, that the metric state of the replicas will as default be destroyed before we can sync
-them. It is therefore recommended, when using metrics in DP mode, to initialize them with ``dist_sync_on_step=True``
-such that metric states are synchonized between the main process and the replicas before they are destroyed.
-
-Addtionally, if metrics are used together with a `LightningModule` the metric update/logging should be done
-in the ``<mode>_step_end`` method (where ``<mode>`` is either ``training``, ``validation`` or ``test``), else
-it will lead to wrong accumulation. In practice do the following:
-
-.. testcode::
-
-    def training_step(self, batch, batch_idx):
-        data, target = batch
-        preds = self(data)
-        ...
-        return {'loss': loss, 'preds': preds, 'target': target}
-
-    def training_step_end(self, outputs):
-        #update and log
-        self.metric(outputs['preds'], outputs['target'])
-        self.log('metric', self.metric)
 
 Metrics in Distributed Data Parallel (DDP) mode
 ===============================================
@@ -282,7 +256,8 @@ inside your LightningModule. In most cases we just have to replace ``self.log`` 
     from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall
 
     class MyModule(LightningModule):
-        def __init__(self, num_classes):
+        def __init__(self, num_classes: int):
+            super().__init__()
             metrics = MetricCollection([
                 MulticlassAccuracy(num_classes), MulticlassPrecision(num_classes), MulticlassRecall(num_classes)
             ])
@@ -305,8 +280,10 @@ inside your LightningModule. In most cases we just have to replace ``self.log`` 
         def validation_epoch_end(self, outputs):
             # use log_dict instead of log
             # metrics are logged with keys: val_Accuracy, val_Precision and val_Recall
-            output = self.valid_metric.compute()
+            output = self.valid_metrics.compute()
             self.log_dict(output)
+            # remember to reset metrics at the end of the epoch
+            self.valid_metrics.reset()
 
 .. note::
 
@@ -378,7 +355,7 @@ property that can be used to determine this:
 .. code-block:: python
 
     # returns True because accuracy is optimal when it is maximized
-    torchmetrics.Accuracy.higher_is_better
+    torchmetrics.classification.Accuracy.higher_is_better
 
     # returns False because the mean squared error is optimal when it is minimized
     torchmetrics.MeanSquaredError.higher_is_better
@@ -395,13 +372,22 @@ that will alter how metric states are stored and synced.
 If you are running metrics on GPU and are encountering that you are running out of GPU VRAM then the following
 argument can help:
 
-- ``compute_on_cpu`` will automatically move the metric states to cpu after calling ``update``, making sure that
+- ``compute_on_cpu``: will automatically move the metric states to cpu after calling ``update``, making sure that
   GPU memory is not filling up. The consequence will be that the ``compute`` method will be called on CPU instead
   of GPU. Only applies to metric states that are lists.
+
+- ``compute_with_cache``: This argument indicates if the result after calling the ``compute`` method should be cached.
+  By default this is ``True`` meaning that repeated calls to ``compute`` (with no change to the metric state inbetween)
+  does not recompute the metric but just returns the cache. By setting it to ``False`` the metric will be recomputed
+  every time ``compute`` is called, but it can also help clean up a bit of memory.
 
 If you are running in a distributed environment, TorchMetrics will automatically take care of the distributed
 synchronization for you. However, the following three keyword arguments can be given to any metric class for
 further control over the distributed aggregation:
+
+- ``sync_on_compute``: This argument is an ``bool`` that indicates if the metrics should automatically sync between
+  devices whenever the ``compute`` method is called. By default this is ``True``, but by setting this to ``False``
+  you can manually control when the synchronization happens.
 
 - ``dist_sync_on_step``: This argument is ``bool`` that indicates if the metric should synchronize between
   different devices every time ``forward`` is called. Setting this to ``True`` is in general not recommended

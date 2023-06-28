@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -21,9 +21,14 @@ from torchmetrics.image.fid import NoTrainInceptionV3
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-__doctest_requires__ = {("InceptionScore", "IS"): ["torch_fidelity"]}
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["InceptionScore.plot"]
+
+
+__doctest_requires__ = {("InceptionScore", "InceptionScore.plot"): ["torch_fidelity"]}
 
 
 class InceptionScore(Metric):
@@ -90,6 +95,7 @@ class InceptionScore(Metric):
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
 
     features: List
 
@@ -117,7 +123,7 @@ class InceptionScore(Metric):
             valid_int_input = ("logits_unbiased", 64, 192, 768, 2048)
             if feature not in valid_int_input:
                 raise ValueError(
-                    f"Integer input to argument `feature` must be one of {valid_int_input}," f" but got {feature}."
+                    f"Integer input to argument `feature` must be one of {valid_int_input}, but got {feature}."
                 )
 
             self.inception = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
@@ -162,3 +168,46 @@ class InceptionScore(Metric):
 
         # return mean and std
         return kl.mean(), kl.std()
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.image.inception import InceptionScore
+            >>> metric = InceptionScore()
+            >>> metric.update(torch.randint(0, 255, (50, 3, 299, 299), dtype=torch.uint8))
+            >>> fig_, ax_ = metric.plot()  # the returned plot only shows the mean value by default
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.image.inception import InceptionScore
+            >>> metric = InceptionScore()
+            >>> values = [ ]
+            >>> for _ in range(3):
+            ...     # we index by 0 such that only the mean value is plotted
+            ...     values.append(metric(torch.randint(0, 255, (50, 3, 299, 299), dtype=torch.uint8))[0])
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        val = val or self.compute()[0]  # by default we select the mean to plot
+        return self._plot(val, ax)

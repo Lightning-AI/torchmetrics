@@ -48,7 +48,7 @@ def _cohen_kappa_reduce(confmat: Tensor, weights: Optional[Literal["linear", "qu
         w_mat = torch.abs(w_mat - w_mat.T) if weights == "linear" else torch.pow(w_mat - w_mat.T, 2.0)
     else:
         raise ValueError(
-            f"Received {weights} for argument ``weights`` but should be either" " None, 'linear' or 'quadratic'"
+            f"Received {weights} for argument ``weights`` but should be either None, 'linear' or 'quadratic'"
         )
     k = torch.sum(w_mat * confmat) / torch.sum(w_mat * expected)
     return 1 - k
@@ -259,6 +259,7 @@ def cohen_kappa(
     if task == ClassificationTaskNoMultilabel.BINARY:
         return binary_cohen_kappa(preds, target, threshold, weights, ignore_index, validate_args)
     if task == ClassificationTaskNoMultilabel.MULTICLASS:
-        assert isinstance(num_classes, int)
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         return multiclass_cohen_kappa(preds, target, num_classes, weights, ignore_index, validate_args)
     raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy

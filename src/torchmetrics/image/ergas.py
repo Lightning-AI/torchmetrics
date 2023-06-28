@@ -22,7 +22,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["ErrorRelativeGlobalDimensionlessSynthesis.plot"]
@@ -56,7 +56,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics import ErrorRelativeGlobalDimensionlessSynthesis
+        >>> from torchmetrics.image import ErrorRelativeGlobalDimensionlessSynthesis
         >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
         >>> ergas = ErrorRelativeGlobalDimensionlessSynthesis()
@@ -67,8 +67,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
     higher_is_better: bool = False
     is_differentiable: bool = True
     full_state_update: bool = False
-    plot_lower_bound = 0.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: float = 0.0
 
     preds: List[Tensor]
     target: List[Tensor]
@@ -125,7 +124,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics import ErrorRelativeGlobalDimensionlessSynthesis
+            >>> from torchmetrics.image import ErrorRelativeGlobalDimensionlessSynthesis
             >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
             >>> target = preds * 0.75
             >>> metric = ErrorRelativeGlobalDimensionlessSynthesis()
@@ -137,7 +136,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics import ErrorRelativeGlobalDimensionlessSynthesis
+            >>> from torchmetrics.image import ErrorRelativeGlobalDimensionlessSynthesis
             >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
             >>> target = preds * 0.75
             >>> metric = ErrorRelativeGlobalDimensionlessSynthesis()

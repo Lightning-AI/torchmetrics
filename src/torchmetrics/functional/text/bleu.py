@@ -155,7 +155,7 @@ def bleu_score(
         preds: An iterable of machine translated corpus
         target: An iterable of iterables of reference corpus
         n_gram: Gram value ranged from 1 to 4
-        smooth: Whether to apply smoothing – see [2]
+        smooth: Whether to apply smoothing - see [2]
         weights:
             Weights used for unigrams, bigrams, etc. to calculate BLEU score.
             If not provided, uniform weights are used.
@@ -168,7 +168,7 @@ def bleu_score(
         ValueError: If a length of a list of weights is not ``None`` and not equal to ``n_gram``.
 
     Example:
-        >>> from torchmetrics.functional import bleu_score
+        >>> from torchmetrics.functional.text import bleu_score
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> bleu_score(preds, target)

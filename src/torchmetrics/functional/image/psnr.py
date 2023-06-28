@@ -88,7 +88,7 @@ def _psnr_update(
 def peak_signal_noise_ratio(
     preds: Tensor,
     target: Tensor,
-    data_range: Optional[float] = None,
+    data_range: Optional[Union[float, Tuple[float, float]]] = None,
     base: float = 10.0,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
     dim: Optional[Union[int, Tuple[int, ...]]] = None,
@@ -98,8 +98,10 @@ def peak_signal_noise_ratio(
     Args:
         preds: estimated signal
         target: groun truth signal
-        data_range: the range of the data. If None, it is determined from the data (max - min).
-            ``data_range`` must be given when ``dim`` is not None.
+        data_range:
+            the range of the data. If None, it is determined from the data (max - min). If a tuple is provided then
+            the range is calculated as the difference and input is clamped between the values.
+            The ``data_range`` must be given when ``dim`` is not None.
         base: a base of a logarithm to use
         reduction: a method to reduce metric score over labels.
 
@@ -119,7 +121,7 @@ def peak_signal_noise_ratio(
             If ``dim`` is not ``None`` and ``data_range`` is not provided.
 
     Example:
-        >>> from torchmetrics.functional import peak_signal_noise_ratio
+        >>> from torchmetrics.functional.image import peak_signal_noise_ratio
         >>> pred = torch.tensor([[0.0, 1.0], [2.0, 3.0]])
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
         >>> peak_signal_noise_ratio(pred, target)
@@ -138,7 +140,12 @@ def peak_signal_noise_ratio(
             raise ValueError("The `data_range` must be given when `dim` is not None.")
 
         data_range = target.max() - target.min()
+    elif isinstance(data_range, tuple):
+        preds = torch.clamp(preds, min=data_range[0], max=data_range[1])
+        target = torch.clamp(target, min=data_range[0], max=data_range[1])
+        data_range = tensor(data_range[1] - data_range[0])
     else:
         data_range = tensor(float(data_range))
+
     sum_squared_error, n_obs = _psnr_update(preds, target, dim=dim)
     return _psnr_compute(sum_squared_error, n_obs, data_range, base=base, reduction=reduction)

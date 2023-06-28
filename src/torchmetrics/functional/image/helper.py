@@ -108,7 +108,7 @@ def _reflection_pad_2d(inputs: Tensor, pad: int, outer_pad: int = 0) -> Tensor:
 
 
 def _uniform_filter(inputs: Tensor, window_size: int) -> Tensor:
-    """Applies uniform filtew with a window of a given size over the input image.
+    """Apply uniform filter with a window of a given size over the input image.
 
     Args:
         inputs: Input image
@@ -120,14 +120,13 @@ def _uniform_filter(inputs: Tensor, window_size: int) -> Tensor:
     inputs = _reflection_pad_2d(inputs, window_size // 2, window_size % 2)
     kernel_weight, kernel_bias = _uniform_weight_bias_conv2d(inputs, window_size)
     # Iterate over channels
-    inputs = torch.cat(
+    return torch.cat(
         [
             F.conv2d(inputs[:, channel].unsqueeze(1), kernel_weight, kernel_bias, padding=0)
             for channel in range(inputs.shape[1])
         ],
         dim=1,
     )
-    return inputs
 
 
 def _gaussian_kernel_3d(

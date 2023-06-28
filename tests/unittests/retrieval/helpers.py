@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Callable, Dict, List, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 import numpy as np
 import pytest
@@ -73,12 +73,12 @@ def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, 
 def _compute_sklearn_metric(
     preds: Union[Tensor, array],
     target: Union[Tensor, array],
-    indexes: np.ndarray = None,
-    metric: Callable = None,
+    indexes: Optional[np.ndarray] = None,
+    metric: Optional[Callable] = None,
     empty_target_action: str = "skip",
-    ignore_index: int = None,
+    ignore_index: Optional[int] = None,
     reverse: bool = False,
-    **kwargs,
+    **kwargs: Any,
 ) -> Tensor:
     """Compute metric with multiple iterations over every query predictions set."""
     if indexes is None:
@@ -380,11 +380,11 @@ def _errors_test_class_metric(
     target: Tensor,
     metric_class: Metric,
     message: str = "",
-    metric_args: dict = None,
+    metric_args: Optional[dict] = None,
     exception_type: Type[Exception] = ValueError,
-    kwargs_update: dict = None,
+    kwargs_update: Optional[dict] = None,
 ):
-    """Utility function doing checks about types, parameters and errors.
+    """Check types, parameters and errors.
 
     Args:
         indexes: torch tensor with indexes
@@ -410,9 +410,9 @@ def _errors_test_functional_metric(
     metric_functional: Metric,
     message: str = "",
     exception_type: Type[Exception] = ValueError,
-    kwargs_update: dict = None,
+    kwargs_update: Optional[dict] = None,
 ):
-    """Utility function doing checks about types, parameters and errors.
+    """Check types, parameters and errors.
 
     Args:
         preds: torch tensor with predictions
@@ -444,6 +444,7 @@ class RetrievalMetricTester(MetricTester):
         metric_args: dict,
         reverse: bool = False,
     ):
+        """Test class implementation of metric."""
         _ref_metric_adapted = partial(_compute_sklearn_metric, metric=reference_metric, reverse=reverse, **metric_args)
 
         super().run_class_metric_test(
@@ -465,8 +466,9 @@ class RetrievalMetricTester(MetricTester):
         reference_metric: Callable,
         metric_args: dict,
         reverse: bool = False,
-        **kwargs,
+        **kwargs: Any,
     ):
+        """Test functional implementation of metric."""
         _ref_metric_adapted = partial(_compute_sklearn_metric, metric=reference_metric, reverse=reverse, **metric_args)
 
         super().run_functional_metric_test(
@@ -487,6 +489,8 @@ class RetrievalMetricTester(MetricTester):
         metric_module: Metric,
         metric_functional: Callable,
     ):
+        """Test dtype support of the metric on CPU."""
+
         def metric_functional_ignore_indexes(preds, target, indexes, empty_target_action):
             return metric_functional(preds, target)
 
@@ -507,6 +511,7 @@ class RetrievalMetricTester(MetricTester):
         metric_module: Metric,
         metric_functional: Callable,
     ):
+        """Test dtype support of the metric on GPU."""
         if not torch.cuda.is_available():
             pytest.skip("Test requires GPU")
 
@@ -529,10 +534,11 @@ class RetrievalMetricTester(MetricTester):
         target: Tensor,
         metric_class: Metric,
         message: str = "",
-        metric_args: dict = None,
+        metric_args: Optional[dict] = None,
         exception_type: Type[Exception] = ValueError,
-        kwargs_update: dict = None,
-    ):
+        kwargs_update: Optional[dict] = None,
+    ) -> None:
+        """Test that specific errors are raised for incorrect input."""
         _errors_test_class_metric(
             indexes=indexes,
             preds=preds,
@@ -551,8 +557,9 @@ class RetrievalMetricTester(MetricTester):
         metric_functional: Callable,
         message: str = "",
         exception_type: Type[Exception] = ValueError,
-        kwargs_update: dict = None,
-    ):
+        kwargs_update: Optional[dict] = None,
+    ) -> None:
+        """Test that specific errors are raised for incorrect input."""
         _errors_test_functional_metric(
             preds=preds,
             target=target,

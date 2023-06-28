@@ -12,13 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
 
 from torchmetrics.functional.image.rmse_sw import _rmse_sw_compute, _rmse_sw_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["RootMeanSquaredErrorUsingSlidingWindow.plot"]
 
 
 class RootMeanSquaredErrorUsingSlidingWindow(Metric):
@@ -38,7 +43,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import RootMeanSquaredErrorUsingSlidingWindow
+        >>> from torchmetrics.image import RootMeanSquaredErrorUsingSlidingWindow
         >>> g = torch.manual_seed(22)
         >>> preds = torch.rand(4, 3, 16, 16)
         >>> target = torch.rand(4, 3, 16, 16)
@@ -50,12 +55,14 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
         ValueError: If ``window_size`` is not a positive integer.
     """
 
-    rmse_val_sum: Tensor
-    rmse_map: Optional[Tensor] = None
-    total_images: Tensor
     higher_is_better: bool = False
     is_differentiable: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+
+    rmse_val_sum: Tensor
+    rmse_map: Optional[Tensor] = None
+    total_images: Tensor
 
     def __init__(
         self,
@@ -81,7 +88,48 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
         )
 
     def compute(self) -> Optional[Tensor]:
-        """Computes Root Mean Squared Error (using sliding window) and potentially return RMSE map."""
-        assert self.rmse_map is not None
+        """Compute Root Mean Squared Error (using sliding window) and potentially return RMSE map."""
+        assert self.rmse_map is not None  # noqa: S101  # needed for mypy
         rmse, _ = _rmse_sw_compute(self.rmse_val_sum, self.rmse_map, self.total_images)
         return rmse
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.image import RootMeanSquaredErrorUsingSlidingWindow
+            >>> metric = RootMeanSquaredErrorUsingSlidingWindow()
+            >>> metric.update(torch.rand(4, 3, 16, 16), torch.rand(4, 3, 16, 16))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.image import RootMeanSquaredErrorUsingSlidingWindow
+            >>> metric = RootMeanSquaredErrorUsingSlidingWindow()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.rand(4, 3, 16, 16), torch.rand(4, 3, 16, 16)))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)

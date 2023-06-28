@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Union
+from typing import Any, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -20,6 +20,11 @@ from typing_extensions import Literal
 from torchmetrics.functional.nominal.cramers import _cramers_v_compute, _cramers_v_update
 from torchmetrics.functional.nominal.utils import _nominal_input_validation
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["CramersV.plot"]
 
 
 class CramersV(Metric):
@@ -57,7 +62,7 @@ class CramersV(Metric):
             If `nan_strategy` is equal to `'replace'` and `nan_replace_value` is not an `int` or `float`
 
     Example:
-        >>> from torchmetrics import CramersV
+        >>> from torchmetrics.nominal import CramersV
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randint(0, 4, (100,))
         >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
@@ -69,6 +74,8 @@ class CramersV(Metric):
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
     confmat: Tensor
 
     def __init__(
@@ -78,7 +85,7 @@ class CramersV(Metric):
         nan_strategy: Literal["replace", "drop"] = "replace",
         nan_replace_value: Optional[Union[int, float]] = 0.0,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         self.num_classes = num_classes
         self.bias_correction = bias_correction
@@ -109,3 +116,42 @@ class CramersV(Metric):
     def compute(self) -> Tensor:
         """Compute Cramer's V statistic."""
         return _cramers_v_compute(self.confmat, self.bias_correction)
+
+    def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.nominal import CramersV
+            >>> metric = CramersV(num_classes=5)
+            >>> metric.update(torch.randint(0, 4, (100,)), torch.randint(0, 4, (100,)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.nominal import CramersV
+            >>> metric = CramersV(num_classes=5)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.randint(0, 4, (100,)), torch.randint(0, 4, (100,))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)

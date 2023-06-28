@@ -21,15 +21,15 @@ import numpy as np
 import pytest
 import torch
 from torch import Tensor, tensor
-
 from torchmetrics import Metric
 from torchmetrics.detection.mean_ap import MAPMetricResults
 from torchmetrics.utilities.data import _flatten, apply_to_collection
+
 from unittests import NUM_PROCESSES
 
 
 def _assert_allclose(tm_result: Any, ref_result: Any, atol: float = 1e-8, key: Optional[str] = None) -> None:
-    """Utility function for recursively asserting that two results are within a certain tolerance."""
+    """Recursively assert that two results are within a certain tolerance."""
     # single output compare
     if isinstance(tm_result, Tensor):
         assert np.allclose(tm_result.detach().cpu().numpy(), ref_result, atol=atol, equal_nan=True)
@@ -46,7 +46,7 @@ def _assert_allclose(tm_result: Any, ref_result: Any, atol: float = 1e-8, key: O
 
 
 def _assert_tensor(tm_result: Any, key: Optional[str] = None) -> None:
-    """Utility function for recursively checking that some input only consists of torch tensors."""
+    """Recursively check that some input only consists of torch tensors."""
     if isinstance(tm_result, Sequence):
         for plr in tm_result:
             _assert_tensor(plr)
@@ -62,7 +62,7 @@ def _assert_tensor(tm_result: Any, key: Optional[str] = None) -> None:
 
 
 def _assert_requires_grad(metric: Metric, tm_result: Any, key: Optional[str] = None) -> None:
-    """Function for recursively asserting that metric output is consistent with the `is_differentiable` attribute."""
+    """Recursively assert that metric output is consistent with the `is_differentiable` attribute."""
     if isinstance(tm_result, Sequence):
         for plr in tm_result:
             _assert_requires_grad(metric, plr, key=key)
@@ -82,7 +82,7 @@ def _class_test(
     metric_class: Metric,
     reference_metric: Callable,
     dist_sync_on_step: bool,
-    metric_args: dict = None,
+    metric_args: Optional[dict] = None,
     check_dist_sync_on_step: bool = True,
     check_batch: bool = True,
     atol: float = 1e-8,
@@ -92,7 +92,7 @@ def _class_test(
     check_state_dict: bool = True,
     **kwargs_update: Any,
 ):
-    """Utility function doing the actual comparison between class metric and reference metric.
+    """Comparison between class metric and reference metric.
 
     Args:
         rank: rank of current process
@@ -118,6 +118,7 @@ def _class_test(
     """
     assert len(preds) == len(target)
     num_batches = len(preds)
+    assert num_batches % world_size == 0, "Number of batches must be divisible by world_size"
 
     if not metric_args:
         metric_args = {}
@@ -231,13 +232,13 @@ def _functional_test(
     target: Union[Tensor, list],
     metric_functional: Callable,
     reference_metric: Callable,
-    metric_args: dict = None,
+    metric_args: Optional[dict] = None,
     atol: float = 1e-8,
     device: str = "cpu",
     fragment_kwargs: bool = False,
     **kwargs_update: Any,
 ):
-    """Utility function doing the actual comparison between functional metric and reference metric.
+    """Comparison between functional metric and reference metric.
 
     Args:
         preds: torch tensor with predictions
@@ -316,7 +317,7 @@ def _assert_dtype_support(
 
 
 class MetricTester:
-    """General test class for all metrics
+    """Test class for all metrics.
 
     Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup once and
     that pool of processes are used for all tests. All tests should subclass from this and implement a new method called
@@ -331,11 +332,11 @@ class MetricTester:
         target: Tensor,
         metric_functional: Callable,
         reference_metric: Callable,
-        metric_args: dict = None,
+        metric_args: Optional[dict] = None,
         fragment_kwargs: bool = False,
         **kwargs_update: Any,
     ):
-        """Main method that should be used for testing functions. Call this inside testing method.
+        """Core method that should be used for testing functions. Call this inside testing method.
 
         Args:
             preds: torch tensor with predictions
@@ -369,14 +370,14 @@ class MetricTester:
         metric_class: Metric,
         reference_metric: Callable,
         dist_sync_on_step: bool = False,
-        metric_args: dict = None,
+        metric_args: Optional[dict] = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,
         fragment_kwargs: bool = False,
         check_scriptable: bool = True,
         **kwargs_update: Any,
     ):
-        """Main method that should be used for testing class. Call this inside testing methods.
+        """Core method that should be used for testing class. Call this inside testing methods.
 
         Args:
             ddp: bool, if running in ddp mode or not
@@ -448,7 +449,7 @@ class MetricTester:
         metric_args: Optional[dict] = None,
         dtype: torch.dtype = torch.half,
         **kwargs_update: Any,
-    ):
+    ) -> None:
         """Test if a metric can be used with half precision tensors on cpu.
 
         Args:
@@ -481,7 +482,7 @@ class MetricTester:
         metric_args: Optional[dict] = None,
         dtype: torch.dtype = torch.half,
         **kwargs_update: Any,
-    ):
+    ) -> None:
         """Test if a metric can be used with half precision tensors on gpu.
 
         Args:
@@ -512,7 +513,7 @@ class MetricTester:
         metric_module: Metric,
         metric_functional: Optional[Callable] = None,
         metric_args: Optional[dict] = None,
-    ):
+    ) -> None:
         """Test if a metric is differentiable or not.
 
         Args:
@@ -548,15 +549,15 @@ class DummyMetric(Metric):
     name = "Dummy"
     full_state_update: Optional[bool] = True
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.add_state("x", tensor(0.0), dist_reduce_fx="sum")
 
     def update(self):
-        pass
+        """Update state."""
 
     def compute(self):
-        pass
+        """Compute value."""
 
 
 class DummyListMetric(Metric):
@@ -565,14 +566,17 @@ class DummyListMetric(Metric):
     name = "DummyList"
     full_state_update: Optional[bool] = True
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.add_state("x", [], dist_reduce_fx="cat")
 
-    def update(self, x=torch.tensor(1)):
+    def update(self, x=None):
+        """Update state."""
+        x = torch.tensor(1) if x is None else x
         self.x.append(x)
 
     def compute(self):
+        """Compute value."""
         return self.x
 
 
@@ -580,9 +584,11 @@ class DummyMetricSum(DummyMetric):
     """DummyMetricSum for testing core components."""
 
     def update(self, x):
+        """Update state."""
         self.x += x
 
     def compute(self):
+        """Compute value."""
         return self.x
 
 
@@ -590,9 +596,11 @@ class DummyMetricDiff(DummyMetric):
     """DummyMetricDiff for testing core components."""
 
     def update(self, y):
+        """Update state."""
         self.x -= y
 
     def compute(self):
+        """Compute value."""
         return self.x
 
 
@@ -600,11 +608,20 @@ class DummyMetricMultiOutput(DummyMetricSum):
     """DummyMetricMultiOutput for testing core components."""
 
     def compute(self):
+        """Compute value."""
         return [self.x, self.x]
 
 
+class DummyMetricMultiOutputDict(DummyMetricSum):
+    """DummyMetricMultiOutput for testing core components."""
+
+    def compute(self):
+        """Compute value."""
+        return {"output1": self.x, "output2": self.x}
+
+
 def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
-    """Utility function for injecting the ignored index value into a tensor randomly."""
+    """Injecting the ignored index value into a tensor randomly."""
     if any(x.flatten() == ignore_index):  # ignore index is a class label
         return x
     classes = torch.unique(x)
@@ -624,8 +641,18 @@ def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
 
 
 def remove_ignore_index(target: Tensor, preds: Tensor, ignore_index: Optional[int]) -> Tuple[Tensor, Tensor]:
-    """Utility function for removing samples that are equal to the ignore_index in comparison functions."""
+    """Remove samples that are equal to the ignore_index in comparison functions."""
     if ignore_index is not None:
         idx = target == ignore_index
         target, preds = deepcopy(target[~idx]), deepcopy(preds[~idx])
     return target, preds
+
+
+def remove_ignore_index_groups(
+    target: Tensor, preds: Tensor, groups: Tensor, ignore_index: Optional[int]
+) -> Tuple[Tensor, Tensor, Tensor]:
+    """Version of the remove_ignore_index which includes groups."""
+    if ignore_index is not None:
+        idx = target == ignore_index
+        target, preds, groups = deepcopy(target[~idx]), deepcopy(preds[~idx]), deepcopy(groups[~idx])
+    return target, preds, groups

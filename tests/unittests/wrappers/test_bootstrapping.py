@@ -13,17 +13,18 @@
 # limitations under the License.
 import operator
 from functools import partial
+from typing import Any
 
 import numpy as np
 import pytest
 import torch
 from sklearn.metrics import mean_squared_error, precision_score, recall_score
 from torch import Tensor
-
-from torchmetrics import MeanSquaredError
 from torchmetrics.classification import MulticlassPrecision, MulticlassRecall
+from torchmetrics.regression import MeanSquaredError
 from torchmetrics.utilities import apply_to_collection
 from torchmetrics.wrappers.bootstrapping import BootStrapper, _bootstrap_sampler
+
 from unittests.helpers import seed_all
 
 seed_all(42)
@@ -40,7 +41,8 @@ class TestBootStrapper(BootStrapper):
     permutation.
     """
 
-    def update(self, *args) -> None:
+    def update(self, *args: Any) -> None:
+        """Update input where the permutation is also saved."""
         self.out = []
         for idx in range(self.num_bootstraps):
             size = len(args[0])

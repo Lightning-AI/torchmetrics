@@ -29,7 +29,7 @@ def _rmse_sw_update(
     rmse_map: Optional[Tensor],
     total_images: Optional[Tensor],
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Calculates the sum of RMSE values and RMSE map for the batch of examples and update intermediate states.
+    """Calculate the sum of RMSE values and RMSE map for the batch of examples and update intermediate states.
 
     Args:
         preds: Deformed image
@@ -89,7 +89,7 @@ def _rmse_sw_update(
 def _rmse_sw_compute(
     rmse_val_sum: Optional[Tensor], rmse_map: Tensor, total_images: Tensor
 ) -> Tuple[Optional[Tensor], Tensor]:
-    """Computes RMSE from the aggregated RMSE value. Optionally also computes the mean value for RMSE map.
+    """Compute RMSE from the aggregated RMSE value. Optionally also computes the mean value for RMSE map.
 
     Args:
         rmse_val_sum: Sum of RMSE over all examples
@@ -109,7 +109,7 @@ def _rmse_sw_compute(
 def root_mean_squared_error_using_sliding_window(
     preds: Tensor, target: Tensor, window_size: int = 8, return_rmse_map: bool = False
 ) -> Union[Optional[Tensor], Tuple[Optional[Tensor], Tensor]]:
-    """Computes Root Mean Squared Error (RMSE) using sliding window.
+    """Compute Root Mean Squared Error (RMSE) using sliding window.
 
     Args:
         preds: Deformed image
@@ -122,7 +122,7 @@ def root_mean_squared_error_using_sliding_window(
         (Optionally) RMSE map
 
     Example:
-        >>> from torchmetrics.functional import root_mean_squared_error_using_sliding_window
+        >>> from torchmetrics.functional.image import root_mean_squared_error_using_sliding_window
         >>> g = torch.manual_seed(22)
         >>> preds = torch.rand(4, 3, 16, 16)
         >>> target = torch.rand(4, 3, 16, 16)

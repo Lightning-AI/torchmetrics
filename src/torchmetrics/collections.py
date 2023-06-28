@@ -14,15 +14,21 @@
 # this is just a bypass for this module name collision with build-in one
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, Dict, Hashable, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Hashable, Iterable, Iterator, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
 from torch.nn import Module, ModuleDict
+from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.data import _flatten_dict, allclose
+from torchmetrics.utilities.data import allclose
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["MetricCollection.plot", "MetricCollection.plot_all"]
 
 
 class MetricCollection(ModuleDict):
@@ -82,7 +88,8 @@ class MetricCollection(ModuleDict):
     Example (input as list):
         >>> from torch import tensor
         >>> from pprint import pprint
-        >>> from torchmetrics import MetricCollection, MeanSquaredError
+        >>> from torchmetrics import MetricCollection
+        >>> from torchmetrics.regression import MeanSquaredError
         >>> from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall
         >>> target = tensor([0, 2, 0, 2, 0, 1, 0, 2])
         >>> preds = tensor([2, 1, 2, 0, 1, 2, 2, 2])
@@ -170,9 +177,7 @@ class MetricCollection(ModuleDict):
         Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
         """
-        res = {k: m(*args, **m._filter_kwargs(**kwargs)) for k, m in self.items(keep_base=True, copy_state=False)}
-        res = _flatten_dict(res)
-        return {self._set_name(k): v for k, v in res.items()}
+        return self._compute_and_reduce("forward", *args, **kwargs)
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Call update for each metric sequentially.
@@ -182,7 +187,7 @@ class MetricCollection(ModuleDict):
         """
         # Use compute groups if already initialized and checked
         if self._groups_checked:
-            for _, cg in self._groups.items():
+            for cg in self._groups.values():
                 # only update the first member
                 m0 = getattr(self, cg[0])
                 m0.update(*args, **m0._filter_kwargs(**kwargs))
@@ -191,7 +196,7 @@ class MetricCollection(ModuleDict):
                 self._compute_groups_create_state_ref()
                 self._state_is_copy = False
         else:  # the first update always do per metric to form compute groups
-            for _, m in self.items(keep_base=True, copy_state=False):
+            for m in self.values(copy_state=False):
                 m_kwargs = m._filter_kwargs(**kwargs)
                 m.update(*args, **m_kwargs)
 
@@ -269,7 +274,7 @@ class MetricCollection(ModuleDict):
                 of just passed by reference
         """
         if not self._state_is_copy:
-            for _, cg in self._groups.items():
+            for cg in self._groups.values():
                 m0 = getattr(self, cg[0])
                 for i in range(1, len(cg)):
                     mi = getattr(self, cg[i])
@@ -277,18 +282,52 @@ class MetricCollection(ModuleDict):
                         m0_state = getattr(m0, state)
                         # Determine if we just should set a reference or a full copy
                         setattr(mi, state, deepcopy(m0_state) if copy else m0_state)
-                    setattr(mi, "_update_count", deepcopy(m0._update_count) if copy else m0._update_count)
+                    mi._update_count = deepcopy(m0._update_count) if copy else m0._update_count
         self._state_is_copy = copy
 
     def compute(self) -> Dict[str, Any]:
         """Compute the result for each metric in the collection."""
-        res = {k: m.compute() for k, m in self.items(keep_base=True, copy_state=False)}
-        res = _flatten_dict(res)
-        return {self._set_name(k): v for k, v in res.items()}
+        return self._compute_and_reduce("compute")
+
+    def _compute_and_reduce(
+        self, method_name: Literal["compute", "forward"], *args: Any, **kwargs: Any
+    ) -> Dict[str, Any]:
+        """Compute result from collection and reduce into a single dictionary.
+
+        Args:
+            method_name: The method to call on each metric in the collection.
+                Should be either `compute` or `forward`.
+            args: Positional arguments to pass to each metric (if method_name is `forward`)
+            kwargs: Keyword arguments to pass to each metric (if method_name is `forward`)
+
+        Raises:
+            ValueError:
+                If method_name is not `compute` or `forward`.
+
+        """
+        result = {}
+        for k, m in self.items(keep_base=True, copy_state=False):
+            if method_name == "compute":
+                res = m.compute()
+            elif method_name == "forward":
+                res = m(*args, **m._filter_kwargs(**kwargs))
+            else:
+                raise ValueError("method_name should be either 'compute' or 'forward', but got {method_name}")
+
+            if isinstance(res, dict):
+                for key, v in res.items():
+                    if hasattr(m, "prefix") and m.prefix is not None:
+                        key = f"{m.prefix}{key}"
+                    if hasattr(m, "postfix") and m.postfix is not None:
+                        key = f"{key}{m.postfix}"
+                    result[key] = v
+            else:
+                result[k] = res
+        return {self._set_name(k): v for k, v in result.items()}
 
     def reset(self) -> None:
         """Call reset for each metric sequentially."""
-        for _, m in self.items(keep_base=True, copy_state=False):
+        for m in self.values(copy_state=False):
             m.reset()
         if self._enable_compute_groups and self._groups_checked:
             # reset state reference
@@ -311,7 +350,7 @@ class MetricCollection(ModuleDict):
 
     def persistent(self, mode: bool = True) -> None:
         """Change if metric states should be saved to its state_dict after initialization."""
-        for _, m in self.items(keep_base=True, copy_state=False):
+        for m in self.values(copy_state=False):
             m.persistent(mode)
 
     def add_metrics(
@@ -352,6 +391,8 @@ class MetricCollection(ModuleDict):
                     self[name] = metric
                 else:
                     for k, v in metric.items(keep_base=False):
+                        v.postfix = metric.postfix
+                        v.prefix = metric.prefix
                         self[f"{name}_{k}"] = v
         elif isinstance(metrics, Sequence):
             for metric in metrics:
@@ -367,9 +408,14 @@ class MetricCollection(ModuleDict):
                     self[name] = metric
                 else:
                     for k, v in metric.items(keep_base=False):
+                        v.postfix = metric.postfix
+                        v.prefix = metric.prefix
                         self[k] = v
         else:
-            raise ValueError("Unknown input to MetricCollection.")
+            raise ValueError(
+                "Unknown input to MetricCollection. Expected, `Metric`, `MetricCollection` or `dict`/`sequence` of the"
+                f" previous, but got {metrics}"
+            )
 
         self._groups_checked = False
         if self._enable_compute_groups:
@@ -384,7 +430,7 @@ class MetricCollection(ModuleDict):
         simply initialize each metric in the collection as its own group
         """
         if isinstance(self._enable_compute_groups, list):
-            self._groups = {i: k for i, k in enumerate(self._enable_compute_groups)}
+            self._groups = dict(enumerate(self._enable_compute_groups))
             for v in self._groups.values():
                 for metric in v:
                     if metric not in self:
@@ -412,6 +458,10 @@ class MetricCollection(ModuleDict):
         for k, v in self._modules.items():
             od[self._set_name(k)] = v
         return od
+
+    def __iter__(self) -> Iterator[str]:
+        """Return an iterator over the keys of the MetricDict."""
+        return iter(self.keys())
 
     # TODO: redefine this as native python dict
     def keys(self, keep_base: bool = False) -> Iterable[Hashable]:
@@ -472,3 +522,97 @@ class MetricCollection(ModuleDict):
         if self.postfix:
             repr_str += f"{',' if not self.prefix else ''}\n  postfix={self.postfix}"
         return repr_str + "\n)"
+
+    def set_dtype(self, dst_type: Union[str, torch.dtype]) -> "MetricCollection":
+        """Transfer all metric state to specific dtype. Special version of standard `type` method.
+
+        Arguments:
+            dst_type (type or string): the desired type.
+        """
+        for m in self.values(copy_state=False):
+            m.set_dtype(dst_type)
+        return self
+
+    def plot(
+        self,
+        val: Optional[Union[Dict, Sequence[Dict]]] = None,
+        ax: Optional[Union[_AX_TYPE, Sequence[_AX_TYPE]]] = None,
+        together: bool = False,
+    ) -> Sequence[_PLOT_OUT_TYPE]:
+        """Plot a single or multiple values from the metric.
+
+        The plot method has two modes of operation. If argument `together` is set to `False` (default), the `.plot`
+        method of each metric will be called individually and the result will be list of figures. If `together` is set
+        to `True`, the values of all metrics will instead be plotted in the same figure.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: Either a single instance of matplotlib axis object or an sequence of matplotlib axis objects. If
+                provided, will add the plots to the provided axis objects. If not provided, will create a new. If
+                argument `together` is set to `True`, a single object is expected. If `together` is set to `False`,
+                the number of axis objects needs to be the same lenght as the number of metrics in the collection.
+            together: If `True`, will plot all metrics in the same axis. If `False`, will plot each metric in a separate
+
+        Returns:
+            Either instal tupel of Figure and Axes object or an sequence of tuples with Figure and Axes object for each
+            metric in the collection.
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+            ValueError:
+                If `together` is not an bool
+            ValueError:
+                If `ax` is not an instance of matplotlib axis object or a sequence of matplotlib axis objects
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics import MetricCollection
+            >>> from torchmetrics.classification import BinaryAccuracy, BinaryPrecision, BinaryRecall
+            >>> metrics = MetricCollection([BinaryAccuracy(), BinaryPrecision(), BinaryRecall()])
+            >>> metrics.update(torch.rand(10), torch.randint(2, (10,)))
+            >>> fig_ax_ = metrics.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics import MetricCollection
+            >>> from torchmetrics.classification import BinaryAccuracy, BinaryPrecision, BinaryRecall
+            >>> metrics = MetricCollection([BinaryAccuracy(), BinaryPrecision(), BinaryRecall()])
+            >>> values = []
+            >>> for _ in range(10):
+            ...     values.append(metrics(torch.rand(10), torch.randint(2, (10,))))
+            >>> fig_, ax_ = metrics.plot(values, together=True)
+        """
+        if not isinstance(together, bool):
+            raise ValueError(f"Expected argument `together` to be a boolean, but got {type(together)}")
+        if ax is not None:
+            if together and not isinstance(ax, _AX_TYPE):
+                raise ValueError(
+                    f"Expected argument `ax` to be a matplotlib axis object, but got {type(ax)} when `together=True`"
+                )
+            if not together and not (
+                isinstance(ax, Sequence) and all(isinstance(a, _AX_TYPE) for a in ax) and len(ax) == len(self)
+            ):
+                raise ValueError(
+                    f"Expected argument `ax` to be a sequence of matplotlib axis objects with the same length as the "
+                    f"number of metrics in the collection, but got {type(ax)} with len {len(ax)} when `together=False`"
+                )
+
+        val = val or self.compute()
+        if together:
+            return plot_single_or_multi_val(val, ax=ax)
+        fig_axs = []
+        for i, (k, m) in enumerate(self.items(keep_base=True, copy_state=False)):
+            if isinstance(val, dict):
+                f, a = m.plot(val[k], ax=ax[i] if ax is not None else ax)
+            elif isinstance(val, Sequence):
+                f, a = m.plot([v[k] for v in val], ax=ax[i] if ax is not None else ax)
+            fig_axs.append((f, a))
+        return fig_axs

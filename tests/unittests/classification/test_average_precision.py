@@ -19,7 +19,6 @@ import torch
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import average_precision_score as sk_average_precision_score
-
 from torchmetrics.classification.average_precision import (
     BinaryAveragePrecision,
     MulticlassAveragePrecision,
@@ -31,6 +30,7 @@ from torchmetrics.functional.classification.average_precision import (
     multilabel_average_precision,
 )
 from torchmetrics.functional.classification.precision_recall_curve import binary_precision_recall_curve
+
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
@@ -48,14 +48,15 @@ def _sklearn_avg_precision_binary(preds, target, ignore_index=None):
     return sk_average_precision_score(target, preds)
 
 
-@pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
+@pytest.mark.parametrize("inputs", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinaryAveragePrecision(MetricTester):
     """Test class for `BinaryAveragePrecision` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_binary_average_precision(self, input, ddp, ignore_index):
-        preds, target = input
+    def test_binary_average_precision(self, inputs, ddp, ignore_index):
+        """Test class implementation of metric."""
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
@@ -71,8 +72,9 @@ class TestBinaryAveragePrecision(MetricTester):
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_binary_average_precision_functional(self, input, ignore_index):
-        preds, target = input
+    def test_binary_average_precision_functional(self, inputs, ignore_index):
+        """Test functional implementation of metric."""
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
@@ -86,8 +88,9 @@ class TestBinaryAveragePrecision(MetricTester):
             },
         )
 
-    def test_binary_average_precision_differentiability(self, input):
-        preds, target = input
+    def test_binary_average_precision_differentiability(self, inputs):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -97,8 +100,9 @@ class TestBinaryAveragePrecision(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_average_precision_dtype_cpu(self, input, dtype):
-        preds, target = input
+    def test_binary_average_precision_dtype_cpu(self, inputs, dtype):
+        """Test dtype support of the metric on CPU."""
+        preds, target = inputs
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -112,8 +116,9 @@ class TestBinaryAveragePrecision(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_average_precision_dtype_gpu(self, input, dtype):
-        preds, target = input
+    def test_binary_average_precision_dtype_gpu(self, inputs, dtype):
+        """Test dtype support of the metric on GPU."""
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -124,8 +129,9 @@ class TestBinaryAveragePrecision(MetricTester):
         )
 
     @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
-    def test_binary_average_precision_threshold_arg(self, input, threshold_fn):
-        preds, target = input
+    def test_binary_average_precision_threshold_arg(self, inputs, threshold_fn):
+        """Test that different types of `thresholds` argument lead to same result."""
+        preds, target = inputs
 
         for pred, true in zip(preds, target):
             _, _, t = binary_precision_recall_curve(pred, true, thresholds=None)
@@ -156,7 +162,7 @@ def _sklearn_avg_precision_multiclass(preds, target, average="macro", ignore_ind
 
 
 @pytest.mark.parametrize(
-    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "inputs", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassAveragePrecision(MetricTester):
     """Test class for `MulticlassAveragePrecision` metric."""
@@ -164,8 +170,9 @@ class TestMulticlassAveragePrecision(MetricTester):
     @pytest.mark.parametrize("average", ["macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multiclass_average_precision(self, input, average, ddp, ignore_index):
-        preds, target = input
+    def test_multiclass_average_precision(self, inputs, average, ddp, ignore_index):
+        """Test class implementation of metric."""
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
@@ -184,8 +191,9 @@ class TestMulticlassAveragePrecision(MetricTester):
 
     @pytest.mark.parametrize("average", ["macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    def test_multiclass_average_precision_functional(self, input, average, ignore_index):
-        preds, target = input
+    def test_multiclass_average_precision_functional(self, inputs, average, ignore_index):
+        """Test functional implementation of metric."""
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
@@ -201,8 +209,9 @@ class TestMulticlassAveragePrecision(MetricTester):
             },
         )
 
-    def test_multiclass_average_precision_differentiability(self, input):
-        preds, target = input
+    def test_multiclass_average_precision_differentiability(self, inputs):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -212,8 +221,9 @@ class TestMulticlassAveragePrecision(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_average_precision_dtype_cpu(self, input, dtype):
-        preds, target = input
+    def test_multiclass_average_precision_dtype_cpu(self, inputs, dtype):
+        """Test dtype support of the metric on CPU."""
+        preds, target = inputs
         if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
         self.run_precision_test_cpu(
@@ -227,8 +237,9 @@ class TestMulticlassAveragePrecision(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_average_precision_dtype_gpu(self, input, dtype):
-        preds, target = input
+    def test_multiclass_average_precision_dtype_gpu(self, inputs, dtype):
+        """Test dtype support of the metric on GPU."""
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -239,8 +250,9 @@ class TestMulticlassAveragePrecision(MetricTester):
         )
 
     @pytest.mark.parametrize("average", ["macro", "weighted", None])
-    def test_multiclass_average_precision_threshold_arg(self, input, average):
-        preds, target = input
+    def test_multiclass_average_precision_threshold_arg(self, inputs, average):
+        """Test that different types of `thresholds` argument lead to same result."""
+        preds, target = inputs
         if (preds < 0).any():
             preds = preds.softmax(dim=-1)
         for pred, true in zip(preds, target):
@@ -268,7 +280,7 @@ def _sklearn_avg_precision_multilabel(preds, target, average="macro", ignore_ind
 
 
 @pytest.mark.parametrize(
-    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "inputs", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelAveragePrecision(MetricTester):
     """Test class for `MultilabelAveragePrecision` metric."""
@@ -276,8 +288,9 @@ class TestMultilabelAveragePrecision(MetricTester):
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multilabel_average_precision(self, input, ddp, average, ignore_index):
-        preds, target = input
+    def test_multilabel_average_precision(self, inputs, ddp, average, ignore_index):
+        """Test class implementation of metric."""
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
@@ -296,8 +309,9 @@ class TestMultilabelAveragePrecision(MetricTester):
 
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    def test_multilabel_average_precision_functional(self, input, average, ignore_index):
-        preds, target = input
+    def test_multilabel_average_precision_functional(self, inputs, average, ignore_index):
+        """Test functional implementation of metric."""
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
@@ -313,8 +327,9 @@ class TestMultilabelAveragePrecision(MetricTester):
             },
         )
 
-    def test_multiclass_average_precision_differentiability(self, input):
-        preds, target = input
+    def test_multiclass_average_precision_differentiability(self, inputs):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -324,8 +339,9 @@ class TestMultilabelAveragePrecision(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_average_precision_dtype_cpu(self, input, dtype):
-        preds, target = input
+    def test_multilabel_average_precision_dtype_cpu(self, inputs, dtype):
+        """Test dtype support of the metric on CPU."""
+        preds, target = inputs
         if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
         self.run_precision_test_cpu(
@@ -339,8 +355,9 @@ class TestMultilabelAveragePrecision(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_average_precision_dtype_gpu(self, input, dtype):
-        preds, target = input
+    def test_multiclass_average_precision_dtype_gpu(self, inputs, dtype):
+        """Test dtype support of the metric on GPU."""
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -351,8 +368,9 @@ class TestMultilabelAveragePrecision(MetricTester):
         )
 
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
-    def test_multilabel_average_precision_threshold_arg(self, input, average):
-        preds, target = input
+    def test_multilabel_average_precision_threshold_arg(self, inputs, average):
+        """Test that different types of `thresholds` argument lead to same result."""
+        preds, target = inputs
         if (preds < 0).any():
             preds = sigmoid(preds)
         for pred, true in zip(preds, target):

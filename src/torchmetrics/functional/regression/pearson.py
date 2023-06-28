@@ -49,13 +49,25 @@ def _pearson_corrcoef_update(
     # Data checking
     _check_same_shape(preds, target)
     _check_data_shape_to_num_outputs(preds, target, num_outputs)
+    cond = n_prior.mean() > 0
 
     n_obs = preds.shape[0]
-    mx_new = (n_prior * mean_x + preds.mean(0) * n_obs) / (n_prior + n_obs)
-    my_new = (n_prior * mean_y + target.mean(0) * n_obs) / (n_prior + n_obs)
+    if cond:
+        mx_new = (n_prior * mean_x + preds.sum(0)) / (n_prior + n_obs)
+        my_new = (n_prior * mean_y + target.sum(0)) / (n_prior + n_obs)
+    else:
+        mx_new = preds.mean(0)
+        my_new = target.mean(0)
+
     n_prior += n_obs
-    var_x += ((preds - mx_new) * (preds - mean_x)).sum(0)
-    var_y += ((target - my_new) * (target - mean_y)).sum(0)
+
+    if cond:
+        var_x += ((preds - mx_new) * (preds - mean_x)).sum(0)
+        var_y += ((target - my_new) * (target - mean_y)).sum(0)
+
+    else:
+        var_x += preds.var(0) * (n_obs - 1)
+        var_y += target.var(0) * (n_obs - 1)
     corr_xy += ((preds - mx_new) * (target - mean_y)).sum(0)
     mean_x = mx_new
     mean_y = my_new
@@ -80,6 +92,12 @@ def _pearson_corrcoef_compute(
     var_x /= nb - 1
     var_y /= nb - 1
     corr_xy /= nb - 1
+    # if var_x, var_y is float16 and on cpu, make it bfloat16 as sqrt is not supported for float16
+    # on cpu, remove this after https://github.com/pytorch/pytorch/issues/54774 is fixed
+    if var_x.dtype == torch.float16 and var_x.device == torch.device("cpu"):
+        var_x = var_x.bfloat16()
+        var_y = var_y.bfloat16()
+
     corrcoef = (corr_xy / (var_x * var_y).sqrt()).squeeze()
     return torch.clamp(corrcoef, -1.0, 1.0)
 
@@ -92,14 +110,14 @@ def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         target: ground truth scores
 
     Example (single output regression):
-        >>> from torchmetrics.functional import pearson_corrcoef
+        >>> from torchmetrics.functional.regression import pearson_corrcoef
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> pearson_corrcoef(preds, target)
         tensor(0.9849)
 
     Example (multi output regression):
-        >>> from torchmetrics.functional import pearson_corrcoef
+        >>> from torchmetrics.functional.regression import pearson_corrcoef
         >>> target = torch.tensor([[3, -0.5], [2, 7]])
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
         >>> pearson_corrcoef(preds, target)

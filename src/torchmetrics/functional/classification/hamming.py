@@ -31,7 +31,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_tensor_validation,
     _multilabel_stat_scores_update,
 )
-from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.compute import _adjust_weights_safe_divide, _safe_divide
 from torchmetrics.utilities.enums import ClassificationTask
 
 
@@ -80,10 +80,7 @@ def _hamming_distance_reduce(
         return 1 - _safe_divide(tp, tp + fn)
 
     score = 1 - _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else 1 - _safe_divide(tp, tp + fn)
-    if average is None or average == "none":
-        return score
-    weights = tp + fn if average == "weighted" else torch.ones_like(score)
-    return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
+    return _adjust_weights_safe_divide(score, average, multilabel, tp, fp, fn)
 
 
 def binary_hamming_distance(
@@ -406,17 +403,20 @@ def hamming_distance(
         tensor(0.2500)
     """
     task = ClassificationTask.from_str(task)
-    assert multidim_average is not None
+    assert multidim_average is not None  # noqa: S101  # needed for mypy
     if task == ClassificationTask.BINARY:
         return binary_hamming_distance(preds, target, threshold, multidim_average, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
-        assert isinstance(num_classes, int)
-        assert isinstance(top_k, int)
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
+        if not isinstance(top_k, int):
+            raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
         return multiclass_hamming_distance(
             preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
     if task == ClassificationTask.MULTILABEL:
-        assert isinstance(num_labels, int)
+        if not isinstance(num_labels, int):
+            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_hamming_distance(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )

@@ -135,7 +135,7 @@ def theils_u(
         Theil's U Statistic: Tensor
 
     Example:
-        >>> from torchmetrics.functional import theils_u
+        >>> from torchmetrics.functional.nominal import theils_u
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randint(10, (10,))
         >>> target = torch.randint(10, (10,))

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any
+from typing import Any, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -21,6 +21,11 @@ from torchmetrics.functional.regression.tweedie_deviance import (
     _tweedie_deviance_score_update,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["TweedieDevianceScore.plot"]
 
 
 class TweedieDevianceScore(Metric):
@@ -62,7 +67,7 @@ class TweedieDevianceScore(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import TweedieDevianceScore
+        >>> from torchmetrics.regression import TweedieDevianceScore
         >>> targets = torch.tensor([1.0, 2.0, 3.0, 4.0])
         >>> preds = torch.tensor([4.0, 3.0, 2.0, 1.0])
         >>> deviance_score = TweedieDevianceScore(power=2)
@@ -72,6 +77,8 @@ class TweedieDevianceScore(Metric):
     is_differentiable: bool = True
     higher_is_better = None
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+
     sum_deviance_score: Tensor
     num_observations: Tensor
 
@@ -99,3 +106,44 @@ class TweedieDevianceScore(Metric):
     def compute(self) -> Tensor:
         """Compute metric."""
         return _tweedie_deviance_score_compute(self.sum_deviance_score, self.num_observations)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn
+            >>> # Example plotting a single value
+            >>> from torchmetrics.regression import TweedieDevianceScore
+            >>> metric = TweedieDevianceScore()
+            >>> metric.update(randn(10,), randn(10,))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.regression import TweedieDevianceScore
+            >>> metric = TweedieDevianceScore()
+            >>> values = []
+            >>> for _ in range(10):
+            ...     values.append(metric(randn(10,), randn(10,)))
+            >>> fig, ax = metric.plot(values)
+        """
+        return self._plot(val, ax)

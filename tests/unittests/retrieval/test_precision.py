@@ -11,12 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
+
 import numpy as np
 import pytest
 from torch import Tensor
-
 from torchmetrics.functional.retrieval.precision import retrieval_precision
 from torchmetrics.retrieval.precision import RetrievalPrecision
+
 from unittests.helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,
@@ -36,7 +38,7 @@ from unittests.retrieval.helpers import (
 seed_all(42)
 
 
-def _precision_at_k(target: np.ndarray, preds: np.ndarray, top_k: int = None, adaptive_k: bool = False):
+def _precision_at_k(target: np.ndarray, preds: np.ndarray, top_k: Optional[int] = None, adaptive_k: bool = False):
     """Didn't find a reliable implementation of Precision in Information Retrieval, so, reimplementing here.
 
     A good explanation can be found `here
@@ -75,6 +77,7 @@ class TestPrecision(RetrievalMetricTester):
         k: int,
         adaptive_k: bool,
     ):
+        """Test class implementation of metric."""
         metric_args = {
             "empty_target_action": empty_target_action,
             "top_k": k,
@@ -107,6 +110,7 @@ class TestPrecision(RetrievalMetricTester):
         k: int,
         adaptive_k: bool,
     ):
+        """Test class implementation of metric with ignore_index argument."""
         metric_args = {
             "empty_target_action": empty_target_action,
             "top_k": k,
@@ -128,6 +132,7 @@ class TestPrecision(RetrievalMetricTester):
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
     @pytest.mark.parametrize("adaptive_k", [False, True])
     def test_functional_metric(self, preds: Tensor, target: Tensor, k: int, adaptive_k: bool):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
             target=target,
@@ -140,6 +145,7 @@ class TestPrecision(RetrievalMetricTester):
 
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_precision_cpu(self, indexes: Tensor, preds: Tensor, target: Tensor):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
             indexes=indexes,
             preds=preds,
@@ -150,6 +156,7 @@ class TestPrecision(RetrievalMetricTester):
 
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_precision_gpu(self, indexes: Tensor, preds: Tensor, target: Tensor):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             indexes=indexes,
             preds=preds,
@@ -169,6 +176,7 @@ class TestPrecision(RetrievalMetricTester):
     def test_arguments_class_metric(
         self, indexes: Tensor, preds: Tensor, target: Tensor, message: str, metric_args: dict
     ):
+        """Test that specific errors are raised for incorrect input."""
         self.run_metric_class_arguments_test(
             indexes=indexes,
             preds=preds,
@@ -188,6 +196,7 @@ class TestPrecision(RetrievalMetricTester):
         )
     )
     def test_arguments_functional_metric(self, preds: Tensor, target: Tensor, message: str, metric_args: dict):
+        """Test that specific errors are raised for incorrect input."""
         self.run_functional_metric_arguments_test(
             preds=preds,
             target=target,

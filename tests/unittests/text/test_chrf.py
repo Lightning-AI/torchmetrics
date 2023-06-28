@@ -3,10 +3,10 @@ from typing import Sequence
 
 import pytest
 from torch import Tensor, tensor
-
 from torchmetrics.functional.text.chrf import chrf_score
 from torchmetrics.text.chrf import CHRFScore
 from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
+
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 
@@ -14,7 +14,7 @@ if _SACREBLEU_AVAILABLE:
     from sacrebleu.metrics import CHRF
 
 
-def sacrebleu_chrf_fn(
+def _sacrebleu_chrf_fn(
     preds: Sequence[str],
     targets: Sequence[Sequence[str]],
     char_order: int,
@@ -52,6 +52,7 @@ class TestCHRFScore(TextTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_chrf_score_class(self, ddp, preds, targets, char_order, word_order, lowercase, whitespace):
+        """Test class implementation of metric."""
         metric_args = {
             "n_char_order": char_order,
             "n_word_order": word_order,
@@ -59,7 +60,7 @@ class TestCHRFScore(TextTester):
             "whitespace": whitespace,
         }
         nltk_metric = partial(
-            sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
+            _sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
         )
 
         self.run_class_metric_test(
@@ -72,6 +73,7 @@ class TestCHRFScore(TextTester):
         )
 
     def test_chrf_score_functional(self, preds, targets, char_order, word_order, lowercase, whitespace):
+        """Test functional implementation of metric."""
         metric_args = {
             "n_char_order": char_order,
             "n_word_order": word_order,
@@ -79,7 +81,7 @@ class TestCHRFScore(TextTester):
             "whitespace": whitespace,
         }
         nltk_metric = partial(
-            sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
+            _sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
         )
 
         self.run_functional_metric_test(
@@ -91,6 +93,7 @@ class TestCHRFScore(TextTester):
         )
 
     def test_chrf_score_differentiability(self, preds, targets, char_order, word_order, lowercase, whitespace):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {
             "n_char_order": char_order,
             "n_word_order": word_order,
@@ -108,12 +111,14 @@ class TestCHRFScore(TextTester):
 
 
 def test_chrf_empty_functional():
+    """Test that eed returns 0 when no input is provided."""
     preds = []
     targets = [[]]
     assert chrf_score(preds, targets) == tensor(0.0)
 
 
 def test_chrf_empty_class():
+    """Test that eed returns 0 when no input is provided."""
     chrf = CHRFScore()
     preds = []
     targets = [[]]
@@ -121,6 +126,7 @@ def test_chrf_empty_class():
 
 
 def test_chrf_return_sentence_level_score_functional():
+    """Test that chrf can return sentence level scores."""
     preds = _inputs_single_sentence_multiple_references.preds
     targets = _inputs_single_sentence_multiple_references.targets
     _, chrf_sentence_score = chrf_score(preds, targets, return_sentence_level_score=True)
@@ -128,6 +134,7 @@ def test_chrf_return_sentence_level_score_functional():
 
 
 def test_chrf_return_sentence_level_class():
+    """Test that chrf can return sentence level scores."""
     chrf = CHRFScore(return_sentence_level_score=True)
     preds = _inputs_single_sentence_multiple_references.preds
     targets = _inputs_single_sentence_multiple_references.targets

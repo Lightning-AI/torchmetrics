@@ -22,6 +22,7 @@ from unittest.mock import Mock
 import torch
 from torch import Tensor
 
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import select_topk, to_onehot
 from torchmetrics.utilities.enums import DataType
 
@@ -626,12 +627,12 @@ def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-6) -> bool:
 
 @no_type_check
 def check_forward_full_state_property(
-    metric_class,
-    init_args: Dict[str, Any] = {},
-    input_args: Dict[str, Any] = {},
+    metric_class: Metric,
+    init_args: Optional[Dict[str, Any]] = None,
+    input_args: Optional[Dict[str, Any]] = None,
     num_update_to_compare: Sequence[int] = [10, 100, 1000],
     reps: int = 5,
-) -> bool:
+) -> None:
     """Check if the new ``full_state_update`` property works as intended.
 
     This function checks if the property can safely be set to ``False`` which will for most metrics results in a
@@ -676,6 +677,8 @@ def check_forward_full_state_property(
         ... )
         Recommended setting `full_state_update=True`
     """
+    init_args = init_args or {}
+    input_args = input_args or {}
 
     class FullState(metric_class):
         full_state_update = True
@@ -728,6 +731,7 @@ def check_forward_full_state_property(
 
     faster = (mean[1, -1] < mean[0, -1]).item()  # if faster on average, we recommend upgrading
     print(f"Recommended setting `full_state_update={not faster}`")
+    return
 
 
 def is_overridden(method_name: str, instance: object, parent: object) -> bool:
@@ -769,8 +773,9 @@ def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIM
     """
     # source: https://stackoverflow.com/a/14924210/4521646
     proc = multiprocessing.Process(target=fn)
+    logging.debug(f"try to run `{fn.__name__}` for {timeout}s...")
     proc.start()
-    # Wait for 10 seconds or until process finishes
+    # Wait for N seconds or until process finishes
     proc.join(timeout)
     # If thread is still active
     if not proc.is_alive():

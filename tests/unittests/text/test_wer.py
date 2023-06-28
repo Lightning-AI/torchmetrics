@@ -1,10 +1,10 @@
 from typing import Callable, List, Union
 
 import pytest
-
 from torchmetrics.functional.text.wer import word_error_rate
 from torchmetrics.text.wer import WordErrorRate
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
+
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 
@@ -31,6 +31,7 @@ class TestWER(TextTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_wer_class(self, ddp, preds, targets):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -40,6 +41,7 @@ class TestWER(TextTester):
         )
 
     def test_wer_functional(self, preds, targets):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             targets,
@@ -48,6 +50,7 @@ class TestWER(TextTester):
         )
 
     def test_wer_differentiability(self, preds, targets):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             targets=targets,

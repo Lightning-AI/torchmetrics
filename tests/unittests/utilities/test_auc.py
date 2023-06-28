@@ -18,7 +18,6 @@ import numpy as np
 import pytest
 from sklearn.metrics import auc as _sk_auc
 from torch import tensor
-
 from torchmetrics.utilities.compute import auc
 from unittests import NUM_BATCHES
 from unittests.helpers import seed_all
@@ -28,6 +27,7 @@ seed_all(42)
 
 
 def sk_auc(x, y, reorder=False):
+    """Comparison function for correctness of auc implementation."""
     x = x.flatten()
     y = y.flatten()
     if reorder:
@@ -59,6 +59,7 @@ class TestAUC(MetricTester):
 
     @pytest.mark.parametrize("reorder", [True, False])
     def test_auc_functional(self, x, y, reorder):
+        """Test functional implementation."""
         self.run_functional_metric_test(
             x,
             y,
@@ -81,6 +82,7 @@ class TestAUC(MetricTester):
     ],
 )
 def test_auc(x, y, expected, unsqueeze_x, unsqueeze_y):
+    """Test that auc function gives the expected result."""
     x = tensor(x)
     y = tensor(y)
 

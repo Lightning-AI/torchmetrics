@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Optional, Sequence, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -20,6 +20,15 @@ from torchmetrics.classification.stat_scores import BinaryStatScores, Multiclass
 from torchmetrics.functional.classification.hamming import _hamming_distance_reduce
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import ClassificationTask
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = [
+        "BinaryHammingDistance.plot",
+        "MulticlassHammingDistance.plot",
+        "MultilabelHammingDistance.plot",
+    ]
 
 
 class BinaryHammingDistance(BinaryStatScores):
@@ -92,11 +101,54 @@ class BinaryHammingDistance(BinaryStatScores):
     is_differentiable: bool = False
     higher_is_better: bool = False
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def compute(self) -> Tensor:
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _hamming_distance_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import BinaryHammingDistance
+            >>> metric = BinaryHammingDistance()
+            >>> metric.update(rand(10), randint(2,(10,)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import BinaryHammingDistance
+            >>> metric = BinaryHammingDistance()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(rand(10), randint(2,(10,))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
 
 
 class MulticlassHammingDistance(MulticlassStatScores):
@@ -198,11 +250,55 @@ class MulticlassHammingDistance(MulticlassStatScores):
     is_differentiable: bool = False
     higher_is_better: bool = False
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Class"
 
     def compute(self) -> Tensor:
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _hamming_distance_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value per class
+            >>> from torch import randint
+            >>> from torchmetrics.classification import MulticlassHammingDistance
+            >>> metric = MulticlassHammingDistance(num_classes=3, average=None)
+            >>> metric.update(randint(3, (20,)), randint(3, (20,)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a multiple values per class
+            >>> from torch import randint
+            >>> from torchmetrics.classification import MulticlassHammingDistance
+            >>> metric = MulticlassHammingDistance(num_classes=3, average=None)
+            >>> values = []
+            >>> for _ in range(20):
+            ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
 
 
 class MultilabelHammingDistance(MultilabelStatScores):
@@ -302,6 +398,9 @@ class MultilabelHammingDistance(MultilabelStatScores):
     is_differentiable: bool = False
     higher_is_better: bool = False
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
     def compute(self) -> Tensor:
         """Compute metric."""
@@ -309,6 +408,47 @@ class MultilabelHammingDistance(MultilabelStatScores):
         return _hamming_distance_reduce(
             tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
         )
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import MultilabelHammingDistance
+            >>> metric = MultilabelHammingDistance(num_labels=3)
+            >>> metric.update(randint(2, (20, 3)), randint(2, (20, 3)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import MultilabelHammingDistance
+            >>> metric = MultilabelHammingDistance(num_labels=3)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
 
 
 class HammingDistance:
@@ -350,17 +490,20 @@ class HammingDistance:
     ) -> Metric:
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
-        assert multidim_average is not None
+        assert multidim_average is not None  # noqa: S101  # needed for mypy
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
         )
         if task == ClassificationTask.BINARY:
             return BinaryHammingDistance(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:
-            assert isinstance(num_classes, int)
-            assert isinstance(top_k, int)
+            if not isinstance(num_classes, int):
+                raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
+            if not isinstance(top_k, int):
+                raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
             return MulticlassHammingDistance(num_classes, top_k, average, **kwargs)
         if task == ClassificationTask.MULTILABEL:
-            assert isinstance(num_labels, int)
+            if not isinstance(num_labels, int):
+                raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelHammingDistance(num_labels, threshold, average, **kwargs)
         return None

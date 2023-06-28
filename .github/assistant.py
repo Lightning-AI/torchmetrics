@@ -32,9 +32,10 @@ LUT_PYTHON_TORCH = {
     "3.8": "1.4",
     "3.9": "1.7.1",
     "3.10": "1.11",
+    "3.11": "1.13",
 }
 _path = lambda *ds: os.path.join(_PATH_ROOT, *ds)
-REQUIREMENTS_FILES = tuple(glob.glob(_path("requirements", "*.txt")) + [_path("requirements.txt")])
+REQUIREMENTS_FILES = (*glob.glob(_path("requirements", "*.txt")), _path("requirements.txt"))
 
 
 def request_url(url: str, auth_token: Optional[str] = None) -> Optional[dict]:
@@ -113,7 +114,7 @@ class AssistantCLI:
         """Determine what domains were changed in particular PR."""
         if not pr:
             return "unittests"
-        url = f"https://api.github.com/repos/Lightning-AI/metrics/pulls/{pr}/files"
+        url = f"https://api.github.com/repos/Lightning-AI/torchmetrics/pulls/{pr}/files"
         logging.debug(url)
         data = request_url(url, auth_token)
         if not data:
@@ -140,7 +141,7 @@ class AssistantCLI:
             return "unittests"
 
         # parse domains
-        def _crop_path(fname: str, paths: List[str]):
+        def _crop_path(fname: str, paths: List[str]) -> str:
             for p in paths:
                 fname = fname.replace(p, "")
             return fname
@@ -158,7 +159,8 @@ class AssistantCLI:
             return list(tm_modules)
         tm_modules = [f"unittests/{md}" for md in set(tm_modules)]
         not_exists = [p for p in tm_modules if os.path.exists(p)]
-        assert not not_exists, f"Missing following paths: {not_exists}"
+        if not_exists:
+            raise ValueError(f"Missing following paths: {not_exists}")
         return " ".join(tm_modules)
 
 

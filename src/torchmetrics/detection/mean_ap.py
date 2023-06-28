@@ -12,46 +12,51 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
+import torch.distributed as dist
 from torch import IntTensor, Tensor
 
+from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import _cumsum
-from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["MeanAveragePrecision.plot"]
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
     from torchvision.ops import box_area, box_convert, box_iou
 else:
     box_convert = box_iou = box_area = None
-    __doctest_skip__ = ["MeanAveragePrecision"]
+    __doctest_skip__ = ["MeanAveragePrecision.plot", "MeanAveragePrecision"]
 
 if _PYCOCOTOOLS_AVAILABLE:
     import pycocotools.mask as mask_utils
 else:
     mask_utils = None
-    __doctest_skip__ = ["MeanAveragePrecision"]
+    __doctest_skip__ = ["MeanAveragePrecision.plot", "MeanAveragePrecision"]
 
 
 log = logging.getLogger(__name__)
 
 
-def compute_area(input: List[Any], iou_type: str = "bbox") -> Tensor:
+def compute_area(inputs: List[Any], iou_type: str = "bbox") -> Tensor:
     """Compute area of input depending on the specified iou_type.
 
     Default output for empty input is :class:`~torch.Tensor`
     """
-    if len(input) == 0:
+    if len(inputs) == 0:
         return Tensor([])
 
     if iou_type == "bbox":
-        return box_area(torch.stack(input))
+        return box_area(torch.stack(inputs))
     if iou_type == "segm":
-        input = [{"size": i[0], "counts": i[1]} for i in input]
-        area = torch.tensor(mask_utils.area(input).astype("float"))
-        return area
+        inputs = [{"size": i[0], "counts": i[1]} for i in inputs]
+        return torch.tensor(mask_utils.area(inputs).astype("float"))
 
     raise Exception(f"IOU type {iou_type} is not supported")
 
@@ -142,65 +147,15 @@ def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarra
     return torch.tensor(mask_utils.iou(det_coco_format, gt_coco_format, [False for _ in gt]))
 
 
-def _input_validator(
-    preds: Sequence[Dict[str, Tensor]], targets: Sequence[Dict[str, Tensor]], iou_type: str = "bbox"
-) -> None:
-    """Ensure the correct input format of `preds` and `targets`."""
-    if not isinstance(preds, Sequence):
-        raise ValueError("Expected argument `preds` to be of type Sequence")
-    if not isinstance(targets, Sequence):
-        raise ValueError("Expected argument `target` to be of type Sequence")
-    if len(preds) != len(targets):
-        raise ValueError("Expected argument `preds` and `target` to have the same length")
-    iou_attribute = "boxes" if iou_type == "bbox" else "masks"
-
-    for k in [iou_attribute, "scores", "labels"]:
-        if any(k not in p for p in preds):
-            raise ValueError(f"Expected all dicts in `preds` to contain the `{k}` key")
-
-    for k in [iou_attribute, "labels"]:
-        if any(k not in p for p in targets):
-            raise ValueError(f"Expected all dicts in `target` to contain the `{k}` key")
-
-    if any(type(pred[iou_attribute]) is not Tensor for pred in preds):
-        raise ValueError(f"Expected all {iou_attribute} in `preds` to be of type Tensor")
-    if any(type(pred["scores"]) is not Tensor for pred in preds):
-        raise ValueError("Expected all scores in `preds` to be of type Tensor")
-    if any(type(pred["labels"]) is not Tensor for pred in preds):
-        raise ValueError("Expected all labels in `preds` to be of type Tensor")
-    if any(type(target[iou_attribute]) is not Tensor for target in targets):
-        raise ValueError(f"Expected all {iou_attribute} in `target` to be of type Tensor")
-    if any(type(target["labels"]) is not Tensor for target in targets):
-        raise ValueError("Expected all labels in `target` to be of type Tensor")
-
-    for i, item in enumerate(targets):
-        if item[iou_attribute].size(0) != item["labels"].size(0):
-            raise ValueError(
-                f"Input {iou_attribute} and labels of sample {i} in targets have a"
-                f" different length (expected {item[iou_attribute].size(0)} labels, got {item['labels'].size(0)})"
-            )
-    for i, item in enumerate(preds):
-        if not (item[iou_attribute].size(0) == item["labels"].size(0) == item["scores"].size(0)):
-            raise ValueError(
-                f"Input {iou_attribute}, labels and scores of sample {i} in predictions have a"
-                f" different length (expected {item[iou_attribute].size(0)} labels and scores,"
-                f" got {item['labels'].size(0)} labels and {item['scores'].size(0)})"
-            )
-
-
-def _fix_empty_tensors(boxes: Tensor) -> Tensor:
-    """Empty tensors can cause problems in DDP mode, this methods corrects them."""
-    if boxes.numel() == 0 and boxes.ndim == 1:
-        return boxes.unsqueeze(0)
-    return boxes
-
-
 class MeanAveragePrecision(Metric):
     r"""Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection predictions.
 
-    Predicted boxes and targets have to be in Pascal VOC format (xmin-top left, ymin-top left, xmax-bottom right,
-    ymax-bottom right). The metric can both compute the mAP and mAR values per class or as an global average over all
-    classes.
+    .. math::
+        \text{mAP} = \frac{1}{n} \sum_{i=1}^{n} AP_i
+
+    where :math:`AP_i` is the average precision for class :math:`i` and :math:`n` is the number of classes. The average
+    precision is defined as the area under the precision-recall curve. If argument `class_metrics` is set to ``True``,
+    the metric will also return the mAP/mAR per class.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -289,7 +244,7 @@ class MeanAveragePrecision(Metric):
         ModuleNotFoundError:
             If ``torchvision`` is not installed or version installed is lower than 0.8.0
         ModuleNotFoundError:
-            If ``iou_type`` is equal to ``seqm`` and ``pycocotools`` is not installed
+            If ``iou_type`` is equal to ``segm`` and ``pycocotools`` is not installed
         ValueError:
             If ``class_metrics`` is not a boolean
         ValueError:
@@ -311,7 +266,7 @@ class MeanAveragePrecision(Metric):
 
     Example:
         >>> from torch import tensor
-        >>> from torchmetrics.detection.mean_ap import MeanAveragePrecision
+        >>> from torchmetrics.detection import MeanAveragePrecision
         >>> preds = [
         ...   dict(
         ...     boxes=tensor([[258.0, 41.0, 606.0, 285.0]]),
@@ -346,8 +301,10 @@ class MeanAveragePrecision(Metric):
          'mar_small': tensor(-1.)}
     """
     is_differentiable: bool = False
-    higher_is_better: Optional[bool] = None
+    higher_is_better: Optional[bool] = True
     full_state_update: bool = True
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     detections: List[Tensor]
     detection_scores: List[Tensor]
@@ -388,10 +345,10 @@ class MeanAveragePrecision(Metric):
             raise ModuleNotFoundError("When `iou_type` is set to 'segm', pycocotools need to be installed")
         self.iou_type = iou_type
         self.bbox_area_ranges = {
-            "all": (0**2, int(1e5**2)),
-            "small": (0**2, 32**2),
-            "medium": (32**2, 96**2),
-            "large": (96**2, int(1e5**2)),
+            "all": (float(0**2), float(1e5**2)),
+            "small": (float(0**2), float(32**2)),
+            "medium": (float(32**2), float(96**2)),
+            "large": (float(96**2), float(1e5**2)),
         }
 
         if not isinstance(class_metrics, bool):
@@ -789,8 +746,8 @@ class MeanAveragePrecision(Metric):
         """
         results = {"precision": precisions, "recall": recalls}
         map_metrics = MAPMetricResults()
-        map_metrics.map = self._summarize(results, True)
         last_max_det_thr = self.max_detection_thresholds[-1]
+        map_metrics.map = self._summarize(results, True, max_dets=last_max_det_thr)
         if 0.5 in self.iou_thresholds:
             map_metrics.map_50 = self._summarize(results, True, iou_threshold=0.5, max_dets=last_max_det_thr)
         else:
@@ -912,3 +869,102 @@ class MeanAveragePrecision(Metric):
         metrics[f"mar_{self.max_detection_thresholds[-1]}_per_class"] = mar_max_dets_per_class_values
         metrics.classes = torch.tensor(classes, dtype=torch.int)
         return metrics
+
+    def _apply(self, fn: Callable) -> torch.nn.Module:
+        """Custom apply function.
+
+        Excludes the detections and groundtruths from the casting when the iou_type is set to `segm` as the state is
+        no longer a tensor but a tuple.
+        """
+        if self.iou_type == "segm":
+            this = super()._apply(fn, exclude_state=("detections", "groundtruths"))
+        else:
+            this = super()._apply(fn)
+        return this
+
+    def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, process_group: Optional[Any] = None) -> None:
+        """Custom sync function.
+
+        For the iou_type `segm` the detections and groundtruths are no longer tensors but tuples. Therefore, we need
+        to gather the list of tuples and then convert it back to a list of tuples.
+
+        """
+        super()._sync_dist(dist_sync_fn=dist_sync_fn, process_group=process_group)
+
+        if self.iou_type == "segm":
+            self.detections = self._gather_tuple_list(self.detections, process_group)
+            self.groundtruths = self._gather_tuple_list(self.groundtruths, process_group)
+
+    @staticmethod
+    def _gather_tuple_list(list_to_gather: List[Tuple], process_group: Optional[Any] = None) -> List[Any]:
+        """Gather a list of tuples over multiple devices."""
+        world_size = dist.get_world_size(group=process_group)
+        dist.barrier(group=process_group)
+
+        list_gathered = [None for _ in range(world_size)]
+        dist.all_gather_object(list_gathered, list_to_gather, group=process_group)
+
+        list_merged = []
+        for idx in range(len(list_gathered[0])):
+            for rank in range(world_size):
+                list_merged.append(list_gathered[rank][idx])
+
+        return list_merged
+
+    def plot(
+        self, val: Optional[Union[Dict[str, Tensor], Sequence[Dict[str, Tensor]]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure object and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import tensor
+            >>> from torchmetrics.detection.mean_ap import MeanAveragePrecision
+            >>> preds = [dict(
+            ...     boxes=tensor([[258.0, 41.0, 606.0, 285.0]]),
+            ...     scores=tensor([0.536]),
+            ...     labels=tensor([0]),
+            ... )]
+            >>> target = [dict(
+            ...     boxes=tensor([[214.0, 41.0, 562.0, 285.0]]),
+            ...     labels=tensor([0]),
+            ... )]
+            >>> metric = MeanAveragePrecision()
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.detection.mean_ap import MeanAveragePrecision
+            >>> preds = lambda: [dict(
+            ...     boxes=torch.tensor([[258.0, 41.0, 606.0, 285.0]]) + torch.randint(10, (1,4)),
+            ...     scores=torch.tensor([0.536]) + 0.1*torch.rand(1),
+            ...     labels=torch.tensor([0]),
+            ... )]
+            >>> target = [dict(
+            ...     boxes=torch.tensor([[214.0, 41.0, 562.0, 285.0]]),
+            ...     labels=torch.tensor([0]),
+            ... )]
+            >>> metric = MeanAveragePrecision()
+            >>> vals = []
+            >>> for _ in range(20):
+            ...     vals.append(metric(preds(), target))
+            >>> fig_, ax_ = metric.plot(vals)
+        """
+        return self._plot(val, ax)

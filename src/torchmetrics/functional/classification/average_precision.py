@@ -47,13 +47,10 @@ def _reduce_average_precision(
     weights: Optional[Tensor] = None,
 ) -> Tensor:
     """Reduce multiple average precision score into one number."""
-    res = []
     if isinstance(precision, Tensor) and isinstance(recall, Tensor):
         res = -torch.sum((recall[:, 1:] - recall[:, :-1]) * precision[:, :-1], 1)
     else:
-        for p, r in zip(precision, recall):
-            res.append(-torch.sum((r[1:] - r[:-1]) * p[:-1]))
-        res = torch.stack(res)
+        res = torch.stack([-torch.sum((r[1:] - r[:-1]) * p[:-1]) for p, r in zip(precision, recall)])
     if average is None or average == "none":
         return res
     if torch.isnan(res).any():
@@ -288,7 +285,7 @@ def _multilabel_average_precision_compute(
     average: Optional[Literal["micro", "macro", "weighted", "none"]],
     thresholds: Optional[Tensor],
     ignore_index: Optional[int] = None,
-) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+) -> Tensor:
     if average == "micro":
         if isinstance(state, Tensor) and thresholds is not None:
             state = state.sum(1)
@@ -298,7 +295,7 @@ def _multilabel_average_precision_compute(
                 idx = target == ignore_index
                 preds = preds[~idx]
                 target = target[~idx]
-            state = [preds, target]
+            state = (preds, target)
         return _binary_average_precision_compute(state, thresholds)
 
     precision, recall, _ = _multilabel_precision_recall_curve_compute(state, num_labels, thresholds, ignore_index)
@@ -416,7 +413,7 @@ def average_precision(
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[List[Tensor], Tensor]:
+) -> Optional[Tensor]:
     r"""Compute the average precision (AP) score.
 
     The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
@@ -434,7 +431,7 @@ def average_precision(
     for the specific details of each argument influence and examples.
 
     Legacy Example:
-        >>> from torchmetrics.functional import average_precision
+        >>> from torchmetrics.functional.classification import average_precision
         >>> pred = torch.tensor([0.0, 1.0, 2.0, 3.0])
         >>> target = torch.tensor([0, 1, 1, 1])
         >>> average_precision(pred, target, task="binary")
@@ -452,11 +449,13 @@ def average_precision(
     if task == ClassificationTask.BINARY:
         return binary_average_precision(preds, target, thresholds, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
-        assert isinstance(num_classes, int)
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         return multiclass_average_precision(
             preds, target, num_classes, average, thresholds, ignore_index, validate_args
         )
     if task == ClassificationTask.MULTILABEL:
-        assert isinstance(num_labels, int)
+        if not isinstance(num_labels, int):
+            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_average_precision(preds, target, num_labels, average, thresholds, ignore_index, validate_args)
     return None

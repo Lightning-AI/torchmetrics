@@ -162,18 +162,16 @@ def _calculate_tau(
 ) -> Tensor:
     """Calculate Kendall's tau from metric metadata."""
     if variant == _MetricVariant.A:
-        tau = con_min_dis_pairs / (concordant_pairs + discordant_pairs)
-    elif variant == _MetricVariant.B:
+        return con_min_dis_pairs / (concordant_pairs + discordant_pairs)
+    if variant == _MetricVariant.B:
         total_combinations: Tensor = n_total * (n_total - 1) // 2
         denominator = (total_combinations - preds_ties) * (total_combinations - target_ties)
-        tau = con_min_dis_pairs / torch.sqrt(denominator)
-    else:
-        preds_unique = torch.tensor([len(p.unique()) for p in preds.T], dtype=preds.dtype, device=preds.device)
-        target_unique = torch.tensor([len(t.unique()) for t in target.T], dtype=target.dtype, device=target.device)
-        min_classes = torch.minimum(preds_unique, target_unique)
-        tau = 2 * con_min_dis_pairs / ((min_classes - 1) / min_classes * n_total**2)
+        return con_min_dis_pairs / torch.sqrt(denominator)
 
-    return tau
+    preds_unique = torch.tensor([len(p.unique()) for p in preds.T], dtype=preds.dtype, device=preds.device)
+    target_unique = torch.tensor([len(t.unique()) for t in target.T], dtype=target.dtype, device=target.device)
+    min_classes = torch.minimum(preds_unique, target_unique)
+    return 2 * con_min_dis_pairs / ((min_classes - 1) / min_classes * n_total**2)
 
 
 def _get_p_value_for_t_value_from_dist(t_value: Tensor) -> Tensor:
@@ -226,8 +224,8 @@ def _calculate_p_value(
 def _kendall_corrcoef_update(
     preds: Tensor,
     target: Tensor,
-    concat_preds: List[Tensor] = [],
-    concat_target: List[Tensor] = [],
+    concat_preds: Optional[List[Tensor]] = None,
+    concat_target: Optional[List[Tensor]] = None,
     num_outputs: int = 1,
 ) -> Tuple[List[Tensor], List[Tensor]]:
     """Update variables required to compute Kendall rank correlation coefficient.
@@ -242,6 +240,8 @@ def _kendall_corrcoef_update(
     Raises:
         RuntimeError: If ``preds`` and ``target`` do not have the same shape
     """
+    concat_preds = concat_preds or []
+    concat_target = concat_target or []
     # Data checking
     _check_same_shape(preds, target)
     _check_data_shape_to_num_outputs(preds, target, num_outputs)

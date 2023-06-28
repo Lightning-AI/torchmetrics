@@ -37,7 +37,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _PLOT_OUT_TYPE, plot_confusion_matrix
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_confusion_matrix
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = [
@@ -57,12 +57,11 @@ class BinaryConfusionMatrix(Metric):
       element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-    .. note::
-       Additional dimension ``...`` will be flattened into the batch dimension.
-
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``bcm`` (:class:`~torch.Tensor`): A tensor containing a ``(2, 2)`` matrix
+    - ``confusion_matrix`` (:class:`~torch.Tensor`): A tensor containing a ``(2, 2)`` matrix
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
         threshold: Threshold for transforming probability to binary (0,1) predictions
@@ -131,13 +130,18 @@ class BinaryConfusionMatrix(Metric):
         return _binary_confusion_matrix_compute(self.confmat, self.normalize)
 
     def plot(
-        self, val: Optional[Tensor] = None, add_text: bool = True, labels: Optional[List[str]] = None
+        self,
+        val: Optional[Tensor] = None,
+        ax: Optional[_AX_TYPE] = None,
+        add_text: bool = True,
+        labels: Optional[List[str]] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
         Args:
             val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
                 If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
             add_text: if the value of each cell should be added to the plot
             labels: a list of strings, if provided will be added to the plot to indicate the different classes
 
@@ -157,10 +161,10 @@ class BinaryConfusionMatrix(Metric):
             >>> metric.update(randint(5, (20,)), randint(5, (20,)))
             >>> fig_, ax_ = metric.plot()
         """
-        val = val or self.compute()
+        val = val if val is not None else self.compute()
         if not isinstance(val, Tensor):
             raise TypeError(f"Expected val to be a single tensor but got {val}")
-        fig, ax = plot_confusion_matrix(val, add_text=add_text, labels=labels)
+        fig, ax = plot_confusion_matrix(val, ax=ax, add_text=add_text, labels=labels)
         return fig, ax
 
 
@@ -174,27 +178,9 @@ class MulticlassConfusionMatrix(Metric):
       element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-    .. note::
-       Additional dimension ``...`` will be flattened into the batch dimension.
-
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``bcm`` (:class:`~torch.Tensor`): A tensor containing a ``(2, 2)`` matrix
-
-    ---
-
-    As input to 'update' the metric accepts the following input:
-
-    - ``preds``: ``(N, ...)`` (int tensor) or ``(N, C, ..)`` (float tensor). If preds is a floating point
-      we apply ``torch.argmax`` along the ``C`` dimension to automatically convert probabilities/logits into
-      an int tensor.
-    - ``target`` (int tensor): ``(N, ...)``
-
-    Additional dimension ``...`` will be flattened into the batch dimension.
-
-    As output of 'compute' the metric returns the following output:
-
-    - ``confusion matrix``: [num_classes, num_classes] matrix
+    - ``confusion_matrix``: [num_classes, num_classes] matrix
 
     Args:
         num_classes: Integer specifing the number of classes
@@ -269,13 +255,18 @@ class MulticlassConfusionMatrix(Metric):
         return _multiclass_confusion_matrix_compute(self.confmat, self.normalize)
 
     def plot(
-        self, val: Optional[Tensor] = None, add_text: bool = True, labels: Optional[List[str]] = None
+        self,
+        val: Optional[Tensor] = None,
+        ax: Optional[_AX_TYPE] = None,
+        add_text: bool = True,
+        labels: Optional[List[str]] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
         Args:
             val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
                 If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
             add_text: if the value of each cell should be added to the plot
             labels: a list of strings, if provided will be added to the plot to indicate the different classes
 
@@ -295,10 +286,10 @@ class MulticlassConfusionMatrix(Metric):
             >>> metric.update(randint(5, (20,)), randint(5, (20,)))
             >>> fig_, ax_ = metric.plot()
         """
-        val = val or self.compute()
+        val = val if val is not None else self.compute()
         if not isinstance(val, Tensor):
             raise TypeError(f"Expected val to be a single tensor but got {val}")
-        fig, ax = plot_confusion_matrix(val, add_text=add_text, labels=labels)
+        fig, ax = plot_confusion_matrix(val, ax=ax, add_text=add_text, labels=labels)
         return fig, ax
 
 
@@ -311,8 +302,6 @@ class MultilabelConfusionMatrix(Metric):
       [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
-
-    Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output of 'compute' the metric returns the following output:
 
@@ -393,13 +382,18 @@ class MultilabelConfusionMatrix(Metric):
         return _multilabel_confusion_matrix_compute(self.confmat, self.normalize)
 
     def plot(
-        self, val: Optional[Tensor] = None, add_text: bool = True, labels: Optional[List[str]] = None
+        self,
+        val: Optional[Tensor] = None,
+        ax: Optional[_AX_TYPE] = None,
+        add_text: bool = True,
+        labels: Optional[List[str]] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
         Args:
             val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
                 If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
             add_text: if the value of each cell should be added to the plot
             labels: a list of strings, if provided will be added to the plot to indicate the different classes
 
@@ -419,10 +413,10 @@ class MultilabelConfusionMatrix(Metric):
             >>> metric.update(randint(5, (20,)), randint(5, (20,)))
             >>> fig_, ax_ = metric.plot()
         """
-        val = val or self.compute()
+        val = val if val is not None else self.compute()
         if not isinstance(val, Tensor):
             raise TypeError(f"Expected val to be a single tensor but got {val}")
-        fig, ax = plot_confusion_matrix(val, add_text=add_text, labels=labels)
+        fig, ax = plot_confusion_matrix(val, ax=ax, add_text=add_text, labels=labels)
         return fig, ax
 
 
@@ -477,9 +471,11 @@ class ConfusionMatrix:
         if task == ClassificationTask.BINARY:
             return BinaryConfusionMatrix(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:
-            assert isinstance(num_classes, int)
+            if not isinstance(num_classes, int):
+                raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassConfusionMatrix(num_classes, **kwargs)
         if task == ClassificationTask.MULTILABEL:
-            assert isinstance(num_labels, int)
+            if not isinstance(num_labels, int):
+                raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelConfusionMatrix(num_labels, threshold, **kwargs)
         return None

@@ -18,7 +18,7 @@ from torch import Tensor, tensor
 from torchmetrics.functional.audio.stoi import short_time_objective_intelligibility
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PYSTOI_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 __doctest_requires__ = {"ShortTimeObjectiveIntelligibility": ["pystoi"]}
 
@@ -64,7 +64,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
+        >>> from torchmetrics.audio import ShortTimeObjectiveIntelligibility
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
@@ -77,8 +77,8 @@ class ShortTimeObjectiveIntelligibility(Metric):
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
-    plot_lower_bound = -20.0
-    plot_upper_bound = 5.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,
@@ -131,7 +131,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
+            >>> from torchmetrics.audio import ShortTimeObjectiveIntelligibility
             >>> g = torch.manual_seed(1)
             >>> preds = torch.randn(8000)
             >>> target = torch.randn(8000)
@@ -144,7 +144,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.audio.stoi import ShortTimeObjectiveIntelligibility
+            >>> from torchmetrics.audio import ShortTimeObjectiveIntelligibility
             >>> metric = ShortTimeObjectiveIntelligibility(8000, False)
             >>> g = torch.manual_seed(1)
             >>> preds = torch.randn(8000)

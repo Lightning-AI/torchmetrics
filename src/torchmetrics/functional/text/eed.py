@@ -211,9 +211,7 @@ def _preprocess_en(sentence: str) -> str:
         sentence = sentence.replace(pattern, replacement)
 
     # add space to beginning and end of string
-    sentence = " " + sentence + " "
-
-    return sentence
+    return " " + sentence + " "
 
 
 def _preprocess_ja(sentence: str) -> str:
@@ -384,7 +382,7 @@ def extended_edit_distance(
         Extended edit distance score as a tensor
 
     Example:
-        >>> from torchmetrics.functional import extended_edit_distance
+        >>> from torchmetrics.functional.text import extended_edit_distance
         >>> preds = ["this is the prediction", "here is an other sample"]
         >>> target = ["this is the reference", "here is another one"]
         >>> extended_edit_distance(preds=preds, target=target)

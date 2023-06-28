@@ -10,7 +10,7 @@ Welcome to TorchMetrics
    <div class="row" style='font-size: 14px'>
       <div class='col-md-12'>
 
-TorchMetrics is a collection of 90+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
+TorchMetrics is a collection of 100+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
 * A standardized interface to increase reproducibility
 * Reduces Boilerplate
@@ -130,6 +130,7 @@ Or directly from conda
    pages/quickstart
    all-metrics
    pages/overview
+   pages/plotting
    pages/implement
    pages/lightning
 

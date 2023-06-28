@@ -17,12 +17,12 @@ from typing import Optional
 import pytest
 from scipy.spatial.distance import dice as sc_dice
 from torch import Tensor, tensor
-
-from torchmetrics import Dice
+from torchmetrics.classification import Dice
 from torchmetrics.functional import dice
 from torchmetrics.functional.classification.stat_scores import _del_column
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
+
 from unittests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
 from unittests.classification.inputs import _input_multiclass as _input_mcls
 from unittests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
@@ -76,6 +76,7 @@ def _scipy_dice(
     ],
 )
 def test_dice(pred, target, expected):
+    """Test that implementation returns the correct result."""
     score = dice(tensor(pred), tensor(target), ignore_index=0)
     assert score == expected
 
@@ -94,6 +95,7 @@ class TestDiceBinary(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False])
     def test_dice_class(self, ddp, preds, target, ignore_index):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -104,6 +106,7 @@ class TestDiceBinary(MetricTester):
         )
 
     def test_dice_fn(self, preds, target, ignore_index):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
@@ -133,6 +136,7 @@ class TestDiceMulti(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False])
     def test_dice_class(self, ddp, preds, target, ignore_index):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -143,6 +147,7 @@ class TestDiceMulti(MetricTester):
         )
 
     def test_dice_fn(self, preds, target, ignore_index):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,

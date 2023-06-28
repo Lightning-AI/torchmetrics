@@ -17,10 +17,10 @@ from typing import Sequence
 
 import pytest
 from torch import Tensor, tensor
-
 from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
 from torchmetrics.text.sacre_bleu import SacreBLEUScore
 from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
+
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_multiple_references
 
@@ -31,7 +31,7 @@ if _SACREBLEU_AVAILABLE:
 TOKENIZERS = ("none", "13a", "zh", "intl", "char")
 
 
-def sacrebleu_fn(preds: Sequence[str], targets: Sequence[Sequence[str]], tokenize: str, lowercase: bool) -> Tensor:
+def _sacrebleu_fn(preds: Sequence[str], targets: Sequence[Sequence[str]], tokenize: str, lowercase: bool) -> Tensor:
     sacrebleu_fn = BLEU(tokenize=tokenize, lowercase=lowercase)
     # Sacrebleu expects different format of input
     targets = [[target[i] for target in targets] for i in range(len(targets[0]))]
@@ -51,8 +51,9 @@ class TestSacreBLEUScore(TextTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_bleu_score_class(self, ddp, preds, targets, tokenize, lowercase):
+        """Test class implementation of metric."""
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
-        original_sacrebleu = partial(sacrebleu_fn, tokenize=tokenize, lowercase=lowercase)
+        original_sacrebleu = partial(_sacrebleu_fn, tokenize=tokenize, lowercase=lowercase)
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -64,8 +65,9 @@ class TestSacreBLEUScore(TextTester):
         )
 
     def test_bleu_score_functional(self, preds, targets, tokenize, lowercase):
+        """Test functional implementation of metric."""
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
-        original_sacrebleu = partial(sacrebleu_fn, tokenize=tokenize, lowercase=lowercase)
+        original_sacrebleu = partial(_sacrebleu_fn, tokenize=tokenize, lowercase=lowercase)
 
         self.run_functional_metric_test(
             preds,
@@ -76,6 +78,7 @@ class TestSacreBLEUScore(TextTester):
         )
 
     def test_bleu_score_differentiability(self, preds, targets, tokenize, lowercase):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
 
         self.run_differentiability_test(
@@ -88,6 +91,7 @@ class TestSacreBLEUScore(TextTester):
 
 
 def test_no_and_uniform_weights_functional():
+    """Test that implementation works with no weights and uniform weights, and it gives the same result."""
     preds = ["My full pytorch-lightning"]
     targets = [["My full pytorch-lightning test", "Completely Different"]]
     no_weights_score = sacre_bleu_score(preds, targets, n_gram=2)
@@ -96,6 +100,7 @@ def test_no_and_uniform_weights_functional():
 
 
 def test_no_and_uniform_weights_class():
+    """Test that implementation works with no weights and uniform weights, and it gives the same result."""
     no_weights_bleu = SacreBLEUScore(n_gram=2)
     uniform_weights_bleu = SacreBLEUScore(n_gram=2, weights=[0.5, 0.5])
 

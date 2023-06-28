@@ -20,45 +20,67 @@ import pytest
 import torch
 from pycocotools import mask
 from torch import IntTensor, Tensor
-
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+
 from unittests.detection import _SAMPLE_DETECTION_SEGMENTATION
 from unittests.helpers.testers import MetricTester
 
 Input = namedtuple("Input", ["preds", "target"])
 
-with open(_SAMPLE_DETECTION_SEGMENTATION) as fp:
-    inputs_json = json.load(fp)
 
-_mask_unsqueeze_bool = lambda m: Tensor(mask.decode(m)).unsqueeze(0).bool()
-_masks_stack_bool = lambda ms: Tensor(np.stack([mask.decode(m) for m in ms])).bool()
+def _create_inputs_masks() -> Input:
+    with open(_SAMPLE_DETECTION_SEGMENTATION) as fp:
+        inputs_json = json.load(fp)
 
-_inputs_masks = Input(
-    preds=[
-        [
-            {
-                "masks": _mask_unsqueeze_bool(inputs_json["preds"][0]),
-                "scores": Tensor([0.236]),
-                "labels": IntTensor([4]),
-            },
-            {
-                "masks": _masks_stack_bool([inputs_json["preds"][1], inputs_json["preds"][2]]),
-                "scores": Tensor([0.318, 0.726]),
-                "labels": IntTensor([3, 2]),
-            },  # 73
+    _mask_unsqueeze_bool = lambda m: Tensor(mask.decode(m)).unsqueeze(0).bool()
+    _masks_stack_bool = lambda ms: Tensor(np.stack([mask.decode(m) for m in ms])).bool()
+
+    return Input(
+        preds=[
+            [
+                {
+                    "masks": _mask_unsqueeze_bool(inputs_json["preds"][0]),
+                    "scores": Tensor([0.236]),
+                    "labels": IntTensor([4]),
+                },
+                {
+                    "masks": _masks_stack_bool([inputs_json["preds"][1], inputs_json["preds"][2]]),
+                    "scores": Tensor([0.318, 0.726]),
+                    "labels": IntTensor([3, 2]),
+                },  # 73
+            ],
+            [
+                {
+                    "masks": _mask_unsqueeze_bool(inputs_json["preds"][0]),
+                    "scores": Tensor([0.236]),
+                    "labels": IntTensor([4]),
+                },
+                {
+                    "masks": _masks_stack_bool([inputs_json["preds"][1], inputs_json["preds"][2]]),
+                    "scores": Tensor([0.318, 0.726]),
+                    "labels": IntTensor([3, 2]),
+                },  # 73
+            ],
         ],
-    ],
-    target=[
-        [
-            {"masks": _mask_unsqueeze_bool(inputs_json["targets"][0]), "labels": IntTensor([4])},  # 42
-            {
-                "masks": _masks_stack_bool([inputs_json["targets"][1], inputs_json["targets"][2]]),
-                "labels": IntTensor([2, 2]),
-            },  # 73
+        target=[
+            [
+                {"masks": _mask_unsqueeze_bool(inputs_json["targets"][0]), "labels": IntTensor([4])},  # 42
+                {
+                    "masks": _masks_stack_bool([inputs_json["targets"][1], inputs_json["targets"][2]]),
+                    "labels": IntTensor([2, 2]),
+                },  # 73
+            ],
+            [
+                {"masks": _mask_unsqueeze_bool(inputs_json["targets"][0]), "labels": IntTensor([4])},  # 42
+                {
+                    "masks": _masks_stack_bool([inputs_json["targets"][1], inputs_json["targets"][2]]),
+                    "labels": IntTensor([2, 2]),
+                },  # 73
+            ],
         ],
-    ],
-)
+    )
+
 
 _inputs = Input(
     preds=[
@@ -161,7 +183,7 @@ _inputs = Input(
     ],
 )
 
-# example from this issue https://github.com/Lightning-AI/metrics/issues/943
+# example from this issue https://github.com/Lightning-AI/torchmetrics/issues/943
 _inputs2 = Input(
     preds=[
         [
@@ -196,8 +218,8 @@ _inputs2 = Input(
 )
 
 # Test empty preds case, to ensure bool inputs are properly casted to uint8
-# From https://github.com/Lightning-AI/metrics/issues/981
-# and https://github.com/Lightning-AI/metrics/issues/1147
+# From https://github.com/Lightning-AI/torchmetrics/issues/981
+# and https://github.com/Lightning-AI/torchmetrics/issues/1147
 _inputs3 = Input(
     preds=[
         [
@@ -354,9 +376,10 @@ class TestMAP(MetricTester):
             metric_args={"class_metrics": True, "compute_on_cpu": compute_on_cpu},
         )
 
-    @pytest.mark.parametrize("ddp", [False])
+    @pytest.mark.parametrize("ddp", [False, True])
     def test_map_segm(self, compute_on_cpu, ddp):
         """Test modular implementation for correctness."""
+        _inputs_masks = _create_inputs_masks()
         self.run_class_metric_test(
             ddp=ddp,
             preds=_inputs_masks.preds,
@@ -471,12 +494,12 @@ def test_empty_preds_cxcywh():
 _gpu_test_condition = not torch.cuda.is_available()
 
 
-def _move_to_gpu(input):
-    for x in input:
+def _move_to_gpu(inputs):
+    for x in inputs:
         for key in x:
             if torch.is_tensor(x[key]):
                 x[key] = x[key].to("cuda")
-    return input
+    return inputs
 
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
@@ -656,3 +679,40 @@ def test_error_on_wrong_input():
             [{"boxes": Tensor(), "scores": Tensor(), "labels": IntTensor()}],
             [{"boxes": Tensor(), "labels": []}],
         )
+
+
+def _generate_random_segm_input(device):
+    """Generate random inputs for mAP when iou_type=segm."""
+    preds = []
+    targets = []
+    for _ in range(2):
+        result = {}
+        num_preds = torch.randint(0, 10, (1,)).item()
+        result["scores"] = torch.rand((num_preds,), device=device)
+        result["labels"] = torch.randint(0, 10, (num_preds,), device=device)
+        result["masks"] = torch.randint(0, 2, (num_preds, 10, 10), device=device).bool()
+        preds.append(result)
+        gt = {}
+        num_gt = torch.randint(0, 10, (1,)).item()
+        gt["labels"] = torch.randint(0, 10, (num_gt,), device=device)
+        gt["masks"] = torch.randint(0, 2, (num_gt, 10, 10), device=device).bool()
+        targets.append(gt)
+    return preds, targets
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+def test_device_changing():
+    """See issue: https://github.com/Lightning-AI/torchmetrics/issues/1743.
+
+    Checks that the custom apply function of the metric works as expected.
+    """
+    device = "cuda"
+    metric = MeanAveragePrecision(iou_type="segm").to(device)
+
+    for _ in range(2):
+        preds, targets = _generate_random_segm_input(device)
+        metric.update(preds, targets)
+
+    metric = metric.cpu()
+    val = metric.compute()
+    assert isinstance(val, dict)

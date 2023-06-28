@@ -78,7 +78,7 @@ def symmetric_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> T
         Tensor with SMAPE.
 
     Example:
-        >>> from torchmetrics.functional import symmetric_mean_absolute_percentage_error
+        >>> from torchmetrics.functional.regression import symmetric_mean_absolute_percentage_error
         >>> target = torch.tensor([1, 10, 1e6])
         >>> preds = torch.tensor([0.9, 15, 1.2e6])
         >>> symmetric_mean_absolute_percentage_error(preds, target)
@@ -88,9 +88,7 @@ def symmetric_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> T
         preds,
         target,
     )
-    mean_ape = _symmetric_mean_absolute_percentage_error_compute(
+    return _symmetric_mean_absolute_percentage_error_compute(
         sum_abs_per_error,
         num_obs,
     )
-
-    return mean_ape

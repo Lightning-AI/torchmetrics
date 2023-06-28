@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Sequence, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -31,6 +31,15 @@ from torchmetrics.functional.classification.average_precision import (
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.enums import ClassificationTask
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = [
+        "BinaryAveragePrecision.plot",
+        "MulticlassAveragePrecision.plot",
+        "MultilabelAveragePrecision.plot",
+    ]
 
 
 class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
@@ -97,15 +106,59 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def compute(self) -> Tensor:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _binary_average_precision_compute(state, self.thresholds)
 
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single
+            >>> import torch
+            >>> from torchmetrics.classification import BinaryAveragePrecision
+            >>> metric = BinaryAveragePrecision()
+            >>> metric.update(torch.rand(20,), torch.randint(2, (20,)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.classification import BinaryAveragePrecision
+            >>> metric = BinaryAveragePrecision()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.rand(20,), torch.randint(2, (20,))))
+            >>> fig_, ax_ = metric.plot(values)
+
+        """
+        return self._plot(val, ax)
+
 
 class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
-    r"""Compute the average precision (AP) score for binary tasks.
+    r"""Compute the average precision (AP) score for multiclass tasks.
 
     The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
     difference in recall from the previous threshold as weight:
@@ -185,6 +238,9 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Class"
 
     def __init__(
         self,
@@ -208,9 +264,50 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multiclass_average_precision_compute(state, self.num_classes, self.average, self.thresholds)
 
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single
+            >>> import torch
+            >>> from torchmetrics.classification import MulticlassAveragePrecision
+            >>> metric = MulticlassAveragePrecision(num_classes=3)
+            >>> metric.update(torch.randn(20, 3), torch.randint(3,(20,)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.classification import MulticlassAveragePrecision
+            >>> metric = MulticlassAveragePrecision(num_classes=3)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.randn(20, 3), torch.randint(3, (20,))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
+
 
 class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
-    r"""Compute the average precision (AP) score for binary tasks.
+    r"""Compute the average precision (AP) score for multilabel tasks.
 
     The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
     difference in recall from the previous threshold as weight:
@@ -293,6 +390,9 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+    plot_legend_name: str = "Label"
 
     def __init__(
         self,
@@ -317,6 +417,47 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         return _multilabel_average_precision_compute(
             state, self.num_labels, self.average, self.thresholds, self.ignore_index
         )
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single
+            >>> import torch
+            >>> from torchmetrics.classification import MultilabelAveragePrecision
+            >>> metric = MultilabelAveragePrecision(num_labels=3)
+            >>> metric.update(torch.rand(20,3), torch.randint(2, (20,3)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.classification import MultilabelAveragePrecision
+            >>> metric = MultilabelAveragePrecision(num_labels=3)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.rand(20,3), torch.randint(2, (20,3))))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
 
 
 class AveragePrecision:
@@ -371,9 +512,11 @@ class AveragePrecision:
         if task == ClassificationTask.BINARY:
             return BinaryAveragePrecision(**kwargs)
         if task == ClassificationTask.MULTICLASS:
-            assert isinstance(num_classes, int)
+            if not isinstance(num_classes, int):
+                raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassAveragePrecision(num_classes, average, **kwargs)
         if task == ClassificationTask.MULTILABEL:
-            assert isinstance(num_labels, int)
+            if not isinstance(num_labels, int):
+                raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelAveragePrecision(num_labels, average, **kwargs)
         return None

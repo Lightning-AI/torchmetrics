@@ -123,8 +123,8 @@ def _preprocess_text(
     else:
         try:
             tokenized_data = tokenizer(text, max_length)
-        except BaseException as e:
-            raise BaseException(f"Tokenization was not successful: {e}")
+        except BaseException as ex:
+            raise RuntimeError(f"Tokenization was not successful: {ex}") from ex
 
     if sort_according_length:
         input_ids, attention_mask, sorting_indices = _sort_data_according_length(

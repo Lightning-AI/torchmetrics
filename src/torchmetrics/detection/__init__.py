@@ -11,9 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.detection.panoptic_qualities import ModifiedPanopticQuality, PanopticQuality
+from torchmetrics.utilities.imports import (
+    _TORCHVISION_AVAILABLE,
+    _TORCHVISION_GREATER_EQUAL_0_8,
+    _TORCHVISION_GREATER_EQUAL_0_13,
+)
+
+__all__ = ["ModifiedPanopticQuality", "PanopticQuality"]
 
 if _TORCHVISION_GREATER_EQUAL_0_8:
-    from torchmetrics.detection.mean_ap import MeanAveragePrecision  # noqa: F401
+    from torchmetrics.detection.giou import GeneralizedIntersectionOverUnion
+    from torchmetrics.detection.iou import IntersectionOverUnion
+    from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
-from torchmetrics.detection.panoptic_quality import PanopticQuality  # noqa: F401
+    __all__ += ["MeanAveragePrecision", "GeneralizedIntersectionOverUnion", "IntersectionOverUnion"]
+
+if _TORCHVISION_GREATER_EQUAL_0_13:
+    from torchmetrics.detection.ciou import CompleteIntersectionOverUnion
+    from torchmetrics.detection.diou import DistanceIntersectionOverUnion
+
+    __all__ += ["CompleteIntersectionOverUnion", "DistanceIntersectionOverUnion"]

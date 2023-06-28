@@ -14,6 +14,7 @@
 import os
 import pickle
 from collections import OrderedDict
+from typing import Any
 from unittest.mock import Mock
 
 import cloudpickle
@@ -23,9 +24,9 @@ import pytest
 import torch
 from torch import Tensor, tensor
 from torch.nn import Module
-
-from torchmetrics import PearsonCorrCoef
 from torchmetrics.classification import BinaryAccuracy
+from torchmetrics.regression import PearsonCorrCoef
+
 from unittests.helpers import seed_all
 from unittests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
 from unittests.helpers.utilities import no_warning_call
@@ -43,6 +44,12 @@ def test_error_on_wrong_input():
 
     with pytest.raises(ValueError, match="Expected keyword argument `compute_on_cpu` to be an `bool` bu.*"):
         DummyMetric(compute_on_cpu=None)
+
+    with pytest.raises(ValueError, match="Expected keyword argument `sync_on_compute` to be a `bool` but.*"):
+        DummyMetric(sync_on_compute=None)
+
+    with pytest.raises(ValueError, match="Expected keyword argument `compute_with_cache` to be a `bool` but got.*"):
+        DummyMetric(compute_with_cache=None)
 
     with pytest.raises(ValueError, match="Unexpected keyword arguments: `foo`"):
         DummyMetric(foo=True)
@@ -89,6 +96,7 @@ def test_add_state():
 
 
 def test_add_state_persistent():
+    """Test that metric states are not added to the normal state dict."""
     a = DummyMetric()
 
     a.add_state("a", tensor(0), "sum", persistent=True)
@@ -98,6 +106,8 @@ def test_add_state_persistent():
 
 
 def test_reset():
+    """Test that reset method works as expected."""
+
     class A(DummyMetric):
         pass
 
@@ -120,6 +130,7 @@ def test_reset():
 
 
 def test_reset_compute():
+    """Test that `reset`+`compute` methods works as expected."""
     a = DummyMetricSum()
     assert a.x == 0
     a.update(tensor(5))
@@ -129,6 +140,8 @@ def test_reset_compute():
 
 
 def test_update():
+    """Test that `update` method works as expected."""
+
     class A(DummyMetric):
         def update(self, x):
             self.x += x
@@ -144,7 +157,10 @@ def test_update():
     assert a._computed is None
 
 
-def test_compute():
+@pytest.mark.parametrize("compute_with_cache", [True, False])
+def test_compute(compute_with_cache):
+    """Test that `compute` method works as expected."""
+
     class A(DummyMetric):
         def update(self, x):
             self.x += x
@@ -152,17 +168,17 @@ def test_compute():
         def compute(self):
             return self.x
 
-    a = A()
+    a = A(compute_with_cache=compute_with_cache)
     assert a.compute() == 0
     assert a.x == 0
     a.update(1)
     assert a._computed is None
     assert a.compute() == 1
-    assert a._computed == 1
+    assert a._computed == 1 if compute_with_cache else a._computed is None
     a.update(2)
     assert a._computed is None
     assert a.compute() == 3
-    assert a._computed == 3
+    assert a._computed == 3 if compute_with_cache else a._computed is None
 
     # called without update, should return cached value
     a._computed = 5
@@ -170,6 +186,8 @@ def test_compute():
 
 
 def test_hash():
+    """Test that hashes for different metrics are different, even if states are the same."""
+
     class A(DummyMetric):
         pass
 
@@ -198,6 +216,8 @@ def test_hash():
 
 
 def test_forward():
+    """Test that `forward` method works as expected."""
+
     class A(DummyMetric):
         def update(self, x):
             self.x += x
@@ -216,6 +236,7 @@ def test_forward():
 
 
 def test_pickle(tmpdir):
+    """Test that metric can be pickled."""
     # doesn't tests for DDP
     a = DummyMetricSum()
     a.update(1)
@@ -258,7 +279,7 @@ def test_child_metric_state_dict():
     """Test that child metric states will be added to parent state dict."""
 
     class TestModule(Module):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.metric = DummyMetric()
             self.metric.add_state("a", tensor(0), persistent=True)
@@ -276,6 +297,7 @@ def test_child_metric_state_dict():
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
 def test_device_and_dtype_transfer(tmpdir):
+    """Test that device and dtypes are correctly updated when appropriate methods are called."""
     metric = DummyMetricSum()
     assert metric.x.is_cuda is False
     assert metric.device == torch.device("cpu")
@@ -294,6 +316,21 @@ def test_device_and_dtype_transfer(tmpdir):
     assert metric.x.dtype == torch.float16
     metric.reset()
     assert metric.x.dtype == torch.float16
+
+
+def test_disable_of_normal_dtype_methods():
+    """Check that the default dtype changing methods does nothing."""
+    metric = DummyMetricSum()
+    assert metric.x.dtype == torch.float32
+
+    metric = metric.half()
+    assert metric.x.dtype == torch.float32
+
+    metric = metric.double()
+    assert metric.x.dtype == torch.float32
+
+    metric = metric.type(torch.half)
+    assert metric.x.dtype == torch.float32
 
 
 def test_warning_on_compute_before_update():
@@ -337,6 +374,7 @@ def test_metric_forward_cache_reset():
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
 @pytest.mark.parametrize("metric_class", [DummyMetricSum, DummyMetricMultiOutput])
 def test_forward_and_compute_to_device(metric_class):
+    """Test that the `_forward_cache` and `_computed` attributes are on correct device."""
     metric = metric_class()
     metric(1)
     metric.to(device="cuda")
@@ -359,7 +397,7 @@ def test_device_if_child_module(metric_class):
     """Test that if a metric is a child module all values gets moved to the correct device."""
 
     class TestModule(Module):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.metric = metric_class()
             self.register_buffer("dummy", torch.zeros(1))
@@ -424,8 +462,32 @@ def test_constant_memory(device, requires_grad):
         assert base_memory_level >= memory, "memory increased above base level"
 
 
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
+def test_constant_memory_on_repeat_init():
+    """Test that when initializing a metric multiple times the memory does not increase.
+
+    This only works for metrics with `compute_with_cache=False` as otherwise the cache will keep a refence that python
+    gc will not be able to collect and clean.
+    """
+
+    def mem():
+        return torch.cuda.memory_allocated() / 1024**2
+
+    x = torch.randn(10000).cuda()
+
+    for i in range(100):
+        m = DummyListMetric(compute_with_cache=False).cuda()
+        m(x)
+        if i == 0:
+            after_one_iter = mem()
+
+        # allow for 5% flucturation due to measuring
+        assert after_one_iter * 1.05 >= mem(), "memory increased too much above base level"
+
+
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires gpu")
 def test_specific_error_on_wrong_device():
+    """Test that a specific error is raised if we detect input and metric are on different devices."""
     metric = PearsonCorrCoef()
     preds = torch.tensor(range(10), device="cuda", dtype=torch.float)
     target = torch.tensor(range(10), device="cuda", dtype=torch.float)
@@ -442,7 +504,7 @@ def test_no_warning_on_custom_forward(metric_class):
     class UnsetProperty(metric_class):
         full_state_update = None
 
-        def forward(self, *args, **kwargs):
+        def forward(self, *args: Any, **kwargs: Any):
             self.update(*args, **kwargs)
 
     with no_warning_call(
@@ -453,6 +515,7 @@ def test_no_warning_on_custom_forward(metric_class):
 
 
 def test_custom_availability_check_and_sync_fn():
+    """Test that custom `dist_sync_fn` can be provided to metric."""
     dummy_availability_check = Mock(return_value=True)
     dummy_dist_sync_fn = Mock(wraps=lambda x, group: [x])
     acc = BinaryAccuracy(dist_sync_fn=dummy_dist_sync_fn, distributed_available_fn=dummy_availability_check)
@@ -467,15 +530,17 @@ def test_custom_availability_check_and_sync_fn():
 
 
 def test_no_iteration_allowed():
+    """Test that no iteration of metric is allowed."""
     metric = DummyMetric()
     with pytest.raises(TypeError, match="'DummyMetric' object is not iterable"):  # noqa: PT012
-        for m in metric:
+        for _m in metric:
             continue
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 @pytest.mark.parametrize("method", ["forward", "update"])
 def test_compute_on_cpu_arg_forward(method):
+    """Test the `compute_on_cpu` argument works in combination with `forward` method."""
     metric = DummyListMetric(compute_on_cpu=True)
     x = torch.randn(10).cuda()
     if method == "update":
@@ -492,6 +557,7 @@ def test_compute_on_cpu_arg_forward(method):
 @pytest.mark.parametrize("method", ["forward", "update"])
 @pytest.mark.parametrize("metric", [DummyMetricSum, DummyListMetric])
 def test_update_properties(metric, method):
+    """Test that `update_called` and `update_count` attributes is correctly updated."""
     m = metric()
     x = torch.randn(
         1,

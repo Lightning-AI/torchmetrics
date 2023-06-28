@@ -18,9 +18,9 @@ import pytest
 import torch
 from lpips import LPIPS as LPIPS_reference  # noqa: N811
 from torch import Tensor
-
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
+
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -29,8 +29,8 @@ seed_all(42)
 Input = namedtuple("Input", ["img1", "img2"])
 
 _inputs = Input(
-    img1=torch.rand(4, 2, 3, 100, 100),
-    img2=torch.rand(4, 2, 3, 100, 100),
+    img1=torch.rand(4, 2, 3, 50, 50),
+    img2=torch.rand(4, 2, 3, 50, 50),
 )
 
 
@@ -52,7 +52,7 @@ class TestLPIPS(MetricTester):
     @pytest.mark.parametrize("net_type", ["vgg", "alex", "squeeze"])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_lpips(self, net_type, ddp):
-        """Test modular implementation for correctness."""
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=_inputs.img1,
@@ -65,7 +65,7 @@ class TestLPIPS(MetricTester):
         )
 
     def test_lpips_differentiability(self):
-        """Test for differentiability of LPIPS metric."""
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=_inputs.img1, target=_inputs.img2, metric_module=LearnedPerceptualImagePatchSimilarity
         )
@@ -79,7 +79,7 @@ class TestLPIPS(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_lpips_half_gpu(self):
-        """Test for half + gpu support."""
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(_inputs.img1, _inputs.img2, LearnedPerceptualImagePatchSimilarity)
 
 

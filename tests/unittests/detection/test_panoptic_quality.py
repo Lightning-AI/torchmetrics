@@ -17,9 +17,9 @@ from typing import Any, Dict
 import numpy as np
 import pytest
 import torch
+from torchmetrics.detection.panoptic_qualities import PanopticQuality
+from torchmetrics.functional.detection.panoptic_qualities import panoptic_quality
 
-from torchmetrics.detection.panoptic_quality import PanopticQuality
-from torchmetrics.functional.detection.panoptic_quality import panoptic_quality
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -74,17 +74,17 @@ _ARGS_2 = {"things": {0, 1}, "stuffs": {10, 11}}
 
 
 def _compare_fn_0_0(preds, target) -> np.ndarray:
-    """Reference result for the _INPUTS_0, _ARGS_0 combination."""
+    """Baseline result for the _INPUTS_0, _ARGS_0 combination."""
     return np.array([0.7753])
 
 
 def _compare_fn_0_1(preds, target) -> np.ndarray:
-    """Reference result for the _INPUTS_0, _ARGS_1 combination."""
+    """Baseline result for the _INPUTS_0, _ARGS_1 combination."""
     return np.array([np.nan])
 
 
 def _compare_fn_1_2(preds, target) -> np.ndarray:
-    """Reference result for the _INPUTS_1, _ARGS_2 combination."""
+    """Baseline result for the _INPUTS_1, _ARGS_2 combination."""
     return np.array([(2 / 3 + 1 + 2 / 3) / 3])
 
 
@@ -101,6 +101,7 @@ class TestPanopticQuality(MetricTester):
         ],
     )
     def test_panoptic_quality_class(self, ddp, inputs, args, reference_metric):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=inputs.preds,
@@ -111,7 +112,8 @@ class TestPanopticQuality(MetricTester):
             metric_args=args,
         )
 
-    def test_panoptic_quality_fn(self):
+    def test_panoptic_quality_functional(self):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             _INPUTS_0.preds,
             _INPUTS_0.target,

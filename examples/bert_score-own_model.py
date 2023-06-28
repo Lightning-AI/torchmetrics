@@ -20,10 +20,8 @@ from pprint import pprint
 from typing import Dict, List, Union
 
 import torch
-import torch.nn as nn
-from torch import Tensor
+from torch import Tensor, nn
 from torch.nn import Module
-
 from torchmetrics.text.bert import BERTScore
 
 _NUM_LAYERS = 2
@@ -40,9 +38,9 @@ class UserTokenizer:
     successfully in batches.
     """
 
-    CLS_TOKEN = "<cls>"
-    SEP_TOKEN = "<sep>"
-    PAD_TOKEN = "<pad>"
+    CLS_TOKEN = "<cls>"  # noqa: S105
+    SEP_TOKEN = "<sep>"  # noqa: S105
+    PAD_TOKEN = "<pad>"  # noqa: S105
 
     def __init__(self) -> None:
         self.word2vec = {

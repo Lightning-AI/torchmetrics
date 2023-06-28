@@ -20,12 +20,12 @@ import pytest
 import torch
 from lightning_utilities.core.imports import compare_version
 from scipy.stats.contingency import association
-
 from torchmetrics.functional.nominal.pearson import (
     pearsons_contingency_coefficient,
     pearsons_contingency_coefficient_matrix,
 )
 from torchmetrics.nominal.pearson import PearsonsContingencyCoefficient
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers.testers import MetricTester
 
@@ -46,6 +46,7 @@ _input_logits = Input(
 
 @pytest.fixture()
 def pearson_matrix_input():
+    """Define input in matrix format for the metric."""
     return torch.cat(
         [
             torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES * BATCH_SIZE, 1), dtype=torch.float),
@@ -76,9 +77,6 @@ def _pd_pearsons_t_matrix(matrix):
 
 
 @pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
-@pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
-    torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
-)
 @pytest.mark.parametrize(
     "preds, target",
     [
@@ -93,6 +91,7 @@ class TestPearsonsContingencyCoefficient(MetricTester):
 
     @pytest.mark.parametrize("ddp", [False, True])
     def test_pearsons_ta(self, ddp, preds, target):
+        """Test class implementation of metric."""
         metric_args = {"num_classes": NUM_CLASSES}
         self.run_class_metric_test(
             ddp=ddp,
@@ -104,11 +103,13 @@ class TestPearsonsContingencyCoefficient(MetricTester):
         )
 
     def test_pearsons_t_functional(self, preds, target):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds, target, metric_functional=pearsons_contingency_coefficient, reference_metric=_pd_pearsons_t
         )
 
     def test_pearsons_t_differentiability(self, preds, target):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {"num_classes": NUM_CLASSES}
         self.run_differentiability_test(
             preds,
@@ -120,10 +121,8 @@ class TestPearsonsContingencyCoefficient(MetricTester):
 
 
 @pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
-@pytest.mark.skipif(  # TODO: testing on CUDA fails with pandas 1.3.5, and newer is not available for python 3.7
-    torch.cuda.is_available(), reason="Tests fail on CUDA with the most up-to-date available pandas"
-)
 def test_pearsons_contingency_coefficient_matrix(pearson_matrix_input):
+    """Test matrix version of metric works as expected."""
     tm_score = pearsons_contingency_coefficient_matrix(pearson_matrix_input)
     reference_score = _pd_pearsons_t_matrix(pearson_matrix_input)
     assert torch.allclose(tm_score, reference_score)

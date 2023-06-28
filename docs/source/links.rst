@@ -95,7 +95,7 @@
 .. _beta divergence: https://www.sciencedirect.com/science/article/pii/S0047259X08000456
 .. _AB divergence: https://pdfs.semanticscholar.org/744b/1166de34cb099100f151f3b1459f141ae25b.pdf
 .. _Rényi divergence: https://static.renyi.hu/renyi_cikkek/1961_on_measures_of_entropy_and_information.pdf
-.. _Fisher-Rao distance: http://www.scholarpedia.org/article/Fisher-Rao_metric
+.. _Fisher-Rao distance: https://arxiv.org/pdf/1711.01530.pdf
 .. _Cramer's V: https://en.wikipedia.org/wiki/Cram%C3%A9r%27s_V
 .. _Kendall Rank Correlation Coefficient: https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient
 .. _The Treatment of Ties in Ranking Problems: https://www.jstor.org/stable/2332303
@@ -116,6 +116,7 @@
 .. _sdr ref2: https://arxiv.org/abs/2110.06440
 .. _Scale-invariant signal-to-distortion ratio: https://arxiv.org/abs/1811.02508
 .. _Scale-invariant signal-to-noise ratio: https://arxiv.org/abs/1711.00541
+.. _Complex scale-invariant signal-to-noise ratio: https://arxiv.org/abs/2011.09162
 .. _Signal-to-noise ratio: https://arxiv.org/abs/1811.02508
 .. _Permutation invariant training: https://arxiv.org/abs/1607.00325
 .. _ranking ref1: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
@@ -130,5 +131,10 @@
 .. _Spectral Angle Mapper: https://ntrs.nasa.gov/citations/19940012238
 .. _Multilabel coverage error: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
 .. _Panoptic Quality: https://arxiv.org/abs/1801.00868
-.. _torchmetrics mAP example: https://github.com/Lightning-AI/metrics/blob/master/examples/detection_map.py
+.. _torchmetrics mAP example: https://github.com/Lightning-AI/torchmetrics/blob/master/examples/detection_map.py
+.. _Peak Signal to Noise Ratio With Blocked Effect: https://ieeexplore.ieee.org/abstract/document/5535179
 .. _Minkowski Distance: https://en.wikipedia.org/wiki/Minkowski_distance
+.. _Demographic parity: http://www.fairmlbook.org/
+.. _Equal opportunity: https://proceedings.neurips.cc/paper/2016/hash/9d2682367c3935defcb1f9e247a97c0d-Abstract.html
+.. _Seamless Scene Segmentation paper: https://arxiv.org/abs/1905.01220
+.. _Fleiss kappa: https://en.wikipedia.org/wiki/Fleiss%27_kappa

@@ -19,7 +19,7 @@ from typing_extensions import Literal
 from torchmetrics.functional.audio.pit import permutation_invariant_training
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 __doctest_requires__ = {"PermutationInvariantTraining": ["pit"]}
 
@@ -44,9 +44,16 @@ class PermutationInvariantTraining(Metric):
 
     Args:
         metric_func:
-            a metric function accept a batch of target and estimate,
-            i.e. ``metric_func(preds[:, i, ...], target[:, j, ...])``, and returns a batch of metric
-            tensors ``(batch,)``
+            a metric function accept a batch of target and estimate.
+
+            if `mode`==`'speaker-wise'`, then ``metric_func(preds[:, i, ...], target[:, j, ...])`` is called
+            and expected to return a batch of metric tensors ``(batch,)``;
+
+            if `mode`==`'permutation-wise'`, then ``metric_func(preds[:, p, ...], target[:, :, ...])`` is called,
+            where `p` is one possible permutation, e.g. [0,1] or [1,0] for 2-speaker case, and expected to return
+            a batch of metric tensors ``(batch,)``;
+        mode:
+            can be `'speaker-wise'` or `'permutation-wise'`.
         eval_func:
             the function to find the best permutation, can be 'min' or 'max', i.e. the smaller the better
             or the larger the better.
@@ -55,12 +62,13 @@ class PermutationInvariantTraining(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics import PermutationInvariantTraining
-        >>> from torchmetrics.functional import scale_invariant_signal_noise_ratio
+        >>> from torchmetrics.audio import PermutationInvariantTraining
+        >>> from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
         >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> pit = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
+        >>> pit = PermutationInvariantTraining(scale_invariant_signal_noise_ratio,
+        ...     mode="speaker-wise", eval_func="max")
         >>> pit(preds, target)
         tensor(-2.1065)
     """
@@ -69,12 +77,13 @@ class PermutationInvariantTraining(Metric):
     is_differentiable: bool = True
     sum_pit_metric: Tensor
     total: Tensor
-    plot_lower_bound = -10.0
-    plot_upper_bound = 1.0
+    plot_lower_bound: Optional[float] = None
+    plot_upper_bound: Optional[float] = None
 
     def __init__(
         self,
         metric_func: Callable,
+        mode: Literal["speaker-wise", "permutation-wise"] = "speaker-wise",
         eval_func: Literal["max", "min"] = "max",
         **kwargs: Any,
     ) -> None:
@@ -85,6 +94,7 @@ class PermutationInvariantTraining(Metric):
         }
         super().__init__(**base_kwargs)
         self.metric_func = metric_func
+        self.mode = mode
         self.eval_func = eval_func
         self.kwargs = kwargs
 
@@ -93,7 +103,9 @@ class PermutationInvariantTraining(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        pit_metric = permutation_invariant_training(preds, target, self.metric_func, self.eval_func, **self.kwargs)[0]
+        pit_metric = permutation_invariant_training(
+            preds, target, self.metric_func, self.mode, self.eval_func, **self.kwargs
+        )[0]
 
         self.sum_pit_metric += pit_metric.sum()
         self.total += pit_metric.numel()
@@ -122,11 +134,12 @@ class PermutationInvariantTraining(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.audio.pit import PermutationInvariantTraining
-            >>> from torchmetrics.functional import scale_invariant_signal_noise_ratio
+            >>> from torchmetrics.audio import PermutationInvariantTraining
+            >>> from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
             >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
             >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-            >>> metric = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
+            >>> metric = PermutationInvariantTraining(scale_invariant_signal_noise_ratio,
+            ...     mode="speaker-wise", eval_func="max")
             >>> metric.update(preds, target)
             >>> fig_, ax_ = metric.plot()
 
@@ -135,11 +148,12 @@ class PermutationInvariantTraining(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.audio.pit import PermutationInvariantTraining
-            >>> from torchmetrics.functional import scale_invariant_signal_noise_ratio
+            >>> from torchmetrics.audio import PermutationInvariantTraining
+            >>> from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
             >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
             >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-            >>> metric = PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
+            >>> metric = PermutationInvariantTraining(scale_invariant_signal_noise_ratio,
+            ...     mode="speaker-wise", eval_func="max")
             >>> values = [ ]
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))

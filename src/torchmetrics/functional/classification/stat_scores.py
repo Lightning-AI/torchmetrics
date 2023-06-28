@@ -69,7 +69,7 @@ def _binary_stat_scores_tensor_validation(
     if check:
         raise RuntimeError(
             f"Detected the following values in `target`: {unique_values} but expected only"
-            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+            f" the following values {[0, 1] if ignore_index is None else [ignore_index]}."
         )
 
     # If preds is label tensor, also check that it only contains [0,1] values
@@ -254,7 +254,7 @@ def _multiclass_stat_scores_tensor_validation(
 ) -> None:
     """Validate tensor input.
 
-    - if target has one more dimension than preds, then all dimensions except for preds.shape[1] should match
+    - if preds has one more dimension than target, then all dimensions except for preds.shape[1] should match
     exactly. preds.shape[1] should have size equal to number of classes
     - if preds and target have same number of dims, then all dimensions should match
     - if ``multidim_average`` is set to ``samplewise`` preds tensor needs to be atleast 2 dimensional in the
@@ -302,17 +302,17 @@ def _multiclass_stat_scores_tensor_validation(
     check = num_unique_values > num_classes if ignore_index is None else num_unique_values > num_classes + 1
     if check:
         raise RuntimeError(
-            "Detected more unique values in `target` than `num_classes`. Expected only "
-            f"{num_classes if ignore_index is None else num_classes + 1} but found"
-            f"{num_unique_values} in `target`."
+            "Detected more unique values in `target` than `num_classes`. Expected only"
+            f" {num_classes if ignore_index is None else num_classes + 1} but found"
+            f" {num_unique_values} in `target`."
         )
 
     if not preds.is_floating_point():
         unique_values = torch.unique(preds)
         if len(unique_values) > num_classes:
             raise RuntimeError(
-                "Detected more unique values in `preds` than `num_classes`. Expected only "
-                f"{num_classes} but found {len(unique_values)} in `preds`."
+                "Detected more unique values in `preds` than `num_classes`. Expected only"
+                f" {num_classes} but found {len(unique_values)} in `preds`."
             )
 
 
@@ -358,8 +358,9 @@ def _multiclass_stat_scores_update(
             preds = preds.clone()
             target = target.clone()
             idx = target == ignore_index
-            preds[idx] = num_classes
             target[idx] = num_classes
+            idx = idx.unsqueeze(1).repeat(1, num_classes, 1) if preds.ndim > target.ndim else idx
+            preds[idx] = num_classes
 
         if top_k > 1:
             preds_oh = torch.movedim(select_topk(preds, topk=top_k, dim=1), 1, -1)
@@ -374,7 +375,7 @@ def _multiclass_stat_scores_update(
             if 0 <= ignore_index <= num_classes - 1:
                 target_oh[target == ignore_index, :] = -1
             else:
-                preds_oh = preds_oh[..., :-1]
+                preds_oh = preds_oh[..., :-1] if top_k == 1 else preds_oh
                 target_oh = target_oh[..., :-1]
                 target_oh[target == num_classes, :] = -1
         sum_dim = [0, 1] if multidim_average == "global" else [1]
@@ -615,7 +616,7 @@ def _multilabel_stat_scores_tensor_validation(
     if check:
         raise RuntimeError(
             f"Detected the following values in `target`: {unique_values} but expected only"
-            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+            f" the following values {[0, 1] if ignore_index is None else [ignore_index]}."
         )
 
     # If preds is label tensor, also check that it only contains [0,1] values
@@ -898,7 +899,7 @@ def _stat_scores_update(
     threshold: float = 0.5,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
-    mode: DataType = None,
+    mode: Optional[DataType] = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """Calculate true positives, false positives, true negatives, false negatives.
 
@@ -1049,11 +1050,8 @@ def _reduce_stat_scores(
         ignore_mask = ignore_mask.sum(dim=0).bool()
 
     if average in (AverageMethod.NONE, None):
-        scores = torch.where(ignore_mask, tensor(float("nan"), device=scores.device), scores)
-    else:
-        scores = scores.sum()
-
-    return scores
+        return torch.where(ignore_mask, tensor(float("nan"), device=scores.device), scores)
+    return scores.sum()
 
 
 def stat_scores(
@@ -1088,17 +1086,20 @@ def stat_scores(
                 [1, 0, 3, 0, 1]])
     """
     task = ClassificationTask.from_str(task)
-    assert multidim_average is not None
+    assert multidim_average is not None  # noqa: S101  # needed for mypy
     if task == ClassificationTask.BINARY:
         return binary_stat_scores(preds, target, threshold, multidim_average, ignore_index, validate_args)
     if task == ClassificationTask.MULTICLASS:
-        assert isinstance(num_classes, int)
-        assert isinstance(top_k, int)
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
+        if not isinstance(top_k, int):
+            raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
         return multiclass_stat_scores(
             preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
     if task == ClassificationTask.MULTILABEL:
-        assert isinstance(num_labels, int)
+        if not isinstance(num_labels, int):
+            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_stat_scores(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )

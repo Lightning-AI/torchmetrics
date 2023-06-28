@@ -18,7 +18,7 @@ from torch import Tensor, tensor
 from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PESQ_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 __doctest_requires__ = {"PerceptualEvaluationSpeechQuality": ["pesq"]}
 
@@ -68,7 +68,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
+        >>> from torchmetrics.audio import PerceptualEvaluationSpeechQuality
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
@@ -85,8 +85,8 @@ class PerceptualEvaluationSpeechQuality(Metric):
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
-    plot_lower_bound = 1.0
-    plot_upper_bound = 4.5
+    plot_lower_bound: float = -0.5
+    plot_upper_bound: float = 4.5
 
     def __init__(
         self,
@@ -147,7 +147,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
+            >>> from torchmetrics.audio import PerceptualEvaluationSpeechQuality
             >>> metric = PerceptualEvaluationSpeechQuality(8000, 'nb')
             >>> metric.update(torch.rand(8000), torch.rand(8000))
             >>> fig_, ax_ = metric.plot()
@@ -157,7 +157,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
+            >>> from torchmetrics.audio import PerceptualEvaluationSpeechQuality
             >>> metric = PerceptualEvaluationSpeechQuality(8000, 'nb')
             >>> values = [ ]
             >>> for _ in range(10):

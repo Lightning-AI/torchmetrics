@@ -24,7 +24,7 @@ from torchmetrics.functional.image.rmse_sw import _rmse_sw_compute, _rmse_sw_upd
 def _rase_update(
     preds: Tensor, target: Tensor, window_size: int, rmse_map: Tensor, target_sum: Tensor, total_images: Tensor
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Calculates the sum of RMSE map values for the batch of examples and update intermediate states.
+    """Calculate the sum of RMSE map values for the batch of examples and update intermediate states.
 
     Args:
         preds: Deformed image
@@ -67,7 +67,7 @@ def _rase_compute(rmse_map: Tensor, target_sum: Tensor, total_images: Tensor, wi
 
 
 def relative_average_spectral_error(preds: Tensor, target: Tensor, window_size: int = 8) -> Tensor:
-    """Computes Relative Average Spectral Error (RASE) (RelativeAverageSpectralError_).
+    """Compute Relative Average Spectral Error (RASE) (RelativeAverageSpectralError_).
 
     Args:
         preds: Deformed image
@@ -78,7 +78,7 @@ def relative_average_spectral_error(preds: Tensor, target: Tensor, window_size: 
         Relative Average Spectral Error (RASE)
 
     Example:
-        >>> from torchmetrics.functional import relative_average_spectral_error
+        >>> from torchmetrics.functional.image import relative_average_spectral_error
         >>> g = torch.manual_seed(22)
         >>> preds = torch.rand(4, 3, 16, 16)
         >>> target = torch.rand(4, 3, 16, 16)
@@ -97,5 +97,4 @@ def relative_average_spectral_error(preds: Tensor, target: Tensor, window_size: 
     total_images = torch.tensor(0.0, device=target.device)
 
     rmse_map, target_sum, total_images = _rase_update(preds, target, window_size, rmse_map, target_sum, total_images)
-    rase = _rase_compute(rmse_map, target_sum, total_images, window_size)
-    return rase
+    return _rase_compute(rmse_map, target_sum, total_images, window_size)

@@ -99,7 +99,7 @@ In addition to stateful metrics (called modular metrics in TorchMetrics), we als
 
 TorchMetrics exhibits high test coverage on the various configurations, including all three major OS platforms (Linux, macOS, and Windows), and various Python, CUDA, and PyTorch versions. We test both minimum and latest package requirements for all combinations of OS and Python versions and include additional tests for each PyTorch version from 1.3 up to future development versions. On every pull request and merge to master, we run a full test suite. All standard tests run on CPU. In addition, we run all tests on a multi-GPU setting which reflects realistic Deep Learning workloads. For usability, we have auto-generated HTML documentation (hosted at [readthedocs](https://torchmetrics.readthedocs.io/en/stable/)) from the source code which updates in real-time with new merged pull requests.
 
-TorchMetrics is released under the Apache 2.0 license. The source code is available at https://github.com/Lightning-AI/metrics.
+TorchMetrics is released under the Apache 2.0 license. The source code is available at https://github.com/Lightning-AI/torchmetrics.
 
 # Acknowledgement
 

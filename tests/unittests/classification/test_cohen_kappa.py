@@ -18,9 +18,9 @@ import pytest
 import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import cohen_kappa_score as sk_cohen_kappa
-
 from torchmetrics.classification.cohen_kappa import BinaryCohenKappa, MulticlassCohenKappa
 from torchmetrics.functional.classification.cohen_kappa import binary_cohen_kappa, multiclass_cohen_kappa
+
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases
 from unittests.helpers import seed_all
@@ -40,7 +40,7 @@ def _sklearn_cohen_kappa_binary(preds, target, weights=None, ignore_index=None):
     return sk_cohen_kappa(y1=target, y2=preds, weights=weights)
 
 
-@pytest.mark.parametrize("input", _binary_cases)
+@pytest.mark.parametrize("inputs", _binary_cases)
 class TestBinaryCohenKappa(MetricTester):
     """Test class for `BinaryCohenKappa` metric."""
 
@@ -49,8 +49,9 @@ class TestBinaryCohenKappa(MetricTester):
     @pytest.mark.parametrize("weights", ["linear", "quadratic", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_binary_cohen_kappa(self, input, ddp, weights, ignore_index):
-        preds, target = input
+    def test_binary_cohen_kappa(self, inputs, ddp, weights, ignore_index):
+        """Test class implementation of metric."""
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
@@ -68,8 +69,9 @@ class TestBinaryCohenKappa(MetricTester):
 
     @pytest.mark.parametrize("weights", ["linear", "quadratic", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_binary_confusion_matrix_functional(self, input, weights, ignore_index):
-        preds, target = input
+    def test_binary_confusion_matrix_functional(self, inputs, weights, ignore_index):
+        """Test functional implementation of metric."""
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
@@ -84,8 +86,9 @@ class TestBinaryCohenKappa(MetricTester):
             },
         )
 
-    def test_binary_cohen_kappa_differentiability(self, input):
-        preds, target = input
+    def test_binary_cohen_kappa_differentiability(self, inputs):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -95,8 +98,9 @@ class TestBinaryCohenKappa(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_cohen_kappa_dtypes_cpu(self, input, dtype):
-        preds, target = input
+    def test_binary_cohen_kappa_dtypes_cpu(self, inputs, dtype):
+        """Test dtype support of the metric on CPU."""
+        preds, target = inputs
 
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -111,8 +115,9 @@ class TestBinaryCohenKappa(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_confusion_matrix_dtypes_gpu(self, input, dtype):
-        preds, target = input
+    def test_binary_confusion_matrix_dtypes_gpu(self, inputs, dtype):
+        """Test dtype support of the metric on GPU."""
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -134,7 +139,7 @@ def _sklearn_cohen_kappa_multiclass(preds, target, weights, ignore_index=None):
     return sk_cohen_kappa(y1=target, y2=preds, weights=weights)
 
 
-@pytest.mark.parametrize("input", _multiclass_cases)
+@pytest.mark.parametrize("inputs", _multiclass_cases)
 class TestMulticlassCohenKappa(MetricTester):
     """Test class for `MulticlassCohenKappa` metric."""
 
@@ -143,8 +148,9 @@ class TestMulticlassCohenKappa(MetricTester):
     @pytest.mark.parametrize("weights", ["linear", "quadratic", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multiclass_cohen_kappa(self, input, ddp, weights, ignore_index):
-        preds, target = input
+    def test_multiclass_cohen_kappa(self, inputs, ddp, weights, ignore_index):
+        """Test class implementation of metric."""
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
@@ -162,8 +168,9 @@ class TestMulticlassCohenKappa(MetricTester):
 
     @pytest.mark.parametrize("weights", ["linear", "quadratic", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_multiclass_confusion_matrix_functional(self, input, weights, ignore_index):
-        preds, target = input
+    def test_multiclass_confusion_matrix_functional(self, inputs, weights, ignore_index):
+        """Test functional implementation of metric."""
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
@@ -178,8 +185,9 @@ class TestMulticlassCohenKappa(MetricTester):
             },
         )
 
-    def test_multiclass_cohen_kappa_differentiability(self, input):
-        preds, target = input
+    def test_multiclass_cohen_kappa_differentiability(self, inputs):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -189,8 +197,9 @@ class TestMulticlassCohenKappa(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_cohen_kappa_dtypes_cpu(self, input, dtype):
-        preds, target = input
+    def test_multiclass_cohen_kappa_dtypes_cpu(self, inputs, dtype):
+        """Test dtype support of the metric on CPU."""
+        preds, target = inputs
 
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -205,8 +214,9 @@ class TestMulticlassCohenKappa(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_confusion_matrix_dtypes_gpu(self, input, dtype):
-        preds, target = input
+    def test_multiclass_confusion_matrix_dtypes_gpu(self, inputs, dtype):
+        """Test dtype support of the metric on GPU."""
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
