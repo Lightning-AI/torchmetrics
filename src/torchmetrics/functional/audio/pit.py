@@ -186,11 +186,13 @@ def permutation_invariant_training(
         return best_metric, best_perm
 
     # speaker-wise
-    first_ele = metric_func(preds[:, 0, ...], target[:, 0, ...], **kwargs)
+    first_ele = metric_func(preds[:, 0, ...], target[:, 0, ...], **kwargs)  # needed for dtype and device
     metric_mtx = torch.empty((batch_size, spk_num, spk_num), dtype=first_ele.dtype, device=first_ele.device)
     metric_mtx[:, 0, 0] = first_ele
     for target_idx in range(spk_num):  # we have spk_num speeches in target in each sample
-        for preds_idx in range(1, spk_num):  # we have spk_num speeches in preds in each sample
+        for preds_idx in range(spk_num):  # we have spk_num speeches in preds in each sample
+            if target_idx == 0 and preds_idx == 0:  # already calculated
+                continue
             metric_mtx[:, target_idx, preds_idx] = metric_func(
                 preds[:, preds_idx, ...], target[:, target_idx, ...], **kwargs
             )
