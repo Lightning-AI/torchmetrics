@@ -132,7 +132,7 @@ class PeakSignalNoiseRatio(Metric):
             if self.data_range is None:
                 # keep track of min and max target values
                 self.min_target = torch.minimum(target.min(), self.min_target)
-                self.max_target = torch.minimum(target.max(), self.max_target)
+                self.max_target = torch.maximum(target.max(), self.max_target)
 
             self.sum_squared_error += sum_squared_error
             self.total += n_obs
