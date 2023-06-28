@@ -316,7 +316,6 @@ def speech_reverberation_modulation_energy_ratio(
     return score.reshape(*shape[:-1]) if len(shape) > 1 else score  # recover original shape
 
 
-
 def _srmr_arg_validate(
     fs: int,
     n_cochlear_filters: int = 23,
