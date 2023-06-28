@@ -56,8 +56,7 @@ def compute_area(inputs: List[Any], iou_type: str = "bbox") -> Tensor:
         return box_area(torch.stack(inputs))
     if iou_type == "segm":
         inputs = [{"size": i[0], "counts": i[1]} for i in inputs]
-        area = torch.tensor(mask_utils.area(inputs).astype("float"))
-        return area
+        return torch.tensor(mask_utils.area(inputs).astype("float"))
 
     raise Exception(f"IOU type {iou_type} is not supported")
 

@@ -93,6 +93,8 @@ extend-select = [
     "ISC",  # see: https://pypi.org/project/flake8-implicit-str-concat
     "PIE",  # see: https://pypi.org/project/flake8-pie
     "PLE",  # see: https://pypi.org/project/pylint/
+    "PERF",  # see: https://pypi.org/project/perflint/
+    "PYI",  # see: https://pypi.org/project/flake8-pyi/
 ]
 ignore = [
     "E731",  # Do not assign a lambda expression, use a def

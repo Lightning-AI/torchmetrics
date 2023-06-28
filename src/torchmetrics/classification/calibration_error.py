@@ -356,7 +356,7 @@ class CalibrationError:
 
     def __new__(
         cls,
-        task: Literal["binary", "multiclass"] = None,
+        task: Literal["binary", "multiclass"],
         n_bins: int = 15,
         norm: Literal["l1", "l2", "max"] = "l1",
         num_classes: Optional[int] = None,
@@ -373,4 +373,4 @@ class CalibrationError:
             if not isinstance(num_classes, int):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassCalibrationError(num_classes, **kwargs)
-        return None
+        raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy
