@@ -48,21 +48,22 @@ def _mifid_compute(
 ):
     fid_value = _compute_fid(mu1, sigma1, mu2, sigma2)
     distance = _compute_cosine_distance(features1, features2, cosine_distance_eps)
-    print(fid_value, distance)
     mifid = fid_value / (distance + 10e-15)
     return mifid
 
 
 class MemorizationInformedFrechetInceptionDistance(Metric):
-    r"""Calculate Fréchet inception distance (FID_) which is used to access the quality of generated images.
+    r"""Calculate Memorization-Informed Frechet Inception Distance (MIFID_).
+
+    MIFID is a improved variation of the Frechet Inception Distance (FID_) that penalizes memorization of the training
+    set by the generator. It is calculated as
 
     .. math::
-        FID = |\mu - \mu_w| + tr(\Sigma + \Sigma_w - 2(\Sigma \Sigma_w)^{\frac{1}{2}})
+        MIFID = \frac{FID(F_{real}, F_{fake})}{M(F_{real}, F_{fake})}
 
-    where :math:`\mathcal{N}(\mu, \Sigma)` is the multivariate normal distribution estimated from Inception v3
-    (`fid ref1`_) features calculated on real life images and :math:`\mathcal{N}(\mu_w, \Sigma_w)` is the
-    multivariate normal distribution estimated from Inception v3 features calculated on generated (fake) images.
-    The metric was originally proposed in `fid ref1`_.
+    where :math:`FID` is the normal FID score and :math:`M` is the memorization penalty. The memorization penalty
+    essentially corresponds to the average minimum cosine distance between the features of the real and fake
+    distribution.
 
     Using the default feature extraction (Inception v3 using the original weights from `fid ref2`_), the input is
     expected to be mini-batches of 3-channel RGB images of shape ``(3 x H x W)``. If argument ``normalize``
@@ -100,11 +101,13 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         reset_real_features: Whether to also reset the real features. Since in many cases the real dataset does not
             change, the features can be cached them to avoid recomputing them which is costly. Set this to ``False`` if
             your dataset does not change.
+        cosine_distance_eps: Epsilon value for the cosine distance. If the cosine distance is larger than this value
+            it is set to 1 and thus ignored in the MIFID calculation.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``feature`` is set to an ``int`` (default settings) and ``torch-fidelity`` is not installed
+            If ``feature`` is set to an ``int`` and ``torch-fidelity`` is not installed
         ValueError:
             If ``feature`` is set to an ``int`` not in [64, 192, 768, 2048]
         TypeError:
@@ -115,15 +118,15 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(123)
-        >>> from torchmetrics.image.fid import FrechetInceptionDistance
-        >>> fid = FrechetInceptionDistance(feature=64)
+        >>> from torchmetrics.image.mifid import MemorizationInformedFrechetInceptionDistance
+        >>> fid = MemorizationInformedFrechetInceptionDistance(feature=64)
         >>> # generate two slightly overlapping image intensity distributions
         >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
         >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
         >>> fid.update(imgs_dist1, real=True)
         >>> fid.update(imgs_dist2, real=False)
         >>> fid.compute()
-        tensor(12.7202)
+        tensor(2959.7734)
     """
     higher_is_better: bool = False
     is_differentiable: bool = False
@@ -193,9 +196,7 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         """Calculate FID score based on accumulated extracted features from the two distributions."""
         real_features = dim_zero_cat(self.real_features)
         fake_features = dim_zero_cat(self.fake_features)
-        import pdb
 
-        pdb.set_trace()
         mean_real, mean_fake = torch.mean(real_features, dim=0), torch.mean(fake_features, dim=0)
         cov_real, cov_fake = torch.cov(real_features.t()), torch.cov(fake_features.t())
 

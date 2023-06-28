@@ -87,15 +87,12 @@ def _compare_mifid(preds, target, cosine_distance_eps: float = 0.1):
     net = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(768)])
     preds_act = net(preds).numpy()
     target_act = net(target).numpy()
-    import pdb
 
-    pdb.set_trace()
     m1, s1, features1 = calculate_activation_statistics(preds_act)
     m2, s2, features2 = calculate_activation_statistics(target_act)
 
     fid_private, distance_private = calculate_mifid(m1, s1, features1, m2, s2, features2)
     distance_private_thresholded = distance_thresholding(distance_private, cosine_distance_eps)
-    print(fid_private, distance_private_thresholded)
     private_score = fid_private / (distance_private_thresholded + 1e-15)
 
     return private_score
