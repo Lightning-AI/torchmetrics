@@ -33,8 +33,7 @@ def _compute_cosine_distance(features1: Tensor, features2: Tensor, cosine_distan
 
     d = 1.0 - torch.abs(torch.matmul(norm_f1, norm_f2.t()))
     mean_min_d = torch.mean(d.min(dim=1).values)
-    mean_min_d = mean_min_d if mean_min_d < cosine_distance_eps else torch.ones_like(mean_min_d)
-    return mean_min_d
+    return mean_min_d if mean_min_d < cosine_distance_eps else torch.ones_like(mean_min_d)
 
 
 def _mifid_compute(
@@ -48,8 +47,7 @@ def _mifid_compute(
 ):
     fid_value = _compute_fid(mu1, sigma1, mu2, sigma2)
     distance = _compute_cosine_distance(features1, features2, cosine_distance_eps)
-    mifid = fid_value / (distance + 10e-15)
-    return mifid
+    return fid_value / (distance + 10e-15)
 
 
 class MemorizationInformedFrechetInceptionDistance(Metric):
@@ -91,6 +89,7 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         cosine_distance_eps: Epsilon value for the cosine distance. If the cosine distance is larger than this value
             it is set to 1 and thus ignored in the MIFID calculation.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
     Raises:
         ValueError:
             If ``feature`` is set to an ``int`` and ``torch-fidelity`` is not installed
@@ -111,7 +110,7 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         >>> fid.update(imgs_dist1, real=True)
         >>> fid.update(imgs_dist2, real=False)
         >>> fid.compute()
-        tensor(2959.7734)
+        tensor(2959.7734).
     """
     higher_is_better: bool = False
     is_differentiable: bool = False
