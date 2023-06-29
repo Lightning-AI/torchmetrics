@@ -65,7 +65,7 @@ def _jaccard_index_reduce(
     if average == "binary":
         return confmat[1, 1] / (confmat[0, 1] + confmat[1, 0] + confmat[1, 1])
 
-    ignore_index_cond = ignore_index is not None and 0 <= ignore_index <= confmat.shape[0]
+    ignore_index_cond = ignore_index is not None and 0 <= ignore_index < confmat.shape[0]
     multilabel = confmat.ndim == 3
     if multilabel:
         num = confmat[:, 1, 1]

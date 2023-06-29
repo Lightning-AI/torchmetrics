@@ -147,7 +147,7 @@ def plot_single_or_multi_val(
     xlim = ax.get_xlim()
     factor = 0.1 * (xlim[1] - xlim[0])
 
-    y_ = [lower_bound, upper_bound] if lower_bound or upper_bound else []
+    y_ = [lower_bound, upper_bound] if lower_bound and upper_bound else []
     ax.hlines(y_, xlim[0], xlim[1], linestyles="dashed", colors="k")
     if higher_is_better is not None:
         if lower_bound is not None and not higher_is_better:

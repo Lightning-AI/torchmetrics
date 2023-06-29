@@ -93,6 +93,8 @@ extend-select = [
     "ISC",  # see: https://pypi.org/project/flake8-implicit-str-concat
     "PIE",  # see: https://pypi.org/project/flake8-pie
     "PLE",  # see: https://pypi.org/project/pylint/
+    "PERF",  # see: https://pypi.org/project/perflint/
+    "PYI",  # see: https://pypi.org/project/flake8-pyi/
 ]
 ignore = [
     "E731",  # Do not assign a lambda expression, use a def
@@ -182,9 +184,7 @@ module = [
     "torchmetrics.classification.roc",
     "torchmetrics.classification.specificity",
     "torchmetrics.classification.stat_scores",
-    "torchmetrics.collections",
     "torchmetrics.detection.mean_ap",
-    "torchmetrics.functional.audio.pit",
     "torchmetrics.functional.classification.calibration_error",
     "torchmetrics.functional.classification.confusion_matrix",
     "torchmetrics.functional.classification.f_beta",
@@ -192,21 +192,9 @@ module = [
     "torchmetrics.functional.classification.precision_recall_curve",
     "torchmetrics.functional.classification.ranking",
     "torchmetrics.functional.classification.recall_at_fixed_precision",
-    "torchmetrics.functional.classification.roc",
-    "torchmetrics.functional.classification.stat_scores",
-    "torchmetrics.functional.image.helper",
     "torchmetrics.functional.image.psnr",
     "torchmetrics.functional.image.ssim",
-    "torchmetrics.functional.image.uqi",
-    "torchmetrics.functional.multimodal.clip_score",
-    "torchmetrics.functional.retrieval.r_precision",
-    "torchmetrics.image.fid",
-    "torchmetrics.image.inception",
-    "torchmetrics.image.lpip",
     "torchmetrics.image.psnr",
     "torchmetrics.image.ssim",
-    "torchmetrics.image.tv",
-    "torchmetrics.image.uqi",
-    "torchmetrics.retrieval.precision_recall_curve",
 ]
 ignore_errors = "True"

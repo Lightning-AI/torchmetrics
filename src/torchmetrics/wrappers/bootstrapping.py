@@ -45,8 +45,7 @@ def _bootstrap_sampler(
         n = p.sample((size,))
         return torch.arange(size).repeat_interleave(n.long(), dim=0)
     if sampling_strategy == "multinomial":
-        idx = torch.multinomial(torch.ones(size), num_samples=size, replacement=True)
-        return idx
+        return torch.multinomial(torch.ones(size), num_samples=size, replacement=True)
     raise ValueError("Unknown sampling strategy")
 
 
