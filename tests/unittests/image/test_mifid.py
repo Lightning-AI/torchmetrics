@@ -24,8 +24,10 @@ from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 def _compare_mifid(preds, target, cosine_distance_eps: float = 0.1):
     """Reference implementation.
+
     Implementation taken from:
     https://github.com/jybai/generative-memorization-benchmark/blob/main/src/competition_scoring.py
+
     Adjusted slightly to work with our code. We replace the feature extraction with our own, since we already check in
     FID that we use the correct feature extractor. This saves us from needing to download tensorflow for comparison.
     """
