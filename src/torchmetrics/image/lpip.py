@@ -97,8 +97,8 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    real_features: List[Tensor]
-    fake_features: List[Tensor]
+    sum_scores: Tensor
+    total: Tensor
 
     # due to the use of named tuple in the backbone the net variable cannot be scripted
     __jit_ignored_attributes__: ClassVar[List[str]] = ["net"]

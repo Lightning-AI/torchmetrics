@@ -42,7 +42,7 @@ def _gen_permutations(spk_num: int, device: torch.device) -> Tensor:
 
 def _find_best_perm_by_linear_sum_assignment(
     metric_mtx: Tensor,
-    eval_func: Union[torch.min, torch.max],
+    eval_func: Callable,
 ) -> Tuple[Tensor, Tensor]:
     """Solves the linear sum assignment problem.
 
@@ -67,7 +67,7 @@ def _find_best_perm_by_linear_sum_assignment(
 
 def _find_best_perm_by_exhaustive_method(
     metric_mtx: Tensor,
-    eval_func: Union[torch.min, torch.max],
+    eval_func: Callable,
 ) -> Tuple[Tensor, Tensor]:
     """Solves the linear sum assignment problem using exhaustive method.
 
@@ -186,17 +186,16 @@ def permutation_invariant_training(
         return best_metric, best_perm
 
     # speaker-wise
-    metric_mtx = None
+    first_ele = metric_func(preds[:, 0, ...], target[:, 0, ...], **kwargs)  # needed for dtype and device
+    metric_mtx = torch.empty((batch_size, spk_num, spk_num), dtype=first_ele.dtype, device=first_ele.device)
+    metric_mtx[:, 0, 0] = first_ele
     for target_idx in range(spk_num):  # we have spk_num speeches in target in each sample
         for preds_idx in range(spk_num):  # we have spk_num speeches in preds in each sample
-            if metric_mtx is not None:
-                metric_mtx[:, target_idx, preds_idx] = metric_func(
-                    preds[:, preds_idx, ...], target[:, target_idx, ...], **kwargs
-                )
-            else:
-                first_ele = metric_func(preds[:, preds_idx, ...], target[:, target_idx, ...], **kwargs)
-                metric_mtx = torch.empty((batch_size, spk_num, spk_num), dtype=first_ele.dtype, device=first_ele.device)
-                metric_mtx[:, target_idx, preds_idx] = first_ele
+            if target_idx == 0 and preds_idx == 0:  # already calculated
+                continue
+            metric_mtx[:, target_idx, preds_idx] = metric_func(
+                preds[:, preds_idx, ...], target[:, target_idx, ...], **kwargs
+            )
 
     # find best
     if spk_num < 3 or not _SCIPY_AVAILABLE:
