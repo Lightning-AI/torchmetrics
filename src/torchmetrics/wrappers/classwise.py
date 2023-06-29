@@ -47,6 +47,19 @@ class ClasswiseWrapper(Metric):
         'multiclassaccuracy_1': tensor(0.7500),
         'multiclassaccuracy_2': tensor(0.)}
 
+    Example (with custom name via prefix):
+        >>> import torch
+        >>> _ = torch.manual_seed(42)
+        >>> from torchmetrics.wrappers import ClasswiseWrapper
+        >>> from torchmetrics.classification import MulticlassAccuracy
+        >>> metric = ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None), prefix="acc-")
+        >>> preds = torch.randn(10, 3).softmax(dim=-1)
+        >>> target = torch.randint(3, (10,))
+        >>> metric(preds, target)  # doctest: +NORMALIZE_WHITESPACE
+        {'acc-0': tensor(0.5000),
+        'acc-1': tensor(0.7500),
+        'acc-2': tensor(0.)}
+
     Example (labels as list of strings):
         >>> from torchmetrics.wrappers import ClasswiseWrapper
         >>> from torchmetrics.classification import MulticlassAccuracy
@@ -81,7 +94,13 @@ class ClasswiseWrapper(Metric):
          'multiclassrecall_dog': tensor(0.4000)}
     """
 
-    def __init__(self, metric: Metric, labels: Optional[List[str]] = None) -> None:
+    def __init__(
+        self,
+        metric: Metric,
+        labels: Optional[List[str]] = None,
+        prefix: Optional[str] = None,
+        postfix: Optional[str] = None,
+    ) -> None:
         super().__init__()
         if not isinstance(metric, Metric):
             raise ValueError(f"Expected argument `metric` to be an instance of `torchmetrics.Metric` but got {metric}")
@@ -89,13 +108,17 @@ class ClasswiseWrapper(Metric):
             raise ValueError(f"Expected argument `labels` to either be `None` or a list of strings but got {labels}")
         self.metric = metric
         self.labels = labels
+        self.prefix = prefix
+        self.postfix = postfix
+        # Will set the class name as prefix if neither prefix nor postfix is given
+        if not self.prefix and not self.postfix:
+            self.prefix = self.metric.__class__.__name__.lower()
         self._update_count = 1
 
     def _convert(self, x: Tensor) -> Dict[str, Any]:
-        name = self.metric.__class__.__name__.lower()
         if self.labels is None:
-            return {f"{name}_{i}": val for i, val in enumerate(x)}
-        return {f"{name}_{lab}": val for lab, val in zip(self.labels, x)}
+            return {f"{self.prefix}_{i}{self.postfix}": val for i, val in enumerate(x)}
+        return {f"{self.prefix}_{lab}{self.postfix}": val for lab, val in zip(self.labels, x)}
 
     def forward(self, *args: Any, **kwargs: Any) -> Any:
         """Calculate on batch and accumulate to global state."""

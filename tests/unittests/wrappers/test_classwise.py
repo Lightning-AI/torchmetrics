@@ -54,6 +54,38 @@ def test_output_with_labels():
             assert val[f"multiclassaccuracy_{lab}"] == val_base[i]
 
 
+def test_output_with_prefix():
+    """Test that wrapper works with prefix."""
+    base = MulticlassAccuracy(num_classes=3, average=None)
+    metric = ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None), prefix="pre_")
+    for _ in range(2):
+        preds = torch.randn(20, 3).softmax(dim=-1)
+        target = torch.randint(3, (20,))
+        val = metric(preds, target)
+        val_base = base(preds, target)
+        assert isinstance(val, dict)
+        assert len(val) == 3
+        for i in range(3):
+            assert f"pre_{i}" in val
+            assert val[f"pre_{i}"] == val_base[i]
+
+
+def test_output_with_postfix():
+    """Test that wrapper works with postfix."""
+    base = MulticlassAccuracy(num_classes=3, average=None)
+    metric = ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None), postfix="_post")
+    for _ in range(2):
+        preds = torch.randn(20, 3).softmax(dim=-1)
+        target = torch.randint(3, (20,))
+        val = metric(preds, target)
+        val_base = base(preds, target)
+        assert isinstance(val, dict)
+        assert len(val) == 3
+        for i in range(3):
+            assert f"{i}_post" in val
+            assert val[f"{i}_post"] == val_base[i]
+
+
 @pytest.mark.parametrize("prefix", [None, "pre_"])
 @pytest.mark.parametrize("postfix", [None, "_post"])
 def test_using_metriccollection(prefix, postfix):
