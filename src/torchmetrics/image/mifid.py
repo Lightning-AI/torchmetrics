@@ -23,13 +23,14 @@ from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-if not _TORCH_FIDELITY_AVAILABLE:
-    __doctest_skip__ = [
-        "MemorizationInformedFrechetInceptionDistance, MemorizationInformedFrechetInceptionDistance.plot"
-    ]
-
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MemorizationInformedFrechetInceptionDistance.plot"]
+
+__doctest_requires__ = {
+    ("MemorizationInformedFrechetInceptionDistance", "MemorizationInformedFrechetInceptionDistance.plot"): [
+        "torch_fidelity"
+    ]
+}
 
 
 def _compute_cosine_distance(features1: Tensor, features2: Tensor, cosine_distance_eps: float = 0.1) -> Tensor:
