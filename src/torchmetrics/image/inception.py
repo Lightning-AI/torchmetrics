@@ -98,6 +98,7 @@ class InceptionScore(Metric):
     plot_lower_bound: float = 0.0
 
     features: List
+    inception: Module
 
     def __init__(
         self,

@@ -8,7 +8,7 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_10
 
 
-def _gaussian(kernel_size: int, sigma: float, dtype: torch.dtype, device: torch.device) -> Tensor:
+def _gaussian(kernel_size: int, sigma: float, dtype: torch.dtype, device: Union[torch.device, str]) -> Tensor:
     """Compute 1D gaussian kernel.
 
     Args:

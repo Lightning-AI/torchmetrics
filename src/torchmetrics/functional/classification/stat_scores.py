@@ -120,7 +120,7 @@ def _binary_stat_scores_update(
     multidim_average: Literal["global", "samplewise"] = "global",
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """Compute the statistics."""
-    sum_dim = [0, 1] if multidim_average == "global" else 1
+    sum_dim = [0, 1] if multidim_average == "global" else [1]
     tp = ((target == preds) & (target == 1)).sum(sum_dim).squeeze()
     fn = ((target != preds) & (target == 1)).sum(sum_dim).squeeze()
     fp = ((target != preds) & (target == 0)).sum(sum_dim).squeeze()
@@ -254,7 +254,7 @@ def _multiclass_stat_scores_tensor_validation(
 ) -> None:
     """Validate tensor input.
 
-    - if target has one more dimension than preds, then all dimensions except for preds.shape[1] should match
+    - if preds has one more dimension than target, then all dimensions except for preds.shape[1] should match
     exactly. preds.shape[1] should have size equal to number of classes
     - if preds and target have same number of dims, then all dimensions should match
     - if ``multidim_average`` is set to ``samplewise`` preds tensor needs to be atleast 2 dimensional in the
@@ -1103,4 +1103,4 @@ def stat_scores(
         return multilabel_stat_scores(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    return None
+    raise ValueError(f"Unsupported task `{task}`")

@@ -109,7 +109,7 @@ from torchmetrics.image import (
     TotalVariation,
     UniversalImageQualityIndex,
 )
-from torchmetrics.nominal import CramersV, PearsonsContingencyCoefficient, TheilsU, TschuprowsT
+from torchmetrics.nominal import CramersV, FleissKappa, PearsonsContingencyCoefficient, TheilsU, TschuprowsT
 from torchmetrics.regression import (
     ConcordanceCorrCoef,
     CosineSimilarity,
@@ -231,6 +231,7 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
         pytest.param(partial(TheilsU, num_classes=5), _nominal_input, _nominal_input, id="theils U"),
         pytest.param(partial(TschuprowsT, num_classes=5), _nominal_input, _nominal_input, id="tschuprows T"),
         pytest.param(partial(CramersV, num_classes=5), _nominal_input, _nominal_input, id="cramers V"),
+        pytest.param(partial(FleissKappa, mode="probs"), lambda: torch.randn(10, 3, 5), None, id="fleiss kappa"),
         pytest.param(
             SpectralDistortionIndex,
             _image_input,
