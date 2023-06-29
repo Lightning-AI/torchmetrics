@@ -18,7 +18,6 @@ import numpy as np
 import pytest
 import torch
 from scipy.linalg import sqrtm
-
 from torchmetrics.image.mifid import MemorizationInformedFrechetInceptionDistance, NoTrainInceptionV3
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
@@ -41,8 +40,7 @@ def _compare_mifid(preds, target, cosine_distance_eps: float = 0.1):
         norm_f2 = normalize_rows(features2_nozero)
 
         d = 1.0 - np.abs(np.matmul(norm_f1, norm_f2.T))
-        mean_min_d = np.mean(np.min(d, axis=1))
-        return mean_min_d
+        return np.mean(np.min(d, axis=1))
 
     def distance_thresholding(d, eps):
         return d if d < eps else 1
@@ -91,9 +89,8 @@ def _compare_mifid(preds, target, cosine_distance_eps: float = 0.1):
 
     fid_private, distance_private = calculate_mifid(m1, s1, features1, m2, s2, features2)
     distance_private_thresholded = distance_thresholding(distance_private, cosine_distance_eps)
-    private_score = fid_private / (distance_private_thresholded + 1e-15)
+    return fid_private / (distance_private_thresholded + 1e-15)
 
-    return private_score
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
@@ -101,7 +98,7 @@ def test_no_train():
     """Assert that metric never leaves evaluation mode."""
 
     class MyModel(torch.nn.Module):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.metric = MemorizationInformedFrechetInceptionDistance()
 
