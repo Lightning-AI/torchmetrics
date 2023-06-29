@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from copy import deepcopy
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
@@ -37,7 +37,7 @@ if _TORCH_FIDELITY_AVAILABLE:
     from torch_fidelity.interpolate_compat_tensorflow import interpolate_bilinear_2d_like_tensorflow1x
 else:
 
-    class _FeatureExtractorInceptionV3(Module):
+    class _FeatureExtractorInceptionV3(Module):  # type: ignore[no-redef]
         pass
 
     vassert = None
@@ -66,7 +66,7 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
         """Force network to always be in evaluation mode."""
         return super().train(False)
 
-    def _torch_fidelity_forward(self, x: Tensor) -> Tensor:
+    def _torch_fidelity_forward(self, x: Tensor) -> Tuple[Tensor, ...]:
         """Forward method of inception net.
 
         Copy of the forward method from this file:
@@ -268,6 +268,8 @@ class FrechetInceptionDistance(Metric):
     fake_features_sum: Tensor
     fake_features_cov_sum: Tensor
     fake_features_num_samples: Tensor
+
+    inception: Module
 
     def __init__(
         self,
