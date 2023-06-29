@@ -20,17 +20,23 @@ from torch.nn import Module
 from torchmetrics.image.fid import NoTrainInceptionV3, _compute_fid
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
-
-if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["MemorizationInformedFrechetInceptionDistance.plot"]
 
 __doctest_requires__ = {
     ("MemorizationInformedFrechetInceptionDistance", "MemorizationInformedFrechetInceptionDistance.plot"): [
         "torch_fidelity"
     ]
 }
+
+if not _TORCH_GREATER_EQUAL_1_9:
+    __doctest_skip__ = [
+        "MemorizationInformedFrechetInceptionDistance",
+        "MemorizationInformedFrechetInceptionDistance.plot",
+    ]
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["MemorizationInformedFrechetInceptionDistance.plot"]
 
 
 def _compute_cosine_distance(features1: Tensor, features2: Tensor, cosine_distance_eps: float = 0.1) -> Tensor:
@@ -59,7 +65,8 @@ def _mifid_compute(
     """Compute MIFID score given two sets of features and their statistics."""
     fid_value = _compute_fid(mu1, sigma1, mu2, sigma2)
     distance = _compute_cosine_distance(features1, features2, cosine_distance_eps)
-    return fid_value / (distance + 10e-15)
+    # secure that very small fid values does not explode the mifid
+    return fid_value / (distance + 10e-15) if fid_value > 1e-8 else torch.zeros_like(fid_value)
 
 
 class MemorizationInformedFrechetInceptionDistance(Metric):
