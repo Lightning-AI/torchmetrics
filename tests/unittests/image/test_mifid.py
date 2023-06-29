@@ -92,7 +92,6 @@ def _compare_mifid(preds, target, cosine_distance_eps: float = 0.1):
     return fid_private / (distance_private_thresholded + 1e-15)
 
 
-
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_no_train():
     """Assert that metric never leaves evaluation mode."""
