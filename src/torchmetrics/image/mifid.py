@@ -97,15 +97,17 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``fid`` (:class:`~torch.Tensor`): float scalar tensor with mean FID value over samples
+    - ``mifid`` (:class:`~torch.Tensor`): float scalar tensor with mean FID value over samples
 
     Args:
         feature:
             Either an integer or ``nn.Module``:
+
             - an integer will indicate the inceptionv3 feature layer to choose. Can be one of the following:
               64, 192, 768, 2048
             - an ``nn.Module`` for using a custom feature extractor. Expects that its forward method returns
               an ``(N,d)`` matrix where ``N`` is the batch size and ``d`` is the feature size.
+
         reset_real_features: Whether to also reset the real features. Since in many cases the real dataset does not
             change, the features can be cached them to avoid recomputing them which is costly. Set this to ``False`` if
             your dataset does not change.
