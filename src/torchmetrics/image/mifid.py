@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from typing import Any, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -97,7 +97,7 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``mifid`` (:class:`~torch.Tensor`): float scalar tensor with mean FID value over samples
+    - ``mifid`` (:class:`~torch.Tensor`): float scalar tensor with mean MIFID value over samples
 
     Args:
         feature:
@@ -142,8 +142,10 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
     is_differentiable: bool = False
     full_state_update: bool = False
 
-    real_features_stacked: Tensor
-    fake_features_stacked: Tensor
+    real_features: List[Tensor]
+    fake_features: List[Tensor]
+
+    inception: Module
 
     def __init__(
         self,
