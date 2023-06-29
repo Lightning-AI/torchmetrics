@@ -23,7 +23,8 @@ from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 
-def _compute_cosine_distance(features1: Tensor, features2: Tensor, cosine_distance_eps: float = 0.1):
+def _compute_cosine_distance(features1: Tensor, features2: Tensor, cosine_distance_eps: float = 0.1) -> Tensor:
+    """Compute the cosine distance between two sets of features."""
     features1_nozero = features1[torch.sum(features1, dim=1) != 0]
     features2_nozero = features2[torch.sum(features2, dim=1) != 0]
 
@@ -44,7 +45,8 @@ def _mifid_compute(
     sigma2: Tensor,
     features2: Tensor,
     cosine_distance_eps: float = 0.1,
-):
+) -> Tensor:
+    """Compute MIFID score given two sets of features and their statistics."""
     fid_value = _compute_fid(mu1, sigma1, mu2, sigma2)
     distance = _compute_cosine_distance(features1, features2, cosine_distance_eps)
     return fid_value / (distance + 10e-15)
@@ -52,13 +54,17 @@ def _mifid_compute(
 
 class MemorizationInformedFrechetInceptionDistance(Metric):
     r"""Calculate Memorization-Informed Frechet Inception Distance (MIFID_).
+
     MIFID is a improved variation of the Frechet Inception Distance (FID_) that penalizes memorization of the training
     set by the generator. It is calculated as
+
     .. math::
         MIFID = \frac{FID(F_{real}, F_{fake})}{M(F_{real}, F_{fake})}
+
     where :math:`FID` is the normal FID score and :math:`M` is the memorization penalty. The memorization penalty
     essentially corresponds to the average minimum cosine distance between the features of the real and fake
     distribution.
+
     Using the default feature extraction (Inception v3 using the original weights from `fid ref2`_), the input is
     expected to be mini-batches of 3-channel RGB images of shape ``(3 x H x W)``. If argument ``normalize``
     is ``True`` images are expected to be dtype ``float`` and have values in the ``[0, 1]`` range, else if
@@ -66,16 +72,23 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
     range. All images will be resized to 299 x 299 which is the size of the original training data. The boolian
     flag ``real`` determines if the images should update the statistics of the real distribution or the
     fake distribution.
+
     .. note:: using this metrics requires you to have ``scipy`` install. Either install as ``pip install
         torchmetrics[image]`` or ``pip install scipy``
+
     .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
+
     As input to ``forward`` and ``update`` the metric accepts the following input
+
     - ``imgs`` (:class:`~torch.Tensor`): tensor with images feed to the feature extractor with
     - ``real`` (:class:`~bool`): bool indicating if ``imgs`` belong to the real or the fake distribution
+
     As output of `forward` and `compute` the metric returns the following output
+
     - ``fid`` (:class:`~torch.Tensor`): float scalar tensor with mean FID value over samples
+
     Args:
         feature:
             Either an integer or ``nn.Module``:
@@ -99,18 +112,19 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
             If ``feature`` is not an ``str``, ``int`` or ``torch.nn.Module``
         ValueError:
             If ``reset_real_features`` is not an ``bool``
-    Example:
+
+    Example::
         >>> import torch
         >>> _ = torch.manual_seed(123)
         >>> from torchmetrics.image.mifid import MemorizationInformedFrechetInceptionDistance
-        >>> fid = MemorizationInformedFrechetInceptionDistance(feature=64)
+        >>> mifid = MemorizationInformedFrechetInceptionDistance(feature=64)
         >>> # generate two slightly overlapping image intensity distributions
         >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
         >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
-        >>> fid.update(imgs_dist1, real=True)
-        >>> fid.update(imgs_dist2, real=False)
-        >>> fid.compute()
-        tensor(2959.7734).
+        >>> mifid.update(imgs_dist1, real=True)
+        >>> mifid.update(imgs_dist2, real=False)
+        >>> mifid.compute()
+        tensor(2959.7734)
     """
     higher_is_better: bool = False
     is_differentiable: bool = False

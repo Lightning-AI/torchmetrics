@@ -13,6 +13,7 @@
 # limitations under the License.
 import pickle
 from contextlib import nullcontext as does_not_raise
+from functools import partial
 
 import pytest
 import torch
@@ -119,8 +120,7 @@ def test_compare_fid(tmpdir, equal_size, feature=768):
 
     metric = FrechetInceptionDistance(feature=feature).cuda()
 
-    n = 100
-    m = 100 if equal_size else 90
+    n, m = 100, 100 if equal_size else 90
 
     # Generate some synthetic data
     torch.manual_seed(42)
@@ -179,20 +179,21 @@ def test_reset_real_features_arg(reset_real_features):
 
 
 @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_9, reason="test requires torch>=1.9")
-def test_normalize_arg_true():
+@pytest.mark.parametrize("normalize", [True, False])
+def test_normalize_arg(normalize):
     """Test that normalize argument works as expected."""
     img = torch.rand(2, 3, 299, 299)
-    metric = FrechetInceptionDistance(normalize=True)
-    with does_not_raise():
-        metric.update(img, real=True)
+    metric = FrechetInceptionDistance(normalize=normalize)
 
+    context = (
+        partial(
+            pytest.raises, expected_exception=ValueError, match="Expecting image as torch.Tensor with dtype=torch.uint8"
+        )
+        if not normalize
+        else does_not_raise
+    )
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_9, reason="test requires torch>=1.9")
-def test_normalize_arg_false():
-    """Test that normalize argument works as expected."""
-    img = torch.rand(2, 3, 299, 299)
-    metric = FrechetInceptionDistance(normalize=False)
-    with pytest.raises(ValueError, match="Expecting image as torch.Tensor with dtype=torch.uint8"):
+    with context():
         metric.update(img, real=True)
 
 
