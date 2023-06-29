@@ -110,15 +110,19 @@ class ClasswiseWrapper(Metric):
         self.labels = labels
         self.prefix = prefix
         self.postfix = postfix
-        # Will set the class name as prefix if neither prefix nor postfix is given
-        if not self.prefix and not self.postfix:
-            self.prefix = self.metric.__class__.__name__.lower()
         self._update_count = 1
 
     def _convert(self, x: Tensor) -> Dict[str, Any]:
+        # Will set the class name as prefix if neither prefix nor postfix is given
+        if not self.prefix and not self.postfix:
+            prefix = f"{self.metric.__class__.__name__.lower()}_"
+            postfix = ""
+        else:
+            prefix = self.prefix or ""
+            postfix = self.postfix or ""
         if self.labels is None:
-            return {f"{self.prefix}_{i}{self.postfix}": val for i, val in enumerate(x)}
-        return {f"{self.prefix}_{lab}{self.postfix}": val for lab, val in zip(self.labels, x)}
+            return {f"{prefix}{i}{postfix}": val for i, val in enumerate(x)}
+        return {f"{prefix}{lab}{postfix}": val for lab, val in zip(self.labels, x)}
 
     def forward(self, *args: Any, **kwargs: Any) -> Any:
         """Calculate on batch and accumulate to global state."""
