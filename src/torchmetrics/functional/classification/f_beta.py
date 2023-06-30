@@ -31,7 +31,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_tensor_validation,
     _multilabel_stat_scores_update,
 )
-from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.compute import _adjust_weights_safe_divide, _safe_divide
 from torchmetrics.utilities.enums import ClassificationTask
 
 
@@ -43,6 +43,7 @@ def _fbeta_reduce(
     beta: float,
     average: Optional[Literal["binary", "micro", "macro", "weighted", "none"]],
     multidim_average: Literal["global", "samplewise"] = "global",
+    multilabel: bool = False,
 ) -> Tensor:
     beta2 = beta**2
     if average == "binary":
@@ -54,10 +55,7 @@ def _fbeta_reduce(
         return _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
 
     fbeta_score = _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
-    if average is None or average == "none":
-        return fbeta_score
-    weights = tp + fn if average == "weighted" else torch.ones_like(fbeta_score)
-    return _safe_divide(weights * fbeta_score, weights.sum(-1, keepdim=True)).sum(-1)
+    return _adjust_weights_safe_divide(fbeta_score, average, multilabel, tp, fp, fn)
 
 
 def _binary_fbeta_score_arg_validation(
@@ -375,7 +373,7 @@ def multilabel_fbeta_score(
         _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
-    return _fbeta_reduce(tp, fp, tn, fn, beta, average=average, multidim_average=multidim_average)
+    return _fbeta_reduce(tp, fp, tn, fn, beta, average=average, multidim_average=multidim_average, multilabel=True)
 
 
 def binary_f1_score(

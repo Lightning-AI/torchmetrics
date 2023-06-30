@@ -82,7 +82,7 @@ def _baseline_specificity_binary(preds, target, ignore_index, multidim_average):
 class TestBinarySpecificity(MetricTester):
     """Test class for `BinarySpecificity` metric."""
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
     def test_binary_specificity(self, ddp, inputs, ignore_index, multidim_average):
@@ -106,7 +106,7 @@ class TestBinarySpecificity(MetricTester):
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     def test_binary_specificity_functional(self, inputs, ignore_index, multidim_average):
         """Test functional implementation of metric."""
@@ -190,6 +190,7 @@ def _baseline_specificity_multiclass_global(preds, target, ignore_index, average
 
     res = _calc_specificity(tn, fp)
     if average == "macro":
+        res = res[(np.bincount(preds, minlength=NUM_CLASSES) + np.bincount(target, minlength=NUM_CLASSES)) != 0.0]
         return res.mean(0)
     if average == "weighted":
         w = tp + fn
@@ -222,7 +223,8 @@ def _baseline_specificity_multiclass_local(preds, target, ignore_index, average)
 
         r = _calc_specificity(tn, fp)
         if average == "macro":
-            res.append(r.mean(0))
+            r = r[(np.bincount(pred, minlength=NUM_CLASSES) + np.bincount(true, minlength=NUM_CLASSES)) != 0.0]
+            res.append(r.mean(0) if len(r) > 0 else 0.0)
         elif average == "weighted":
             w = tp + fn
             res.append((r * (w / w.sum()).reshape(-1, 1)).sum(0))
@@ -446,7 +448,7 @@ class TestMultilabelSpecificity(MetricTester):
     """Test class for `MultilabelSpecificity` metric."""
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
     def test_multilabel_specificity(self, ddp, inputs, ignore_index, multidim_average, average):
@@ -479,7 +481,7 @@ class TestMultilabelSpecificity(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
     def test_multilabel_specificity_functional(self, inputs, ignore_index, multidim_average, average):
@@ -548,3 +550,18 @@ class TestMultilabelSpecificity(MetricTester):
             metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
             dtype=dtype,
         )
+
+
+def test_corner_cases():
+    """Test corner cases for specificity metric."""
+    # simulate the output of a perfect predictor (i.e. preds == target)
+    target = torch.tensor([0, 1, 2, 0, 1, 2])
+    preds = target
+
+    metric = MulticlassSpecificity(num_classes=3, average="none", ignore_index=0)
+    res = metric(preds, target)
+    assert torch.allclose(res, torch.tensor([1.0, 1.0, 1.0]))
+
+    metric = MulticlassSpecificity(num_classes=3, average="macro", ignore_index=0)
+    res = metric(preds, target)
+    assert res == 1.0

@@ -73,6 +73,7 @@ from torchmetrics.functional.image._deprecated import _universal_image_quality_i
 from torchmetrics.functional.nominal import (
     cramers_v,
     cramers_v_matrix,
+    fleiss_kappa,
     pearsons_contingency_coefficient,
     pearsons_contingency_coefficient_matrix,
     theils_u,
@@ -160,6 +161,7 @@ __all__ = [
     "f1_score",
     "fbeta_score",
     "generalized_dice_score",
+    "fleiss_kappa",
     "hamming_distance",
     "hinge_loss",
     "image_gradients",
