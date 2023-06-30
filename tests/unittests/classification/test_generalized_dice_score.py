@@ -352,6 +352,7 @@ def _sk_generalized_dice_score_multilabel_global(preds, target, sk_fn, ignore_in
         return ((weights * res) / weights_norm).sum(-1)
     elif average is None or average == "none":
         return res
+    return None
 
 
 def _sk_generalized_dice_score_multilabel_local(preds, target, sk_fn, ignore_index, average):
@@ -385,6 +386,7 @@ def _sk_generalized_dice_score_multilabel_local(preds, target, sk_fn, ignore_ind
         return ((weights * res) / weights_norm).sum(-1)
     elif average is None or average == "none":
         return res
+    return None
 
 
 def _sk_generalized_dice_score_multilabel(preds, target, sk_fn, ignore_index, multidim_average, average):
