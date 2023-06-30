@@ -321,7 +321,7 @@ def test_zero_case_in_multiclass():
 @pytest.mark.parametrize(
     ("metric_fn", "preds", "target", "expected"),
     [
-        (binary_matthews_corrcoef, torch.zeros(10), torch.zeros(10), -1.0),
+        (binary_matthews_corrcoef, torch.zeros(10), torch.zeros(10), 1.0),
         (binary_matthews_corrcoef, torch.ones(10), torch.ones(10), 1.0),
         (
             binary_matthews_corrcoef,
@@ -329,17 +329,31 @@ def test_zero_case_in_multiclass():
             torch.tensor([0, 0, 0, 0, 0, 1, 1, 1, 1, 1]),
             0.0,
         ),
+        (binary_matthews_corrcoef, torch.zeros(10), torch.ones(10), -1.0),
+        (binary_matthews_corrcoef, torch.ones(10), torch.zeros(10), -1.0),
         (
             partial(multilabel_matthews_corrcoef, num_labels=NUM_CLASSES),
             torch.zeros(10, NUM_CLASSES).long(),
             torch.zeros(10, NUM_CLASSES).long(),
-            -1.0,
+            1.0,
         ),
         (
             partial(multilabel_matthews_corrcoef, num_labels=NUM_CLASSES),
             torch.ones(10, NUM_CLASSES).long(),
             torch.ones(10, NUM_CLASSES).long(),
             1.0,
+        ),
+        (
+            partial(multilabel_matthews_corrcoef, num_labels=NUM_CLASSES),
+            torch.zeros(10, NUM_CLASSES).long(),
+            torch.ones(10, NUM_CLASSES).long(),
+            -1.0,
+        ),
+        (
+            partial(multilabel_matthews_corrcoef, num_labels=NUM_CLASSES),
+            torch.ones(10, NUM_CLASSES).long(),
+            torch.zeros(10, NUM_CLASSES).long(),
+            -1.0,
         ),
     ],
 )
