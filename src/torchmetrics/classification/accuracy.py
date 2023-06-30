@@ -28,7 +28,7 @@ from torchmetrics.functional.classification.accuracy import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.enums import AverageMethod
+from torchmetrics.utilities.enums import AverageMethod, DataType
 
 from torchmetrics.classification.stat_scores import (  # isort:skip
     BinaryStatScores,
