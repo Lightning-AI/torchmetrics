@@ -20,7 +20,7 @@ from torch.nn import Module
 from torchmetrics.image.fid import NoTrainInceptionV3, _compute_fid
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_10
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 __doctest_requires__ = {
@@ -29,7 +29,7 @@ __doctest_requires__ = {
     ]
 }
 
-if not _TORCH_GREATER_EQUAL_1_9:
+if not _TORCH_GREATER_EQUAL_1_10:
     __doctest_skip__ = [
         "MemorizationInformedFrechetInceptionDistance",
         "MemorizationInformedFrechetInceptionDistance.plot",
@@ -123,6 +123,8 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
+        RuntimeError:
+            If ``torch`` is version less than 1.10
         ValueError:
             If ``feature`` is set to an ``int`` and ``torch-fidelity`` is not installed
         ValueError:
@@ -134,7 +136,7 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
 
     Example::
         >>> import torch
-        >>> _ = torch.manual_seed(123)
+        >>> _ = torch.manual_seed(42)
         >>> from torchmetrics.image.mifid import MemorizationInformedFrechetInceptionDistance
         >>> mifid = MemorizationInformedFrechetInceptionDistance(feature=64)
         >>> # generate two slightly overlapping image intensity distributions
@@ -143,7 +145,7 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         >>> mifid.update(imgs_dist1, real=True)
         >>> mifid.update(imgs_dist2, real=False)
         >>> mifid.compute()
-        tensor(2959.7734)
+        tensor(3003.3691)
     """
     higher_is_better: bool = False
     is_differentiable: bool = False
@@ -163,6 +165,10 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
+        if not _TORCH_GREATER_EQUAL_1_10:
+            raise RuntimeError(
+                "MemorizationInformedFrechetInceptionDistance metric requires PyTorch version greater or equal to 1.10"
+            )
 
         if isinstance(feature, int):
             if not _TORCH_FIDELITY_AVAILABLE:
