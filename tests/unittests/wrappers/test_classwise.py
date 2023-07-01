@@ -13,6 +13,12 @@ def test_raises_error_on_wrong_input():
     with pytest.raises(ValueError, match="Expected argument `labels` to either be `None` or a list of strings.*"):
         ClasswiseWrapper(MulticlassAccuracy(num_classes=3), "hest")
 
+    with pytest.raises(ValueError, match="Expected argument `prefix` to either be `None` or a string.*"):
+        ClasswiseWrapper(MulticlassAccuracy(num_classes=3), prefix=1)
+
+    with pytest.raises(ValueError, match="Expected argument `postfix` to either be `None` or a string.*"):
+        ClasswiseWrapper(MulticlassAccuracy(num_classes=3), postfix=1)
+
 
 def test_output_no_labels():
     """Test that wrapper works with no label input."""
