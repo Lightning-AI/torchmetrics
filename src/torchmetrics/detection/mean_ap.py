@@ -295,7 +295,7 @@ class MeanAveragePrecision(Metric):
         self.add_state("groundtruth_crowds", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_area", default=[], dist_reduce_fx=None)
 
-    def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:  # type: ignore
+    def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:
         """Update metric state.
 
         Raises:
@@ -373,8 +373,8 @@ class MeanAveragePrecision(Metric):
             map_per_class_values = torch.tensor(map_per_class_list, dtype=torch.float32)
             mar_100_per_class_values = torch.tensor(mar_100_per_class_list, dtype=torch.float32)
         else:
-            map_per_class_values: Tensor = torch.tensor([-1], dtype=torch.float32)
-            mar_100_per_class_values: Tensor = torch.tensor([-1], dtype=torch.float32)
+            map_per_class_values = torch.tensor([-1], dtype=torch.float32)
+            mar_100_per_class_values = torch.tensor([-1], dtype=torch.float32)
 
         return {
             "map": torch.tensor([stats[0]], dtype=torch.float32),
@@ -693,7 +693,7 @@ class MeanAveragePrecision(Metric):
     # specialized syncronization and apply functions for this metric
     # --------------------
 
-    def _apply(self, fn: Callable) -> torch.nn.Module:
+    def _apply(self, fn: Callable) -> torch.nn.Module:  # type: ignore[override]
         """Custom apply function.
 
         Excludes the detections and groundtruths from the casting when the iou_type is set to `segm` as the state is
