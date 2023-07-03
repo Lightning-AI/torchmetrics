@@ -37,7 +37,7 @@ def visual_information_fidelity(
             target = torch.clamp(target, min=0.0, max=data_range)
         else:
             raise ValueError(
-                f"The `data_range` has to be either a float or a tuple of floats " f"but got {type(data_range)}"
+                f"The `data_range` has to be either a float or a tuple of floats but got {type(data_range)}"
             )
 
     # Constant for numerical stability
