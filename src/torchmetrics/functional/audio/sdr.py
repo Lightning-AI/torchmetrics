@@ -249,23 +249,47 @@ def source_aggregated_signal_distortion_ratio(
     target: Tensor,
     scale_invariant: bool = True,
     zero_mean: bool = False,
+    average: bool = False,
 ) -> Tensor:
-    """`Source-aggregated signal-to-distortion ratio`_ (SI-SDR).
+    """`Source-aggregated signal-to-distortion ratio`_ (SA-SDR).
 
     The SA-SDR is proposed to consider a global SDR over all output channels at the same time
 
     Args:
         preds: float tensor with shape ``(..., spk, time)``
         target: float tensor with shape ``(..., spk, time)``
-        scale_invariant: if True, scale the targets of different speakers with the same value.
+        scale_invariant: if True, scale the targets of different speakers with the same value
         zero_mean: If to zero mean target and preds or not
+        average: whether to average the SA-SDR value over the speaker dimension
 
     Returns:
-        Float tensor with shape ``(...,)`` of SA-SDR values per sample
+        SA-SDR with shape ``(..., spk)`` if average==False else ``(...)``
+
+    Example:
+        >>> import torch
+        >>> from torchmetrics.functional.audio import source_aggregated_signal_distortion_ratio
+        >>> g = torch.manual_seed(1)
+        >>> preds = torch.randn(2, 8000)  # [..., spk, time]
+        >>> target = torch.randn(2, 8000)
+        >>> source_aggregated_signal_distortion_ratio(preds, target)
+        tensor([-41.6434, -41.6726])
+        >>> # use with permutation_invariant_training
+        >>> from torchmetrics.functional.audio import permutation_invariant_training
+        >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
+        >>> target = torch.randn(4, 2, 8000)
+        >>> best_metric, best_perm = permutation_invariant_training(preds, target, 
+        >>>     source_aggregated_signal_distortion_ratio, mode="permutation-wise", average=True)
+        >>> best_metric
+        tensor([-37.9511, -41.9123, -42.7393, -42.5153])
+        >>> best_perm
+        tensor([[1, 0],
+                [1, 0],
+                [0, 1],
+                [1, 0]])
     """
     _check_same_shape(preds, target)
     if preds.ndim < 2:
-        raise RuntimeError(f'the preds and target should be the shape (..., spk, time), but {preds.shape} found')
+        raise RuntimeError(f'the preds and target should have the shape (..., spk, time), but {preds.shape} found')
 
     eps = torch.finfo(preds.dtype).eps
 
@@ -274,15 +298,15 @@ def source_aggregated_signal_distortion_ratio(
         preds = preds - torch.mean(preds, dim=-1, keepdim=True)
 
     if scale_invariant:
-        # scale the targets of different speakers with the same value
-        preds_sum = preds.sum(dim=-2, keepdim=True)
-        target_sum = target.sum(dim=-2, keepdim=True)
-        alpha = ((preds_sum * target_sum).sum(dim=-1, keepdim=True) + eps) / (
-            (target_sum**2).sum(dim=-1, keepdim=True) + eps
-        ) # shape [..., 1, 1]
+        # scale the targets of different speakers with the same alpha (shape [..., 1, 1])
+        alpha = ((preds * target).sum(dim=-1, keepdim=True).sum(dim=-2, keepdim=True) + eps) / \
+            ((target**2).sum(dim=-1, keepdim=True).sum(dim=-2, keepdim=True) + eps)
         target = alpha * target
 
     noise = target - preds
 
     val = (torch.sum(target**2, dim=-1) + eps) / (torch.sum(noise**2, dim=-1) + eps)
-    return 10 * torch.log10(val)
+    if average:
+        return torch.mean(10 * torch.log10(val), dim=-1)
+    else:
+        return 10 * torch.log10(val)
