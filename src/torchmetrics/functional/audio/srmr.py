@@ -210,6 +210,10 @@ def speech_reverberation_modulation_energy_ratio(
         Either install as ``pip install torchmetrics[audio]`` or ``pip install torchaudio``
         and ``pip install git+https://github.com/detly/gammatone``.
 
+    .. note::
+        This implementation is experimental, and might not consistent with the matlab 
+        implementation `SRMRToolbox`_.
+
     Returns:
         Tensor: srmr value, shape ``(...)``
 
