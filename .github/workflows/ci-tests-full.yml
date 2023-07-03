@@ -79,8 +79,9 @@ jobs:
     - name: Set PyTorch version
       if: inputs.requires != 'oldest'
       run: |
-        pip install packaging
-        python ./requirements/adjust-versions.py requirements.txt ${{ matrix.pytorch-version }}
+        curl https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py \
+          -o adjust-torch-versions.py
+        python adjust-torch-versions.py requirements.txt ${{ matrix.pytorch-version }}
 
     - uses: ./.github/actions/caching
       with:
@@ -107,8 +108,6 @@ jobs:
 
     - name: Install all dependencies
       run: |
-        curl https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py -o adjust-torch-versions.py
-        python adjust-torch-versions.py requirements.txt
         python adjust-torch-versions.py requirements/image.txt
         pip install --requirement requirements/devel.txt -U --find-links $PYTORCH_URL
         pip list
