@@ -55,7 +55,9 @@ class SpeechReverberationModulationEnergyRatio(Metric):
 
     .. note::
         This implementation is experimental, and might not consistent with the matlab 
-        implementation `SRMRToolbox`_.
+        implementation `SRMRToolbox`_, especially the fast implementation. 
+        The slow versions, a) fast=False, norm=False, max_cf=128, b) fast=False, norm=True, max_cf=30, have 
+        a relatively small inconsistence.
 
     Args:
         fs: the sampling rate
