@@ -100,6 +100,7 @@ from torchmetrics.image import (
     InceptionScore,
     KernelInceptionDistance,
     LearnedPerceptualImagePatchSimilarity,
+    MemorizationInformedFrechetInceptionDistance,
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
     RelativeAverageSpectralError,
@@ -160,7 +161,11 @@ from torchmetrics.text import (
     WordInfoLost,
     WordInfoPreserved,
 )
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9, _TORCHAUDIO_GREATER_EQUAL_0_10
+from torchmetrics.utilities.imports import (
+    _TORCH_GREATER_EQUAL_1_9,
+    _TORCH_GREATER_EQUAL_1_10,
+    _TORCHAUDIO_GREATER_EQUAL_0_10,
+)
 from torchmetrics.wrappers import (
     BootStrapper,
     ClasswiseWrapper,
@@ -653,6 +658,14 @@ def test_plot_methods(metric_class: object, preds: Callable, target: Callable, n
             None,
             True,
             id="inception score",
+        ),
+        pytest.param(
+            partial(MemorizationInformedFrechetInceptionDistance, feature=64),
+            lambda: torch.randint(0, 200, (30, 3, 299, 299), dtype=torch.uint8),
+            lambda: torch.randint(0, 200, (30, 3, 299, 299), dtype=torch.uint8),
+            False,
+            id="memorization informed frechet inception distance",
+            marks=pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_10, reason="test requires torch>=1.9"),
         ),
     ],
 )
