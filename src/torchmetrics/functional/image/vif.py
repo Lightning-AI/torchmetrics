@@ -1,6 +1,7 @@
 import torch
 from torch import Tensor
 from torch.nn.functional import conv2d
+
 from torchmetrics.utilities.distributed import reduce
 
 
@@ -10,8 +11,8 @@ def _filter(win_size: float, sigma: float, dtype: torch.dtype, device: torch.dev
     # https://github.com/photosynthesis-team/piq/blob/01e16b7d8c76bc8765fb6a69560d806148b8046a/piq/functional/filters.py#L38
     # Both links do the same, but the second one is cleaner
     coords = torch.arange(win_size, dtype=dtype, device=device) - (win_size - 1) / 2
-    g = coords ** 2
-    g = torch.exp(- (g.unsqueeze(0) + g.unsqueeze(1)) / (2.0 * sigma ** 2))
+    g = coords**2
+    g = torch.exp(-(g.unsqueeze(0) + g.unsqueeze(1)) / (2.0 * sigma**2))
     g /= torch.sum(g)
     return g
 
@@ -63,7 +64,7 @@ def _vif_per_channel(preds: Tensor, target: Tensor, sigma_n_sq: float) -> Tensor
         g[mask] = 0
         sigma_v_sq = torch.clamp(sigma_v_sq, min=eps)
 
-        preds_vif_scale = torch.log10(1.0 + (g ** 2.0) * sigma_target_sq / (sigma_v_sq + sigma_n_sq))
+        preds_vif_scale = torch.log10(1.0 + (g**2.0) * sigma_target_sq / (sigma_v_sq + sigma_n_sq))
         preds_vif = preds_vif + torch.sum(preds_vif_scale, dim=[1, 2, 3])
         target_vif = target_vif + torch.sum(torch.log10(1.0 + sigma_target_sq / sigma_n_sq), dim=[1, 2, 3])
     return preds_vif / target_vif
@@ -95,7 +96,9 @@ def visual_information_fidelity(preds: Tensor, target: Tensor, sigma_n_sq: float
         raise ValueError(f"Invalid size of preds. Expected at least 41x41, but got {preds.size(-1)}x{preds.size(-1)}!")
 
     if target.size(-1) < 41 or target.size(-1) < 41:
-        raise ValueError(f"Invalid size of target. Expected at least 41x41, but got {target.size(-1)}x{target.size(-1)}!")
+        raise ValueError(
+            f"Invalid size of target. Expected at least 41x41, but got {target.size(-1)}x{target.size(-1)}!"
+        )
 
     per_channel = [_vif_per_channel(preds[:, i, :, :], target[:, i, :, :], sigma_n_sq) for i in range(preds.size(1))]
     return reduce(torch.cat(per_channel), "elementwise_mean")

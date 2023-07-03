@@ -38,11 +38,10 @@ class VisualInformationFidelity(Metric):
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         batches, channels = preds.size(0), preds.size(1)
-        vif_per_channel = [_vif_per_channel(preds[:, i, :, :], target[:, i, :, :], self.sigma_n_sq) for i in range(channels)]
-        if channels > 1:
-            vif_per_channel = torch.mean(torch.stack(vif_per_channel), 0)
-        else:
-            vif_per_channel = torch.cat(vif_per_channel)
+        vif_per_channel = [
+            _vif_per_channel(preds[:, i, :, :], target[:, i, :, :], self.sigma_n_sq) for i in range(channels)
+        ]
+        vif_per_channel = torch.mean(torch.stack(vif_per_channel), 0) if channels > 1 else torch.cat(vif_per_channel)
         self.vif_score += torch.sum(vif_per_channel)
         self.total += preds.shape[0]
 
