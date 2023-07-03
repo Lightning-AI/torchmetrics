@@ -123,7 +123,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Changed the default parameter `max_cf` of `speech_reverberation_modulation_energy_ratio` to `None` ([#1872](https://github.com/Lightning-AI/torchmetrics/pull/1872))
+- Changed the default value of the parameter `max_cf` of `speech_reverberation_modulation_energy_ratio` to `None` ([#1872](https://github.com/Lightning-AI/torchmetrics/pull/1872))
 
 
 - Changed `permutation_invariant_training` to allow using a `'permutation-wise'` metric function ([#1794](https://github.com/Lightning-AI/metrics/pull/1794))
