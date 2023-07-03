@@ -211,7 +211,7 @@ def speech_reverberation_modulation_energy_ratio(
         and ``pip install git+https://github.com/detly/gammatone``.
 
     .. note::
-        This implementation is experimental, and might not consistent with the matlab
+        This implementation is experimental, and might not be consistent with the matlab
         implementation `SRMRToolbox`_, especially the fast implementation.
         The slow versions, a) fast=False, norm=False, max_cf=128, b) fast=False, norm=True, max_cf=30, have
         a relatively small inconsistence.
