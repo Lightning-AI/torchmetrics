@@ -37,7 +37,7 @@ class VisualInformationFidelity(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        batches, channels = preds.size(0), preds.size(1)
+        channels = preds.size(1)
         vif_per_channel = [
             _vif_per_channel(preds[:, i, :, :], target[:, i, :, :], self.sigma_n_sq) for i in range(channels)
         ]
