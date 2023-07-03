@@ -451,7 +451,7 @@ def _average_precision_compute(
         target = target.flatten()
         num_classes = 1
 
-    precision, recall, _ = _precision_recall_curve_compute(preds, target, num_classes, pos_label)
+    precision, recall, _ = _precision_recall_curve_compute(preds, target, num_classes=num_classes, pos_label=pos_label)
     if average == "weighted":
         if preds.ndim == target.ndim and target.ndim > 1:
             weights = target.sum(dim=0).float()
@@ -460,7 +460,7 @@ def _average_precision_compute(
         weights = weights / torch.sum(weights)
     else:
         weights = None
-    return _average_precision_compute_with_precision_recall(precision, recall, num_classes, average, weights)
+    return _average_precision_compute_with_precision_recall(precision, recall, num_classes=num_classes, average=average, weights=weights)
 
 
 def _average_precision_compute_with_precision_recall(
@@ -488,10 +488,9 @@ def _average_precision_compute_with_precision_recall(
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
-        >>> num_classes = 5
-        >>> preds, target, num_classes, pos_label = _average_precision_update(preds, target, num_classes)
-        >>> precision, recall, _ = _precision_recall_curve_compute(preds, target, num_classes)
-        >>> _average_precision_compute_with_precision_recall(precision, recall, num_classes, average=None)
+        >>> preds, target, num_classes, pos_label = _average_precision_update(preds, target, num_classes=5)
+        >>> precision, recall, _ = _precision_recall_curve_compute(preds, target, num_classes=num_classes)
+        >>> _average_precision_compute_with_precision_recall(precision, recall, num_classes=num_classes, average=None)
         [tensor(1.), tensor(1.), tensor(0.2500), tensor(0.2500), tensor(nan)]
     """
 

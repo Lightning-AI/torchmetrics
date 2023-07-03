@@ -479,7 +479,6 @@ def _roc_compute_multi_class(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    sample_weights: Optional[Sequence] = None,
 ) -> Tuple[List[Tensor], List[Tensor], List[Tensor]]:
     """Computes Receiver Operating Characteristic for multi class inputs.
 
@@ -491,16 +490,13 @@ def _roc_compute_multi_class(
     for cls in range(num_classes):
         if preds.shape == target.shape:
             target_cls = target[:, cls]
-            pos_label = 1
         else:
             target_cls = target
-            pos_label = cls
         res = roc(
+            task="multiclass",
             preds=preds[:, cls],
             target=target_cls,
             num_classes=1,
-            pos_label=pos_label,
-            sample_weights=sample_weights,
         )
         fpr.append(res[0])
         tpr.append(res[1])
@@ -514,7 +510,6 @@ def _roc_compute(
     target: Tensor,
     num_classes: int,
     pos_label: Optional[int] = None,
-    sample_weights: Optional[Sequence] = None,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     """Computes Receiver Operating Characteristic based on the number of classes.
 
@@ -538,9 +533,8 @@ def _roc_compute(
         ...                      [0.05, 0.05, 0.75, 0.05],
         ...                      [0.05, 0.05, 0.05, 0.75]])
         >>> target = torch.tensor([0, 1, 3, 2])
-        >>> num_classes = 4
-        >>> preds, target, num_classes, pos_label = _roc_update(preds, target, num_classes)
-        >>> fpr, tpr, thresholds = _roc_compute(preds, target, num_classes)
+        >>> preds, target, num_classes, pos_label = _roc_update(preds, target, num_classes=4)
+        >>> fpr, tpr, thresholds = _roc_compute(preds, target, num_classes=4)
         >>> fpr
         [tensor([0., 0., 1.]), tensor([0., 0., 1.]), tensor([0.0000, 0.3333, 1.0000]), tensor([0.0000, 0.3333, 1.0000])]
         >>> tpr
@@ -556,8 +550,8 @@ def _roc_compute(
         if num_classes == 1 and preds.ndim == 1:  # binary
             if pos_label is None:
                 pos_label = 1
-            return _roc_compute_single_class(preds, target, pos_label, sample_weights)
-        return _roc_compute_multi_class(preds, target, num_classes, sample_weights)
+            return _roc_compute_single_class(preds, target, pos_label)
+        return _roc_compute_multi_class(preds, target, num_classes)
 
 
 def roc(
@@ -624,13 +618,13 @@ def roc(
          tensor([1.0000, 0.1837, 0.1338, 0.1183, 0.1138])]
     """
     if task == "binary":
-        return binary_roc(preds, target, thresholds, ignore_index, validate_args)
+        return binary_roc(preds, target, thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args)
     if task == "multiclass":
         assert isinstance(num_classes, int)
-        return multiclass_roc(preds, target, num_classes, thresholds, ignore_index, validate_args)
+        return multiclass_roc(preds, target, num_classes=num_classes, thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args)
     if task == "multilabel":
         assert isinstance(num_labels, int)
-        return multilabel_roc(preds, target, num_labels, thresholds, ignore_index, validate_args)
+        return multilabel_roc(preds, target, num_labels=num_labels, thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args)
     raise ValueError(
         f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
     )

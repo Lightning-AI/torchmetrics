@@ -912,7 +912,7 @@ def _stat_scores_update(
     reduce: Optional[str] = "micro",
     mdmc_reduce: Optional[str] = None,
     num_classes: Optional[int] = None,
-    top_k: Optional[int] = 1,
+    top_k: Optional[int] = None,
     threshold: float = 0.5,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
@@ -1005,12 +1005,12 @@ def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tens
     Example:
         >>> preds  = torch.tensor([1, 0, 2, 1])
         >>> target = torch.tensor([1, 1, 2, 0])
-        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='macro', num_classes=3)
+        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, top_k=1, reduce='macro', num_classes=3)
         >>> _stat_scores_compute(tp, fp, tn, fn)
         tensor([[0, 1, 2, 1, 1],
                 [1, 1, 1, 1, 2],
                 [1, 0, 3, 0, 1]])
-        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='micro')
+        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, top_k=1, reduce='micro')
         >>> _stat_scores_compute(tp, fp, tn, fn)
         tensor([2, 2, 6, 2, 4])
     """

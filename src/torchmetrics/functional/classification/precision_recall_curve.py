@@ -851,7 +851,6 @@ def _precision_recall_curve_compute_multi_class(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    sample_weights: Optional[Sequence] = None,
 ) -> Tuple[List[Tensor], List[Tensor], List[Tensor]]:
     """Computes precision-recall pairs for multiclass inputs."""
 
@@ -864,14 +863,11 @@ def _precision_recall_curve_compute_multi_class(
             preds=preds_cls,
             target=target,
             num_classes=1,
-            pos_label=cls,
-            sample_weights=sample_weights,
         )
         if target.ndim > 1:
             prc_args.update(
                 dict(
-                    target=target[:, cls],
-                    pos_label=1,
+                    target=target[:, cls]
                 )
             )
         res = precision_recall_curve(**prc_args)
@@ -911,9 +907,8 @@ def _precision_recall_curve_compute(
         ...                      [0.05, 0.05, 0.75, 0.05, 0.05],
         ...                      [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
-        >>> num_classes = 5
-        >>> preds, target, num_classes, pos_label = _precision_recall_curve_update(preds, target, num_classes)
-        >>> precision, recall, thresholds = _precision_recall_curve_compute(preds, target, num_classes)
+        >>> preds, target, num_classes, pos_label = _precision_recall_curve_update(preds, target, num_classes=4)
+        >>> precision, recall, thresholds = _precision_recall_curve_compute(preds, target, num_classes=num_classes)
         >>> precision
         [tensor([1., 1.]), tensor([1., 1.]), tensor([0.2500, 0.0000, 1.0000]),
          tensor([0.2500, 0.0000, 1.0000]), tensor([0., 1.])]
@@ -927,8 +922,8 @@ def _precision_recall_curve_compute(
         if num_classes == 1:
             if pos_label is None:
                 pos_label = 1
-            return _precision_recall_curve_compute_single_class(preds, target, pos_label, sample_weights)
-        return _precision_recall_curve_compute_multi_class(preds, target, num_classes, sample_weights)
+            return _precision_recall_curve_compute_single_class(preds, target, pos_label=pos_label, sample_weights=sample_weights)
+        return _precision_recall_curve_compute_multi_class(preds, target, num_classes=num_classes)
 
 
 def precision_recall_curve(
@@ -942,7 +937,7 @@ def precision_recall_curve(
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Computes the precision-recall curve. The curve consist of multiple pairs of precision and recall values
-    evaluated at different thresholds, such that the tradeoff between the two values can been seen.
+    evaluated at different thresholds, such that the tradeoff between the two values can be seen.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of

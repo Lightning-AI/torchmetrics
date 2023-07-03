@@ -519,7 +519,7 @@ def _auroc_compute(
                 num_classes = class_observed.sum()
                 if num_classes == 1:
                     raise ValueError("Found 1 non-empty class in `multiclass` AUROC calculation")
-        fpr, tpr, _ = roc(preds, target, num_classes, pos_label, sample_weights)
+        fpr, tpr, _ = roc(preds, target, "binary", num_classes, pos_label, sample_weights)
 
     # calculate standard roc auc score
     if max_fpr is None or max_fpr == 1:
