@@ -306,6 +306,7 @@ information on this topic.
 
 .. autoclass:: torchmetrics.MetricCollection
     :noindex:
+    :exclude-members: update, compute, forward
 
 
 ****************************
