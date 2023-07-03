@@ -46,6 +46,13 @@ else:
 
 
 def _get_net(net: str, pretrained: bool) -> nn.modules.container.Sequential:
+    """Get torchvision network.
+
+    Args:
+        net: Name of network
+        pretrained: If pretrained weights should be used
+
+    """
     if _TORCHVISION_GREATER_EQUAL_0_13:
         if pretrained:
             pretrained_features = getattr(tv, net)(weights=getattr(tv, _weight_map[net]).IMAGENET1K_V1).features
@@ -380,8 +387,8 @@ def learned_perceptual_image_patch_similarity(
         >>> from torchmetrics.functional.image.lpips import learned_perceptual_image_patch_similarity
         >>> img1 = (torch.rand(10, 3, 100, 100) * 2) - 1
         >>> img2 = (torch.rand(10, 3, 100, 100) * 2) - 1
-        >>> learned_perceptual_image_patch_similarity(img1, img2, net_type='vgg')
-        tensor(0.3485, grad_fn=<DivBackward0>)
+        >>> learned_perceptual_image_patch_similarity(img1, img2, net_type='squeeze')
+        tensor(0.1008, grad_fn=<DivBackward0>)
 
     """
     net = _NoTrainLpips(net=net_type)
