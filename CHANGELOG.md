@@ -155,6 +155,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Changed calculation in `PearsonCorrCoeff` to be more robust in certain cases  ([#1729](https://github.com/Lightning-AI/torchmetrics/pull/1729))
 
+
+- Changed `MeanAveragePrecision` to `pycocotools` backend ([#1832](https://github.com/Lightning-AI/torchmetrics/pull/1832))
+
+
 ### Deprecated
 
 - Deprecated domain metrics import from package root (
