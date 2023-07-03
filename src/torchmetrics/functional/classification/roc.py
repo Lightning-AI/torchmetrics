@@ -621,10 +621,24 @@ def roc(
         return binary_roc(preds, target, thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args)
     if task == "multiclass":
         assert isinstance(num_classes, int)
-        return multiclass_roc(preds, target, num_classes=num_classes, thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args)
+        return multiclass_roc(
+            preds,
+            target,
+            num_classes=num_classes,
+            thresholds=thresholds,
+            ignore_index=ignore_index,
+            validate_args=validate_args,
+        )
     if task == "multilabel":
         assert isinstance(num_labels, int)
-        return multilabel_roc(preds, target, num_labels=num_labels, thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args)
+        return multilabel_roc(
+            preds,
+            target,
+            num_labels=num_labels,
+            thresholds=thresholds,
+            ignore_index=ignore_index,
+            validate_args=validate_args,
+        )
     raise ValueError(
         f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
     )

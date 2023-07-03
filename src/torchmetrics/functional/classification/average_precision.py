@@ -460,7 +460,9 @@ def _average_precision_compute(
         weights = weights / torch.sum(weights)
     else:
         weights = None
-    return _average_precision_compute_with_precision_recall(precision, recall, num_classes=num_classes, average=average, weights=weights)
+    return _average_precision_compute_with_precision_recall(
+        precision, recall, num_classes=num_classes, average=average, weights=weights
+    )
 
 
 def _average_precision_compute_with_precision_recall(

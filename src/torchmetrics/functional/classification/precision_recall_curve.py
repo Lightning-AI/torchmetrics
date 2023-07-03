@@ -865,11 +865,7 @@ def _precision_recall_curve_compute_multi_class(
             num_classes=1,
         )
         if target.ndim > 1:
-            prc_args.update(
-                dict(
-                    target=target[:, cls]
-                )
-            )
+            prc_args.update(dict(target=target[:, cls]))
         res = precision_recall_curve(**prc_args)
         precision.append(res[0])
         recall.append(res[1])
@@ -922,7 +918,9 @@ def _precision_recall_curve_compute(
         if num_classes == 1:
             if pos_label is None:
                 pos_label = 1
-            return _precision_recall_curve_compute_single_class(preds, target, pos_label=pos_label, sample_weights=sample_weights)
+            return _precision_recall_curve_compute_single_class(
+                preds, target, pos_label=pos_label, sample_weights=sample_weights
+            )
         return _precision_recall_curve_compute_multi_class(preds, target, num_classes=num_classes)
 
 
