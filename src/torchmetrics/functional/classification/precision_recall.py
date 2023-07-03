@@ -64,6 +64,57 @@ def _precision_recall_reduce(
         return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
+def _recall_compute(
+    tp: Tensor,
+    fp: Tensor,
+    fn: Tensor,
+    average: Optional[str],
+    mdmc_average: Optional[str],
+) -> Tensor:
+    """Computes precision from the stat scores: true positives, false positives, true negatives, false negatives.
+
+    Args:
+        tp: True positives
+        fp: False positives
+        fn: False negatives
+        average: Defines the reduction that is applied
+        mdmc_average: Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
+            ``average`` parameter)
+
+    Example:
+        >>> from torchmetrics.functional.classification.stat_scores import _stat_scores_update
+        >>> preds  = torch.tensor([2, 0, 2, 1])
+        >>> target = torch.tensor([1, 1, 2, 0])
+        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='macro', num_classes=3)
+        >>> _recall_compute(tp, fp, fn, average='macro', mdmc_average=None)
+        tensor(0.3333)
+        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='micro')
+        >>> _recall_compute(tp, fp, fn, average='micro', mdmc_average=None)
+        tensor(0.2500)
+    """
+    numerator = tp.clone()
+    denominator = tp + fn
+
+    if average == AverageMethod.MACRO and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
+        cond = tp + fp + fn == 0
+        numerator = numerator[~cond]
+        denominator = denominator[~cond]
+
+    if average == AverageMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
+        # a class is not present if there exists no TPs, no FPs, and no FNs
+        meaningless_indeces = ((tp | fn | fp) == 0).nonzero().cpu()
+        numerator[meaningless_indeces, ...] = -1
+        denominator[meaningless_indeces, ...] = -1
+
+    return _reduce_stat_scores(
+        numerator=numerator,
+        denominator=denominator,
+        weights=None if average != AverageMethod.WEIGHTED else tp + fn,
+        average=average,
+        mdmc_average=mdmc_average,
+    )
+
+
 def binary_precision(
     preds: Tensor,
     target: Tensor,
