@@ -249,8 +249,7 @@ class _UniversalImageQualityIndex(UniversalImageQualityIndex):
         kernel_size: Sequence[int] = (11, 11),
         sigma: Sequence[float] = (1.5, 1.5),
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        data_range: Optional[float] = None,
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("UniversalImageQualityIndex", "image")
-        super().__init__(kernel_size=kernel_size, sigma=sigma, reduction=reduction, data_range=data_range, **kwargs)
+        super().__init__(kernel_size=kernel_size, sigma=sigma, reduction=reduction, **kwargs)

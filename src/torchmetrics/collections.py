@@ -166,6 +166,7 @@ class MetricCollection(ModuleDict):
 
     """
 
+    _modules: Dict[str, Metric]  # type: ignore[assignment]
     _groups: Dict[int, List[str]]
 
     def __init__(
@@ -475,7 +476,7 @@ class MetricCollection(ModuleDict):
             od[self._set_name(k)] = v
         return od
 
-    def __iter__(self) -> Iterator[str]:
+    def __iter__(self) -> Iterator[Hashable]:
         """Return an iterator over the keys of the MetricDict."""
         return iter(self.keys())
 
@@ -490,7 +491,7 @@ class MetricCollection(ModuleDict):
             return self._modules.keys()
         return self._to_renamed_ordered_dict().keys()
 
-    def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[Tuple[str, Module]]:
+    def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[Tuple[str, Metric]]:
         r"""Return an iterable of the ModuleDict key/value pairs.
 
         Args:
@@ -503,7 +504,7 @@ class MetricCollection(ModuleDict):
             return self._modules.items()
         return self._to_renamed_ordered_dict().items()
 
-    def values(self, copy_state: bool = True) -> Iterable[Module]:
+    def values(self, copy_state: bool = True) -> Iterable[Metric]:
         """Return an iterable of the ModuleDict values.
 
         Args:
@@ -513,7 +514,7 @@ class MetricCollection(ModuleDict):
         self._compute_groups_create_state_ref(copy_state)
         return self._modules.values()
 
-    def __getitem__(self, key: str, copy_state: bool = True) -> Module:
+    def __getitem__(self, key: str, copy_state: bool = True) -> Metric:
         """Retrieve a single metric from the collection.
 
         Args:
