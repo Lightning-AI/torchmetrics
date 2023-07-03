@@ -131,10 +131,12 @@ def _sklearn_jaccard_index_multiclass(preds, target, ignore_index=None, average=
     preds = preds.flatten()
     target = target.flatten()
     target, preds = remove_ignore_index(target, preds, ignore_index)
-    if ignore_index is not None and 0 <= ignore_index <= NUM_CLASSES:
+    if ignore_index is not None and 0 <= ignore_index < NUM_CLASSES:
         labels = [i for i in range(NUM_CLASSES) if i != ignore_index]
         res = sk_jaccard_index(y_true=target, y_pred=preds, average=average, labels=labels)
         return np.insert(res, ignore_index, 0.0) if average is None else res
+    if average is None:
+        return sk_jaccard_index(y_true=target, y_pred=preds, average=average, labels=list(range(NUM_CLASSES)))
     return sk_jaccard_index(y_true=target, y_pred=preds, average=average)
 
 
@@ -334,3 +336,26 @@ class TestMultilabelJaccardIndex(MetricTester):
             metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
             dtype=dtype,
         )
+
+
+def test_corner_case():
+    """Issue: https://github.com/Lightning-AI/torchmetrics/issues/1693."""
+    # edge case: class 2 is not present in the target AND the prediction
+    target = torch.tensor([0, 1, 0, 0])
+    preds = torch.tensor([0, 1, 0, 1])
+
+    metric = MulticlassJaccardIndex(num_classes=3, average="none")
+    res = metric(preds, target)
+    assert torch.allclose(res, torch.tensor([2.0 / 3.0, 0.5000, 0.0000]))
+
+    metric = MulticlassJaccardIndex(num_classes=3, average="macro")
+    res = metric(preds, target)
+    assert torch.allclose(res, torch.tensor(0.5833333))
+
+    target = torch.tensor([0, 1])
+    pred = torch.tensor([0, 1])
+    out = torch.tensor([1, 1, 0, 0, 0, 0, 0, 0, 0, 0]).float()
+    res = multiclass_jaccard_index(pred, target, num_classes=10)
+    assert torch.allclose(res, torch.ones_like(res))
+    res = multiclass_jaccard_index(pred, target, num_classes=10, average="none")
+    assert torch.allclose(res, out)

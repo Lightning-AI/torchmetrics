@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
+
 import numpy as np
 import pytest
 from torch import Tensor
@@ -36,7 +38,7 @@ from unittests.retrieval.helpers import (
 seed_all(42)
 
 
-def _precision_at_k(target: np.ndarray, preds: np.ndarray, top_k: int = None, adaptive_k: bool = False):
+def _precision_at_k(target: np.ndarray, preds: np.ndarray, top_k: Optional[int] = None, adaptive_k: bool = False):
     """Didn't find a reliable implementation of Precision in Information Retrieval, so, reimplementing here.
 
     A good explanation can be found `here

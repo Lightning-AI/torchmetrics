@@ -52,7 +52,7 @@ def _sklearn_matthews_corrcoef_binary(preds, target, ignore_index=None):
 class TestBinaryMatthewsCorrCoef(MetricTester):
     """Test class for `BinaryMatthewsCorrCoef` metric."""
 
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_binary_matthews_corrcoef(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
@@ -71,7 +71,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     def test_binary_matthews_corrcoef_functional(self, inputs, ignore_index):
         """Test functional implementation of metric."""
         preds, target = inputs
@@ -234,7 +234,7 @@ def _sklearn_matthews_corrcoef_multilabel(preds, target, ignore_index=None):
 class TestMultilabelMatthewsCorrCoef(MetricTester):
     """Test class for `MultilabelMatthewsCorrCoef` metric."""
 
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multilabel_matthews_corrcoef(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
@@ -253,7 +253,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     def test_multilabel_matthews_corrcoef_functional(self, inputs, ignore_index):
         """Test functional implementation of metric."""
         preds, target = inputs
@@ -316,3 +316,48 @@ def test_zero_case_in_multiclass():
     # Example where neither 1 or 2 is present in the target tensor
     out = multiclass_matthews_corrcoef(torch.tensor([0, 1, 2]), torch.tensor([0, 0, 0]), 3)
     assert out == 0.0
+
+
+@pytest.mark.parametrize(
+    ("metric_fn", "preds", "target", "expected"),
+    [
+        (binary_matthews_corrcoef, torch.zeros(10), torch.zeros(10), 1.0),
+        (binary_matthews_corrcoef, torch.ones(10), torch.ones(10), 1.0),
+        (
+            binary_matthews_corrcoef,
+            torch.tensor([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+            torch.tensor([0, 0, 0, 0, 0, 1, 1, 1, 1, 1]),
+            0.0,
+        ),
+        (binary_matthews_corrcoef, torch.zeros(10), torch.ones(10), -1.0),
+        (binary_matthews_corrcoef, torch.ones(10), torch.zeros(10), -1.0),
+        (
+            partial(multilabel_matthews_corrcoef, num_labels=NUM_CLASSES),
+            torch.zeros(10, NUM_CLASSES).long(),
+            torch.zeros(10, NUM_CLASSES).long(),
+            1.0,
+        ),
+        (
+            partial(multilabel_matthews_corrcoef, num_labels=NUM_CLASSES),
+            torch.ones(10, NUM_CLASSES).long(),
+            torch.ones(10, NUM_CLASSES).long(),
+            1.0,
+        ),
+        (
+            partial(multilabel_matthews_corrcoef, num_labels=NUM_CLASSES),
+            torch.zeros(10, NUM_CLASSES).long(),
+            torch.ones(10, NUM_CLASSES).long(),
+            -1.0,
+        ),
+        (
+            partial(multilabel_matthews_corrcoef, num_labels=NUM_CLASSES),
+            torch.ones(10, NUM_CLASSES).long(),
+            torch.zeros(10, NUM_CLASSES).long(),
+            -1.0,
+        ),
+    ],
+)
+def test_corner_cases(metric_fn, preds, target, expected):
+    """Test the corner cases of perfect classifiers or completely random classifiers that they work as expected."""
+    out = metric_fn(preds, target)
+    assert out == expected

@@ -39,7 +39,7 @@
 
 import re
 from functools import partial
-from typing import Optional, Sequence
+from typing import ClassVar, Optional, Sequence
 
 import torch
 from torch import Tensor, tensor
@@ -109,7 +109,7 @@ class _SacreBLEUTokenizer:
             (regex.compile(r"(\p{S})"), r" \1 "),
         )
 
-    _TOKENIZE_FN = {
+    _TOKENIZE_FN: ClassVar[dict] = {
         "none": "_tokenize_base",
         "13a": "_tokenize_13a",
         "zh": "_tokenize_zh",

@@ -58,7 +58,7 @@ jobs:
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that MacOS jobs take much more than orger OS
-    timeout-minutes: 90
+    timeout-minutes: 120
 
     steps:
     - uses: actions/checkout@v3
@@ -89,11 +89,6 @@ jobs:
         requires: ${{ matrix.requires }}
         pytorch-version: ${{ matrix.pytorch-version }}
         pypi-dir: ${{ env.PYPI_CACHE }}
-
-    - name: Temp numba bump (for py3.11)
-      if: ${{ matrix.python-version == '3.11' }}
-      # ToDo: remove after full 0.57.0 release
-      run: pip install "numba~=0.57.0rc1"
 
     - name: Install pkg
       timeout-minutes: 25
@@ -138,6 +133,7 @@ jobs:
     - name: Unittests
       uses: ./.github/actions/unittesting
       if: ${{ needs.check-diff.outputs.test-dirs != '' }}
+      timeout-minutes: 90
       with:
         requires: ${{ matrix.requires }}
         codecov-token: ${{ secrets.CODECOV_TOKEN }}

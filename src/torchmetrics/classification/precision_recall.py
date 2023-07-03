@@ -405,7 +405,7 @@ class MultilabelPrecision(MultilabelStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
-            "precision", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
+            "precision", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
         )
 
     def plot(
@@ -819,7 +819,7 @@ class MultilabelRecall(MultilabelStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
-            "recall", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
+            "recall", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
         )
 
     def plot(

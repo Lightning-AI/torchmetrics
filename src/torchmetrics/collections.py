@@ -14,7 +14,7 @@
 # this is just a bypass for this module name collision with build-in one
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, Dict, Hashable, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Hashable, Iterable, Iterator, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -85,7 +85,10 @@ class MetricCollection(ModuleDict):
         ValueError:
             If ``postfix`` is set and it is not a string.
 
-    Example (input as list):
+    Example::
+        In the most basic case, the metrics can be passed in as a list or tuple. The keys of the output dict will be
+        the same as the class name of the metric:
+
         >>> from torch import tensor
         >>> from pprint import pprint
         >>> from torchmetrics import MetricCollection
@@ -101,7 +104,10 @@ class MetricCollection(ModuleDict):
          'MulticlassPrecision': tensor(0.0667),
          'MulticlassRecall': tensor(0.1111)}
 
-    Example (input as arguments):
+    Example::
+        Alternatively, metrics can be passed in as arguments. The keys of the output dict will be the same as the
+        class name of the metric:
+
         >>> metrics = MetricCollection(MulticlassAccuracy(num_classes=3, average='micro'),
         ...                            MulticlassPrecision(num_classes=3, average='macro'),
         ...                            MulticlassRecall(num_classes=3, average='macro'))
@@ -110,7 +116,10 @@ class MetricCollection(ModuleDict):
          'MulticlassPrecision': tensor(0.0667),
          'MulticlassRecall': tensor(0.1111)}
 
-    Example (input as dict):
+    Example::
+        If multiple of the same metric class (with different parameters) should be chained together, metrics can be
+        passed in as a dict and the output dict will have the same keys as the input dict:
+
         >>> metrics = MetricCollection({'micro_recall': MulticlassRecall(num_classes=3, average='micro'),
         ...                             'macro_recall': MulticlassRecall(num_classes=3, average='macro')})
         >>> same_metric = metrics.clone()
@@ -119,20 +128,10 @@ class MetricCollection(ModuleDict):
         >>> pprint(same_metric(preds, target))
         {'macro_recall': tensor(0.1111), 'micro_recall': tensor(0.1250)}
 
-    Example (specification of compute groups):
-        >>> metrics = MetricCollection(
-        ...     MulticlassRecall(num_classes=3, average='macro'),
-        ...     MulticlassPrecision(num_classes=3, average='macro'),
-        ...     MeanSquaredError(),
-        ...     compute_groups=[['MulticlassRecall', 'MulticlassPrecision'], ['MeanSquaredError']]
-        ... )
-        >>> metrics.update(preds, target)
-        >>> pprint(metrics.compute())
-        {'MeanSquaredError': tensor(2.3750), 'MulticlassPrecision': tensor(0.0667), 'MulticlassRecall': tensor(0.1111)}
-        >>> pprint(metrics.compute_groups)
-        {0: ['MulticlassRecall', 'MulticlassPrecision'], 1: ['MeanSquaredError']}
+    Example::
+        Metric collections can also be nested up to a single time. The output of the collection will still be a single
+        dict with the prefix and postfix arguments from the nested collection:
 
-    Example (nested metric collections):
         >>> metrics = MetricCollection([
         ...     MetricCollection([
         ...         MulticlassAccuracy(num_classes=3, average='macro'),
@@ -148,8 +147,26 @@ class MetricCollection(ModuleDict):
          'valmetrics/MulticlassAccuracy_micro': tensor(0.1250),
          'valmetrics/MulticlassPrecision_macro': tensor(0.0667),
          'valmetrics/MulticlassPrecision_micro': tensor(0.1250)}
+
+    Example::
+        The `compute_groups` argument allow you to specify which metrics should share metric state. By default, this
+        will automatically be derived but can also be set manually.
+
+        >>> metrics = MetricCollection(
+        ...     MulticlassRecall(num_classes=3, average='macro'),
+        ...     MulticlassPrecision(num_classes=3, average='macro'),
+        ...     MeanSquaredError(),
+        ...     compute_groups=[['MulticlassRecall', 'MulticlassPrecision'], ['MeanSquaredError']]
+        ... )
+        >>> metrics.update(preds, target)
+        >>> pprint(metrics.compute())
+        {'MeanSquaredError': tensor(2.3750), 'MulticlassPrecision': tensor(0.0667), 'MulticlassRecall': tensor(0.1111)}
+        >>> pprint(metrics.compute_groups)
+        {0: ['MulticlassRecall', 'MulticlassPrecision'], 1: ['MeanSquaredError']}
+
     """
 
+    _modules: Dict[str, Metric]  # type: ignore[assignment]
     _groups: Dict[int, List[str]]
 
     def __init__(
@@ -187,7 +204,7 @@ class MetricCollection(ModuleDict):
         """
         # Use compute groups if already initialized and checked
         if self._groups_checked:
-            for _, cg in self._groups.items():
+            for cg in self._groups.values():
                 # only update the first member
                 m0 = getattr(self, cg[0])
                 m0.update(*args, **m0._filter_kwargs(**kwargs))
@@ -196,7 +213,7 @@ class MetricCollection(ModuleDict):
                 self._compute_groups_create_state_ref()
                 self._state_is_copy = False
         else:  # the first update always do per metric to form compute groups
-            for _, m in self.items(keep_base=True, copy_state=False):
+            for m in self.values(copy_state=False):
                 m_kwargs = m._filter_kwargs(**kwargs)
                 m.update(*args, **m_kwargs)
 
@@ -274,7 +291,7 @@ class MetricCollection(ModuleDict):
                 of just passed by reference
         """
         if not self._state_is_copy:
-            for _, cg in self._groups.items():
+            for cg in self._groups.values():
                 m0 = getattr(self, cg[0])
                 for i in range(1, len(cg)):
                     mi = getattr(self, cg[i])
@@ -327,7 +344,7 @@ class MetricCollection(ModuleDict):
 
     def reset(self) -> None:
         """Call reset for each metric sequentially."""
-        for _, m in self.items(keep_base=True, copy_state=False):
+        for m in self.values(copy_state=False):
             m.reset()
         if self._enable_compute_groups and self._groups_checked:
             # reset state reference
@@ -350,7 +367,7 @@ class MetricCollection(ModuleDict):
 
     def persistent(self, mode: bool = True) -> None:
         """Change if metric states should be saved to its state_dict after initialization."""
-        for _, m in self.items(keep_base=True, copy_state=False):
+        for m in self.values(copy_state=False):
             m.persistent(mode)
 
     def add_metrics(
@@ -459,6 +476,10 @@ class MetricCollection(ModuleDict):
             od[self._set_name(k)] = v
         return od
 
+    def __iter__(self) -> Iterator[Hashable]:
+        """Return an iterator over the keys of the MetricDict."""
+        return iter(self.keys())
+
     # TODO: redefine this as native python dict
     def keys(self, keep_base: bool = False) -> Iterable[Hashable]:
         r"""Return an iterable of the ModuleDict key.
@@ -470,7 +491,7 @@ class MetricCollection(ModuleDict):
             return self._modules.keys()
         return self._to_renamed_ordered_dict().keys()
 
-    def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[Tuple[str, Module]]:
+    def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[Tuple[str, Metric]]:
         r"""Return an iterable of the ModuleDict key/value pairs.
 
         Args:
@@ -483,7 +504,7 @@ class MetricCollection(ModuleDict):
             return self._modules.items()
         return self._to_renamed_ordered_dict().items()
 
-    def values(self, copy_state: bool = True) -> Iterable[Module]:
+    def values(self, copy_state: bool = True) -> Iterable[Metric]:
         """Return an iterable of the ModuleDict values.
 
         Args:
@@ -493,7 +514,7 @@ class MetricCollection(ModuleDict):
         self._compute_groups_create_state_ref(copy_state)
         return self._modules.values()
 
-    def __getitem__(self, key: str, copy_state: bool = True) -> Module:
+    def __getitem__(self, key: str, copy_state: bool = True) -> Metric:
         """Retrieve a single metric from the collection.
 
         Args:
@@ -525,7 +546,7 @@ class MetricCollection(ModuleDict):
         Arguments:
             dst_type (type or string): the desired type.
         """
-        for _, m in self.items(keep_base=True, copy_state=False):
+        for m in self.values(copy_state=False):
             m.set_dtype(dst_type)
         return self
 

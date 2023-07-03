@@ -32,6 +32,7 @@ from torchmetrics.audio import (
 )
 from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
 from torchmetrics.audio.pit import PermutationInvariantTraining
+from torchmetrics.audio.srmr import SpeechReverberationModulationEnergyRatio
 from torchmetrics.classification import (
     BinaryAccuracy,
     BinaryAUROC,
@@ -99,6 +100,7 @@ from torchmetrics.image import (
     InceptionScore,
     KernelInceptionDistance,
     LearnedPerceptualImagePatchSimilarity,
+    MemorizationInformedFrechetInceptionDistance,
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
     RelativeAverageSpectralError,
@@ -109,7 +111,7 @@ from torchmetrics.image import (
     TotalVariation,
     UniversalImageQualityIndex,
 )
-from torchmetrics.nominal import CramersV, PearsonsContingencyCoefficient, TheilsU, TschuprowsT
+from torchmetrics.nominal import CramersV, FleissKappa, PearsonsContingencyCoefficient, TheilsU, TschuprowsT
 from torchmetrics.regression import (
     ConcordanceCorrCoef,
     CosineSimilarity,
@@ -159,7 +161,11 @@ from torchmetrics.text import (
     WordInfoLost,
     WordInfoPreserved,
 )
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
+from torchmetrics.utilities.imports import (
+    _TORCH_GREATER_EQUAL_1_9,
+    _TORCH_GREATER_EQUAL_1_10,
+    _TORCHAUDIO_GREATER_EQUAL_0_10,
+)
 from torchmetrics.wrappers import (
     BootStrapper,
     ClasswiseWrapper,
@@ -231,6 +237,7 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
         pytest.param(partial(TheilsU, num_classes=5), _nominal_input, _nominal_input, id="theils U"),
         pytest.param(partial(TschuprowsT, num_classes=5), _nominal_input, _nominal_input, id="tschuprows T"),
         pytest.param(partial(CramersV, num_classes=5), _nominal_input, _nominal_input, id="cramers V"),
+        pytest.param(partial(FleissKappa, mode="probs"), lambda: torch.randn(10, 3, 5), None, id="fleiss kappa"),
         pytest.param(
             SpectralDistortionIndex,
             _image_input,
@@ -296,6 +303,13 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             _audio_input,
             _audio_input,
             id="short_time_objective_intelligibility",
+        ),
+        pytest.param(
+            partial(SpeechReverberationModulationEnergyRatio, fs=8000),
+            _audio_input,
+            None,
+            id="speech_reverberation_modulation_energy_ratio",
+            marks=pytest.mark.skipif(not _TORCHAUDIO_GREATER_EQUAL_0_10, reason="test requires torchaudio>=0.10"),
         ),
         pytest.param(
             partial(PermutationInvariantTraining, metric_func=scale_invariant_signal_noise_ratio, eval_func="max"),
@@ -644,6 +658,14 @@ def test_plot_methods(metric_class: object, preds: Callable, target: Callable, n
             None,
             True,
             id="inception score",
+        ),
+        pytest.param(
+            partial(MemorizationInformedFrechetInceptionDistance, feature=64),
+            lambda: torch.randint(0, 200, (30, 3, 299, 299), dtype=torch.uint8),
+            lambda: torch.randint(0, 200, (30, 3, 299, 299), dtype=torch.uint8),
+            False,
+            id="memorization informed frechet inception distance",
+            marks=pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_10, reason="test requires torch>=1.9"),
         ),
     ],
 )

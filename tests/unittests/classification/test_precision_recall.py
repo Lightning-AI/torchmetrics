@@ -84,7 +84,7 @@ def _sklearn_precision_recall_binary(preds, target, sk_fn, ignore_index, multidi
 class TestBinaryPrecisionRecall(MetricTester):
     """Test class for `BinaryPrecisionRecall` metric."""
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
     def test_binary_precision_recall(self, ddp, inputs, module, functional, compare, ignore_index, multidim_average):
@@ -111,7 +111,7 @@ class TestBinaryPrecisionRecall(MetricTester):
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     def test_binary_precision_recall_functional(
         self, inputs, module, functional, compare, ignore_index, multidim_average
@@ -184,11 +184,12 @@ class TestBinaryPrecisionRecall(MetricTester):
 def _sklearn_precision_recall_multiclass(preds, target, sk_fn, ignore_index, multidim_average, average):
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
+
     if multidim_average == "global":
         preds = preds.numpy().flatten()
         target = target.numpy().flatten()
         target, preds = remove_ignore_index(target, preds, ignore_index)
-        return sk_fn(target, preds, average=average)
+        return sk_fn(target, preds, average=average, labels=list(range(NUM_CLASSES)) if average is None else None)
 
     preds = preds.numpy()
     target = target.numpy()
@@ -197,7 +198,9 @@ def _sklearn_precision_recall_multiclass(preds, target, sk_fn, ignore_index, mul
         pred = pred.flatten()
         true = true.flatten()
         true, pred = remove_ignore_index(true, pred, ignore_index)
-        res.append(sk_fn(true, pred, average=average, labels=list(range(NUM_CLASSES))))
+        r = sk_fn(true, pred, average=average, labels=list(range(NUM_CLASSES)) if average is None else None)
+        res.append(0.0 if np.isnan(r).any() else r)
+
     return np.stack(res, 0)
 
 
@@ -451,7 +454,7 @@ class TestMultilabelPrecisionRecall(MetricTester):
     """Test class for `MultilabelPrecisionRecall` metric."""
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multilabel_precision_recall(
@@ -487,7 +490,7 @@ class TestMultilabelPrecisionRecall(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multilabel_precision_recall_functional(
@@ -559,3 +562,26 @@ class TestMultilabelPrecisionRecall(MetricTester):
             metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
             dtype=dtype,
         )
+
+
+def test_corner_case():
+    """Issue: https://github.com/Lightning-AI/torchmetrics/issues/1692."""
+    # simulate the output of a perfect predictor (i.e. preds == target)
+    target = torch.tensor([0, 1, 2, 0, 1, 2])
+    preds = target.clone()
+
+    metric = MulticlassPrecision(num_classes=3, average="none", ignore_index=0)
+    res = metric(preds, target)
+    assert torch.allclose(res, torch.tensor([0.0, 1.0, 1.0]))
+
+    metric = MulticlassRecall(num_classes=3, average="none", ignore_index=0)
+    res = metric(preds, target)
+    assert torch.allclose(res, torch.tensor([0.0, 1.0, 1.0]))
+
+    metric = MulticlassPrecision(num_classes=3, average="macro", ignore_index=0)
+    res = metric(preds, target)
+    assert res == 1.0
+
+    metric = MulticlassRecall(num_classes=3, average="macro", ignore_index=0)
+    res = metric(preds, target)
+    assert res == 1.0

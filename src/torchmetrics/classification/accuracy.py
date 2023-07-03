@@ -48,6 +48,8 @@ class BinaryAccuracy(BinaryStatScores):
           If ``multidim_average`` is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar
           value per sample.
 
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
         multidim_average:
