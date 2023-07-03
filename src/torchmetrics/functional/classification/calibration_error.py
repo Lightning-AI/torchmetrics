@@ -317,7 +317,7 @@ def multiclass_calibration_error(
 def calibration_error(
     preds: Tensor,
     target: Tensor,
-    task: Literal["binary", "multiclass"] = None,
+    task: Literal["binary", "multiclass"],
     n_bins: int = 15,
     norm: Literal["l1", "l2", "max"] = "l1",
     num_classes: Optional[int] = None,

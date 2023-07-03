@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from functools import partial
-from typing import Callable, Tuple, Union
+from typing import Callable, Optional, Tuple, Union
 
 import numpy as np
 import pytest
@@ -34,10 +34,10 @@ seed_all(42)
 def _compute_precision_recall_curve(
     preds: Union[Tensor, array],
     target: Union[Tensor, array],
-    indexes: Union[Tensor, array] = None,
-    max_k: int = None,
+    indexes: Optional[Union[Tensor, array]] = None,
+    max_k: Optional[int] = None,
     adaptive_k: bool = False,
-    ignore_index: int = None,
+    ignore_index: Optional[int] = None,
     empty_target_action: str = "skip",
     reverse: bool = False,
 ) -> Tuple[Tensor, Tensor, Tensor]:

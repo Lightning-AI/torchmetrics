@@ -44,10 +44,10 @@ def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
 
     if confmat.numel() == 4:  # binary case
         tn, fp, fn, tp = confmat.reshape(-1)
-        if tp != 0 and tn == 0 and fp == 0 and fn == 0:
+        if tp + tn != 0 and fp + fn == 0:
             return torch.tensor(1.0, dtype=confmat.dtype, device=confmat.device)
 
-        if tp == 0 and tn != 0 and fp == 0 and fn == 0:
+        if tp + tn == 0 and fp + fn != 0:
             return torch.tensor(-1.0, dtype=confmat.dtype, device=confmat.device)
 
     tk = confmat.sum(dim=-1).float()
@@ -71,7 +71,7 @@ def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
 
         eps = torch.tensor(torch.finfo(torch.float32).eps, dtype=torch.float32, device=confmat.device)
         numerator = torch.sqrt(eps) * (a - b)
-        denom = torch.sqrt(2 * (a + b) * (a + eps) * (b + eps))
+        denom = (tp + fp + eps) * (tp + fn + eps) * (tn + fp + eps) * (tn + fn + eps)
     elif denom == 0:
         return torch.tensor(0, dtype=confmat.dtype, device=confmat.device)
     return numerator / torch.sqrt(denom)

@@ -76,7 +76,13 @@ from torchmetrics.image._deprecated import (  # noqa: E402
 from torchmetrics.image._deprecated import _TotalVariation as TotalVariation  # noqa: E402
 from torchmetrics.image._deprecated import _UniversalImageQualityIndex as UniversalImageQualityIndex  # noqa: E402
 from torchmetrics.metric import Metric  # noqa: E402
-from torchmetrics.nominal import CramersV, PearsonsContingencyCoefficient, TheilsU, TschuprowsT  # noqa: E402
+from torchmetrics.nominal import (  # noqa: E402
+    CramersV,
+    FleissKappa,
+    PearsonsContingencyCoefficient,
+    TheilsU,
+    TschuprowsT,
+)
 from torchmetrics.regression import (  # noqa: E402
     ConcordanceCorrCoef,
     CosineSimilarity,
@@ -157,6 +163,7 @@ __all__ = [
     "ExtendedEditDistance",
     "F1Score",
     "FBetaScore",
+    "FleissKappa",
     "HammingDistance",
     "HingeLoss",
     "JaccardIndex",
@@ -174,6 +181,7 @@ __all__ = [
     "Metric",
     "MetricCollection",
     "MetricTracker",
+    "MinkowskiDistance",
     "MinMaxMetric",
     "MinMetric",
     "ModifiedPanopticQuality",

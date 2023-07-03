@@ -86,20 +86,20 @@ def test_device_and_dtype_transfer_metriccollection(tmpdir):
     m2 = DummyMetricDiff()
 
     metric_collection = MetricCollection([m1, m2])
-    for _, metric in metric_collection.items():
+    for metric in metric_collection.values():
         assert metric.x.is_cuda is False
         assert metric.x.dtype == torch.float32
 
     metric_collection = metric_collection.to(device="cuda")
-    for _, metric in metric_collection.items():
+    for metric in metric_collection.values():
         assert metric.x.is_cuda
 
     metric_collection = metric_collection.set_dtype(torch.double)
-    for _, metric in metric_collection.items():
+    for metric in metric_collection.values():
         assert metric.x.dtype == torch.float64
 
     metric_collection = metric_collection.set_dtype(torch.half)
-    for _, metric in metric_collection.items():
+    for metric in metric_collection.values():
         assert metric.x.dtype == torch.float16
 
 
@@ -187,17 +187,11 @@ def test_metric_collection_prefix_postfix_args(prefix, postfix):
     for name in names:
         assert f"new_prefix_{name}" in out, "prefix argument not working as intended with clone method"
 
-    for k, _ in new_metric_collection.items():
+    for k in new_metric_collection:
         assert "new_prefix_" in k
 
     for k in new_metric_collection.keys(keep_base=False):
         assert "new_prefix_" in k
-
-    for k in new_metric_collection:
-        assert "new_prefix_" not in k
-
-    for k, _ in new_metric_collection.items(keep_base=True):
-        assert "new_prefix_" not in k
 
     for k in new_metric_collection.keys(keep_base=True):
         assert "new_prefix_" not in k
@@ -433,7 +427,7 @@ class TestComputeGroups:
             m.update(preds, target)
             m2.update(preds, target)
 
-            for _, member in m.items():
+            for member in m.values():
                 assert member.update_called
 
             assert m.compute_groups == expected
@@ -443,7 +437,7 @@ class TestComputeGroups:
             m.update(preds, target)
             m2.update(preds, target)
 
-            for _, member in m.items():
+            for member in m.values():
                 assert member.update_called
 
             # compare results for correctness
