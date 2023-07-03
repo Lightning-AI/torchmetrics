@@ -147,7 +147,7 @@ def plot_single_or_multi_val(
     xlim = ax.get_xlim()
     factor = 0.1 * (xlim[1] - xlim[0])
 
-    y_lines = [ ]
+    y_lines = []
     if lower_bound is not None:
         y_lines.append(lower_bound)
     if upper_bound is not None:
