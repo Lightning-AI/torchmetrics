@@ -15,7 +15,7 @@ def _filter(win_size: float, sigma: float):
     start: float = -win_size // 2 + 1
     end: float = win_size // 2 + 1
     x, y = torch.meshgrid(torch.arange(start, end), torch.arange(start, end), indexing="ij")
-    g = torch.exp(-torch.div(x ** 2 + y ** 2, 2.0 * tensor(sigma) ** 2))
+    g = torch.exp(-torch.div(x**2 + y**2, 2.0 * tensor(sigma) ** 2))
     g[g < torch.finfo(g.dtype).eps * g.max()] = 0
     assert g.size() == (win_size, win_size)
     den = torch.sum(g)
@@ -24,9 +24,7 @@ def _filter(win_size: float, sigma: float):
     return g
 
 
-def visual_information_fidelity(
-        preds: Tensor, target: Tensor, sigma_n_sq: float = 2.0
-) -> Tensor:
+def visual_information_fidelity(preds: Tensor, target: Tensor, sigma_n_sq: float = 2.0) -> Tensor:
     """Compute Pixel Based Visual Information Fidelity (vif-p).
 
     Args:
@@ -57,12 +55,12 @@ def visual_information_fidelity(
 
         mu_target = conv2d(target, kernel)
         mu_preds = conv2d(preds, kernel)
-        mu_target_sq = mu_target ** 2
-        mu_preds_sq = mu_preds ** 2
+        mu_target_sq = mu_target**2
+        mu_preds_sq = mu_preds**2
         mu_target_preds = mu_target * mu_preds
 
-        sigma_target_sq = torch.clamp(conv2d(target ** 2, kernel) - mu_target_sq, min=0.0)
-        sigma_preds_sq = torch.clamp(conv2d(preds ** 2, kernel) - mu_preds_sq, min=0.0)
+        sigma_target_sq = torch.clamp(conv2d(target**2, kernel) - mu_target_sq, min=0.0)
+        sigma_preds_sq = torch.clamp(conv2d(preds**2, kernel) - mu_preds_sq, min=0.0)
         sigma_target_preds = conv2d(target * preds, kernel) - mu_target_preds
 
         g = sigma_target_preds / (sigma_target_sq + eps)
@@ -82,7 +80,7 @@ def visual_information_fidelity(
         g[mask] = 0
         sigma_v_sq = torch.clamp(sigma_v_sq, min=eps)
 
-        preds_vif_scale = torch.log10(1.0 + (g ** 2.0) * sigma_target_sq / (sigma_v_sq + sigma_n_sq))
+        preds_vif_scale = torch.log10(1.0 + (g**2.0) * sigma_target_sq / (sigma_v_sq + sigma_n_sq))
         preds_vif = preds_vif + torch.sum(preds_vif_scale, dim=[1, 2, 3])
         target_vif = target_vif + torch.sum(torch.log10(1.0 + sigma_target_sq / sigma_n_sq), dim=[1, 2, 3])
     return preds_vif / target_vif

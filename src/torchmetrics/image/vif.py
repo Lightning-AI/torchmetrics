@@ -27,13 +27,12 @@ class VIF(Metric):
     Args:
         sigma_n_sq: variance of the visual noise
     """
+
     is_differentiable = True
     higher_is_better = True
     full_state_update = False
 
-    def __init__(
-            self, sigma_n_sq: float = 2.0, **kwargs: Any
-    ) -> None:
+    def __init__(self, sigma_n_sq: float = 2.0, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
         self.add_state("vif_score", default=tensor(0.0), dist_reduce_fx="sum")
@@ -42,9 +41,7 @@ class VIF(Metric):
         self.sigma_n_sq = sigma_n_sq
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        vif_score = visual_information_fidelity(
-            preds=preds, target=target, sigma_n_sq=self.sigma_n_sq
-        )
+        vif_score = visual_information_fidelity(preds=preds, target=target, sigma_n_sq=self.sigma_n_sq)
         self.vif_score += vif_score
         self.total += preds.size(0)
 
