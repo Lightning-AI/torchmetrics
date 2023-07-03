@@ -1,57 +1,36 @@
 import torch
-from torch import Tensor, tensor
+from torch import Tensor
 from torch.nn.functional import conv2d
+from torchmetrics.utilities.distributed import reduce
 
 
-def _filter(win_size: float, sigma: float) -> Tensor:
+def _filter(win_size: float, sigma: float, dtype: torch.dtype, device: torch.device) -> Tensor:
     # This code is inspired by
     # https://github.com/andrewekhalel/sewar/blob/ac76e7bc75732fde40bb0d3908f4b6863400cc27/sewar/utils.py#L45
-    start: float = -win_size // 2 + 1
-    end: float = win_size // 2 + 1
-    x, y = torch.meshgrid(torch.arange(start, end), torch.arange(start, end), indexing="ij")
-    g = torch.exp(-torch.div(x**2 + y**2, 2.0 * tensor(sigma) ** 2))
-    g[g < torch.finfo(g.dtype).eps * g.max()] = 0
-
-    if not g.size() == (win_size, win_size):
-        raise ValueError(f"Resulting filter size of {g.size()} does not match expected size {(win_size, win_size)}!")
-
-    den = torch.sum(g)
-    if den != 0:
-        g = torch.div(g, den)
+    # https://github.com/photosynthesis-team/piq/blob/01e16b7d8c76bc8765fb6a69560d806148b8046a/piq/functional/filters.py#L38
+    # Both links do the same, but the second one is cleaner
+    coords = torch.arange(win_size, dtype=dtype, device=device) - (win_size - 1) / 2
+    g = coords ** 2
+    g = torch.exp(- (g.unsqueeze(0) + g.unsqueeze(1)) / (2.0 * sigma ** 2))
+    g /= torch.sum(g)
     return g
 
 
-def visual_information_fidelity(preds: Tensor, target: Tensor, sigma_n_sq: float = 2.0) -> Tensor:
-    """Compute Pixel Based Visual Information Fidelity (vif-p).
+def _vif_per_channel(preds: Tensor, target: Tensor, sigma_n_sq: float) -> Tensor:
+    dtype = preds.dtype
+    device = preds.device
 
-    Args:
-        preds: predicted images
-        target: ground truth images
-        sigma_n_sq: variance of the visual noise
-
-    Return:
-        Tensor with vif-p score
-
-    Raises:
-        ValueError:
-            If ``data_range`` is neither a ``tuple`` nor a ``float``
-    """
-    # This code is inspired by
-    # https://github.com/photosynthesis-team/piq/blob/01e16b7d8c76bc8765fb6a69560d806148b8046a/piq/vif.py and
-    # https://github.com/andrewekhalel/sewar/blob/ac76e7bc75732fde40bb0d3908f4b6863400cc27/sewar/full_ref.py#L357.
-    #
-    # Reference: https://ieeexplore.ieee.org/abstract/document/1576816
-    # https://live.ece.utexas.edu/research/quality/VIF.htm
-
+    preds = preds.unsqueeze(1)  # Add channel dimension
+    target = target.unsqueeze(1)
     # Constant for numerical stability
-    eps = torch.tensor(1e-10)
+    eps = torch.tensor(1e-10, dtype=dtype, device=device)
 
-    sigma_n_sq = torch.tensor(sigma_n_sq)
+    sigma_n_sq = torch.tensor(sigma_n_sq, dtype=dtype, device=device)
 
-    preds_vif, target_vif = torch.zeros(1), torch.zeros(1)
+    preds_vif, target_vif = torch.zeros(1, dtype=dtype, device=device), torch.zeros(1, dtype=dtype, device=device)
     for scale in range(4):
         n = 2.0 ** (4 - scale) + 1
-        kernel = _filter(n, n / 5)[None, None, :]
+        kernel = _filter(n, n / 5, dtype=dtype, device=device)[None, None, :]
 
         if scale > 0:
             target = conv2d(target, kernel)[:, :, ::2, ::2]
@@ -84,7 +63,39 @@ def visual_information_fidelity(preds: Tensor, target: Tensor, sigma_n_sq: float
         g[mask] = 0
         sigma_v_sq = torch.clamp(sigma_v_sq, min=eps)
 
-        preds_vif_scale = torch.log10(1.0 + (g**2.0) * sigma_target_sq / (sigma_v_sq + sigma_n_sq))
+        preds_vif_scale = torch.log10(1.0 + (g ** 2.0) * sigma_target_sq / (sigma_v_sq + sigma_n_sq))
         preds_vif = preds_vif + torch.sum(preds_vif_scale, dim=[1, 2, 3])
         target_vif = target_vif + torch.sum(torch.log10(1.0 + sigma_target_sq / sigma_n_sq), dim=[1, 2, 3])
     return preds_vif / target_vif
+
+
+def visual_information_fidelity(preds: Tensor, target: Tensor, sigma_n_sq: float = 2.0) -> Tensor:
+    """Compute Pixel Based Visual Information Fidelity (vif-p).
+
+    Args:
+        preds: predicted images of shape ``(N,C,H,W)``
+        target: ground truth images of shape ``(N,C,H,W)``
+        sigma_n_sq: variance of the visual noise
+
+    Return:
+        Tensor with vif-p score
+
+    Raises:
+        ValueError:
+            If ``data_range`` is neither a ``tuple`` nor a ``float``
+    """
+    # This code is inspired by
+    # https://github.com/photosynthesis-team/piq/blob/01e16b7d8c76bc8765fb6a69560d806148b8046a/piq/vif.py and
+    # https://github.com/andrewekhalel/sewar/blob/ac76e7bc75732fde40bb0d3908f4b6863400cc27/sewar/full_ref.py#L357.
+    #
+    # Reference: https://ieeexplore.ieee.org/abstract/document/1576816
+    # https://live.ece.utexas.edu/research/quality/VIF.htm
+
+    if preds.size(-1) < 41 or preds.size(-1) < 41:
+        raise ValueError(f"Invalid size of preds. Expected at least 41x41, but got {preds.size(-1)}x{preds.size(-1)}!")
+
+    if target.size(-1) < 41 or target.size(-1) < 41:
+        raise ValueError(f"Invalid size of target. Expected at least 41x41, but got {target.size(-1)}x{target.size(-1)}!")
+
+    per_channel = [_vif_per_channel(preds[:, i, :, :], target[:, i, :, :], sigma_n_sq) for i in range(preds.size(1))]
+    return reduce(torch.cat(per_channel), "elementwise_mean")
