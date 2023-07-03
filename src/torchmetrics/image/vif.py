@@ -1,9 +1,3 @@
-"""This code is inspired by
-https://github.com/photosynthesis-team/piq/blob/01e16b7d8c76bc8765fb6a69560d806148b8046a/piq/vif.py and
-https://github.com/andrewekhalel/sewar/blob/ac76e7bc75732fde40bb0d3908f4b6863400cc27/sewar/full_ref.py#L357.
-
-Reference: https://ieeexplore.ieee.org/abstract/document/1576816
-"""
 from typing import Any
 
 from torch import Tensor, tensor
@@ -41,9 +35,11 @@ class VIF(Metric):
         self.sigma_n_sq = sigma_n_sq
 
     def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update state with predictions and targets."""
         vif_score = visual_information_fidelity(preds=preds, target=target, sigma_n_sq=self.sigma_n_sq)
         self.vif_score += vif_score
         self.total += preds.size(0)
 
-    def compute(self) -> Any:
+    def compute(self) -> Tensor:
+        """Compute vif-p over state."""
         return self.vif_score / self.total
