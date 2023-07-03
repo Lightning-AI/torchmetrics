@@ -99,7 +99,7 @@ class SpeechReverberationModulationEnergyRatio(Metric):
         n_cochlear_filters: int = 23,
         low_freq: float = 125,
         min_cf: float = 4,
-        max_cf: Optional[float] = 128,
+        max_cf: Optional[float] = None,
         norm: bool = False,
         fast: bool = False,
         **kwargs: Any,

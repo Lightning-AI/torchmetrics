@@ -39,7 +39,7 @@ def _ref_metric_batch(preds: Tensor, target: Tensor, fs: int, fast: bool, norm: 
     preds = preds.detach().cpu().numpy()
     score = []
     for b in range(preds.shape[0]):
-        val, _ = srmrpy_srmr(preds[b, ...], fs=fs, fast=fast, norm=norm)
+        val, _ = srmrpy_srmr(preds[b, ...], fs=fs, fast=fast, norm=norm, max_cf=128 if not norm else 30)
         score.append(val)
     score = torch.tensor(score)
     return score.reshape(*shape[:-1])
