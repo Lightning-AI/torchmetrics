@@ -382,7 +382,8 @@ class MetricCollection(ModuleDict):
             metrics = list(metrics)
             remain: list = []
             for m in additional_metrics:
-                (metrics if isinstance(m, Metric) else remain).append(m)
+                sel = metrics if isinstance(m, Metric) else remain
+                sel.append(m)
 
             if remain:
                 rank_zero_warn(

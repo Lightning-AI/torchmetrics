@@ -503,10 +503,9 @@ def rouge_score(
         accumulate=accumulate,
     )
 
-    output: Dict[str, List[Tensor]] = {}
-    for rouge_key in rouge_keys_values:
-        for tp in ["fmeasure", "precision", "recall"]:
-            output[f"rouge{rouge_key}_{tp}"] = []
+    output: Dict[str, List[Tensor]] = {
+        f"rouge{rouge_key}_{tp}": [] for rouge_key in rouge_keys_values for tp in ["fmeasure", "precision", "recall"]
+    }
 
     for rouge_key, metrics in sentence_results.items():
         for metric in metrics:
