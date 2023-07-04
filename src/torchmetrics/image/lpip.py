@@ -83,12 +83,12 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         >>> import torch
         >>> _ = torch.manual_seed(123)
         >>> from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
-        >>> lpips = LearnedPerceptualImagePatchSimilarity(net_type='vgg')
+        >>> lpips = LearnedPerceptualImagePatchSimilarity(net_type='squeeze')
         >>> # LPIPS needs the images to be in the [-1, 1] range.
         >>> img1 = (torch.rand(10, 3, 100, 100) * 2) - 1
         >>> img2 = (torch.rand(10, 3, 100, 100) * 2) - 1
         >>> lpips(img1, img2)
-        tensor(0.3493, grad_fn=<SqueezeBackward0>)
+        tensor(0.1046, grad_fn=<SqueezeBackward0>)
     """
 
     is_differentiable: bool = True
@@ -105,7 +105,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
 
     def __init__(
         self,
-        net_type: Literal["alex", "alex", "squeeze"] = "alex",
+        net_type: Literal["vgg", "alex", "squeeze"] = "alex",
         reduction: Literal["sum", "mean"] = "mean",
         normalize: bool = False,
         **kwargs: Any,
@@ -168,7 +168,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
             >>> # Example plotting a single value
             >>> import torch
             >>> from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
-            >>> metric = LearnedPerceptualImagePatchSimilarity()
+            >>> metric = LearnedPerceptualImagePatchSimilarity(net_type='squeeze')
             >>> metric.update(torch.rand(10, 3, 100, 100), torch.rand(10, 3, 100, 100))
             >>> fig_, ax_ = metric.plot()
 
@@ -178,7 +178,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
             >>> # Example plotting multiple values
             >>> import torch
             >>> from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
-            >>> metric = LearnedPerceptualImagePatchSimilarity()
+            >>> metric = LearnedPerceptualImagePatchSimilarity(net_type='squeeze')
             >>> values = [ ]
             >>> for _ in range(3):
             ...     values.append(metric(torch.rand(10, 3, 100, 100), torch.rand(10, 3, 100, 100)))

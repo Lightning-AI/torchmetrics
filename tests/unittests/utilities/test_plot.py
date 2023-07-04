@@ -100,6 +100,7 @@ from torchmetrics.image import (
     InceptionScore,
     KernelInceptionDistance,
     LearnedPerceptualImagePatchSimilarity,
+    MemorizationInformedFrechetInceptionDistance,
     MultiScaleStructuralSimilarityIndexMeasure,
     PeakSignalNoiseRatio,
     RelativeAverageSpectralError,
@@ -160,7 +161,11 @@ from torchmetrics.text import (
     WordInfoLost,
     WordInfoPreserved,
 )
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9, _TORCHAUDIO_GREATER_EQUAL_0_10
+from torchmetrics.utilities.imports import (
+    _TORCH_GREATER_EQUAL_1_9,
+    _TORCH_GREATER_EQUAL_1_10,
+    _TORCHAUDIO_GREATER_EQUAL_0_10,
+)
 from torchmetrics.wrappers import (
     BootStrapper,
     ClasswiseWrapper,
@@ -627,6 +632,7 @@ def test_plot_methods(metric_class: object, preds: Callable, target: Callable, n
 
     assert isinstance(fig, plt.Figure)
     assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(fig)
 
 
 @pytest.mark.parametrize(
@@ -653,6 +659,14 @@ def test_plot_methods(metric_class: object, preds: Callable, target: Callable, n
             None,
             True,
             id="inception score",
+        ),
+        pytest.param(
+            partial(MemorizationInformedFrechetInceptionDistance, feature=64),
+            lambda: torch.randint(0, 200, (30, 3, 299, 299), dtype=torch.uint8),
+            lambda: torch.randint(0, 200, (30, 3, 299, 299), dtype=torch.uint8),
+            False,
+            id="memorization informed frechet inception distance",
+            marks=pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_10, reason="test requires torch>=1.9"),
         ),
     ],
 )
@@ -686,17 +700,17 @@ def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0
 
     assert isinstance(fig, plt.Figure)
     assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(fig)
 
 
-@pytest.mark.skipif(not hasattr(torch, "inference_mode"), reason="`inference_mode` is not supported")
 def test_plot_methods_special_text_metrics():
     """Test the plot method for text metrics that does not fit the default testing format."""
     metric = BERTScore()
-    with torch.inference_mode():
-        metric.update(_text_input_1(), _text_input_2())
-        fig, ax = metric.plot()
+    metric.update(_text_input_1(), _text_input_2())
+    fig, ax = metric.plot()
     assert isinstance(fig, plt.Figure)
     assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(fig)
 
 
 @pytest.mark.parametrize(
@@ -769,6 +783,7 @@ def test_plot_methods_retrieval(metric_class, preds, target, indexes, num_vals):
 
     assert isinstance(fig, plt.Figure)
     assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(fig)
 
 
 @pytest.mark.parametrize(
@@ -808,6 +823,7 @@ def test_confusion_matrix_plotter(metric_class, preds, target, labels, use_label
     cond1 = isinstance(axs, matplotlib.axes.Axes)
     cond2 = isinstance(axs, np.ndarray) and all(isinstance(a, matplotlib.axes.Axes) for a in axs)
     assert cond1 or cond2
+    plt.close(fig)
 
 
 @pytest.mark.parametrize("together", [True, False])
@@ -846,6 +862,7 @@ def test_plot_method_collection(together, num_vals):
     fig, ax = plt.subplots(nrows=len(m_collection) + 1, ncols=1)
     with pytest.raises(ValueError, match="Expected argument `ax` to be a sequence of matplotlib axis objects with.*"):
         m_collection.plot(ax=ax.tolist())
+    plt.close(fig)
 
 
 @pytest.mark.parametrize(
@@ -902,6 +919,7 @@ def test_plot_method_curve_metrics(metric_class, preds, target, thresholds, scor
     fig, ax = metric.plot(score=score)
     assert isinstance(fig, plt.Figure)
     assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(fig)
 
 
 def test_tracker_plotter():
@@ -914,3 +932,4 @@ def test_tracker_plotter():
     fig, ax = tracker.plot()  # plot all epochs
     assert isinstance(fig, plt.Figure)
     assert isinstance(ax, matplotlib.axes.Axes)
+    plt.close(fig)

@@ -13,6 +13,7 @@
 # limitations under the License.
 from torchmetrics.image.d_lambda import SpectralDistortionIndex
 from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
+from torchmetrics.image.mifid import MemorizationInformedFrechetInceptionDistance
 from torchmetrics.image.psnr import PeakSignalNoiseRatio
 from torchmetrics.image.psnrb import PeakSignalNoiseRatioWithBlockedEffect
 from torchmetrics.image.rase import RelativeAverageSpectralError
@@ -33,6 +34,7 @@ __all__ = [
     "RootMeanSquaredErrorUsingSlidingWindow",
     "SpectralAngleMapper",
     "MultiScaleStructuralSimilarityIndexMeasure",
+    "MemorizationInformedFrechetInceptionDistance",
     "StructuralSimilarityIndexMeasure",
     "UniversalImageQualityIndex",
     "TotalVariation",
