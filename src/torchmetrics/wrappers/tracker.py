@@ -249,7 +249,7 @@ class MetricTracker(ModuleList):
                     fn = torch.max if maximize[i] else torch.min
                     out = fn(v, 0)
                     value[k], idx[k] = out[0].item(), out[1].item()
-                except (ValueError, RuntimeError) as error:
+                except (ValueError, RuntimeError) as error:  # noqa: PERF203 # todo
                     rank_zero_warn(
                         f"Encountered the following error when trying to get the best metric for metric {k}:"
                         f"{error} this is probably due to the 'best' not being defined for this metric."

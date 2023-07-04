@@ -367,7 +367,7 @@ def _rouge_score_update(
             highest_idx = int(torch.argmax(all_fmeasure).item())
 
             for rouge_key in rouge_keys_values:
-                results[rouge_key].append(list_results[highest_idx][rouge_key])
+                results[rouge_key].append(list_results[highest_idx][rouge_key])  # noqa: PERF401 # todo
 
         elif accumulate == "avg":
             new_result_avg: Dict[Union[int, str], Dict[str, Tensor]] = {
@@ -386,7 +386,7 @@ def _rouge_score_update(
                 }
 
             for rouge_key in rouge_keys_values:
-                results[rouge_key].append(new_result_avg[rouge_key])
+                results[rouge_key].append(new_result_avg[rouge_key])  # noqa: PERF401 # todo
 
     return results
 
@@ -506,10 +506,9 @@ def rouge_score(
     output: Dict[str, List[Tensor]] = {
         f"rouge{rouge_key}_{tp}": [] for rouge_key in rouge_keys_values for tp in ["fmeasure", "precision", "recall"]
     }
-
     for rouge_key, metrics in sentence_results.items():
         for metric in metrics:
             for tp, value in metric.items():
-                output[f"rouge{rouge_key}_{tp}"].append(value)
+                output[f"rouge{rouge_key}_{tp}"].append(value)  # noqa: PERF401 # todo
 
     return _rouge_score_compute(output)
