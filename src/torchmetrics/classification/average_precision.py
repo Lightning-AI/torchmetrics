@@ -109,12 +109,12 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    def compute(self) -> Tensor:
+    def compute(self) -> Tensor:  # type: ignore[override]
         """Compute metric."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _binary_average_precision_compute(state, self.thresholds)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -259,12 +259,12 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         self.average = average
         self.validate_args = validate_args
 
-    def compute(self) -> Tensor:
+    def compute(self) -> Tensor:  # type: ignore[override]
         """Compute metric."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multiclass_average_precision_compute(state, self.num_classes, self.average, self.thresholds)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -411,14 +411,14 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         self.average = average
         self.validate_args = validate_args
 
-    def compute(self) -> Tensor:
+    def compute(self) -> Tensor:  # type: ignore[override]
         """Compute metric."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multilabel_average_precision_compute(
             state, self.num_labels, self.average, self.thresholds, self.ignore_index
         )
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -495,7 +495,7 @@ class AveragePrecision:
         tensor([1.0000, 1.0000, 0.2500, 0.2500,    nan])
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
@@ -519,4 +519,4 @@ class AveragePrecision:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelAveragePrecision(num_labels, average, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")

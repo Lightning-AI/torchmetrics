@@ -122,8 +122,8 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        state = [_cat(self.preds), _cat(self.target)] if self.thresholds is None else self.confmat  # type: ignore
-        return _binary_specificity_at_sensitivity_compute(state, self.thresholds, self.min_sensitivity)  # type: ignore
+        state = (_cat(self.preds), _cat(self.target)) if self.thresholds is None else self.confmat
+        return _binary_specificity_at_sensitivity_compute(state, self.thresholds, self.min_sensitivity)
 
 
 class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
@@ -217,9 +217,9 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        state = [_cat(self.preds), _cat(self.target)] if self.thresholds is None else self.confmat  # type: ignore
+        state = (_cat(self.preds), _cat(self.target)) if self.thresholds is None else self.confmat
         return _multiclass_specificity_at_sensitivity_compute(
-            state, self.num_classes, self.thresholds, self.min_sensitivity  # type: ignore
+            state, self.num_classes, self.thresholds, self.min_sensitivity
         )
 
 
@@ -314,9 +314,9 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        state = [_cat(self.preds), _cat(self.target)] if self.thresholds is None else self.confmat  # type: ignore
+        state = (_cat(self.preds), _cat(self.target)) if self.thresholds is None else self.confmat
         return _multilabel_specificity_at_sensitivity_compute(
-            state, self.num_labels, self.thresholds, self.ignore_index, self.min_sensitivity  # type: ignore
+            state, self.num_labels, self.thresholds, self.ignore_index, self.min_sensitivity
         )
 
 

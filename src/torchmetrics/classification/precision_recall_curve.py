@@ -125,6 +125,10 @@ class BinaryPrecisionRecallCurve(Metric):
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
 
+    preds: List[Tensor]
+    target: List[Tensor]
+    confmat: Tensor
+
     def __init__(
         self,
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
@@ -164,7 +168,7 @@ class BinaryPrecisionRecallCurve(Metric):
 
     def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
         """Compute metric."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _binary_precision_recall_curve_compute(state, self.thresholds)
 
     def plot(
@@ -289,6 +293,10 @@ class MulticlassPrecisionRecallCurve(Metric):
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
 
+    preds: List[Tensor]
+    target: List[Tensor]
+    confmat: Tensor
+
     def __init__(
         self,
         num_classes: int,
@@ -334,7 +342,7 @@ class MulticlassPrecisionRecallCurve(Metric):
 
     def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute metric."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multiclass_precision_recall_curve_compute(state, self.num_classes, self.thresholds)
 
     def plot(
@@ -468,6 +476,10 @@ class MultilabelPrecisionRecallCurve(Metric):
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
 
+    preds: List[Tensor]
+    target: List[Tensor]
+    confmat: Tensor
+
     def __init__(
         self,
         num_labels: int,
@@ -513,7 +525,7 @@ class MultilabelPrecisionRecallCurve(Metric):
 
     def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute metric."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multilabel_precision_recall_curve_compute(state, self.num_labels, self.thresholds, self.ignore_index)
 
     def plot(
@@ -595,7 +607,7 @@ class PrecisionRecallCurve:
          tensor(0.0500)]
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
@@ -618,4 +630,4 @@ class PrecisionRecallCurve:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelPrecisionRecallCurve(num_labels, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")
