@@ -45,11 +45,11 @@ def _confusion_matrix_reduce(
     if normalize is not None and normalize != "none":
         confmat = confmat.float() if not confmat.is_floating_point() else confmat
         if normalize == "true":
-            confmat = confmat / confmat.sum(axis=-1, keepdim=True)
+            confmat = confmat / confmat.sum(dim=-1, keepdim=True)
         elif normalize == "pred":
-            confmat = confmat / confmat.sum(axis=-2, keepdim=True)
+            confmat = confmat / confmat.sum(dim=-2, keepdim=True)
         elif normalize == "all":
-            confmat = confmat / confmat.sum(axis=[-2, -1], keepdim=True)
+            confmat = confmat / confmat.sum(dim=[-2, -1], keepdim=True)
 
         nan_elements = confmat[torch.isnan(confmat)].nelement()
         if nan_elements:
@@ -643,4 +643,4 @@ def confusion_matrix(
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_confusion_matrix(preds, target, num_labels, threshold, normalize, ignore_index, validate_args)
-    return None
+    raise ValueError(f"Task {task} not supported.")

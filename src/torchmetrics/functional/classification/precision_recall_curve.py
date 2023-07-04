@@ -28,7 +28,7 @@ from torchmetrics.utilities.enums import ClassificationTask
 def _binary_clf_curve(
     preds: Tensor,
     target: Tensor,
-    sample_weights: Optional[Sequence] = None,
+    sample_weights: Optional[Union[Sequence, Tensor]] = None,
     pos_label: int = 1,
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Calculate the TPs and false positives for all unique thresholds in the preds tensor.
@@ -253,7 +253,7 @@ def _binary_precision_recall_curve_compute(
     If state is a single tensor, then we calculate the pr-curve from a multi threshold confusion matrix. If state is
     original input, then we dynamically compute the binary classification curve.
     """
-    if isinstance(state, Tensor):
+    if isinstance(state, Tensor) and thresholds is not None:
         tps = state[:, 1, 1]
         fps = state[:, 0, 1]
         fns = state[:, 1, 0]
@@ -511,7 +511,7 @@ def _multiclass_precision_recall_curve_compute(
     If state is a single tensor, then we calculate the pr-curve from a multi threshold confusion matrix. If state is
     original input, then we dynamically compute the binary classification curve in an iterative way.
     """
-    if isinstance(state, Tensor):
+    if isinstance(state, Tensor) and thresholds is not None:
         tps = state[:, :, 1, 1]
         fps = state[:, :, 0, 1]
         fns = state[:, :, 1, 0]
@@ -521,13 +521,13 @@ def _multiclass_precision_recall_curve_compute(
         recall = torch.cat([recall, torch.zeros(1, num_classes, dtype=recall.dtype, device=recall.device)])
         return precision.T, recall.T, thresholds
 
-    precision, recall, thresholds = [], [], []
+    precision_list, recall_list, threshold_list = [], [], []
     for i in range(num_classes):
-        res = _binary_precision_recall_curve_compute([state[0][:, i], state[1]], thresholds=None, pos_label=i)
-        precision.append(res[0])
-        recall.append(res[1])
-        thresholds.append(res[2])
-    return precision, recall, thresholds
+        res = _binary_precision_recall_curve_compute((state[0][:, i], state[1]), thresholds=None, pos_label=i)
+        precision_list.append(res[0])
+        recall_list.append(res[1])
+        threshold_list.append(res[2])
+    return precision_list, recall_list, threshold_list
 
 
 def multiclass_precision_recall_curve(
@@ -733,7 +733,7 @@ def _multilabel_precision_recall_curve_compute(
     If state is a single tensor, then we calculate the pr-curve from a multi threshold confusion matrix. If state is
     original input, then we dynamically compute the binary classification curve in an iterative way.
     """
-    if isinstance(state, Tensor):
+    if isinstance(state, Tensor) and thresholds is not None:
         tps = state[:, :, 1, 1]
         fps = state[:, :, 0, 1]
         fns = state[:, :, 1, 0]
@@ -743,7 +743,7 @@ def _multilabel_precision_recall_curve_compute(
         recall = torch.cat([recall, torch.zeros(1, num_labels, dtype=recall.dtype, device=recall.device)])
         return precision.T, recall.T, thresholds
 
-    precision, recall, thresholds = [], [], []
+    precision_list, recall_list, thres_list = [], [], []
     for i in range(num_labels):
         preds = state[0][:, i]
         target = state[1][:, i]
@@ -751,11 +751,11 @@ def _multilabel_precision_recall_curve_compute(
             idx = target == ignore_index
             preds = preds[~idx]
             target = target[~idx]
-        res = _binary_precision_recall_curve_compute([preds, target], thresholds=None, pos_label=1)
-        precision.append(res[0])
-        recall.append(res[1])
-        thresholds.append(res[2])
-    return precision, recall, thresholds
+        res = _binary_precision_recall_curve_compute((preds, target), thresholds=None, pos_label=1)
+        precision_list.append(res[0])
+        recall_list.append(res[1])
+        thres_list.append(res[2])
+    return precision_list, recall_list, thres_list
 
 
 def multilabel_precision_recall_curve(
@@ -919,4 +919,4 @@ def precision_recall_curve(
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_precision_recall_curve(preds, target, num_labels, thresholds, ignore_index, validate_args)
-    return None
+    raise ValueError(f"Task {task} not supported.")

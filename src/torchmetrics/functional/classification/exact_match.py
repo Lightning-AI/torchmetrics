@@ -250,4 +250,4 @@ def exact_match(
         return multilabel_exact_match(
             preds, target, num_labels, threshold, multidim_average, ignore_index, validate_args
         )
-    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy
+    raise ValueError(f"Not handled value: {task}")
