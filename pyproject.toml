@@ -184,6 +184,7 @@ module = [
     "torchmetrics.classification.roc",
     "torchmetrics.classification.specificity",
     "torchmetrics.classification.stat_scores",
+    "torchmetrics.detection._mean_ap",
     "torchmetrics.detection.mean_ap",
     "torchmetrics.functional.classification.calibration_error",
     "torchmetrics.functional.classification.confusion_matrix",

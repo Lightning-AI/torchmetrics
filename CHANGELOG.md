@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added speech-to-reverberation modulation energy ratio (SRMR) metric ([#1792](https://github.com/Lightning-AI/torchmetrics/pull/1792))
+- Added speech-to-reverberation modulation energy ratio (SRMR) metric ([#1792](https://github.com/Lightning-AI/torchmetrics/pull/1792), [#1872](https://github.com/Lightning-AI/torchmetrics/pull/1872))
 
 
 - Added new global arg `compute_with_cache` to control caching behaviour after `compute` method ([#1754](https://github.com/Lightning-AI/torchmetrics/pull/1754))
@@ -118,6 +118,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `RelativeSquaredError` metric to regression package ([#1765](https://github.com/Lightning-AI/torchmetrics/pull/1765))
 
 
+- Added `MemorizationInformedFrechetInceptionDistance` metric to image package ([#1580](https://github.com/Lightning-AI/torchmetrics/pull/1580))
+
+
 ### Changed
 
 - Changed `permutation_invariant_training` to allow using a `'permutation-wise'` metric function ([#1794](https://github.com/Lightning-AI/metrics/pull/1794))
@@ -151,6 +154,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Changed calculation in `PearsonCorrCoeff` to be more robust in certain cases  ([#1729](https://github.com/Lightning-AI/torchmetrics/pull/1729))
+
+
+- Changed `MeanAveragePrecision` to `pycocotools` backend ([#1832](https://github.com/Lightning-AI/torchmetrics/pull/1832))
+
 
 ### Deprecated
 

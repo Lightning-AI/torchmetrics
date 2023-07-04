@@ -183,7 +183,7 @@ def speech_reverberation_modulation_energy_ratio(
     n_cochlear_filters: int = 23,
     low_freq: float = 125,
     min_cf: float = 4,
-    max_cf: Optional[float] = 128,
+    max_cf: Optional[float] = None,
     norm: bool = False,
     fast: bool = False,
 ) -> Tensor:
@@ -209,6 +209,12 @@ def speech_reverberation_modulation_energy_ratio(
     .. note:: using this metrics requires you to have ``gammatone`` and ``torchaudio`` installed.
         Either install as ``pip install torchmetrics[audio]`` or ``pip install torchaudio``
         and ``pip install git+https://github.com/detly/gammatone``.
+
+    .. note::
+        This implementation is experimental, and might not be consistent with the matlab
+        implementation `SRMRToolbox`_, especially the fast implementation.
+        The slow versions, a) fast=False, norm=False, max_cf=128, b) fast=False, norm=True, max_cf=30, have
+        a relatively small inconsistence.
 
     Returns:
         Tensor: srmr value, shape ``(...)``
