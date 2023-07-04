@@ -62,6 +62,7 @@ docs/_build/
 docs/source/api/
 docs/source/generated/
 docs/source/*.md
+docs/source/_static/fetched-s3-assets
 
 # PyBuilder
 target/
