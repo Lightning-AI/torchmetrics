@@ -249,7 +249,6 @@ def source_aggregated_signal_distortion_ratio(
     target: Tensor,
     scale_invariant: bool = True,
     zero_mean: bool = False,
-    average: bool = False,
 ) -> Tensor:
     """`Source-aggregated signal-to-distortion ratio`_ (SA-SDR).
 
@@ -261,10 +260,9 @@ def source_aggregated_signal_distortion_ratio(
         target: float tensor with shape ``(..., spk, time)``
         scale_invariant: if True, scale the targets of different speakers with the same value
         zero_mean: If to zero mean target and preds or not
-        average: whether to average the SA-SDR value over the speaker dimension
 
     Returns:
-        SA-SDR with shape ``(..., spk)`` if average==False else ``(...)``
+        SA-SDR with shape ``(...)``
 
     Example:
         >>> import torch
@@ -273,7 +271,7 @@ def source_aggregated_signal_distortion_ratio(
         >>> preds = torch.randn(2, 8000)  # [..., spk, time]
         >>> target = torch.randn(2, 8000)
         >>> source_aggregated_signal_distortion_ratio(preds, target)
-        tensor([-41.6434, -41.6726])
+        tensor(-41.6579)
         >>> # use with permutation_invariant_training
         >>> from torchmetrics.functional.audio import permutation_invariant_training
         >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
@@ -281,7 +279,7 @@ def source_aggregated_signal_distortion_ratio(
         >>> best_metric, best_perm = permutation_invariant_training(preds, target,
         >>>     source_aggregated_signal_distortion_ratio, mode="permutation-wise", average=True)
         >>> best_metric
-        tensor([-37.9511, -41.9123, -42.7393, -42.5153])
+        tensor([-37.9511, -41.9124, -42.7369, -42.5155])
         >>> best_perm
         tensor([[1, 0],
                 [1, 0],
@@ -305,10 +303,7 @@ def source_aggregated_signal_distortion_ratio(
         )
         target = alpha * target
 
-    noise = target - preds
+    distortion = target - preds
 
-    val = (torch.sum(target**2, dim=-1) + eps) / (torch.sum(noise**2, dim=-1) + eps)
-    if average:
-        return torch.mean(10 * torch.log10(val), dim=-1)
-    else:
-        return 10 * torch.log10(val)
+    val = ((target**2).sum(dim=-1).sum(dim=-1) + eps) / ((distortion**2).sum(dim=-1).sum(dim=-1) + eps)
+    return 10 * torch.log10(val)
