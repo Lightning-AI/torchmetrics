@@ -34,6 +34,7 @@ sys.path.insert(0, os.path.abspath(_PATH_ROOT))
 
 FOLDER_GENERATED = "generated"
 SPHINX_MOCK_REQUIREMENTS = int(os.environ.get("SPHINX_MOCK_REQUIREMENTS", True))
+SPHINX_FETCH_ASSETS = int(os.environ.get("SPHINX_FETCH_ASSETS", True))
 
 html_favicon = "_static/images/icon.svg"
 
@@ -67,11 +68,12 @@ _transform_changelog(
     os.path.join(_PATH_HERE, FOLDER_GENERATED, "CHANGELOG.md"),
 )
 
-fetch_external_assets(
-    docs_folder=_PATH_HERE,
-    assets_folder="_static/fetched-s3-assets",
-    retrieve_pattern=r"https?://[-a-zA-Z0-9_]+\.s3\.[-a-zA-Z0-9()_\\+.\\/=]+",
-)
+if SPHINX_FETCH_ASSETS:
+    fetch_external_assets(
+        docs_folder=_PATH_HERE,
+        assets_folder="_static/fetched-s3-assets",
+        retrieve_pattern=r"https?://[-a-zA-Z0-9_]+\.s3\.[-a-zA-Z0-9()_\\+.\\/=]+",
+    )
 
 # -- General configuration ---------------------------------------------------
 
