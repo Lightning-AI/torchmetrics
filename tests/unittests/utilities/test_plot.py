@@ -839,9 +839,7 @@ def test_plot_method_collection(together, num_vals):
         m_collection.update(torch.randint(0, 2, size=(10,)), torch.randint(0, 2, size=(10,)))
         fig_ax = m_collection.plot(together=together)
     else:
-        vals = []
-        for _ in range(num_vals):
-            vals.append(m_collection(torch.randint(0, 2, size=(10,)), torch.randint(0, 2, size=(10,))))
+        vals = [m_collection(torch.randint(0, 2, size=(10,)), torch.randint(0, 2, size=(10,))) for _ in range(num_vals)]
         fig_ax = m_collection.plot(val=vals, together=together)
 
     if together:
