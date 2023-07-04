@@ -278,7 +278,7 @@ def source_aggregated_signal_distortion_ratio(
         >>> from torchmetrics.functional.audio import permutation_invariant_training
         >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
         >>> target = torch.randn(4, 2, 8000)
-        >>> best_metric, best_perm = permutation_invariant_training(preds, target, 
+        >>> best_metric, best_perm = permutation_invariant_training(preds, target,
         >>>     source_aggregated_signal_distortion_ratio, mode="permutation-wise", average=True)
         >>> best_metric
         tensor([-37.9511, -41.9123, -42.7393, -42.5153])
@@ -290,7 +290,7 @@ def source_aggregated_signal_distortion_ratio(
     """
     _check_same_shape(preds, target)
     if preds.ndim < 2:
-        raise RuntimeError(f'the preds and target should have the shape (..., spk, time), but {preds.shape} found')
+        raise RuntimeError(f"the preds and target should have the shape (..., spk, time), but {preds.shape} found")
 
     eps = torch.finfo(preds.dtype).eps
 
@@ -300,8 +300,9 @@ def source_aggregated_signal_distortion_ratio(
 
     if scale_invariant:
         # scale the targets of different speakers with the same alpha (shape [..., 1, 1])
-        alpha = ((preds * target).sum(dim=-1, keepdim=True).sum(dim=-2, keepdim=True) + eps) / \
-            ((target**2).sum(dim=-1, keepdim=True).sum(dim=-2, keepdim=True) + eps)
+        alpha = ((preds * target).sum(dim=-1, keepdim=True).sum(dim=-2, keepdim=True) + eps) / (
+            (target**2).sum(dim=-1, keepdim=True).sum(dim=-2, keepdim=True) + eps
+        )
         target = alpha * target
 
     noise = target - preds
