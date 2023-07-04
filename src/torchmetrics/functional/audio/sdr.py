@@ -253,7 +253,8 @@ def source_aggregated_signal_distortion_ratio(
 ) -> Tensor:
     """`Source-aggregated signal-to-distortion ratio`_ (SA-SDR).
 
-    The SA-SDR is proposed to consider a global SDR over all output channels at the same time
+    The SA-SDR is proposed to provide a stable gradient for meeting style source separation, where
+    one-speaker and multiple-speaker scenes coexist.
 
     Args:
         preds: float tensor with shape ``(..., spk, time)``
