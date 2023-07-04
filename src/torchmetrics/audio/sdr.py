@@ -15,7 +15,11 @@ from typing import Any, Optional, Sequence, Union
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.audio.sdr import scale_invariant_signal_distortion_ratio, signal_distortion_ratio
+from torchmetrics.functional.audio.sdr import (
+    scale_invariant_signal_distortion_ratio,
+    signal_distortion_ratio,
+    source_aggregated_signal_distortion_ratio,
+)
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -265,3 +269,133 @@ class ScaleInvariantSignalDistortionRatio(Metric):
             >>> fig_, ax_ = metric.plot(values)
         """
         return self._plot(val, ax)
+
+
+class SourceAggregatedSignalDistortionRatio(Metric):
+    r"""`Source-aggregated signal-to-distortion ratio`_ (SA-SDR).
+
+    The SA-SDR is proposed to provide a stable gradient for meeting style source separation, where
+    one-speaker and multiple-speaker scenes coexist.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(..., spk, time)``
+    - ``target`` (:class:`~torch.Tensor`): float tensor with shape ``(..., spk, time)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``sa_sdr`` (:class:`~torch.Tensor`): float scalar tensor with average SA-SDR value over samples
+
+    Args:
+        use_cg_iter:
+            If provided, conjugate gradient descent is used to solve for the distortion
+            filter coefficients instead of direct Gaussian elimination, which requires that
+            ``fast-bss-eval`` is installed and pytorch version >= 1.8.
+            This can speed up the computation of the metrics in case the filters
+            are long. Using a value of 10 here has been shown to provide
+            good accuracy in most cases and is sufficient when using this
+            loss to train neural separation networks.
+        filter_length: The length of the distortion filter allowed
+        zero_mean:
+            When set to True, the mean of all signals is subtracted prior to computation of the metrics
+        load_diag:
+            If provided, this small value is added to the diagonal coefficients of the system metrics when solving
+            for the filter coefficients. This can help stabilize the metric in the case where some reference
+            signals may sometimes be zero
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Example:
+        >>> import torch
+        >>> from torchmetrics.audio import SignalDistortionRatio
+        >>> g = torch.manual_seed(1)
+        >>> preds = torch.randn(8000)
+        >>> target = torch.randn(8000)
+        >>> sdr = SignalDistortionRatio()
+        >>> sdr(preds, target)
+        tensor(-12.0589)
+        >>> # use with pit
+        >>> from torchmetrics.audio import PermutationInvariantTraining
+        >>> from torchmetrics.functional.audio import signal_distortion_ratio
+        >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
+        >>> target = torch.randn(4, 2, 8000)
+        >>> pit = PermutationInvariantTraining(signal_distortion_ratio,
+        ...     mode="speaker-wise", eval_func="max")
+        >>> pit(preds, target)
+        tensor(-11.6051)
+    """
+
+    msum: Tensor
+    mnum: Tensor
+    full_state_update: bool = False
+    is_differentiable: bool = True
+    higher_is_better: bool = True
+    plot_lower_bound: Optional[float] = None
+    plot_upper_bound: Optional[float] = None
+
+    def __init__(
+        self,
+        scale_invariant: bool = True,
+        zero_mean: bool = False,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(**kwargs)
+
+        self.scale_invariant = scale_invariant
+        self.zero_mean = zero_mean
+
+        self.add_state("msum", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("mnum", default=tensor(0), dist_reduce_fx="sum")
+
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update state with predictions and targets."""
+        mbatch = source_aggregated_signal_distortion_ratio(
+            preds, target, self.scale_invariant, self.zero_mean,
+        )
+
+        self.msum += mbatch.sum()
+        self.mnum += mbatch.numel()
+
+    def compute(self) -> Tensor:
+        """Compute metric."""
+        return self.msum / self.mnum
+
+    def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.audio import SourceAggregatedSignalDistortionRatio
+            >>> metric = SourceAggregatedSignalDistortionRatio()
+            >>> metric.update(torch.rand(2,8000), torch.rand(2,8000))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.audio import SourceAggregatedSignalDistortionRatio
+            >>> metric = SourceAggregatedSignalDistortionRatio()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.rand(2,8000), torch.rand(2,8000)))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
+
+

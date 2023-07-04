@@ -258,7 +258,7 @@ def source_aggregated_signal_distortion_ratio(
     Args:
         preds: float tensor with shape ``(..., spk, time)``
         target: float tensor with shape ``(..., spk, time)``
-        scale_invariant: if True, scale the targets of different speakers with the same value
+        scale_invariant: if True, scale the targets of different speakers with the same alpha
         zero_mean: If to zero mean target and preds or not
 
     Returns:
