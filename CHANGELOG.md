@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `prefix` and `postfix` arguments to `ClasswiseWrapper` ([#1866](https://github.com/Lightning-AI/torchmetrics/pull/1866))
+
+
 - Added speech-to-reverberation modulation energy ratio (SRMR) metric ([#1792](https://github.com/Lightning-AI/torchmetrics/pull/1792), [#1872](https://github.com/Lightning-AI/torchmetrics/pull/1872))
 
 
