@@ -64,12 +64,12 @@ class ClasswiseWrapper(Metric):
         >>> target = torch.randint(3, (10,))
         >>> metric_pre(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         {'acc-0': tensor(0.5000),
-        'acc-1': tensor(0.7500),
-        'acc-2': tensor(0.)}
+         'acc-1': tensor(0.7500),
+         'acc-2': tensor(0.)}
         >>> metric_post(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         {'0-acc': tensor(0.5000),
-        '1-acc': tensor(0.7500),
-        '2-acc': tensor(0.)}
+         '1-acc': tensor(0.7500),
+         '2-acc': tensor(0.)}
 
     Example::
         Providing labels as a list of strings:
