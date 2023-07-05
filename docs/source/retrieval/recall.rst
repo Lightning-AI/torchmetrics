@@ -12,12 +12,12 @@ Retrieval Recall
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.RetrievalRecall
+.. autoclass:: torchmetrics.retrieval.RetrievalRecall
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.retrieval_recall
+.. autofunction:: torchmetrics.functional.retrieval.retrieval_recall
     :noindex:
