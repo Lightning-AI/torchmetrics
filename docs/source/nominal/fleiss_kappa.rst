@@ -10,12 +10,12 @@ Fleiss Kappa
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.FleissKappa
+.. autoclass:: torchmetrics.nominal.FleissKappa
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.fleiss_kappa
+.. autofunction:: torchmetrics.functional.nominal.fleiss_kappa
     :noindex:
