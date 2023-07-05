@@ -10,12 +10,12 @@ Panoptic Quality
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.PanopticQuality
+.. autoclass:: torchmetrics.detection.PanopticQuality
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.panoptic_quality
+.. autofunction:: torchmetrics.functional.detection.panoptic_quality
     :noindex:
