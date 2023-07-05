@@ -12,6 +12,6 @@ Running Sum
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.RunningSum
+.. autoclass:: torchmetrics.aggregation.RunningSum
     :noindex:
     :exclude-members: update, compute

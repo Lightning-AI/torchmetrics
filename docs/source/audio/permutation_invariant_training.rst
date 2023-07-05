@@ -12,12 +12,12 @@ Permutation Invariant Training (PIT)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.PermutationInvariantTraining
+.. autoclass:: torchmetrics.audio.PermutationInvariantTraining
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.permutation_invariant_training
+.. autofunction:: torchmetrics.functional.audio.permutation_invariant_training
     :noindex:

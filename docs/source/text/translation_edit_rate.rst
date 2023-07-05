@@ -12,12 +12,12 @@ Translation Edit Rate (TER)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.TranslationEditRate
+.. autoclass:: torchmetrics.text.TranslationEditRate
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.translation_edit_rate
+.. autofunction:: torchmetrics.functional.text.translation_edit_rate
     :noindex:

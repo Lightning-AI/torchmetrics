@@ -10,14 +10,14 @@ Tschuprow's T
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.TschuprowsT
+.. autoclass:: torchmetrics.nominal.TschuprowsT
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.tschuprows_t
+.. autofunction:: torchmetrics.functional.nominal.tschuprows_t
     :noindex:
 
 tschuprows_t_matrix

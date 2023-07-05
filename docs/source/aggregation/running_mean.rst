@@ -12,6 +12,6 @@ Running Mean
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.RunningMean
+.. autoclass:: torchmetrics.aggregation.RunningMean
     :noindex:
     :exclude-members: update, compute

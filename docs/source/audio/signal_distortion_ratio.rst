@@ -12,12 +12,12 @@ Signal to Distortion Ratio (SDR)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.SignalDistortionRatio
+.. autoclass:: torchmetrics.audio.SignalDistortionRatio
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.signal_distortion_ratio
+.. autofunction:: torchmetrics.functional.audio.signal_distortion_ratio
     :noindex:

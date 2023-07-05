@@ -12,12 +12,12 @@ Precision Recall Curve
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.RetrievalPrecisionRecallCurve
+.. autoclass:: torchmetrics.retrieval.RetrievalPrecisionRecallCurve
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.retrieval_precision_recall_curve
+.. autofunction:: torchmetrics.functional.retrieval.retrieval_precision_recall_curve
     :noindex:

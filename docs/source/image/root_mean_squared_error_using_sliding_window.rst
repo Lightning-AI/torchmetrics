@@ -12,12 +12,12 @@ Root Mean Squared Error Using Sliding Window
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.RootMeanSquaredErrorUsingSlidingWindow
+.. autoclass:: torchmetrics.image.RootMeanSquaredErrorUsingSlidingWindow
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.root_mean_squared_error_using_sliding_window
+.. autofunction:: torchmetrics.functional.image.root_mean_squared_error_using_sliding_window
     :noindex:
