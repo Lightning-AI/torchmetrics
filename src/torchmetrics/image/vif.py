@@ -25,8 +25,8 @@ class VisualInformationFidelity(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``preds`` (:class:`~torch.Tensor`): Predictions from model of shape ``(N,C,H,W)``. ``(H, W)`` has to be at least ``(41, 41)``
-    - ``target`` (:class:`~torch.Tensor`): Ground truth values of shape ``(N,C,H,W)``. ``(H, W)`` has to be at least ``(41, 41)``
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model of shape ``(N,C,H,W)`` with H,W ≥ 41
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values of shape ``(N,C,H,W)`` with H,W ≥ 41
 
     As output of `forward` and `compute` the metric returns the following output
 
@@ -43,7 +43,7 @@ class VisualInformationFidelity(Metric):
         >>> target = torch.randn([32, 3, 41, 41])
         >>> vif = VisualInformationFidelity()
         >>> vif(preds, target)
-        tensor(0.0034)
+        tensor(0.0032)
     """
 
     is_differentiable = True
@@ -58,7 +58,8 @@ class VisualInformationFidelity(Metric):
 
         if not isinstance(sigma_n_sq, float) and not isinstance(sigma_n_sq, int):
             raise ValueError(f"Argument `sigma_n_sq` is expected to be a positive float or int, but got {sigma_n_sq}")
-        elif sigma_n_sq < 0:
+
+        if sigma_n_sq < 0:
             raise ValueError(f"Argument `sigma_n_sq` is expected to be a positive float or int, but got {sigma_n_sq}")
 
         self.add_state("vif_score", default=tensor(0.0), dist_reduce_fx="sum")
