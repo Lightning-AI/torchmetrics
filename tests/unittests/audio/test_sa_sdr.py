@@ -54,14 +54,13 @@ def _ref_metric(preds: Tensor, target: Tensor, scale_invariant: bool, zero_mean:
     target = target.reshape(preds.shape[0], preds[1] * preds[2])
     if scale_invariant:
         return scale_invariant_signal_distortion_ratio(preds=preds, target=target, zero_mean=zero_mean)
-    else:
-        return signal_noise_ratio(preds=preds, target=target, zero_mean=zero_mean)
+    return signal_noise_ratio(preds=preds, target=target, zero_mean=zero_mean)
 
 
-def _average_metric(**kwargs):
+def _average_metric(preds: Tensor, target: Tensor, scale_invariant: bool, zero_mean: bool):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
-    return _ref_metric(**kwargs).mean()
+    return _ref_metric(preds, target, scale_invariant, zero_mean).mean()
 
 
 @pytest.mark.parametrize(
