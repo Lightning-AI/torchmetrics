@@ -28,14 +28,13 @@ from unittests.helpers.testers import MetricTester
 seed_all(42)
 
 Input = namedtuple("Input", ["preds", "target"])
-_inputs = []
-for channels in [1, 3]:
-    _inputs.append(
-        Input(
-            preds=torch.randint(0, 255, size=(NUM_BATCHES, BATCH_SIZE, channels, 41, 41), dtype=torch.float),
-            target=torch.randint(0, 255, size=(NUM_BATCHES, BATCH_SIZE, channels, 41, 41), dtype=torch.float),
-        )
+_inputs = [
+    Input(
+        preds=torch.randint(0, 255, size=(NUM_BATCHES, BATCH_SIZE, channels, 41, 41), dtype=torch.float),
+        target=torch.randint(0, 255, size=(NUM_BATCHES, BATCH_SIZE, channels, 41, 41), dtype=torch.float),
     )
+    for channels in [1, 3]
+]
 
 
 def _sewar_vif(preds, target, sigma_nsq=2):
@@ -43,9 +42,7 @@ def _sewar_vif(preds, target, sigma_nsq=2):
     target = torch.movedim(target, 1, -1)
     preds = preds.cpu().numpy()
     target = target.cpu().numpy()
-    vif = []
-    for batch in range(preds.shape[0]):
-        vif.append(vifp(GT=target[batch], P=preds[batch], sigma_nsq=sigma_nsq))
+    vif = [vifp(GT=target[batch], P=preds[batch], sigma_nsq=sigma_nsq) for batch in range(preds.shape[0])]
     return np.mean(vif)
 
 
