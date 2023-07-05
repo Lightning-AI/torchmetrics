@@ -12,12 +12,12 @@ Total Variation (TV)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.TotalVariation
+.. autoclass:: torchmetrics.image.TotalVariation
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.total_variation
+.. autofunction:: torchmetrics.functional.image.total_variation
     :noindex:
