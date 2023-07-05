@@ -45,7 +45,8 @@ inputs = Input(
 
 
 def _ref_metric(preds: Tensor, target: Tensor, scale_invariant: bool, zero_mean: bool):
-    # According to the original paper, the sa-sdr equals to si-sdr with inputs concatenated over the speaker dimension if scale_invariant==True. Accordingly, for scale_invariant==False, the sa-sdr equals to snr.
+    # According to the original paper, the sa-sdr equals to si-sdr with inputs concatenated over the speaker
+    # dimension if scale_invariant==True. Accordingly, for scale_invariant==False, the sa-sdr equals to snr.
     # shape: preds [BATCH_SIZE, Spk, Time] , target [BATCH_SIZE, Spk, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, Spk, Time], target [NUM_BATCHES*BATCH_SIZE, Spk, Time]
 
