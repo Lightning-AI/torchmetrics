@@ -12,12 +12,12 @@ Word Error Rate
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.WordErrorRate
+.. autoclass:: torchmetrics.text.WordErrorRate
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.word_error_rate
+.. autofunction:: torchmetrics.functional.text.word_error_rate
     :noindex:

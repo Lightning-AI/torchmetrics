@@ -690,15 +690,11 @@ def check_forward_full_state_property(
     partstate = PartState(**init_args)
 
     equal = True
-    for _ in range(num_update_to_compare[0]):
-        out1 = fullstate(**input_args)
-        try:  # if it fails, the code most likely need access to the full state
-            out2 = partstate(**input_args)
-        except RuntimeError:
-            equal = False
-            break
-        equal = equal & _allclose_recursive(out1, out2)
-
+    try:  # if it fails, the code most likely need access to the full state
+        for _ in range(num_update_to_compare[0]):
+            equal = equal & _allclose_recursive(fullstate(**input_args), partstate(**input_args))
+    except RuntimeError:
+        equal = False
     res1 = fullstate.compute()
     try:  # if it fails, the code most likely need access to the full state
         res2 = partstate.compute()

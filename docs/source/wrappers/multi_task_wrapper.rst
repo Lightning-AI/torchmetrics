@@ -12,5 +12,5 @@ Multi-task Wrapper
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.MultitaskWrapper
+.. autoclass:: torchmetrics.wrappers.MultitaskWrapper
     :noindex:

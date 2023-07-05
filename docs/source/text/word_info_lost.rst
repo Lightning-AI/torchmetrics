@@ -12,12 +12,12 @@ Word Info. Lost
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.WordInfoLost
+.. autoclass:: torchmetrics.text.WordInfoLost
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.word_information_lost
+.. autofunction:: torchmetrics.functional.text.word_information_lost
     :noindex:

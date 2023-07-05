@@ -12,6 +12,6 @@ Metric Tracker
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.MetricTracker
+.. autoclass:: torchmetrics.wrappers.MetricTracker
     :noindex:
     :exclude-members: update, compute

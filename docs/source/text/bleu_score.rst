@@ -12,12 +12,12 @@ BLEU Score
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.BLEUScore
+.. autoclass:: torchmetrics.text.BLEUScore
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.bleu_score
+.. autofunction:: torchmetrics.functional.text.bleu_score
     :noindex:

@@ -125,11 +125,7 @@ class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        state = (
-            (dim_zero_cat(self.preds), dim_zero_cat(self.target))  # type: ignore[arg-type]
-            if self.thresholds is None
-            else self.confmat
-        )
+        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _binary_recall_at_fixed_precision_compute(
             state, self.thresholds, self.min_recall, reduce_fn=_precision_at_recall
         )
@@ -271,11 +267,7 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        state = (
-            (dim_zero_cat(self.preds), dim_zero_cat(self.target))  # type: ignore[arg-type]
-            if self.thresholds is None
-            else self.confmat
-        )
+        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multiclass_recall_at_fixed_precision_arg_compute(
             state, self.num_classes, self.thresholds, self.min_recall, reduce_fn=_precision_at_recall
         )
@@ -418,11 +410,7 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        state = (
-            (dim_zero_cat(self.preds), dim_zero_cat(self.target))  # type: ignore[arg-type]
-            if self.thresholds is None
-            else self.confmat
-        )
+        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multilabel_recall_at_fixed_precision_arg_compute(
             state, self.num_labels, self.thresholds, self.ignore_index, self.min_recall, reduce_fn=_precision_at_recall
         )

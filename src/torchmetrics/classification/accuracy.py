@@ -467,7 +467,7 @@ class Accuracy:
         tensor(0.6667)
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
@@ -503,4 +503,4 @@ class Accuracy:
                     f"Optional arg `num_labels` must be type `int` when task is {task}. Got {type(num_labels)}"
                 )
             return MultilabelAccuracy(num_labels, threshold, average, **kwargs)
-        raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy
+        raise ValueError(f"Not handled value: {task}")
