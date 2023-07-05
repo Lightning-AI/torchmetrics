@@ -277,7 +277,7 @@ def source_aggregated_signal_distortion_ratio(
         >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
         >>> target = torch.randn(4, 2, 8000)
         >>> best_metric, best_perm = permutation_invariant_training(preds, target,
-        >>>     source_aggregated_signal_distortion_ratio, mode="permutation-wise", average=True)
+        >>>     source_aggregated_signal_distortion_ratio, mode="permutation-wise")
         >>> best_metric
         tensor([-37.9511, -41.9124, -42.7369, -42.5155])
         >>> best_perm
@@ -288,7 +288,7 @@ def source_aggregated_signal_distortion_ratio(
     """
     _check_same_shape(preds, target)
     if preds.ndim < 2:
-        raise RuntimeError(f"the preds and target should have the shape (..., spk, time), but {preds.shape} found")
+        raise RuntimeError(f"The preds and target should have the shape (..., spk, time), but {preds.shape} found")
 
     eps = torch.finfo(preds.dtype).eps
 

@@ -27,7 +27,11 @@ from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 __doctest_requires__ = {"SignalDistortionRatio": ["fast_bss_eval"]}
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["SignalDistortionRatio.plot", "ScaleInvariantSignalDistortionRatio.plot"]
+    __doctest_skip__ = [
+        "SignalDistortionRatio.plot",
+        "ScaleInvariantSignalDistortionRatio.plot",
+        "SourceAggregatedSignalDistortionRatio.plot",
+    ]
 
 
 class SignalDistortionRatio(Metric):
@@ -287,41 +291,30 @@ class SourceAggregatedSignalDistortionRatio(Metric):
     - ``sa_sdr`` (:class:`~torch.Tensor`): float scalar tensor with average SA-SDR value over samples
 
     Args:
-        use_cg_iter:
-            If provided, conjugate gradient descent is used to solve for the distortion
-            filter coefficients instead of direct Gaussian elimination, which requires that
-            ``fast-bss-eval`` is installed and pytorch version >= 1.8.
-            This can speed up the computation of the metrics in case the filters
-            are long. Using a value of 10 here has been shown to provide
-            good accuracy in most cases and is sufficient when using this
-            loss to train neural separation networks.
-        filter_length: The length of the distortion filter allowed
-        zero_mean:
-            When set to True, the mean of all signals is subtracted prior to computation of the metrics
-        load_diag:
-            If provided, this small value is added to the diagonal coefficients of the system metrics when solving
-            for the filter coefficients. This can help stabilize the metric in the case where some reference
-            signals may sometimes be zero
+        preds: float tensor with shape ``(..., spk, time)``
+        target: float tensor with shape ``(..., spk, time)``
+        scale_invariant: if True, scale the targets of different speakers with the same alpha
+        zero_mean: If to zero mean target and preds or not
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> import torch
-        >>> from torchmetrics.audio import SignalDistortionRatio
+        >>> from torchmetrics.audio import SourceAggregatedSignalDistortionRatio
         >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn(8000)
-        >>> target = torch.randn(8000)
-        >>> sdr = SignalDistortionRatio()
-        >>> sdr(preds, target)
-        tensor(-12.0589)
+        >>> preds = torch.randn(2, 8000) # [..., spk, time]
+        >>> target = torch.randn(2, 8000)
+        >>> sasdr = SourceAggregatedSignalDistortionRatio()
+        >>> sasdr(preds, target)
+        tensor(-41.6579)
         >>> # use with pit
         >>> from torchmetrics.audio import PermutationInvariantTraining
-        >>> from torchmetrics.functional.audio import signal_distortion_ratio
+        >>> from torchmetrics.functional.audio import source_aggregated_signal_distortion_ratio
         >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
         >>> target = torch.randn(4, 2, 8000)
-        >>> pit = PermutationInvariantTraining(signal_distortion_ratio,
-        ...     mode="speaker-wise", eval_func="max")
+        >>> pit = PermutationInvariantTraining(source_aggregated_signal_distortion_ratio,
+        ...     mode="permutation-wise", eval_func="max")
         >>> pit(preds, target)
-        tensor(-11.6051)
+        tensor(-41.2790)
     """
 
     msum: Tensor
