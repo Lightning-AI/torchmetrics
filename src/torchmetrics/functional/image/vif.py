@@ -87,8 +87,8 @@ def visual_information_fidelity(preds: Tensor, target: Tensor, sigma_n_sq: float
     """Compute Pixel Based Visual Information Fidelity (VIF_).
 
     Args:
-        preds: predicted images of shape ``(N,C,H,W)``
-        target: ground truth images of shape ``(N,C,H,W)``
+        preds: predicted images of shape ``(N,C,H,W)``. ``(H, W)`` has to be at least ``(41, 41)``.
+        target: ground truth images of shape ``(N,C,H,W)``. ``(H, W)`` has to be at least ``(41, 41)``
         sigma_n_sq: variance of the visual noise
 
     Return:
@@ -102,12 +102,12 @@ def visual_information_fidelity(preds: Tensor, target: Tensor, sigma_n_sq: float
     # https://github.com/photosynthesis-team/piq/blob/01e16b7d8c76bc8765fb6a69560d806148b8046a/piq/vif.py and
     # https://github.com/andrewekhalel/sewar/blob/ac76e7bc75732fde40bb0d3908f4b6863400cc27/sewar/full_ref.py#L357.
 
-    if preds.size(-1) < 41 or preds.size(-1) < 41:
-        raise ValueError(f"Invalid size of preds. Expected at least 41x41, but got {preds.size(-1)}x{preds.size(-1)}!")
+    if preds.size(-1) < 41 or preds.size(-2) < 41:
+        raise ValueError(f"Invalid size of preds. Expected at least 41x41, but got {preds.size(-1)}x{preds.size(-2)}!")
 
-    if target.size(-1) < 41 or target.size(-1) < 41:
+    if target.size(-1) < 41 or target.size(-2) < 41:
         raise ValueError(
-            f"Invalid size of target. Expected at least 41x41, but got {target.size(-1)}x{target.size(-1)}!"
+            f"Invalid size of target. Expected at least 41x41, but got {target.size(-1)}x{target.size(-2)}!"
         )
 
     per_channel = [_vif_per_channel(preds[:, i, :, :], target[:, i, :, :], sigma_n_sq) for i in range(preds.size(1))]

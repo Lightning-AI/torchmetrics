@@ -25,8 +25,8 @@ class VisualInformationFidelity(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``preds`` (:class:`~torch.Tensor`): Predictions from model of shape ``(N,C,H,W)``
-    - ``target`` (:class:`~torch.Tensor`): Ground truth values of shape ``(N,C,H,W)``
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model of shape ``(N,C,H,W)``. ``(H, W)`` has to be at least ``(41, 41)``
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values of shape ``(N,C,H,W)``. ``(H, W)`` has to be at least ``(41, 41)``
 
     As output of `forward` and `compute` the metric returns the following output
 
