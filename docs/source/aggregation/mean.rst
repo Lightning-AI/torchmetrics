@@ -12,6 +12,6 @@ Mean
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.MeanMetric
+.. autoclass:: torchmetrics.aggregation.MeanMetric
     :noindex:
     :exclude-members: update, compute

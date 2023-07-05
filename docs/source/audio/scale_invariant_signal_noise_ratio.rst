@@ -12,12 +12,12 @@ Scale-Invariant Signal-to-Noise Ratio (SI-SNR)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.ScaleInvariantSignalNoiseRatio
+.. autoclass:: torchmetrics.audio.ScaleInvariantSignalNoiseRatio
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.scale_invariant_signal_noise_ratio
+.. autofunction:: torchmetrics.functional.audio.scale_invariant_signal_noise_ratio
     :noindex:

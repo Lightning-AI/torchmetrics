@@ -12,7 +12,7 @@ Error Relative Global Dim. Synthesis (ERGAS)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.image.ergas.ErrorRelativeGlobalDimensionlessSynthesis
+.. autoclass:: torchmetrics.image.ErrorRelativeGlobalDimensionlessSynthesis
     :noindex:
     :exclude-members: update, compute
 
@@ -20,5 +20,5 @@ ________________
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.error_relative_global_dimensionless_synthesis
+.. autofunction:: torchmetrics.functional.image.error_relative_global_dimensionless_synthesis
     :noindex:
