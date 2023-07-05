@@ -126,10 +126,11 @@ class MultioutputWrapper(Metric):
 
         We override this method to ensure that state variables get copied over on the underlying metrics.
         """
-        results = []
         reshaped_args_kwargs = self._get_args_kwargs_by_output(*args, **kwargs)
-        for metric, (selected_args, selected_kwargs) in zip(self.metrics, reshaped_args_kwargs):
-            results.append(metric(*selected_args, **selected_kwargs))
+        results = [
+            metric(*selected_args, **selected_kwargs)
+            for metric, (selected_args, selected_kwargs) in zip(self.metrics, reshaped_args_kwargs)
+        ]
         if results[0] is None:
             return None
         return torch.stack(results, 0)

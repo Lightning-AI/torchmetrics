@@ -115,12 +115,12 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
             _binary_auroc_arg_validation(max_fpr, thresholds, ignore_index)
         self.max_fpr = max_fpr
 
-    def compute(self) -> Tensor:
+    def compute(self) -> Tensor:  # type: ignore[override]
         """Compute metric."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _binary_auroc_compute(state, self.thresholds, self.max_fpr)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -260,12 +260,12 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         self.average = average
         self.validate_args = validate_args
 
-    def compute(self) -> Tensor:
+    def compute(self) -> Tensor:  # type: ignore[override]
         """Compute metric."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multiclass_auroc_compute(state, self.num_classes, self.average, self.thresholds)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -407,12 +407,12 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         self.average = average
         self.validate_args = validate_args
 
-    def compute(self) -> Tensor:
+    def compute(self) -> Tensor:  # type: ignore[override]
         """Compute metric."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multilabel_auroc_compute(state, self.num_labels, self.average, self.thresholds, self.ignore_index)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -485,7 +485,7 @@ class AUROC:
         tensor(0.7778)
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
@@ -510,4 +510,4 @@ class AUROC:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelAUROC(num_labels, average, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")

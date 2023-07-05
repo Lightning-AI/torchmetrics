@@ -267,9 +267,7 @@ class TestMulticlassAveragePrecision(MetricTester):
 def _sklearn_avg_precision_multilabel(preds, target, average="macro", ignore_index=None):
     if average == "micro":
         return _sklearn_avg_precision_binary(preds.flatten(), target.flatten(), ignore_index)
-    res = []
-    for i in range(NUM_CLASSES):
-        res.append(_sklearn_avg_precision_binary(preds[:, i], target[:, i], ignore_index))
+    res = [_sklearn_avg_precision_binary(preds[:, i], target[:, i], ignore_index) for i in range(NUM_CLASSES)]
     if average == "macro":
         return np.array(res)[~np.isnan(res)].mean()
     if average == "weighted":
