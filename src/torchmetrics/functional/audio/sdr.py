@@ -277,7 +277,7 @@ def source_aggregated_signal_distortion_ratio(
         >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
         >>> target = torch.randn(4, 2, 8000)
         >>> best_metric, best_perm = permutation_invariant_training(preds, target,
-        >>>     source_aggregated_signal_distortion_ratio, mode="permutation-wise")
+        ...     source_aggregated_signal_distortion_ratio, mode="permutation-wise")
         >>> best_metric
         tensor([-37.9511, -41.9124, -42.7369, -42.5155])
         >>> best_perm
