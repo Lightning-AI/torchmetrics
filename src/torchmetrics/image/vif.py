@@ -43,7 +43,6 @@ class VisualInformationFidelity(Metric):
         >>> target = torch.randn([32, 3, 41, 41])
         >>> vif = VisualInformationFidelity()
         >>> vif(preds, target)
-        tensor(0.0034)
     """
 
     is_differentiable = True
