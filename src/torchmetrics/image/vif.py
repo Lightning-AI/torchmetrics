@@ -18,7 +18,6 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.image.vif import _vif_per_channel
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.distributed import reduce
 
 
 class VisualInformationFidelity(Metric):
@@ -36,6 +35,15 @@ class VisualInformationFidelity(Metric):
     Args:
         sigma_n_sq: variance of the visual noise
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Example:
+        >>> import torch
+        >>> from torchmetrics.image import VisualInformationFidelity
+        >>> preds = torch.randn([32, 3, 41, 41])
+        >>> target = torch.randn([32, 3, 41, 41])
+        >>> vif = VisualInformationFidelity()
+        >>> vif(preds, target)
+        tensor(0.0034)
     """
 
     is_differentiable = True
@@ -47,6 +55,11 @@ class VisualInformationFidelity(Metric):
 
     def __init__(self, sigma_n_sq: float = 2.0, **kwargs: Any) -> None:
         super().__init__(**kwargs)
+
+        if not isinstance(sigma_n_sq, float) and not isinstance(sigma_n_sq, int):
+            raise ValueError(f"Argument `sigma_n_sq` is expected to be a positive float or int, but got {sigma_n_sq}")
+        elif sigma_n_sq < 0:
+            raise ValueError(f"Argument `sigma_n_sq` is expected to be a positive float or int, but got {sigma_n_sq}")
 
         self.add_state("vif_score", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0.0), dist_reduce_fx="sum")

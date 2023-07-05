@@ -37,6 +37,7 @@ __all__ = [
     "MemorizationInformedFrechetInceptionDistance",
     "StructuralSimilarityIndexMeasure",
     "UniversalImageQualityIndex",
+    "VisualInformationFidelity",
     "TotalVariation",
 ]
 
