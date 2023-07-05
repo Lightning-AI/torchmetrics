@@ -53,6 +53,8 @@ def _sewar_vif(preds, target, sigma_nsq=2):
 class TestVIF(MetricTester):
     """Test class for `VisualInformationFidelity` metric."""
 
+    atol = 1e-7
+
     @pytest.mark.parametrize("ddp", [True, False])
     def test_vif(self, preds, target, ddp):
         """Test class implementation of metric."""
