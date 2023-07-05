@@ -131,7 +131,7 @@ def _binary_calibration_error_tensor_validation(
         )
 
 
-def _binary_calibration_error_update(preds: Tensor, target: Tensor) -> Tensor:
+def _binary_calibration_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     confidences, accuracies = preds, target
     return confidences, accuracies
 
@@ -235,7 +235,7 @@ def _multiclass_calibration_error_tensor_validation(
 def _multiclass_calibration_error_update(
     preds: Tensor,
     target: Tensor,
-) -> Tensor:
+) -> Tuple[Tensor, Tensor]:
     if not torch.all((preds >= 0) * (preds <= 1)):
         preds = preds.softmax(1)
     confidences, predictions = preds.max(dim=1)

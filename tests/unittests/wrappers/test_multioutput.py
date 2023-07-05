@@ -78,10 +78,7 @@ def _multi_target_sk_r2score(preds, target, adjusted=0, multioutput="raw_values"
 
 def _multi_target_sk_accuracy(preds, target, num_outputs):
     """Compute accuracy over multiple outputs."""
-    accs = []
-    for i in range(num_outputs):
-        accs.append(accuracy_score(torch.argmax(preds[:, :, i], dim=1), target[:, i]))
-    return accs
+    return [accuracy_score(torch.argmax(preds[:, :, i], dim=1), target[:, i]) for i in range(num_outputs)]
 
 
 @pytest.mark.parametrize(

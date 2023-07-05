@@ -10,14 +10,14 @@ Cramer's V
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.CramersV
+.. autoclass:: torchmetrics.nominal.CramersV
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.cramers_v
+.. autofunction:: torchmetrics.functional.nominal.cramers_v
     :noindex:
 
 cramers_v_matrix

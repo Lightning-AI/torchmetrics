@@ -122,7 +122,7 @@ def _multilabel_ranking_average_precision_update(preds: Tensor, target: Tensor) 
             rank = _rank_data(neg_preds[i])[relevant].float()
             score_idx = (ranking / rank).mean()
         else:
-            score_idx = 1.0
+            score_idx = torch.ones_like(score)
         score += score_idx
     return score, n_preds
 

@@ -164,9 +164,6 @@ warn_no_return = "False"
 # TODO: the goal is for this to be empty
 [[tool.mypy.overrides]]
 module = [
-    "torchmetrics.classification.accuracy",
-    "torchmetrics.classification.auroc",
-    "torchmetrics.classification.average_precision",
     "torchmetrics.classification.calibration_error",
     "torchmetrics.classification.cohen_kappa",
     "torchmetrics.classification.confusion_matrix",
@@ -178,7 +175,6 @@ module = [
     "torchmetrics.classification.jaccard",
     "torchmetrics.classification.matthews_corrcoef",
     "torchmetrics.classification.precision_recall",
-    "torchmetrics.classification.precision_recall_curve",
     "torchmetrics.classification.ranking",
     "torchmetrics.classification.recall_at_fixed_precision",
     "torchmetrics.classification.roc",
@@ -186,13 +182,6 @@ module = [
     "torchmetrics.classification.stat_scores",
     "torchmetrics.detection._mean_ap",
     "torchmetrics.detection.mean_ap",
-    "torchmetrics.functional.classification.calibration_error",
-    "torchmetrics.functional.classification.confusion_matrix",
-    "torchmetrics.functional.classification.f_beta",
-    "torchmetrics.functional.classification.group_fairness",
-    "torchmetrics.functional.classification.precision_recall_curve",
-    "torchmetrics.functional.classification.ranking",
-    "torchmetrics.functional.classification.recall_at_fixed_precision",
     "torchmetrics.functional.image.psnr",
     "torchmetrics.functional.image.ssim",
     "torchmetrics.image.psnr",
