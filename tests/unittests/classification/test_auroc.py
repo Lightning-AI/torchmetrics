@@ -262,9 +262,10 @@ def _sklearn_auroc_multilabel(preds, target, average="macro", ignore_index=None)
         return sk_roc_auc_score(target, preds, average=average, max_fpr=None)
     if average == "micro":
         return _sklearn_auroc_binary(preds.flatten(), target.flatten(), max_fpr=None, ignore_index=ignore_index)
-    res = []
-    for i in range(NUM_CLASSES):
-        res.append(_sklearn_auroc_binary(preds[:, i], target[:, i], max_fpr=None, ignore_index=ignore_index))
+    res = [
+        _sklearn_auroc_binary(preds[:, i], target[:, i], max_fpr=None, ignore_index=ignore_index)
+        for i in range(NUM_CLASSES)
+    ]
     if average == "macro":
         return np.array(res)[~np.isnan(res)].mean()
     if average == "weighted":

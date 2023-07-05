@@ -728,4 +728,4 @@ def recall(
         return multilabel_recall(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy
+    raise ValueError(f"Not handled value: {task}")

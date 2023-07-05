@@ -277,4 +277,4 @@ def matthews_corrcoef(
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_matthews_corrcoef(preds, target, num_labels, threshold, ignore_index, validate_args)
-    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy
+    raise ValueError(f"Not handled value: {task}")

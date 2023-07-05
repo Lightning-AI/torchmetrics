@@ -22,6 +22,8 @@ import torch
 torch.nn.Module.__init__.__doc__ = ""
 
 import pt_lightning_sphinx_theme
+from lightning_utilities.docs import fetch_external_assets
+from lightning_utilities.docs.formatting import _transform_changelog
 
 import torchmetrics
 
@@ -32,6 +34,7 @@ sys.path.insert(0, os.path.abspath(_PATH_ROOT))
 
 FOLDER_GENERATED = "generated"
 SPHINX_MOCK_REQUIREMENTS = int(os.environ.get("SPHINX_MOCK_REQUIREMENTS", True))
+SPHINX_FETCH_ASSETS = int(os.environ.get("SPHINX_FETCH_ASSETS", True))
 
 html_favicon = "_static/images/icon.svg"
 
@@ -55,21 +58,6 @@ github_repo = "metrics"
 # -- Project documents -------------------------------------------------------
 
 
-def _transform_changelog(path_in: str, path_out: str) -> None:
-    with open(path_in) as fp:
-        chlog_lines = fp.readlines()
-    # enrich short subsub-titles to be unique
-    chlog_ver = ""
-    for i, ln in enumerate(chlog_lines):
-        if ln.startswith("## "):
-            chlog_ver = ln[2:].split("-")[0].strip()
-        elif ln.startswith("### "):
-            ln = ln.replace("###", f"### {chlog_ver} -")
-            chlog_lines[i] = ln
-    with open(path_out, "w", encoding="utf-8") as fp:
-        fp.writelines(chlog_lines)
-
-
 os.makedirs(os.path.join(_PATH_HERE, FOLDER_GENERATED), exist_ok=True)
 # copy all documents from GH templates like contribution guide
 for md in glob.glob(os.path.join(_PATH_ROOT, ".github", "*.md")):
@@ -79,6 +67,13 @@ _transform_changelog(
     os.path.join(_PATH_ROOT, "CHANGELOG.md"),
     os.path.join(_PATH_HERE, FOLDER_GENERATED, "CHANGELOG.md"),
 )
+
+if SPHINX_FETCH_ASSETS:
+    fetch_external_assets(
+        docs_folder=_PATH_HERE,
+        assets_folder="_static/fetched-s3-assets",
+        retrieve_pattern=r"https?://[-a-zA-Z0-9_]+\.s3\.[-a-zA-Z0-9()_\\+.\\/=]+",
+    )
 
 # -- General configuration ---------------------------------------------------
 

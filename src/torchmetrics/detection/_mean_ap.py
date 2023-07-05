@@ -904,12 +904,7 @@ class MeanAveragePrecision(Metric):
         list_gathered = [None for _ in range(world_size)]
         dist.all_gather_object(list_gathered, list_to_gather, group=process_group)
 
-        list_merged = []
-        for idx in range(len(list_gathered[0])):
-            for rank in range(world_size):
-                list_merged.append(list_gathered[rank][idx])
-
-        return list_merged
+        return [list_gathered[rank][idx] for idx in range(len(list_gathered[0])) for rank in range(world_size)]
 
     def plot(
         self, val: Optional[Union[Dict[str, Tensor], Sequence[Dict[str, Tensor]]]] = None, ax: Optional[_AX_TYPE] = None
