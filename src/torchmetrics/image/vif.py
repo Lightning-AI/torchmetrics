@@ -22,7 +22,7 @@ from torchmetrics.utilities.distributed import reduce
 
 
 class VisualInformationFidelity(Metric):
-    """Compute Pixel Based Visual Information Fidelity (vif-p).
+    """Compute Pixel Based Visual Information Fidelity (VIF_).
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -35,6 +35,7 @@ class VisualInformationFidelity(Metric):
 
     Args:
         sigma_n_sq: variance of the visual noise
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
     """
 
     is_differentiable = True

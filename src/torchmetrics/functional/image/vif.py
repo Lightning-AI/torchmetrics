@@ -84,7 +84,7 @@ def _vif_per_channel(preds: Tensor, target: Tensor, sigma_n_sq: float) -> Tensor
 
 
 def visual_information_fidelity(preds: Tensor, target: Tensor, sigma_n_sq: float = 2.0) -> Tensor:
-    """Compute Pixel Based Visual Information Fidelity (vif-p).
+    """Compute Pixel Based Visual Information Fidelity (VIF_).
 
     Args:
         preds: predicted images of shape ``(N,C,H,W)``
@@ -101,9 +101,6 @@ def visual_information_fidelity(preds: Tensor, target: Tensor, sigma_n_sq: float
     # This code is inspired by
     # https://github.com/photosynthesis-team/piq/blob/01e16b7d8c76bc8765fb6a69560d806148b8046a/piq/vif.py and
     # https://github.com/andrewekhalel/sewar/blob/ac76e7bc75732fde40bb0d3908f4b6863400cc27/sewar/full_ref.py#L357.
-    #
-    # Reference: https://ieeexplore.ieee.org/abstract/document/1576816
-    # https://live.ece.utexas.edu/research/quality/VIF.htm
 
     if preds.size(-1) < 41 or preds.size(-1) < 41:
         raise ValueError(f"Invalid size of preds. Expected at least 41x41, but got {preds.size(-1)}x{preds.size(-1)}!")
