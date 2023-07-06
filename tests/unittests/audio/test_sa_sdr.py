@@ -17,11 +17,7 @@ from functools import partial
 import pytest
 import torch
 from torch import Tensor
-from torchmetrics.audio import (
-    ScaleInvariantSignalDistortionRatio,
-    SignalNoiseRatio,
-    SourceAggregatedSignalDistortionRatio,
-)
+from torchmetrics.audio import SourceAggregatedSignalDistortionRatio
 from torchmetrics.functional.audio import (
     scale_invariant_signal_distortion_ratio,
     signal_noise_ratio,
@@ -51,7 +47,7 @@ def _ref_metric(preds: Tensor, target: Tensor, scale_invariant: bool, zero_mean:
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, Spk, Time], target [NUM_BATCHES*BATCH_SIZE, Spk, Time]
 
     preds = preds.reshape(preds.shape[0], preds.shape[1] * preds.shape[2])
-    target = target.reshape(preds.shape[0], preds.shape[1] * preds.shape[2])
+    target = target.reshape(target.shape[0], target.shape[1] * target.shape[2])
     if scale_invariant:
         return scale_invariant_signal_distortion_ratio(preds=preds, target=target, zero_mean=zero_mean)
     return signal_noise_ratio(preds=preds, target=target, zero_mean=zero_mean)
