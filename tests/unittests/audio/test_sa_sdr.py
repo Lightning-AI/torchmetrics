@@ -85,7 +85,7 @@ class TestSASDR(MetricTester):
             preds,
             target,
             SourceAggregatedSignalDistortionRatio,
-            reference_metric=_average_metric,
+            reference_metric=partial(_average_metric, scale_invariant=scale_invariant, zero_mean=zero_mean),
             metric_args={
                 "scale_invariant": scale_invariant,
                 "zero_mean": zero_mean,
@@ -98,7 +98,7 @@ class TestSASDR(MetricTester):
             preds,
             target,
             source_aggregated_signal_distortion_ratio,
-            reference_metric=_ref_metric,
+            reference_metric=partial(_ref_metric, scale_invariant=scale_invariant, zero_mean=zero_mean),
             metric_args={
                 "scale_invariant": scale_invariant,
                 "zero_mean": zero_mean,
