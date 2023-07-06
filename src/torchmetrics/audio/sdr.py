@@ -334,10 +334,10 @@ class SourceAggregatedSignalDistortionRatio(Metric):
         super().__init__(**kwargs)
 
         if not isinstance(scale_invariant, bool):
-             raise ValueError(f"Expected argument `scale_invarint` to be a bool, but got {scale_invariant}")
+            raise ValueError(f"Expected argument `scale_invarint` to be a bool, but got {scale_invariant}")
         self.scale_invariant = scale_invariant
         if not isinstance(zero_mean, bool):
-             raise ValueError(f"Expected argument `zero_mean` to be a bool, but got {zero_mean}")
+            raise ValueError(f"Expected argument `zero_mean` to be a bool, but got {zero_mean}")
         self.zero_mean = zero_mean
 
         self.add_state("msum", default=tensor(0.0), dist_reduce_fx="sum")
