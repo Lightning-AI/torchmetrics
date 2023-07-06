@@ -34,11 +34,11 @@ jobs:
         path: dist
 
   upload-package:
-    timeout-minutes: 5
-    runs-on: ubuntu-20.04
     needs: build-package
+    if: startsWith(github.event.ref, 'refs/tags') || github.event_name == 'release'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
-    - uses: actions/checkout@v3
     - uses: actions/download-artifact@v3
       with:
         name: pypi-packages-${{ github.sha }}
@@ -46,18 +46,17 @@ jobs:
     - run: ls -lh dist/
 
     - name: Upload to release
-      if: startsWith(github.event.ref, 'refs/tags') || github.event_name == 'release'
       uses: AButler/upload-release-assets@v2.0
       with:
         files: 'dist/*'
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   publish-package:
-    runs-on: ubuntu-20.04
-    timeout-minutes: 10
     needs: build-package
+    if: startsWith(github.event.ref, 'refs/tags') || github.event_name == 'release'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-    - uses: actions/checkout@v3
     - uses: actions/download-artifact@v3
       with:
         name: pypi-packages-${{ github.sha }}
@@ -66,7 +65,6 @@ jobs:
 
     # We do this, since failures on test.pypi aren't that bad
     - name: Publish to Test PyPI
-      if: startsWith(github.event.ref, 'refs/tags') || github.event_name == 'release'
       uses: pypa/gh-action-pypi-publish@v1.8.7
       with:
         user: __token__
@@ -75,13 +73,11 @@ jobs:
         verbose: true
 
     - name: Delay releasing
-      if: startsWith(github.event.ref, 'refs/tags') || github.event_name == 'release'
       uses: juliangruber/sleep-action@v1
       with:
         time: 5m
 
     - name: Publish distribution 📦 to PyPI
-      if: startsWith(github.event.ref, 'refs/tags') || github.event_name == 'release'
       uses: pypa/gh-action-pypi-publish@v1.8.7
       with:
         user: __token__
