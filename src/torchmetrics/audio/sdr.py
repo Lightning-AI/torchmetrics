@@ -333,6 +333,8 @@ class SourceAggregatedSignalDistortionRatio(Metric):
     ) -> None:
         super().__init__(**kwargs)
 
+        if not isinstance(scale_invariant, bool):
+             raise ValueError(f"Expected argument `scale_invarint` to be a bool, but got {scale_invariant}")
         self.scale_invariant = scale_invariant
         self.zero_mean = zero_mean
 
