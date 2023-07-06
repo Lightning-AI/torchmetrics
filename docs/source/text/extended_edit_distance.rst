@@ -12,12 +12,12 @@ Extended Edit Distance
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.ExtendedEditDistance
+.. autoclass:: torchmetrics.text.ExtendedEditDistance
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.extended_edit_distance
+.. autofunction:: torchmetrics.functional.text.extended_edit_distance
     :noindex:

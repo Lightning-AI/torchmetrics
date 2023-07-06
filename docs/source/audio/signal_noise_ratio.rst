@@ -12,12 +12,12 @@ Signal-to-Noise Ratio (SNR)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.SignalNoiseRatio
+.. autoclass:: torchmetrics.audio.SignalNoiseRatio
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.signal_noise_ratio
+.. autofunction:: torchmetrics.functional.audio.signal_noise_ratio
     :noindex:
