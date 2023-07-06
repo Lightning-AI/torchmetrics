@@ -144,3 +144,20 @@ def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tens
         slice_param = [slice(dim_size) for dim_size in item_size]
         gathered_result[idx] = gathered_result[idx][slice_param]
     return gathered_result
+
+
+class EvaluationDistributedSampler(torch.utils.data.DistributedSampler):
+    """A distributed sampler that doesn't add duplicates. Arguments are the same as DistributedSampler.
+
+    From:
+    https://github.com/pytorch/pytorch/issues/25162#issuecomment-1227647626
+    """
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+
+        if not self.drop_last and len(self.dataset) % self.num_replicas != 0:
+            # some ranks may have less samples, that's fine
+            if self.rank >= len(self.dataset) % self.num_replicas:
+                self.num_samples -= 1
+            self.total_size = len(self.dataset)
