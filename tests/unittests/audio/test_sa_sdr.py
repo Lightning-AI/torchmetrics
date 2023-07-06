@@ -46,10 +46,14 @@ def _ref_metric(preds: Tensor, target: Tensor, scale_invariant: bool, zero_mean:
     # shape: preds [BATCH_SIZE, Spk, Time] , target [BATCH_SIZE, Spk, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, Spk, Time], target [NUM_BATCHES*BATCH_SIZE, Spk, Time]
 
+    if zero_mean:
+        target = target - torch.mean(target, dim=-1, keepdim=True)
+        preds = preds - torch.mean(preds, dim=-1, keepdim=True)
+
     preds = preds.reshape(preds.shape[0], preds.shape[1] * preds.shape[2])
     target = target.reshape(target.shape[0], target.shape[1] * target.shape[2])
     if scale_invariant:
-        return scale_invariant_signal_distortion_ratio(preds=preds, target=target, zero_mean=zero_mean)
+        return scale_invariant_signal_distortion_ratio(preds=preds, target=target, zero_mean=False)
     return signal_noise_ratio(preds=preds, target=target, zero_mean=zero_mean)
 
 
