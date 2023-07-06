@@ -10,14 +10,14 @@ Theil's U
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.TheilsU
+.. autoclass:: torchmetrics.nominal.TheilsU
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.theils_u
+.. autofunction:: torchmetrics.functional.nominal.theils_u
     :noindex:
 
 theils_u_matrix

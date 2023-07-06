@@ -183,7 +183,7 @@ def _multiclass_specificity_at_sensitivity_compute(
     num_classes: int,
     thresholds: Optional[Tensor],
     min_sensitivity: float,
-) -> Union[Tensor, Tuple[Tensor, Tensor], Tuple[List[Tensor], List[Tensor]]]:
+) -> Tuple[Tensor, Tensor]:
     fpr, sensitivity, thresholds = _multiclass_roc_compute(state, num_classes, thresholds)
     specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
@@ -277,9 +277,7 @@ def multiclass_specificity_at_sensitivity(
         preds, target, num_classes, thresholds, ignore_index
     )
     state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
-    return _multiclass_specificity_at_sensitivity_compute(
-        state, num_classes, thresholds, min_sensitivity
-    )  # type: ignore
+    return _multiclass_specificity_at_sensitivity_compute(state, num_classes, thresholds, min_sensitivity)
 
 
 def _multilabel_specificity_at_sensitivity_arg_validation(
@@ -440,4 +438,4 @@ def specicity_at_sensitivity(
         return multilabel_specificity_at_sensitivity(  # type: ignore
             preds, target, num_labels, min_sensitivity, thresholds, ignore_index, validate_args
         )
-    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy
+    raise ValueError(f"Not handled value: {task}")

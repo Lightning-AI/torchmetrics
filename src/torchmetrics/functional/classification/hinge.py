@@ -282,4 +282,4 @@ def hinge_loss(
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         return multiclass_hinge_loss(preds, target, num_classes, squared, multiclass_mode, ignore_index, validate_args)
-    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy
+    raise ValueError(f"Not handled value: {task}")

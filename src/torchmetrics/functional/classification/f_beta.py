@@ -715,7 +715,7 @@ def fbeta_score(
         return multilabel_fbeta_score(
             preds, target, beta, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    return None
+    raise ValueError(f"Unsupported task `{task}` passed.")
 
 
 def f1_score(
@@ -766,4 +766,4 @@ def f1_score(
         return multilabel_f1_score(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    return None
+    raise ValueError(f"Unsupported task `{task}` passed.")

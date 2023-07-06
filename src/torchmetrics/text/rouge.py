@@ -166,7 +166,7 @@ class ROUGEScore(Metric):
         for rouge_key, metrics in output.items():
             for metric in metrics:
                 for tp, value in metric.items():
-                    getattr(self, f"rouge{rouge_key}_{tp}").append(value.to(self.device))
+                    getattr(self, f"rouge{rouge_key}_{tp}").append(value.to(self.device))  # noqa: PERF401 # todo
 
     def compute(self) -> Dict[str, Tensor]:
         """Calculate (Aggregate and provide confidence intervals) ROUGE score."""
