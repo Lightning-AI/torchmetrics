@@ -38,7 +38,10 @@ def _iou_update(
 def _iou_compute(iou: torch.Tensor, labels_eq: bool = True) -> torch.Tensor:
     if labels_eq:
         return iou.diag().mean()
-    return iou.mean()
+    if iou.numel() > 0:
+        return iou.mean()
+    else:
+        return torch.tensor(0.0)
 
 
 def intersection_over_union(
