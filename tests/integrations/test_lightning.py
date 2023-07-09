@@ -19,7 +19,7 @@ from torch import tensor
 from torch.nn import Linear
 
 if module_available("lightning"):
-    from lightning import LightningModule, Trainer
+    from lightning.pytorch import LightningModule, Trainer
     from lightning.pytorch.loggers import CSVLogger
 else:
     from pytorch_lightning import LightningModule, Trainer
