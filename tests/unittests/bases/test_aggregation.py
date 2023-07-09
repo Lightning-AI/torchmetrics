@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 import torch
 from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric
+from torchmetrics.collections import MetricCollection
 
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers.testers import MetricTester
@@ -164,3 +165,19 @@ def test_mean_metric_broadcasting(weights, expected):
     avg = MeanMetric()
 
     assert avg(values, weights) == expected
+
+
+def test_aggregation_in_collection_with_compute_groups():
+    """Check that aggregation metrics work in MetricCollection with compute_groups=True."""
+    m = MetricCollection(MinMetric(), MaxMetric(), SumMetric(), MeanMetric(), compute_groups=True)
+    assert len(m.compute_groups) == 4, "Expected 4 compute groups"
+    m.update(1)
+    assert len(m.compute_groups) == 4, "Expected 4 compute groups"
+    m.update(2)
+    assert len(m.compute_groups) == 4, "Expected 4 compute groups"
+
+    res = m.compute()
+    assert res["MinMetric"] == 1
+    assert res["MaxMetric"] == 2
+    assert res["SumMetric"] == 3
+    assert res["MeanMetric"] == 1.5
