@@ -38,6 +38,7 @@ class VisualInformationFidelity(Metric):
 
     Example:
         >>> import torch
+        >>> _ = torch.manual_seed(42)
         >>> from torchmetrics.image import VisualInformationFidelity
         >>> preds = torch.randn([32, 3, 41, 41])
         >>> target = torch.randn([32, 3, 41, 41])
