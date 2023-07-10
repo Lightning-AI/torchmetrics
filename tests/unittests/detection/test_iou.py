@@ -15,7 +15,7 @@ from typing import Callable, ClassVar, Dict
 
 import pytest
 import torch
-from torch import Tensor
+from torch import Tensor, tensor
 from torchmetrics.detection.iou import IntersectionOverUnion
 from torchmetrics.functional.detection.iou import intersection_over_union
 from torchmetrics.metric import Metric
@@ -56,3 +56,16 @@ class TestIntersectionOverUnion(MetricTester, BaseTestIntersectionOverUnion):
     }
     metric_class: ClassVar[Metric] = IntersectionOverUnion
     metric_fn: ClassVar[Callable[[Tensor, Tensor, bool, float], Tensor]] = intersection_over_union
+
+
+def test_corner_case():
+    """Test corner case where preds is empty for a given target.
+
+    See this issue: https://github.com/Lightning-AI/torchmetrics/issues/1889
+    """
+    target = [{"boxes": tensor([[238.0000, 74.0000, 343.0000, 275.0000]]), "labels": tensor([6])}]
+    preds = [{"boxes": tensor([[], [], [], []]).T, "labels": tensor([], dtype=torch.int64), "scores": tensor([])}]
+    metric = IntersectionOverUnion()
+    metric.update(preds, target)
+    result = metric.compute()
+    assert result["iou"] == tensor(0.0)
