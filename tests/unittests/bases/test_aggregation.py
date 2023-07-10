@@ -173,7 +173,7 @@ def test_mean_metric_broadcast(nan_strategy):
     metric = MeanMetric(nan_strategy=nan_strategy)
 
     x = torch.arange(5).float()
-    x[1] = torch.nan
+    x[1] = torch.tensor(float("nan"))
     w = torch.arange(5).float()
 
     metric.update(x, w)
@@ -182,7 +182,7 @@ def test_mean_metric_broadcast(nan_strategy):
 
     x = torch.arange(5).float()
     w = torch.arange(5).float()
-    w[1] = torch.nan
+    w[1] = torch.tensor(float("nan"))
 
     metric.update(x, w)
     res = metric.compute()
