@@ -164,3 +164,26 @@ def test_mean_metric_broadcasting(weights, expected):
     avg = MeanMetric()
 
     assert avg(values, weights) == expected
+
+
+@pytest.mark.skipif(not hasattr(torch, "broadcast_to"), reason="PyTorch <1.8 does not have broadcast_to")
+@pytest.mark.parametrize("nan_strategy", ["ignore", "warn"])
+def test_mean_metric_broadcast(nan_strategy):
+    """Check that weights gets broadcasted correctly when Nans are present."""
+    metric = MeanMetric(nan_strategy=nan_strategy)
+
+    x = torch.arange(5).float()
+    x[1] = torch.tensor(float("nan"))
+    w = torch.arange(5).float()
+
+    metric.update(x, w)
+    res = metric.compute()
+    assert round(res.item(), 4) == 3.2222  # (0*0 + 2*2 + 3*3 + 4*4) / (0 + 2 + 3 + 4)
+
+    x = torch.arange(5).float()
+    w = torch.arange(5).float()
+    w[1] = torch.tensor(float("nan"))
+
+    metric.update(x, w)
+    res = metric.compute()
+    assert round(res.item(), 4) == 3.2222  # (0*0 + 2*2 + 3*3 + 4*4) / (0 + 2 + 3 + 4)
