@@ -30,13 +30,13 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Time = 100  # the number of samples
+NUM_SAMPLES = 100  # the number of samples
 
 Input = namedtuple("Input", ["preds", "target"])
 
 inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, Time),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, Time),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, NUM_SAMPLES),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, NUM_SAMPLES),
 )
 
 
