@@ -393,3 +393,17 @@ def test_valid_input_thresholds(metric, thresholds):
     with pytest.warns(None) as record:
         metric(thresholds=thresholds)
     assert len(record) == 0
+
+
+@pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
+def test_corner_case_max_fpr(max_fpr):
+    """Check that metric returns 0 when one class is missing and `max_fpr` is set."""
+    preds = torch.tensor([0.1, 0.2, 0.3, 0.4])
+    target = torch.tensor([0, 0, 0, 0])
+    metric = BinaryAUROC(max_fpr=max_fpr)
+    assert metric(preds, target) == 0.0
+
+    preds = torch.tensor([0.5, 0.6, 0.7, 0.8])
+    target = torch.tensor([1, 1, 1, 1])
+    metric = BinaryAUROC(max_fpr=max_fpr)
+    assert metric(preds, target) == 0.0
