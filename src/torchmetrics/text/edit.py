@@ -14,6 +14,7 @@
 from typing import Any, List, Literal, Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.text.edit import _edit_distance_compute, _edit_distance_update
 from torchmetrics.metric import Metric
@@ -77,6 +78,15 @@ class EditDistance(Metric):
         tensor(3.5000)
 
     """
+
+    higher_is_better: bool = False
+    is_differentiable: bool = False
+    full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+
+    edit_scores_list: List[Tensor]
+    edit_scores: Tensor
+    num_elements: Tensor
 
     def __init__(
         self, substitution_cost: int = 1, reduction: Optional[Literal["mean", "sum", "none"]] = "mean", **kwargs: Any

@@ -14,15 +14,16 @@
 from typing import List, Literal, Optional, Union
 
 import torch
+from torch import Tensor
 
-from torchmetrics.functional.text.helper import _LevenshteinEditDistance
+from torchmetrics.functional.text.helper import _LevenshteinEditDistance as _LE_distance
 
 
 def _edit_distance_update(
     preds: List[str],
     target: List[str],
     substitution_cost: int = 1,
-) -> torch.Tensor:
+) -> Tensor:
     if not isinstance(preds, list):
         preds = [preds]
     if not isinstance(target, list):
@@ -34,15 +35,17 @@ def _edit_distance_update(
     if len(preds) != len(target):
         raise ValueError("Expected argument `preds` and `target` to have same length")
 
-    distance = [_LevenshteinEditDistance(t, op_substitute=substitution_cost)(p)[0] for p, t in zip(preds, target)]
+    distance = [
+        _LE_distance(t, op_substitute=substitution_cost)(p)[0] for p, t in zip(preds, target)  # type: ignore[arg-type]
+    ]
     return torch.tensor(distance, dtype=torch.int)
 
 
 def _edit_distance_compute(
-    edit_scores: torch.Tensor,
-    num_elements: Union[torch.Tensor, int],
+    edit_scores: Tensor,
+    num_elements: Union[Tensor, int],
     reduction: Optional[Literal["mean", "sum", "none"]] = "mean",
-) -> torch.Tensor:
+) -> Tensor:
     """Compute final edit distance reduced over the batch."""
     if reduction == "mean":
         return edit_scores.sum() / num_elements
@@ -58,7 +61,7 @@ def edit_distance(
     target: List[str],
     substitution_cost: int = 1,
     reduction: Optional[Literal["mean", "sum", "none"]] = "mean",
-) -> int:
+) -> Tensor:
     """Calculates the Levenshtein edit distance between two sequences.
 
     The edit distance is the number of characters that need to be substituted, inserted, or deleted, to transform the
