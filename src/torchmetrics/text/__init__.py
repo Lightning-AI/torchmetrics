@@ -14,6 +14,7 @@
 from torchmetrics.text.bleu import BLEUScore
 from torchmetrics.text.cer import CharErrorRate
 from torchmetrics.text.chrf import CHRFScore
+from torchmetrics.text.edit import EditDistance
 from torchmetrics.text.eed import ExtendedEditDistance
 from torchmetrics.text.mer import MatchErrorRate
 from torchmetrics.text.perplexity import Perplexity
@@ -35,6 +36,7 @@ __all__ = [
     "BLEUScore",
     "CharErrorRate",
     "CHRFScore",
+    "EditDistance",
     "ExtendedEditDistance",
     "MatchErrorRate",
     "Perplexity",
