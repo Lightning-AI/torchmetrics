@@ -30,7 +30,7 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Time = 100
+Time = 100 # the number of samples
 
 Input = namedtuple("Input", ["preds", "target"])
 
