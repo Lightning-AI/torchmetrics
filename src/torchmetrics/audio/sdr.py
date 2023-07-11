@@ -345,12 +345,7 @@ class SourceAggregatedSignalDistortionRatio(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        mbatch = source_aggregated_signal_distortion_ratio(
-            preds,
-            target,
-            self.scale_invariant,
-            self.zero_mean
-        )
+        mbatch = source_aggregated_signal_distortion_ratio(preds, target, self.scale_invariant, self.zero_mean)
 
         self.msum += mbatch.sum()
         self.mnum += mbatch.numel()
