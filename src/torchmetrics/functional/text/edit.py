@@ -59,6 +59,53 @@ def edit_distance(
     substitution_cost: int = 1,
     reduction: Optional[Literal["mean", "sum", "none"]] = "mean",
 ) -> int:
-    """https://www.nltk.org/api/nltk.metrics.distance.html#module-nltk.metrics.distance."""
+    """Calculates the Levenshtein edit distance between two sequences.
+
+    The edit distance is the number of characters that need to be substituted, inserted, or deleted, to transform the
+    predicted text into the reference text. The lower the distance, the more accurate the model is considered to be.
+
+    Implementation is similar to `nltk.edit_distance <https://www.nltk.org/_modules/nltk/metrics/distance.html>`_.
+
+    Args:
+        preds: An iterable of predicted texts (strings).
+        target: An iterable of reference texts (strings).
+        substitution_cost: The cost of substituting one character for another.
+        reduction: a method to reduce metric score over samples.
+
+            - ``'mean'``: takes the mean over samples
+            - ``'sum'``: takes the sum over samples
+            - ``None`` or ``'none'``: return the score per sample
+
+    Raises:
+        ValueError:
+            If ``preds`` and ``target`` do not have the same length.
+        ValueError:
+            If ``preds`` or ``target`` contain non-string values.
+
+    Example::
+        Basic example with two strings. Going from “rain” -> “sain” -> “shin” -> “shine” takes 3 edits:
+
+        >>> from torchmetrics.functional.text import edit_distance
+        >>> edit_distance(["rain"], ["shine"])
+        tensor(3.)
+
+    Example::
+        Basic example with two strings and substitution cost of 2. Going from “rain” -> “sain” -> “shin” -> “shine”
+        takes 3 edits, where two of them are substitutions:
+
+        >>> from torchmetrics.functional.text import edit_distance
+        >>> edit_distance(["rain"], ["shine"], substitution_cost=2)
+        tensor(5.)
+
+    Example::
+        Multiple strings example:
+
+        >>> from torchmetrics.functional.text import edit_distance
+        >>> edit_distance(["rain", "lnaguaeg"], ["shine", "language"], reduction=None)
+        tensor([3, 4], dtype=torch.int32)
+        >>> edit_distance(["rain", "lnaguaeg"], ["shine", "language"], reduction="mean")
+        tensor(3.5000)
+
+    """
     distance = _edit_distance_update(preds, target, substitution_cost)
     return _edit_distance_compute(distance, num_elements=distance.numel(), reduction=reduction)

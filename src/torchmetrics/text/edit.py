@@ -21,7 +21,22 @@ from torchmetrics.utilities.data import dim_zero_cat
 
 
 class EditDistance(Metric):
-    """Calculates the edit distance between two sequences.
+    """Calculates the Levenshtein edit distance between two sequences.
+
+    The edit distance is the number of characters that need to be substituted, inserted, or deleted, to transform the
+    predicted text into the reference text. The lower the distance, the more accurate the model is considered to be.
+
+    Implementation is similar to `nltk.edit_distance <https://www.nltk.org/_modules/nltk/metrics/distance.html>`_.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~List`): An iterable of hypothesis corpus
+    - ``target`` (:class:`~List`): An iterable of iterables of reference corpus
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``eed`` (:class:`~torch.Tensor`): A tensor with the extended edit distance score. If `reduction` is set to
+      ``'none'`` or ``None``, this has shape ``(N, )``, where ``N`` is the batch size. Otherwise, this is a scalar.
 
     Args:
         substitution_cost: The cost of substituting one character for another.
@@ -33,13 +48,41 @@ class EditDistance(Metric):
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
+    Example::
+        Basic example with two strings. Going from “rain” -> “sain” -> “shin” -> “shine” takes 3 edits:
+
+        >>> from torchmetrics.text import EditDistance
+        >>> metric = EditDistance()
+        >>> metric(["rain"], ["shine"])
+        tensor(3.)
+
+    Example::
+        Basic example with two strings and substitution cost of 2. Going from “rain” -> “sain” -> “shin” -> “shine”
+        takes 3 edits, where two of them are substitutions:
+
+        >>> from torchmetrics.text import EditDistance
+        >>> metric = EditDistance(substitution_cost=2)
+        >>> metric(["rain"], ["shine"])
+        tensor(5.)
+
+    Example::
+        Multiple strings example:
+
+        >>> from torchmetrics.text import EditDistance
+        >>> metric = EditDistance(reduction=None)
+        >>> metric(["rain", "lnaguaeg"], ["shine", "language"])
+        tensor([3, 4], dtype=torch.int32)
+        >>> metric = EditDistance(reduction="mean")
+        >>> metric(["rain", "lnaguaeg"], ["shine", "language"])
+        tensor(3.5000)
+
     """
 
     def __init__(
         self, substitution_cost: int = 1, reduction: Optional[Literal["mean", "sum", "none"]] = "mean", **kwargs: Any
     ) -> None:
         super().__init__(**kwargs)
-        if not (isinstance(substitution_cost) and substitution_cost >= 0):
+        if not (isinstance(substitution_cost, int) and substitution_cost >= 0):
             raise ValueError("Expected argument `substitution_cost` to be a positive integer")
         self.substitution_cost = substitution_cost
 
