@@ -349,7 +349,7 @@ class SourceAggregatedSignalDistortionRatio(Metric):
             preds,
             target,
             self.scale_invariant,
-            self.zero_mean,
+            self.zero_mean
         )
 
         self.msum += mbatch.sum()
