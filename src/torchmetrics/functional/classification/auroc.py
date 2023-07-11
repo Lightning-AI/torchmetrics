@@ -86,7 +86,7 @@ def _binary_auroc_compute(
     pos_label: int = 1,
 ) -> Tensor:
     fpr, tpr, _ = _binary_roc_compute(state, thresholds, pos_label)
-    if max_fpr is None or max_fpr == 1:
+    if max_fpr is None or max_fpr == 1 or fpr.sum() == 0 or tpr.sum() == 0:
         return _auc_compute_without_check(fpr, tpr, 1.0)
 
     _device = fpr.device if isinstance(fpr, Tensor) else fpr[0].device
