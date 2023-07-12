@@ -117,6 +117,7 @@
 .. _sdr ref2: https://arxiv.org/abs/2110.06440
 .. _Scale-invariant signal-to-distortion ratio: https://arxiv.org/abs/1811.02508
 .. _Scale-invariant signal-to-noise ratio: https://arxiv.org/abs/1711.00541
+.. _Source-aggregated signal-to-distortion ratio: https://arxiv.org/abs/2110.15581
 .. _Complex scale-invariant signal-to-noise ratio: https://arxiv.org/abs/2011.09162
 .. _Signal-to-noise ratio: https://arxiv.org/abs/1811.02508
 .. _Speech-to-Reverberation Modulation Energy Ratio: https://ieeexplore.ieee.org/document/5547575
@@ -142,3 +143,4 @@
 .. _Equal opportunity: https://proceedings.neurips.cc/paper/2016/hash/9d2682367c3935defcb1f9e247a97c0d-Abstract.html
 .. _Seamless Scene Segmentation paper: https://arxiv.org/abs/1905.01220
 .. _Fleiss kappa: https://en.wikipedia.org/wiki/Fleiss%27_kappa
+.. _VIF: https://ieeexplore.ieee.org/abstract/document/1576816
