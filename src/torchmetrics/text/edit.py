@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Literal, Optional
+from typing import Any, List, Literal, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -19,6 +19,11 @@ from torch import Tensor
 from torchmetrics.functional.text.edit import _edit_distance_compute, _edit_distance_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["EditDistance.plot"]
 
 
 class EditDistance(Metric):
@@ -121,3 +126,46 @@ class EditDistance(Metric):
         if self.reduction == "none" or self.reduction is None:
             return _edit_distance_compute(dim_zero_cat(self.edit_scores_list), 1, self.reduction)
         return _edit_distance_compute(self.edit_scores, self.num_elements, self.reduction)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torchmetrics.text import EditDistance
+            >>> metric = EditDistance()
+            >>> preds = ["this is the prediction", "there is an other sample"]
+            >>> target = ["this is the reference", "there is another one"]
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.text import EditDistance
+            >>> metric = EditDistance()
+            >>> preds = ["this is the prediction", "there is an other sample"]
+            >>> target = ["this is the reference", "there is another one"]
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+        """
+        return self._plot(val, ax)
