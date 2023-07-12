@@ -289,8 +289,7 @@ class _LevenshteinEditDistance:
 
     @staticmethod
     def _get_initial_row(length: int) -> List[Tuple[int, _EditOperations]]:
-        """First row corresponds to insertion operations of the reference, so we do 1 edit operation per reference
-        word.
+        """First row corresponds to insertion operations of the reference, so we do 1 edit operation per reference word.
 
         Args:
             length: A length of a tokenized sentence.
