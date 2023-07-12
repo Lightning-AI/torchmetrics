@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, List, Optional, Sequence, Union
+from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -71,25 +71,36 @@ class BaseAggregator(Metric):
         self.add_state(state_name, default=default_value, dist_reduce_fx=fn)
         self.state_name = state_name
 
-    def _cast_and_nan_check_input(self, x: Union[float, Tensor]) -> Tensor:
+    def _cast_and_nan_check_input(
+        self, x: Union[float, Tensor], weight: Optional[Union[float, Tensor]] = None
+    ) -> Tuple[Tensor, Tensor]:
         """Convert input ``x`` to a tensor and check for Nans."""
         if not isinstance(x, Tensor):
             x = torch.as_tensor(x, dtype=torch.float32, device=self.device)
+        if weight is not None and not isinstance(weight, Tensor):
+            weight = torch.as_tensor(weight, dtype=torch.float32, device=self.device)
 
         nans = torch.isnan(x)
-        if nans.any():
+        if weight is not None:
+            nans_weight = torch.isnan(weight)
+        else:
+            nans_weight = torch.zeros_like(nans).bool()
+            weight = torch.ones_like(x)
+        if nans.any() or nans_weight.any():
             if self.nan_strategy == "error":
                 raise RuntimeError("Encounted `nan` values in tensor")
             if self.nan_strategy in ("ignore", "warn"):
                 if self.nan_strategy == "warn":
                     rank_zero_warn("Encounted `nan` values in tensor. Will be removed.", UserWarning)
-                x = x[~nans]
+                x = x[~(nans | nans_weight)]
+                weight = weight[~(nans | nans_weight)]
             else:
                 if not isinstance(self.nan_strategy, float):
                     raise ValueError(f"`nan_strategy` shall be float but you pass {self.nan_strategy}")
-                x[nans] = self.nan_strategy
+                x[nans | nans_weight] = self.nan_strategy
+                weight[nans | nans_weight] = self.nan_strategy
 
-        return x.float()
+        return x.float(), weight.float()
 
     def update(self, value: Union[float, Tensor]) -> None:
         """Overwrite in child class."""
@@ -157,7 +168,7 @@ class MaxMetric(BaseAggregator):
             value: Either a float or tensor containing data. Additional tensor
                 dimensions will be flattened
         """
-        value = self._cast_and_nan_check_input(value)
+        value, _ = self._cast_and_nan_check_input(value)
         if value.numel():  # make sure tensor not empty
             self.max_value = torch.max(self.max_value, torch.max(value))
 
@@ -259,7 +270,7 @@ class MinMetric(BaseAggregator):
             value: Either a float or tensor containing data. Additional tensor
                 dimensions will be flattened
         """
-        value = self._cast_and_nan_check_input(value)
+        value, _ = self._cast_and_nan_check_input(value)
         if value.numel():  # make sure tensor not empty
             self.min_value = torch.min(self.min_value, torch.min(value))
 
@@ -360,7 +371,7 @@ class SumMetric(BaseAggregator):
             value: Either a float or tensor containing data. Additional tensor
                 dimensions will be flattened
         """
-        value = self._cast_and_nan_check_input(value)
+        value, _ = self._cast_and_nan_check_input(value)
         if value.numel():
             self.sum_value += value.sum()
 
@@ -456,7 +467,7 @@ class CatMetric(BaseAggregator):
             value: Either a float or tensor containing data. Additional tensor
                 dimensions will be flattened
         """
-        value = self._cast_and_nan_check_input(value)
+        value, _ = self._cast_and_nan_check_input(value)
         if value.numel():
             self.value.append(value)
 
@@ -530,13 +541,16 @@ class MeanMetric(BaseAggregator):
                 the shape of `value`. Default to `1.0` corresponding to simple
                 harmonic average.
         """
-        value = self._cast_and_nan_check_input(value)
-        weight = self._cast_and_nan_check_input(weight)
+        # broadcast weight to value shape
+        if not isinstance(value, Tensor):
+            value = torch.as_tensor(value, dtype=torch.float32, device=self.device)
+        if weight is not None and not isinstance(weight, Tensor):
+            weight = torch.as_tensor(weight, dtype=torch.float32, device=self.device)
+        weight = torch.broadcast_to(weight, value.shape)
+        value, weight = self._cast_and_nan_check_input(value, weight)
 
         if value.numel() == 0:
             return
-        # broadcast weight to value shape
-        weight = torch.broadcast_to(weight, value.shape)
         self.mean_value += (value * weight).sum()
         self.weight += weight.sum()
 

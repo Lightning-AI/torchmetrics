@@ -27,13 +27,13 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Time = 100
+NUM_SAMPLES = 100
 
 Input = namedtuple("Input", ["preds", "target"])
 
 inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, Time),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, Time),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, NUM_SAMPLES),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, NUM_SAMPLES),
 )
 
 speechmetrics_sisdr = speechmetrics.load("sisdr")
