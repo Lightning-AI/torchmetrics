@@ -39,6 +39,7 @@ class BaseAggregator(Metric):
             - ``'ignore'``: all `nan` values are silently removed
             - a float: if a float is provided will impude any `nan` values with this value
 
+        state_name: name of the metric state
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -47,7 +48,6 @@ class BaseAggregator(Metric):
 
     """
 
-    value: Tensor
     is_differentiable = None
     higher_is_better = None
     full_state_update: bool = False
@@ -57,6 +57,7 @@ class BaseAggregator(Metric):
         fn: Union[Callable, str],
         default_value: Union[Tensor, List],
         nan_strategy: Union[str, float] = "error",
+        state_name: str = "value",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -68,7 +69,8 @@ class BaseAggregator(Metric):
             )
 
         self.nan_strategy = nan_strategy
-        self.add_state("value", default=default_value, dist_reduce_fx=fn)
+        self.add_state(state_name, default=default_value, dist_reduce_fx=fn)
+        self.state_name = state_name
 
     def _cast_and_nan_check_input(
         self, x: Union[float, Tensor], weight: Optional[Union[float, Tensor]] = None
@@ -106,7 +108,7 @@ class BaseAggregator(Metric):
 
     def compute(self) -> Tensor:
         """Compute the aggregated value."""
-        return self.value
+        return getattr(self, self.state_name)
 
 
 class MaxMetric(BaseAggregator):
@@ -146,6 +148,7 @@ class MaxMetric(BaseAggregator):
     """
 
     full_state_update: bool = True
+    max_value: Tensor
 
     def __init__(
         self,
@@ -156,6 +159,7 @@ class MaxMetric(BaseAggregator):
             "max",
             -torch.tensor(float("inf")),
             nan_strategy,
+            state_name="max_value",
             **kwargs,
         )
 
@@ -169,7 +173,7 @@ class MaxMetric(BaseAggregator):
         """
         value, _ = self._cast_and_nan_check_input(value)
         if value.numel():  # make sure tensor not empty
-            self.value = torch.max(self.value, torch.max(value))
+            self.max_value = torch.max(self.max_value, torch.max(value))
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -249,6 +253,7 @@ class MinMetric(BaseAggregator):
     """
 
     full_state_update: bool = True
+    min_value: Tensor
 
     def __init__(
         self,
@@ -259,6 +264,7 @@ class MinMetric(BaseAggregator):
             "min",
             torch.tensor(float("inf")),
             nan_strategy,
+            state_name="min_value",
             **kwargs,
         )
 
@@ -272,7 +278,7 @@ class MinMetric(BaseAggregator):
         """
         value, _ = self._cast_and_nan_check_input(value)
         if value.numel():  # make sure tensor not empty
-            self.value = torch.min(self.value, torch.min(value))
+            self.min_value = torch.min(self.min_value, torch.min(value))
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -351,6 +357,8 @@ class SumMetric(BaseAggregator):
 
     """
 
+    sum_value: Tensor
+
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
@@ -360,6 +368,7 @@ class SumMetric(BaseAggregator):
             "sum",
             torch.tensor(0.0),
             nan_strategy,
+            state_name="sum_value",
             **kwargs,
         )
 
@@ -373,7 +382,7 @@ class SumMetric(BaseAggregator):
         """
         value, _ = self._cast_and_nan_check_input(value)
         if value.numel():
-            self.value += value.sum()
+            self.sum_value += value.sum()
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -453,6 +462,8 @@ class CatMetric(BaseAggregator):
 
     """
 
+    value: Tensor
+
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
@@ -516,6 +527,8 @@ class MeanMetric(BaseAggregator):
 
     """
 
+    mean_value: Tensor
+
     def __init__(
         self,
         nan_strategy: Union[str, float] = "warn",
@@ -525,6 +538,7 @@ class MeanMetric(BaseAggregator):
             "sum",
             torch.tensor(0.0),
             nan_strategy,
+            state_name="mean_value",
             **kwargs,
         )
         self.add_state("weight", default=torch.tensor(0.0), dist_reduce_fx="sum")
@@ -551,12 +565,12 @@ class MeanMetric(BaseAggregator):
 
         if value.numel() == 0:
             return
-        self.value += (value * weight).sum()
+        self.mean_value += (value * weight).sum()
         self.weight += weight.sum()
 
     def compute(self) -> Tensor:
         """Compute the aggregated value."""
-        return self.value / self.weight
+        return self.mean_value / self.weight
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
