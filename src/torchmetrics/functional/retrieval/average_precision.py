@@ -44,6 +44,7 @@ def retrieval_average_precision(preds: Tensor, target: Tensor, top_k: Optional[i
         >>> target = tensor([True, False, True])
         >>> retrieval_average_precision(preds, target)
         tensor(0.8333)
+
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 

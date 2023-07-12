@@ -108,6 +108,7 @@ class ClasswiseWrapper(Metric):
          'multiclassrecall_horse': tensor(0.),
          'multiclassrecall_fish': tensor(0.3333),
          'multiclassrecall_dog': tensor(0.4000)}
+
     """
 
     def __init__(
@@ -212,5 +213,6 @@ class ClasswiseWrapper(Metric):
             >>> for _ in range(3):
             ...     values.append(metric(torch.randint(3, (20,)), torch.randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

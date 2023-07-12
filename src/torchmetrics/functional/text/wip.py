@@ -32,6 +32,7 @@ def _wip_update(
         Number of edit operations to get from the reference to the prediction, summed over all samples
         Number of words overall references
         Number of words overall prediction
+
     """
     if isinstance(preds, str):
         preds = [preds]
@@ -62,6 +63,7 @@ def _wip_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> T
 
     Returns:
         Word Information Perserved score
+
     """
     return (errors / target_total) * (errors / preds_total)
 
@@ -85,6 +87,7 @@ def word_information_preserved(preds: Union[str, List[str]], target: Union[str, 
         >>> target = ["this is the reference", "there is another one"]
         >>> word_information_preserved(preds, target)
         tensor(0.3472)
+
     """
     errors, reference_total, prediction_total = _wip_update(preds, target)
     return _wip_compute(errors, reference_total, prediction_total)

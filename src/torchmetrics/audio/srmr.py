@@ -83,6 +83,7 @@ class SpeechReverberationModulationEnergyRatio(Metric):
         >>> srmr = SpeechReverberationModulationEnergyRatio(8000)
         >>> srmr(preds)
         tensor(0.3354)
+
     """
 
     msum: Tensor
@@ -181,5 +182,6 @@ class SpeechReverberationModulationEnergyRatio(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(8000)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

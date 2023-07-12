@@ -47,6 +47,7 @@ def _cramers_v_update(
 
     Returns:
         Non-reduced confusion matrix
+
     """
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
@@ -63,6 +64,7 @@ def _cramers_v_compute(confmat: Tensor, bias_correction: bool) -> Tensor:
 
     Returns:
         Cramer's V statistic
+
     """
     confmat = _drop_empty_rows_and_cols(confmat)
     cm_sum = confmat.sum()
@@ -128,6 +130,7 @@ def cramers_v(
         >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
         >>> cramers_v(preds, target)
         tensor(0.5284)
+
     """
     _nominal_input_validation(nan_strategy, nan_replace_value)
     num_classes = len(torch.cat([preds, target]).unique())
@@ -167,6 +170,7 @@ def cramers_v_matrix(
                 [0.0000, 0.0000, 1.0000, 0.0000, 0.0649],
                 [0.0542, 0.0000, 0.0000, 1.0000, 0.1100],
                 [0.1337, 0.0000, 0.0649, 0.1100, 1.0000]])
+
     """
     _nominal_input_validation(nan_strategy, nan_replace_value)
     num_variables = matrix.shape[1]

@@ -95,6 +95,7 @@ def _class_test(
         ignore_order: Ignore order of prediction accross processes when DDP is used.
         kwargs_update: Additional keyword arguments that will be passed with preds and
             targets when running update on the metric.
+
     """
     if not metric_args:
         metric_args = {}
@@ -199,6 +200,7 @@ def _functional_test(
             the ref_metric.
         kwargs_update: Additional keyword arguments that will be passed with preds and
             targets when running update on the metric.
+
     """
     if not metric_args:
         metric_args = {}
@@ -240,6 +242,7 @@ def _assert_half_support(
         device: determine device, either "cpu" or "cuda"
         kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
+
     """
     y_hat = preds[0]
     y = targets[0]
@@ -258,6 +261,7 @@ class TextTester(MetricTester):
     Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup once and
     that pool of processes are used for all tests. All tests for text metrics should subclass from this and implement
     a new method called `test_metric_name` where the method `self.run_metric_test` is called inside.
+
     """
 
     def run_functional_metric_test(
@@ -284,6 +288,7 @@ class TextTester(MetricTester):
                 against the ref_metric.
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
+
         """
         device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
 
@@ -339,6 +344,7 @@ class TextTester(MetricTester):
             ignore_order: Ignore order of prediction accross processes when DDP is used.
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
+
         """
         if not metric_args:
             metric_args = {}
@@ -407,6 +413,7 @@ class TextTester(MetricTester):
             metric_args: dict with additional arguments used for class initialization
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
+
         """
         metric_args = metric_args or {}
         _assert_half_support(
@@ -432,6 +439,7 @@ class TextTester(MetricTester):
             metric_args: dict with additional arguments used for class initialization
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
+
         """
         metric_args = metric_args or {}
         _assert_half_support(
@@ -457,6 +465,7 @@ class TextTester(MetricTester):
             metric_args: dict with additional arguments used for class initialization
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
                 against the ref_metric.
+
         """
         metric_args = metric_args or {}
         # only floating point tensors can require grad
@@ -475,6 +484,7 @@ def skip_on_connection_issues(reason: str = "Unable to load checkpoints from Hug
     """Handle download related tests if they fail due to connection issues.
 
     The tests run normally if no connection issue arises, and they're marked as skipped otherwise.
+
     """
     _error_msg_starts = ["We couldn't connect to", "Connection error", "Can't load", "`nltk` resource `punkt` is"]
 

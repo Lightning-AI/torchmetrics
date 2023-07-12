@@ -54,6 +54,7 @@ class MeanSquaredLogError(Metric):
 
     .. note::
         Half precision is only support on GPU for this metric
+
     """
     is_differentiable: bool = True
     higher_is_better: bool = False
@@ -121,5 +122,6 @@ class MeanSquaredLogError(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
+
         """
         return self._plot(val, ax)

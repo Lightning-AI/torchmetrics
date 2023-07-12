@@ -29,6 +29,7 @@ def _pairwise_euclidean_distance_update(
         x: tensor of shape ``[N,d]``
         y: tensor of shape ``[M,d]``
         zero_diagonal: determines if the diagonal of the distance matrix should be set to zero
+
     """
     x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
     # upcast to float64 to prevent precision issues
@@ -82,6 +83,7 @@ def pairwise_euclidean_distance(
         tensor([[0.0000, 2.2361, 5.8310],
                 [2.2361, 0.0000, 3.6056],
                 [5.8310, 3.6056, 0.0000]])
+
     """
     distance = _pairwise_euclidean_distance_update(x, y, zero_diagonal)
     return _reduce_distance_matrix(distance, reduction)

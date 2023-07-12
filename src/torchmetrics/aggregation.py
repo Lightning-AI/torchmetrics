@@ -44,6 +44,7 @@ class BaseAggregator(Metric):
     Raises:
         ValueError:
             If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+
     """
 
     value: Tensor
@@ -141,6 +142,7 @@ class MaxMetric(BaseAggregator):
         >>> metric.update(tensor([2, 3]))
         >>> metric.compute()
         tensor(3.)
+
     """
 
     full_state_update: bool = True
@@ -163,6 +165,7 @@ class MaxMetric(BaseAggregator):
         Args:
             value: Either a float or tensor containing data. Additional tensor
                 dimensions will be flattened
+
         """
         value, _ = self._cast_and_nan_check_input(value)
         if value.numel():  # make sure tensor not empty
@@ -204,6 +207,7 @@ class MaxMetric(BaseAggregator):
             >>> for i in range(10):
             ...     values.append(metric(i))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -241,6 +245,7 @@ class MinMetric(BaseAggregator):
         >>> metric.update(tensor([2, 3]))
         >>> metric.compute()
         tensor(1.)
+
     """
 
     full_state_update: bool = True
@@ -263,6 +268,7 @@ class MinMetric(BaseAggregator):
         Args:
             value: Either a float or tensor containing data. Additional tensor
                 dimensions will be flattened
+
         """
         value, _ = self._cast_and_nan_check_input(value)
         if value.numel():  # make sure tensor not empty
@@ -304,6 +310,7 @@ class MinMetric(BaseAggregator):
             >>> for i in range(10):
             ...     values.append(metric(i))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -341,6 +348,7 @@ class SumMetric(BaseAggregator):
         >>> metric.update(tensor([2, 3]))
         >>> metric.compute()
         tensor(6.)
+
     """
 
     def __init__(
@@ -361,6 +369,7 @@ class SumMetric(BaseAggregator):
         Args:
             value: Either a float or tensor containing data. Additional tensor
                 dimensions will be flattened
+
         """
         value, _ = self._cast_and_nan_check_input(value)
         if value.numel():
@@ -403,6 +412,7 @@ class SumMetric(BaseAggregator):
             >>> for i in range(10):
             ...     values.append(metric([i, i+1]))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -440,6 +450,7 @@ class CatMetric(BaseAggregator):
         >>> metric.update(tensor([2, 3]))
         >>> metric.compute()
         tensor([1., 2., 3.])
+
     """
 
     def __init__(
@@ -455,6 +466,7 @@ class CatMetric(BaseAggregator):
         Args:
             value: Either a float or tensor containing data. Additional tensor
                 dimensions will be flattened
+
         """
         value, _ = self._cast_and_nan_check_input(value)
         if value.numel():
@@ -501,6 +513,7 @@ class MeanMetric(BaseAggregator):
         >>> metric.update(torch.tensor([2, 3]))
         >>> metric.compute()
         tensor(2.)
+
     """
 
     def __init__(
@@ -526,6 +539,7 @@ class MeanMetric(BaseAggregator):
                 the average. Shape of weight should be able to broadcast with
                 the shape of `value`. Default to `1.0` corresponding to simple
                 harmonic average.
+
         """
         # broadcast weight to value shape
         if not isinstance(value, Tensor):
@@ -580,6 +594,7 @@ class MeanMetric(BaseAggregator):
             >>> for i in range(10):
             ...     values.append(metric([i, i+1]))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -629,6 +644,7 @@ class RunningMean(Running):
         current_val=tensor(3.), running_val=tensor(2.), total_val=tensor(1.5000)
         current_val=tensor(4.), running_val=tensor(3.), total_val=tensor(2.)
         current_val=tensor(5.), running_val=tensor(4.), total_val=tensor(2.5000)
+
     """
 
     def __init__(
@@ -685,6 +701,7 @@ class RunningSum(Running):
         current_val=tensor(3.), running_val=tensor(6.), total_val=tensor(6)
         current_val=tensor(4.), running_val=tensor(9.), total_val=tensor(10)
         current_val=tensor(5.), running_val=tensor(12.), total_val=tensor(15)
+
     """
 
     def __init__(

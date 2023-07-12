@@ -82,6 +82,7 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         >>> metric = BinaryJaccardIndex()
         >>> metric(preds, target)
         tensor(0.5000)
+
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -142,6 +143,7 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -204,6 +206,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         >>> metric = MulticlassJaccardIndex(num_classes=3)
         >>> metric(preds, target)
         tensor(0.6667)
+
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -270,6 +273,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
             >>> for _ in range(20):
             ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -330,6 +334,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         >>> metric = MultilabelJaccardIndex(num_labels=3)
         >>> metric(preds, target)
         tensor(0.5000)
+
     """
 
     is_differentiable: bool = False
@@ -403,6 +408,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -429,6 +435,7 @@ class JaccardIndex:
         >>> jaccard = JaccardIndex(task="multiclass", num_classes=2)
         >>> jaccard(pred, target)
         tensor(0.9660)
+
     """
 
     def __new__(

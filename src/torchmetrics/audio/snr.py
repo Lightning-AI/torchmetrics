@@ -66,6 +66,7 @@ class SignalNoiseRatio(Metric):
         >>> snr = SignalNoiseRatio()
         >>> snr(preds, target)
         tensor(16.1805)
+
     """
     full_state_update: bool = False
     is_differentiable: bool = True
@@ -135,6 +136,7 @@ class SignalNoiseRatio(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(4), torch.rand(4)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -167,6 +169,7 @@ class ScaleInvariantSignalNoiseRatio(Metric):
         >>> si_snr = ScaleInvariantSignalNoiseRatio()
         >>> si_snr(preds, target)
         tensor(15.0918)
+
     """
 
     is_differentiable = True
@@ -232,6 +235,7 @@ class ScaleInvariantSignalNoiseRatio(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(4), torch.rand(4)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -272,6 +276,7 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
         >>> c_si_snr = ComplexScaleInvariantSignalNoiseRatio()
         >>> c_si_snr(preds, target)
         tensor(-63.4849)
+
     """
 
     is_differentiable = True
@@ -341,5 +346,6 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(1,257,100,2), torch.rand(1,257,100,2)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

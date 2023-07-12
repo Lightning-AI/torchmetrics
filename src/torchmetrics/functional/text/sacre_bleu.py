@@ -81,6 +81,7 @@ class _SacreBLEUTokenizer:
     """Tokenizer used for SacreBLEU calculation.
 
     Source: https://github.com/mjpost/sacrebleu/tree/master/sacrebleu/tokenizers
+
     """
 
     _REGEX = (
@@ -142,6 +143,7 @@ class _SacreBLEUTokenizer:
 
         Return:
             the tokenized line
+
         """
         for _re, repl in cls._REGEX:
             line = _re.sub(repl, line)
@@ -157,6 +159,7 @@ class _SacreBLEUTokenizer:
 
         Return:
             whether the input char is a Chinese character.
+
         """
         return any(start <= uchar <= end for start, end in _UCODE_RANGES)
 
@@ -169,6 +172,7 @@ class _SacreBLEUTokenizer:
 
         Return:
             the tokenized line
+
         """
         return line
 
@@ -181,6 +185,7 @@ class _SacreBLEUTokenizer:
 
         Return:
             tokenized sentence
+
         """
         # language-independent part:
         line = line.replace("<skipped>", "")
@@ -208,6 +213,7 @@ class _SacreBLEUTokenizer:
 
         Return:
             tokenized sentence
+
         """
         line = line.strip()
         line_in_chars = ""
@@ -248,6 +254,7 @@ class _SacreBLEUTokenizer:
 
         Return:
             The tokenized string.
+
         """
         for _re, repl in cls._INT_REGEX:
             line = _re.sub(repl, line)
@@ -263,6 +270,7 @@ class _SacreBLEUTokenizer:
 
         Return:
             the tokenized line
+
         """
         return " ".join(char for char in line)
 
@@ -320,6 +328,7 @@ def sacre_bleu_score(
 
         [3] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
+
     """
     if tokenize not in AVAILABLE_TOKENIZERS:
         raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")

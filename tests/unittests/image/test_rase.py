@@ -45,6 +45,7 @@ def _sewar_rase(preds, target, window_size):
 
     This custom implementation is nessesary since sewar only supports single image and aggregation therefore needs
     adjustments.
+
     """
     target_sum = torch.sum(_uniform_filter(target, window_size) / (window_size**2), dim=0)
     target_mean = target_sum / target.shape[0]

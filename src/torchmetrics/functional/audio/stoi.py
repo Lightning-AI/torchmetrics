@@ -69,6 +69,7 @@ def short_time_objective_intelligibility(
         >>> target = torch.randn(8000)
         >>> short_time_objective_intelligibility(preds, target, 8000).float()
         tensor(-0.0100)
+
     """
     if not _PYSTOI_AVAILABLE:
         raise ModuleNotFoundError(

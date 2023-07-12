@@ -56,6 +56,7 @@ class MinMaxMetric(Metric):
         >>> minmax_metric.update(preds_2, labels)
         >>> pprint(minmax_metric.compute())
         {'max': tensor(1.), 'min': tensor(0.7500), 'raw': tensor(0.7500)}
+
     """
 
     full_state_update: Optional[bool] = True
@@ -85,6 +86,7 @@ class MinMaxMetric(Metric):
 
         Returns a dictionary that consists of the computed value (``raw``), as well as the minimum (``min``) and maximum
         (``max``) values.
+
         """
         val = self._base_metric.compute()
         if not self._is_suitable_val(val):
@@ -149,5 +151,6 @@ class MinMaxMetric(Metric):
             >>> for _ in range(3):
             ...     values.append(metric(torch.randint(2, (20,)), torch.randint(2, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

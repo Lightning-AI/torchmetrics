@@ -36,9 +36,9 @@ _target = torch.randint(10, (10, 32))
 class TestBootStrapper(BootStrapper):
     """Subclass of Bootstrapper class.
 
-    For testing purpose, we subclass the bootstrapper class so we can get the exact permutation the class is
-    creating. This is nessesary such that the reference we are comparing to returns the exact same result for a given
-    permutation.
+    For testing purpose, we subclass the bootstrapper class so we can get the exact permutation the class is creating.
+    This is nessesary such that the reference we are comparing to returns the exact same result for a given permutation.
+
     """
 
     def update(self, *args: Any) -> None:

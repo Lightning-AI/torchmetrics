@@ -95,6 +95,7 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
         >>> b_auroc = BinaryAUROC(thresholds=5)
         >>> b_auroc(preds, target)
         tensor(0.5000)
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -158,6 +159,7 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(20,), torch.randint(2, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -234,6 +236,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         >>> mc_auroc = MulticlassAUROC(num_classes=5, average=None, thresholds=5)
         >>> mc_auroc(preds, target)
         tensor([1.0000, 1.0000, 0.3333, 0.3333, 0.0000])
+
     """
 
     is_differentiable: bool = False
@@ -303,6 +306,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
             >>> for _ in range(10):
             ...     values.append(metric(torch.randn(20, 3), torch.randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -382,6 +386,7 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         >>> ml_auroc = MultilabelAUROC(num_labels=3, average=None, thresholds=5)
         >>> ml_auroc(preds, target)
         tensor([0.6250, 0.5000, 0.8333])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -450,6 +455,7 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(20,3), torch.randint(2, (20,3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -483,6 +489,7 @@ class AUROC:
         >>> auroc = AUROC(task="multiclass", num_classes=3)
         >>> auroc(preds, target)
         tensor(0.7778)
+
     """
 
     def __new__(  # type: ignore[misc]

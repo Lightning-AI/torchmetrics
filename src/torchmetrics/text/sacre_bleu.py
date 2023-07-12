@@ -82,6 +82,7 @@ class SacreBLEUScore(BLEUScore):
 
         - Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
           and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
+
     """
 
     is_differentiable: bool = False
@@ -163,5 +164,6 @@ class SacreBLEUScore(BLEUScore):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

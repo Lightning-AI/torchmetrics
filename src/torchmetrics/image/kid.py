@@ -154,6 +154,7 @@ class KernelInceptionDistance(Metric):
         >>> kid_mean, kid_std = kid.compute()
         >>> print((kid_mean, kid_std))
         (tensor(0.0337), tensor(0.0023))
+
     """
     higher_is_better: bool = False
     is_differentiable: bool = False
@@ -248,6 +249,7 @@ class KernelInceptionDistance(Metric):
         """Calculate KID score based on accumulated extracted features from the two distributions.
 
         Implementation inspired by `Fid Score`_
+
         """
         real_features = dim_zero_cat(self.real_features)
         fake_features = dim_zero_cat(self.fake_features)
@@ -327,6 +329,7 @@ class KernelInceptionDistance(Metric):
             ...     values.append(metric.compute()[0])
             ...     metric.reset()
             >>> fig_, ax_ = metric.plot(values)
+
         """
         val = val or self.compute()[0]  # by default we select the mean to plot
         return self._plot(val, ax)

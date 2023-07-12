@@ -178,6 +178,7 @@ def test_cumsum_still_not_supported():
     """Make sure that cumsum on gpu and deterministic mode still fails.
 
     If this test begins to passes, it means newer Pytorch versions support this and we can drop internal support.
+
     """
     torch.use_deterministic_algorithms(True)
     with pytest.raises(RuntimeError, match="cumsum_cuda_kernel does not have a deterministic implementation.*"):

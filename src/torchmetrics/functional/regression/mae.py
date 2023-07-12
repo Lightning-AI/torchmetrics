@@ -27,6 +27,7 @@ def _mean_absolute_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
+
     """
     _check_same_shape(preds, target)
     preds = preds if preds.is_floating_point else preds.float()  # type: ignore[truthy-function] # todo
@@ -49,6 +50,7 @@ def _mean_absolute_error_compute(sum_abs_error: Tensor, n_obs: Union[int, Tensor
         >>> sum_abs_error, n_obs = _mean_absolute_error_update(preds, target)
         >>> _mean_absolute_error_compute(sum_abs_error, n_obs)
         tensor(0.2500)
+
     """
     return sum_abs_error / n_obs
 
@@ -69,6 +71,7 @@ def mean_absolute_error(preds: Tensor, target: Tensor) -> Tensor:
         >>> y = torch.tensor([0., 1, 2, 2])
         >>> mean_absolute_error(x, y)
         tensor(0.2500)
+
     """
     sum_abs_error, n_obs = _mean_absolute_error_update(preds, target)
     return _mean_absolute_error_compute(sum_abs_error, n_obs)

@@ -70,6 +70,7 @@ class MultioutputWrapper(Metric):
          >>> r2score = MultioutputWrapper(R2Score(), 2)
          >>> r2score(preds, target)
          tensor([0.9654, 0.9082])
+
     """
 
     is_differentiable = False
@@ -125,6 +126,7 @@ class MultioutputWrapper(Metric):
         """Call underlying forward methods and aggregate the results if they're non-null.
 
         We override this method to ensure that state variables get copied over on the underlying metrics.
+
         """
         reshaped_args_kwargs = self._get_args_kwargs_by_output(*args, **kwargs)
         results = [
@@ -189,5 +191,6 @@ class MultioutputWrapper(Metric):
             >>> for _ in range(3):
             ...     values.append(metric(torch.randn(20, 2), torch.randn(20, 2)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

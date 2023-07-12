@@ -27,6 +27,7 @@ def _mean_squared_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, i
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
+
     """
     _check_same_shape(preds, target)
     diff = preds - target
@@ -49,6 +50,7 @@ def _mean_squared_error_compute(sum_squared_error: Tensor, n_obs: Union[int, Ten
         >>> sum_squared_error, n_obs = _mean_squared_error_update(preds, target)
         >>> _mean_squared_error_compute(sum_squared_error, n_obs)
         tensor(0.2500)
+
     """
     return sum_squared_error / n_obs if squared else torch.sqrt(sum_squared_error / n_obs)
 
@@ -70,6 +72,7 @@ def mean_squared_error(preds: Tensor, target: Tensor, squared: bool = True) -> T
         >>> y = torch.tensor([0., 1, 2, 2])
         >>> mean_squared_error(x, y)
         tensor(0.2500)
+
     """
     sum_squared_error, n_obs = _mean_squared_error_update(preds, target)
     return _mean_squared_error_compute(sum_squared_error, n_obs, squared=squared)

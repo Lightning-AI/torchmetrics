@@ -91,6 +91,7 @@ def to_onehot(
         tensor([[0, 1, 0, 0],
                 [0, 0, 1, 0],
                 [0, 0, 0, 1]])
+
     """
     if num_classes is None:
         num_classes = int(label_tensor.max().detach().item() + 1)
@@ -123,6 +124,7 @@ def select_topk(prob_tensor: Tensor, topk: int = 1, dim: int = 1) -> Tensor:
         >>> select_topk(x, topk=2)
         tensor([[0, 1, 1],
                 [1, 1, 0]], dtype=torch.int32)
+
     """
     zeros = torch.zeros_like(prob_tensor)
     if topk == 1:  # argmax has better performance than topk
@@ -146,6 +148,7 @@ def to_categorical(x: Tensor, argmax_dim: int = 1) -> Tensor:
         >>> x = torch.tensor([[0.2, 0.5], [0.9, 0.1]])
         >>> to_categorical(x)
         tensor([1, 0])
+
     """
     return torch.argmax(x, dim=argmax_dim)
 
@@ -179,6 +182,7 @@ def apply_to_collection(
         [64, 0, 4, 36, 49]
         >>> apply_to_collection(dict(abc=123), dtype=int, function=lambda x: x ** 2)
         {'abc': 15129}
+
     """
     elem_type = type(data)
 
@@ -261,6 +265,7 @@ def _flexible_bincount(x: Tensor) -> Tensor:
 
     Returns:
         Number of occurrences for each unique element in x
+
     """
     # make sure elements in x start from 0
     x = x - x.min()

@@ -120,6 +120,7 @@ class BinaryPrecisionRecallCurve(Metric):
         (tensor([0.5000, 0.6667, 0.6667, 0.0000, 0.0000, 1.0000]),
          tensor([1., 1., 1., 0., 0., 0.]),
          tensor([0.0000, 0.2500, 0.5000, 0.7500, 1.0000]))
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -204,6 +205,7 @@ class BinaryPrecisionRecallCurve(Metric):
             >>> metric = BinaryROC()
             >>> metric.update(preds[:, 1], target)
             >>> fig_, ax_ = metric.plot()
+
         """
         curve = curve or self.compute()
         score = _auc_compute_without_check(curve[0], curve[1], 1.0) if not curve and score is True else None
@@ -288,6 +290,7 @@ class MulticlassPrecisionRecallCurve(Metric):
                  [1., 0., 0., 0., 0., 0.],
                  [0., 0., 0., 0., 0., 0.]]),
          tensor([0.0000, 0.2500, 0.5000, 0.7500, 1.0000]))
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -378,6 +381,7 @@ class MulticlassPrecisionRecallCurve(Metric):
             >>> metric = BinaryROC()
             >>> metric.update(preds[:, 1], target)
             >>> fig_, ax_ = metric.plot()
+
         """
         curve = curve or self.compute()
         score = _reduce_auroc(curve[0], curve[1], average=None) if not curve and score is True else None
@@ -471,6 +475,7 @@ class MultilabelPrecisionRecallCurve(Metric):
                  [1.0000, 1.0000, 1.0000, 0.0000, 0.0000, 0.0000],
                  [1.0000, 0.6667, 0.3333, 0.3333, 0.0000, 0.0000]]),
          tensor([0.0000, 0.2500, 0.5000, 0.7500, 1.0000]))
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -561,6 +566,7 @@ class MultilabelPrecisionRecallCurve(Metric):
             >>> metric = BinaryROC()
             >>> metric.update(preds[:, 1], target)
             >>> fig_, ax_ = metric.plot()
+
         """
         curve = curve or self.compute()
         score = _reduce_auroc(curve[0], curve[1], average=None) if not curve and score is True else None
@@ -605,6 +611,7 @@ class PrecisionRecallCurve:
         >>> thresholds
         [tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]), tensor([0.0500, 0.7500]),
          tensor(0.0500)]
+
     """
 
     def __new__(  # type: ignore[misc]

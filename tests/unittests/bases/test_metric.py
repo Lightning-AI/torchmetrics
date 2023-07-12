@@ -468,6 +468,7 @@ def test_constant_memory_on_repeat_init():
 
     This only works for metrics with `compute_with_cache=False` as otherwise the cache will keep a refence that python
     gc will not be able to collect and clean.
+
     """
 
     def mem():

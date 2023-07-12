@@ -97,6 +97,7 @@ def multilabel_coverage_error(
     References:
         [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
         knowledge discovery handbook (pp. 667-685). Springer US.
+
     """
     if validate_args:
         _multilabel_confusion_matrix_arg_validation(num_labels, threshold=0.0, ignore_index=ignore_index)
@@ -169,6 +170,7 @@ def multilabel_ranking_average_precision(
     References:
         [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
         knowledge discovery handbook (pp. 667-685). Springer US.
+
     """
     if validate_args:
         _multilabel_confusion_matrix_arg_validation(num_labels, threshold=0.0, ignore_index=ignore_index)
@@ -187,6 +189,7 @@ def _multilabel_ranking_loss_update(preds: Tensor, target: Tensor) -> Tuple[Tens
         preds: tensor with predictions
         target: tensor with ground truth labels
         sample_weight: optional tensor with weight for each sample
+
     """
     n_preds, n_labels = preds.shape
     relevant = target == 1
@@ -252,6 +255,7 @@ def multilabel_ranking_loss(
     References:
         [1] Tsoumakas, G., Katakis, I., & Vlahavas, I. (2010). Mining multi-label data. In Data mining and
         knowledge discovery handbook (pp. 667-685). Springer US.
+
     """
     if validate_args:
         _multilabel_confusion_matrix_arg_validation(num_labels, threshold=0.0, ignore_index=ignore_index)

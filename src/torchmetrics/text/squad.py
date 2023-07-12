@@ -87,6 +87,7 @@ class SQuAD(Metric):
         >>> squad = SQuAD()
         >>> squad(preds, target)
         {'exact_match': tensor(100.), 'f1': tensor(100.)}
+
     """
 
     is_differentiable: bool = False
@@ -161,5 +162,6 @@ class SQuAD(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

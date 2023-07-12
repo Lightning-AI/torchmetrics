@@ -57,6 +57,7 @@ def _jaccard_index_reduce(
 
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
+
     """
     allowed_average = ["binary", "micro", "macro", "weighted", "none", None]
     if average not in allowed_average:
@@ -141,6 +142,7 @@ def binary_jaccard_index(
         >>> preds = tensor([0.35, 0.85, 0.48, 0.01])
         >>> binary_jaccard_index(preds, target)
         tensor(0.5000)
+
     """
     if validate_args:
         _binary_confusion_matrix_arg_validation(threshold, ignore_index)
@@ -221,6 +223,7 @@ def multiclass_jaccard_index(
         ...                 [0.05, 0.82, 0.13]])
         >>> multiclass_jaccard_index(preds, target, num_classes=3)
         tensor(0.6667)
+
     """
     if validate_args:
         _multiclass_jaccard_index_arg_validation(num_classes, ignore_index, average)
@@ -301,6 +304,7 @@ def multilabel_jaccard_index(
         >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_jaccard_index(preds, target, num_labels=3)
         tensor(0.5000)
+
     """
     if validate_args:
         _multilabel_jaccard_index_arg_validation(num_labels, threshold, ignore_index)
@@ -341,6 +345,7 @@ def jaccard_index(
         >>> pred[2:5, 7:13, 9:15] = 1 - pred[2:5, 7:13, 9:15]
         >>> jaccard_index(pred, target, task="multiclass", num_classes=2)
         tensor(0.9660)
+
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:

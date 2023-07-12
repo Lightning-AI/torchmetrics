@@ -39,6 +39,7 @@ def retrieval_r_precision(preds: Tensor, target: Tensor) -> Tensor:
         >>> target = tensor([True, False, True])
         >>> retrieval_r_precision(preds, target)
         tensor(0.5000)
+
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 

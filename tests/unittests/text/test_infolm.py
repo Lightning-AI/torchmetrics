@@ -31,7 +31,9 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
     """Baseline implementation is currently not available.
 
     We, therefore, are enforced to relied on hard-coded results for now. The results below were generated using scripts
-    in https://github.com/stancld/infolm-docker.
+    in
+    https://github.com/stancld/infolm-docker.
+
     """
     if model_name != "google/bert_uncased_L-2_H-128_A-2":
         raise ValueError(

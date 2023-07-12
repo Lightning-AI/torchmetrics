@@ -48,6 +48,7 @@ def _psnr_compute(
         >>> sum_squared_error, n_obs = _psnr_update(preds, target)
         >>> _psnr_compute(sum_squared_error, n_obs, data_range)
         tensor(2.5527)
+
     """
     psnr_base_e = 2 * torch.log(data_range) - torch.log(sum_squared_error / n_obs)
     psnr_vals = psnr_base_e * (10 / torch.log(tensor(base)))
@@ -66,6 +67,7 @@ def _psnr_update(
         target: Ground truth tensor
         dim: Dimensions to reduce PSNR scores over provided as either an integer or a list of integers.
             Default is None meaning scores will be reduced across all dimensions.
+
     """
     if dim is None:
         sum_squared_error = torch.sum(torch.pow(preds - target, 2))
@@ -129,6 +131,7 @@ def peak_signal_noise_ratio(
 
     .. note::
         Half precision is only support on GPU for this metric
+
     """
     if dim is None and reduction != "elementwise_mean":
         rank_zero_warn(f"The `reduction={reduction}` will not have any effect when `dim` is None.")

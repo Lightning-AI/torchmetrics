@@ -62,6 +62,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         >>> ergas = ErrorRelativeGlobalDimensionlessSynthesis()
         >>> torch.round(ergas(preds, target))
         tensor(154.)
+
     """
 
     higher_is_better: bool = False
@@ -144,5 +145,6 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

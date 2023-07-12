@@ -45,6 +45,7 @@ class VisualInformationFidelity(Metric):
         >>> vif = VisualInformationFidelity()
         >>> vif(preds, target)
         tensor(0.0032)
+
     """
 
     is_differentiable = True

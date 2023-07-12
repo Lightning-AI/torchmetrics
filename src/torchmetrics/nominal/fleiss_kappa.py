@@ -133,5 +133,6 @@ class FleissKappa(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.randn(100, 5, 10).softmax(dim=1)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

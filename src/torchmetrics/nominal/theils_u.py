@@ -58,6 +58,7 @@ class TheilsU(Metric):
         >>> metric = TheilsU(num_classes=10)
         >>> metric(preds, target)
         tensor(0.8530)
+
     """
 
     full_state_update: bool = False
@@ -93,6 +94,7 @@ class TheilsU(Metric):
             target: 1D or 2D tensor of categorical (nominal) data
             - 1D shape: (batch_size,)
             - 2D shape: (batch_size, num_classes)
+
         """
         confmat = _theils_u_update(preds, target, self.num_classes, self.nan_strategy, self.nan_replace_value)
         self.confmat += confmat
@@ -137,5 +139,6 @@ class TheilsU(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.randint(10, (10,)), torch.randint(10, (10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

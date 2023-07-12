@@ -46,6 +46,7 @@ def retrieval_fall_out(preds: Tensor, target: Tensor, top_k: Optional[int] = Non
         >>> target = tensor([True, False, True])
         >>> retrieval_fall_out(preds, target, top_k=2)
         tensor(1.)
+
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 

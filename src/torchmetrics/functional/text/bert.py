@@ -89,6 +89,7 @@ def _get_embeddings_and_idf_scale(
     Raises:
         ValueError:
             If ``all_layers = True`` and a model, which is not from the ``transformers`` package, is used.
+
     """
     embeddings_list: List[Tensor] = []
     idf_scale_list: List[Tensor] = []
@@ -154,6 +155,7 @@ def _get_precision_recall_f1(
 
     Return:
         Tensors containing precision, recall and F1 score, respectively.
+
     """
     # Dimensions: b = batch_size, l = num_layers, p = predictions_seq_len, r = references_seq_len, d = bert_dim
     cos_sim = torch.einsum("blpd, blrd -> blpr", preds_embeddings, target_embeddings)
@@ -176,6 +178,7 @@ def _read_csv_from_local_file(baseline_path: str) -> Tensor:
     """Read baseline from csv file from the local file.
 
     This method implemented to avoid `pandas` dependency.
+
     """
     with open(baseline_path) as fname:
         csv_file = csv.reader(fname)
@@ -187,6 +190,7 @@ def _read_csv_from_url(baseline_url: str) -> Tensor:
     """Read baseline from csv file from URL.
 
     This method is implemented to avoid `pandas` dependency.
+
     """
     with urllib.request.urlopen(baseline_url) as http_request:
         baseline_list = [
@@ -328,6 +332,7 @@ def bert_score(
         >>> target = ["hello there", "master kenobi"]
         >>> pprint(bert_score(preds, target))
         {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
+
     """
     if len(preds) != len(target):
         raise ValueError("Number of predicted and reference sententes must be the same!")

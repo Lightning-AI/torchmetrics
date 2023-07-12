@@ -32,6 +32,7 @@ def _symmetric_mean_absolute_percentage_error_update(
         preds: Predicted tensor
         target: Ground truth tensor
         epsilon: Avoids ``ZeroDivisionError``.
+
     """
     _check_same_shape(preds, target)
 
@@ -59,6 +60,7 @@ def _symmetric_mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor,
         >>> sum_abs_per_error, num_obs = _symmetric_mean_absolute_percentage_error_update(preds, target)
         >>> _symmetric_mean_absolute_percentage_error_compute(sum_abs_per_error, num_obs)
         tensor(0.2290)
+
     """
     return sum_abs_per_error / num_obs
 
@@ -83,6 +85,7 @@ def symmetric_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> T
         >>> preds = torch.tensor([0.9, 15, 1.2e6])
         >>> symmetric_mean_absolute_percentage_error(preds, target)
         tensor(0.2290)
+
     """
     sum_abs_per_error, num_obs = _symmetric_mean_absolute_percentage_error_update(
         preds,

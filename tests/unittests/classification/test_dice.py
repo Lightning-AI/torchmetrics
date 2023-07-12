@@ -54,6 +54,7 @@ def _scipy_dice(
 
     Return:
         Float dice score
+
     """
     sk_preds, sk_target, mode = _input_format_classification(preds, target)
 

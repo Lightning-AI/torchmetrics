@@ -50,6 +50,7 @@ def retrieval_normalized_dcg(preds: Tensor, target: Tensor, top_k: Optional[int]
         >>> target = torch.tensor([10, 0, 0, 1, 5])
         >>> retrieval_normalized_dcg(preds, target)
         tensor(0.6957)
+
     """
     preds, target = _check_retrieval_functional_inputs(preds, target, allow_non_binary_target=True)
 

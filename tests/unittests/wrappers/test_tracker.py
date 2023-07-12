@@ -159,6 +159,7 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
 
     Test that if user tries to compute the best metric for a metric that does not have a well defined best, we throw an
     warning and return None.
+
     """
     tracker = MetricTracker(base_metric)
     for _ in range(3):

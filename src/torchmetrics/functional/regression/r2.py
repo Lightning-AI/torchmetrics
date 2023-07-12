@@ -28,6 +28,7 @@ def _r2_score_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Ten
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
+
     """
     _check_same_shape(preds, target)
     if preds.ndim > 2:
@@ -72,6 +73,7 @@ def _r2_score_compute(
         >>> sum_squared_obs, sum_obs, rss, n_obs = _r2_score_update(preds, target)
         >>> _r2_score_compute(sum_squared_obs, sum_obs, rss, n_obs, multioutput="raw_values")
         tensor([0.9654, 0.9082])
+
     """
     if n_obs < 2:
         raise ValueError("Needs at least two samples to calculate r2 score.")
@@ -168,6 +170,7 @@ def r2_score(
         >>> preds = torch.tensor([[0, 2], [-1, 2], [8, -5]])
         >>> r2_score(preds, target, multioutput='raw_values')
         tensor([0.9654, 0.9082])
+
     """
     sum_squared_obs, sum_obs, rss, n_obs = _r2_score_update(preds, target)
     return _r2_score_compute(sum_squared_obs, sum_obs, rss, n_obs, adjusted, multioutput)

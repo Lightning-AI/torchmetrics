@@ -35,6 +35,7 @@ def _tweedie_deviance_score_update(preds: Tensor, targets: Tensor, power: float 
         >>> preds = torch.tensor([4.0, 3.0, 2.0, 1.0])
         >>> _tweedie_deviance_score_update(preds, targets, power=2)
         (tensor(4.8333), tensor(4))
+
     """
     _check_same_shape(preds, targets)
 
@@ -96,6 +97,7 @@ def _tweedie_deviance_score_compute(sum_deviance_score: Tensor, num_observations
         >>> sum_deviance_score, num_observations = _tweedie_deviance_score_update(preds, targets, power=2)
         >>> _tweedie_deviance_score_compute(sum_deviance_score, num_observations)
         tensor(1.2083)
+
     """
     return sum_deviance_score / num_observations
 
@@ -134,6 +136,7 @@ def tweedie_deviance_score(preds: Tensor, targets: Tensor, power: float = 0.0) -
         >>> preds = torch.tensor([4.0, 3.0, 2.0, 1.0])
         >>> tweedie_deviance_score(preds, targets, power=2)
         tensor(1.2083)
+
     """
     sum_deviance_score, num_observations = _tweedie_deviance_score_update(preds, targets, power=power)
     return _tweedie_deviance_score_compute(sum_deviance_score, num_observations)

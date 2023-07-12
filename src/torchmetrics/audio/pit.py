@@ -71,6 +71,7 @@ class PermutationInvariantTraining(Metric):
         ...     mode="speaker-wise", eval_func="max")
         >>> pit(preds, target)
         tensor(-2.1065)
+
     """
 
     full_state_update: bool = False
@@ -158,5 +159,6 @@ class PermutationInvariantTraining(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

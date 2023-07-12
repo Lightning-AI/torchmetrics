@@ -23,6 +23,7 @@ def _safe_matmul(x: Tensor, y: Tensor) -> Tensor:
     """Safe calculation of matrix multiplication.
 
     If input is float16, will cast to float32 for computation and back again.
+
     """
     if x.dtype == torch.float16 or y.dtype == torch.float16:
         return (x.float() @ y.T.float()).half()
@@ -48,6 +49,7 @@ def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
     """Safe division, by preventing division by zero.
 
     Additionally casts to float if input is not already to secure backwards compatibility.
+
     """
     denom[denom == 0.0] = 1
     num = num if num.is_floating_point() else num.float()
@@ -89,6 +91,7 @@ def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float, axis: int
     """Compute area under the curve using the trapezoidal rule.
 
     Assumes increasing or decreasing order of `x`.
+
     """
     with torch.no_grad():
         auc_: Tensor = torch.trapz(y, x, dim=axis) * direction
@@ -124,6 +127,7 @@ def auc(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
 
     Return:
         Tensor containing AUC score
+
     """
     x, y = _auc_format_inputs(x, y)
     return _auc_compute(x, y, reorder=reorder)

@@ -30,6 +30,7 @@ def _compare_mifid(preds, target, cosine_distance_eps: float = 0.1):
 
     Adjusted slightly to work with our code. We replace the feature extraction with our own, since we already check in
     FID that we use the correct feature extractor. This saves us from needing to download tensorflow for comparison.
+
     """
 
     def normalize_rows(x: np.ndarray):

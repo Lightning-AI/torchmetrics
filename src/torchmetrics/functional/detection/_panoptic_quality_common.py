@@ -29,6 +29,7 @@ def _nested_tuple(nested_list: List) -> Tuple:
 
     Returns:
         A nested tuple with the same content.
+
     """
     return tuple(map(_nested_tuple, nested_list)) if isinstance(nested_list, list) else nested_list
 
@@ -41,6 +42,7 @@ def _to_tuple(t: Tensor) -> Tuple:
 
     Returns:
         A nested tuple with the same content.
+
     """
     return _nested_tuple(t.tolist())
 
@@ -53,6 +55,7 @@ def _get_color_areas(inputs: Tensor) -> Dict[Tuple, Tensor]:
 
     Returns:
         A dictionary specifying the `(category_id, instance_id)` and the corresponding number of occurrences.
+
     """
     unique_keys, unique_keys_area = torch.unique(inputs, dim=0, return_counts=True)
     # dictionary indexed by color tuples
@@ -69,6 +72,7 @@ def _parse_categories(things: Collection[int], stuffs: Collection[int]) -> Tuple
     Returns:
         things_parsed: A set of unique category IDs for the things categories.
         stuffs_parsed: A set of unique category IDs for the stuffs categories.
+
     """
     things_parsed = set(things)
     if len(things_parsed) < len(things):
@@ -95,6 +99,7 @@ def _validate_inputs(preds: Tensor, target: torch.Tensor) -> None:
     Args:
         preds: the prediction tensor
         target: the target tensor
+
     """
     if not isinstance(preds, Tensor):
         raise TypeError(f"Expected argument `preds` to be of type `torch.Tensor`, but got {type(preds)}")
@@ -125,6 +130,7 @@ def _get_void_color(things: Set[int], stuffs: Set[int]) -> Tuple[int, int]:
 
     Returns:
         A new color ID that does not belong to things nor stuffs.
+
     """
     unused_category_id = 1 + max([0, *list(things), *list(stuffs)])
     return unused_category_id, 0
@@ -139,6 +145,7 @@ def _get_category_id_to_continuous_id(things: Set[int], stuffs: Set[int]) -> Dic
 
     Returns:
         A mapping from the original category IDs to continuous IDs (i.e., 0, 1, 2, ...).
+
     """
     # things metrics are stored with a continuous id in [0, len(things)[,
     thing_id_to_continuous_id = {thing_id: idx for idx, thing_id in enumerate(things)}
@@ -160,6 +167,7 @@ def _isin(arr: Tensor, values: List) -> Tensor:
     Returns:
         a bool tensor of the same shape as :param:`arr` indicating for each
         position whether the element of the tensor is in :param:`values`
+
     """
     return (arr[..., None] == arr.new(values)).any(-1)
 
@@ -186,6 +194,7 @@ def _prepocess_inputs(
 
     Returns:
         The preprocessed input tensor flattened along the spatial dimensions.
+
     """
     # flatten the spatial dimensions of the input tensor, e.g., (B, H, W, C) -> (B, H*W, C).
     out = inputs.detach().clone()
@@ -224,6 +233,7 @@ def _calculate_iou(
 
     Returns:
         The calculated IoU as a torch.Tensor containing a single scalar value.
+
     """
     if pred_color[0] != target_color[0]:
         raise ValueError(
@@ -260,6 +270,7 @@ def _filter_false_negatives(
 
     Yields:
         Category IDs of segments that account for false negatives.
+
     """
     false_negative_colors = set(target_areas) - target_segment_matched
     false_negative_colors.discard(void_color)
@@ -288,6 +299,7 @@ def _filter_false_positives(
 
     Yields:
         Category IDs of segments that account for false positives.
+
     """
     false_positive_colors = set(pred_areas) - pred_segment_matched
     false_positive_colors.discard(void_color)
@@ -327,6 +339,7 @@ def _panoptic_quality_update_sample(
         - True positives
         - False positives
         - False negatives.
+
     """
     stuffs_modified_metric = stuffs_modified_metric or set()
     device = flatten_preds.device
@@ -405,6 +418,7 @@ def _panoptic_quality_update(
         - True positives
         - False positives
         - False negatives
+
     """
     device = flatten_preds.device
     n_categories = len(cat_id_to_continuous_id)
@@ -446,6 +460,7 @@ def _panoptic_quality_compute(
 
     Returns:
         Panoptic quality as a tensor containing a single scalar.
+
     """
     # per category calculation
     denominator = (true_positives + 0.5 * false_positives + 0.5 * false_negatives).double()

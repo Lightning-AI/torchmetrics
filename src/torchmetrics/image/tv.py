@@ -60,6 +60,7 @@ class TotalVariation(Metric):
         >>> img = torch.rand(5, 3, 28, 28)
         >>> tv(img)
         tensor(7546.8018)
+
     """
 
     full_state_update: bool = False
@@ -133,5 +134,6 @@ class TotalVariation(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(5, 3, 28, 28)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

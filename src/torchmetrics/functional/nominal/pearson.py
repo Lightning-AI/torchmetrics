@@ -45,6 +45,7 @@ def _pearsons_contingency_coefficient_update(
 
     Returns:
         Non-reduced confusion matrix
+
     """
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
@@ -60,6 +61,7 @@ def _pearsons_contingency_coefficient_compute(confmat: Tensor) -> Tensor:
 
     Returns:
         Pearson's Contingency Coefficient
+
     """
     confmat = _drop_empty_rows_and_cols(confmat)
     cm_sum = confmat.sum()
@@ -118,6 +120,7 @@ def pearsons_contingency_coefficient(
         >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
         >>> pearsons_contingency_coefficient(preds, target)
         tensor(0.6948)
+
     """
     _nominal_input_validation(nan_strategy, nan_replace_value)
     num_classes = len(torch.cat([preds, target]).unique())
@@ -157,6 +160,7 @@ def pearsons_contingency_coefficient_matrix(
                 [0.1959, 0.1386, 1.0000, 0.1840, 0.2335],
                 [0.2262, 0.1895, 0.1840, 1.0000, 0.2737],
                 [0.2989, 0.1329, 0.2335, 0.2737, 1.0000]])
+
     """
     _nominal_input_validation(nan_strategy, nan_replace_value)
     num_variables = matrix.shape[1]

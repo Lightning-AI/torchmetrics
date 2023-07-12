@@ -20,6 +20,7 @@ def _gaussian(kernel_size: int, sigma: float, dtype: torch.dtype, device: Union[
     Example:
         >>> _gaussian(3, 1, torch.float, 'cpu')
         tensor([[0.2741, 0.4519, 0.2741]])
+
     """
     dist = torch.arange(start=(1 - kernel_size) / 2, end=(1 + kernel_size) / 2, step=1, dtype=dtype, device=device)
     gauss = torch.exp(-torch.pow(dist / sigma, 2) / 2)
@@ -49,6 +50,7 @@ def _gaussian_kernel_2d(
                   [0.0219, 0.0983, 0.1621, 0.0983, 0.0219],
                   [0.0133, 0.0596, 0.0983, 0.0596, 0.0133],
                   [0.0030, 0.0133, 0.0219, 0.0133, 0.0030]]]])
+
     """
     gaussian_kernel_x = _gaussian(kernel_size[0], sigma[0], dtype, device)
     gaussian_kernel_y = _gaussian(kernel_size[1], sigma[1], dtype, device)
@@ -66,6 +68,7 @@ def _uniform_weight_bias_conv2d(inputs: Tensor, window_size: int) -> Tuple[Tenso
 
     Return:
         The weight and bias for 2d convolution
+
     """
     kernel_weight = torch.ones(1, 1, window_size, window_size, dtype=inputs.dtype, device=inputs.device)
     kernel_weight /= window_size**2
@@ -84,6 +87,7 @@ def _single_dimension_pad(inputs: Tensor, dim: int, pad: int, outer_pad: int = 0
 
     Return:
         Image padded over a single dimension
+
     """
     _max = inputs.shape[dim]
     x = torch.index_select(inputs, dim, torch.arange(pad - 1, -1, -1).to(inputs.device))
@@ -101,6 +105,7 @@ def _reflection_pad_2d(inputs: Tensor, pad: int, outer_pad: int = 0) -> Tensor:
 
     Return:
         Padded image
+
     """
     for dim in [2, 3]:
         inputs = _single_dimension_pad(inputs, dim, pad, outer_pad)
@@ -116,6 +121,7 @@ def _uniform_filter(inputs: Tensor, window_size: int) -> Tensor:
 
     Return:
         Image transformed with the uniform input
+
     """
     inputs = _reflection_pad_2d(inputs, window_size // 2, window_size % 2)
     kernel_weight, kernel_bias = _uniform_weight_bias_conv2d(inputs, window_size)
@@ -140,6 +146,7 @@ def _gaussian_kernel_3d(
         sigma: Standard deviation of the gaussian kernel
         dtype: data type of the output tensor
         device: device of the output tensor
+
     """
     gaussian_kernel_x = _gaussian(kernel_size[0], sigma[0], dtype, device)
     gaussian_kernel_y = _gaussian(kernel_size[1], sigma[1], dtype, device)
@@ -163,6 +170,7 @@ def _reflection_pad_3d(inputs: Tensor, pad_h: int, pad_w: int, pad_d: int) -> Te
 
     Returns:
         padded input tensor
+
     """
     if _TORCH_GREATER_EQUAL_1_10:
         inputs = F.pad(inputs, (pad_h, pad_h, pad_w, pad_w, pad_d, pad_d), mode="reflect")

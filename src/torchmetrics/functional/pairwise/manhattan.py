@@ -28,6 +28,7 @@ def _pairwise_manhattan_distance_update(
         x: tensor of shape ``[N,d]``
         y: if provided, a tensor of shape ``[M,d]``
         zero_diagonal: determines if the diagonal of the distance matrix should be set to zero
+
     """
     x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
 
@@ -76,6 +77,7 @@ def pairwise_manhattan_distance(
         tensor([[0., 3., 8.],
                 [3., 0., 5.],
                 [8., 5., 0.]])
+
     """
     distance = _pairwise_manhattan_distance_update(x, y, zero_diagonal)
     return _reduce_distance_matrix(distance, reduction)

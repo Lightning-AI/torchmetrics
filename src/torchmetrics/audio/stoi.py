@@ -71,6 +71,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
         >>> stoi = ShortTimeObjectiveIntelligibility(8000, False)
         >>> stoi(preds, target)
         tensor(-0.0100)
+
     """
     sum_stoi: Tensor
     total: Tensor
@@ -153,5 +154,6 @@ class ShortTimeObjectiveIntelligibility(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

@@ -215,6 +215,7 @@ class MeanAveragePrecision(Metric):
          'mar_large': tensor(0.6000),
          'mar_medium': tensor(-1.),
          'mar_small': tensor(-1.)}
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -315,6 +316,7 @@ class MeanAveragePrecision(Metric):
                 If any class is not type int and of length 1
             ValueError:
                 If any score is not type float and of length 1
+
         """
         _input_validator(preds, target, iou_type=self.iou_type)
 
@@ -572,6 +574,7 @@ class MeanAveragePrecision(Metric):
         """Transforms and returns all cached targets or predictions in COCO format.
 
         Format is defined at https://cocodataset.org/#format-data
+
         """
         images = []
         annotations = []
@@ -686,6 +689,7 @@ class MeanAveragePrecision(Metric):
             >>> for _ in range(20):
             ...     vals.append(metric(preds(), target))
             >>> fig_, ax_ = metric.plot(vals)
+
         """
         return self._plot(val, ax)
 
@@ -698,6 +702,7 @@ class MeanAveragePrecision(Metric):
 
         Excludes the detections and groundtruths from the casting when the iou_type is set to `segm` as the state is
         no longer a tensor but a tuple.
+
         """
         return super()._apply(fn, exclude_state=("detections", "groundtruths") if self.iou_type == "segm" else "")
 

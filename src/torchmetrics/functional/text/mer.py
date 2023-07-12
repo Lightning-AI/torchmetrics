@@ -33,6 +33,7 @@ def _mer_update(
     Returns:
         Number of edit operations to get from the reference to the prediction, summed over all samples
         Number of words overall references
+
     """
     if isinstance(preds, str):
         preds = [preds]
@@ -58,6 +59,7 @@ def _mer_compute(errors: Tensor, total: Tensor) -> Tensor:
 
     Returns:
         Match error rate score
+
     """
     return errors / total
 
@@ -80,6 +82,7 @@ def match_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]
         >>> target = ["this is the reference", "there is another one"]
         >>> match_error_rate(preds=preds, target=target)
         tensor(0.4444)
+
     """
     errors, total = _mer_update(
         preds,

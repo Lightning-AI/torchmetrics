@@ -51,13 +51,21 @@ def setup_ddp(rank, world_size):
 
 
 def pytest_sessionstart():
-    """Global initialization of multiprocessing pool. Runs before any test."""
+    """Global initialization of multiprocessing pool.
+
+    Runs before any test.
+
+    """
     pool = Pool(processes=NUM_PROCESSES)
     pool.starmap(setup_ddp, [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)])
     pytest.pool = pool
 
 
 def pytest_sessionfinish():
-    """Correctly closes the global multiprocessing pool. Runs after all tests."""
+    """Correctly closes the global multiprocessing pool.
+
+    Runs after all tests.
+
+    """
     pytest.pool.close()
     pytest.pool.join()

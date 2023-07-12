@@ -52,7 +52,11 @@ class WrappedFleissKappa(FleissKappa):
 
 
 def _random_counts(high, size):
-    """Generate random counts matrix that is fully ranked. Interface is similar to torch.randint."""
+    """Generate random counts matrix that is fully ranked.
+
+    Interface is similar to torch.randint.
+
+    """
     x = torch.randint(high=high, size=size)
     x_sum = x.sum(-1)
     x_total = x_sum.max()

@@ -41,6 +41,7 @@ class EnumStr(StrEnum):
         Traceback (most recent call last):
           ...
         ValueError: Invalid Task: expected one of ['a', 'b'], but got c.
+
         """
         try:
             me = super().from_str(value.replace("-", "_"), source=source)
@@ -57,6 +58,7 @@ class DataType(EnumStr):
 
     >>> "Binary" in list(DataType)
     True
+
     """
 
     @staticmethod
@@ -78,6 +80,7 @@ class AverageMethod(EnumStr):
     True
     >>> AverageMethod.NONE == 'none'
     True
+
     """
 
     @staticmethod
@@ -107,6 +110,7 @@ class ClassificationTask(EnumStr):
 
     >>> "binary" in list(ClassificationTask)
     True
+
     """
 
     @staticmethod
@@ -123,6 +127,7 @@ class ClassificationTaskNoBinary(EnumStr):
 
     >>> "binary" in list(ClassificationTaskNoBinary)
     False
+
     """
 
     @staticmethod
@@ -138,6 +143,7 @@ class ClassificationTaskNoMultilabel(EnumStr):
 
     >>> "multilabel" in list(ClassificationTaskNoMultilabel)
     False
+
     """
 
     @staticmethod

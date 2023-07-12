@@ -64,6 +64,7 @@ class CharErrorRate(Metric):
         >>> cer = CharErrorRate()
         >>> cer(preds, target)
         tensor(0.3415)
+
     """
     is_differentiable: bool = False
     higher_is_better: bool = False
@@ -132,5 +133,6 @@ class CharErrorRate(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

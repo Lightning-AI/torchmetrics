@@ -56,6 +56,7 @@ def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, 
         >>> indexes = torch.tensor([0, 0, 0, 1, 1, 1, 1])
         >>> get_group_indexes(indexes)
         [tensor([0, 1, 2]), tensor([3, 4, 5, 6])]
+
     """
     structure, dtype = (tensor, torch.long) if isinstance(indexes, Tensor) else (np.array, np.int64)
 
@@ -396,6 +397,7 @@ def _errors_test_class_metric(
         exception_type: callable function that is used for comparison
         kwargs_update: Additional keyword arguments that will be passed with indexes, preds and
             target when running update on the metric.
+
     """
     metric_args = metric_args or {}
     kwargs_update = kwargs_update or {}
@@ -422,6 +424,7 @@ def _errors_test_functional_metric(
         exception_type: callable function that is used for comparison
         kwargs_update: Additional keyword arguments that will be passed with indexes, preds and
             target when running update on the metric.
+
     """
     kwargs_update = kwargs_update or {}
     with pytest.raises(exception_type, match=message):

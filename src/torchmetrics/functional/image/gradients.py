@@ -73,6 +73,7 @@ def image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
     .. note:: The implementation follows the 1-step finite difference method as followed
            by the TF implementation. The values are organized such that the gradient of
            [I(x+1, y)-[I(x, y)]] are at the (x, y) location
+
     """
     _image_gradients_validate(img)
 

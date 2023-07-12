@@ -55,6 +55,7 @@ class ExtendedEditDistance(Metric):
         >>> eed = ExtendedEditDistance()
         >>> eed(preds=preds, target=target)
         tensor(0.3078)
+
     """
 
     higher_is_better: bool = False
@@ -159,5 +160,6 @@ class ExtendedEditDistance(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

@@ -56,6 +56,7 @@ def concordance_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
         >>> concordance_corrcoef(preds, target)
         tensor([0.7273, 0.9887])
+
     """
     d = preds.shape[1] if preds.ndim == 2 else 1
     _temp = torch.zeros(d, dtype=preds.dtype, device=preds.device)
