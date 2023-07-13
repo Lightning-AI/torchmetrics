@@ -92,7 +92,7 @@ jobs:
 
       - name: Make Documentation
         working-directory: ./docs
-        run: make html --debug SPHINXOPTS="-W --keep-going"
+        run: make html --debug SPHINXOPTS="-W --keep-going -n"
 
       - name: Check External Links (Optional)
         working-directory: ./docs
