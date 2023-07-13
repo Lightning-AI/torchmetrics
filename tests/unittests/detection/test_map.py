@@ -678,6 +678,7 @@ def test_for_box_format(box_format, iou_val_expected, map_val_expected):
     """Test that only the correct box format lead to a score of 1.
 
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/1908.
+
     """
     predictions = [
         {"boxes": torch.tensor([[0.5, 0.5, 1, 1]]), "scores": torch.tensor([1.0]), "labels": torch.tensor([0])}
