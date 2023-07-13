@@ -36,8 +36,8 @@ class EditDistance(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~List`): An iterable of hypothesis corpus
-    - ``target`` (:class:`~List`): An iterable of iterables of reference corpus
+    - ``preds`` (:class:`~Sequence`): An iterable of hypothesis corpus
+    - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
@@ -98,12 +98,14 @@ class EditDistance(Metric):
     ) -> None:
         super().__init__(**kwargs)
         if not (isinstance(substitution_cost, int) and substitution_cost >= 0):
-            raise ValueError("Expected argument `substitution_cost` to be a positive integer")
+            raise ValueError(
+                f"Expected argument `substitution_cost` to be a positive integer, but got {substitution_cost}"
+            )
         self.substitution_cost = substitution_cost
 
         allowed_reduction = (None, "mean", "sum", "none")
         if reduction not in allowed_reduction:
-            raise ValueError(f"Expected argument `reduction` to be one of {allowed_reduction}")
+            raise ValueError(f"Expected argument `reduction` to be one of {allowed_reduction}, but got {reduction}")
         self.reduction = reduction
 
         if self.reduction == "none" or self.reduction is None:
@@ -112,7 +114,7 @@ class EditDistance(Metric):
             self.add_state("edit_scores", default=torch.tensor(0), dist_reduce_fx="sum")
             self.add_state("num_elements", default=torch.tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: List[str], target: List[str]) -> None:
+    def update(self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str]]) -> None:
         """Update state with predictions and targets."""
         distance = _edit_distance_update(preds, target, self.substitution_cost)
         if self.reduction == "none" or self.reduction is None:

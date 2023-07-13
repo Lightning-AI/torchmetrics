@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Literal, Optional, Union
+from typing import Literal, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -20,20 +20,22 @@ from torchmetrics.functional.text.helper import _LevenshteinEditDistance as _LE_
 
 
 def _edit_distance_update(
-    preds: List[str],
-    target: List[str],
+    preds: Union[str, Sequence[str]],
+    target: Union[str, Sequence[str]],
     substitution_cost: int = 1,
 ) -> Tensor:
-    if not isinstance(preds, list):
+    if isinstance(preds, str):
         preds = [preds]
-    if not isinstance(target, list):
+    if isinstance(target, str):
         target = [target]
     if not all(isinstance(x, str) for x in preds):
-        raise ValueError("Expected all values in argument `preds` to be string type")
+        raise ValueError(f"Expected all values in argument `preds` to be string type, but got {preds}")
     if not all(isinstance(x, str) for x in target):
-        raise ValueError("Expected all values in argument `target` to be string type")
+        raise ValueError(f"Expected all values in argument `target` to be string type, but got {target}")
     if len(preds) != len(target):
-        raise ValueError("Expected argument `preds` and `target` to have same length")
+        raise ValueError(
+            f"Expected argument `preds` and `target` to have same length, but got {len(preds)} and {len(target)}"
+        )
 
     distance = [
         _LE_distance(t, op_substitute=substitution_cost)(p)[0] for p, t in zip(preds, target)  # type: ignore[arg-type]
@@ -47,6 +49,8 @@ def _edit_distance_compute(
     reduction: Optional[Literal["mean", "sum", "none"]] = "mean",
 ) -> Tensor:
     """Compute final edit distance reduced over the batch."""
+    if edit_scores.numel() == 0:
+        return torch.tensor(0, dtype=torch.int32)
     if reduction == "mean":
         return edit_scores.sum() / num_elements
     if reduction == "sum":
@@ -57,8 +61,8 @@ def _edit_distance_compute(
 
 
 def edit_distance(
-    preds: List[str],
-    target: List[str],
+    preds: Union[str, Sequence[str]],
+    target: Union[str, Sequence[str]],
     substitution_cost: int = 1,
     reduction: Optional[Literal["mean", "sum", "none"]] = "mean",
 ) -> Tensor:

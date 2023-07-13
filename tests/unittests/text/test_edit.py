@@ -11,8 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from functools import partial
+
 import pytest
+from nltk.metrics.distance import edit_distance as nltk_edit_distance
 from torchmetrics.functional.text.edit import edit_distance
+from torchmetrics.text.edit import EditDistance
+
+from unittests.text.helpers import TextTester
+from unittests.text.inputs import _inputs_single_reference
 
 
 @pytest.mark.parametrize(
@@ -59,3 +66,75 @@ def test_for_correctness(
             substitution_cost=substitution_cost,
         )
         assert predicted == expected
+
+
+def _ref_implementation(preds, target, substitution_cost=1, reduction="mean"):
+    costs = [nltk_edit_distance(p, t, substitution_cost=substitution_cost) for p, t in zip(preds, target)]
+    if reduction == "mean":
+        return sum(costs) / len(costs)
+    if reduction == "sum":
+        return sum(costs)
+    return costs
+
+
+@pytest.mark.parametrize(
+    ["preds", "targets"],
+    [(_inputs_single_reference.preds, _inputs_single_reference.targets)],
+)
+class TestEditDistance(TextTester):
+    """Test class for `EditDistance` metric."""
+
+    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("substitution_cost", [1, 2])
+    @pytest.mark.parametrize("reduction", ["none", "mean", "sum"])
+    def test_edit_class(self, preds, targets, ddp, substitution_cost, reduction):
+        """Test class implementation of metric."""
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            targets=targets,
+            metric_class=EditDistance,
+            reference_metric=partial(_ref_implementation, substitution_cost=substitution_cost, reduction=reduction),
+            metric_args={"substitution_cost": substitution_cost, "reduction": reduction},
+        )
+
+    @pytest.mark.parametrize("substitution_cost", [1, 2])
+    @pytest.mark.parametrize("reduction", ["none", "mean", "sum"])
+    def test_edit_functional(self, preds, targets, substitution_cost, reduction):
+        """Test functional implementation of metric."""
+        self.run_functional_metric_test(
+            preds=preds,
+            targets=targets,
+            metric_functional=edit_distance,
+            reference_metric=partial(_ref_implementation, substitution_cost=substitution_cost, reduction=reduction),
+            metric_args={"substitution_cost": substitution_cost, "reduction": reduction},
+        )
+
+    def test_edit_differentiability(self, preds, targets):
+        """Test differentiability of metric."""
+        self.run_differentiability_test(
+            preds=preds,
+            target=targets,
+            metric_module=EditDistance,
+            metric_functional=edit_distance,
+        )
+
+
+def test_edit_empty_functional():
+    """Test functional implementation of metric with empty inputs."""
+    assert edit_distance([], []) == 0
+
+
+def test_edit_raise_errors():
+    """Test errors are raised on wrong input."""
+    with pytest.raises(ValueError, match="Expected argument `substitution_cost` to be a positive integer.*"):
+        EditDistance(substitution_cost=-1)
+
+    with pytest.raises(ValueError, match="Expected argument `substitution_cost` to be a positive integer.*"):
+        EditDistance(substitution_cost=2.0)
+
+    with pytest.raises(ValueError, match="Expected argument `reduction` to be one of.*"):
+        EditDistance(reduction=2.0)
+
+    with pytest.raises(ValueError, match="Expected argument `preds` and `target` to have same length.*"):
+        edit_distance(["abc"], ["abc", "def"])
