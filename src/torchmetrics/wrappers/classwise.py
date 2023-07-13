@@ -18,12 +18,13 @@ from torch import Tensor
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+from torchmetrics.wrappers.abstract import WrapperMetric
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["ClasswiseWrapper.plot"]
 
 
-class ClasswiseWrapper(Metric):
+class ClasswiseWrapper(WrapperMetric):
     """Wrapper metric for altering the output of classification metrics.
 
     This metric works together with classification metrics that returns multiple values (one value per class) such that
@@ -163,14 +164,6 @@ class ClasswiseWrapper(Metric):
     def reset(self) -> None:
         """Reset metric."""
         self.metric.reset()
-
-    def _wrap_update(self, update: Callable) -> Callable:
-        """Overwrite to do nothing."""
-        return update
-
-    def _wrap_compute(self, compute: Callable) -> Callable:
-        """Overwrite to do nothing."""
-        return compute
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
