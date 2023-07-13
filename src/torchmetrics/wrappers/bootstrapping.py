@@ -156,6 +156,10 @@ class BootStrapper(WrapperMetric):
             output_dict["raw"] = computed_vals
         return output_dict
 
+    def forward(self, *args: Any, **kwargs: Any) -> Any:
+        """Use the original forward method of the base metric class."""
+        return super(WrapperMetric, self).forward(*args, **kwargs)
+
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
