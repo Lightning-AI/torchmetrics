@@ -251,9 +251,10 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "torch": ("https://pytorch.org/docs/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
+    'matplotlib': ('http://matplotlib.org/stable', None),
 }
 
-# -- Options for todo extension ----------------------------------------------
+# -- Options for to-do extension ----------------------------------------------
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
