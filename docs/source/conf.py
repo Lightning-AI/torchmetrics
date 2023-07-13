@@ -251,7 +251,7 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "torch": ("https://pytorch.org/docs/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
-    'matplotlib': ('http://matplotlib.org/stable', None),
+    "matplotlib": ("http://matplotlib.org/stable", None),
 }
 
 # -- Options for to-do extension ----------------------------------------------
