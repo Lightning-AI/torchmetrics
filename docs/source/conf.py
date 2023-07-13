@@ -253,6 +253,7 @@ intersphinx_mapping = {
     "numpy": ("https://numpy.org/doc/stable/", None),
     "matplotlib": ("http://matplotlib.org/stable", None),
 }
+nitpicky = True
 
 # -- Options for to-do extension ----------------------------------------------
 

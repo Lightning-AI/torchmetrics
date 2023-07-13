@@ -28,7 +28,7 @@ test: clean env data
 docs: clean
 	FREEZE_REQUIREMENTS=1 pip install -e . --quiet -r requirements/docs.txt
 	# apt-get install -y texlive-latex-extra dvipng texlive-pictures texlive-fonts-recommended cm-super
-	TOKENIZERS_PARALLELISM=false python -m sphinx -b html -W --keep-going -n docs/source docs/build
+	TOKENIZERS_PARALLELISM=false python -m sphinx -b html -W --keep-going docs/source docs/build
 
 env:
 	export FREEZE_REQUIREMENTS=1
