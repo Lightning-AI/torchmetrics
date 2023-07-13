@@ -145,7 +145,15 @@ class MeanAveragePrecision(Metric):
 
     Args:
         box_format:
-            Input format of given boxes. Supported formats are ``[`xyxy`, `xywh`, `cxcywh`]``.
+            Input format of given boxes. Supported formats are:
+
+                - 'xyxy': boxes are represented via corners, x1, y1 being top left and x2, y2 being bottom right.
+                - 'xywh' : boxes are represented via corner, width and height, x1, y2 being top left, w, h being
+                  width and height. This is the default format used by pycoco and all input formats will be converted
+                  to this.
+                - 'cxcywh': boxes are represented via centre, width and height, cx, cy being center of box, w, h being
+                  width and height.
+
         iou_type:
             Type of input (either masks or bounding-boxes) used for computing IOU.
             Supported IOU types are ``["bbox", "segm"]``. If using ``"segm"``, masks should be provided in input.
@@ -232,7 +240,7 @@ class MeanAveragePrecision(Metric):
 
     def __init__(
         self,
-        box_format: str = "xyxy",
+        box_format: Literal["xyxy", "xywh", "cxcywh"] = "xyxy",
         iou_type: Literal["bbox", "segm"] = "bbox",
         iou_thresholds: Optional[List[float]] = None,
         rec_thresholds: Optional[List[float]] = None,
@@ -345,27 +353,27 @@ class MeanAveragePrecision(Metric):
             coco_target.createIndex()
             coco_preds.createIndex()
 
-            coco_eval = COCOeval(coco_target, coco_preds, iouType=self.iou_type)
-            coco_eval.params.iouThrs = np.array(self.iou_thresholds, dtype=np.float64)
-            coco_eval.params.recThrs = np.array(self.rec_thresholds, dtype=np.float64)
-            coco_eval.params.maxDets = self.max_detection_thresholds
+            self.coco_eval = COCOeval(coco_target, coco_preds, iouType=self.iou_type)
+            self.coco_eval.params.iouThrs = np.array(self.iou_thresholds, dtype=np.float64)
+            self.coco_eval.params.recThrs = np.array(self.rec_thresholds, dtype=np.float64)
+            self.coco_eval.params.maxDets = self.max_detection_thresholds
 
-            coco_eval.evaluate()
-            coco_eval.accumulate()
-            coco_eval.summarize()
-            stats = coco_eval.stats
+            self.coco_eval.evaluate()
+            self.coco_eval.accumulate()
+            self.coco_eval.summarize()
+            stats = self.coco_eval.stats
 
         # if class mode is enabled, evaluate metrics per class
         if self.class_metrics:
             map_per_class_list = []
             mar_100_per_class_list = []
             for class_id in self._get_classes():
-                coco_eval.params.catIds = [class_id]
+                self.coco_eval.params.catIds = [class_id]
                 with contextlib.redirect_stdout(io.StringIO()):
-                    coco_eval.evaluate()
-                    coco_eval.accumulate()
-                    coco_eval.summarize()
-                    class_stats = coco_eval.stats
+                    self.coco_eval.evaluate()
+                    self.coco_eval.accumulate()
+                    self.coco_eval.summarize()
+                    class_stats = self.coco_eval.stats
 
                 map_per_class_list.append(torch.tensor([class_stats[0]]))
                 mar_100_per_class_list.append(torch.tensor([class_stats[8]]))
@@ -545,7 +553,7 @@ class MeanAveragePrecision(Metric):
         if self.iou_type == "bbox":
             boxes = _fix_empty_tensors(item["boxes"])
             if boxes.numel() > 0:
-                boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
+                boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xywh")
             return boxes
         if self.iou_type == "segm":
             masks = []
