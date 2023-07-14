@@ -20,12 +20,13 @@ from torchmetrics.collections import MetricCollection
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+from torchmetrics.wrappers.abstract import WrapperMetric
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MultitaskWrapper.plot"]
 
 
-class MultitaskWrapper(Metric):
+class MultitaskWrapper(WrapperMetric):
     """Wrapper class for computing different metrics on different tasks in the context of multitask learning.
 
     In multitask learning the different tasks requires different metrics to be evaluated. This wrapper allows
@@ -151,14 +152,6 @@ class MultitaskWrapper(Metric):
         for metric in self.task_metrics.values():
             metric.reset()
         super().reset()
-
-    def _wrap_update(self, update: Callable) -> Callable:
-        """Overwrite to do nothing."""
-        return update
-
-    def _wrap_compute(self, compute: Callable) -> Callable:
-        """Overwrite to do nothing."""
-        return compute
 
     def plot(
         self, val: Optional[Union[Dict, Sequence[Dict]]] = None, axes: Optional[Sequence[_AX_TYPE]] = None
