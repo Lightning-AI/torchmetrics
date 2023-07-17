@@ -99,6 +99,8 @@ class BinaryConfusionMatrix(Metric):
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
 
+    confmat: Tensor
+
     def __init__(
         self,
         threshold: float = 0.5,
@@ -224,6 +226,8 @@ class MulticlassConfusionMatrix(Metric):
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
 
+    confmat: Tensor
+
     def __init__(
         self,
         num_classes: int,
@@ -347,6 +351,8 @@ class MultilabelConfusionMatrix(Metric):
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
 
+    confmat: Tensor
+
     def __init__(
         self,
         num_labels: int,
@@ -454,7 +460,7 @@ class ConfusionMatrix:
                 [[0, 1], [0, 1]]])
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
@@ -478,4 +484,4 @@ class ConfusionMatrix:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelConfusionMatrix(num_labels, threshold, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")

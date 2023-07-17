@@ -104,7 +104,7 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average="binary")
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -232,7 +232,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average=self.average, ignore_index=self.ignore_index)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -365,7 +365,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average=self.average)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -431,7 +431,7 @@ class JaccardIndex:
         tensor(0.9660)
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
@@ -455,4 +455,4 @@ class JaccardIndex:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelJaccardIndex(num_labels, threshold, average, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")

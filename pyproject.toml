@@ -164,15 +164,11 @@ warn_no_return = "False"
 # TODO: the goal is for this to be empty
 [[tool.mypy.overrides]]
 module = [
-    "torchmetrics.classification.calibration_error",
-    "torchmetrics.classification.cohen_kappa",
-    "torchmetrics.classification.confusion_matrix",
     "torchmetrics.classification.exact_match",
     "torchmetrics.classification.f_beta",
     "torchmetrics.classification.group_fairness",
     "torchmetrics.classification.hamming",
     "torchmetrics.classification.hinge",
-    "torchmetrics.classification.jaccard",
     "torchmetrics.classification.matthews_corrcoef",
     "torchmetrics.classification.precision_recall",
     "torchmetrics.classification.ranking",
