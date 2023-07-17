@@ -31,8 +31,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class BLEUScore(Metric):
-    """Calculate `BLEU score`_ of machine translated text with one or more
-    references.
+    """Calculate `BLEU score`_ of machine translated text with one or more references.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -61,6 +60,7 @@ class BLEUScore(Metric):
         >>> bleu = BLEUScore()
         >>> bleu(preds, target)
         tensor(0.7598)
+
     """
 
     is_differentiable: bool = False
@@ -152,5 +152,6 @@ class BLEUScore(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

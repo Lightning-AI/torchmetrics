@@ -51,6 +51,7 @@ def _get_net(net: str, pretrained: bool) -> nn.modules.container.Sequential:
     Args:
         net: Name of network
         pretrained: If pretrained weights should be used
+
     """
     if _TORCHVISION_GREATER_EQUAL_0_13:
         if pretrained:
@@ -249,6 +250,7 @@ class _LPIPS(nn.Module):
             use_dropout: If dropout layers should be added
             model_path: Model path to load pretained models from
             eval_mode: If network should be in evaluation mode
+
         """
         super().__init__()
 
@@ -363,8 +365,7 @@ def learned_perceptual_image_patch_similarity(
     reduction: Literal["sum", "mean"] = "mean",
     normalize: bool = False,
 ) -> Tensor:
-    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates the
-    perceptual similarity between two images.
+    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates the perceptual similarity between two images.
 
     LPIPS essentially computes the similarity between the activations of two image patches for some pre-defined network.
     This measure has been shown to match human perception well. A low LPIPS score means that image patches are
@@ -389,6 +390,7 @@ def learned_perceptual_image_patch_similarity(
         >>> img2 = (torch.rand(10, 3, 100, 100) * 2) - 1
         >>> learned_perceptual_image_patch_similarity(img1, img2, net_type='squeeze')
         tensor(0.1008, grad_fn=<DivBackward0>)
+
     """
     net = _NoTrainLpips(net=net_type)
     loss, total = _lpips_update(img1, img2, net, normalize)

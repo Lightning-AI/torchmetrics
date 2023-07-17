@@ -28,8 +28,7 @@ else:
 def short_time_objective_intelligibility(
     preds: Tensor, target: Tensor, fs: int, extended: bool = False, keep_same_device: bool = False
 ) -> Tensor:
-    r"""Calculate STOI (Short-Time Objective Intelligibility) metric for
-    evaluating speech signals.
+    r"""Calculate STOI (Short-Time Objective Intelligibility) metric for evaluating speech signals.
 
     Intelligibility measure which is highly correlated with the intelligibility of degraded speech signals, e.g., due to
     additive noise, single-/multi-channel noise reduction, binary masking and vocoded speech as in CI simulations. The
@@ -70,6 +69,7 @@ def short_time_objective_intelligibility(
         >>> target = torch.randn(8000)
         >>> short_time_objective_intelligibility(preds, target, 8000).float()
         tensor(-0.0100)
+
     """
     if not _PYSTOI_AVAILABLE:
         raise ModuleNotFoundError(

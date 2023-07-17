@@ -39,11 +39,11 @@ seed_all(42)
 
 
 def _precision_at_k(target: np.ndarray, preds: np.ndarray, top_k: Optional[int] = None, adaptive_k: bool = False):
-    """Didn't find a reliable implementation of Precision in Information
-    Retrieval, so, reimplementing here.
+    """Didn't find a reliable implementation of Precision in Information Retrieval, so, reimplementing here.
 
     A good explanation can be found
     `here <https://web.stanford.edu/class/cs276/handouts/EvaluationNew-handout-1-per.pdf>_`.
+
     """
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs

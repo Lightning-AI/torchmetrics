@@ -101,6 +101,7 @@ class IntersectionOverUnion(Metric):
     Raises:
         ModuleNotFoundError:
             If torchvision is not installed with version 0.8.0 or newer.
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -184,6 +185,7 @@ class IntersectionOverUnion(Metric):
                 If any class is not type int and of length 1
             ValueError:
                 If any score is not type float and of length 1
+
         """
         _input_validator(preds, target)
 
@@ -215,9 +217,7 @@ class IntersectionOverUnion(Metric):
         return boxes
 
     def _get_gt_classes(self) -> List:
-        """Returns a list of unique classes found in ground truth and detection
-        data.
-        """
+        """Returns a list of unique classes found in ground truth and detection data."""
         if len(self.groundtruth_labels) > 0:
             return torch.cat(self.groundtruth_labels).unique().tolist()
         return []
@@ -305,5 +305,6 @@ class IntersectionOverUnion(Metric):
             >>> for _ in range(20):
             ...     vals.append(metric(preds, target()))
             >>> fig_, ax_ = metric.plot(vals)
+
         """
         return self._plot(val, ax)

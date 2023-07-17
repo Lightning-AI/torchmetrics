@@ -84,6 +84,7 @@ class MultioutputWrapper(WrapperMetric):
          >>> r2score = MultioutputWrapper(R2Score(), 2)
          >>> r2score(preds, target)
          tensor([0.9654, 0.9082])
+
     """
 
     is_differentiable = False
@@ -103,9 +104,7 @@ class MultioutputWrapper(WrapperMetric):
         self.squeeze_outputs = squeeze_outputs
 
     def _get_args_kwargs_by_output(self, *args: Tensor, **kwargs: Tensor) -> List[Tuple[Tensor, Tensor]]:
-        """Get args and kwargs reshaped to be output-specific and (maybe)
-        having NaNs stripped out.
-        """
+        """Get args and kwargs reshaped to be output-specific and (maybe) having NaNs stripped out."""
         args_kwargs_by_output = []
         for i in range(len(self.metrics)):
             selected_args = apply_to_collection(
@@ -138,11 +137,10 @@ class MultioutputWrapper(WrapperMetric):
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Any:
-        """Call underlying forward methods and aggregate the results if they're
-        non-null.
+        """Call underlying forward methods and aggregate the results if they're non-null.
 
-        We override this method to ensure that state variables get
-        copied over on the underlying metrics.
+        We override this method to ensure that state variables get copied over on the underlying metrics.
+
         """
         reshaped_args_kwargs = self._get_args_kwargs_by_output(*args, **kwargs)
         results = [
@@ -199,5 +197,6 @@ class MultioutputWrapper(WrapperMetric):
             >>> for _ in range(3):
             ...     values.append(metric(torch.randn(20, 2), torch.randn(20, 2)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

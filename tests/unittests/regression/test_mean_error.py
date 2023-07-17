@@ -100,6 +100,7 @@ def _baseline_symmetric_mape(
             But note the fact that bad predictions can lead to arbitrarily large
             MAPE values, especially if some y_true values are very close to zero.
             Note that we return a large value instead of `inf` when y_true is zero.
+
     """
     _, y_true, y_pred, multioutput = _check_reg_targets(y_true, y_pred, multioutput)
     check_consistent_length(y_true, y_pred, sample_weight)
@@ -198,9 +199,7 @@ class TestMeanError(MetricTester):
     def test_mean_error_differentiability(
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args
     ):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             target=target,

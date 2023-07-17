@@ -33,8 +33,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class SignalNoiseRatio(Metric):
-    r"""Calculate `Signal-to-noise ratio`_ (SNR_) meric for evaluating quality
-    of audio.
+    r"""Calculate `Signal-to-noise ratio`_ (SNR_) meric for evaluating quality of audio.
 
     .. math::
         \text{SNR} = \frac{P_{signal}}{P_{noise}}
@@ -67,6 +66,7 @@ class SignalNoiseRatio(Metric):
         >>> snr = SignalNoiseRatio()
         >>> snr(preds, target)
         tensor(16.1805)
+
     """
     full_state_update: bool = False
     is_differentiable: bool = True
@@ -136,13 +136,13 @@ class SignalNoiseRatio(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(4), torch.rand(4)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
 
 class ScaleInvariantSignalNoiseRatio(Metric):
-    """Calculate `Scale-invariant signal-to-noise ratio`_ (SI-SNR) metric for
-    evaluating quality of audio.
+    """Calculate `Scale-invariant signal-to-noise ratio`_ (SI-SNR) metric for evaluating quality of audio.
 
     As input to `forward` and `update` the metric accepts the following input
 
@@ -169,6 +169,7 @@ class ScaleInvariantSignalNoiseRatio(Metric):
         >>> si_snr = ScaleInvariantSignalNoiseRatio()
         >>> si_snr(preds, target)
         tensor(15.0918)
+
     """
 
     is_differentiable = True
@@ -234,13 +235,13 @@ class ScaleInvariantSignalNoiseRatio(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(4), torch.rand(4)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
 
 class ComplexScaleInvariantSignalNoiseRatio(Metric):
-    """Calculate `Complex scale-invariant signal-to-noise ratio`_ (C-SI-SNR)
-    metric for evaluating quality of audio.
+    """Calculate `Complex scale-invariant signal-to-noise ratio`_ (C-SI-SNR) metric for evaluating quality of audio.
 
     As input to `forward` and `update` the metric accepts the following input
 
@@ -275,6 +276,7 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
         >>> c_si_snr = ComplexScaleInvariantSignalNoiseRatio()
         >>> c_si_snr(preds, target)
         tensor(-63.4849)
+
     """
 
     is_differentiable = True
@@ -344,5 +346,6 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(1,257,100,2), torch.rand(1,257,100,2)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

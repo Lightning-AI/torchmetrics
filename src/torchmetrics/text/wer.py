@@ -26,8 +26,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class WordErrorRate(Metric):
-    r"""Word error rate (`WordErrorRate`_) is a common metric of the performance
-    of an automatic speech recognition.
+    r"""Word error rate (`WordErrorRate`_) is a common metric of the performance of an automatic speech recognition.
 
     This value indicates the percentage of words that were incorrectly predicted. The lower the value, the
     better the performance of the ASR system with a WER of 0 being a perfect score. Word error rate can then be
@@ -64,6 +63,7 @@ class WordErrorRate(Metric):
         >>> wer = WordErrorRate()
         >>> wer(preds, target)
         tensor(0.5000)
+
     """
     is_differentiable: bool = False
     higher_is_better: bool = False
@@ -132,5 +132,6 @@ class WordErrorRate(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

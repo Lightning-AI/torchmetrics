@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""An example of how to use ROUGEScore with a user's defined/own normalizer and
-tokenizer.
+"""An example of how to use ROUGEScore with a user's defined/own normalizer and tokenizer.
 
 To run: python rouge_score-own_normalizer_and_tokenizer.py
+
 """
 
 import re
@@ -25,11 +25,10 @@ from torchmetrics.text.rouge import ROUGEScore
 
 
 class UserNormalizer:
-    """The `UserNormalizer` class is required to normalize a non-alphabet
-    language text input.
+    """The `UserNormalizer` class is required to normalize a non-alphabet language text input.
 
-    The user's defined normalizer is expected to return string that are
-    fed into the tokenizer.
+    The user's defined normalizer is expected to return string that are fed into the tokenizer.
+
     """
 
     def __init__(self) -> None:
@@ -46,15 +45,16 @@ class UserNormalizer:
 
         Return:
             Normalized python string object
+
         """
         return re.sub(self.pattern, " ", text.lower())
 
 
 class UserTokenizer:
-    """The `UserNormalizer` class is required to tokenize a non-alphabet
-    language text input.
+    """The `UserNormalizer` class is required to tokenize a non-alphabet language text input.
 
     The user's defined tokenizer is expected to return ``Sequence[str]`` that are fed into the rouge score.
+
     """
 
     pattern = r"\s+"
@@ -70,6 +70,7 @@ class UserTokenizer:
 
         Return:
             Tokenized sentence
+
         """
         return re.split(self.pattern, text)
 

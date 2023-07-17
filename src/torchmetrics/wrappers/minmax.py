@@ -27,8 +27,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class MinMaxMetric(WrapperMetric):
-    """Wrapper metric that tracks both the minimum and maximum of a
-    scalar/tensor across an experiment.
+    """Wrapper metric that tracks both the minimum and maximum of a scalar/tensor across an experiment.
 
     The min/max value will be updated each time ``.compute`` is called.
 
@@ -58,6 +57,7 @@ class MinMaxMetric(WrapperMetric):
         >>> minmax_metric.update(preds_2, labels)
         >>> pprint(minmax_metric.compute())
         {'max': tensor(1.), 'min': tensor(0.7500), 'raw': tensor(0.7500)}
+
     """
 
     full_state_update: Optional[bool] = True
@@ -83,11 +83,11 @@ class MinMaxMetric(WrapperMetric):
         self._base_metric.update(*args, **kwargs)
 
     def compute(self) -> Dict[str, Tensor]:
-        """Compute the underlying metric as well as max and min values for this
-        metric.
+        """Compute the underlying metric as well as max and min values for this metric.
 
         Returns a dictionary that consists of the computed value (``raw``), as well as the minimum (``min``) and maximum
         (``max``) values.
+
         """
         val = self._base_metric.compute()
         if not self._is_suitable_val(val):
@@ -103,9 +103,7 @@ class MinMaxMetric(WrapperMetric):
         return super(WrapperMetric, self).forward(*args, **kwargs)
 
     def reset(self) -> None:
-        """Set ``max_val`` and ``min_val`` to the initialization bounds and
-        resets the base metric.
-        """
+        """Set ``max_val`` and ``min_val`` to the initialization bounds and resets the base metric."""
         super().reset()
         self._base_metric.reset()
 
@@ -158,5 +156,6 @@ class MinMaxMetric(WrapperMetric):
             >>> for _ in range(3):
             ...     values.append(metric(torch.randint(2, (20,)), torch.randint(2, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

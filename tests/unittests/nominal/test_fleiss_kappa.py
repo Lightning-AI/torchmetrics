@@ -55,6 +55,7 @@ def _random_counts(high, size):
     """Generate random counts matrix that is fully ranked.
 
     Interface is similar to torch.randint.
+
     """
     x = torch.randint(high=high, size=size)
     x_sum = x.sum(-1)
@@ -106,9 +107,7 @@ class TestFleissKappa(MetricTester):
         )
 
     def test_fleiss_kappa_differentiability(self, preds, target, mode):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds,
             target,

@@ -86,9 +86,7 @@ class TestKLDivergence(MetricTester):
         )
 
     def test_kldivergence_differentiability(self, reduction, p, q, log_prob):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             p,
             q,
@@ -117,9 +115,7 @@ def test_error_on_different_shape():
 
 
 def test_error_on_multidim_tensors():
-    """Test that error is raised if a larger than 2D tensor is given as
-    input.
-    """
+    """Test that error is raised if a larger than 2D tensor is given as input."""
     metric = KLDivergence()
     with pytest.raises(ValueError, match="Expected both p and q distribution to be 2D but got 3 and 3 respectively"):
         metric(torch.randn(10, 20, 5), torch.randn(10, 20, 5))

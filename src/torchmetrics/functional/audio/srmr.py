@@ -128,6 +128,7 @@ def _erb_filterbank(wave: Tensor, coefs: Tensor) -> Tensor:
 
     Returns:
         Tensor: shape [B, N, time]
+
     """
     n_batch, time = wave.shape
     wave = wave.to(dtype=coefs.dtype).reshape(n_batch, 1, time)  # [B, time]
@@ -153,6 +154,7 @@ def _normalize_energy(energy: Tensor, drange: float = 30.0) -> Tensor:
     Args:
         energy: shape [B, N_filters, 8, n_frames]
         drange: dynamic range in dB
+
     """
     peak_energy = torch.mean(energy, dim=1, keepdim=True).max(dim=2, keepdim=True).values
     peak_energy = peak_energy.max(dim=3, keepdim=True).values
@@ -229,6 +231,7 @@ def speech_reverberation_modulation_energy_ratio(
         >>> preds = torch.randn(8000)
         >>> speech_reverberation_modulation_energy_ratio(preds, 8000)
         tensor([0.3354], dtype=torch.float64)
+
     """
     if not _TORCHAUDIO_AVAILABEL or not _TORCHAUDIO_GREATER_EQUAL_0_10 or not _GAMMATONE_AVAILABEL:
         raise ModuleNotFoundError(
@@ -340,6 +343,7 @@ def _srmr_arg_validate(
         max_cf: Center frequency in Hz of the last modulation filter. If None is given,
         norm: Use modulation spectrum energy normalization
         fast: Use the faster version based on the gammatonegram.
+
     """
     if not (isinstance(fs, int) and fs > 0):
         raise ValueError(f"Expected argument `fs` to be an int larger than 0, but got {fs}")

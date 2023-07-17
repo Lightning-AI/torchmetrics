@@ -21,9 +21,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _find_repeats(data: Tensor) -> Tensor:
-    """Find and return values which have repeats i.e. the same value are more
-    than once in the tensor.
-    """
+    """Find and return values which have repeats i.e. the same value are more than once in the tensor."""
     temp = data.detach().clone()
     temp = temp.sort()[0]
 
@@ -38,11 +36,11 @@ def _find_repeats(data: Tensor) -> Tensor:
 def _rank_data(data: Tensor) -> Tensor:
     """Calculate the rank for each element of a tensor.
 
-    The rank refers to the indices of an element in the corresponding
-    sorted tensor (starting from 1). Duplicates of the same value will
-    be assigned the mean of their rank.
+    The rank refers to the indices of an element in the corresponding sorted tensor (starting from 1). Duplicates of the
+    same value will be assigned the mean of their rank.
 
     Adopted from `Rank of element tensor`_
+
     """
     n = data.numel()
     rank = torch.empty_like(data)
@@ -57,8 +55,7 @@ def _rank_data(data: Tensor) -> Tensor:
 
 
 def _spearman_corrcoef_update(preds: Tensor, target: Tensor, num_outputs: int) -> Tuple[Tensor, Tensor]:
-    """Update and returns variables required to compute Spearman Correlation
-    Coefficient.
+    """Update and returns variables required to compute Spearman Correlation Coefficient.
 
     Check for same shape and type of input tensors.
 
@@ -66,6 +63,7 @@ def _spearman_corrcoef_update(preds: Tensor, target: Tensor, num_outputs: int) -
         preds: Predicted tensor
         target: Ground truth tensor
         num_outputs: Number of outputs in multioutput setting
+
     """
     if not (preds.is_floating_point() and target.is_floating_point()):
         raise TypeError(
@@ -91,6 +89,7 @@ def _spearman_corrcoef_compute(preds: Tensor, target: Tensor, eps: float = 1e-6)
         >>> preds, target = _spearman_corrcoef_update(preds, target, num_outputs=1)
         >>> _spearman_corrcoef_compute(preds, target)
         tensor(1.0000)
+
     """
     if preds.ndim == 1:
         preds = _rank_data(preds)
@@ -136,6 +135,7 @@ def spearman_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
         >>> spearman_corrcoef(preds, target)
         tensor([1.0000, 1.0000])
+
     """
     preds, target = _spearman_corrcoef_update(preds, target, num_outputs=1 if preds.ndim == 1 else preds.shape[-1])
     return _spearman_corrcoef_compute(preds, target)

@@ -89,6 +89,7 @@ class BinaryAccuracy(BinaryStatScores):
         >>> metric = BinaryAccuracy(multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0.3333, 0.1667])
+
     """
     is_differentiable = False
     higher_is_better = True
@@ -97,9 +98,7 @@ class BinaryAccuracy(BinaryStatScores):
     plot_upper_bound: float = 1.0
 
     def compute(self) -> Tensor:
-        """Compute accuracy based on inputs passed in to ``update``
-        previously.
-        """
+        """Compute accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
 
@@ -141,6 +140,7 @@ class BinaryAccuracy(BinaryStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -237,6 +237,7 @@ class MulticlassAccuracy(MulticlassStatScores):
         >>> mca(preds, target)
         tensor([[1.0000, 0.0000, 0.5000],
                 [0.0000, 0.3333, 0.5000]])
+
     """
     is_differentiable = False
     higher_is_better = True
@@ -246,9 +247,7 @@ class MulticlassAccuracy(MulticlassStatScores):
     plot_legend_name: str = "Class"
 
     def compute(self) -> Tensor:
-        """Compute accuracy based on inputs passed in to ``update``
-        previously.
-        """
+        """Compute accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
@@ -290,6 +289,7 @@ class MulticlassAccuracy(MulticlassStatScores):
             >>> for _ in range(20):
             ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -386,6 +386,7 @@ class MultilabelAccuracy(MultilabelStatScores):
         >>> mla(preds, target)
         tensor([[0.5000, 0.5000, 0.0000],
                 [0.0000, 0.0000, 0.5000]])
+
     """
     is_differentiable = False
     higher_is_better = True
@@ -395,9 +396,7 @@ class MultilabelAccuracy(MultilabelStatScores):
     plot_legend_name: str = "Label"
 
     def compute(self) -> Tensor:
-        """Compute accuracy based on inputs passed in to ``update``
-        previously.
-        """
+        """Compute accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
         return _accuracy_reduce(
             tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
@@ -441,6 +440,7 @@ class MultilabelAccuracy(MultilabelStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -471,6 +471,7 @@ class Accuracy:
         >>> accuracy = Accuracy(task="multiclass", num_classes=3, top_k=2)
         >>> accuracy(preds, target)
         tensor(0.6667)
+
     """
 
     def __new__(  # type: ignore[misc]

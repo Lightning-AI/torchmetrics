@@ -33,6 +33,7 @@ def _wil_update(
         Number of edit operations to get from the reference to the prediction, summed over all samples
         Number of words overall references
         Number of words overall predictions
+
     """
     if isinstance(preds, str):
         preds = [preds]
@@ -63,13 +64,13 @@ def _wil_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> T
 
     Returns:
         Word Information Lost score
+
     """
     return 1 - ((errors / target_total) * (errors / preds_total))
 
 
 def word_information_lost(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
-    """Word Information Lost rate is a metric of the performance of an
-    automatic speech recognition system.
+    """Word Information Lost rate is a metric of the performance of an automatic speech recognition system.
 
     This value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better
     the performance of the ASR system with a Word Information Lost rate of 0 being a perfect score.
@@ -87,6 +88,7 @@ def word_information_lost(preds: Union[str, List[str]], target: Union[str, List[
         >>> target = ["this is the reference", "there is another one"]
         >>> word_information_lost(preds, target)
         tensor(0.6528)
+
     """
     errors, target_total, preds_total = _wil_update(preds, target)
     return _wil_compute(errors, target_total, preds_total)

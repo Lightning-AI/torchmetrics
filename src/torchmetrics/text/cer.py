@@ -26,8 +26,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class CharErrorRate(Metric):
-    r"""Character Error Rate (`CER`_) is a metric of the performance of an
-    automatic speech recognition (ASR) system.
+    r"""Character Error Rate (`CER`_) is a metric of the performance of an automatic speech recognition (ASR) system.
 
     This value indicates the percentage of characters that were incorrectly predicted.
     The lower the value, the better the performance of the ASR system with a CharErrorRate of 0 being
@@ -65,6 +64,7 @@ class CharErrorRate(Metric):
         >>> cer = CharErrorRate()
         >>> cer(preds, target)
         tensor(0.3415)
+
     """
     is_differentiable: bool = False
     higher_is_better: bool = False
@@ -133,5 +133,6 @@ class CharErrorRate(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

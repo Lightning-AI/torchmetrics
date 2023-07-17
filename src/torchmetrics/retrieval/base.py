@@ -23,8 +23,7 @@ from torchmetrics.utilities.data import _flexible_bincount, dim_zero_cat
 
 
 class RetrievalMetric(Metric, ABC):
-    """Works with binary target data. Accepts float predictions from a model
-    output.
+    """Works with binary target data. Accepts float predictions from a model output.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -64,6 +63,7 @@ class RetrievalMetric(Metric, ABC):
             If ``empty_target_action`` is not one of ``error``, ``skip``, ``neg`` or ``pos``.
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
+
     """
 
     is_differentiable: bool = False
@@ -99,9 +99,7 @@ class RetrievalMetric(Metric, ABC):
         self.add_state("target", default=[], dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor, indexes: Tensor) -> None:
-        """Check shape, check and convert dtypes, flatten and add to
-        accumulators.
-        """
+        """Check shape, check and convert dtypes, flatten and add to accumulators."""
         if indexes is None:
             raise ValueError("Argument `indexes` cannot be None")
 
@@ -114,12 +112,12 @@ class RetrievalMetric(Metric, ABC):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """First concat state ``indexes``, ``preds`` and ``target`` since they
-        were stored as lists.
+        """First concat state ``indexes``, ``preds`` and ``target`` since they were stored as lists.
 
         After that, compute list of groups that will help in keeping together predictions about the same query. Finally,
         for each group compute the ``_metric`` if the number of positive targets is at least 1, otherwise behave as
         specified by ``self.empty_target_action``.
+
         """
         indexes = dim_zero_cat(self.indexes)
         preds = dim_zero_cat(self.preds)
@@ -153,4 +151,5 @@ class RetrievalMetric(Metric, ABC):
         """Compute a metric over a predictions and target of a single group.
 
         This method should be overridden by subclasses.
+
         """

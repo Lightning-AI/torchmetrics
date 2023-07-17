@@ -114,9 +114,7 @@ class TestBinaryStatScores(MetricTester):
         )
 
     def test_binary_stat_scores_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -281,9 +279,7 @@ class TestMulticlassStatScores(MetricTester):
         )
 
     def test_multiclass_stat_scores_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -363,9 +359,7 @@ def test_top_k_ignore_index_multiclass():
 
 
 def test_multiclass_overflow():
-    """Test that multiclass computations does not overflow even on byte
-    input.
-    """
+    """Test that multiclass computations does not overflow even on byte input."""
     preds = torch.randint(20, (100,)).byte()
     target = torch.randint(20, (100,)).byte()
 
@@ -502,9 +496,7 @@ class TestMultilabelStatScores(MetricTester):
         )
 
     def test_multilabel_stat_scores_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,

@@ -74,8 +74,7 @@ def binary_hinge_loss(
     ignore_index: Optional[int] = None,
     validate_args: bool = False,
 ) -> Tensor:
-    r"""Compute the mean `Hinge loss`_ typically used for Support Vector
-    Machines (SVMs) for binary tasks.
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for binary tasks.
 
     .. math::
         \text{Hinge loss} = \max(0, 1 - y \times \hat{y})
@@ -111,6 +110,7 @@ def binary_hinge_loss(
         tensor(0.6900)
         >>> binary_hinge_loss(preds, target, squared=True)
         tensor(0.6905)
+
     """
     if validate_args:
         _binary_hinge_loss_arg_validation(squared, ignore_index)
@@ -185,8 +185,7 @@ def multiclass_hinge_loss(
     ignore_index: Optional[int] = None,
     validate_args: bool = False,
 ) -> Tensor:
-    r"""Compute the mean `Hinge loss`_ typically used for Support Vector
-    Machines (SVMs) for multiclass tasks.
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs) for multiclass tasks.
 
     The metric can be computed in two ways. Either, the definition by Crammer and Singer is used:
 
@@ -234,6 +233,7 @@ def multiclass_hinge_loss(
         tensor(1.1131)
         >>> multiclass_hinge_loss(preds, target, num_classes=3, multiclass_mode='one-vs-all')
         tensor([0.8750, 1.1250, 1.1000])
+
     """
     if validate_args:
         _multiclass_hinge_loss_arg_validation(num_classes, squared, multiclass_mode, ignore_index)
@@ -253,8 +253,7 @@ def hinge_loss(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute the mean `Hinge loss`_ typically used for Support Vector
-    Machines (SVMs).
+    r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
@@ -277,6 +276,7 @@ def hinge_loss(
         >>> preds = tensor([[-1.0, 0.9, 0.2], [0.5, -1.1, 0.8], [2.2, -0.5, 0.3]])
         >>> hinge_loss(preds, target, task="multiclass", num_classes=3, multiclass_mode="one-vs-all")
         tensor([1.3743, 1.1945, 1.2359])
+
     """
     task = ClassificationTaskNoMultilabel.from_str(task)
     if task == ClassificationTaskNoMultilabel.BINARY:

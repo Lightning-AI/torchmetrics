@@ -89,9 +89,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
         )
 
     def test_binary_matthews_corrcoef_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -183,9 +181,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
         )
 
     def test_multiclass_matthews_corrcoef_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -275,9 +271,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
         )
 
     def test_multilabel_matthews_corrcoef_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -318,9 +312,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
 
 
 def test_zero_case_in_multiclass():
-    """Cases where the denominator in the matthews corrcoef is 0, the score
-    should return 0.
-    """
+    """Cases where the denominator in the matthews corrcoef is 0, the score should return 0."""
     # Example where neither 1 or 2 is present in the target tensor
     out = multiclass_matthews_corrcoef(torch.tensor([0, 1, 2]), torch.tensor([0, 0, 0]), 3)
     assert out == 0.0
@@ -366,8 +358,6 @@ def test_zero_case_in_multiclass():
     ],
 )
 def test_corner_cases(metric_fn, preds, target, expected):
-    """Test the corner cases of perfect classifiers or completely random
-    classifiers that they work as expected.
-    """
+    """Test the corner cases of perfect classifiers or completely random classifiers that they work as expected."""
     out = metric_fn(preds, target)
     assert out == expected

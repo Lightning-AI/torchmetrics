@@ -106,9 +106,7 @@ class TestSASDR(MetricTester):
         )
 
     def test_sa_sdr_differentiability(self, preds, target, scale_invariant, zero_mean):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             target=target,

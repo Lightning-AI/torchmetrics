@@ -76,6 +76,7 @@ class RetrievalFallOut(RetrievalMetric):
         >>> fo = RetrievalFallOut(top_k=2)
         >>> fo(preds, target, indexes=indexes)
         tensor(0.5000)
+
     """
 
     is_differentiable: bool = False
@@ -102,12 +103,12 @@ class RetrievalFallOut(RetrievalMetric):
         self.top_k = top_k
 
     def compute(self) -> Tensor:
-        """First concat state ``indexes``, ``preds`` and ``target`` since they
-        were stored as lists.
+        """First concat state ``indexes``, ``preds`` and ``target`` since they were stored as lists.
 
         After that, compute list of groups that will help in keeping together predictions about the same query. Finally,
         for each group compute the `_metric` if the number of negative targets is at least 1, otherwise behave as
         specified by `self.empty_target_action`.
+
         """
         indexes = dim_zero_cat(self.indexes)
         preds = dim_zero_cat(self.preds)
@@ -177,5 +178,6 @@ class RetrievalFallOut(RetrievalMetric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(10,), torch.randint(2, (10,)), indexes=torch.randint(2,(10,))))
             >>> fig, ax = metric.plot(values)
+
         """
         return self._plot(val, ax)

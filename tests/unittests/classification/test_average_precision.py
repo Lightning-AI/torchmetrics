@@ -89,9 +89,7 @@ class TestBinaryAveragePrecision(MetricTester):
         )
 
     def test_binary_average_precision_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -132,9 +130,7 @@ class TestBinaryAveragePrecision(MetricTester):
 
     @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
     def test_binary_average_precision_threshold_arg(self, inputs, threshold_fn):
-        """Test that different types of `thresholds` argument lead to same
-        result.
-        """
+        """Test that different types of `thresholds` argument lead to same result."""
         preds, target = inputs
 
         for pred, true in zip(preds, target):
@@ -214,9 +210,7 @@ class TestMulticlassAveragePrecision(MetricTester):
         )
 
     def test_multiclass_average_precision_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -257,9 +251,7 @@ class TestMulticlassAveragePrecision(MetricTester):
 
     @pytest.mark.parametrize("average", ["macro", "weighted", None])
     def test_multiclass_average_precision_threshold_arg(self, inputs, average):
-        """Test that different types of `thresholds` argument lead to same
-        result.
-        """
+        """Test that different types of `thresholds` argument lead to same result."""
         preds, target = inputs
         if (preds < 0).any():
             preds = preds.softmax(dim=-1)
@@ -334,9 +326,7 @@ class TestMultilabelAveragePrecision(MetricTester):
         )
 
     def test_multiclass_average_precision_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -377,9 +367,7 @@ class TestMultilabelAveragePrecision(MetricTester):
 
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multilabel_average_precision_threshold_arg(self, inputs, average):
-        """Test that different types of `thresholds` argument lead to same
-        result.
-        """
+        """Test that different types of `thresholds` argument lead to same result."""
         preds, target = inputs
         if (preds < 0).any():
             preds = sigmoid(preds)

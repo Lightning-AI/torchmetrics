@@ -117,9 +117,7 @@ def test_metrics_eq(second_operand, expected_result):
     ],
 )
 def test_metrics_floordiv(second_operand, expected_result):
-    """Test that `floordiv` operator works and returns a compositional
-    metric.
-    """
+    """Test that `floordiv` operator works and returns a compositional metric."""
     first_metric = DummyMetric(5)
 
     final_floordiv = first_metric // second_operand
@@ -349,9 +347,7 @@ def test_metrics_pow(second_operand, expected_result):
     [(5, tensor(2)), (5.0, tensor(2.0)), (tensor(5), tensor(2))],
 )
 def test_metrics_rfloordiv(first_operand, expected_result):
-    """Test that `rfloordiv` operator works and returns a compositional
-    metric.
-    """
+    """Test that `rfloordiv` operator works and returns a compositional metric."""
     second_operand = DummyMetric(2)
 
     final_rfloordiv = first_operand // second_operand
@@ -367,9 +363,7 @@ def test_metrics_rfloordiv(first_operand, expected_result):
     [pytest.param(tensor([2, 2, 2]), tensor(12))],
 )
 def test_metrics_rmatmul(first_operand, expected_result):
-    """Test that `rmatmul` operator works and returns a compositional
-    metric.
-    """
+    """Test that `rmatmul` operator works and returns a compositional metric."""
     second_operand = DummyMetric([2, 2, 2])
 
     final_rmatmul = first_operand @ second_operand
@@ -445,9 +439,7 @@ def test_metrics_rsub(first_operand, expected_result):
     ],
 )
 def test_metrics_rtruediv(first_operand, expected_result):
-    """Test that `rtruediv` operator works and returns a compositional
-    metric.
-    """
+    """Test that `rtruediv` operator works and returns a compositional metric."""
     second_operand = DummyMetric(3)
 
     final_rtruediv = first_operand / second_operand
@@ -487,9 +479,7 @@ def test_metrics_sub(second_operand, expected_result):
     ],
 )
 def test_metrics_truediv(second_operand, expected_result):
-    """Test that `truediv` operator works and returns a compositional
-    metric.
-    """
+    """Test that `truediv` operator works and returns a compositional metric."""
     first_metric = DummyMetric(6)
 
     final_truediv = first_metric / second_operand
@@ -565,9 +555,7 @@ def test_metrics_pos():
     [([1, 2, 3], 1, tensor(2)), ([[0, 1], [2, 3]], (1, 0), tensor(2)), ([[0, 1], [2, 3]], 1, tensor([2, 3]))],
 )
 def test_metrics_getitem(value, idx, expected_result):
-    """Test that `getitem` operator works and returns a compositional
-    metric.
-    """
+    """Test that `getitem` operator works and returns a compositional metric."""
     first_metric = DummyMetric(value)
 
     final_getitem = first_metric[idx]

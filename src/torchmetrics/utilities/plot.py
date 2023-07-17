@@ -67,8 +67,7 @@ def plot_single_or_multi_val(
     legend_name: Optional[str] = None,
     name: Optional[str] = None,
 ) -> _PLOT_OUT_TYPE:
-    """Plot a single metric value or multiple, including bounds of value if
-    existing.
+    """Plot a single metric value or multiple, including bounds of value if existing.
 
     Args:
         val: A single tensor with one or multiple values (multiclass/label/output format) or a list of such tensors.
@@ -87,6 +86,7 @@ def plot_single_or_multi_val(
     Raises:
         ModuleNotFoundError:
             If `matplotlib` is not installed
+
     """
     _error_on_missing_matplotlib()
     fig, ax = plt.subplots() if ax is None else (None, ax)
@@ -182,6 +182,7 @@ def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> Union[np.ndarray, _AX
     """Reduce `axs` to `nb` Axes.
 
     All further Axes are removed from the figure.
+
     """
     if isinstance(axs, _AX_TYPE):
         return axs
@@ -218,6 +219,7 @@ def plot_confusion_matrix(
     Raises:
         ModuleNotFoundError:
             If `matplotlib` is not installed
+
     """
     _error_on_missing_matplotlib()
 

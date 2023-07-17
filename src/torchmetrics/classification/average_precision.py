@@ -102,6 +102,7 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
         >>> bap = BinaryAveragePrecision(thresholds=5)
         >>> bap(preds, target)
         tensor(0.6667)
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -152,6 +153,7 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(20,), torch.randint(2, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -232,6 +234,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         >>> mcap = MulticlassAveragePrecision(num_classes=5, average=None, thresholds=5)
         >>> mcap(preds, target)
         tensor([1.0000, 1.0000, 0.2500, 0.2500, -0.0000])
+
     """
 
     is_differentiable: bool = False
@@ -301,6 +304,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
             >>> for _ in range(10):
             ...     values.append(metric(torch.randn(20, 3), torch.randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -385,6 +389,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         >>> mlap = MultilabelAveragePrecision(num_labels=3, average=None, thresholds=5)
         >>> mlap(preds, target)
         tensor([0.7500, 0.6667, 0.9167])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -455,6 +460,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(20,3), torch.randint(2, (20,3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -492,6 +498,7 @@ class AveragePrecision:
         >>> average_precision = AveragePrecision(task="multiclass", num_classes=5, average=None)
         >>> average_precision(pred, target)
         tensor([1.0000, 1.0000, 0.2500, 0.2500,    nan])
+
     """
 
     def __new__(  # type: ignore[misc]

@@ -132,6 +132,7 @@ class Dice(Metric):
         >>> dice = Dice(average='micro')
         >>> dice(preds, target)
         tensor(0.2500)
+
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -231,9 +232,7 @@ class Dice(Metric):
 
     @no_type_check
     def _get_final_stats(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-        """Perform concatenation on the stat scores if neccesary, before
-        passing them to a compute function.
-        """
+        """Perform concatenation on the stat scores if neccesary, before passing them to a compute function."""
         tp = torch.cat(self.tp) if isinstance(self.tp, list) else self.tp
         fp = torch.cat(self.fp) if isinstance(self.fp, list) else self.fp
         tn = torch.cat(self.tn) if isinstance(self.tn, list) else self.tn
@@ -284,5 +283,6 @@ class Dice(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2,(10,)), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

@@ -53,6 +53,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.
+
     """
 
     higher_is_better: bool = False
@@ -88,9 +89,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
         )
 
     def compute(self) -> Optional[Tensor]:
-        """Compute Root Mean Squared Error (using sliding window) and
-        potentially return RMSE map.
-        """
+        """Compute Root Mean Squared Error (using sliding window) and potentially return RMSE map."""
         assert self.rmse_map is not None  # noqa: S101  # needed for mypy
         rmse, _ = _rmse_sw_compute(self.rmse_val_sum, self.rmse_map, self.total_images)
         return rmse
@@ -133,5 +132,6 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(4, 3, 16, 16), torch.rand(4, 3, 16, 16)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

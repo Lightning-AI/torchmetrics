@@ -32,8 +32,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class MetricCollection(ModuleDict):
-    """MetricCollection class can be used to chain metrics that have the same
-    call pattern into one single class.
+    """MetricCollection class can be used to chain metrics that have the same call pattern into one single class.
 
     Args:
         metrics: One of the following
@@ -164,6 +163,7 @@ class MetricCollection(ModuleDict):
         {'MeanSquaredError': tensor(2.3750), 'MulticlassPrecision': tensor(0.0667), 'MulticlassRecall': tensor(0.1111)}
         >>> pprint(metrics.compute_groups)
         {0: ['MulticlassRecall', 'MulticlassPrecision'], 1: ['MeanSquaredError']}
+
     """
 
     _modules: Dict[str, Metric]  # type: ignore[assignment]
@@ -191,18 +191,18 @@ class MetricCollection(ModuleDict):
     def forward(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """Call forward for each metric sequentially.
 
-        Positional arguments (args) will be passed to every metric in
-        the collection, while keyword arguments (kwargs) will be
-        filtered based on the signature of the individual metric.
+        Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
+        will be filtered based on the signature of the individual metric.
+
         """
         return self._compute_and_reduce("forward", *args, **kwargs)
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Call update for each metric sequentially.
 
-        Positional arguments (args) will be passed to every metric in
-        the collection, while keyword arguments (kwargs) will be
-        filtered based on the signature of the individual metric.
+        Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
+        will be filtered based on the signature of the individual metric.
+
         """
         # Use compute groups if already initialized and checked
         if self._groups_checked:
@@ -226,11 +226,11 @@ class MetricCollection(ModuleDict):
                 self._groups_checked = True
 
     def _merge_compute_groups(self) -> None:
-        """Iterate over the collection of metrics, checking if the state of
-        each metric matches another.
+        """Iterate over the collection of metrics, checking if the state of each metric matches another.
 
         If so, their compute groups will be merged into one. The complexity of the method is approximately
         ``O(number_of_metrics_in_collection ** 2)``, as all metrics need to be compared to all other metrics.
+
         """
         n_groups = len(self._groups)
         while True:
@@ -292,6 +292,7 @@ class MetricCollection(ModuleDict):
         Args:
             copy: If `True` the metric state will between members will be copied instead
                 of just passed by reference
+
         """
         if not self._state_is_copy:
             for cg in self._groups.values():
@@ -323,6 +324,7 @@ class MetricCollection(ModuleDict):
         Raises:
             ValueError:
                 If method_name is not `compute` or `forward`.
+
         """
         result = {}
         for k, m in self.items(keep_base=True, copy_state=False):
@@ -358,6 +360,7 @@ class MetricCollection(ModuleDict):
         Args:
             prefix: a string to append in front of the metric keys
             postfix: a string to append after the keys of the output dict.
+
         """
         mc = deepcopy(self)
         if prefix:
@@ -367,9 +370,7 @@ class MetricCollection(ModuleDict):
         return mc
 
     def persistent(self, mode: bool = True) -> None:
-        """Change if metric states should be saved to its state_dict after
-        initialization.
-        """
+        """Change if metric states should be saved to its state_dict after initialization."""
         for m in self.values(copy_state=False):
             m.persistent(mode)
 
@@ -449,6 +450,7 @@ class MetricCollection(ModuleDict):
 
         If user provided a list, we check that all metrics in the list are also in the collection. If set to `True` we
         simply initialize each metric in the collection as its own group
+
         """
         if isinstance(self._enable_compute_groups, list):
             self._groups = dict(enumerate(self._enable_compute_groups))
@@ -490,6 +492,7 @@ class MetricCollection(ModuleDict):
 
         Args:
             keep_base: Whether to add prefix/postfix on the items collection.
+
         """
         if keep_base:
             return self._modules.keys()
@@ -502,6 +505,7 @@ class MetricCollection(ModuleDict):
             keep_base: Whether to add prefix/postfix on the collection.
             copy_state:
                 If metric states should be copied between metrics in the same compute group or just passed by reference
+
         """
         self._compute_groups_create_state_ref(copy_state)
         if keep_base:
@@ -514,6 +518,7 @@ class MetricCollection(ModuleDict):
         Args:
             copy_state:
                 If metric states should be copied between metrics in the same compute group or just passed by reference
+
         """
         self._compute_groups_create_state_ref(copy_state)
         return self._modules.values()
@@ -525,6 +530,7 @@ class MetricCollection(ModuleDict):
             key: name of metric to retrieve
             copy_state:
                 If metric states should be copied between metrics in the same compute group or just passed by reference
+
         """
         self._compute_groups_create_state_ref(copy_state)
         return self._modules[key]
@@ -536,9 +542,7 @@ class MetricCollection(ModuleDict):
         raise ValueError(f"Expected input `{name}` to be a string, but got {type(arg)}")
 
     def __repr__(self) -> str:
-        """Return the representation of the metric collection including all
-        metrics in the collection.
-        """
+        """Return the representation of the metric collection including all metrics in the collection."""
         repr_str = super().__repr__()[:-2]
         if self.prefix:
             repr_str += f",\n  prefix={self.prefix}{',' if self.postfix else ''}"
@@ -547,11 +551,11 @@ class MetricCollection(ModuleDict):
         return repr_str + "\n)"
 
     def set_dtype(self, dst_type: Union[str, torch.dtype]) -> "MetricCollection":
-        """Transfer all metric state to specific dtype. Special version of
-        standard `type` method.
+        """Transfer all metric state to specific dtype. Special version of standard `type` method.
 
         Arguments:
             dst_type (type or string): the desired type.
+
         """
         for m in self.values(copy_state=False):
             m.set_dtype(dst_type)
@@ -613,6 +617,7 @@ class MetricCollection(ModuleDict):
             >>> for _ in range(10):
             ...     values.append(metrics(torch.rand(10), torch.randint(2, (10,))))
             >>> fig_, ax_ = metrics.plot(values, together=True)
+
         """
         if not isinstance(together, bool):
             raise ValueError(f"Expected argument `together` to be a boolean, but got {type(together)}")

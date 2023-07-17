@@ -52,8 +52,7 @@ class _AbstractGroupStatScores(Metric):
 
 
 class BinaryGroupStatRates(_AbstractGroupStatScores):
-    r"""Computes the true/false positives and true/false negatives rates for
-    binary classification by group.
+    r"""Computes the true/false positives and true/false negatives rates for binary classification by group.
 
     Related to `Type I and Type II errors`_.
 
@@ -95,6 +94,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
         >>> metric = BinaryGroupStatRates(num_groups=2)
         >>> metric(preds, target, groups)
         {'group_0': tensor([0., 0., 1., 0.]), 'group_1': tensor([1., 0., 0., 0.])}
+
     """
     is_differentiable = False
     higher_is_better = False
@@ -131,6 +131,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
             preds: Tensor with predictions.
             target: Tensor with true labels.
             groups: Tensor with group identifiers. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
+
         """
         group_stats = _binary_groups_stat_scores(
             preds, target, groups, self.num_groups, self.threshold, self.ignore_index, self.validate_args
@@ -141,17 +142,14 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
     def compute(
         self,
     ) -> Dict[str, torch.Tensor]:
-        """Compute tp, fp, tn and fn rates based on inputs passed in to
-        ``update`` previously.
-        """
+        """Compute tp, fp, tn and fn rates based on inputs passed in to ``update`` previously."""
         results = torch.stack((self.tp, self.fp, self.tn, self.fn), dim=1)
 
         return {f"group_{i}": group / group.sum() for i, group in enumerate(results)}
 
 
 class BinaryFairness(_AbstractGroupStatScores):
-    r"""Computes `Demographic parity`_ and `Equal opportunity`_ ratio for binary
-    classification problems.
+    r"""Computes `Demographic parity`_ and `Equal opportunity`_ ratio for binary classification problems.
 
     Accepts the following input tensors:
 
@@ -202,6 +200,7 @@ class BinaryFairness(_AbstractGroupStatScores):
         >>> metric = BinaryFairness(2)
         >>> metric(preds, target, groups)
         {'DP_0_1': tensor(0.), 'EO_0_1': tensor(0.)}
+
     """
     is_differentiable = False
     higher_is_better = False
@@ -246,6 +245,7 @@ class BinaryFairness(_AbstractGroupStatScores):
             preds: Tensor with predictions.
             target: Tensor with true labels.
             groups: Tensor with group identifiers. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
+
         """
         if self.task == "demographic_parity":
             if target is not None:
@@ -261,9 +261,7 @@ class BinaryFairness(_AbstractGroupStatScores):
     def compute(
         self,
     ) -> Dict[str, torch.Tensor]:
-        """Compute fairness criteria based on inputs passed in to ``update``
-        previously.
-        """
+        """Compute fairness criteria based on inputs passed in to ``update`` previously."""
         if self.task == "demographic_parity":
             return _compute_binary_demographic_parity(self.tp, self.fp, self.tn, self.fn)
 
@@ -317,5 +315,6 @@ class BinaryFairness(_AbstractGroupStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(20), torch.randint(2,(20,)), torch.ones(20).long()))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

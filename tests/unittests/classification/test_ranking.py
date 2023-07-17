@@ -104,9 +104,7 @@ class TestMultilabelRanking(MetricTester):
         )
 
     def test_multilabel_ranking_differentiability(self, inputs, metric, functional_metric, ref_metric):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,

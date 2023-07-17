@@ -34,8 +34,7 @@ def _pearsons_contingency_coefficient_update(
     nan_strategy: Literal["replace", "drop"] = "replace",
     nan_replace_value: Optional[Union[int, float]] = 0.0,
 ) -> Tensor:
-    """Compute the bins to update the confusion matrix with for Pearson's
-    Contingency Coefficient calculation.
+    """Compute the bins to update the confusion matrix with for Pearson's Contingency Coefficient calculation.
 
     Args:
         preds: 1D or 2D tensor of categorical (nominal) data
@@ -46,6 +45,7 @@ def _pearsons_contingency_coefficient_update(
 
     Returns:
         Non-reduced confusion matrix
+
     """
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
@@ -54,14 +54,14 @@ def _pearsons_contingency_coefficient_update(
 
 
 def _pearsons_contingency_coefficient_compute(confmat: Tensor) -> Tensor:
-    """Compute Pearson's Contingency Coefficient based on a pre-computed
-    confusion matrix.
+    """Compute Pearson's Contingency Coefficient based on a pre-computed confusion matrix.
 
     Args:
         confmat: Confusion matrix for observed data
 
     Returns:
         Pearson's Contingency Coefficient
+
     """
     confmat = _drop_empty_rows_and_cols(confmat)
     cm_sum = confmat.sum()
@@ -78,8 +78,7 @@ def pearsons_contingency_coefficient(
     nan_strategy: Literal["replace", "drop"] = "replace",
     nan_replace_value: Optional[Union[int, float]] = 0.0,
 ) -> Tensor:
-    r"""Compute `Pearson's Contingency Coefficient`_ for measuring the
-    association between two categorical data series.
+    r"""Compute `Pearson's Contingency Coefficient`_ for measuring the association between two categorical data series.
 
     .. math::
         Pearson = \sqrt{\frac{\chi^2 / n}{1 + \chi^2 / n}}
@@ -121,6 +120,7 @@ def pearsons_contingency_coefficient(
         >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
         >>> pearsons_contingency_coefficient(preds, target)
         tensor(0.6948)
+
     """
     _nominal_input_validation(nan_strategy, nan_replace_value)
     num_classes = len(torch.cat([preds, target]).unique())
@@ -133,8 +133,7 @@ def pearsons_contingency_coefficient_matrix(
     nan_strategy: Literal["replace", "drop"] = "replace",
     nan_replace_value: Optional[Union[int, float]] = 0.0,
 ) -> Tensor:
-    r"""Compute `Pearson's Contingency Coefficient`_ statistic between a set of
-    multiple variables.
+    r"""Compute `Pearson's Contingency Coefficient`_ statistic between a set of multiple variables.
 
     This can serve as a convenient tool to compute Pearson's Contingency Coefficient for analyses
     of correlation between categorical variables in your dataset.
@@ -161,6 +160,7 @@ def pearsons_contingency_coefficient_matrix(
                 [0.1959, 0.1386, 1.0000, 0.1840, 0.2335],
                 [0.2262, 0.1895, 0.1840, 1.0000, 0.2737],
                 [0.2989, 0.1329, 0.2335, 0.2737, 1.0000]])
+
     """
     _nominal_input_validation(nan_strategy, nan_replace_value)
     num_variables = matrix.shape[1]

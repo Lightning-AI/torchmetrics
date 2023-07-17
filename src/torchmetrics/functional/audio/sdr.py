@@ -53,6 +53,7 @@ def _symmetric_toeplitz(vector: Tensor) -> Tensor:
 
     Returns:
         a symmetric Toeplitz matrix of shape [..., L, L]
+
     """
     vec_exp = torch.cat([torch.flip(vector, dims=(-1,)), vector[..., 1:]], dim=-1)
     v_len = vector.shape[-1]
@@ -62,8 +63,7 @@ def _symmetric_toeplitz(vector: Tensor) -> Tensor:
 
 
 def _compute_autocorr_crosscorr(target: Tensor, preds: Tensor, corr_len: int) -> Tuple[Tensor, Tensor]:
-    r"""Compute the auto correlation of `target` and the cross correlation of
-    `target` and `preds`.
+    r"""Compute the auto correlation of `target` and the cross correlation of `target` and `preds`.
 
     This calculation is done using the fast Fourier transform (FFT). Let's denotes the symmetric Toeplitz matric of the
     auto correlation of `target` as `R`, the cross correlation as 'b', then solving the equation `Rh=b` could have `h`
@@ -77,6 +77,7 @@ def _compute_autocorr_crosscorr(target: Tensor, preds: Tensor, corr_len: int) ->
     Returns:
         the auto correlation of `target` of shape [..., corr_len]
         the cross correlation of `target` and `preds` of shape [..., corr_len]
+
     """
     # the valid length for the signal after convolution
     n_fft = 2 ** math.ceil(math.log2(preds.shape[-1] + target.shape[-1] - 1))
@@ -101,8 +102,7 @@ def signal_distortion_ratio(
     zero_mean: bool = False,
     load_diag: Optional[float] = None,
 ) -> Tensor:
-    r"""Calculate Signal to Distortion Ratio (SDR) metric. See `SDR ref1`_ and
-    `SDR ref2`_ for details on the metric.
+    r"""Calculate Signal to Distortion Ratio (SDR) metric. See `SDR ref1`_ and `SDR ref2`_ for details on the metric.
 
     .. note:
         The metric currently does not seem to work with Pytorch v1.11 and specific GPU hardware.
@@ -152,6 +152,7 @@ def signal_distortion_ratio(
                 [0, 1],
                 [1, 0],
                 [0, 1]])
+
     """
     _check_same_shape(preds, target)
 
@@ -227,6 +228,7 @@ def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
         >>> scale_invariant_signal_distortion_ratio(preds, target)
         tensor(18.4030)
+
     """
     _check_same_shape(preds, target)
     eps = torch.finfo(preds.dtype).eps
@@ -287,6 +289,7 @@ def source_aggregated_signal_distortion_ratio(
                 [1, 0],
                 [0, 1],
                 [1, 0]])
+
     """
     _check_same_shape(preds, target)
     if preds.ndim < 2:

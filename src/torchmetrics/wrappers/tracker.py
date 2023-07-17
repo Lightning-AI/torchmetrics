@@ -29,8 +29,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class MetricTracker(ModuleList):
-    """A wrapper class that can help keeping track of a metric or metric
-    collection over time.
+    """A wrapper class that can help keeping track of a metric or metric collection over time.
 
     The wrapper implements the standard ``.update()``, ``.compute()``, ``.reset()`` methods that just
     calls corresponding method of the currently tracked metric. However, the following additional methods are
@@ -103,6 +102,7 @@ class MetricTracker(ModuleList):
         >>> pprint(tracker.compute_all())
         {'ExplainedVariance': tensor([-0.8969, -1.0206, -0.8298, -0.9199, -1.1622]),
          'MeanSquaredError': tensor([1.8218, 2.0268, 1.9491, 1.9800, 2.2481])}
+
     """
 
     def __init__(self, metric: Union[Metric, MetricCollection], maximize: Union[bool, List[bool]] = True) -> None:
@@ -129,9 +129,7 @@ class MetricTracker(ModuleList):
         return len(self) - 1  # subtract the base metric
 
     def increment(self) -> None:
-        """Create a new instance of the input metric that will be updated
-        next.
-        """
+        """Create a new instance of the input metric that will be updated next."""
         self._increment_called = True
         self.append(deepcopy(self._base_metric))
 
@@ -161,6 +159,7 @@ class MetricTracker(ModuleList):
         Raises:
             ValueError:
                 If `self.increment` have not been called before this method is called.
+
         """
         self._check_for_increment("compute_all")
         # The i!=0 accounts for the self._base_metric should be ignored
@@ -214,6 +213,7 @@ class MetricTracker(ModuleList):
 
             In addtion the value in all cases may be ``None`` if the underlying metric does have a proper defined way
             of being optimal or in the case where a nested structure of metrics are being tracked.
+
         """
         res = self.compute_all()
         if isinstance(res, list):
@@ -266,9 +266,7 @@ class MetricTracker(ModuleList):
             return value
 
     def _check_for_increment(self, method: str) -> None:
-        """Check that a metric that can be updated/used for computations has
-        been intialized.
-        """
+        """Check that a metric that can be updated/used for computations has been intialized."""
         if not self._increment_called:
             raise ValueError(f"`{method}` cannot be called before `.increment()` has been called.")
 
@@ -302,6 +300,7 @@ class MetricTracker(ModuleList):
             ...     for batch_idx in range(5):
             ...         tracker.update(torch.randint(2, (10,)), torch.randint(2, (10,)))
             >>> fig_, ax_ = tracker.plot()  # plot all epochs
+
         """
         val = val if val is not None else self.compute_all()
         fig, ax = plot_single_or_multi_val(

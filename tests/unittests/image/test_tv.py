@@ -29,9 +29,7 @@ seed_all(42)
 
 # add extra argument to make the metric and reference fit into the testing framework
 class TotalVariationTester(TotalVariation):
-    """Tester class for `TotalVariation` metric overriding its update
-    method.
-    """
+    """Tester class for `TotalVariation` metric overriding its update method."""
 
     def update(self, img, *args: Any):
         """Update metric."""

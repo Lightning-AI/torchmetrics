@@ -85,9 +85,7 @@ class TestBinaryAUROC(MetricTester):
         )
 
     def test_binary_auroc_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -129,9 +127,7 @@ class TestBinaryAUROC(MetricTester):
 
     @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
     def test_binary_auroc_threshold_arg(self, inputs, threshold_fn):
-        """Test that different types of `thresholds` argument lead to same
-        result.
-        """
+        """Test that different types of `thresholds` argument lead to same result."""
         preds, target = inputs
 
         for pred, true in zip(preds, target):
@@ -199,9 +195,7 @@ class TestMulticlassAUROC(MetricTester):
         )
 
     def test_multiclass_auroc_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -243,9 +237,7 @@ class TestMulticlassAUROC(MetricTester):
 
     @pytest.mark.parametrize("average", ["macro", "weighted", None])
     def test_multiclass_auroc_threshold_arg(self, inputs, average):
-        """Test that different types of `thresholds` argument lead to same
-        result.
-        """
+        """Test that different types of `thresholds` argument lead to same result."""
         preds, target = inputs
         if (preds < 0).any():
             preds = preds.softmax(dim=-1)
@@ -332,9 +324,7 @@ class TestMultilabelAUROC(MetricTester):
         )
 
     def test_multiclass_auroc_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -376,9 +366,7 @@ class TestMultilabelAUROC(MetricTester):
 
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     def test_multilabel_auroc_threshold_arg(self, inputs, average):
-        """Test that different types of `thresholds` argument lead to same
-        result.
-        """
+        """Test that different types of `thresholds` argument lead to same result."""
         preds, target = inputs
         if (preds < 0).any():
             preds = sigmoid(preds)
@@ -409,9 +397,7 @@ def test_valid_input_thresholds(metric, thresholds):
 
 @pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
 def test_corner_case_max_fpr(max_fpr):
-    """Check that metric returns 0 when one class is missing and `max_fpr` is
-    set.
-    """
+    """Check that metric returns 0 when one class is missing and `max_fpr` is set."""
     preds = torch.tensor([0.1, 0.2, 0.3, 0.4])
     target = torch.tensor([0, 0, 0, 0])
     metric = BinaryAUROC(max_fpr=max_fpr)

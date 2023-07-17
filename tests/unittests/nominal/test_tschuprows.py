@@ -107,9 +107,7 @@ class TestTschuprowsT(MetricTester):
         )
 
     def test_tschuprows_t_differentiability(self, preds, target):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {"bias_correction": False, "num_classes": NUM_CLASSES}
         self.run_differentiability_test(
             preds,

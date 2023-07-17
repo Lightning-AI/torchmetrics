@@ -111,9 +111,7 @@ class TestKendallRankCorrCoef(MetricTester):
         self.run_functional_metric_test(preds, target, kendall_rank_corrcoef, _sk_kendall_tau, metric_args=metric_args)
 
     def test_kendall_rank_corrcoef_differentiability(self, preds, target, alternative, variant):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_differentiability_test(
             preds=preds,

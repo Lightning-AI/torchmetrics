@@ -49,9 +49,7 @@ for size, channel, p, dtype in [
 
 
 def _baseline_d_lambda(preds: np.ndarray, target: np.ndarray, p: int = 1) -> float:
-    """NumPy based implementation of Spectral Distortion Index, which uses UQI
-    of TorchMetrics.
-    """
+    """NumPy based implementation of Spectral Distortion Index, which uses UQI of TorchMetrics."""
     target, preds = torch.from_numpy(target), torch.from_numpy(preds)
     # Permute to ensure B x C x H x W (Pillow/NumPy stores in B x H x W x C)
     target = target.permute(0, 3, 1, 2)
@@ -151,9 +149,7 @@ def test_d_lambda_invalid_type():
 
 
 def test_d_lambda_different_sizes():
-    """Since d lambda is reference free, it can accept different number of
-    targets and preds.
-    """
+    """Since d lambda is reference free, it can accept different number of targets and preds."""
     preds = torch.rand(1, 1, 32, 32)
     target = torch.rand(1, 1, 16, 16)
     out = spectral_distortion_index(preds, target, p=1)

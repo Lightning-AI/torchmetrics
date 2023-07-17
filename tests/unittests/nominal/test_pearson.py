@@ -109,9 +109,7 @@ class TestPearsonsContingencyCoefficient(MetricTester):
         )
 
     def test_pearsons_t_differentiability(self, preds, target):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {"num_classes": NUM_CLASSES}
         self.run_differentiability_test(
             preds,

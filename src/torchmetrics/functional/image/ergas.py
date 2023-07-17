@@ -22,12 +22,12 @@ from torchmetrics.utilities.distributed import reduce
 
 
 def _ergas_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Update and returns variables required to compute Erreur Relative Globale
-    Adimensionnelle de Synthèse.
+    """Update and returns variables required to compute Erreur Relative Globale Adimensionnelle de Synthèse.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
+
     """
     if preds.dtype != target.dtype:
         raise TypeError(
@@ -67,6 +67,7 @@ def _ergas_compute(
         >>> preds, target = _ergas_update(preds, target)
         >>> torch.round(_ergas_compute(preds, target))
         tensor(154.)
+
     """
     b, c, h, w = preds.shape
     preds = preds.reshape(b, c, h * w)
@@ -120,6 +121,7 @@ def error_relative_global_dimensionless_synthesis(
         [1] Qian Du; Nicholas H. Younan; Roger King; Vijay P. Shah, "On the Performance Evaluation of
         Pan-Sharpening Techniques" in IEEE Geoscience and Remote Sensing Letters, vol. 4, no. 4, pp. 518-522,
         15 October 2007, doi: 10.1109/LGRS.2007.896328.
+
     """
     preds, target = _ergas_update(preds, target)
     return _ergas_compute(preds, target, ratio, reduction)

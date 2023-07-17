@@ -50,9 +50,7 @@ class TestWER(TextTester):
         )
 
     def test_wer_differentiability(self, preds, targets):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             targets=targets,

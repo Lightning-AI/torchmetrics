@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""An example of how to use BERTScore with a user's defined/own model and
-tokenizer.
+"""An example of how to use BERTScore with a user's defined/own model and tokenizer.
 
 To run: python bert_score-own_model.py
+
 """
 
 from pprint import pprint
@@ -32,13 +32,12 @@ _MAX_LEN = 6
 
 
 class UserTokenizer:
-    """The `UserTokenizer` class is required to be defined when a non-default
-    model is used.
+    """The `UserTokenizer` class is required to be defined when a non-default model is used.
 
-    The user's defined tokenizer is expected to return either token IDs
-    or token embeddings that are fed into the model. The tokenizer
-    vocabulary should contain some special tokens, such as a `<pad>`
-    token so that a tokenization will run successfully in batches.
+    The user's defined tokenizer is expected to return either token IDs or token embeddings that are fed into the model.
+    The tokenizer vocabulary should contain some special tokens, such as a `<pad>` token so that a tokenization will run
+    successfully in batches.
+
     """
 
     CLS_TOKEN = "<cls>"  # noqa: S105
@@ -68,6 +67,7 @@ class UserTokenizer:
 
         Return:
             Python dictionary containing the keys `input_ids` and `attention_mask` with corresponding values.
+
         """
         output_dict: Dict[str, Tensor] = {}
         if isinstance(sentences, str):
@@ -110,6 +110,7 @@ def user_forward_fn(model: Module, batch: Dict[str, Tensor]) -> Tensor:
 
     Return:
         The model output.
+
     """
     return model(batch["input_ids"])
 

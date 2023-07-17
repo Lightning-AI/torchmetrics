@@ -132,9 +132,7 @@ _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0
 
 
 def compare_fn(preds: Any, target: Any, result: Any):
-    """Mock compare function by returning additional parameter results
-    directly.
-    """
+    """Mock compare function by returning additional parameter results directly."""
     return result
 
 
@@ -142,9 +140,7 @@ def compare_fn(preds: Any, target: Any, result: Any):
 @pytest.mark.parametrize("compute_on_cpu", [True, False])
 @pytest.mark.parametrize("ddp", [False, True])
 class BaseTestIntersectionOverUnion(ABC):
-    """Base Test the Intersection over Union metric for object detection
-    predictions.
-    """
+    """Base Test the Intersection over Union metric for object detection predictions."""
 
     data: ClassVar[Dict[str, TestCaseData]] = {
         "iou_variant": TestCaseData(data=_inputs, result={"iou": torch.Tensor([0])}),
@@ -169,9 +165,7 @@ class BaseTestIntersectionOverUnion(ABC):
         )
 
     def test_iou_variant_dont_respect_labels(self, compute_on_cpu: bool, ddp: bool):
-        """Test modular implementation for correctness while ignoring
-        labels.
-        """
+        """Test modular implementation for correctness while ignoring labels."""
         key = "iou_variant_respect"
 
         self.run_class_metric_test(  # type: ignore

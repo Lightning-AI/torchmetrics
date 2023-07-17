@@ -35,10 +35,10 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
-    """Reduce an un-normalized confusion matrix of shape (n_classes, n_classes)
-    into the matthews corrcoef score.
+    """Reduce an un-normalized confusion matrix of shape (n_classes, n_classes) into the matthews corrcoef score.
 
     See: https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-019-6413-7 for more info.
+
     """
     # convert multilabel into binary
     confmat = confmat.sum(0) if confmat.ndim == 3 else confmat
@@ -122,6 +122,7 @@ def binary_matthews_corrcoef(
         >>> preds = tensor([0.35, 0.85, 0.48, 0.01])
         >>> binary_matthews_corrcoef(preds, target)
         tensor(0.5774)
+
     """
     if validate_args:
         _binary_confusion_matrix_arg_validation(threshold, ignore_index, normalize=None)
@@ -178,6 +179,7 @@ def multiclass_matthews_corrcoef(
         ...                 [0.05, 0.82, 0.13]])
         >>> multiclass_matthews_corrcoef(preds, target, num_classes=3)
         tensor(0.7000)
+
     """
     if validate_args:
         _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index, normalize=None)
@@ -232,6 +234,7 @@ def multilabel_matthews_corrcoef(
         >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_matthews_corrcoef(preds, target, num_labels=3)
         tensor(0.3333)
+
     """
     if validate_args:
         _multilabel_confusion_matrix_arg_validation(num_labels, threshold, ignore_index, normalize=None)
@@ -266,6 +269,7 @@ def matthews_corrcoef(
         >>> preds = tensor([0, 1, 0, 0])
         >>> matthews_corrcoef(preds, target, task="multiclass", num_classes=2)
         tensor(0.5774)
+
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:

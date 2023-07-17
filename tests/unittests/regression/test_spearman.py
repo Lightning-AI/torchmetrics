@@ -110,9 +110,7 @@ class TestSpearmanCorrCoef(MetricTester):
         self.run_functional_metric_test(preds, target, spearman_corrcoef, _scipy_spearman)
 
     def test_spearman_corrcoef_differentiability(self, preds, target):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_differentiability_test(
             preds=preds,
@@ -140,9 +138,7 @@ class TestSpearmanCorrCoef(MetricTester):
 
 
 def test_error_on_different_shape():
-    """Test that error is raised when the preds and target shapes are not what
-    is expected of the metric.
-    """
+    """Test that error is raised when the preds and target shapes are not what is expected of the metric."""
     metric = SpearmanCorrCoef(num_outputs=1)
     with pytest.raises(TypeError, match="Expected `preds` and `target` both to be floating point tensors.*"):
         metric(torch.randint(5, (100,)), torch.randn(100))

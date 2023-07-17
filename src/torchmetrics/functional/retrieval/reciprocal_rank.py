@@ -18,8 +18,7 @@ from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
 
 
 def retrieval_reciprocal_rank(preds: Tensor, target: Tensor) -> Tensor:
-    """Compute reciprocal rank (for information retrieval). See `Mean
-    Reciprocal Rank`_.
+    """Compute reciprocal rank (for information retrieval). See `Mean Reciprocal Rank`_.
 
     ``preds`` and ``target`` should be of the same shape and live on the same device. If no ``target`` is ``True``,
     0 is returned. ``target`` must be either `bool` or `integers` and ``preds`` must be ``float``,
@@ -38,6 +37,7 @@ def retrieval_reciprocal_rank(preds: Tensor, target: Tensor) -> Tensor:
         >>> target = torch.tensor([False, True, False])
         >>> retrieval_reciprocal_rank(preds, target)
         tensor(0.5000)
+
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 

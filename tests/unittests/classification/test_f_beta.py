@@ -133,9 +133,7 @@ class TestBinaryFBetaScore(MetricTester):
         )
 
     def test_binary_fbeta_score_differentiability(self, inputs, module, functional, compare):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -282,9 +280,7 @@ class TestMulticlassFBetaScore(MetricTester):
         )
 
     def test_multiclass_fbeta_score_differentiability(self, inputs, module, functional, compare):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -532,9 +528,7 @@ class TestMultilabelFBetaScore(MetricTester):
         )
 
     def test_multilabel_fbeta_score_differentiability(self, inputs, module, functional, compare):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,

@@ -46,9 +46,7 @@ def _baseline_ergas(
     ratio: Union[int, float] = 4,
     reduction: str = "elementwise_mean",
 ) -> Tensor:
-    """Baseline implementation of Erreur Relative Globale Adimensionnelle de
-    Synthèse.
-    """
+    """Baseline implementation of Erreur Relative Globale Adimensionnelle de Synthèse."""
     reduction_options = ("elementwise_mean", "sum", "none")
     if reduction not in reduction_options:
         raise ValueError(f"reduction has to be one of {reduction_options}, got: {reduction}.")

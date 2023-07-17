@@ -44,8 +44,7 @@ def _scipy_dice(
     target: Tensor,
     ignore_index: Optional[int] = None,
 ) -> float:
-    """Compute dice score from prediction and target. Used scipy implementation
-    of main dice logic.
+    """Compute dice score from prediction and target. Used scipy implementation of main dice logic.
 
     Args:
         preds: prediction tensor
@@ -55,6 +54,7 @@ def _scipy_dice(
 
     Return:
         Float dice score
+
     """
     sk_preds, sk_target, mode = _input_format_classification(preds, target)
 

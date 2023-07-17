@@ -20,9 +20,7 @@ seed_all(42)
 
 
 class _MultioutputMetric(Metric):
-    """Test class that allows passing base metric as a class rather than its
-    instantiation to the wrapper.
-    """
+    """Test class that allows passing base metric as a class rather than its instantiation to the wrapper."""
 
     def __init__(
         self,
@@ -41,9 +39,7 @@ class _MultioutputMetric(Metric):
         return self.metric.update(preds, target)
 
     def compute(self) -> Tensor:
-        """Compute the R2 score between each pair of outputs and
-        predictions.
-        """
+        """Compute the R2 score between each pair of outputs and predictions."""
         return self.metric.compute()
 
     @torch.jit.unused
@@ -105,18 +101,15 @@ def _multi_target_sk_accuracy(preds, target, num_outputs):
     ],
 )
 class TestMultioutputWrapper(MetricTester):
-    """Test the MultioutputWrapper class with regression and classification
-    inner metrics.
-    """
+    """Test the MultioutputWrapper class with regression and classification inner metrics."""
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_multioutput_wrapper(self, base_metric_class, compare_metric, preds, target, num_outputs, ddp):
         """Test correctness of implementation.
 
-        Tests that the multioutput wrapper properly slices and computes
-        outputs along the output dimension for both classification and
-        regression metrics, by comparing to the metric if they had been
-        calculated sequentially.
+        Tests that the multioutput wrapper properly slices and computes outputs along the output dimension for both
+        classification and regression metrics, by comparing to the metric if they had been calculated sequentially.
+
         """
         self.run_class_metric_test(
             ddp,
@@ -129,9 +122,7 @@ class TestMultioutputWrapper(MetricTester):
 
 
 def test_reset_called_correctly():
-    """Check that underlying metric is being correctly reset when calling
-    forward.
-    """
+    """Check that underlying metric is being correctly reset when calling forward."""
     base_metric = ConfusionMatrix(task="multiclass", num_classes=2)
     cf = MultioutputWrapper(base_metric, num_outputs=2)
 

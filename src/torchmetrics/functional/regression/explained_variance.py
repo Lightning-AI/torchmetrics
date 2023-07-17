@@ -23,12 +23,12 @@ ALLOWED_MULTIOUTPUT = ("raw_values", "uniform_average", "variance_weighted")
 
 
 def _explained_variance_update(preds: Tensor, target: Tensor) -> Tuple[int, Tensor, Tensor, Tensor, Tensor]:
-    """Update and returns variables required to compute Explained Variance.
-    Checks for same shape of input tensors.
+    """Update and returns variables required to compute Explained Variance. Checks for same shape of input tensors.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
+
     """
     _check_same_shape(preds, target)
 
@@ -72,6 +72,7 @@ def _explained_variance_compute(
         >>> n_obs, sum_error, ss_error, sum_target, ss_target = _explained_variance_update(preds, target)
         >>> _explained_variance_compute(n_obs, sum_error, ss_error, sum_target, ss_target, multioutput='raw_values')
         tensor([0.9677, 1.0000])
+
     """
     diff_avg = sum_error / n_obs
     numerator = sum_squared_error / n_obs - (diff_avg * diff_avg)
@@ -125,6 +126,7 @@ def explained_variance(
         >>> preds = torch.tensor([[0, 2], [-1, 2], [8, -5]])
         >>> explained_variance(preds, target, multioutput='raw_values')
         tensor([0.9677, 1.0000])
+
     """
     if multioutput not in ALLOWED_MULTIOUTPUT:
         raise ValueError(f"Invalid input to argument `multioutput`. Choose one of the following: {ALLOWED_MULTIOUTPUT}")

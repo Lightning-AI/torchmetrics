@@ -31,6 +31,7 @@ def reduce(x: Tensor, reduction: Literal["elementwise_mean", "sum", "none", None
 
     Raise:
         ValueError if an invalid reduction parameter was given
+
     """
     if reduction == "elementwise_mean":
         return torch.mean(x)
@@ -66,6 +67,7 @@ def class_reduce(
     Raises:
         ValueError:
             If ``class_reduction`` is none of ``"micro"``, ``"macro"``, ``"weighted"``, ``"none"`` or ``None``.
+
     """
     valid_reduction = ("micro", "macro", "weighted", "none", None)
     fraction = torch.sum(num) / torch.sum(denom) if class_reduction == "micro" else num / denom
@@ -93,8 +95,7 @@ def _simple_gather_all_tensors(result: Tensor, group: Any, world_size: int) -> L
 
 
 def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tensor]:
-    """Gather all tensors from several ddp processes onto a list that is
-    broadcasted to all processes.
+    """Gather all tensors from several ddp processes onto a list that is broadcasted to all processes.
 
     Works on tensors that have the same number of dimensions, but where each dimension may differ. In this case
     tensors are padded, gathered and then trimmed to secure equal workload for all processes.
@@ -106,6 +107,7 @@ def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tens
     Return:
         gathered_result: list with size equal to the process group where
             ``gathered_result[i]`` corresponds to result tensor from process ``i``
+
     """
     if group is None:
         group = torch.distributed.group.WORLD

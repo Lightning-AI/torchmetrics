@@ -50,9 +50,7 @@ def _compute_rouge_score(
     metric: str,
     accumulate: Literal["avg", "best", None],
 ) -> Tensor:
-    """Evaluate rouge scores from rouge-score package for baseline
-    evaluation.
-    """
+    """Evaluate rouge scores from rouge-score package for baseline evaluation."""
     if isinstance(target, list) and all(isinstance(tgt, str) for tgt in target):
         target = [target] if isinstance(preds, str) else [[tgt] for tgt in target]
 
@@ -244,9 +242,7 @@ def test_rouge_metric_normalizer_tokenizer(pl_rouge_metric_key):
 @pytest.mark.parametrize("use_stemmer", [False, True])
 @skip_on_connection_issues(reason="could not download nltk relevant data")
 def test_rouge_lsum_score(pl_rouge_metric_key, use_stemmer):
-    """Specific tests to verify the correctness of Rouge-L and Rouge-LSum
-    metric.
-    """
+    """Specific tests to verify the correctness of Rouge-L and Rouge-LSum metric."""
     rouge_level, metric = pl_rouge_metric_key.split("_")
     original_score = _compute_rouge_score(
         preds=_inputs_summarization.preds,

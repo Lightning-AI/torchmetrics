@@ -146,6 +146,7 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         >>> mifid.update(imgs_dist2, real=False)
         >>> mifid.compute()
         tensor(3003.3691)
+
     """
     higher_is_better: bool = False
     is_differentiable: bool = False
@@ -218,9 +219,7 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
             self.fake_features.append(features)
 
     def compute(self) -> Tensor:
-        """Calculate FID score based on accumulated extracted features from the
-        two distributions.
-        """
+        """Calculate FID score based on accumulated extracted features from the two distributions."""
         real_features = dim_zero_cat(self.real_features)
         fake_features = dim_zero_cat(self.fake_features)
 
@@ -293,5 +292,6 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
             ...     values.append(metric.compute())
             ...     metric.reset()
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

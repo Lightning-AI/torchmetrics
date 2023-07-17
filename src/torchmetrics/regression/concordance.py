@@ -25,8 +25,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class ConcordanceCorrCoef(PearsonCorrCoef):
-    r"""Compute concordance correlation coefficient that measures the agreement
-    between two variables.
+    r"""Compute concordance correlation coefficient that measures the agreement between two variables.
 
     .. math::
         \rho_c = \frac{2 \rho \sigma_x \sigma_y}{\sigma_x^2 + \sigma_y^2 + (\mu_x - \mu_y)^2}
@@ -66,14 +65,13 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
         >>> concordance = ConcordanceCorrCoef(num_outputs=2)
         >>> concordance(preds, target)
         tensor([0.7273, 0.9887])
+
     """
     plot_lower_bound: float = -1.0
     plot_upper_bound: float = 1.0
 
     def compute(self) -> Tensor:
-        """Compute final concordance correlation coefficient over metric
-        states.
-        """
+        """Compute final concordance correlation coefficient over metric states."""
         if (self.num_outputs == 1 and self.mean_x.numel() > 1) or (self.num_outputs > 1 and self.mean_x.ndim > 1):
             mean_x, mean_y, var_x, var_y, corr_xy, n_total = _final_aggregation(
                 self.mean_x, self.mean_y, self.var_x, self.var_y, self.corr_xy, self.n_total
@@ -125,5 +123,6 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
+
         """
         return self._plot(val, ax)

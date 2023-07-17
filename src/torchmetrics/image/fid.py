@@ -75,6 +75,7 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
 
         Corresponding license file (Apache License, Version 2.0):
         https://github.com/toshas/torch-fidelity/blob/master/LICENSE.md
+
         """
         vassert(torch.is_tensor(x) and x.dtype == torch.uint8, "Expecting image as torch.Tensor with dtype=torch.uint8")
         features = {}
@@ -171,6 +172,7 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor) -> Te
 
     Returns:
         Scalar value of the distance between sets.
+
     """
     a = (mu1 - mu2).square().sum(dim=-1)
     b = sigma1.trace() + sigma2.trace()
@@ -180,8 +182,7 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor) -> Te
 
 
 class FrechetInceptionDistance(Metric):
-    r"""Calculate Fréchet inception distance (FID_) which is used to access the
-    quality of generated images.
+    r"""Calculate Fréchet inception distance (FID_) which is used to access the quality of generated images.
 
     .. math::
         FID = \|\mu - \mu_w\|^2 + tr(\Sigma + \Sigma_w - 2(\Sigma \Sigma_w)^{\frac{1}{2}})
@@ -255,6 +256,7 @@ class FrechetInceptionDistance(Metric):
         >>> fid.update(imgs_dist2, real=False)
         >>> fid.compute()
         tensor(12.7202)
+
     """
 
     higher_is_better: bool = False
@@ -342,9 +344,7 @@ class FrechetInceptionDistance(Metric):
             self.fake_features_num_samples += imgs.shape[0]
 
     def compute(self) -> Tensor:
-        """Calculate FID score based on accumulated extracted features from the
-        two distributions.
-        """
+        """Calculate FID score based on accumulated extracted features from the two distributions."""
         if self.real_features_num_samples < 2 or self.fake_features_num_samples < 2:
             raise RuntimeError("More than one sample is required for both the real and fake distributed to compute FID")
         mean_real = (self.real_features_sum / self.real_features_num_samples).unsqueeze(0)
@@ -370,11 +370,11 @@ class FrechetInceptionDistance(Metric):
             super().reset()
 
     def set_dtype(self, dst_type: Union[str, torch.dtype]) -> "Metric":
-        """Transfer all metric state to specific dtype. Special version of
-        standard `type` method.
+        """Transfer all metric state to specific dtype. Special version of standard `type` method.
 
         Arguments:
             dst_type (type or string): the desired type.
+
         """
         out = super().set_dtype(dst_type)
         if isinstance(out.inception, NoTrainInceptionV3):
@@ -427,5 +427,6 @@ class FrechetInceptionDistance(Metric):
             ...     values.append(metric.compute())
             ...     metric.reset()
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

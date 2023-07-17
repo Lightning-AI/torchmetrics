@@ -63,8 +63,7 @@ else:
 
 
 class MeanAveragePrecision(Metric):
-    r"""Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall
-    (mAR)`_ for object detection predictions.
+    r"""Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection predictions.
 
     .. math::
         \text{mAP} = \frac{1}{n} \sum_{i=1}^{n} AP_i
@@ -224,6 +223,7 @@ class MeanAveragePrecision(Metric):
          'mar_large': tensor(0.6000),
          'mar_medium': tensor(-1.),
          'mar_small': tensor(-1.)}
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -324,6 +324,7 @@ class MeanAveragePrecision(Metric):
                 If any class is not type int and of length 1
             ValueError:
                 If any score is not type float and of length 1
+
         """
         _input_validator(preds, target, iou_type=self.iou_type)
 
@@ -409,8 +410,7 @@ class MeanAveragePrecision(Metric):
         coco_target: str,
         iou_type: Literal["bbox", "segm"] = "bbox",
     ) -> Tuple[List[Dict[str, Tensor]], List[Dict[str, Tensor]]]:
-        """Utility function for converting .json coco format files to the input
-        format of this metric.
+        """Utility function for converting .json coco format files to the input format of this metric.
 
         The function accepts a file for the predictions and a file for the target in coco format and converts them to
         a list of dictionaries containing the boxes, labels and scores in the input format of this metric.
@@ -434,6 +434,7 @@ class MeanAveragePrecision(Metric):
             ...   "val2014_fake_eval_res.txt.json"
             ...   iou_type="bbox"
             ... )  # doctest: +SKIP
+
         """
         with contextlib.redirect_stdout(io.StringIO()):
             gt = COCO(coco_target)
@@ -499,8 +500,7 @@ class MeanAveragePrecision(Metric):
         return batched_preds, batched_target
 
     def tm_to_coco(self, name: str = "tm_map_input") -> None:
-        """Utility function for converting the input for this metric to coco
-        format and saving it to a json file.
+        """Utility function for converting the input for this metric to coco format and saving it to a json file.
 
         This function should be used after calling `.update(...)` or `.forward(...)` on all data that should be written
         to the file, as the input is then internally cached. The function then converts to information to coco format
@@ -528,6 +528,7 @@ class MeanAveragePrecision(Metric):
             >>> metric = MeanAveragePrecision()
             >>> metric.update(preds, target)
             >>> metric.tm_to_coco("tm_map_input")  # doctest: +SKIP
+
         """
         target_dataset = self._get_coco_format(self.groundtruths, self.groundtruth_labels)
         preds_dataset = self._get_coco_format(self.detections, self.detection_labels, self.detection_scores)
@@ -542,14 +543,14 @@ class MeanAveragePrecision(Metric):
             f.write(target_json)
 
     def _get_safe_item_values(self, item: Dict[str, Any]) -> Union[Tensor, Tuple]:
-        """Convert and return the boxes or masks from the item depending on the
-        iou_type.
+        """Convert and return the boxes or masks from the item depending on the iou_type.
 
         Args:
             item: input dictionary containing the boxes or masks
 
         Returns:
             boxes or masks depending on the iou_type
+
         """
         if self.iou_type == "bbox":
             boxes = _fix_empty_tensors(item["boxes"])
@@ -565,9 +566,7 @@ class MeanAveragePrecision(Metric):
         raise Exception(f"IOU type {self.iou_type} is not supported")
 
     def _get_classes(self) -> List:
-        """Return a list of unique classes found in ground truth and detection
-        data.
-        """
+        """Return a list of unique classes found in ground truth and detection data."""
         if len(self.detection_labels) > 0 or len(self.groundtruth_labels) > 0:
             return torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist()
         return []
@@ -580,11 +579,11 @@ class MeanAveragePrecision(Metric):
         crowds: Optional[List[torch.Tensor]] = None,
         area: Optional[List[torch.Tensor]] = None,
     ) -> Dict:
-        """Transforms and returns all cached targets or predictions in COCO
-        format.
+        """Transforms and returns all cached targets or predictions in COCO format.
 
         Format is defined at
         https://cocodataset.org/#format-data
+
         """
         images = []
         annotations = []
@@ -699,6 +698,7 @@ class MeanAveragePrecision(Metric):
             >>> for _ in range(20):
             ...     vals.append(metric(preds(), target))
             >>> fig_, ax_ = metric.plot(vals)
+
         """
         return self._plot(val, ax)
 
@@ -711,6 +711,7 @@ class MeanAveragePrecision(Metric):
 
         Excludes the detections and groundtruths from the casting when the iou_type is set to `segm` as the state is
         no longer a tensor but a tuple.
+
         """
         return super()._apply(fn, exclude_state=("detections", "groundtruths") if self.iou_type == "segm" else "")
 
@@ -719,6 +720,7 @@ class MeanAveragePrecision(Metric):
 
         For the iou_type `segm` the detections and groundtruths are no longer tensors but tuples. Therefore, we need
         to gather the list of tuples and then convert it back to a list of tuples.
+
         """
         super()._sync_dist(dist_sync_fn=dist_sync_fn, process_group=process_group)
 
@@ -736,6 +738,7 @@ class MeanAveragePrecision(Metric):
 
         Returns:
             list of tuples gathered across devices
+
         """
         world_size = dist.get_world_size(group=process_group)
         dist.barrier(group=process_group)

@@ -93,6 +93,7 @@ class ROUGEScore(Metric):
             If the python packages ``nltk`` is not installed.
         ValueError:
             If any of the ``rouge_keys`` does not belong to the allowed set of keys.
+
     """
 
     is_differentiable: bool = False
@@ -169,9 +170,7 @@ class ROUGEScore(Metric):
                     getattr(self, f"rouge{rouge_key}_{tp}").append(value.to(self.device))  # todo
 
     def compute(self) -> Dict[str, Tensor]:
-        """Calculate (Aggregate and provide confidence intervals) ROUGE
-        score.
-        """
+        """Calculate (Aggregate and provide confidence intervals) ROUGE score."""
         update_output = {}
         for rouge_key in self.rouge_keys_values:
             for tp in ["fmeasure", "precision", "recall"]:
@@ -232,5 +231,6 @@ class ROUGEScore(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

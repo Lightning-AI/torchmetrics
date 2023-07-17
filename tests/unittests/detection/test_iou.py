@@ -47,9 +47,7 @@ _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
 class TestIntersectionOverUnion(MetricTester, BaseTestIntersectionOverUnion):
-    """Test the Intersection over Union metric for object detection
-    predictions.
-    """
+    """Test the Intersection over Union metric for object detection predictions."""
 
     data: ClassVar[Dict[str, TestCaseData]] = {
         "iou_variant": TestCaseData(data=_inputs, result={IntersectionOverUnion._iou_type: iou}),
@@ -64,6 +62,7 @@ def test_corner_case():
     """Test corner case where preds is empty for a given target.
 
     See this issue: https://github.com/Lightning-AI/torchmetrics/issues/1889
+
     """
     target = [{"boxes": tensor([[238.0000, 74.0000, 343.0000, 275.0000]]), "labels": tensor([6])}]
     preds = [{"boxes": tensor([[], [], [], []]).T, "labels": tensor([], dtype=torch.int64), "scores": tensor([])}]

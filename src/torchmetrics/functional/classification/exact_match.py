@@ -62,8 +62,7 @@ def multiclass_exact_match(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute Exact match (also known as subset accuracy) for multiclass
-    tasks.
+    r"""Compute Exact match (also known as subset accuracy) for multiclass tasks.
 
     Exact Match is a stricter version of accuracy where all labels have to match exactly for the sample to be
     correctly classified.
@@ -111,6 +110,7 @@ def multiclass_exact_match(
         >>> preds = tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_exact_match(preds, target, num_classes=3, multidim_average='samplewise')
         tensor([1., 0.])
+
     """
     top_k, average = 1, None
     if validate_args:
@@ -143,8 +143,7 @@ def multilabel_exact_match(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute Exact match (also known as subset accuracy) for multilabel
-    tasks.
+    r"""Compute Exact match (also known as subset accuracy) for multilabel tasks.
 
     Exact Match is a stricter version of accuracy where all labels have to match exactly for the sample to be
     correctly classified.
@@ -201,6 +200,7 @@ def multilabel_exact_match(
         ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> multilabel_exact_match(preds, target, num_labels=3, multidim_average='samplewise')
         tensor([0., 0.])
+
     """
     average = None
     if validate_args:
@@ -242,6 +242,7 @@ def exact_match(
         >>> preds = tensor([[[0, 1], [2, 1], [0, 2]], [[2, 2], [2, 1], [1, 0]]])
         >>> exact_match(preds, target, task="multiclass", num_classes=3, multidim_average='samplewise')
         tensor([1., 0.])
+
     """
     task = ClassificationTaskNoBinary.from_str(task)
     if task == ClassificationTaskNoBinary.MULTICLASS:

@@ -32,8 +32,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class BinaryHammingDistance(BinaryStatScores):
-    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for
-    binary tasks.
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for binary tasks.
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -97,6 +96,7 @@ class BinaryHammingDistance(BinaryStatScores):
         >>> metric = BinaryHammingDistance(multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0.6667, 0.8333])
+
     """
 
     is_differentiable: bool = False
@@ -148,13 +148,13 @@ class BinaryHammingDistance(BinaryStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
 
 class MulticlassHammingDistance(MulticlassStatScores):
-    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for
-    multiclass tasks.
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for multiclass tasks.
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -247,6 +247,7 @@ class MulticlassHammingDistance(MulticlassStatScores):
         >>> mchd(preds, target)
         tensor([[0.0000, 1.0000, 0.5000],
                 [1.0000, 0.6667, 0.5000]])
+
     """
 
     is_differentiable: bool = False
@@ -299,13 +300,13 @@ class MulticlassHammingDistance(MulticlassStatScores):
             >>> for _ in range(20):
             ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
 
 class MultilabelHammingDistance(MultilabelStatScores):
-    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for
-    multilabel tasks.
+    r"""Compute the average `Hamming distance`_ (also known as Hamming loss) for multilabel tasks.
 
     .. math::
         \text{Hamming distance} = \frac{1}{N \cdot L} \sum_i^N \sum_l^L 1(y_{il} \neq \hat{y}_{il})
@@ -396,6 +397,7 @@ class MultilabelHammingDistance(MultilabelStatScores):
         >>> mlhd(preds, target)
         tensor([[0.5000, 0.5000, 1.0000],
                 [1.0000, 1.0000, 0.5000]])
+
     """
 
     is_differentiable: bool = False
@@ -450,6 +452,7 @@ class MultilabelHammingDistance(MultilabelStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -476,6 +479,7 @@ class HammingDistance:
         >>> hamming_distance = HammingDistance(task="multilabel", num_labels=2)
         >>> hamming_distance(preds, target)
         tensor(0.2500)
+
     """
 
     def __new__(

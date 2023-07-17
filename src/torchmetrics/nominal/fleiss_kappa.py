@@ -27,8 +27,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class FleissKappa(Metric):
-    r"""Calculatees `Fleiss kappa`_ a statistical measure for inter agreement
-    between raters.
+    r"""Calculatees `Fleiss kappa`_ a statistical measure for inter agreement between raters.
 
     .. math::
         \kappa = \frac{\bar{p} - \bar{p_e}}{1 - \bar{p_e}}
@@ -72,6 +71,7 @@ class FleissKappa(Metric):
         >>> metric = FleissKappa(mode='probs')
         >>> metric(ratings)
         tensor(-0.0105)
+
     """
 
     full_state_update: bool = False
@@ -133,5 +133,6 @@ class FleissKappa(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.randn(100, 5, 10).softmax(dim=1)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

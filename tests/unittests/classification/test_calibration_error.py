@@ -95,9 +95,7 @@ class TestBinaryCalibrationError(MetricTester):
         )
 
     def test_binary_calibration_error_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -136,9 +134,7 @@ class TestBinaryCalibrationError(MetricTester):
 
 
 def test_binary_with_zero_pred():
-    """Test that metric works with edge case where confidence is zero for a
-    bin.
-    """
+    """Test that metric works with edge case where confidence is zero for a bin."""
     preds = torch.tensor([1.0, 1.0, 1.0, 1.0, 0.0])
     target = torch.tensor([0, 0, 1, 1, 1])
     assert binary_calibration_error(preds, target, n_bins=2, norm="l1") == torch.tensor(0.6)
@@ -210,9 +206,7 @@ class TestMulticlassCalibrationError(MetricTester):
         )
 
     def test_multiclass_calibration_error_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,

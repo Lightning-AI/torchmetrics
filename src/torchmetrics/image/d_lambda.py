@@ -28,8 +28,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class SpectralDistortionIndex(Metric):
-    """Compute Spectral Distortion Index (SpectralDistortionIndex_) also now as
-    D_lambda.
+    """Compute Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda.
 
     The metric is used to compare the spectral distortion between two images.
 
@@ -62,6 +61,7 @@ class SpectralDistortionIndex(Metric):
         >>> sdi = SpectralDistortionIndex()
         >>> sdi(preds, target)
         tensor(0.0234)
+
     """
 
     higher_is_better: bool = True
@@ -149,5 +149,6 @@ class SpectralDistortionIndex(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

@@ -140,9 +140,7 @@ class TestTheilsU(MetricTester):
         )
 
     def test_theils_u_differentiability(self, preds, target, nan_strategy, nan_replace_value):
-        """Test the differentiability of the metric, according to its
-        `is_differentiable` attribute.
-        """
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {
             "nan_strategy": nan_strategy,
             "nan_replace_value": nan_replace_value,

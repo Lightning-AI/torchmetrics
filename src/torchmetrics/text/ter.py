@@ -27,8 +27,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class TranslationEditRate(Metric):
-    """Calculate Translation edit rate (`TER`_)  of machine translated text
-    with one or more references.
+    """Calculate Translation edit rate (`TER`_)  of machine translated text with one or more references.
 
     This implementation follows the one from `SacreBleu_ter`_, which is a
     near-exact reimplementation of the Tercom algorithm, produces identical results on all "sane" outputs.
@@ -58,6 +57,7 @@ class TranslationEditRate(Metric):
         >>> ter = TranslationEditRate()
         >>> ter(preds, target)
         tensor(0.1538)
+
     """
 
     is_differentiable: bool = False
@@ -155,5 +155,6 @@ class TranslationEditRate(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

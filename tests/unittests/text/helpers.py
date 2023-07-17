@@ -33,9 +33,7 @@ NUM_BATCHES = 2
 def _assert_all_close_regardless_of_order(
     pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Optional[str] = None
 ) -> None:
-    """Recursively asserting that two results are within a certain tolerance
-    regardless of the order.
-    """
+    """Recursively asserting that two results are within a certain tolerance regardless of the order."""
     # single output compare
     if isinstance(pl_result, Tensor):
         assert np.allclose(pl_result.detach().cpu().numpy().mean(-1), sk_result.mean(-1), atol=atol, equal_nan=True)
@@ -97,6 +95,7 @@ def _class_test(
         ignore_order: Ignore order of prediction accross processes when DDP is used.
         kwargs_update: Additional keyword arguments that will be passed with preds and
             targets when running update on the metric.
+
     """
     if not metric_args:
         metric_args = {}
@@ -201,6 +200,7 @@ def _functional_test(
             the ref_metric.
         kwargs_update: Additional keyword arguments that will be passed with preds and
             targets when running update on the metric.
+
     """
     if not metric_args:
         metric_args = {}
@@ -242,6 +242,7 @@ def _assert_half_support(
         device: determine device, either "cpu" or "cuda"
         kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
+
     """
     y_hat = preds[0]
     y = targets[0]
@@ -260,6 +261,7 @@ class TextTester(MetricTester):
     Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup once and
     that pool of processes are used for all tests. All tests for text metrics should subclass from this and implement
     a new method called `test_metric_name` where the method `self.run_metric_test` is called inside.
+
     """
 
     def run_functional_metric_test(
@@ -273,8 +275,7 @@ class TextTester(MetricTester):
         key: Optional[str] = None,
         **kwargs_update: Any,
     ):
-        """Core method that should be used for testing functions. Call this
-        inside testing method.
+        """Core method that should be used for testing functions. Call this inside testing method.
 
         Args:
             preds: torch tensor with predictions
@@ -287,6 +288,7 @@ class TextTester(MetricTester):
                 against the ref_metric.
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
+
         """
         device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
 
@@ -320,8 +322,7 @@ class TextTester(MetricTester):
         ignore_order: Optional[bool] = None,
         **kwargs_update: Any,
     ):
-        """Core method that should be used for testing class. Call this inside
-        testing methods.
+        """Core method that should be used for testing class. Call this inside testing methods.
 
         Args:
             ddp: bool, if running in ddp mode or not
@@ -343,6 +344,7 @@ class TextTester(MetricTester):
             ignore_order: Ignore order of prediction accross processes when DDP is used.
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
+
         """
         if not metric_args:
             metric_args = {}
@@ -411,6 +413,7 @@ class TextTester(MetricTester):
             metric_args: dict with additional arguments used for class initialization
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
+
         """
         metric_args = metric_args or {}
         _assert_half_support(
@@ -436,6 +439,7 @@ class TextTester(MetricTester):
             metric_args: dict with additional arguments used for class initialization
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
+
         """
         metric_args = metric_args or {}
         _assert_half_support(
@@ -461,6 +465,7 @@ class TextTester(MetricTester):
             metric_args: dict with additional arguments used for class initialization
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
                 against the ref_metric.
+
         """
         metric_args = metric_args or {}
         # only floating point tensors can require grad
@@ -478,8 +483,8 @@ class TextTester(MetricTester):
 def skip_on_connection_issues(reason: str = "Unable to load checkpoints from HuggingFace `transformers`."):
     """Handle download related tests if they fail due to connection issues.
 
-    The tests run normally if no connection issue arises, and they're
-    marked as skipped otherwise.
+    The tests run normally if no connection issue arises, and they're marked as skipped otherwise.
+
     """
     _error_msg_starts = ["We couldn't connect to", "Connection error", "Can't load", "`nltk` resource `punkt` is"]
 

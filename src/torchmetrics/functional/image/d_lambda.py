@@ -23,12 +23,12 @@ from torchmetrics.utilities.distributed import reduce
 
 
 def _spectral_distortion_index_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Update and returns variables required to compute Spectral Distortion
-    Index.
+    """Update and returns variables required to compute Spectral Distortion Index.
 
     Args:
         preds: Low resolution multispectral image
         target: High resolution fused image
+
     """
     if preds.dtype != target.dtype:
         raise TypeError(
@@ -71,6 +71,7 @@ def _spectral_distortion_index_compute(
         >>> preds, target = _spectral_distortion_index_update(preds, target)
         >>> _spectral_distortion_index_compute(preds, target)
         tensor(0.0234)
+
     """
     length = preds.shape[1]
 
@@ -112,8 +113,7 @@ def spectral_distortion_index(
     p: int = 1,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
 ) -> Tensor:
-    """Calculate `Spectral Distortion Index`_ (SpectralDistortionIndex_) also
-    known as D_lambda.
+    """Calculate `Spectral Distortion Index`_ (SpectralDistortionIndex_) also known as D_lambda.
 
     Metric is used to compare the spectral distortion between two images.
 
@@ -145,6 +145,7 @@ def spectral_distortion_index(
         >>> target = torch.rand([16, 3, 16, 16])
         >>> spectral_distortion_index(preds, target)
         tensor(0.0234)
+
     """
     if not isinstance(p, int) or p <= 0:
         raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")
