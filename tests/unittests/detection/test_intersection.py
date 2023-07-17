@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from abc import ABC
 from collections import namedtuple
-from dataclasses import dataclass
 from functools import partial
 from typing import Any, Callable, ClassVar, Dict
 
@@ -21,17 +19,18 @@ import pytest
 import torch
 from torch import IntTensor, Tensor
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8, _TORCHVISION_GREATER_EQUAL_0_13
+
+from unittests.helpers.testers import MetricTester
+
+if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_13:
+    from torchvision.ops import box_iou as tv_iou
+    from torchvision.ops import generalized_box_iou as tv_giou
+    from torchvision.ops import complete_box_iou as tv_ciou
+    from torchvision.ops import distance_box_iou as tv_diou
+
 
 Input = namedtuple("Input", ["preds", "target"])
-
-
-@dataclass
-class TestCaseData:
-    """Test data sample."""
-
-    data: Input
-    result: Any
 
 
 _preds = torch.Tensor(
@@ -125,73 +124,62 @@ _inputs = Input(
         ],
     ],
 )
-
 _box_inputs = Input(preds=_preds, target=_target)
 
 _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
 
 
-def compare_fn(preds: Any, target: Any, result: Any):
-    """Mock compare function by returning additional parameter results directly."""
-    return result
+from torchmetrics.functional.detection.iou import intersection_over_union
+from torchmetrics.functional.detection.ciou import complete_intersection_over_union
+from torchmetrics.functional.detection.diou import distance_intersection_over_union
+from torchmetrics.functional.detection.giou import generalized_intersection_over_union
+
+from torchmetrics.detection.iou import IntersectionOverUnion
+from torchmetrics.detection.ciou import CompleteIntersectionOverUnion
+from torchmetrics.detection.diou import DistanceIntersectionOverUnion
+from torchmetrics.detection.giou import GeneralizedIntersectionOverUnion
 
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-@pytest.mark.parametrize("compute_on_cpu", [True, False])
-@pytest.mark.parametrize("ddp", [False, True])
-class BaseTestIntersectionOverUnion(ABC):
-    """Base Test the Intersection over Union metric for object detection predictions."""
+@pytest.mark.parametrize("class_metric, functional_metric, reference_metric",
+    [
+        (IntersectionOverUnion, intersection_over_union, tv_iou),
+        (CompleteIntersectionOverUnion, complete_intersection_over_union, tv_ciou),
+        (DistanceIntersectionOverUnion, distance_intersection_over_union, tv_diou),
+        (GeneralizedIntersectionOverUnion, generalized_intersection_over_union, tv_giou),
+    ]
+)
 
-    data: ClassVar[Dict[str, TestCaseData]] = {
-        "iou_variant": TestCaseData(data=_inputs, result={"iou": torch.Tensor([0])}),
-        "fn_iou_variant": TestCaseData(data=_box_inputs, result=None),
-    }
-    metric_class: ClassVar
-    metric_fn: Callable[[Tensor, Tensor, bool, float], Tensor]
-
-    def test_iou_variant(self, compute_on_cpu: bool, ddp: bool):
-        """Test modular implementation for correctness."""
-        key = "iou_variant"
-
-        self.run_class_metric_test(  # type: ignore
+class TestIntersectionMetrics(MetricTester):
+    @pytest.mark.parametrize("preds, target", [
+        (_inputs.preds, _inputs.target),
+    ])
+    @pytest.mark.parametrize("ddp", [False, True])
+    def test_intersection_class(self, class_metric, functional_metric, reference_metric, preds, target, ddp):
+        """Test class implementation for correctness."""
+        self.run_class_metric_test(
             ddp=ddp,
-            preds=self.data[key].data.preds,
-            target=self.data[key].data.target,
-            metric_class=self.metric_class,
-            reference_metric=partial(compare_fn, result=self.data[key].result),
-            dist_sync_on_step=False,
-            check_batch=False,
-            metric_args={"compute_on_cpu": compute_on_cpu},
+            preds=preds,
+            target=target,
+            metric_class=class_metric,
+            reference_metric=reference_metric,
         )
 
-    def test_iou_variant_dont_respect_labels(self, compute_on_cpu: bool, ddp: bool):
-        """Test modular implementation for correctness while ignoring labels."""
-        key = "iou_variant_respect"
-
-        self.run_class_metric_test(  # type: ignore
-            ddp=ddp,
-            preds=self.data[key].data.preds,
-            target=self.data[key].data.target,
-            metric_class=self.metric_class,
-            reference_metric=partial(compare_fn, result=self.data[key].result),
-            dist_sync_on_step=False,
-            check_batch=False,
-            metric_args={"compute_on_cpu": compute_on_cpu, "respect_labels": False},
-        )
-
-    def test_fn(self, compute_on_cpu: bool, ddp: bool):
-        """Test functional implementation for correctness."""
-        key = "fn_iou_variant"
+    @pytest.mark.parametrize("preds, target", [
+        #(_box_inputs.preds, _box_inputs.target),
+        (torch.)
+    ])
+    def test_intersection_function(self, class_metric, functional_metric, reference_metric, preds, target):
         self.run_functional_metric_test(
-            self.data[key].data.preds[0].unsqueeze(0),  # pass as batch, otherwise it attempts to pass element wise
-            self.data[key].data.target[0].unsqueeze(0),
-            self.metric_fn.__func__,
-            partial(compare_fn, result=self.data[key].result),
+            preds=preds,
+            target=target,
+            metric_functional=functional_metric,
+            reference_metric=reference_metric,
         )
 
-    def test_error_on_wrong_input(self, compute_on_cpu: bool, ddp: bool):
+
+    def test_error_on_wrong_input(self, class_metric, functional_metric, reference_metric):
         """Test class input validation."""
-        metric = self.metric_class()
+        metric = class_metric()
 
         metric.update([], [])  # no error
 
