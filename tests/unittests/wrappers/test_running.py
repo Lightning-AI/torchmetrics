@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
+from functools import partial
 
 import pytest
 import torch
@@ -20,6 +22,7 @@ from torchmetrics.collections import MetricCollection
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError, PearsonCorrCoef
 from torchmetrics.wrappers import Running
 
+from unittests import NUM_PROCESSES
 from unittests.helpers.testers import MetricTester
 
 
@@ -130,3 +133,21 @@ def test_metric_collection(window):
         res1, res2 = compare(p_run, t_run), metric.compute()
         for key in res1:
             assert torch.allclose(res1[key], res2[key])
+
+
+def _test_ddp_running(rank, dist_sync_on_step, expected):
+    """Worker function for ddp test."""
+    metric = Running(SumMetric(dist_sync_on_step=dist_sync_on_step), window=3)
+    for _ in range(10):
+        out = metric(torch.tensor(1.0))
+        assert out == expected
+    assert metric.compute() == 6
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@pytest.mark.parametrize(("dist_sync_on_step", "expected"), [(False, 1), (True, 2)])
+def test_ddp_running(dist_sync_on_step, expected):
+    """Check that the dist_sync_on_step gets correctly passed to base metric."""
+    pytest.pool.map(
+        partial(_test_ddp_running, dist_sync_on_step=dist_sync_on_step, expected=expected), range(NUM_PROCESSES)
+    )

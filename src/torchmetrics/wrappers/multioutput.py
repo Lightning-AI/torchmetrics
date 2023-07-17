@@ -1,3 +1,16 @@
+# Copyright The Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from copy import deepcopy
 from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
 
@@ -9,6 +22,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import apply_to_collection
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+from torchmetrics.wrappers.abstract import WrapperMetric
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MultioutputWrapper.plot"]
@@ -26,7 +40,7 @@ def _get_nan_indices(*tensors: Tensor) -> Tensor:
     return nan_idxs
 
 
-class MultioutputWrapper(Metric):
+class MultioutputWrapper(WrapperMetric):
     """Wrap a base metric to enable it to support multiple outputs.
 
     Several torchmetrics metrics, such as :class:`torchmetrics.regression.spearman.SpearmanCorrcoef` lack support for
@@ -142,14 +156,6 @@ class MultioutputWrapper(Metric):
         for metric in self.metrics:
             metric.reset()
         super().reset()
-
-    def _wrap_update(self, update: Callable) -> Callable:
-        """Overwrite to do nothing."""
-        return update
-
-    def _wrap_compute(self, compute: Callable) -> Callable:
-        """Overwrite to do nothing."""
-        return compute
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

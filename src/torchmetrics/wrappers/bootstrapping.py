@@ -22,6 +22,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import apply_to_collection
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+from torchmetrics.wrappers.abstract import WrapperMetric
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["BootStrapper.plot"]
@@ -50,7 +51,7 @@ def _bootstrap_sampler(
     raise ValueError("Unknown sampling strategy")
 
 
-class BootStrapper(Metric):
+class BootStrapper(WrapperMetric):
     r"""Using `Turn a Metric into a Bootstrapped`_.
 
     That can automate the process of getting confidence intervals for metric values. This wrapper
@@ -158,6 +159,10 @@ class BootStrapper(Metric):
         if self.raw:
             output_dict["raw"] = computed_vals
         return output_dict
+
+    def forward(self, *args: Any, **kwargs: Any) -> Any:
+        """Use the original forward method of the base metric class."""
+        return super(WrapperMetric, self).forward(*args, **kwargs)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
