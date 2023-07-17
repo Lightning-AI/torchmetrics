@@ -114,7 +114,7 @@ class TestEditDistance(TextTester):
         """Test differentiability of metric."""
         self.run_differentiability_test(
             preds=preds,
-            target=targets,
+            targets=targets,
             metric_module=EditDistance,
             metric_functional=edit_distance,
         )
