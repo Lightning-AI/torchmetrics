@@ -99,9 +99,6 @@ class MulticlassExactMatch(Metric):
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Class"
 
-    correct: Union[Tensor, Sequence[Tensor]]
-    total: Union[Tensor, Sequence[Tensor]]
-
     def __init__(
         self,
         num_classes: int,
