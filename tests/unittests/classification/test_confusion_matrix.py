@@ -93,7 +93,9 @@ class TestBinaryConfusionMatrix(MetricTester):
         )
 
     def test_binary_confusion_matrix_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -194,7 +196,9 @@ class TestMulticlassConfusionMatrix(MetricTester):
         )
 
     def test_multiclass_confusion_matrix_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -234,7 +238,9 @@ class TestMulticlassConfusionMatrix(MetricTester):
 
 
 def test_multiclass_overflow():
-    """Test that multiclass computations does not overflow even on byte inputs."""
+    """Test that multiclass computations does not overflow even on byte
+    inputs.
+    """
     preds = torch.randint(20, (100,)).byte()
     target = torch.randint(20, (100,)).byte()
 
@@ -311,7 +317,9 @@ class TestMultilabelConfusionMatrix(MetricTester):
         )
 
     def test_multilabel_confusion_matrix_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -353,7 +361,9 @@ class TestMultilabelConfusionMatrix(MetricTester):
 
 
 def test_warning_on_nan():
-    """Test that a warning is given if division by zero happens during normalization of confusion matrix."""
+    """Test that a warning is given if division by zero happens during
+    normalization of confusion matrix.
+    """
     preds = torch.randint(3, size=(20,))
     target = torch.randint(3, size=(20,))
 

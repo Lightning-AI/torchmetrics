@@ -175,6 +175,5 @@ class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
             >>> for _ in range(20):
             ...     vals.append(metric(preds, target()))
             >>> fig_, ax_ = metric.plot(vals)
-
         """
         return self._plot(val, ax)

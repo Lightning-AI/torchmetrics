@@ -267,9 +267,9 @@ class TestSSIM(MetricTester):
 def test_ssim_invalid_inputs(pred, target, kernel, sigma, match):
     """Test for invalid input.
 
-    Checks that that an value errors are raised if input sizes are different, kernel length and sigma does not match
-    size or invalid values are provided.
-
+    Checks that that an value errors are raised if input sizes are
+    different, kernel length and sigma does not match size or invalid
+    values are provided.
     """
     pred = torch.rand(pred)
     target = torch.rand(target)
@@ -334,7 +334,9 @@ def test_ssim_unequal_kernel_size():
     [(i.preds, i.target) for i in _inputs],
 )
 def test_full_image_output(preds, target):
-    """Test that if full output should be returned, then its shape matches the input."""
+    """Test that if full output should be returned, then its shape matches the
+    input.
+    """
     out = structural_similarity_index_measure(preds[0], target[0])
     assert isinstance(out, Tensor)
     assert out.numel() == 1

@@ -63,7 +63,8 @@ def _get_embeddings_and_idf_scale(
     verbose: bool = False,
     user_forward_fn: Optional[Callable[[Module, Dict[str, Tensor]], Tensor]] = None,
 ) -> Tuple[Tensor, Tensor]:
-    """Calculate sentence embeddings and the inverse-document-frequency scaling factor.
+    """Calculate sentence embeddings and the inverse-document-frequency scaling
+    factor.
 
     Args:
         dataloader: dataloader instance.
@@ -89,7 +90,6 @@ def _get_embeddings_and_idf_scale(
     Raises:
         ValueError:
             If ``all_layers = True`` and a model, which is not from the ``transformers`` package, is used.
-
     """
     embeddings_list: List[Tensor] = []
     idf_scale_list: List[Tensor] = []
@@ -134,7 +134,9 @@ def _get_embeddings_and_idf_scale(
 
 
 def _get_scaled_precision_or_recall(cos_sim: Tensor, metric: str, idf_scale: Tensor) -> Tensor:
-    """Calculate precision or recall, transpose it and scale it with idf_scale factor."""
+    """Calculate precision or recall, transpose it and scale it with idf_scale
+    factor.
+    """
     dim = 3 if metric == "precision" else 2
     res = cos_sim.max(dim=dim).values
     res = torch.einsum("bls, bs -> bls", res, idf_scale).sum(-1)
@@ -145,7 +147,8 @@ def _get_scaled_precision_or_recall(cos_sim: Tensor, metric: str, idf_scale: Ten
 def _get_precision_recall_f1(
     preds_embeddings: Tensor, target_embeddings: Tensor, preds_idf_scale: Tensor, target_idf_scale: Tensor
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Calculate precision, recall and F1 score over candidate and reference sentences.
+    """Calculate precision, recall and F1 score over candidate and reference
+    sentences.
 
     Args:
         preds_embeddings: Embeddings of candidate sentences.
@@ -155,7 +158,6 @@ def _get_precision_recall_f1(
 
     Return:
         Tensors containing precision, recall and F1 score, respectively.
-
     """
     # Dimensions: b = batch_size, l = num_layers, p = predictions_seq_len, r = references_seq_len, d = bert_dim
     cos_sim = torch.einsum("blpd, blrd -> blpr", preds_embeddings, target_embeddings)
@@ -178,7 +180,6 @@ def _read_csv_from_local_file(baseline_path: str) -> Tensor:
     """Read baseline from csv file from the local file.
 
     This method implemented to avoid `pandas` dependency.
-
     """
     with open(baseline_path) as fname:
         csv_file = csv.reader(fname)
@@ -190,7 +191,6 @@ def _read_csv_from_url(baseline_url: str) -> Tensor:
     """Read baseline from csv file from URL.
 
     This method is implemented to avoid `pandas` dependency.
-
     """
     with urllib.request.urlopen(baseline_url) as http_request:
         baseline_list = [
@@ -332,7 +332,6 @@ def bert_score(
         >>> target = ["hello there", "master kenobi"]
         >>> pprint(bert_score(preds, target))
         {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
-
     """
     if len(preds) != len(target):
         raise ValueError("Number of predicted and reference sententes must be the same!")

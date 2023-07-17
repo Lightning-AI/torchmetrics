@@ -30,10 +30,9 @@ MAX_LENGTH = 30  # the selected model has default max_length = 20 and we have lo
 def reference_infolm_score(preds, target, model_name, information_measure, idf, alpha, beta):
     """Baseline implementation is currently not available.
 
-    We, therefore, are enforced to relied on hard-coded results for now. The results below were generated using scripts
-    in
+    We, therefore, are enforced to relied on hard-coded results for now.
+    The results below were generated using scripts in
     https://github.com/stancld/infolm-docker.
-
     """
     if model_name != "google/bert_uncased_L-2_H-128_A-2":
         raise ValueError(
@@ -168,7 +167,9 @@ class TestInfoLM(TextTester):
 
     @skip_on_connection_issues()
     def test_infolm_differentiability(self, preds, targets, information_measure, idf, alpha, beta):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "information_measure": information_measure,

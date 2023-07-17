@@ -168,7 +168,9 @@ def test_mean_metric_broadcasting(weights, expected):
 
 
 def test_aggregation_in_collection_with_compute_groups():
-    """Check that aggregation metrics work in MetricCollection with compute_groups=True."""
+    """Check that aggregation metrics work in MetricCollection with
+    compute_groups=True.
+    """
     m = MetricCollection(MinMetric(), MaxMetric(), SumMetric(), MeanMetric(), compute_groups=True)
     assert len(m.compute_groups) == 4, "Expected 4 compute groups"
     m.update(1)

@@ -106,7 +106,9 @@ class TestPESQ(MetricTester):
         )
 
     def test_pesq_differentiability(self, preds, target, ref_metric, fs, mode):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         self.run_differentiability_test(
             preds=preds,
             target=target,

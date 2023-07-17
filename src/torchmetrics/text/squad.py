@@ -32,7 +32,8 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class SQuAD(Metric):
-    """Calculate `SQuAD Metric`_ which is a metric for evaluating question answering models.
+    """Calculate `SQuAD Metric`_ which is a metric for evaluating question
+    answering models.
 
     This metric corresponds to the scoring script for version 1 of the Stanford Question Answering Dataset (SQuAD).
 
@@ -87,7 +88,6 @@ class SQuAD(Metric):
         >>> squad = SQuAD()
         >>> squad(preds, target)
         {'exact_match': tensor(100.), 'f1': tensor(100.)}
-
     """
 
     is_differentiable: bool = False
@@ -162,6 +162,5 @@ class SQuAD(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)

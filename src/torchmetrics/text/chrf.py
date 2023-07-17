@@ -50,7 +50,8 @@ _DICT_STATES_TYPES = Tuple[
 
 
 class CHRFScore(Metric):
-    """Calculate `chrf score`_ of machine translated text with one or more references.
+    """Calculate `chrf score`_ of machine translated text with one or more
+    references.
 
     This implementation supports both ChrF score computation introduced in `chrF score`_ and `chrF++ score`_ introduced
     in `chrF++ score`_. This implementation follows the implmenetaions from https://github.com/m-popovic/chrF and
@@ -91,7 +92,6 @@ class CHRFScore(Metric):
         >>> chrf = CHRFScore()
         >>> chrf(preds, target)
         tensor(0.8640)
-
     """
 
     is_differentiable: bool = False
@@ -166,7 +166,9 @@ class CHRFScore(Metric):
         return _chrf_score_compute(*self._convert_states_to_dicts(), self.n_order, self.beta)
 
     def _convert_states_to_dicts(self) -> _DICT_STATES_TYPES:
-        """Convert global metric states to the n-gram dictionaries to be passed in ``_chrf_score_update``."""
+        """Convert global metric states to the n-gram dictionaries to be passed
+        in ``_chrf_score_update``.
+        """
         n_grams_dicts: Dict[str, Dict[int, Tensor]] = dict(
             zip(_DICT_STATES_NAMES, _prepare_n_grams_dicts(self.n_char_order, self.n_word_order))
         )
@@ -181,7 +183,9 @@ class CHRFScore(Metric):
         return tuple(n_grams_dicts.values())  # type: ignore
 
     def _update_states_from_dicts(self, n_grams_dicts_tuple: _DICT_STATES_TYPES) -> None:
-        """Update global metric states based on the n-gram dictionaries calculated on the current batch."""
+        """Update global metric states based on the n-gram dictionaries
+        calculated on the current batch.
+        """
         n_grams_dicts = dict(zip(_DICT_STATES_NAMES, n_grams_dicts_tuple))
         for (n_gram_level, n_gram_order), text in self._get_text_n_gram_iterator():
             for n in range(1, n_gram_order + 1):
@@ -201,7 +205,9 @@ class CHRFScore(Metric):
         return f"total_{text}_{n_gram_level}_{n}_grams"
 
     def _get_text_n_gram_iterator(self) -> Iterator[Tuple[Tuple[str, int], str]]:
-        """Get iterator over char/word and reference/hypothesis/matching n-gram level."""
+        """Get iterator over char/word and reference/hypothesis/matching n-gram
+        level.
+        """
         return itertools.product(zip(_N_GRAM_LEVELS, [self.n_char_order, self.n_word_order]), _TEXT_LEVELS)
 
     def plot(
@@ -244,6 +250,5 @@ class CHRFScore(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)

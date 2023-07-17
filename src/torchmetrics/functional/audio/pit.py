@@ -55,7 +55,6 @@ def _find_best_perm_by_linear_sum_assignment(
     Returns:
         best_metric: shape ``[batch]``
         best_perm: shape ``[batch, spk]``
-
     """
     from scipy.optimize import linear_sum_assignment
 
@@ -82,7 +81,6 @@ def _find_best_perm_by_exhaustive_method(
     Returns:
         best_metric: shape ``[batch]``
         best_perm: shape ``[batch, spk]``
-
     """
     # create/read/cache the permutations and its indexes
     # reading from cache would be much faster than creating in CPU then moving to GPU
@@ -153,7 +151,6 @@ def permutation_invariant_training(
         >>> pit_permutate(preds, best_perm)
         tensor([[[-0.0579,  0.3560, -0.9604],
                  [-0.1719,  0.3205,  0.2951]]])
-
     """
     if preds.shape[0:2] != target.shape[0:2]:
         raise RuntimeError(
@@ -223,6 +220,5 @@ def pit_permutate(preds: Tensor, perm: Tensor) -> Tensor:
 
     Returns:
         Tensor: the permutated version of estimate
-
     """
     return torch.stack([torch.index_select(pred, 0, p) for pred, p in zip(preds, perm)])

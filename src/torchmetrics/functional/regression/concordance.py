@@ -25,13 +25,16 @@ def _concordance_corrcoef_compute(
     corr_xy: Tensor,
     nb: Tensor,
 ) -> Tensor:
-    """Compute the final concordance correlation coefficient based on accumulated statistics."""
+    """Compute the final concordance correlation coefficient based on
+    accumulated statistics.
+    """
     pearson = _pearson_corrcoef_compute(var_x, var_y, corr_xy, nb)
     return 2.0 * pearson * var_x.sqrt() * var_y.sqrt() / (var_x + var_y + (mean_x - mean_y) ** 2)
 
 
 def concordance_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
-    r"""Compute concordance correlation coefficient that measures the agreement between two variables.
+    r"""Compute concordance correlation coefficient that measures the agreement
+    between two variables.
 
     .. math::
         \rho_c = \frac{2 \rho \sigma_x \sigma_y}{\sigma_x^2 + \sigma_y^2 + (\mu_x - \mu_y)^2}
@@ -56,7 +59,6 @@ def concordance_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
         >>> concordance_corrcoef(preds, target)
         tensor([0.7273, 0.9887])
-
     """
     d = preds.shape[1] if preds.ndim == 2 else 1
     _temp = torch.zeros(d, dtype=preds.dtype, device=preds.device)

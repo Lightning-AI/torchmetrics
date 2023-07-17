@@ -98,7 +98,9 @@ class TestSNR(MetricTester):
         )
 
     def test_snr_differentiability(self, preds, target, ref_metric, zero_mean):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         self.run_differentiability_test(
             preds=preds,
             target=target,

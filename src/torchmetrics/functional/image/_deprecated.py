@@ -33,7 +33,6 @@ def _spectral_distortion_index(
     >>> target = torch.rand([16, 3, 16, 16])
     >>> _spectral_distortion_index(preds, target)
     tensor(0.0234)
-
     """
     _deprecated_root_import_func("spectral_distortion_index", "image")
     return spectral_distortion_index(preds=preds, target=target, p=p, reduction=reduction)
@@ -53,7 +52,6 @@ def _error_relative_global_dimensionless_synthesis(
     >>> ergds = _error_relative_global_dimensionless_synthesis(preds, target)
     >>> torch.round(ergds)
     tensor(154.)
-
     """
     _deprecated_root_import_func("error_relative_global_dimensionless_synthesis", "image")
     return error_relative_global_dimensionless_synthesis(preds=preds, target=target, ratio=ratio, reduction=reduction)
@@ -72,7 +70,6 @@ def _image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
             [5., 5., 5., 5., 5.],
             [5., 5., 5., 5., 5.],
             [0., 0., 0., 0., 0.]])
-
     """
     _deprecated_root_import_func("image_gradients", "image")
     return image_gradients(img=img)
@@ -93,7 +90,6 @@ def _peak_signal_noise_ratio(
     >>> target = tensor([[3.0, 2.0], [1.0, 0.0]])
     >>> _peak_signal_noise_ratio(pred, target)
     tensor(2.5527)
-
     """
     _deprecated_root_import_func("peak_signal_noise_ratio", "image")
     return peak_signal_noise_ratio(
@@ -110,7 +106,6 @@ def _relative_average_spectral_error(preds: Tensor, target: Tensor, window_size:
     >>> target = torch.rand(4, 3, 16, 16)
     >>> _relative_average_spectral_error(preds, target)
     tensor(5114.6641)
-
     """
     _deprecated_root_import_func("relative_average_spectral_error", "image")
     return relative_average_spectral_error(preds=preds, target=target, window_size=window_size)
@@ -127,7 +122,6 @@ def _root_mean_squared_error_using_sliding_window(
     >>> target = torch.rand(4, 3, 16, 16)
     >>> _root_mean_squared_error_using_sliding_window(preds, target)
     tensor(0.3999)
-
     """
     _deprecated_root_import_func("root_mean_squared_error_using_sliding_window", "image")
     return root_mean_squared_error_using_sliding_window(
@@ -147,7 +141,6 @@ def _spectral_angle_mapper(
     >>> target = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(123))
     >>> _spectral_angle_mapper(preds, target)
     tensor(0.5943)
-
     """
     _deprecated_root_import_func("spectral_angle_mapper", "image")
     return spectral_angle_mapper(preds=preds, target=target, reduction=reduction)
@@ -173,7 +166,6 @@ def _multiscale_structural_similarity_index_measure(
     >>> target = preds * 0.75
     >>> _multiscale_structural_similarity_index_measure(preds, target, data_range=1.0)
     tensor(0.9627)
-
     """
     _deprecated_root_import_func("multiscale_structural_similarity_index_measure", "image")
     return multiscale_structural_similarity_index_measure(
@@ -211,7 +203,6 @@ def _structural_similarity_index_measure(
     >>> target = preds * 0.75
     >>> _structural_similarity_index_measure(preds, target)
     tensor(0.9219)
-
     """
     _deprecated_root_import_func("spectral_angle_mapper", "image")
     return structural_similarity_index_measure(
@@ -237,7 +228,6 @@ def _total_variation(img: Tensor, reduction: Literal["mean", "sum", "none", None
     >>> img = torch.rand(5, 3, 28, 28)
     >>> _total_variation(img)
     tensor(7546.8018)
-
     """
     _deprecated_root_import_func("total_variation", "image")
     return total_variation(img=img, reduction=reduction)
@@ -257,7 +247,6 @@ def _universal_image_quality_index(
     >>> target = preds * 0.75
     >>> _universal_image_quality_index(preds, target)
     tensor(0.9216)
-
     """
     _deprecated_root_import_func("universal_image_quality_index", "image")
     return universal_image_quality_index(

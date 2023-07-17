@@ -33,7 +33,6 @@ def _wer_update(
     Returns:
         Number of edit operations to get from the reference to the prediction, summed over all samples
         Number of words overall references
-
     """
     if isinstance(preds, str):
         preds = [preds]
@@ -58,13 +57,13 @@ def _wer_compute(errors: Tensor, total: Tensor) -> Tensor:
 
     Returns:
         Word error rate score
-
     """
     return errors / total
 
 
 def word_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
-    """Word error rate (WordErrorRate_) is a common metric of the performance of an automatic speech recognition system.
+    """Word error rate (WordErrorRate_) is a common metric of the performance
+    of an automatic speech recognition system.
 
     This value indicates the percentage of words that were incorrectly predicted. The lower the value, the better the
     performance of the ASR system with a WER of 0 being a perfect score.
@@ -81,7 +80,6 @@ def word_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]])
         >>> target = ["this is the reference", "there is another one"]
         >>> word_error_rate(preds=preds, target=target)
         tensor(0.5000)
-
     """
     errors, total = _wer_update(preds, target)
     return _wer_compute(errors, total)

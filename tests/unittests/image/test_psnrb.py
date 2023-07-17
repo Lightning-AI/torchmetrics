@@ -41,7 +41,6 @@ def _ref_metric(preds, target):
     Inspired by
     https://github.com/andrewekhalel/sewar/blob/master/sewar/full_ref.py
     that also supports batched inputs.
-
     """
     preds = preds.numpy()
     target = target.numpy()
@@ -65,11 +64,15 @@ class TestPSNR(MetricTester):
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_psnr(self, preds, target, ddp):
-        """Test that modular PSNRB metric returns the same result as the reference implementation."""
+        """Test that modular PSNRB metric returns the same result as the
+        reference implementation.
+        """
         self.run_class_metric_test(ddp, preds, target, PeakSignalNoiseRatioWithBlockedEffect, _ref_metric)
 
     def test_psnr_functional(self, preds, target):
-        """Test that functional PSNRB metric returns the same result as the reference implementation."""
+        """Test that functional PSNRB metric returns the same result as the
+        reference implementation.
+        """
         self.run_functional_metric_test(preds, target, peak_signal_noise_ratio_with_blocked_effect, _ref_metric)
 
     def test_psnr_half_cpu(self, preds, target):
@@ -95,6 +98,8 @@ class TestPSNR(MetricTester):
 
 
 def test_error_on_color_images():
-    """Test that appropriate error is raised when color images are passed to PSNRB metric."""
+    """Test that appropriate error is raised when color images are passed to
+    PSNRB metric.
+    """
     with pytest.raises(ValueError, match="`psnrb` metric expects grayscale images.*"):
         peak_signal_noise_ratio_with_blocked_effect(torch.rand(1, 3, 16, 16), torch.rand(1, 3, 16, 16))

@@ -72,7 +72,6 @@ def naive_implementation_pit_scipy(
             shape [batch]
         best_perm:
             shape [batch, spk]
-
     """
     batch_size, spk_num = target.shape[0:2]
     metric_mtx = torch.empty((batch_size, spk_num, spk_num), device=target.device)
@@ -100,7 +99,6 @@ def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Ten
 
     Returns:
         the average of best_metric
-
     """
     return metric_func(preds, target)[0].mean()
 
@@ -180,7 +178,9 @@ class TestPIT(MetricTester):
         )
 
     def test_pit_differentiability(self, preds, target, ref_metric, metric_func, mode, eval_func):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
 
         def pit_diff(preds, target, metric_func, mode, eval_func):
             return permutation_invariant_training(preds, target, metric_func, mode, eval_func)[0]
@@ -241,7 +241,9 @@ def test_error_on_wrong_shape() -> None:
 
 
 def test_consistency_of_two_implementations() -> None:
-    """Test that both backend functions for computing metric (depending on torch version) returns the same result."""
+    """Test that both backend functions for computing metric (depending on
+    torch version) returns the same result.
+    """
     shapes_test = [(5, 2, 2), (4, 3, 3), (4, 4, 4), (3, 5, 5)]
     for shp in shapes_test:
         metric_mtx = torch.randn(size=shp)

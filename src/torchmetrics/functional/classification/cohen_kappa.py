@@ -31,7 +31,9 @@ from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
 def _cohen_kappa_reduce(confmat: Tensor, weights: Optional[Literal["linear", "quadratic", "none"]] = None) -> Tensor:
-    """Reduce an un-normalized confusion matrix of shape (n_classes, n_classes) into the cohen kappa score."""
+    """Reduce an un-normalized confusion matrix of shape (n_classes, n_classes)
+    into the cohen kappa score.
+    """
     confmat = confmat.float() if not confmat.is_floating_point() else confmat
     n_classes = confmat.shape[0]
     sum0 = confmat.sum(dim=0, keepdim=True)
@@ -64,7 +66,6 @@ def _binary_cohen_kappa_arg_validation(
     - ``threshold`` has to be a float in the [0,1] range
     - ``ignore_index`` has to be None or int
     - ``weights`` has to be "linear" | "quadratic" | "none" | None
-
     """
     _binary_confusion_matrix_arg_validation(threshold, ignore_index, normalize=None)
     allowed_weights = ("linear", "quadratic", "none", None)
@@ -80,7 +81,8 @@ def binary_cohen_kappa(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for binary tasks.
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement
+    for binary tasks.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
@@ -128,7 +130,6 @@ def binary_cohen_kappa(
         >>> preds = tensor([0.35, 0.85, 0.48, 0.01])
         >>> binary_cohen_kappa(preds, target)
         tensor(0.5000)
-
     """
     if validate_args:
         _binary_cohen_kappa_arg_validation(threshold, ignore_index, weights)
@@ -148,7 +149,6 @@ def _multiclass_cohen_kappa_arg_validation(
     - ``num_classes`` has to be a int larger than 1
     - ``ignore_index`` has to be None or int
     - ``weights`` has to be "linear" | "quadratic" | "none" | None
-
     """
     _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index, normalize=None)
     allowed_weights = ("linear", "quadratic", "none", None)
@@ -164,7 +164,8 @@ def multiclass_cohen_kappa(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass tasks.
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement
+    for multiclass tasks.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
@@ -217,7 +218,6 @@ def multiclass_cohen_kappa(
         ...                 [0.05, 0.82, 0.13]])
         >>> multiclass_cohen_kappa(preds, target, num_classes=3)
         tensor(0.6364)
-
     """
     if validate_args:
         _multiclass_cohen_kappa_arg_validation(num_classes, ignore_index, weights)
@@ -237,7 +237,8 @@ def cohen_kappa(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement. It is defined as.
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator
+    agreement. It is defined as.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
@@ -258,7 +259,6 @@ def cohen_kappa(
         >>> preds = tensor([0, 1, 0, 0])
         >>> cohen_kappa(preds, target, task="multiclass", num_classes=2)
         tensor(0.5000)
-
     """
     task = ClassificationTaskNoMultilabel.from_str(task)
     if task == ClassificationTaskNoMultilabel.BINARY:

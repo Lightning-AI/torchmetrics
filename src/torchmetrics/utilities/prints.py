@@ -23,7 +23,6 @@ def rank_zero_only(fn: Callable) -> Callable:
     """Call a function only on rank 0 in distributed settings.
 
     Meant to be used as an decorator.
-
     """
 
     @wraps(fn)
@@ -58,7 +57,9 @@ _future_warning = partial(warnings.warn, category=FutureWarning)
 
 
 def _deprecated_root_import_class(name: str, domain: str) -> None:
-    """Warn user that he is importing class from location it has been deprecated."""
+    """Warn user that he is importing class from location it has been
+    deprecated.
+    """
     _future_warning(
         f"Importing `{name}` from `torchmetrics` was deprecated and will be removed in 2.0."
         f" Import `{name}` from `torchmetrics.{domain}` instead."
@@ -66,7 +67,9 @@ def _deprecated_root_import_class(name: str, domain: str) -> None:
 
 
 def _deprecated_root_import_func(name: str, domain: str) -> None:
-    """Warn user that he is importing function from location it has been deprecated."""
+    """Warn user that he is importing function from location it has been
+    deprecated.
+    """
     _future_warning(
         f"Importing `{name}` from `torchmetrics.functional` was deprecated and will be removed in 2.0."
         f" Import `{name}` from `torchmetrics.{domain}` instead."

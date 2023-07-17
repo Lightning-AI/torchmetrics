@@ -42,7 +42,9 @@ seed_all(42)
 
 
 def test_metric_collection(tmpdir):
-    """Test that updating the metric collection is equal to individually updating metrics in the collection."""
+    """Test that updating the metric collection is equal to individually
+    updating metrics in the collection.
+    """
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
 
@@ -81,7 +83,9 @@ def test_metric_collection(tmpdir):
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
 def test_device_and_dtype_transfer_metriccollection(tmpdir):
-    """Test that metrics in the collection correctly gets updated their dtype and device."""
+    """Test that metrics in the collection correctly gets updated their dtype
+    and device.
+    """
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
 
@@ -125,7 +129,9 @@ def test_metric_collection_wrong_input(tmpdir):
 
 
 def test_metric_collection_args_kwargs(tmpdir):
-    """Check that args and kwargs gets passed correctly in metric collection, checks both update and forward."""
+    """Check that args and kwargs gets passed correctly in metric collection,
+    checks both update and forward.
+    """
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
 
@@ -237,7 +243,9 @@ def test_metric_collection_repr():
 
 
 def test_metric_collection_same_order():
-    """Test that metrics are stored internally in the same order, regardless of input order."""
+    """Test that metrics are stored internally in the same order, regardless of
+    input order.
+    """
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
     col1 = MetricCollection({"a": m1, "b": m2})
@@ -247,7 +255,9 @@ def test_metric_collection_same_order():
 
 
 def test_collection_add_metrics():
-    """Test that `add_metrics` function called multiple times works as expected."""
+    """Test that `add_metrics` function called multiple times works as
+    expected.
+    """
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
 
@@ -413,7 +423,9 @@ class TestComputeGroups:
         ],
     )
     def test_check_compute_groups_correctness(self, metrics, expected, preds, target, prefix, postfix):
-        """Check that compute groups are formed after initialization and that metrics are correctly computed."""
+        """Check that compute groups are formed after initialization and that
+        metrics are correctly computed.
+        """
         if isinstance(metrics, MetricCollection):
             prefix, postfix = None, None  # disable for nested collections
         m = MetricCollection(deepcopy(metrics), prefix=prefix, postfix=postfix, compute_groups=True)
@@ -451,7 +463,9 @@ class TestComputeGroups:
 
     @pytest.mark.parametrize("method", ["items", "values", "keys"])
     def test_check_compute_groups_items_and_values(self, metrics, expected, preds, target, method):
-        """Check states are copied instead of passed by ref when a single metric in the collection is access."""
+        """Check states are copied instead of passed by ref when a single
+        metric in the collection is access.
+        """
         m = MetricCollection(deepcopy(metrics), compute_groups=True)
         m2 = MetricCollection(deepcopy(metrics), compute_groups=False)
 
@@ -539,7 +553,9 @@ def test_compute_group_define_by_user():
 
 
 def test_compute_on_different_dtype():
-    """Check that extraction of compute groups are robust towards difference in dtype."""
+    """Check that extraction of compute groups are robust towards difference in
+    dtype.
+    """
     m = MetricCollection(
         [
             MulticlassConfusionMatrix(num_classes=3),
@@ -615,7 +631,9 @@ def test_nested_collections(input_collections):
 
 
 def test_double_nested_collections():
-    """Test that double nested collections gets flattened to a single collection."""
+    """Test that double nested collections gets flattened to a single
+    collection.
+    """
     collection1 = MetricCollection([DummyMetricMultiOutputDict()], prefix="prefix1_", postfix="_postfix1")
     collection2 = MetricCollection([collection1], prefix="prefix2_", postfix="_postfix2")
     x = torch.randn(10).sum()

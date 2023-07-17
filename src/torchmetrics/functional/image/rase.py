@@ -24,7 +24,8 @@ from torchmetrics.functional.image.rmse_sw import _rmse_sw_compute, _rmse_sw_upd
 def _rase_update(
     preds: Tensor, target: Tensor, window_size: int, rmse_map: Tensor, target_sum: Tensor, total_images: Tensor
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Calculate the sum of RMSE map values for the batch of examples and update intermediate states.
+    """Calculate the sum of RMSE map values for the batch of examples and
+    update intermediate states.
 
     Args:
         preds: Deformed image
@@ -37,7 +38,6 @@ def _rase_update(
     Return:
         Intermediate state of RMSE map
         Updated total number of already processed images
-
     """
     _, rmse_map, total_images = _rmse_sw_update(
         preds, target, window_size, rmse_val_sum=None, rmse_map=rmse_map, total_images=total_images
@@ -57,7 +57,6 @@ def _rase_compute(rmse_map: Tensor, target_sum: Tensor, total_images: Tensor, wi
 
     Return:
         Relative Average Spectral Error (RASE)
-
     """
     _, rmse_map = _rmse_sw_compute(rmse_val_sum=None, rmse_map=rmse_map, total_images=total_images)
     target_mean = target_sum / total_images
@@ -69,7 +68,8 @@ def _rase_compute(rmse_map: Tensor, target_sum: Tensor, total_images: Tensor, wi
 
 
 def relative_average_spectral_error(preds: Tensor, target: Tensor, window_size: int = 8) -> Tensor:
-    """Compute Relative Average Spectral Error (RASE) (RelativeAverageSpectralError_).
+    """Compute Relative Average Spectral Error (RASE)
+    (RelativeAverageSpectralError_).
 
     Args:
         preds: Deformed image
@@ -89,7 +89,6 @@ def relative_average_spectral_error(preds: Tensor, target: Tensor, window_size: 
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.
-
     """
     if not isinstance(window_size, int) or isinstance(window_size, int) and window_size < 1:
         raise ValueError("Argument `window_size` is expected to be a positive integer.")

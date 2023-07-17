@@ -79,7 +79,6 @@ class PanopticQuality(Metric):
         >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuffs = {6, 7})
         >>> panoptic_quality(preds, target)
         tensor(0.5463, dtype=torch.float64)
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -136,7 +135,6 @@ class PanopticQuality(Metric):
                 If ``preds`` has less than 3 dimensions.
             ValueError:
                 If the final dimension of ``preds`` has size != 2.
-
         """
         _validate_inputs(preds, target)
         flatten_preds = _prepocess_inputs(
@@ -152,7 +150,9 @@ class PanopticQuality(Metric):
         self.false_negatives += false_negatives
 
     def compute(self) -> Tensor:
-        """Compute panoptic quality based on inputs passed in to ``update`` previously."""
+        """Compute panoptic quality based on inputs passed in to ``update``
+        previously.
+        """
         return _panoptic_quality_compute(self.iou_sum, self.true_positives, self.false_positives, self.false_negatives)
 
     def plot(
@@ -212,7 +212,6 @@ class PanopticQuality(Metric):
             >>> for _ in range(20):
             ...     vals.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(vals)
-
         """
         return self._plot(val, ax)
 
@@ -257,7 +256,6 @@ class ModifiedPanopticQuality(Metric):
         >>> pq_modified = ModifiedPanopticQuality(things = {0, 1}, stuffs = {6, 7})
         >>> pq_modified(preds, target)
         tensor(0.7667, dtype=torch.float64)
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -314,7 +312,6 @@ class ModifiedPanopticQuality(Metric):
                 If ``preds`` has less than 3 dimensions.
             ValueError:
                 If the final dimension of ``preds`` has size != 2.
-
         """
         _validate_inputs(preds, target)
         flatten_preds = _prepocess_inputs(
@@ -334,7 +331,9 @@ class ModifiedPanopticQuality(Metric):
         self.false_negatives += false_negatives
 
     def compute(self) -> Tensor:
-        """Compute panoptic quality based on inputs passed in to ``update`` previously."""
+        """Compute panoptic quality based on inputs passed in to ``update``
+        previously.
+        """
         return _panoptic_quality_compute(self.iou_sum, self.true_positives, self.false_positives, self.false_negatives)
 
     def plot(
@@ -394,6 +393,5 @@ class ModifiedPanopticQuality(Metric):
             >>> for _ in range(20):
             ...     vals.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(vals)
-
         """
         return self._plot(val, ax)

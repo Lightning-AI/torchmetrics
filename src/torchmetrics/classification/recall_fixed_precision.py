@@ -44,7 +44,8 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
-    r"""Compute the highest possible recall value given the minimum precision thresholds provided.
+    r"""Compute the highest possible recall value given the minimum precision
+    thresholds provided.
 
     This is done by first calculating the precision-recall curve for different thresholds and the find the recall for
     a given precision level.
@@ -101,7 +102,6 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
         >>> metric = BinaryRecallAtFixedPrecision(min_precision=0.5, thresholds=5)
         >>> metric(preds, target)
         (tensor(1.), tensor(0.5000))
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -167,14 +167,14 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
             ...     # we index by 0 such that only the maximum recall value is plotted
             ...     values.append(metric(rand(10), randint(2,(10,)))[0])
             >>> fig_, ax_ = metric.plot(values)
-
         """
         val = val or self.compute()[0]  # by default we select the maximum recall value to plot
         return self._plot(val, ax)
 
 
 class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
-    r"""Compute the highest possible recall value given the minimum precision thresholds provided.
+    r"""Compute the highest possible recall value given the minimum precision
+    thresholds provided.
 
     This is done by first calculating the precision-recall curve for different thresholds and the find the recall for
     a given precision level.
@@ -237,7 +237,6 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
         >>> mcrafp = MulticlassRecallAtFixedPrecision(num_classes=5, min_precision=0.5, thresholds=5)
         >>> mcrafp(preds, target)
         (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -309,14 +308,14 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
             ...     # we index by 0 such that only the maximum recall value is plotted
             ...     values.append(metric(rand(20, 3).softmax(dim=-1), randint(3, (20,)))[0])
             >>> fig_, ax_ = metric.plot(values)
-
         """
         val = val or self.compute()[0]  # by default we select the maximum recall value to plot
         return self._plot(val, ax)
 
 
 class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
-    r"""Compute the highest possible recall value given the minimum precision thresholds provided.
+    r"""Compute the highest possible recall value given the minimum precision
+    thresholds provided.
 
     This is done by first calculating the precision-recall curve for different thresholds and the find the recall for
     a given precision level.
@@ -382,7 +381,6 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
         >>> mlrafp = MultilabelRecallAtFixedPrecision(num_labels=3, min_precision=0.5, thresholds=5)
         >>> mlrafp(preds, target)
         (tensor([1., 1., 1.]), tensor([0.0000, 0.5000, 0.0000]))
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -454,14 +452,14 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
             ...     # we index by 0 such that only the maximum recall value is plotted
             ...     values.append(metric(rand(20, 3), randint(2, (20, 3)))[0])
             >>> fig_, ax_ = metric.plot(values)
-
         """
         val = val or self.compute()[0]  # by default we select the maximum recall value to plot
         return self._plot(val, ax)
 
 
 class RecallAtFixedPrecision:
-    r"""Compute the highest possible recall value given the minimum precision thresholds provided.
+    r"""Compute the highest possible recall value given the minimum precision
+    thresholds provided.
 
     This is done by first calculating the precision-recall curve for different thresholds and the find the recall for
     a given precision level.
@@ -470,7 +468,6 @@ class RecallAtFixedPrecision:
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :mod:`BinaryRecallAtFixedPrecision`, :func:`MulticlassRecallAtFixedPrecision` and
     :func:`MultilabelRecallAtFixedPrecision` for the specific details of each argument influence and examples.
-
     """
 
     def __new__(  # type: ignore[misc]

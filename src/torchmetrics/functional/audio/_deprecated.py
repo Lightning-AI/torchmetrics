@@ -31,7 +31,6 @@ def _permutation_invariant_training(
     >>> pit_permutate(preds, best_perm)
     tensor([[[-0.0579,  0.3560, -0.9604],
              [-0.1719,  0.3205,  0.2951]]])
-
     """
     _deprecated_root_import_func("permutation_invariant_training", "audio")
     return permutation_invariant_training(
@@ -53,7 +52,6 @@ def _scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero
     >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
     >>> _scale_invariant_signal_distortion_ratio(preds, target)
     tensor(18.4030)
-
     """
     _deprecated_root_import_func("scale_invariant_signal_distortion_ratio", "audio")
     return scale_invariant_signal_distortion_ratio(preds=preds, target=target, zero_mean=zero_mean)
@@ -86,7 +84,6 @@ def _signal_distortion_ratio(
             [0, 1],
             [1, 0],
             [0, 1]])
-
     """
     _deprecated_root_import_func("signal_distortion_ratio", "audio")
     return signal_distortion_ratio(
@@ -107,7 +104,6 @@ def _scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor) -> Tensor
     >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
     >>> _scale_invariant_signal_noise_ratio(preds, target)
     tensor(15.0918)
-
     """
     _deprecated_root_import_func("scale_invariant_signal_noise_ratio", "audio")
     return scale_invariant_signal_noise_ratio(preds=preds, target=target)
@@ -121,7 +117,6 @@ def _signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) 
     >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
     >>> _signal_noise_ratio(preds, target)
     tensor(16.1805)
-
     """
     _deprecated_root_import_func("signal_noise_ratio", "audio")
     return signal_noise_ratio(preds=preds, target=target, zero_mean=zero_mean)

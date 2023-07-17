@@ -27,7 +27,8 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class MultitaskWrapper(WrapperMetric):
-    """Wrapper class for computing different metrics on different tasks in the context of multitask learning.
+    """Wrapper class for computing different metrics on different tasks in the
+    context of multitask learning.
 
     In multitask learning the different tasks requires different metrics to be evaluated. This wrapper allows
     for easy evaluation in such cases by supporting multiple predictions and targets through a dictionary.
@@ -89,7 +90,6 @@ class MultitaskWrapper(WrapperMetric):
          >>> metrics.compute()
          {'Classification': {'BinaryAccuracy': tensor(0.3333), 'BinaryF1Score': tensor(0.)},
           'Regression': {'MeanSquaredError': tensor(0.8333), 'MeanAbsoluteError': tensor(0.6667)}}
-
     """
 
     is_differentiable = False
@@ -120,7 +120,6 @@ class MultitaskWrapper(WrapperMetric):
         Args:
             task_preds: Dictionary associating each task to a Tensor of pred.
             task_targets: Dictionary associating each task to a Tensor of target.
-
         """
         if not self.task_metrics.keys() == task_preds.keys() == task_targets.keys():
             raise ValueError(
@@ -139,7 +138,9 @@ class MultitaskWrapper(WrapperMetric):
         return {task_name: metric.compute() for task_name, metric in self.task_metrics.items()}
 
     def forward(self, task_preds: Dict[str, Tensor], task_targets: Dict[str, Tensor]) -> Dict[str, Any]:
-        """Call underlying forward methods for all tasks and return the result as a dictionary."""
+        """Call underlying forward methods for all tasks and return the result
+        as a dictionary.
+        """
         # This method is overriden because we do not need the complex version defined in Metric, that relies on the
         # value of full_state_update, and that also accumulates the results. Here, all computations are handled by the
         # underlying metrics, which all have their own value of full_state_update, and which all accumulate the results
@@ -221,7 +222,6 @@ class MultitaskWrapper(WrapperMetric):
             >>> for _ in range(10):
             ...     values.append(metrics(preds, targets))
             >>> fig_, ax_ = metrics.plot(values)
-
         """
         if axes is not None:
             if not isinstance(axes, Sequence):

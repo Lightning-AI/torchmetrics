@@ -39,7 +39,9 @@ def test_errors_on_wrong_input():
 
 
 def test_basic_aggregation():
-    """Make sure that the aggregation works as expected for simple aggregate metrics."""
+    """Make sure that the aggregation works as expected for simple aggregate
+    metrics.
+    """
     metric = Running(SumMetric(), window=3)
 
     for i in range(10):
@@ -85,7 +87,9 @@ def test_forward():
 )
 @pytest.mark.parametrize("window", [1, 3, 5])
 def test_advance_running(metric, preds, target, window):
-    """Check that running metrics work as expected for metrics that require advance computation."""
+    """Check that running metrics work as expected for metrics that require
+    advance computation.
+    """
     base_metric = metric()
     running_metric = Running(metric(), window=window)
 
@@ -147,7 +151,9 @@ def _test_ddp_running(rank, dist_sync_on_step, expected):
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 @pytest.mark.parametrize(("dist_sync_on_step", "expected"), [(False, 1), (True, 2)])
 def test_ddp_running(dist_sync_on_step, expected):
-    """Check that the dist_sync_on_step gets correctly passed to base metric."""
+    """Check that the dist_sync_on_step gets correctly passed to base
+    metric.
+    """
     pytest.pool.map(
         partial(_test_ddp_running, dist_sync_on_step=dist_sync_on_step, expected=expected), range(NUM_PROCESSES)
     )

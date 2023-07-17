@@ -48,7 +48,6 @@ def compute_area(inputs: List[Any], iou_type: str = "bbox") -> Tensor:
     """Compute area of input depending on the specified iou_type.
 
     Default output for empty input is :class:`~torch.Tensor`
-
     """
     if len(inputs) == 0:
         return Tensor([])
@@ -67,7 +66,9 @@ def compute_iou(
     gt: List[Any],
     iou_type: str = "bbox",
 ) -> Tensor:
-    """Compute IOU between detections and ground-truth using the specified iou_type."""
+    """Compute IOU between detections and ground-truth using the specified
+    iou_type.
+    """
     if iou_type == "bbox":
         return box_iou(torch.stack(det), torch.stack(gt))
     if iou_type == "segm":
@@ -109,7 +110,9 @@ class MARMetricResults(BaseMetricResults):
 
 
 class COCOMetricResults(BaseMetricResults):
-    """Class to wrap the final COCO metric results including various mAP/mAR values."""
+    """Class to wrap the final COCO metric results including various mAP/mAR
+    values.
+    """
 
     __slots__ = (
         "map",
@@ -140,7 +143,6 @@ def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarra
 
        gt: A list of ground-truth masks as ``[(RLE_SIZE, RLE_COUNTS)]``, where ``RLE_SIZE`` is (width, height) dimension
            of the input and RLE_COUNTS is its RLE representation;
-
     """
     det_coco_format = [{"size": i[0], "counts": i[1]} for i in det]
     gt_coco_format = [{"size": i[0], "counts": i[1]} for i in gt]
@@ -149,7 +151,8 @@ def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarra
 
 
 class MeanAveragePrecision(Metric):
-    r"""Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR)`_ for object detection predictions.
+    r"""Compute the `Mean-Average-Precision (mAP) and Mean-Average-Recall
+    (mAR)`_ for object detection predictions.
 
     .. math::
         \text{mAP} = \frac{1}{n} \sum_{i=1}^{n} AP_i
@@ -300,7 +303,6 @@ class MeanAveragePrecision(Metric):
          'mar_large': tensor(0.6000),
          'mar_medium': tensor(-1.),
          'mar_small': tensor(-1.)}
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -407,13 +409,16 @@ class MeanAveragePrecision(Metric):
         raise Exception(f"IOU type {self.iou_type} is not supported")
 
     def _get_classes(self) -> List:
-        """Return a list of unique classes found in ground truth and detection data."""
+        """Return a list of unique classes found in ground truth and detection
+        data.
+        """
         if len(self.detection_labels) > 0 or len(self.groundtruth_labels) > 0:
             return torch.cat(self.detection_labels + self.groundtruth_labels).unique().tolist()
         return []
 
     def _compute_iou(self, idx: int, class_id: int, max_det: int) -> Tensor:
-        """Compute the Intersection over Union (IoU) between bounding boxes for the given image and class.
+        """Compute the Intersection over Union (IoU) between bounding boxes for
+        the given image and class.
 
         Args:
             idx:
@@ -422,7 +427,6 @@ class MeanAveragePrecision(Metric):
                 Class Id of the supplied ground truth and detection labels
             max_det:
                 Maximum number of evaluated detection bounding boxes
-
         """
         # if self.iou_type == "bbox":
         gt = self.groundtruths[idx]
@@ -525,7 +529,6 @@ class MeanAveragePrecision(Metric):
                 Maximum number of evaluated detection bounding boxes.
             ious:
                 IoU results for image and class.
-
         """
         gt = self.groundtruths[idx]
         det = self.detections[idx]
@@ -628,7 +631,6 @@ class MeanAveragePrecision(Metric):
                 IoUs for all combinations of detection and ground truth.
             idx_det:
                 Id of current detection.
-
         """
         previously_matched = gt_matches[idx_iou]
         # Remove previously matched or ignored gts
@@ -660,7 +662,6 @@ class MeanAveragePrecision(Metric):
                 Bounding box area range key.
             max_dets:
                 Maximum detections.
-
         """
         area_inds = [i for i, k in enumerate(self.bbox_area_ranges.keys()) if k == area_range]
         mdet_inds = [i for i, k in enumerate(self.max_detection_thresholds) if k == max_dets]
@@ -685,12 +686,12 @@ class MeanAveragePrecision(Metric):
         return torch.tensor([-1.0]) if len(prec[prec > -1]) == 0 else torch.mean(prec[prec > -1])
 
     def _calculate(self, class_ids: List) -> Tuple[MAPMetricResults, MARMetricResults]:
-        """Calculate the precision and recall for all supplied classes to calculate mAP/mAR.
+        """Calculate the precision and recall for all supplied classes to
+        calculate mAP/mAR.
 
         Args:
             class_ids:
                 List of label class Ids.
-
         """
         img_ids = range(len(self.groundtruths))
         max_detections = self.max_detection_thresholds[-1]
@@ -750,7 +751,6 @@ class MeanAveragePrecision(Metric):
                 Precision values for different thresholds
             recalls:
                 Recall values for different thresholds
-
         """
         results = {"precision": precisions, "recall": recalls}
         map_metrics = MAPMetricResults()
@@ -883,7 +883,6 @@ class MeanAveragePrecision(Metric):
 
         Excludes the detections and groundtruths from the casting when the iou_type is set to `segm` as the state is
         no longer a tensor but a tuple.
-
         """
         if self.iou_type == "segm":
             this = super()._apply(fn, exclude_state=("detections", "groundtruths"))
@@ -896,7 +895,6 @@ class MeanAveragePrecision(Metric):
 
         For the iou_type `segm` the detections and groundtruths are no longer tensors but tuples. Therefore, we need
         to gather the list of tuples and then convert it back to a list of tuples.
-
         """
         super()._sync_dist(dist_sync_fn=dist_sync_fn, process_group=process_group)
 
@@ -970,6 +968,5 @@ class MeanAveragePrecision(Metric):
             >>> for _ in range(20):
             ...     vals.append(metric(preds(), target))
             >>> fig_, ax_ = metric.plot(vals)
-
         """
         return self._plot(val, ax)

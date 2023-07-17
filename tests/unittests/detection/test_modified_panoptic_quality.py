@@ -186,7 +186,9 @@ def test_extreme_values():
     ],
 )
 def test_ignore_mask(inputs: Input, args: Dict[str, Any], cat_dim: int):
-    """Test that the metric correctly ignores regions of the inputs that do not map to a know category ID."""
+    """Test that the metric correctly ignores regions of the inputs that do not
+    map to a know category ID.
+    """
     preds = inputs.preds[0]
     target = inputs.target[0]
     value = modified_panoptic_quality(preds, target, **args)

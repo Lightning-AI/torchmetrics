@@ -84,7 +84,9 @@ class TestMinMaxWrapper(MetricTester):
     ],
 )
 def test_basic_example(preds, labels, raws, maxs, mins) -> None:
-    """Tests that both min and max versions of MinMaxMetric operate correctly after calling compute."""
+    """Tests that both min and max versions of MinMaxMetric operate correctly
+    after calling compute.
+    """
     acc = BinaryAccuracy()
     min_max_acc = MinMaxMetric(acc)
     labels = Tensor(labels).long()
@@ -105,7 +107,9 @@ def test_no_base_metric() -> None:
 
 
 def test_no_scalar_compute() -> None:
-    """Tests that an assertion error is thrown if the wrapped basemetric gives a non-scalar on compute."""
+    """Tests that an assertion error is thrown if the wrapped basemetric gives
+    a non-scalar on compute.
+    """
     min_max_nsm = MinMaxMetric(BinaryConfusionMatrix())
 
     with pytest.raises(RuntimeError, match=r"Returned value from base metric should be a scalar .*"):

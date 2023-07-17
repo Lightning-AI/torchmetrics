@@ -62,7 +62,6 @@ class UniversalImageQualityIndex(Metric):
         >>> uqi = UniversalImageQualityIndex()
         >>> uqi(preds, target)
         tensor(0.9216)
-
     """
 
     is_differentiable: bool = True
@@ -148,6 +147,5 @@ class UniversalImageQualityIndex(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)

@@ -23,7 +23,6 @@ class _BLEUScore(BLEUScore):
     >>> bleu = _BLEUScore()
     >>> bleu(preds, target)
     tensor(0.7598)
-
     """
 
     def __init__(
@@ -45,7 +44,6 @@ class _CharErrorRate(CharErrorRate):
     >>> cer = _CharErrorRate()
     >>> cer(preds, target)
     tensor(0.3415)
-
     """
 
     def __init__(
@@ -64,7 +62,6 @@ class _CHRFScore(CHRFScore):
     >>> chrf = _CHRFScore()
     >>> chrf(preds, target)
     tensor(0.8640)
-
     """
 
     def __init__(
@@ -97,7 +94,6 @@ class _ExtendedEditDistance(ExtendedEditDistance):
     >>> eed = _ExtendedEditDistance()
     >>> eed(preds=preds, target=target)
     tensor(0.3078)
-
     """
 
     def __init__(
@@ -130,7 +126,6 @@ class _MatchErrorRate(MatchErrorRate):
     >>> mer = _MatchErrorRate()
     >>> mer(preds, target)
     tensor(0.4444)
-
     """
 
     def __init__(
@@ -151,7 +146,6 @@ class _Perplexity(Perplexity):
     >>> perp = _Perplexity(ignore_index=-100)
     >>> perp(preds, target)
     tensor(5.2545)
-
     """
 
     def __init__(
@@ -171,7 +165,6 @@ class _SacreBLEUScore(SacreBLEUScore):
     >>> sacre_bleu = _SacreBLEUScore()
     >>> sacre_bleu(preds, target)
     tensor(0.7598)
-
     """
 
     def __init__(
@@ -197,7 +190,6 @@ class _SQuAD(SQuAD):
     >>> squad = _SQuAD()
     >>> squad(preds, target)
     {'exact_match': tensor(100.), 'f1': tensor(100.)}
-
     """
 
     def __init__(self, **kwargs: Any) -> None:
@@ -213,7 +205,6 @@ class _TranslationEditRate(TranslationEditRate):
     >>> ter = _TranslationEditRate()
     >>> ter(preds, target)
     tensor(0.1538)
-
     """
 
     def __init__(
@@ -244,7 +235,6 @@ class _WordErrorRate(WordErrorRate):
     >>> wer = _WordErrorRate()
     >>> wer(preds, target)
     tensor(0.5000)
-
     """
 
     def __init__(self, **kwargs: Any) -> None:
@@ -260,7 +250,6 @@ class _WordInfoLost(WordInfoLost):
     >>> wil = _WordInfoLost()
     >>> wil(preds, target)
     tensor(0.6528)
-
     """
 
     def __init__(self, **kwargs: Any) -> None:
@@ -276,7 +265,6 @@ class _WordInfoPreserved(WordInfoPreserved):
     >>> wip = WordInfoPreserved()
     >>> wip(preds, target)
     tensor(0.3472)
-
     """
 
     def __init__(self, **kwargs: Any) -> None:

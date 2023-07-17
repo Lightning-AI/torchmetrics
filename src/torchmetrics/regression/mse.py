@@ -52,7 +52,6 @@ class MeanSquaredError(Metric):
         >>> mean_squared_error = MeanSquaredError()
         >>> mean_squared_error(preds, target)
         tensor(0.8750)
-
     """
     is_differentiable = True
     higher_is_better = False
@@ -122,6 +121,5 @@ class MeanSquaredError(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
-
         """
         return self._plot(val, ax)

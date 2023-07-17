@@ -78,7 +78,6 @@ class PerceptualEvaluationSpeechQuality(Metric):
         >>> wb_pesq = PerceptualEvaluationSpeechQuality(16000, 'wb')
         >>> wb_pesq(preds, target)
         tensor(1.7359)
-
     """
 
     sum_pesq: Tensor
@@ -164,6 +163,5 @@ class PerceptualEvaluationSpeechQuality(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(8000), torch.rand(8000)))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)

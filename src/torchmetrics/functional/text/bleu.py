@@ -32,7 +32,6 @@ def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:
 
     Return:
         ngram_counter: a collections.Counter object of ngram
-
     """
     ngram_counter: Counter = Counter()
 
@@ -52,7 +51,6 @@ def _tokenize_fn(sentence: str) -> Sequence[str]:
 
     Return:
         List of words
-
     """
     return sentence.split()
 
@@ -79,7 +77,6 @@ def _bleu_score_update(
         target: count of words in a reference translation
         n_gram: gram value ranged 1 to 4
         tokenizer: A function that turns sentence into list of words
-
     """
     target_: Sequence[Sequence[Sequence[str]]] = [[tokenizer(line) if line else [] for line in t] for t in target]
     preds_: Sequence[Sequence[str]] = [tokenizer(line) if line else [] for line in preds]
@@ -125,7 +122,6 @@ def _bleu_score_compute(
         n_gram: gram value ranged 1 to 4
         weights: Weights used for unigrams, bigrams, etc. to calculate BLEU score.
         smooth: Whether to apply smoothing
-
     """
     device = numerator.device
     if min(numerator) == 0.0:
@@ -153,7 +149,8 @@ def bleu_score(
     smooth: bool = False,
     weights: Optional[Sequence[float]] = None,
 ) -> Tensor:
-    """Calculate `BLEU score`_ of machine translated text with one or more references.
+    """Calculate `BLEU score`_ of machine translated text with one or more
+    references.
 
     Args:
         preds: An iterable of machine translated corpus
@@ -184,7 +181,6 @@ def bleu_score(
 
         [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
-
     """
     preds_ = [preds] if isinstance(preds, str) else preds
     target_ = [[tgt] if isinstance(tgt, str) else tgt for tgt in target]

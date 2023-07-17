@@ -72,7 +72,6 @@ class AssistantCLI:
         """Set minimal torch version according to Python actual version.
 
         >>> AssistantCLI.set_min_torch_by_python("../requirements.txt")
-
         """
         py_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
         if py_ver not in LUT_PYTHON_TORCH:

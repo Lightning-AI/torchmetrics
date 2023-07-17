@@ -79,7 +79,9 @@ class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
         )
 
     def test_ms_ssim_differentiability(self, preds, target):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         # We need to minimize this example to make the test tractable
         single_beta = (1.0,)
         _preds = preds[:, :, :, :16, :16]
@@ -99,7 +101,9 @@ class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
 
 
 def test_ms_ssim_contrast_sensitivity():
-    """Test that the contrast sensitivity is correctly computed with 3d input."""
+    """Test that the contrast sensitivity is correctly computed with 3d
+    input.
+    """
     preds = torch.rand(1, 1, 50, 50, 50)
     target = torch.rand(1, 1, 50, 50, 50)
     out = multiscale_structural_similarity_index_measure(

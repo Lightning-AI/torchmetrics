@@ -72,7 +72,6 @@ class RetrievalMRR(RetrievalMetric):
         >>> mrr = RetrievalMRR()
         >>> mrr(preds, target, indexes=indexes)
         tensor(0.7500)
-
     """
 
     is_differentiable: bool = False
@@ -122,6 +121,5 @@ class RetrievalMRR(RetrievalMetric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(10,), torch.randint(2, (10,)), indexes=torch.randint(2,(10,))))
             >>> fig, ax = metric.plot(values)
-
         """
         return self._plot(val, ax)

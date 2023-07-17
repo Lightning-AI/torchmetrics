@@ -40,7 +40,8 @@ else:
 
 
 class LearnedPerceptualImagePatchSimilarity(Metric):
-    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates the perceptual similarity between two images.
+    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates the
+    perceptual similarity between two images.
 
     LPIPS essentially computes the similarity between the activations of two image patches for some pre-defined network.
     This measure has been shown to match human perception well. A low LPIPS score means that image patches are
@@ -89,7 +90,6 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         >>> img2 = (torch.rand(10, 3, 100, 100) * 2) - 1
         >>> lpips(img1, img2)
         tensor(0.1046, grad_fn=<SqueezeBackward0>)
-
     """
 
     is_differentiable: bool = True
@@ -184,6 +184,5 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
             >>> for _ in range(3):
             ...     values.append(metric(torch.rand(10, 3, 100, 100), torch.rand(10, 3, 100, 100)))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)

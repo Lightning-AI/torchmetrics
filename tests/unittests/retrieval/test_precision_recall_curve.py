@@ -41,14 +41,14 @@ def _compute_precision_recall_curve(
     empty_target_action: str = "skip",
     reverse: bool = False,
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Compute metric with multiple iterations over every query predictions set.
+    """Compute metric with multiple iterations over every query predictions
+    set.
 
     Didn't find a reliable implementation of precision-recall curve in Information Retrieval,
     so, reimplementing here.
 
     A good explanation can be found here:
     `<https://nlp.stanford.edu/IR-book/pdf/08eval.pdf>_`. (part 8.4)
-
     """
     recalls, precisions = [], []
 

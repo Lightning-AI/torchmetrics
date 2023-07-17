@@ -66,7 +66,6 @@ def _bert_score(
     {'f1': tensor([1.0000, 0.9961]),
      'precision': tensor([1.0000, 0.9961]),
      'recall': tensor([1.0000, 0.9961])}
-
     """
     _deprecated_root_import_func("bert_score", "text")
     return bert_score(
@@ -105,7 +104,6 @@ def _bleu_score(
     >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
     >>> _bleu_score(preds, target)
     tensor(0.7598)
-
     """
     _deprecated_root_import_func("bleu_score", "text")
     return bleu_score(preds=preds, target=target, n_gram=n_gram, smooth=smooth, weights=weights)
@@ -118,7 +116,6 @@ def _char_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]
     >>> target = ["this is the reference", "there is another one"]
     >>> _char_error_rate(preds=preds, target=target)
     tensor(0.3415)
-
     """
     _deprecated_root_import_func("char_error_rate", "text")
     return char_error_rate(preds=preds, target=target)
@@ -140,7 +137,6 @@ def _chrf_score(
     >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
     >>> _chrf_score(preds, target)
     tensor(0.8640)
-
     """
     _deprecated_root_import_func("chrf_score", "text")
     return chrf_score(
@@ -171,7 +167,6 @@ def _extended_edit_distance(
     >>> target = ["this is the reference", "here is another one"]
     >>> _extended_edit_distance(preds=preds, target=target)
     tensor(0.3078)
-
     """
     _deprecated_root_import_func("extended_edit_distance", "text")
     return extended_edit_distance(
@@ -208,7 +203,6 @@ def _infolm(
     >>> target = ['he was interested in world history because he read the book']
     >>> _infolm(preds, target, model_name_or_path='google/bert_uncased_L-2_H-128_A-2', idf=False)
     tensor(-0.1784)
-
     """
     _deprecated_root_import_func("infolm", "text")
     return infolm(
@@ -236,7 +230,6 @@ def _match_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]
     >>> target = ["this is the reference", "there is another one"]
     >>> _match_error_rate(preds=preds, target=target)
     tensor(0.4444)
-
     """
     _deprecated_root_import_func("match_error_rate", "text")
     return match_error_rate(preds=preds, target=target)
@@ -251,7 +244,6 @@ def _perplexity(preds: Tensor, target: Tensor, ignore_index: Optional[int] = Non
     >>> target[0, 6:] = -100
     >>> _perplexity(preds, target, ignore_index=-100)
     tensor(5.2545)
-
     """
     _deprecated_root_import_func("perplexity", "text")
     return perplexity(preds=preds, target=target, ignore_index=ignore_index)
@@ -284,7 +276,6 @@ def _rouge_score(
         'rougeLsum_fmeasure': tensor(0.5000),
         'rougeLsum_precision': tensor(0.5000),
         'rougeLsum_recall': tensor(0.5000)}
-
     """
     _deprecated_root_import_func("rouge_score", "text")
     return rouge_score(
@@ -313,7 +304,6 @@ def _sacre_bleu_score(
     >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
     >>> _sacre_bleu_score(preds, target)
     tensor(0.7598)
-
     """
     _deprecated_root_import_func("sacre_bleu_score", "text")
     return sacre_bleu_score(
@@ -334,7 +324,6 @@ def _squad(preds: Union[Dict[str, str], List[Dict[str, str]]], target: SQUAD_TAR
     >>> target = [{"answers": {"answer_start": [97], "text": ["1976"]},"id": "56e10a3be3433e1400422b22"}]
     >>> _squad(preds, target)
     {'exact_match': tensor(100.), 'f1': tensor(100.)}
-
     """
     _deprecated_root_import_func("squad", "text")
     return squad(preds=preds, target=target)
@@ -355,7 +344,6 @@ def _translation_edit_rate(
     >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
     >>> _translation_edit_rate(preds, target)
     tensor(0.1538)
-
     """
     _deprecated_root_import_func("translation_edit_rate", "text")
     return translation_edit_rate(
@@ -376,7 +364,6 @@ def _word_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]
     >>> target = ["this is the reference", "there is another one"]
     >>> _word_error_rate(preds=preds, target=target)
     tensor(0.5000)
-
     """
     _deprecated_root_import_func("word_error_rate", "text")
     return word_error_rate(preds=preds, target=target)
@@ -389,7 +376,6 @@ def _word_information_lost(preds: Union[str, List[str]], target: Union[str, List
     >>> target = ["this is the reference", "there is another one"]
     >>> _word_information_lost(preds, target)
     tensor(0.6528)
-
     """
     _deprecated_root_import_func("word_information_lost", "text")
     return word_information_lost(preds=preds, target=target)
@@ -402,7 +388,6 @@ def _word_information_preserved(preds: Union[str, List[str]], target: Union[str,
     >>> target = ["this is the reference", "there is another one"]
     >>> _word_information_preserved(preds, target)
     tensor(0.3472)
-
     """
     _deprecated_root_import_func("word_information_preserved", "text")
     return word_information_preserved(preds=preds, target=target)

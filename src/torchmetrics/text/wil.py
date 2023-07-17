@@ -25,7 +25,8 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class WordInfoLost(Metric):
-    r"""Word Information Lost (`WIL`_) is a metric of the performance of an automatic speech recognition system.
+    r"""Word Information Lost (`WIL`_) is a metric of the performance of an
+    automatic speech recognition system.
 
     This value indicates the percentage of words that were incorrectly predicted between a set of ground-truth
     sentences and a set of hypothesis sentences. The lower the value, the better the performance of the ASR system
@@ -59,7 +60,6 @@ class WordInfoLost(Metric):
         >>> wil = WordInfoLost()
         >>> wil(preds, target)
         tensor(0.6528)
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = False
@@ -131,6 +131,5 @@ class WordInfoLost(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)

@@ -110,7 +110,6 @@ class KendallRankCorrCoef(Metric):
         >>> kendall = KendallRankCorrCoef(t_test=True, alternative='two-sided', num_outputs=2)
         >>> kendall(preds, target)
         (tensor([1., 1.]), tensor([nan, nan]))
-
     """
     is_differentiable = False
     higher_is_better = None
@@ -143,7 +142,9 @@ class KendallRankCorrCoef(Metric):
         self.add_state("target", [], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update variables required to compute Kendall rank correlation coefficient."""
+        """Update variables required to compute Kendall rank correlation
+        coefficient.
+        """
         self.preds, self.target = _kendall_corrcoef_update(
             preds,
             target,
@@ -153,7 +154,9 @@ class KendallRankCorrCoef(Metric):
         )
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-        """Compute Kendall rank correlation coefficient, and optionally p-value of corresponding statistical test."""
+        """Compute Kendall rank correlation coefficient, and optionally p-value
+        of corresponding statistical test.
+        """
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         tau, p_value = _kendall_corrcoef_compute(
@@ -202,6 +205,5 @@ class KendallRankCorrCoef(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
-
         """
         return self._plot(val, ax)

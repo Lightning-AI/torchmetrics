@@ -78,7 +78,9 @@ class TestSacreBLEUScore(TextTester):
         )
 
     def test_bleu_score_differentiability(self, preds, targets, tokenize, lowercase):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
 
         self.run_differentiability_test(
@@ -91,7 +93,9 @@ class TestSacreBLEUScore(TextTester):
 
 
 def test_no_and_uniform_weights_functional():
-    """Test that implementation works with no weights and uniform weights, and it gives the same result."""
+    """Test that implementation works with no weights and uniform weights, and
+    it gives the same result.
+    """
     preds = ["My full pytorch-lightning"]
     targets = [["My full pytorch-lightning test", "Completely Different"]]
     no_weights_score = sacre_bleu_score(preds, targets, n_gram=2)
@@ -100,7 +104,9 @@ def test_no_and_uniform_weights_functional():
 
 
 def test_no_and_uniform_weights_class():
-    """Test that implementation works with no weights and uniform weights, and it gives the same result."""
+    """Test that implementation works with no weights and uniform weights, and
+    it gives the same result.
+    """
     no_weights_bleu = SacreBLEUScore(n_gram=2)
     uniform_weights_bleu = SacreBLEUScore(n_gram=2, weights=[0.5, 0.5])
 

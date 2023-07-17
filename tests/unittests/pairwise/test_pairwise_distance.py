@@ -154,7 +154,9 @@ def test_error_on_wrong_shapes(metric):
     ],
 )
 def test_precison_case(metric_functional, sk_fn):
-    """Test that metrics are robust towars cases where high precision is needed."""
+    """Test that metrics are robust towars cases where high precision is
+    needed.
+    """
     x = torch.tensor([[772.0, 112.0], [772.20001, 112.0]])
     res1 = metric_functional(x, zero_diagonal=False)
     res2 = sk_fn(x)

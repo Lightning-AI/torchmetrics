@@ -149,7 +149,6 @@ def binary_roc(
         (tensor([0.0000, 0.5000, 0.5000, 0.5000, 1.0000]),
          tensor([0., 0., 1., 1., 1.]),
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
-
     """
     if validate_args:
         _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
@@ -190,7 +189,8 @@ def multiclass_roc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Compute the Receiver Operating Characteristic (ROC) for multiclass tasks.
+    r"""Compute the Receiver Operating Characteristic (ROC) for multiclass
+    tasks.
 
     The curve consist of multiple pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at
     different thresholds, such that the tradeoff between the two values can be seen.
@@ -279,7 +279,6 @@ def multiclass_roc(
                  [0., 0., 0., 0., 1.],
                  [0., 0., 0., 0., 0.]]),
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
-
     """
     if validate_args:
         _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
@@ -329,7 +328,8 @@ def multilabel_roc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Compute the Receiver Operating Characteristic (ROC) for multilabel tasks.
+    r"""Compute the Receiver Operating Characteristic (ROC) for multilabel
+    tasks.
 
     The curve consist of multiple pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at
     different thresholds, such that the tradeoff between the two values can be seen.
@@ -421,7 +421,6 @@ def multilabel_roc(
                  [0.0000, 0.0000, 1.0000, 1.0000, 1.0000],
                  [0.0000, 0.3333, 0.3333, 0.6667, 1.0000]]),
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
-
     """
     if validate_args:
         _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
@@ -496,7 +495,6 @@ def roc(
         [tensor([1.0000, 0.8603, 0.8191, 0.3584, 0.2286]),
          tensor([1.0000, 0.7576, 0.3680, 0.3468, 0.0745]),
          tensor([1.0000, 0.1837, 0.1338, 0.1183, 0.1138])]
-
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:

@@ -73,7 +73,6 @@ class MultilabelCoverageError(Metric):
         >>> mlce = MultilabelCoverageError(num_labels=5)
         >>> mlce(preds, target)
         tensor(3.9000)
-
     """
 
     higher_is_better: bool = False
@@ -152,7 +151,6 @@ class MultilabelCoverageError(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(rand(20, 3), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)
 
@@ -193,7 +191,6 @@ class MultilabelRankingAveragePrecision(Metric):
         >>> mlrap = MultilabelRankingAveragePrecision(num_labels=5)
         >>> mlrap(preds, target)
         tensor(0.7744)
-
     """
 
     higher_is_better: bool = True
@@ -272,7 +269,6 @@ class MultilabelRankingAveragePrecision(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(rand(20, 3), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)
 
@@ -315,7 +311,6 @@ class MultilabelRankingLoss(Metric):
         >>> mlrl = MultilabelRankingLoss(num_labels=5)
         >>> mlrl(preds, target)
         tensor(0.4167)
-
     """
 
     higher_is_better: bool = False
@@ -394,6 +389,5 @@ class MultilabelRankingLoss(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(rand(20, 3), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)

@@ -15,7 +15,9 @@ from torch import Tensor
 
 
 def _check_data_shape_to_num_outputs(preds: Tensor, target: Tensor, num_outputs: int) -> None:
-    """Check that predictions and target have the correct shape, else raise error."""
+    """Check that predictions and target have the correct shape, else raise
+    error.
+    """
     if preds.ndim > 2 or target.ndim > 2:
         raise ValueError(
             f"Expected both predictions and target to be either 1- or 2-dimensional tensors,"

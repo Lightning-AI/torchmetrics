@@ -58,7 +58,9 @@ def _assert_tensor(tm_result: Any, key: Optional[str] = None) -> None:
 
 
 def _assert_requires_grad(metric: Metric, tm_result: Any, key: Optional[str] = None) -> None:
-    """Recursively assert that metric output is consistent with the `is_differentiable` attribute."""
+    """Recursively assert that metric output is consistent with the
+    `is_differentiable` attribute.
+    """
     if isinstance(tm_result, Sequence):
         for plr in tm_result:
             _assert_requires_grad(metric, plr, key=key)
@@ -111,7 +113,6 @@ def _class_test(
         check_state_dict: bool indicating if metric should be tested that its state_dict by default is empty
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
-
     """
     assert len(preds) == len(target)
     num_batches = len(preds)
@@ -249,7 +250,6 @@ def _functional_test(
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
-
     """
     p_size = preds.shape[0] if isinstance(preds, Tensor) else len(preds)
     t_size = target.shape[0] if isinstance(target, Tensor) else len(target)
@@ -301,7 +301,6 @@ def _assert_dtype_support(
         dtype: dtype to run test with
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
-
     """
     y_hat = preds[0].to(dtype=dtype, device=device) if preds[0].is_floating_point() else preds[0].to(device)
     y = target[0].to(dtype=dtype, device=device) if target[0].is_floating_point() else target[0].to(device)
@@ -322,7 +321,6 @@ class MetricTester:
     Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup once and
     that pool of processes are used for all tests. All tests should subclass from this and implement a new method called
     `test_metric_name` where the method `self.run_metric_test` is called inside.
-
     """
 
     atol: float = 1e-8
@@ -337,7 +335,8 @@ class MetricTester:
         fragment_kwargs: bool = False,
         **kwargs_update: Any,
     ):
-        """Core method that should be used for testing functions. Call this inside testing method.
+        """Core method that should be used for testing functions. Call this
+        inside testing method.
 
         Args:
             preds: torch tensor with predictions
@@ -348,7 +347,6 @@ class MetricTester:
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
-
         """
         device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
 
@@ -380,7 +378,8 @@ class MetricTester:
         atol: Optional[float] = None,
         **kwargs_update: Any,
     ):
-        """Core method that should be used for testing class. Call this inside testing methods.
+        """Core method that should be used for testing class. Call this inside
+        testing methods.
 
         Args:
             ddp: bool, if running in ddp mode or not
@@ -399,7 +398,6 @@ class MetricTester:
             atol: absolute tolerance used for comparison of results, if None will use self.atol
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
-
         """
         atol = atol or self.atol
         metric_args = metric_args or {}
@@ -467,7 +465,6 @@ class MetricTester:
             dtype: dtype to run test with
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
-
         """
         metric_args = metric_args or {}
         _assert_dtype_support(
@@ -501,7 +498,6 @@ class MetricTester:
             dtype: dtype to run test with
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
-
         """
         metric_args = metric_args or {}
         _assert_dtype_support(
@@ -530,7 +526,6 @@ class MetricTester:
             metric_module: the metric module to test
             metric_functional: functional version of the metric
             metric_args: dict with additional arguments used for class initialization
-
         """
         metric_args = metric_args or {}
         # only floating point tensors can require grad
@@ -650,7 +645,9 @@ def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
 
 
 def remove_ignore_index(target: Tensor, preds: Tensor, ignore_index: Optional[int]) -> Tuple[Tensor, Tensor]:
-    """Remove samples that are equal to the ignore_index in comparison functions."""
+    """Remove samples that are equal to the ignore_index in comparison
+    functions.
+    """
     if ignore_index is not None:
         idx = target == ignore_index
         target, preds = deepcopy(target[~idx]), deepcopy(preds[~idx])

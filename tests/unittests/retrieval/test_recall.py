@@ -37,10 +37,10 @@ seed_all(42)
 
 
 def _recall_at_k(target: np.ndarray, preds: np.ndarray, top_k: Optional[int] = None):
-    """Didn't find a reliable implementation of Recall in Information Retrieval, so, reimplementing here.
+    """Didn't find a reliable implementation of Recall in Information
+    Retrieval, so, reimplementing here.
 
     See wikipedia for more information about definition.
-
     """
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs

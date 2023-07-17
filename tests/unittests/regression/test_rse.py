@@ -99,7 +99,9 @@ class TestRelativeSquaredError(MetricTester):
         )
 
     def test_rse_differentiability(self, squared, preds, target, ref_metric, num_outputs):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -139,7 +141,9 @@ def test_error_on_different_shape(metric_class=RelativeSquaredError):
 
 
 def test_error_on_multidim_tensors(metric_class=RelativeSquaredError):
-    """Test that error is raised if a larger than 2D tensor is given as input."""
+    """Test that error is raised if a larger than 2D tensor is given as
+    input.
+    """
     metric = metric_class()
     with pytest.raises(
         ValueError,

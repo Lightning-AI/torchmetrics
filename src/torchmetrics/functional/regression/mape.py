@@ -33,7 +33,6 @@ def _mean_absolute_percentage_error_update(
         target: Ground truth tensor
         epsilon: Specifies the lower bound for target values. Any target value below epsilon
             is set to epsilon (avoids ``ZeroDivisionError``).
-
     """
     _check_same_shape(preds, target)
 
@@ -61,7 +60,6 @@ def _mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor, num_obs: 
         >>> sum_abs_per_error, num_obs = _mean_absolute_percentage_error_update(preds, target)
         >>> _mean_absolute_percentage_error_compute(sum_abs_per_error, num_obs)
         tensor(0.2667)
-
     """
     return sum_abs_per_error / num_obs
 
@@ -85,7 +83,6 @@ def mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
         >>> preds = torch.tensor([0.9, 15, 1.2e6])
         >>> mean_absolute_percentage_error(preds, target)
         tensor(0.2667)
-
     """
     sum_abs_per_error, num_obs = _mean_absolute_percentage_error_update(preds, target)
     return _mean_absolute_percentage_error_compute(sum_abs_per_error, num_obs)

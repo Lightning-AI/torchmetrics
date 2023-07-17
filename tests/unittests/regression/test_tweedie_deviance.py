@@ -87,7 +87,9 @@ class TestDevianceScore(MetricTester):
         )
 
     def test_deviance_scores_differentiability(self, preds, targets, power):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         self.run_differentiability_test(
             preds, targets, metric_module=TweedieDevianceScore, metric_functional=tweedie_deviance_score
         )

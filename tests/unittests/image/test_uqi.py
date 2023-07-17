@@ -150,7 +150,9 @@ class TestUQI(MetricTester):
     ],
 )
 def test_uqi_invalid_inputs(pred, target, kernel, sigma, match):
-    """Check that errors are raised on wrong input and parameter combinations."""
+    """Check that errors are raised on wrong input and parameter
+    combinations.
+    """
     pred = torch.rand(pred)
     target = torch.rand(target)
     with pytest.raises(ValueError, match=match):
@@ -158,7 +160,9 @@ def test_uqi_invalid_inputs(pred, target, kernel, sigma, match):
 
 
 def test_uqi_different_dtype():
-    """Check that an type error is raised if preds and target have different dtype."""
+    """Check that an type error is raised if preds and target have different
+    dtype.
+    """
     pred_t = torch.rand([1, 1, 16, 16])
     target_t = torch.rand([1, 1, 16, 16], dtype=torch.float64)
     with pytest.raises(TypeError, match="Expected `preds` and `target` to have the same data type.*"):

@@ -22,7 +22,6 @@ class _RetrievalFallOut(RetrievalFallOut):
     >>> fo = _RetrievalFallOut(top_k=2)
     >>> fo(preds, target, indexes=indexes)
     tensor(0.5000)
-
     """
 
     def __init__(
@@ -46,7 +45,6 @@ class _RetrievalHitRate(RetrievalHitRate):
     >>> hr2 = _RetrievalHitRate(top_k=2)
     >>> hr2(preds, target, indexes=indexes)
     tensor(0.5000)
-
     """
 
     def __init__(
@@ -70,7 +68,6 @@ class _RetrievalMAP(RetrievalMAP):
     >>> rmap = _RetrievalMAP()
     >>> rmap(preds, target, indexes=indexes)
     tensor(0.7917)
-
     """
 
     def __init__(
@@ -94,7 +91,6 @@ class _RetrievalRecall(RetrievalRecall):
     >>> r2 = _RetrievalRecall(top_k=2)
     >>> r2(preds, target, indexes=indexes)
     tensor(0.7500)
-
     """
 
     def __init__(
@@ -118,7 +114,6 @@ class _RetrievalRPrecision(RetrievalRPrecision):
     >>> p2 = _RetrievalRPrecision()
     >>> p2(preds, target, indexes=indexes)
     tensor(0.7500)
-
     """
 
     def __init__(
@@ -141,7 +136,6 @@ class _RetrievalNormalizedDCG(RetrievalNormalizedDCG):
     >>> ndcg = _RetrievalNormalizedDCG()
     >>> ndcg(preds, target, indexes=indexes)
     tensor(0.8467)
-
     """
 
     def __init__(
@@ -165,7 +159,6 @@ class _RetrievalPrecision(RetrievalPrecision):
     >>> p2 = _RetrievalPrecision(top_k=2)
     >>> p2(preds, target, indexes=indexes)
     tensor(0.5000)
-
     """
 
     def __init__(
@@ -201,7 +194,6 @@ class _RetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurve):
     tensor([0.5000, 0.5000, 1.0000, 1.0000])
     >>> top_k
     tensor([1, 2, 3, 4])
-
     """
 
     def __init__(
@@ -232,7 +224,6 @@ class _RetrievalRecallAtFixedPrecision(RetrievalRecallAtFixedPrecision):
     >>> r = _RetrievalRecallAtFixedPrecision(min_precision=0.8)
     >>> r(preds, target, indexes=indexes)
     (tensor(0.5000), tensor(1))
-
     """
 
     def __init__(
@@ -265,7 +256,6 @@ class _RetrievalMRR(RetrievalMRR):
     >>> mrr = _RetrievalMRR()
     >>> mrr(preds, target, indexes=indexes)
     tensor(0.7500)
-
     """
 
     def __init__(

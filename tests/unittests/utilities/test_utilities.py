@@ -34,7 +34,9 @@ def test_prints():
 
 
 def test_reduce():
-    """Test that reduction function works as expected and also raises error on wrong input."""
+    """Test that reduction function works as expected and also raises error on
+    wrong input.
+    """
     start_tensor = torch.rand(50, 40, 30)
 
     assert torch.allclose(reduce(start_tensor, "elementwise_mean"), torch.mean(start_tensor))
@@ -177,8 +179,8 @@ def test_recursive_allclose(inputs, expected):
 def test_cumsum_still_not_supported():
     """Make sure that cumsum on gpu and deterministic mode still fails.
 
-    If this test begins to passes, it means newer Pytorch versions support this and we can drop internal support.
-
+    If this test begins to passes, it means newer Pytorch versions
+    support this and we can drop internal support.
     """
     torch.use_deterministic_algorithms(True)
     with pytest.raises(RuntimeError, match="cumsum_cuda_kernel does not have a deterministic implementation.*"):

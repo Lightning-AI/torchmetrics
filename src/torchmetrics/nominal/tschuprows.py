@@ -28,7 +28,8 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class TschuprowsT(Metric):
-    r"""Compute `Tschuprow's T`_ statistic measuring the association between two categorical (nominal) data series.
+    r"""Compute `Tschuprow's T`_ statistic measuring the association between two
+    categorical (nominal) data series.
 
     .. math::
         T = \sqrt{\frac{\chi^2 / n}{\sqrt{(r - 1) * (k - 1)}}}
@@ -69,7 +70,6 @@ class TschuprowsT(Metric):
         >>> tschuprows_t = TschuprowsT(num_classes=5)
         >>> tschuprows_t(preds, target)
         tensor(0.4930)
-
     """
 
     full_state_update: bool = False
@@ -110,7 +110,6 @@ class TschuprowsT(Metric):
 
                 - 1D shape: (batch_size,)
                 - 2D shape: (batch_size, num_classes)
-
         """
         confmat = _tschuprows_t_update(preds, target, self.num_classes, self.nan_strategy, self.nan_replace_value)
         self.confmat += confmat
@@ -155,6 +154,5 @@ class TschuprowsT(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.randint(0, 4, (100,)), torch.randint(0, 4, (100,))))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)

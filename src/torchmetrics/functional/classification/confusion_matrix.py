@@ -38,7 +38,6 @@ def _confusion_matrix_reduce(
 
     Returns:
         Normalized confusion matrix
-
     """
     allowed_normalize = ("true", "pred", "all", "none", None)
     if normalize not in allowed_normalize:
@@ -69,7 +68,6 @@ def _binary_confusion_matrix_arg_validation(
     - ``threshold`` has to be a float in the [0,1] range
     - ``ignore_index`` has to be None or int
     - ``normalize`` has to be "true" | "pred" | "all" | "none" | None
-
     """
     if not (isinstance(threshold, float) and (0 <= threshold <= 1)):
         raise ValueError(f"Expected argument `threshold` to be a float in the [0,1] range, but got {threshold}.")
@@ -88,7 +86,6 @@ def _binary_confusion_matrix_tensor_validation(
     - tensors have to be of same shape
     - all values in target tensor that are not ignored have to be in {0, 1}
     - if pred tensor is not floating point, then all values also have to be in {0, 1}
-
     """
     # Check that they have same shape
     _check_same_shape(preds, target)
@@ -127,7 +124,6 @@ def _binary_confusion_matrix_format(
     - Remove all datapoints that should be ignored
     - If preds tensor is floating point, applies sigmoid if pred tensor not in [0,1] range
     - If preds tensor is floating point, thresholds afterwards
-
     """
     preds = preds.flatten()
     target = target.flatten()
@@ -159,7 +155,6 @@ def _binary_confusion_matrix_compute(
     """Reduces the confusion matrix to it's final form.
 
     Normalization technique can be chosen by ``normalize``.
-
     """
     return _confusion_matrix_reduce(confmat, normalize)
 
@@ -217,7 +212,6 @@ def binary_confusion_matrix(
         >>> binary_confusion_matrix(preds, target)
         tensor([[2, 0],
                 [1, 1]])
-
     """
     if validate_args:
         _binary_confusion_matrix_arg_validation(threshold, ignore_index, normalize)
@@ -237,7 +231,6 @@ def _multiclass_confusion_matrix_arg_validation(
     - ``num_classes`` has to be a int larger than 1
     - ``ignore_index`` has to be None or int
     - ``normalize`` has to be "true" | "pred" | "all" | "none" | None
-
     """
     if not isinstance(num_classes, int) or num_classes < 2:
         raise ValueError(f"Expected argument `num_classes` to be an integer larger than 1, but got {num_classes}")
@@ -258,7 +251,6 @@ def _multiclass_confusion_matrix_tensor_validation(
     - if preds and target have same number of dims, then all dimensions should match
     - all values in target tensor that are not ignored have to be {0, ..., num_classes - 1}
     - if pred tensor is not floating point, then all values also have to be in {0, ..., num_classes - 1}
-
     """
     if preds.ndim == target.ndim + 1:
         if not preds.is_floating_point():
@@ -313,7 +305,6 @@ def _multiclass_confusion_matrix_format(
 
     - Applies argmax if preds have one more dimension than target
     - Remove all datapoints that should be ignored
-
     """
     # Apply argmax if we have one more dimension
     if preds.ndim == target.ndim + 1 and convert_to_labels:
@@ -343,7 +334,6 @@ def _multiclass_confusion_matrix_compute(
     """Reduces the confusion matrix to it's final form.
 
     Normalization technique can be chosen by ``normalize``.
-
     """
     return _confusion_matrix_reduce(confmat, normalize)
 
@@ -406,7 +396,6 @@ def multiclass_confusion_matrix(
         tensor([[1, 1, 0],
                 [0, 1, 0],
                 [0, 0, 1]])
-
     """
     if validate_args:
         _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index, normalize)
@@ -428,7 +417,6 @@ def _multilabel_confusion_matrix_arg_validation(
     - ``threshold`` has to be a float in the [0,1] range
     - ``ignore_index`` has to be None or int
     - ``normalize`` has to be "true" | "pred" | "all" | "none" | None
-
     """
     if not isinstance(num_labels, int) or num_labels < 2:
         raise ValueError(f"Expected argument `num_labels` to be an integer larger than 1, but got {num_labels}")
@@ -450,7 +438,6 @@ def _multilabel_confusion_matrix_tensor_validation(
     - the second dimension of both tensors need to be equal to the number of labels
     - all values in target tensor that are not ignored have to be in {0, 1}
     - if pred tensor is not floating point, then all values also have to be in {0, 1}
-
     """
     # Check that they have same shape
     _check_same_shape(preds, target)
@@ -496,7 +483,6 @@ def _multilabel_confusion_matrix_format(
     - If preds tensor is floating point, applies sigmoid if pred tensor not in [0,1] range
     - If preds tensor is floating point, thresholds afterwards
     - Mask all elements that should be ignored with negative numbers for later filtration
-
     """
     if preds.is_floating_point():
         if not torch.all((preds >= 0) * (preds <= 1)):
@@ -532,7 +518,6 @@ def _multilabel_confusion_matrix_compute(
     """Reduces the confusion matrix to it's final form.
 
     Normalization technique can be chosen by ``normalize``.
-
     """
     return _confusion_matrix_reduce(confmat, normalize)
 
@@ -594,7 +579,6 @@ def multilabel_confusion_matrix(
         tensor([[[1, 0], [0, 1]],
                 [[1, 0], [1, 0]],
                 [[0, 1], [0, 1]]])
-
     """
     if validate_args:
         _multilabel_confusion_matrix_arg_validation(num_labels, threshold, ignore_index, normalize)
@@ -647,7 +631,6 @@ def confusion_matrix(
         tensor([[[1, 0], [0, 1]],
                 [[1, 0], [1, 0]],
                 [[0, 1], [0, 1]]])
-
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:

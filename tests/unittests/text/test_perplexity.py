@@ -30,7 +30,9 @@ from unittests.text.inputs import (
 
 
 def _baseline_perplexity(preds, target, ignore_index):
-    """Baseline implementation of perplexity metric based upon PyTorch Cross Entropy."""
+    """Baseline implementation of perplexity metric based upon PyTorch Cross
+    Entropy.
+    """
     preds = preds.reshape(-1, preds.shape[-1])
     target = target.reshape(-1)
     cross_entropy = F.cross_entropy(preds, target)
@@ -72,7 +74,9 @@ class TestPerplexity(MetricTester):
         )
 
     def test_accuracy_differentiability(self, preds, target, ignore_index):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         self.run_differentiability_test(
             preds=preds,
             target=target,

@@ -33,7 +33,6 @@ def _mer_update(
     Returns:
         Number of edit operations to get from the reference to the prediction, summed over all samples
         Number of words overall references
-
     """
     if isinstance(preds, str):
         preds = [preds]
@@ -59,13 +58,13 @@ def _mer_compute(errors: Tensor, total: Tensor) -> Tensor:
 
     Returns:
         Match error rate score
-
     """
     return errors / total
 
 
 def match_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
-    """Match error rate is a metric of the performance of an automatic speech recognition system.
+    """Match error rate is a metric of the performance of an automatic speech
+    recognition system.
 
     This value indicates the percentage of words that were incorrectly predicted and inserted. The lower the value, the
     better the performance of the ASR system with a MatchErrorRate of 0 being a perfect score.
@@ -82,7 +81,6 @@ def match_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]
         >>> target = ["this is the reference", "there is another one"]
         >>> match_error_rate(preds=preds, target=target)
         tensor(0.4444)
-
     """
     errors, total = _mer_update(
         preds,

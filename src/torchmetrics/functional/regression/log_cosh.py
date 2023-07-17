@@ -38,7 +38,6 @@ def _log_cosh_error_update(preds: Tensor, target: Tensor, num_outputs: int) -> T
 
     Return:
         Sum of LogCosh error over examples, and total number of examples
-
     """
     _check_same_shape(preds, target)
     _check_data_shape_to_num_outputs(preds, target, num_outputs)
@@ -56,7 +55,6 @@ def _log_cosh_error_compute(sum_log_cosh_error: Tensor, n_obs: Tensor) -> Tensor
     Args:
         sum_log_cosh_error: Sum of LogCosh errors over all observations
         n_obs: Number of predictions or observations
-
     """
     return (sum_log_cosh_error / n_obs).squeeze()
 
@@ -88,7 +86,6 @@ def log_cosh_error(preds: Tensor, target: Tensor) -> Tensor:
         >>> target = torch.tensor([[2.5, 5.0, 1.3], [0.3, 4.0, 8.0]])
         >>> log_cosh_error(preds, target)
         tensor([0.9176, 0.4277, 0.2194])
-
     """
     sum_log_cosh_error, n_obs = _log_cosh_error_update(
         preds, target, num_outputs=1 if preds.ndim == 1 else preds.shape[-1]

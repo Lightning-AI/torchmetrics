@@ -92,7 +92,9 @@ class TestCLIPScore(MetricTester):
 
     @skip_on_connection_issues()
     def test_clip_score_differentiability(self, inputs, model_name_or_path):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -104,14 +106,18 @@ class TestCLIPScore(MetricTester):
 
     @skip_on_connection_issues()
     def test_error_on_not_same_amount_of_input(self, inputs, model_name_or_path):
-        """Test that an error is raised if the number of images and text examples does not match."""
+        """Test that an error is raised if the number of images and text
+        examples does not match.
+        """
         metric = CLIPScore(model_name_or_path=model_name_or_path)
         with pytest.raises(ValueError, match="Expected the number of images and text examples to be the same.*"):
             metric(torch.randint(255, (2, 3, 64, 64)), "28-year-old chef found dead in San Francisco mall")
 
     @skip_on_connection_issues()
     def test_error_on_wrong_image_format(self, inputs, model_name_or_path):
-        """Test that an error is raised if not all images are [c, h, w] format."""
+        """Test that an error is raised if not all images are [c, h, w]
+        format.
+        """
         metric = CLIPScore(model_name_or_path=model_name_or_path)
         with pytest.raises(
             ValueError, match="Expected all images to be 3d but found image that has either more or less"
@@ -120,7 +126,9 @@ class TestCLIPScore(MetricTester):
 
     @skip_on_connection_issues()
     def test_plot_method(self, inputs, model_name_or_path):
-        """Test the plot method of CLIPScore seperately in this file due to the skipping conditions."""
+        """Test the plot method of CLIPScore seperately in this file due to the
+        skipping conditions.
+        """
         metric = CLIPScore(model_name_or_path=model_name_or_path)
         preds, target = inputs
         metric.update(preds[0], target[0])

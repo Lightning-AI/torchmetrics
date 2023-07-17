@@ -94,7 +94,6 @@ class BinaryConfusionMatrix(Metric):
         >>> bcm(preds, target)
         tensor([[2, 0],
                 [1, 1]])
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -161,7 +160,6 @@ class BinaryConfusionMatrix(Metric):
             >>> metric = MulticlassConfusionMatrix(num_classes=5)
             >>> metric.update(randint(5, (20,)), randint(5, (20,)))
             >>> fig_, ax_ = metric.plot()
-
         """
         val = val if val is not None else self.compute()
         if not isinstance(val, Tensor):
@@ -221,7 +219,6 @@ class MulticlassConfusionMatrix(Metric):
         tensor([[1, 1, 0],
                 [0, 1, 0],
                 [0, 0, 1]])
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -288,7 +285,6 @@ class MulticlassConfusionMatrix(Metric):
             >>> metric = MulticlassConfusionMatrix(num_classes=5)
             >>> metric.update(randint(5, (20,)), randint(5, (20,)))
             >>> fig_, ax_ = metric.plot()
-
         """
         val = val if val is not None else self.compute()
         if not isinstance(val, Tensor):
@@ -346,7 +342,6 @@ class MultilabelConfusionMatrix(Metric):
         tensor([[[1, 0], [0, 1]],
                 [[1, 0], [1, 0]],
                 [[0, 1], [0, 1]]])
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -417,7 +412,6 @@ class MultilabelConfusionMatrix(Metric):
             >>> metric = MulticlassConfusionMatrix(num_classes=5)
             >>> metric.update(randint(5, (20,)), randint(5, (20,)))
             >>> fig_, ax_ = metric.plot()
-
         """
         val = val if val is not None else self.compute()
         if not isinstance(val, Tensor):
@@ -458,7 +452,6 @@ class ConfusionMatrix:
         tensor([[[1, 0], [0, 1]],
                 [[1, 0], [1, 0]],
                 [[0, 1], [0, 1]]])
-
     """
 
     def __new__(

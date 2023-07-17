@@ -128,7 +128,9 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
         )
 
     def test_binary_specificity_at_sensitivity_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -169,7 +171,9 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
 
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.8])
     def test_binary_specificity_at_sensitivity_threshold_arg(self, inputs, min_sensitivity):
-        """Test that different types of `thresholds` argument lead to same result."""
+        """Test that different types of `thresholds` argument lead to same
+        result.
+        """
         preds, target = inputs
 
         for pred, true in zip(preds, target):
@@ -255,7 +259,9 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
         )
 
     def test_multiclass_specificity_at_sensitivity_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -296,7 +302,9 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
 
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.8])
     def test_multiclass_specificity_at_sensitivity_threshold_arg(self, inputs, min_sensitivity):
-        """Test that different types of `thresholds` argument lead to same result."""
+        """Test that different types of `thresholds` argument lead to same
+        result.
+        """
         preds, target = inputs
         if (preds < 0).any():
             preds = preds.softmax(dim=-1)
@@ -381,7 +389,9 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
         )
 
     def test_multiclass_specificity_at_sensitivity_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -422,7 +432,9 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
 
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.8])
     def test_multilabel_specificity_at_sensitivity_threshold_arg(self, inputs, min_sensitivity):
-        """Test that different types of `thresholds` argument lead to same result."""
+        """Test that different types of `thresholds` argument lead to same
+        result.
+        """
         preds, target = inputs
         if (preds < 0).any():
             preds = sigmoid(preds)

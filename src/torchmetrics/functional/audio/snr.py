@@ -20,7 +20,8 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
-    r"""Calculate `Signal-to-noise ratio`_ (SNR_) meric for evaluating quality of audio.
+    r"""Calculate `Signal-to-noise ratio`_ (SNR_) meric for evaluating quality
+    of audio.
 
     .. math::
         \text{SNR} = \frac{P_{signal}}{P_{noise}}
@@ -46,7 +47,6 @@ def signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
         >>> signal_noise_ratio(preds, target)
         tensor(16.1805)
-
     """
     _check_same_shape(preds, target)
     eps = torch.finfo(preds.dtype).eps
@@ -82,7 +82,6 @@ def scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor) -> Tensor:
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
         >>> scale_invariant_signal_noise_ratio(preds, target)
         tensor(15.0918)
-
     """
     return scale_invariant_signal_distortion_ratio(preds=preds, target=target, zero_mean=True)
 
@@ -111,7 +110,6 @@ def complex_scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor, ze
         >>> target = torch.randn((1,257,100,2))
         >>> complex_scale_invariant_signal_noise_ratio(preds, target)
         tensor([-63.4849])
-
     """
     if preds.is_complex():
         preds = torch.view_as_real(preds)

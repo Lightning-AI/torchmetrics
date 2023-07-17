@@ -77,7 +77,6 @@ class RetrievalNormalizedDCG(RetrievalMetric):
         >>> ndcg = RetrievalNormalizedDCG()
         >>> ndcg(preds, target, indexes=indexes)
         tensor(0.8467)
-
     """
 
     is_differentiable: bool = False
@@ -145,6 +144,5 @@ class RetrievalNormalizedDCG(RetrievalMetric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(10,), torch.randint(2, (10,)), indexes=torch.randint(2,(10,))))
             >>> fig, ax = metric.plot(values)
-
         """
         return self._plot(val, ax)

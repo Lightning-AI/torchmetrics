@@ -172,7 +172,6 @@ def dice(
         >>> target = torch.tensor([1, 1, 2, 0])
         >>> dice(preds, target, average='micro')
         tensor(0.2500)
-
     """
     allowed_average = ("micro", "macro", "weighted", "samples", "none", None)
     if average not in allowed_average:

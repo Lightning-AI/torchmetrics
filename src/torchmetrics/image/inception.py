@@ -32,7 +32,8 @@ __doctest_requires__ = {("InceptionScore", "InceptionScore.plot"): ["torch_fidel
 
 
 class InceptionScore(Metric):
-    r"""Calculate the Inception Score (IS) which is used to access how realistic generated images are.
+    r"""Calculate the Inception Score (IS) which is used to access how realistic
+    generated images are.
 
     .. math::
         IS = exp(\mathbb{E}_x KL(p(y | x ) || p(y)))
@@ -91,7 +92,6 @@ class InceptionScore(Metric):
         >>> inception.update(imgs)
         >>> inception.compute()
         (tensor(1.0544), tensor(0.0117))
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -210,7 +210,6 @@ class InceptionScore(Metric):
             ...     # we index by 0 such that only the mean value is plotted
             ...     values.append(metric(torch.randint(0, 255, (50, 3, 299, 299), dtype=torch.uint8))[0])
             >>> fig_, ax_ = metric.plot(values)
-
         """
         val = val or self.compute()[0]  # by default we select the mean to plot
         return self._plot(val, ax)

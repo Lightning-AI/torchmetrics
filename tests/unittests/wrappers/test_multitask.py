@@ -44,10 +44,10 @@ def _dict_results_same_as_individual_results(classification_results, regression_
 
 
 def _multitask_same_as_individual_tasks(classification_metric, regression_metric, multitask_metrics):
-    """Update classification and regression metrics individually and together using a multitask wrapper.
+    """Update classification and regression metrics individually and together
+    using a multitask wrapper.
 
     Return True if the results are the same.
-
     """
     classification_metric.update(_classification_preds, _classification_target)
     regression_metric.update(_regression_preds, _regression_target)
@@ -73,7 +73,9 @@ def test_errors_on_wrong_input():
 
 
 def test_error_on_wrong_keys():
-    """Check that ValueError is raised when the sets of keys of the task metrics, preds, and targets do not match."""
+    """Check that ValueError is raised when the sets of keys of the task
+    metrics, preds, and targets do not match.
+    """
     multitask_metrics = MultitaskWrapper(
         {
             "Classification": BinaryAccuracy(),
@@ -127,7 +129,9 @@ def test_error_on_wrong_keys():
 
 
 def test_basic_multitask():
-    """Check that wrapping some Metrics in a MultitaskWrapper is the same as computing them individually."""
+    """Check that wrapping some Metrics in a MultitaskWrapper is the same as
+    computing them individually.
+    """
     classification_metric = BinaryAccuracy()
     regression_metric = MeanSquaredError()
     multitask_metrics = MultitaskWrapper({"Classification": BinaryAccuracy(), "Regression": MeanSquaredError()})
@@ -136,7 +140,9 @@ def test_basic_multitask():
 
 
 def test_metric_collection_multitask():
-    """Check that wrapping some MetricCollections in a MultitaskWrapper is the same as computing them individually."""
+    """Check that wrapping some MetricCollections in a MultitaskWrapper is the
+    same as computing them individually.
+    """
     classification_metric = MetricCollection([BinaryAccuracy(), BinaryF1Score()])
     regression_metric = MetricCollection([MeanSquaredError(), MeanAbsoluteError()])
     multitask_metrics = MultitaskWrapper(

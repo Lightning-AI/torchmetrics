@@ -57,7 +57,9 @@ def test_raises_error_on_wrong_input():
     ],
 )
 def test_raises_error_if_increment_not_called(method, method_input):
-    """Test that error is raised if another method is called before increment."""
+    """Test that error is raised if another method is called before
+    increment.
+    """
     tracker = MetricTracker(MulticlassAccuracy(num_classes=10))
     with pytest.raises(ValueError, match=f"`{method}` cannot be called before .*"):  # noqa: PT012
         if method_input is not None:
@@ -157,9 +159,9 @@ def test_tracker(base_metric, metric_input, maximize):
 def test_best_metric_for_not_well_defined_metric_collection(base_metric):
     """Check for user warnings related to best metric.
 
-    Test that if user tries to compute the best metric for a metric that does not have a well defined best, we throw an
-    warning and return None.
-
+    Test that if user tries to compute the best metric for a metric that
+    does not have a well defined best, we throw an warning and return
+    None.
     """
     tracker = MetricTracker(base_metric)
     for _ in range(3):
@@ -204,7 +206,9 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
     ],
 )
 def test_metric_tracker_and_collection_multioutput(input_to_tracker, assert_type):
-    """Check that MetricTracker support wrapper inputs and nested structures."""
+    """Check that MetricTracker support wrapper inputs and nested
+    structures.
+    """
     tracker = MetricTracker(input_to_tracker)
     for _ in range(5):
         tracker.increment()

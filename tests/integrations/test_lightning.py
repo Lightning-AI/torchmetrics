@@ -34,7 +34,9 @@ from integrations.lightning.boring_model import BoringModel
 
 
 class DiffMetric(SumMetric):
-    """DiffMetric inheritted from `SumMetric` by overidding its `update` method."""
+    """DiffMetric inheritted from `SumMetric` by overidding its `update`
+    method.
+    """
 
     def update(self, value):
         """Update state."""
@@ -42,7 +44,9 @@ class DiffMetric(SumMetric):
 
 
 def test_metric_lightning(tmpdir):
-    """Test that including a metric inside a lightning module calculates a simple sum correctly."""
+    """Test that including a metric inside a lightning module calculates a
+    simple sum correctly.
+    """
 
     class TestModel(BoringModel):
         def __init__(self) -> None:
@@ -77,10 +81,10 @@ def test_metric_lightning(tmpdir):
 
 
 def test_metrics_reset(tmpdir):
-    """Tests that metrics are reset correctly after the end of the train/val/test epoch.
+    """Tests that metrics are reset correctly after the end of the
+    train/val/test epoch.
 
     Taken from: `Metric Test for Reset`_
-
     """
 
     class TestModel(BoringModel):
@@ -178,7 +182,9 @@ def test_metrics_reset(tmpdir):
 
 
 def test_metric_lightning_log(tmpdir):
-    """Test logging a metric object and that the metric state gets reset after each epoch."""
+    """Test logging a metric object and that the metric state gets reset after
+    each epoch.
+    """
 
     class TestModel(BoringModel):
         def __init__(self) -> None:
@@ -359,7 +365,9 @@ def test_metric_collection_lightning_log(tmpdir):
 
 
 def test_scriptable(tmpdir):
-    """Test that lightning modules can still be scripted even if metrics cannot."""
+    """Test that lightning modules can still be scripted even if metrics
+    cannot.
+    """
 
     class TestModel(BoringModel):
         def __init__(self) -> None:
@@ -397,7 +405,9 @@ def test_scriptable(tmpdir):
 
 
 def test_dtype_in_pl_module_transfer(tmpdir):
-    """Test that metric states don't change dtype when .half() or .float() is called on the LightningModule."""
+    """Test that metric states don't change dtype when .half() or .float() is
+    called on the LightningModule.
+    """
 
     class BoringModel(LightningModule):
         def __init__(self, metric_dtype=torch.float32) -> None:

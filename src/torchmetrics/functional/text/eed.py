@@ -108,7 +108,6 @@ def _distance_between_words(preds_word: str, target_word: str) -> int:
 
     Return:
         0 for match, 1 for no match
-
     """
     return int(preds_word != target_word)
 
@@ -178,7 +177,6 @@ def _preprocess_en(sentence: str) -> str:
 
     Raises:
         ValueError: If input sentence is not of a type `str`.
-
     """
     if not isinstance(sentence, str):
         raise ValueError(f"Only strings allowed during preprocessing step, found {type(sentence)} instead")
@@ -223,7 +221,6 @@ def _preprocess_ja(sentence: str) -> str:
 
     Raises:
         ValueError: If input sentence is not of a type `str`.
-
     """
     if not isinstance(sentence, str):
         raise ValueError(f"Only strings allowed during preprocessing step, found {type(sentence)} instead")
@@ -241,7 +238,6 @@ def _eed_compute(sentence_level_scores: List[Tensor]) -> Tensor:
 
     Return:
         average of scores as a tensor
-
     """
     if len(sentence_level_scores) == 0:
         return tensor(0.0)
@@ -268,7 +264,6 @@ def _preprocess_sentences(
         ValueError: If a different language than ``'en'`` or ``'ja'`` is used
         ValueError: If length of target not equal to length of preds
         ValueError: If objects in reference and hypothesis corpus are not strings
-
     """
     # sanity checks
     target, preds = _validate_inputs(hypothesis_corpus=preds, ref_corpus=target)
@@ -307,7 +302,6 @@ def _compute_sentence_statistics(
 
     Return:
         best_score: best (lowest) sentence-level score as a Tensor
-
     """
     best_score = inf
 
@@ -343,7 +337,6 @@ def _eed_update(
 
     Return:
         individual sentence scores as a list of Tensors
-
     """
     preds, target = _preprocess_sentences(preds, target, language)
 
@@ -371,7 +364,8 @@ def extended_edit_distance(
     deletion: float = 0.2,
     insertion: float = 1.0,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Compute extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings.
+    """Compute extended edit distance score (`ExtendedEditDistance`_) [1] for
+    strings or list of strings.
 
     The metric utilises the Levenshtein distance and extends it by adding a jump operation.
 
@@ -398,7 +392,6 @@ def extended_edit_distance(
     References:
         [1] P. Stanchev, W. Wang, and H. Ney, “EED: Extended Edit Distance Measure for Machine Translation”,
         submitted to WMT 2019. `ExtendedEditDistance`_
-
     """
     # input validation for parameters
     for param_name, param in zip(["alpha", "rho", "deletion", "insertion"], [alpha, rho, deletion, insertion]):

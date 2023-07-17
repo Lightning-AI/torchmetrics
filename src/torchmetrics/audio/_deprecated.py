@@ -20,7 +20,6 @@ class _PermutationInvariantTraining(PermutationInvariantTraining):
     ...     mode="speaker-wise", eval_func="max")
     >>> pit(preds, target)
     tensor(-2.1065)
-
     """
 
     def __init__(
@@ -43,7 +42,6 @@ class _ScaleInvariantSignalDistortionRatio(ScaleInvariantSignalDistortionRatio):
     >>> si_sdr = _ScaleInvariantSignalDistortionRatio()
     >>> si_sdr(preds, target)
     tensor(18.4030)
-
     """
 
     def __init__(
@@ -64,7 +62,6 @@ class _ScaleInvariantSignalNoiseRatio(ScaleInvariantSignalNoiseRatio):
     >>> si_snr = _ScaleInvariantSignalNoiseRatio()
     >>> si_snr(preds, target)
     tensor(15.0918)
-
     """
 
     def __init__(
@@ -93,7 +90,6 @@ class _SignalDistortionRatio(SignalDistortionRatio):
     ...     mode="speaker-wise", eval_func="max")
     >>> pit(preds, target)
     tensor(-11.6051)
-
     """
 
     def __init__(
@@ -119,7 +115,6 @@ class _SignalNoiseRatio(SignalNoiseRatio):
     >>> snr = _SignalNoiseRatio()
     >>> snr(preds, target)
     tensor(16.1805)
-
     """
 
     def __init__(

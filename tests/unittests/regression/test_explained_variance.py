@@ -87,7 +87,9 @@ class TestExplainedVariance(MetricTester):
         )
 
     def test_explained_variance_differentiability(self, multioutput, preds, target, ref_metric):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         self.run_differentiability_test(
             preds=preds,
             target=target,

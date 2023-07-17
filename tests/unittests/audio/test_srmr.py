@@ -104,7 +104,9 @@ class TestSRMR(MetricTester):
         )
 
     def test_srmr_differentiability(self, preds, fs, fast, norm):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         if fast is True:
             pytest.xfail("SRMR metric is not differentiable when `fast=True`")
         else:

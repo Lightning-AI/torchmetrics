@@ -20,7 +20,9 @@ import pytest
 
 @contextmanager
 def no_warning_call(expected_warning: Type[Warning] = UserWarning, match: Optional[str] = None):
-    """Context manager to make sure that no warning is raised for a given call."""
+    """Context manager to make sure that no warning is raised for a given
+    call.
+    """
     with pytest.warns(None) as record:
         yield
 

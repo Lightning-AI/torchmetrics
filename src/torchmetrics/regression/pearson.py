@@ -36,7 +36,6 @@ def _final_aggregation(
     """Aggregate the statistics from multiple devices.
 
     Formula taken from here: `Aggregate the statistics from multiple devices`_
-
     """
     if len(means_x) == 1:
         return means_x[0], means_y[0], vars_x[0], vars_y[0], corrs_xy[0], nbs[0]
@@ -108,7 +107,6 @@ class PearsonCorrCoef(Metric):
         >>> pearson = PearsonCorrCoef(num_outputs=2)
         >>> pearson(preds, target)
         tensor([1., 1.])
-
     """
     is_differentiable = True
     higher_is_better = None  # both -1 and 1 are optimal
@@ -207,6 +205,5 @@ class PearsonCorrCoef(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
-
         """
         return self._plot(val, ax)

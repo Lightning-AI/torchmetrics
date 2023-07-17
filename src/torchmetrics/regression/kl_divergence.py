@@ -75,7 +75,6 @@ class KLDivergence(Metric):
         >>> kl_divergence = KLDivergence()
         >>> kl_divergence(p, q)
         tensor(0.0853)
-
     """
     is_differentiable: bool = True
     higher_is_better: bool = False
@@ -164,6 +163,5 @@ class KLDivergence(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,3).softmax(dim=-1), randn(10,3).softmax(dim=-1)))
             >>> fig, ax = metric.plot(values)
-
         """
         return self._plot(val, ax)

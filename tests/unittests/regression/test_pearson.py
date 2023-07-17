@@ -91,7 +91,9 @@ class TestPearsonCorrCoef(MetricTester):
         )
 
     def test_pearson_corrcoef_differentiability(self, preds, target):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_differentiability_test(
             preds=preds,
@@ -128,14 +130,18 @@ def test_error_on_different_shape():
 
 
 def test_1d_input_allowed():
-    """Check that both input of the form [N,] and [N,1] is allowed with default num_outputs argument."""
+    """Check that both input of the form [N,] and [N,1] is allowed with default
+    num_outputs argument.
+    """
     assert isinstance(pearson_corrcoef(torch.randn(10, 1), torch.randn(10, 1)), torch.Tensor)
     assert isinstance(pearson_corrcoef(torch.randn(10), torch.randn(10)), torch.Tensor)
 
 
 @pytest.mark.parametrize("shapes", [(5,), (1, 5), (2, 5)])
 def test_final_aggregation_function(shapes):
-    """Test that final aggregation function can take various shapes of input."""
+    """Test that final aggregation function can take various shapes of
+    input.
+    """
     input_fn = lambda: torch.rand(shapes)
     output = _final_aggregation(input_fn(), input_fn(), input_fn(), input_fn(), input_fn(), torch.randint(10, shapes))
     assert all(isinstance(out, torch.Tensor) for out in output)

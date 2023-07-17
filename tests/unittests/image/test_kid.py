@@ -85,7 +85,9 @@ def test_kid_raises_errors_and_warnings():
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_kid_extra_parameters():
-    """Test that the different input arguments raises expected errors if wrong."""
+    """Test that the different input arguments raises expected errors if
+    wrong.
+    """
     with pytest.raises(ValueError, match="Argument `subsets` expected to be integer larger than 0"):
         KernelInceptionDistance(subsets=-1)
 

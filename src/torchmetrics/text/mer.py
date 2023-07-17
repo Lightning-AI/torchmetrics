@@ -26,7 +26,8 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class MatchErrorRate(Metric):
-    r"""Match Error Rate (`MER`_) is a common metric of the performance of an automatic speech recognition system.
+    r"""Match Error Rate (`MER`_) is a common metric of the performance of an
+    automatic speech recognition system.
 
     This value indicates the percentage of words that were incorrectly predicted and inserted.
     The lower the value, the better the performance of the ASR system with a MatchErrorRate of 0 being a perfect score.
@@ -61,7 +62,6 @@ class MatchErrorRate(Metric):
         >>> mer = MatchErrorRate()
         >>> mer(preds, target)
         tensor(0.4444)
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = False
@@ -134,6 +134,5 @@ class MatchErrorRate(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)

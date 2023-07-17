@@ -125,7 +125,6 @@ def _multiclass_with_missing_class(*shape: Any, num_classes=NUM_CLASSES):
 
     Returns:
         tensor with missing classes
-
     """
     x = torch.randint(0, num_classes, shape)
     x[x == 0] = 2

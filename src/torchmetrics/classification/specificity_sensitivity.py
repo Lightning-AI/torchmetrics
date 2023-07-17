@@ -44,7 +44,8 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
-    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided.
+    r"""Compute the higest possible specificity value given the minimum
+    sensitivity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
@@ -99,7 +100,6 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
         >>> metric = BinarySpecificityAtSensitivity(min_sensitivity=0.5, thresholds=5)
         >>> metric(preds, target)
         (tensor(1.), tensor(0.2500))
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -128,7 +128,8 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
 
 
 class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
-    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided.
+    r"""Compute the higest possible specificity value given the minimum
+    sensitivity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
@@ -189,7 +190,6 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
         >>> metric = MulticlassSpecificityAtSensitivity(num_classes=5, min_sensitivity=0.5, thresholds=5)
         >>> metric(preds, target)
         (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 0.0000e+00, 0.0000e+00, 1.0000e+06]))
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -226,7 +226,8 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
 
 
 class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
-    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided.
+    r"""Compute the higest possible specificity value given the minimum
+    sensitivity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
@@ -289,7 +290,6 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
         >>> metric = MultilabelSpecificityAtSensitivity(num_labels=3, min_sensitivity=0.5, thresholds=5)
         >>> metric(preds, target)
         (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.5000, 0.2500]))
-
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -324,7 +324,8 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
 
 
 class SpecificityAtSensitivity:
-    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided.
+    r"""Compute the higest possible specificity value given the minimum
+    sensitivity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
@@ -333,7 +334,6 @@ class SpecificityAtSensitivity:
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :mod:`BinarySpecificityAtSensitivity`, :func:`MulticlassSpecificityAtSensitivity` and
     :func:`MultilabelSpecificityAtSensitivity` for the specific details of each argument influence and examples.
-
     """
 
     def __new__(  # type: ignore[misc]

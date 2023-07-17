@@ -151,7 +151,9 @@ class TestPSNR(MetricTester):
 
 @pytest.mark.parametrize("reduction", ["none", "sum"])
 def test_reduction_for_dim_none(reduction):
-    """Test that warnings are raised when then reduction parameter is combined with no dim provided arg."""
+    """Test that warnings are raised when then reduction parameter is combined
+    with no dim provided arg.
+    """
     match = f"The `reduction={reduction}` will not have any effect when `dim` is None."
     with pytest.warns(UserWarning, match=match):
         PeakSignalNoiseRatio(reduction=reduction, dim=None)

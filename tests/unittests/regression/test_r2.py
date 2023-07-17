@@ -94,7 +94,9 @@ class TestR2Score(MetricTester):
         )
 
     def test_r2_differentiability(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -133,7 +135,9 @@ def test_error_on_different_shape(metric_class=R2Score):
 
 
 def test_error_on_multidim_tensors(metric_class=R2Score):
-    """Test that error is raised if a larger than 2D tensor is given as input."""
+    """Test that error is raised if a larger than 2D tensor is given as
+    input.
+    """
     metric = metric_class()
     with pytest.raises(
         ValueError,
@@ -156,7 +160,9 @@ def test_error_on_too_few_samples(metric_class=R2Score):
 
 
 def test_warning_on_too_large_adjusted(metric_class=R2Score):
-    """Test that warning is raised if adjusted argument is set to more than or equal to the number of datapoints."""
+    """Test that warning is raised if adjusted argument is set to more than or
+    equal to the number of datapoints.
+    """
     metric = metric_class(adjusted=10)
 
     with pytest.warns(

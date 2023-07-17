@@ -44,7 +44,8 @@ def _compute_image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
 
 
 def image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
-    """Compute `Gradient Computation of Image`_ of a given image using finite difference.
+    """Compute `Gradient Computation of Image`_ of a given image using finite
+    difference.
 
     Args:
         img: An ``(N, C, H, W)`` input tensor where ``C`` is the number of image channels
@@ -73,7 +74,6 @@ def image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
     .. note:: The implementation follows the 1-step finite difference method as followed
            by the TF implementation. The values are organized such that the gradient of
            [I(x+1, y)-[I(x, y)]] are at the (x, y) location
-
     """
     _image_gradients_validate(img)
 

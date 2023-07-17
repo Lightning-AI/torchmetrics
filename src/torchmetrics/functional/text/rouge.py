@@ -45,7 +45,6 @@ def _ensure_nltk_punkt_is_downloaded() -> None:
     """Check whether `nltk` `punkt` is downloaded.
 
     If not, try to download if a machine is connected to the internet.
-
     """
     import nltk
 
@@ -62,7 +61,9 @@ def _ensure_nltk_punkt_is_downloaded() -> None:
 
 
 def _split_sentence(x: str) -> Sequence[str]:
-    """Split sentence to get rougeLsum scores matching published rougeL scores for BART and PEGASUS."""
+    """Split sentence to get rougeLsum scores matching published rougeL scores
+    for BART and PEGASUS.
+    """
     if not _NLTK_AVAILABLE:
         raise ModuleNotFoundError("ROUGE-Lsum calculation requires that `nltk` is installed. Use `pip install nltk`.")
     import nltk
@@ -83,7 +84,6 @@ def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> Dict[s
         hits_or_lcs: A number of matches or a length of the longest common subsequence.
         pred_len: A length of a tokenized predicted sentence.
         target_len: A length of a tokenized target sentence.
-
     """
     precision = hits_or_lcs / pred_len
     recall = hits_or_lcs / target_len
@@ -103,7 +103,6 @@ def _lcs(
         pred_tokens: A tokenized predicted sentence.
         target_tokens: A tokenized target sentence.
         return_full_table: If the full table of logest common subsequence should be returned or just the largest
-
     """
     lcs = [[0] * (len(pred_tokens) + 1) for _ in range(len(target_tokens) + 1)]
     for i in range(1, len(target_tokens) + 1):
@@ -126,7 +125,6 @@ def _backtracked_lcs(
         lcs_table: A table containing information for the calculation of the longest common subsequence.
         pred_tokens: A tokenized predicted sentence.
         target_tokens: A tokenized target sentence.
-
     """
     i = len(pred_tokens)
     j = len(target_tokens)
@@ -144,16 +142,18 @@ def _backtracked_lcs(
 
 
 def _union_lcs(pred_tokens_list: Sequence[Sequence[str]], target_tokens: Sequence[str]) -> Sequence[str]:
-    r"""Find union LCS between a target sentence and iterable of predicted tokens.
+    r"""Find union LCS between a target sentence and iterable of predicted
+    tokens.
 
     Args:
         pred_tokens_list: A tokenized predicted sentence split by ``'\n'``.
         target_tokens: A tokenized single part of target sentence split by ``'\n'``.
-
     """
 
     def lcs_ind(pred_tokens: Sequence[str], target_tokens: Sequence[str]) -> Sequence[int]:
-        """Return one of the longest of longest common subsequence via backtracked lcs table."""
+        """Return one of the longest of longest common subsequence via
+        backtracked lcs table.
+        """
         lcs_table: Sequence[Sequence[int]] = _lcs(pred_tokens, target_tokens, return_full_table=True)  # type: ignore
         return _backtracked_lcs(lcs_table, pred_tokens, target_tokens)
 
@@ -185,7 +185,6 @@ def _normalize_and_tokenize_text(
         tokenizer:
             A user's own tokenizer function. If this is ``None``, splitting by spaces is default
             This function must take a ``str`` and return ``Sequence[str]``
-
     """
     # If normalizer is none, replace any non-alpha-numeric characters with spaces.
     text = normalizer(text) if callable(normalizer) else re.sub(r"[^a-z0-9]+", " ", text.lower())
@@ -208,7 +207,6 @@ def _rouge_n_score(pred: Sequence[str], target: Sequence[str], n_gram: int) -> D
         pred: A predicted sentence.
         target: A target sentence.
         n_gram: N-gram overlap.
-
     """
 
     def _create_ngrams(tokens: Sequence[str], n: int) -> Counter:
@@ -233,7 +231,6 @@ def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> Dict[str, Tens
     Args:
         pred: A predicted sentence.
         target: A target sentence.
-
     """
     pred_len, target_len = len(pred), len(target)
     if 0 in (pred_len, target_len):
@@ -256,7 +253,6 @@ def _rouge_lsum_score(pred: Sequence[Sequence[str]], target: Sequence[Sequence[s
 
     References:
         [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin. https://aclanthology.org/W04-1013/
-
     """
     pred_len = sum(map(len, pred))
     target_len = sum(map(len, target))
@@ -295,7 +291,8 @@ def _rouge_score_update(
     normalizer: Optional[Callable[[str], str]] = None,
     tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
 ) -> Dict[Union[int, str], List[Dict[str, Tensor]]]:
-    """Update the rouge score with the current set of predicted and target sentences.
+    """Update the rouge score with the current set of predicted and target
+    sentences.
 
     Args:
         preds: An iterable of predicted sentences.
@@ -336,7 +333,6 @@ def _rouge_score_update(
                {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
                {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
                {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}]}
-
     """
     results: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
 
@@ -402,11 +398,11 @@ def _rouge_score_update(
 
 
 def _rouge_score_compute(sentence_results: Dict[str, List[Tensor]]) -> Dict[str, Tensor]:
-    """Compute the combined ROUGE metric for all the input set of predicted and target sentences.
+    """Compute the combined ROUGE metric for all the input set of predicted and
+    target sentences.
 
     Args:
         sentence_results: Rouge-N/Rouge-L/Rouge-LSum metrics calculated for single sentence.
-
     """
     results: Dict[str, Tensor] = {}
     # Obtain mean scores for individual rouge metrics
@@ -480,7 +476,6 @@ def rouge_score(
 
     References:
         [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin. https://aclanthology.org/W04-1013/
-
     """
     if use_stemmer:
         if not _NLTK_AVAILABLE:

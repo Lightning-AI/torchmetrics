@@ -41,7 +41,6 @@ class _RequirementWithComment(Requirement):
         'arrow<=1.2.2,>=1.2.0  # strict'
         >>> _RequirementWithComment("arrow").adjust(True)
         'arrow'
-
         """
         out = str(self)
         if self.strict:
@@ -63,7 +62,6 @@ def _parse_requirements(strs: Union[str, Iterable[str]]) -> Iterator[_Requiremen
     >>> txt = '\\n'.join(txt)
     >>> [r.adjust('none') for r in _parse_requirements(txt)]
     ['this', 'example', 'foo  # strict', 'thing']
-
     """
     lines = yield_lines(strs)
     pip_argument = None
@@ -102,7 +100,6 @@ def _load_requirements(
 
     >>> _load_requirements(_PATH_ROOT)
     ['numpy...', 'torch..."]
-
     """
     path = Path(path_dir) / file_name
     if not path.exists():
@@ -116,7 +113,6 @@ def _load_readme_description(path_dir: str, homepage: str, version: str) -> str:
 
     >>> _load_readme_description(_PATH_ROOT, "",  "")
     '<div align="center">...'
-
     """
     path_readme = os.path.join(path_dir, "README.md")
     with open(path_readme, encoding="utf-8") as fp:

@@ -70,7 +70,6 @@ def _accuracy_reduce(
 
     Returns:
         Accuracy score
-
     """
     if average == "binary":
         return _safe_divide(tp + tn, tp + tn + fp + fn)
@@ -152,7 +151,6 @@ def binary_accuracy(
         ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> binary_accuracy(preds, target, multidim_average='samplewise')
         tensor([0.3333, 0.1667])
-
     """
     if validate_args:
         _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
@@ -258,7 +256,6 @@ def multiclass_accuracy(
         >>> multiclass_accuracy(preds, target, num_classes=3, multidim_average='samplewise', average=None)
         tensor([[1.0000, 0.0000, 0.5000],
                 [0.0000, 0.3333, 0.5000]])
-
     """
     if validate_args:
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
@@ -362,7 +359,6 @@ def multilabel_accuracy(
         >>> multilabel_accuracy(preds, target, num_labels=3, multidim_average='samplewise', average=None)
         tensor([[0.5000, 0.5000, 0.0000],
                 [0.0000, 0.0000, 0.5000]])
-
     """
     if validate_args:
         _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
@@ -408,7 +404,6 @@ def accuracy(
         >>> preds = tensor([[0.1, 0.9, 0], [0.3, 0.1, 0.6], [0.2, 0.5, 0.3]])
         >>> accuracy(preds, target, task="multiclass", num_classes=3, top_k=2)
         tensor(0.6667)
-
     """
     task = ClassificationTask.from_str(task)
 

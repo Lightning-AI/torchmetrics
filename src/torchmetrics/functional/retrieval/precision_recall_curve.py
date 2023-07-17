@@ -69,7 +69,6 @@ def retrieval_precision_recall_curve(
         tensor([0.5000, 0.5000])
         >>> top_k
         tensor([1, 2])
-
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 

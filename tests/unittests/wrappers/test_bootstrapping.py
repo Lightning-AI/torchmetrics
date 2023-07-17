@@ -36,9 +36,10 @@ _target = torch.randint(10, (10, 32))
 class TestBootStrapper(BootStrapper):
     """Subclass of Bootstrapper class.
 
-    For testing purpose, we subclass the bootstrapper class so we can get the exact permutation the class is creating.
-    This is nessesary such that the reference we are comparing to returns the exact same result for a given permutation.
-
+    For testing purpose, we subclass the bootstrapper class so we can
+    get the exact permutation the class is creating. This is nessesary
+    such that the reference we are comparing to returns the exact same
+    result for a given permutation.
     """
 
     def update(self, *args: Any) -> None:
@@ -91,7 +92,9 @@ def test_bootstrap_sampler(sampling_strategy):
     ],
 )
 def test_bootstrap(device, sampling_strategy, metric, ref_metric):
-    """Test that the different bootstraps gets updated as we expected and that the compute method works."""
+    """Test that the different bootstraps gets updated as we expected and that
+    the compute method works.
+    """
     if device == "cuda" and not torch.cuda.is_available():
         pytest.skip("Test with device='cuda' requires gpu")
 

@@ -186,7 +186,9 @@ def test_compute(compute_with_cache):
 
 
 def test_hash():
-    """Test that hashes for different metrics are different, even if states are the same."""
+    """Test that hashes for different metrics are different, even if states are
+    the same.
+    """
 
     class A(DummyMetric):
         pass
@@ -297,7 +299,9 @@ def test_child_metric_state_dict():
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
 def test_device_and_dtype_transfer(tmpdir):
-    """Test that device and dtypes are correctly updated when appropriate methods are called."""
+    """Test that device and dtypes are correctly updated when appropriate
+    methods are called.
+    """
     metric = DummyMetricSum()
     assert metric.x.is_cuda is False
     assert metric.device == torch.device("cpu")
@@ -334,7 +338,9 @@ def test_disable_of_normal_dtype_methods():
 
 
 def test_warning_on_compute_before_update():
-    """Test that an warning is raised if user tries to call compute before update."""
+    """Test that an warning is raised if user tries to call compute before
+    update.
+    """
     metric = DummyMetricSum()
 
     # make sure everything is fine with forward
@@ -374,7 +380,9 @@ def test_metric_forward_cache_reset():
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
 @pytest.mark.parametrize("metric_class", [DummyMetricSum, DummyMetricMultiOutput])
 def test_forward_and_compute_to_device(metric_class):
-    """Test that the `_forward_cache` and `_computed` attributes are on correct device."""
+    """Test that the `_forward_cache` and `_computed` attributes are on correct
+    device.
+    """
     metric = metric_class()
     metric(1)
     metric.to(device="cuda")
@@ -394,7 +402,9 @@ def test_forward_and_compute_to_device(metric_class):
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
 @pytest.mark.parametrize("metric_class", [DummyMetricSum, DummyMetricMultiOutput])
 def test_device_if_child_module(metric_class):
-    """Test that if a metric is a child module all values gets moved to the correct device."""
+    """Test that if a metric is a child module all values gets moved to the
+    correct device.
+    """
 
     class TestModule(Module):
         def __init__(self) -> None:
@@ -464,11 +474,12 @@ def test_constant_memory(device, requires_grad):
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
 def test_constant_memory_on_repeat_init():
-    """Test that when initializing a metric multiple times the memory does not increase.
+    """Test that when initializing a metric multiple times the memory does not
+    increase.
 
-    This only works for metrics with `compute_with_cache=False` as otherwise the cache will keep a refence that python
-    gc will not be able to collect and clean.
-
+    This only works for metrics with `compute_with_cache=False` as
+    otherwise the cache will keep a refence that python gc will not be
+    able to collect and clean.
     """
 
     def mem():
@@ -488,7 +499,9 @@ def test_constant_memory_on_repeat_init():
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires gpu")
 def test_specific_error_on_wrong_device():
-    """Test that a specific error is raised if we detect input and metric are on different devices."""
+    """Test that a specific error is raised if we detect input and metric are
+    on different devices.
+    """
     metric = PearsonCorrCoef()
     preds = torch.tensor(range(10), device="cuda", dtype=torch.float)
     target = torch.tensor(range(10), device="cuda", dtype=torch.float)
@@ -541,7 +554,9 @@ def test_no_iteration_allowed():
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 @pytest.mark.parametrize("method", ["forward", "update"])
 def test_compute_on_cpu_arg_forward(method):
-    """Test the `compute_on_cpu` argument works in combination with `forward` method."""
+    """Test the `compute_on_cpu` argument works in combination with `forward`
+    method.
+    """
     metric = DummyListMetric(compute_on_cpu=True)
     x = torch.randn(10).cuda()
     if method == "update":
@@ -558,7 +573,9 @@ def test_compute_on_cpu_arg_forward(method):
 @pytest.mark.parametrize("method", ["forward", "update"])
 @pytest.mark.parametrize("metric", [DummyMetricSum, DummyListMetric])
 def test_update_properties(metric, method):
-    """Test that `update_called` and `update_count` attributes is correctly updated."""
+    """Test that `update_called` and `update_count` attributes is correctly
+    updated.
+    """
     m = metric()
     x = torch.randn(
         1,

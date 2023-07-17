@@ -83,7 +83,9 @@ class TestLogCoshError(MetricTester):
         )
 
     def test_log_cosh_error_differentiability(self, preds, target):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         num_outputs = 1 if preds.ndim == 2 else num_targets
         self.run_differentiability_test(
             preds=preds,

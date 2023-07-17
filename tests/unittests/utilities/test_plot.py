@@ -616,7 +616,9 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
 )
 @pytest.mark.parametrize("num_vals", [1, 3])
 def test_plot_methods(metric_class: object, preds: Callable, target: Callable, num_vals: int):
-    """Test the plot method of metrics that only output a single tensor scalar."""
+    """Test the plot method of metrics that only output a single tensor
+    scalar.
+    """
     metric = metric_class()
     inputs = (lambda: (preds(),)) if target is None else lambda: (preds(), target())
 
@@ -674,9 +676,9 @@ def test_plot_methods(metric_class: object, preds: Callable, target: Callable, n
 def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0, num_vals):
     """Test the plot method of metrics that only output a single tensor scalar.
 
-    This takes care of FID, KID and inception score image metrics as these have a slightly different call and update
-    signature than other metrics.
-
+    This takes care of FID, KID and inception score image metrics as
+    these have a slightly different call and update signature than other
+    metrics.
     """
     metric = metric_class()
 
@@ -705,7 +707,9 @@ def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0
 
 
 def test_plot_methods_special_text_metrics():
-    """Test the plot method for text metrics that does not fit the default testing format."""
+    """Test the plot method for text metrics that does not fit the default
+    testing format.
+    """
     metric = BERTScore()
     metric.update(_text_input_1(), _text_input_2())
     fig, ax = metric.plot()
@@ -764,7 +768,9 @@ def test_plot_methods_special_text_metrics():
 )
 @pytest.mark.parametrize("num_vals", [1, 2])
 def test_plot_methods_retrieval(metric_class, preds, target, indexes, num_vals):
-    """Test the plot method for retrieval metrics by themselves, since retrieval metrics requires an extra argument."""
+    """Test the plot method for retrieval metrics by themselves, since
+    retrieval metrics requires an extra argument.
+    """
     metric = metric_class()
 
     if num_vals != 1 and isinstance(metric, RetrievalPrecisionRecallCurve):

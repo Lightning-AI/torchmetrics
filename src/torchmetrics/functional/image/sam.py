@@ -27,7 +27,6 @@ def _sam_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-
     """
     if preds.dtype != target.dtype:
         raise TypeError(
@@ -70,7 +69,6 @@ def _sam_compute(
         >>> preds, target = _sam_update(preds, target)
         >>> _sam_compute(preds, target)
         tensor(0.5943)
-
     """
     dot_product = (preds * target).sum(dim=1)
     preds_norm = preds.norm(dim=1)
@@ -115,7 +113,6 @@ def spectral_angle_mapper(
         [1] Roberta H. Yuhas, Alexander F. H. Goetz and Joe W. Boardman, "Discrimination among semi-arid
         landscape endmembers using the Spectral Angle Mapper (SAM) algorithm" in PL, Summaries of the Third Annual JPL
         Airborne Geoscience Workshop, vol. 1, June 1, 1992.
-
     """
     preds, target = _sam_update(preds, target)
     return _sam_compute(preds, target, reduction)

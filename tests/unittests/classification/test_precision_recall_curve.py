@@ -90,7 +90,9 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
         )
 
     def test_binary_precision_recall_curve_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -131,7 +133,9 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
 
     @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
     def test_binary_precision_recall_curve_threshold_arg(self, inputs, threshold_fn):
-        """Test that different types of `thresholds` argument lead to same result."""
+        """Test that different types of `thresholds` argument lead to same
+        result.
+        """
         preds, target = inputs
 
         for pred, true in zip(preds, target):
@@ -216,7 +220,9 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
         )
 
     def test_multiclass_precision_recall_curve_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -257,7 +263,9 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
 
     @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
     def test_multiclass_precision_recall_curve_threshold_arg(self, inputs, threshold_fn):
-        """Test that different types of `thresholds` argument lead to same result."""
+        """Test that different types of `thresholds` argument lead to same
+        result.
+        """
         preds, target = inputs
         for pred, true in zip(preds, target):
             p1, r1, t1 = multiclass_precision_recall_curve(pred, true, num_classes=NUM_CLASSES, thresholds=None)
@@ -336,7 +344,9 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
         )
 
     def test_multiclass_precision_recall_curve_differentiability(self, inputs):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
@@ -377,7 +387,9 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
 
     @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
     def test_multilabel_precision_recall_curve_threshold_arg(self, inputs, threshold_fn):
-        """Test that different types of `thresholds` argument lead to same result."""
+        """Test that different types of `thresholds` argument lead to same
+        result.
+        """
         preds, target = inputs
         for pred, true in zip(preds, target):
             p1, r1, t1 = multilabel_precision_recall_curve(pred, true, num_labels=NUM_CLASSES, thresholds=None)

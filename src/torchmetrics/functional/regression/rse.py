@@ -42,7 +42,6 @@ def _relative_squared_error_compute(
         >>> sum_squared_obs, sum_obs, rss, n_obs = _r2_score_update(preds, target)
         >>> _relative_squared_error_compute(sum_squared_obs, sum_obs, rss, n_obs, squared=True)
         tensor(0.0632)
-
     """
     epsilon = torch.finfo(sum_squared_error.dtype).eps
     rse = sum_squared_error / torch.clamp(sum_squared_obs - sum_obs * sum_obs / n_obs, min=epsilon)
@@ -74,7 +73,6 @@ def relative_squared_error(preds: Tensor, target: Tensor, squared: bool = True) 
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> relative_squared_error(preds, target)
         tensor(0.0514)
-
     """
     sum_squared_obs, sum_obs, rss, n_obs = _r2_score_update(preds, target)
     return _relative_squared_error_compute(sum_squared_obs, sum_obs, rss, n_obs, squared=squared)

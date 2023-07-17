@@ -31,7 +31,6 @@ def _compute_bef(x: Tensor, block_size: int = 8) -> Tensor:
     Raises:
         ValueError:
             If the image is not a grayscale image
-
     """
     (
         _,
@@ -78,7 +77,6 @@ def _psnrb_compute(
         bef: block effect
         n_obs: Number of predictions or observations
         data_range: the range of the data. If None, it is determined from the data (max - min).
-
     """
     sum_squared_error = sum_squared_error / n_obs + bef
     if data_range > 2:
@@ -87,13 +85,13 @@ def _psnrb_compute(
 
 
 def _psnrb_update(preds: Tensor, target: Tensor, block_size: int = 8) -> Tuple[Tensor, Tensor, Tensor]:
-    """Updates and returns variables required to compute peak signal-to-noise ratio.
+    """Updates and returns variables required to compute peak signal-to-noise
+    ratio.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
         block_size: Integer indication the block size
-
     """
     sum_squared_error = torch.sum(torch.pow(preds - target, 2))
     n_obs = tensor(target.numel(), device=target.device)
@@ -106,7 +104,8 @@ def peak_signal_noise_ratio_with_blocked_effect(
     target: Tensor,
     block_size: int = 8,
 ) -> Tensor:
-    r"""Computes `Peak Signal to Noise Ratio With Blocked Effect` (PSNRB) metrics.
+    r"""Computes `Peak Signal to Noise Ratio With Blocked Effect` (PSNRB)
+    metrics.
 
     .. math::
         \text{PSNRB}(I, J) = 10 * \log_{10} \left(\frac{\max(I)^2}{\text{MSE}(I, J)-\text{B}(I, J)}\right)
@@ -129,7 +128,6 @@ def peak_signal_noise_ratio_with_blocked_effect(
         >>> target = torch.rand(1, 1, 28, 28)
         >>> peak_signal_noise_ratio_with_blocked_effect(preds, target)
         tensor(7.8402)
-
     """
     data_range = target.max() - target.min()
     sum_squared_error, bef, n_obs = _psnrb_update(preds, target, block_size=block_size)

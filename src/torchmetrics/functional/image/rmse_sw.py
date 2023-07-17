@@ -29,7 +29,8 @@ def _rmse_sw_update(
     rmse_map: Optional[Tensor],
     total_images: Optional[Tensor],
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Calculate the sum of RMSE values and RMSE map for the batch of examples and update intermediate states.
+    """Calculate the sum of RMSE values and RMSE map for the batch of examples
+    and update intermediate states.
 
     Args:
         preds: Deformed image
@@ -48,7 +49,6 @@ def _rmse_sw_update(
         ValueError: If ``preds`` and ``target`` do not have the same data type.
         ValueError: If ``preds`` and ``target`` do not have ``BxCxWxH`` shape.
         ValueError: If ``round(window_size / 2)`` is greater or equal to width or height of the image.
-
     """
     if preds.dtype != target.dtype:
         raise TypeError(
@@ -90,7 +90,8 @@ def _rmse_sw_update(
 def _rmse_sw_compute(
     rmse_val_sum: Optional[Tensor], rmse_map: Tensor, total_images: Tensor
 ) -> Tuple[Optional[Tensor], Tensor]:
-    """Compute RMSE from the aggregated RMSE value. Optionally also computes the mean value for RMSE map.
+    """Compute RMSE from the aggregated RMSE value. Optionally also computes
+    the mean value for RMSE map.
 
     Args:
         rmse_val_sum: Sum of RMSE over all examples
@@ -100,7 +101,6 @@ def _rmse_sw_compute(
     Return:
         RMSE using sliding window
         (Optionally) RMSE map
-
     """
     rmse = rmse_val_sum / total_images if rmse_val_sum is not None else None
     if rmse_map is not None:
@@ -133,7 +133,6 @@ def root_mean_squared_error_using_sliding_window(
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.
-
     """
     if not isinstance(window_size, int) or isinstance(window_size, int) and window_size < 1:
         raise ValueError("Argument `window_size` is expected to be a positive integer.")

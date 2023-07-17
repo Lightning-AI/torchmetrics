@@ -101,7 +101,9 @@ class TestTER(TextTester):
         )
 
     def test_chrf_score_differentiability(self, preds, targets, normalize, no_punctuation, asian_support, lowercase):
-        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        """Test the differentiability of the metric, according to its
+        `is_differentiable` attribute.
+        """
         metric_args = {
             "normalize": normalize,
             "no_punctuation": no_punctuation,
@@ -134,7 +136,9 @@ def test_ter_empty_class():
 
 
 def test_ter_empty_with_non_empty_hyp_functional():
-    """Test that zero is returned on empty target input for functional metric."""
+    """Test that zero is returned on empty target input for functional
+    metric.
+    """
     preds = ["python"]
     targets = [[]]
     assert translation_edit_rate(preds, targets) == tensor(0.0)

@@ -119,7 +119,6 @@ def binary_specificity(
         ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> binary_specificity(preds, target, multidim_average='samplewise')
         tensor([0.0000, 0.3333])
-
     """
     if validate_args:
         _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
@@ -224,7 +223,6 @@ def multiclass_specificity(
         >>> multiclass_specificity(preds, target, num_classes=3, multidim_average='samplewise', average=None)
         tensor([[0.7500, 0.7500, 0.7500],
                 [0.8000, 0.6667, 0.5000]])
-
     """
     if validate_args:
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
@@ -327,7 +325,6 @@ def multilabel_specificity(
         >>> multilabel_specificity(preds, target, num_labels=3, multidim_average='samplewise', average=None)
         tensor([[0., 0., 0.],
                 [0., 0., 1.]])
-
     """
     if validate_args:
         _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
@@ -370,7 +367,6 @@ def specificity(
         tensor(0.6111)
         >>> specificity(preds, target, task="multiclass", average='micro', num_classes=3)
         tensor(0.6250)
-
     """
     task = ClassificationTask.from_str(task)
     assert multidim_average is not None  # noqa: S101  # needed for mypy

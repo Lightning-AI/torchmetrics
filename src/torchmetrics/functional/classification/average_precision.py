@@ -139,7 +139,6 @@ def binary_average_precision(
         tensor(0.5833)
         >>> binary_average_precision(preds, target, thresholds=5)
         tensor(0.6667)
-
     """
     if validate_args:
         _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
@@ -257,7 +256,6 @@ def multiclass_average_precision(
         tensor(0.5000)
         >>> multiclass_average_precision(preds, target, num_classes=5, average=None, thresholds=5)
         tensor([1.0000, 1.0000, 0.2500, 0.2500, -0.0000])
-
     """
     if validate_args:
         _multiclass_average_precision_arg_validation(num_classes, average, thresholds, ignore_index)
@@ -394,7 +392,6 @@ def multilabel_average_precision(
         tensor(0.7778)
         >>> multilabel_average_precision(preds, target, num_labels=3, average=None, thresholds=5)
         tensor([0.7500, 0.6667, 0.9167])
-
     """
     if validate_args:
         _multilabel_average_precision_arg_validation(num_labels, average, thresholds, ignore_index)
@@ -447,7 +444,6 @@ def average_precision(
         >>> target = torch.tensor([0, 1, 3, 2])
         >>> average_precision(pred, target, task="multiclass", num_classes=5, average=None)
         tensor([1.0000, 1.0000, 0.2500, 0.2500,    nan])
-
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:

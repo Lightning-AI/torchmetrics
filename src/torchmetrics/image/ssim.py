@@ -74,7 +74,6 @@ class StructuralSimilarityIndexMeasure(Metric):
         >>> ssim = StructuralSimilarityIndexMeasure(data_range=1.0)
         >>> ssim(preds, target)
         tensor(0.9219)
-
     """
 
     higher_is_better: bool = True
@@ -212,13 +211,13 @@ class StructuralSimilarityIndexMeasure(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)
 
 
 class MultiScaleStructuralSimilarityIndexMeasure(Metric):
-    """Compute `MultiScaleSSIM`_, Multi-scale Structural Similarity Index Measure.
+    """Compute `MultiScaleSSIM`_, Multi-scale Structural Similarity Index
+    Measure.
 
     This metric is is a generalization of Structural Similarity Index Measure by incorporating image details at
     different resolution scores.
@@ -275,7 +274,6 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         >>> ms_ssim = MultiScaleStructuralSimilarityIndexMeasure(data_range=1.0)
         >>> ms_ssim(preds, target)
         tensor(0.9627)
-
     """
 
     higher_is_better: bool = True
@@ -414,6 +412,5 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)

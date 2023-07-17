@@ -49,7 +49,9 @@ else:
 
 
 def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> Dict[str, Tensor]:
-    """Create an input dictionary of ``input_ids`` and ``attention_mask`` for BERTScore calculation."""
+    """Create an input dictionary of ``input_ids`` and ``attention_mask`` for
+    BERTScore calculation.
+    """
     return {"input_ids": torch.cat(input_ids), "attention_mask": torch.cat(attention_mask)}
 
 
@@ -119,7 +121,6 @@ class BERTScore(Metric):
         >>> bertscore = BERTScore()
         >>> pprint(bertscore(preds, target))
         {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
-
     """
 
     is_differentiable: bool = False
@@ -198,8 +199,8 @@ class BERTScore(Metric):
     def update(self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str]]) -> None:
         """Store predictions/references for computing BERT scores.
 
-        It is necessary to store sentences in a tokenized form to ensure the DDP mode working.
-
+        It is necessary to store sentences in a tokenized form to ensure
+        the DDP mode working.
         """
         if not isinstance(preds, list):
             preds = list(preds)
@@ -303,7 +304,6 @@ class BERTScore(Metric):
             ...     val = {k: tensor(v).mean() for k,v in val.items()}  # convert into single value per key
             ...     values.append(val)
             >>> fig_, ax_ = metric.plot(values)
-
         """
         if val is None:  # default average score across sentences
             val = self.compute()  # type: ignore

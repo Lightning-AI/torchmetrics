@@ -27,7 +27,6 @@ def _minkowski_distance_update(preds: Tensor, targets: Tensor, p: float) -> Tens
         preds: Predicted tensor
         targets: Ground truth tensor
         p: Non-negative number acting as the p to the errors
-
     """
     _check_same_shape(preds, targets)
 
@@ -51,7 +50,6 @@ def _minkowski_distance_compute(distance: Tensor, p: float) -> Tensor:
         >>> distance_p_sum = _minkowski_distance_update(preds, target, 5)
         >>> _minkowski_distance_compute(distance_p_sum, 5)
         tensor(2.0244)
-
     """
     return torch.pow(distance, 1.0 / p)
 
@@ -78,7 +76,6 @@ def minkowski_distance(preds: Tensor, targets: Tensor, p: float) -> Tensor:
         >>> y = torch.tensor([6.1, 2.11, 3.1, 5.6])
         >>> minkowski_distance(x, y, p=3)
         tensor(5.1220)
-
     """
     minkowski_dist_sum = _minkowski_distance_update(preds, targets, p)
     return _minkowski_distance_compute(minkowski_dist_sum, p)

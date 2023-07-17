@@ -31,7 +31,6 @@ def _pairwise_minkowski_distance_update(
         y: tensor of shape ``[M,d]``
         exponent: int or float larger than 1, exponent to which the difference between preds and target is to be raised
         zero_diagonal: determines if the diagonal of the distance matrix should be set to zero
-
     """
     x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
     if not (isinstance(exponent, (float, int)) and exponent >= 1):
@@ -87,7 +86,6 @@ def pairwise_minkowski_distance(
         tensor([[0.0000, 2.0305, 5.1547],
                 [2.0305, 0.0000, 3.1383],
                 [5.1547, 3.1383, 0.0000]])
-
     """
     distance = _pairwise_minkowski_distance_update(x, y, exponent, zero_diagonal)
     return _reduce_distance_matrix(distance, reduction)

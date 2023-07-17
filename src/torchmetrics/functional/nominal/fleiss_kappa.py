@@ -22,7 +22,6 @@ def _fleiss_kappa_update(ratings: Tensor, mode: Literal["counts", "probs"] = "co
     Args:
         ratings: ratings matrix
         mode: whether ratings are provided as counts or probabilities
-
     """
     if mode == "probs":
         if ratings.ndim != 3 or not ratings.is_floating_point():
@@ -46,7 +45,6 @@ def _fleiss_kappa_compute(counts: Tensor) -> Tensor:
 
     Args:
         counts: counts matrix of shape [n_samples, n_categories]
-
     """
     total = counts.shape[0]
     n_rater = counts.sum(1)
@@ -60,7 +58,8 @@ def _fleiss_kappa_compute(counts: Tensor) -> Tensor:
 
 
 def fleiss_kappa(ratings: Tensor, mode: Literal["counts", "probs"] = "counts") -> Tensor:
-    r"""Calculatees `Fleiss kappa`_ a statistical measure for inter agreement between raters.
+    r"""Calculatees `Fleiss kappa`_ a statistical measure for inter agreement
+    between raters.
 
     .. math::
         \kappa = \frac{\bar{p} - \bar{p_e}}{1 - \bar{p_e}}
@@ -94,7 +93,6 @@ def fleiss_kappa(ratings: Tensor, mode: Literal["counts", "probs"] = "counts") -
         >>> ratings = torch.randn(100, 5, 10).softmax(dim=1)  # 100 samples, 5 categories, 10 raters
         >>> fleiss_kappa(ratings, mode='probs')
         tensor(-0.0105)
-
     """
     if mode not in ["counts", "probs"]:
         raise ValueError("Argument ``mode`` must be one of ['counts', 'probs'].")

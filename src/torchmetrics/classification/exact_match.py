@@ -41,7 +41,8 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class MulticlassExactMatch(Metric):
-    r"""Compute Exact match (also known as subset accuracy) for multiclass tasks.
+    r"""Compute Exact match (also known as subset accuracy) for multiclass
+    tasks.
 
     Exact Match is a stricter version of accuracy where all labels have to match exactly for the sample to be
     correctly classified.
@@ -91,7 +92,6 @@ class MulticlassExactMatch(Metric):
         >>> metric = MulticlassExactMatch(num_classes=3, multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([1., 0.])
-
     """
     is_differentiable = False
     higher_is_better = True
@@ -187,13 +187,13 @@ class MulticlassExactMatch(Metric):
             >>> for _ in range(20):
             ...     values.append(metric(randint(3, (20,5)), randint(3, (20,5))))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)
 
 
 class MultilabelExactMatch(Metric):
-    r"""Compute Exact match (also known as subset accuracy) for multilabel tasks.
+    r"""Compute Exact match (also known as subset accuracy) for multilabel
+    tasks.
 
     Exact Match is a stricter version of accuracy where all labels have to match exactly for the sample to be
     correctly classified.
@@ -253,7 +253,6 @@ class MultilabelExactMatch(Metric):
         >>> metric = MultilabelExactMatch(num_labels=3, multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0., 0.])
-
     """
 
     is_differentiable = False
@@ -354,7 +353,6 @@ class MultilabelExactMatch(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2, (20, 3, 5)), randint(2, (20, 3, 5))))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)
 
@@ -383,7 +381,6 @@ class ExactMatch:
         >>> metric = ExactMatch(task="multiclass", num_classes=3, multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([1., 0.])
-
     """
 
     def __new__(

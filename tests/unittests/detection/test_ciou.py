@@ -48,7 +48,9 @@ _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.13.0 is installed")
 class TestCompleteIntersectionOverUnion(MetricTester, BaseTestIntersectionOverUnion):
-    """Test the Complete Intersection over Union metric for object detection predictions."""
+    """Test the Complete Intersection over Union metric for object detection
+    predictions.
+    """
 
     data: ClassVar[Dict[str, TestCaseData]] = {
         "iou_variant": TestCaseData(data=_inputs, result={CompleteIntersectionOverUnion._iou_type: ciou}),

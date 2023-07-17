@@ -24,12 +24,12 @@ from torchmetrics.utilities.distributed import reduce
 
 
 def _uqi_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Update and returns variables required to compute Universal Image Quality Index.
+    """Update and returns variables required to compute Universal Image Quality
+    Index.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-
     """
     if preds.dtype != target.dtype:
         raise TypeError(
@@ -71,7 +71,6 @@ def _uqi_compute(
         >>> preds, target = _uqi_update(preds, target)
         >>> _uqi_compute(preds, target)
         tensor(0.9216)
-
     """
     if len(kernel_size) != 2 or len(sigma) != 2:
         raise ValueError(
@@ -165,7 +164,6 @@ def universal_image_quality_index(
         [2] Zhou Wang, A. C. Bovik, H. R. Sheikh and E. P. Simoncelli, "Image quality assessment: from error visibility
         to structural similarity," in IEEE Transactions on Image Processing, vol. 13, no. 4, pp. 600-612, April 2004,
         doi: 10.1109/TIP.2003.819861.
-
     """
     preds, target = _uqi_update(preds, target)
     return _uqi_compute(preds, target, kernel_size, sigma, reduction)

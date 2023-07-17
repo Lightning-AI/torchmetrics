@@ -25,7 +25,8 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class WordInfoPreserved(Metric):
-    r"""Word Information Preserved (`WIP`_) is a metric of the performance of an automatic speech recognition system.
+    r"""Word Information Preserved (`WIP`_) is a metric of the performance of an
+    automatic speech recognition system.
 
     This value indicates the percentage of words that were correctly predicted between a set of ground-
     truth sentences and a set of hypothesis sentences. The higher the value, the better the performance of the ASR
@@ -60,7 +61,6 @@ class WordInfoPreserved(Metric):
         >>> wip = WordInfoPreserved()
         >>> wip(preds, target)
         tensor(0.3472)
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = False
@@ -132,6 +132,5 @@ class WordInfoPreserved(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)

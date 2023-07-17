@@ -86,14 +86,18 @@ def _compute_exact_match_score(prediction: str, ground_truth: str) -> Tensor:
 def _metric_max_over_ground_truths(
     metric_fn: Callable[[str, str], Tensor], prediction: str, ground_truths: List[str]
 ) -> Tensor:
-    """Calculate maximum score for a predicted answer with all reference answers."""
+    """Calculate maximum score for a predicted answer with all reference
+    answers.
+    """
     return max(metric_fn(prediction, truth) for truth in ground_truths)  # type: ignore[type-var]
 
 
 def _squad_input_check(
     preds: PREDS_TYPE, targets: TARGETS_TYPE
 ) -> Tuple[Dict[str, str], List[Dict[str, List[Dict[str, List[Dict[str, Any]]]]]]]:
-    """Check for types and convert the input to necessary format to compute the input."""
+    """Check for types and convert the input to necessary format to compute the
+    input.
+    """
     if isinstance(preds, Dict):
         preds = [preds]
 
@@ -137,7 +141,8 @@ def _squad_update(
     preds: Dict[str, str],
     target: List[Dict[str, List[Dict[str, List[Dict[str, Any]]]]]],
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Compute F1 Score and Exact Match for a collection of predictions and references.
+    """Compute F1 Score and Exact Match for a collection of predictions and
+    references.
 
     Args:
         preds: A dictionary mapping an `id` to the predicted `answer`.
@@ -160,7 +165,6 @@ def _squad_update(
         ... ]
         >>> _squad_update(preds_dict, targets_dict)
         (tensor(1.), tensor(1.), tensor(1))
-
     """
     f1 = tensor(0.0)
     exact_match = tensor(0.0)
@@ -185,7 +189,6 @@ def _squad_compute(f1: Tensor, exact_match: Tensor, total: Tensor) -> Dict[str, 
 
     Return:
         Dictionary containing the F1 score, Exact match score for the batch.
-
     """
     exact_match = 100.0 * exact_match / total
     f1 = 100.0 * f1 / total
@@ -245,7 +248,6 @@ def squad(preds: PREDS_TYPE, target: TARGETS_TYPE) -> Dict[str, Tensor]:
     References:
         [1] SQuAD: 100,000+ Questions for Machine Comprehension of Text by Pranav Rajpurkar, Jian Zhang, Konstantin
         Lopyrev, Percy Liang `SQuAD Metric`_ .
-
     """
     preds_dict, target_dict = _squad_input_check(preds, target)
     f1, exact_match, total = _squad_update(preds_dict, target_dict)

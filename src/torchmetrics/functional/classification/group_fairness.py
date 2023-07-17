@@ -33,7 +33,6 @@ def _groups_validation(groups: torch.Tensor, num_groups: int) -> None:
     - The largest number in the tensor should not be larger than the number of groups. The group identifiers should
     be ``0, 1, ..., (num_groups - 1)``.
     - The group tensor should be dtype long.
-
     """
     if torch.max(groups) > num_groups:
         raise ValueError(
@@ -58,10 +57,10 @@ def _binary_groups_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]:
-    """Compute the true/false positives and true/false negatives rates for binary classification by group.
+    """Compute the true/false positives and true/false negatives rates for
+    binary classification by group.
 
     Related to `Type I and Type II errors`_.
-
     """
     if validate_args:
         _binary_stat_scores_arg_validation(threshold, "global", ignore_index)
@@ -111,7 +110,8 @@ def binary_groups_stat_rates(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Dict[str, torch.Tensor]:
-    r"""Compute the true/false positives and true/false negatives rates for binary classification by group.
+    r"""Compute the true/false positives and true/false negatives rates for
+    binary classification by group.
 
     Related to `Type I and Type II errors`_.
 
@@ -154,7 +154,6 @@ def binary_groups_stat_rates(
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> binary_groups_stat_rates(preds, target, groups, 2)
         {'group_0': tensor([0., 0., 1., 0.]), 'group_1': tensor([1., 0., 0., 0.])}
-
     """
     group_stats = _binary_groups_stat_scores(preds, target, groups, num_groups, threshold, ignore_index, validate_args)
 
@@ -228,7 +227,6 @@ def demographic_parity(
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> demographic_parity(preds, groups)
         {'DP_0_1': tensor(0.)}
-
     """
     num_groups = torch.unique(groups).shape[0]
     target = torch.zeros(preds.shape)
@@ -263,7 +261,8 @@ def equal_opportunity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Dict[str, torch.Tensor]:
-    r"""`Equal opportunity`_ compares the true positive rates between all groups.
+    r"""`Equal opportunity`_ compares the true positive rates between all
+    groups.
 
     If more than two groups are present, the disparity between the lowest and highest group is reported. The lowest
     true positive rate is divided by the highest, so a lower value means more discrimination against the numerator.
@@ -313,7 +312,6 @@ def equal_opportunity(
         >>> groups = torch.tensor([0, 1, 0, 1, 0, 1])
         >>> equal_opportunity(preds, target, groups)
         {'EO_0_1': tensor(0.)}
-
     """
     num_groups = torch.unique(groups).shape[0]
     group_stats = _binary_groups_stat_scores(preds, target, groups, num_groups, threshold, ignore_index, validate_args)
@@ -332,7 +330,8 @@ def binary_fairness(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Dict[str, torch.Tensor]:
-    r"""Compute either `Demographic parity`_ and `Equal opportunity`_ ratio for binary classification problems.
+    r"""Compute either `Demographic parity`_ and `Equal opportunity`_ ratio for
+    binary classification problems.
 
     This is done by setting the ``task`` argument to either ``'demographic_parity'``, ``'equal_opportunity'``
     or ``all``. See the documentation of :func:`_compute_binary_demographic_parity`
@@ -348,7 +347,6 @@ def binary_fairness(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-
     """
     if task not in ["demographic_parity", "equal_opportunity", "all"]:
         raise ValueError(

@@ -30,7 +30,6 @@ def _compare_mifid(preds, target, cosine_distance_eps: float = 0.1):
 
     Adjusted slightly to work with our code. We replace the feature extraction with our own, since we already check in
     FID that we use the correct feature extractor. This saves us from needing to download tensorflow for comparison.
-
     """
 
     def normalize_rows(x: np.ndarray):
@@ -142,7 +141,9 @@ def test_mifid_raises_errors_and_warnings():
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 @pytest.mark.parametrize("feature", [64, 192, 768, 2048])
 def test_fid_same_input(feature):
-    """If real and fake are update on the same data the fid score should be 0."""
+    """If real and fake are update on the same data the fid score should be
+    0.
+    """
     metric = MemorizationInformedFrechetInceptionDistance(feature=feature)
 
     for _ in range(2):
@@ -161,7 +162,9 @@ def test_fid_same_input(feature):
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 @pytest.mark.parametrize("equal_size", [False, True])
 def test_compare_mifid(equal_size):
-    """Check that our implementation of MIFID is correct by comparing it to the original implementation."""
+    """Check that our implementation of MIFID is correct by comparing it to the
+    original implementation.
+    """
     metric = MemorizationInformedFrechetInceptionDistance(feature=768).cuda()
 
     n, m = 100, 100 if equal_size else 90

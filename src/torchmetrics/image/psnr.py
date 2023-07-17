@@ -73,7 +73,6 @@ class PeakSignalNoiseRatio(Metric):
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
         >>> psnr(preds, target)
         tensor(2.5527)
-
     """
     is_differentiable: bool = True
     higher_is_better: bool = True
@@ -195,6 +194,5 @@ class PeakSignalNoiseRatio(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)

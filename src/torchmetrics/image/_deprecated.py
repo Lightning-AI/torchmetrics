@@ -23,7 +23,6 @@ class _ErrorRelativeGlobalDimensionlessSynthesis(ErrorRelativeGlobalDimensionles
     >>> ergas = _ErrorRelativeGlobalDimensionlessSynthesis()
     >>> torch.round(ergas(preds, target))
     tensor(154.)
-
     """
 
     def __init__(
@@ -45,7 +44,6 @@ class _MultiScaleStructuralSimilarityIndexMeasure(MultiScaleStructuralSimilarity
     >>> ms_ssim = _MultiScaleStructuralSimilarityIndexMeasure(data_range=1.0)
     >>> ms_ssim(preds, target)
     tensor(0.9627)
-
     """
 
     def __init__(
@@ -85,7 +83,6 @@ class _PeakSignalNoiseRatio(PeakSignalNoiseRatio):
     >>> target = tensor([[3.0, 2.0], [1.0, 0.0]])
     >>> psnr(preds, target)
     tensor(2.5527)
-
     """
 
     def __init__(
@@ -110,7 +107,6 @@ class _RelativeAverageSpectralError(RelativeAverageSpectralError):
     >>> rase = _RelativeAverageSpectralError()
     >>> rase(preds, target)
     tensor(5114.6641)
-
     """
 
     def __init__(
@@ -132,7 +128,6 @@ class _RootMeanSquaredErrorUsingSlidingWindow(RootMeanSquaredErrorUsingSlidingWi
     >>> rmse_sw = RootMeanSquaredErrorUsingSlidingWindow()
     >>> rmse_sw(preds, target)
     tensor(0.3999)
-
     """
 
     def __init__(
@@ -153,7 +148,6 @@ class _SpectralAngleMapper(SpectralAngleMapper):
     >>> sam = _SpectralAngleMapper()
     >>> sam(preds, target)
     tensor(0.5943)
-
     """
 
     def __init__(
@@ -175,7 +169,6 @@ class _SpectralDistortionIndex(SpectralDistortionIndex):
     >>> sdi = _SpectralDistortionIndex()
     >>> sdi(preds, target)
     tensor(0.0234)
-
     """
 
     def __init__(
@@ -194,7 +187,6 @@ class _StructuralSimilarityIndexMeasure(StructuralSimilarityIndexMeasure):
     >>> ssim = _StructuralSimilarityIndexMeasure(data_range=1.0)
     >>> ssim(preds, target)
     tensor(0.9219)
-
     """
 
     def __init__(
@@ -234,7 +226,6 @@ class _TotalVariation(TotalVariation):
     >>> img = torch.rand(5, 3, 28, 28)
     >>> tv(img)
     tensor(7546.8018)
-
     """
 
     def __init__(self, reduction: Literal["mean", "sum", "none", None] = "sum", **kwargs: Any) -> None:
@@ -251,7 +242,6 @@ class _UniversalImageQualityIndex(UniversalImageQualityIndex):
     >>> uqi = _UniversalImageQualityIndex()
     >>> uqi(preds, target)
     tensor(0.9216)
-
     """
 
     def __init__(

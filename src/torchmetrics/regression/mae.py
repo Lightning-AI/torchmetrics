@@ -51,7 +51,6 @@ class MeanAbsoluteError(Metric):
         >>> mean_absolute_error = MeanAbsoluteError()
         >>> mean_absolute_error(preds, target)
         tensor(0.5000)
-
     """
     is_differentiable: bool = True
     higher_is_better: bool = False
@@ -119,6 +118,5 @@ class MeanAbsoluteError(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
-
         """
         return self._plot(val, ax)

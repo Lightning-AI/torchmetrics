@@ -65,7 +65,6 @@ class SpearmanCorrCoef(Metric):
         >>> spearman = SpearmanCorrCoef(num_outputs=2)
         >>> spearman(preds, target)
         tensor([1.0000, 1.0000])
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -143,6 +142,5 @@ class SpearmanCorrCoef(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
-
         """
         return self._plot(val, ax)

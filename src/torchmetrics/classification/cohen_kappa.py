@@ -32,7 +32,8 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class BinaryCohenKappa(BinaryConfusionMatrix):
-    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for binary tasks.
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement
+    for binary tasks.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
@@ -86,7 +87,6 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
         >>> metric = BinaryCohenKappa()
         >>> metric(preds, target)
         tensor(0.5000)
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -150,13 +150,13 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)
 
 
 class MulticlassCohenKappa(MulticlassConfusionMatrix):
-    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement for multiclass tasks.
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement
+    for multiclass tasks.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
@@ -213,7 +213,6 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         >>> metric = MulticlassCohenKappa(num_classes=3)
         >>> metric(preds, target)
         tensor(0.6364)
-
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -278,13 +277,13 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
             >>> for _ in range(20):
             ...     values.append(metric(randn(20,3).softmax(dim=-1), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)
 
 
 class CohenKappa:
-    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement.
+    r"""Calculate `Cohen's kappa score`_ that measures inter-annotator
+    agreement.
 
     .. math::
         \kappa = (p_o - p_e) / (1 - p_e)
@@ -306,7 +305,6 @@ class CohenKappa:
         >>> cohenkappa = CohenKappa(task="multiclass", num_classes=2)
         >>> cohenkappa(preds, target)
         tensor(0.5000)
-
     """
 
     def __new__(

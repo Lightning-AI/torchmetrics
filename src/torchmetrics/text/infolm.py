@@ -107,7 +107,6 @@ class InfoLM(Metric):
         >>> infolm = InfoLM('google/bert_uncased_L-2_H-128_A-2', idf=False)
         >>> infolm(preds, target)
         tensor(-0.1784)
-
     """
 
     is_differentiable = False
@@ -167,7 +166,9 @@ class InfoLM(Metric):
         self.target_attention_mask.append(target_attention_mask)
 
     def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-        """Calculate selected information measure using the pre-trained language model."""
+        """Calculate selected information measure using the pre-trained
+        language model.
+        """
         preds_dataloader = _get_dataloader(
             input_ids=dim_zero_cat(self.preds_input_ids),
             attention_mask=dim_zero_cat(self.preds_attention_mask),
@@ -239,6 +240,5 @@ class InfoLM(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
-
         """
         return self._plot(val, ax)

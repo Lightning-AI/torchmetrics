@@ -73,7 +73,6 @@ class TweedieDevianceScore(Metric):
         >>> deviance_score = TweedieDevianceScore(power=2)
         >>> deviance_score(preds, targets)
         tensor(1.2083)
-
     """
     is_differentiable: bool = True
     higher_is_better = None
@@ -146,6 +145,5 @@ class TweedieDevianceScore(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
-
         """
         return self._plot(val, ax)

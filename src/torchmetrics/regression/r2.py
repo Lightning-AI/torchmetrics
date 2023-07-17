@@ -84,7 +84,6 @@ class R2Score(Metric):
         >>> r2score = R2Score(num_outputs=2, multioutput='raw_values')
         >>> r2score(preds, target)
         tensor([0.9654, 0.9082])
-
     """
     is_differentiable: bool = True
     higher_is_better: bool = True
@@ -177,6 +176,5 @@ class R2Score(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
-
         """
         return self._plot(val, ax)
