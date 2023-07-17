@@ -87,6 +87,9 @@ class BinaryHingeLoss(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
+    measures: Tensor
+    total: Tensor
+
     def __init__(
         self,
         squared: bool = False,
@@ -225,6 +228,9 @@ class MulticlassHingeLoss(Metric):
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Class"
 
+    measures: Tensor
+    total: Tensor
+
     def __init__(
         self,
         num_classes: int,
@@ -338,7 +344,7 @@ class HingeLoss:
         tensor([1.3743, 1.1945, 1.2359])
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass"],
         num_classes: Optional[int] = None,
@@ -356,5 +362,10 @@ class HingeLoss:
         if task == ClassificationTaskNoMultilabel.MULTICLASS:
             if not isinstance(num_classes, int):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
+            if multiclass_mode not in ("crammer-singer", "one-vs-all"):
+                raise ValueError(
+                    f"`multiclass_mode` is expected to be one of 'crammer-singer' or 'one-vs-all' but "
+                    f"`{multiclass_mode}` was passed."
+                )
             return MulticlassHingeLoss(num_classes, squared, multiclass_mode, **kwargs)
-        return None
+        raise ValueError(f"Unsupported task `{task}`")

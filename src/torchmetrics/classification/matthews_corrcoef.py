@@ -99,7 +99,7 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
         """Compute metric."""
         return _matthews_corrcoef_reduce(self.confmat)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -209,7 +209,7 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
         """Compute metric."""
         return _matthews_corrcoef_reduce(self.confmat)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -318,7 +318,7 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
         """Compute metric."""
         return _matthews_corrcoef_reduce(self.confmat)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -379,7 +379,7 @@ class MatthewsCorrCoef:
         tensor(0.5774)
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,

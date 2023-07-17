@@ -166,8 +166,6 @@ warn_no_return = "False"
 module = [
     "torchmetrics.classification.exact_match",
     "torchmetrics.classification.f_beta",
-    "torchmetrics.classification.hinge",
-    "torchmetrics.classification.matthews_corrcoef",
     "torchmetrics.classification.precision_recall",
     "torchmetrics.classification.ranking",
     "torchmetrics.classification.recall_at_fixed_precision",
