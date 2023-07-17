@@ -46,7 +46,6 @@ class IntersectionOverUnion(Metric):
         - boxes: (:class:`~torch.FloatTensor`) of shape ``(num_boxes, 4)`` containing ``num_boxes`` detection
           boxes of the format specified in the constructor.
           By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates.
-        - scores: :class:`~torch.FloatTensor` of shape ``(num_boxes)`` containing detection scores for the boxes.
         - labels: :class:`~torch.IntTensor` of shape ``(num_boxes)`` containing 0-indexed detection classes for
           the boxes.
 
@@ -84,7 +83,6 @@ class IntersectionOverUnion(Metric):
         >>> preds = [
         ...    {
         ...        "boxes": torch.tensor([[296.55, 93.96, 314.97, 152.79], [298.55, 98.96, 314.97, 151.79]]),
-        ...        "scores": torch.tensor([0.236, 0.56]),
         ...        "labels": torch.tensor([4, 5]),
         ...    }
         ... ]
@@ -107,13 +105,8 @@ class IntersectionOverUnion(Metric):
     higher_is_better: Optional[bool] = True
     full_state_update: bool = True
 
-    detections: List[Tensor]
-    detection_scores: List[Tensor]
-    detection_labels: List[Tensor]
-    groundtruths: List[Tensor]
     groundtruth_labels: List[Tensor]
     results: List[Tensor]
-    labels_eq: List[Tensor]
     _iou_type: str = "iou"
     _invalid_val: float = 0.0
 
@@ -148,13 +141,8 @@ class IntersectionOverUnion(Metric):
             raise ValueError("Expected argument `respect_labels` to be a boolean")
         self.respect_labels = respect_labels
 
-        self.add_state("detections", default=[], dist_reduce_fx=None)
-        self.add_state("detection_scores", default=[], dist_reduce_fx=None)
-        self.add_state("detection_labels", default=[], dist_reduce_fx=None)
-        self.add_state("groundtruths", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
         self.add_state("results", default=[], dist_reduce_fx=None)
-        self.add_state("labels_eq", default=[], dist_reduce_fx=None)
 
     @staticmethod
     def _iou_update_fn(*args: Any, **kwargs: Any) -> Tensor:
@@ -190,24 +178,16 @@ class IntersectionOverUnion(Metric):
 
         for p, t in zip(preds, target):
             det_boxes = self._get_safe_item_values(p["boxes"])
-            self.detections.append(det_boxes)
-            self.detection_labels.append(p["labels"])
-            self.detection_scores.append(p["scores"])
-
             gt_boxes = self._get_safe_item_values(t["boxes"])
-            self.groundtruths.append(gt_boxes)
             self.groundtruth_labels.append(t["labels"])
 
             label_eq = torch.equal(p["labels"], t["labels"])
-            # Workaround to persist state, which only works with tensors
-            self.labels_eq.append(torch.tensor([label_eq], dtype=torch.int, device=self.device))
-
             ious = self._iou_update_fn(det_boxes, gt_boxes, self.iou_threshold, self._invalid_val)
             if self.respect_labels and not label_eq:
                 label_diff = p["labels"].unsqueeze(0).T - t["labels"].unsqueeze(0)
                 labels_not_eq = label_diff != 0.0
                 ious[labels_not_eq] = self._invalid_val
-            self.results.append(ious.to(dtype=torch.float, device=self.device))
+            self.results.append(ious.diag().to(dtype=torch.float, device=self.device))
 
     def _get_safe_item_values(self, boxes: Tensor) -> Tensor:
         boxes = _fix_empty_tensors(boxes)
@@ -223,22 +203,15 @@ class IntersectionOverUnion(Metric):
 
     def compute(self) -> dict:
         """Computes IoU based on inputs passed in to ``update`` previously."""
-        aggregated_iou = dim_zero_cat(
-            [self._iou_compute_fn(iou, bool(lbl_eq)) for iou, lbl_eq in zip(self.results, self.labels_eq)]
-        )
-        results: Dict[str, Tensor] = {f"{self._iou_type}": aggregated_iou.mean()}
+        ious = dim_zero_cat(self.results)
+        labels = dim_zero_cat(self.groundtruth_labels)
+        results: Dict[str, Tensor] = {f"{self._iou_type}": self._iou_compute_fn(ious, False)}
 
         if self.class_metrics:
-            class_results: Dict[int, List[Tensor]] = defaultdict(list)
-            for iou, label in zip(self.results, self.groundtruth_labels):
-                for cl in self._get_gt_classes():
-                    masked_iou = iou[:, label == cl]
-                    if masked_iou.numel() > 0:
-                        class_results[cl].append(self._iou_compute_fn(masked_iou, False))
+            for cl in self._get_gt_classes():
+                masked_iou = ious[labels == cl]
+                results.update({f"{self._iou_type}/cl_{cl}": self._iou_compute_fn(masked_iou, False)})
 
-            results.update(
-                {f"{self._iou_type}/cl_{cl}": dim_zero_cat(class_results[cl]).mean() for cl in class_results}
-            )
         return results
 
     def plot(

@@ -38,7 +38,7 @@ def _giou_update(
 def _giou_compute(iou: torch.Tensor, labels_eq: bool = True) -> torch.Tensor:
     if labels_eq:
         return iou.diag().mean()
-    return iou.mean()
+    return iou.mean() if iou.numel() > 0 else torch.tensor(0.0)
 
 
 def generalized_intersection_over_union(
