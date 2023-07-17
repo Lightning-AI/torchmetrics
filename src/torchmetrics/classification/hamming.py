@@ -475,7 +475,7 @@ class HammingDistance:
         tensor(0.2500)
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
@@ -506,4 +506,4 @@ class HammingDistance:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelHammingDistance(num_labels, threshold, average, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")
