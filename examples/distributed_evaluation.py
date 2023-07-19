@@ -13,12 +13,14 @@
 # limitations under the License.
 import argparse
 import os
+from typing import Any, Optional, Tuple
 
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
 import torchmetrics
 import torchvision.datasets as datasets
+from lightning.pytorch.utilities.types import EVAL_DATALOADERS, STEP_OUTPUT
 from torch import Tensor
 from torch.utils.data import DataLoader, Dataset, TensorDataset
 from torchmetrics.utilities.distributed import EvaluationDistributedSampler
@@ -36,9 +38,38 @@ class DummyModel(torch.nn.Module):
         return self.linear(x)
 
 
-def use_lightning() -> None:
+def use_lightning(model: torch.nn.Module, dataset: Dataset, batch_size: int, num_processes: int, gpu: bool) -> None:
     """Use lightning to evaluate a model on a dataset."""
     from lightning.pytorch import LightningModule, Trainer
+
+    class DummyLightningModule(LightningModule):
+        def __init__(self, model: torch.nn.Module) -> None:
+            super().__init__()
+            self.model = model
+            self.metric = torchmetrics.classification.MultiClassAccuracy(num_classes=10)
+
+        def test_step(self, batch: Tuple[Tensor, Tensor], batch_idx: int) -> None:
+            preds = model(batch[0])
+            target = batch[1]
+            self.metric.update(preds, target)
+
+        def on_test_epoch_end(self) -> None:
+            self.log("test_acc", self.metric.compute())
+
+    model = DummyLightningModule(model)
+
+    trainer = Trainer(
+        num_processes=num_processes,
+        accelerator="ddp_cpu" if not gpu else "ddp",
+    )
+
+    dataloader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        sampler=EvaluationDistributedSampler(dataset),
+    )
+
+    trainer.test(model, dataloaders=dataloader)
 
 
 def _use_torch_worker(
