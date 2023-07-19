@@ -83,7 +83,8 @@ class MeanAveragePrecision(Metric):
 
         - boxes: (:class:`~torch.FloatTensor`) of shape ``(num_boxes, 4)`` containing ``num_boxes`` detection
           boxes of the format specified in the constructor.
-          By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates.
+          By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates, but can be changed
+          using the ``box_format`` parameter. Only required when `iou_type="bbox"`.
         - scores: :class:`~torch.FloatTensor` of shape ``(num_boxes)`` containing detection scores for the boxes.
         - labels: :class:`~torch.IntTensor` of shape ``(num_boxes)`` containing 0-indexed detection classes for
           the boxes.
@@ -94,7 +95,7 @@ class MeanAveragePrecision(Metric):
       (each dictionary corresponds to a single image). Parameters that should be provided per dict:
 
         - boxes: :class:`~torch.FloatTensor` of shape ``(num_boxes, 4)`` containing ``num_boxes`` ground truth
-          boxes of the format specified in the constructor.
+          boxes of the format specified in the constructor. only required when `iou_type="bbox"`.
           By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates.
         - labels: :class:`~torch.IntTensor` of shape ``(num_boxes)`` containing 0-indexed ground truth
           classes for the boxes.
@@ -136,7 +137,6 @@ class MeanAveragePrecision(Metric):
     .. note::
         ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ].
         Caution: If the initialization parameters are changed, dictionary keys for mAR can change as well.
-        The default properties are also accessible via fields and will raise an ``AttributeError`` if not available.
 
     .. note::
         This metric utilizes the official `pycocotools` implementation as its backend. This means that the metric
@@ -155,8 +155,8 @@ class MeanAveragePrecision(Metric):
                   width and height.
 
         iou_type:
-            Type of input (either masks or bounding-boxes) used for computing IOU.
-            Supported IOU types are ``["bbox", "segm"]``. If using ``"segm"``, masks should be provided in input.
+            Type of input (either masks or bounding-boxes) used for computing IOU. Supported IOU types are
+            ``"bbox"`` or ``"segm"`` or both as a list.
         iou_thresholds:
             IoU thresholds for evaluation. If set to ``None`` it corresponds to the stepped range ``[0.5,...,0.95]``
             with step ``0.05``. Else provide a list of floats.
@@ -188,7 +188,10 @@ class MeanAveragePrecision(Metric):
         ValueError:
             If ``class_metrics`` is not a boolean
 
-    Example:
+    Example::
+
+        Basic example for when `iou_type="bbox"`:
+
         >>> from torch import tensor
         >>> from torchmetrics.detection import MeanAveragePrecision
         >>> preds = [
@@ -204,7 +207,7 @@ class MeanAveragePrecision(Metric):
         ...     labels=tensor([0]),
         ...   )
         ... ]
-        >>> metric = MeanAveragePrecision()
+        >>> metric = MeanAveragePrecision(iou_type="bbox")
         >>> metric.update(preds, target)
         >>> from pprint import pprint
         >>> pprint(metric.compute())
@@ -223,6 +226,60 @@ class MeanAveragePrecision(Metric):
          'mar_large': tensor(0.6000),
          'mar_medium': tensor(-1.),
          'mar_small': tensor(-1.)}
+
+    Example::
+
+        Basic example for when `iou_type="segm"`:
+
+        >>> from torch import tensor
+        >>> from torchmetrics.detection import MeanAveragePrecision
+        >>> mask_pred = [
+        ...   [0, 0, 0, 0, 0],
+        ...   [0, 0, 1, 1, 0],
+        ...   [0, 0, 1, 1, 0],
+        ...   [0, 0, 0, 0, 0],
+        ...   [0, 0, 0, 0, 0],
+        ... ]
+        >>> mask_tgt = [
+        ...   [0, 0, 0, 0, 0],
+        ...   [0, 0, 1, 0, 0],
+        ...   [0, 0, 1, 1, 0],
+        ...   [0, 0, 1, 0, 0],
+        ...   [0, 0, 0, 0, 0],
+        ... ]
+        >>> preds = [
+        ...   dict(
+        ...     masks=tensor([mask_pred], dtype=torch.bool),
+        ...     scores=tensor([0.536]),
+        ...     labels=tensor([0]),
+        ...   )
+        ... ]
+        >>> target = [
+        ...   dict(
+        ...     masks=tensor([mask_tgt], dtype=torch.bool),
+        ...     labels=tensor([0]),
+        ...   )
+        ... ]
+        >>> metric = MeanAveragePrecision(iou_type="segm")
+        >>> metric.update(preds, target)
+        >>> from pprint import pprint
+        >>> pprint(metric.compute())
+        {'classes': tensor(0, dtype=torch.int32),
+         'map': tensor(0.2000),
+         'map_50': tensor(1.),
+         'map_75': tensor(0.),
+         'map_large': tensor(-1.),
+         'map_medium': tensor(-1.),
+         'map_per_class': tensor(-1.),
+         'map_small': tensor(0.2000),
+         'mar_1': tensor(0.2000),
+         'mar_10': tensor(0.2000),
+         'mar_100': tensor(0.2000),
+         'mar_100_per_class': tensor(-1.),
+         'mar_large': tensor(-1.),
+         'mar_medium': tensor(-1.),
+         'mar_small': tensor(0.2000)}
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
