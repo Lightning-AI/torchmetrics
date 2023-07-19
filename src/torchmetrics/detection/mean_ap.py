@@ -190,7 +190,8 @@ class MeanAveragePrecision(Metric):
 
     Example::
 
-        Basic example for when `iou_type="bbox"`:
+        Basic example for when `iou_type="bbox"`. In this case the ``boxes`` key is required in the input dictionaries,
+        in addition to the ``scores`` and ``labels`` keys.
 
         >>> from torch import tensor
         >>> from torchmetrics.detection import MeanAveragePrecision
@@ -229,7 +230,8 @@ class MeanAveragePrecision(Metric):
 
     Example::
 
-        Basic example for when `iou_type="segm"`:
+        Basic example for when `iou_type="segm"`. In this case the ``masks`` key is required in the input dictionaries,
+        in addition to the ``scores`` and ``labels`` keys.
 
         >>> from torch import tensor
         >>> from torchmetrics.detection import MeanAveragePrecision
