@@ -236,7 +236,6 @@ Or directly from conda
    :caption: API Reference
 
    references/metric
-   references/collection
    references/utilities
 
 .. toctree::
