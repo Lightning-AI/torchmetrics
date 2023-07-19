@@ -16,6 +16,7 @@ from typing import Any, List, Optional
 import torch
 from torch import Tensor
 from torch.nn import functional as F  # noqa: N812
+from torch.utils.data import Dataset
 from typing_extensions import Literal
 
 
@@ -147,17 +148,63 @@ def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tens
 
 
 class EvaluationDistributedSampler(torch.utils.data.DistributedSampler):
-    """A distributed sampler that doesn't add duplicates. Arguments are the same as DistributedSampler.
+    """A specialized distributed sampler for evaluation (test and validation).
 
-    From:
-    https://github.com/pytorch/pytorch/issues/25162#issuecomment-1227647626
+    It is derived from the PyTorch DistributedSampler, with one core difference: it doesn't add extra samples to make
+    the data evenly divisible across devices. This is important while evaluating, as adding extra samples will screw
+    the results towards those duplicated samples.
+
+    Normally not adding the extra samples would lead to processes becoming out of sync, but this is handled by the
+    custom syncronization in Torchmetrics. Thus this sampler does not in general secure that distributed operations
+    are working.
+
+    Arguments are the same as DistributedSampler, and this implementation only overrides the __init__ method.
+
+    Args:
+        dataset: Dataset used for sampling.
+        num_replicas (int, optional): Number of processes participating in
+            distributed training. By default, :attr:`world_size` is retrieved from the
+            current distributed group.
+        rank (int, optional): Rank of the current process within :attr:`num_replicas`.
+            By default, :attr:`rank` is retrieved from the current distributed
+            group.
+        shuffle (bool, optional): If ``True`` (default), sampler will shuffle the
+            indices.
+        seed (int, optional): random seed used to shuffle the sampler if
+            :attr:`shuffle=True`. This number should be identical across all
+            processes in the distributed group. Default: ``0``.
+        drop_last (bool, optional): if ``True``, then the sampler will drop the
+            tail of the data to make it evenly divisible across the number of
+            replicas. If ``False``, the sampler will add extra indices to make
+            the data evenly divisible across the replicas. Default: ``False``.
+
+    Example:
+        >>> import torch
+        >>> from torch.utils.data import DataLoader, TensorDataset
+        >>> from torchmetrics.utilities.distributed import EvaluationDistributedSampler
+        >>> dataset = TensorDataset(torch.arange(10))
+        >>> dataloader = DataLoader(
+        ...   dataset, sampler=EvaluationDistributedSampler(dataset, num_replicas=2)
+        ... )  # doctest: +SKIP
+
     """
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        dataset: Dataset,
+        num_replicas: Optional[int] = None,
+        rank: Optional[int] = None,
+        shuffle: bool = True,
+        seed: int = 0,
+        drop_last: bool = False,
+    ) -> None:
+        # From:
+        # https://github.com/pytorch/pytorch/issues/25162#issuecomment-1227647626
+        super().__init__(dataset=dataset, num_replicas=num_replicas, rank=rank, shuffle=shuffle, seed=seed)
 
-        if not self.drop_last and len(self.dataset) % self.num_replicas != 0:
+        len_dataset = len(self.dataset)  # type: ignore[arg-type]
+        if not self.drop_last and len_dataset % self.num_replicas != 0:
             # some ranks may have less samples, that's fine
-            if self.rank >= len(self.dataset) % self.num_replicas:
+            if self.rank >= len_dataset % self.num_replicas:
                 self.num_samples -= 1
-            self.total_size = len(self.dataset)
+            self.total_size = len_dataset
