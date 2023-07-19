@@ -1,9 +1,26 @@
 .. role:: hidden
     :class: hidden-section
 
-###########################
+######################
+torchmetrics.utilities
+######################
+
+In the following is listed public utility functions that may be beneficial to use in your own code. These functions are
+not part of the public API and may change at any time.
+
+**********************************
+torchmetrics.utilities.distributed
+**********************************
+
+EvaluationDistributedSampler
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: torchmetrics.utilities.distributed.EvaluationDistributedSampler
+    :noindex:
+
+***************************
 torchmetrics.utilities.data
-###########################
+***************************
 
 select_topk
 ~~~~~~~~~~~
