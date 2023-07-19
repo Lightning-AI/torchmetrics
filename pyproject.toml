@@ -54,16 +54,6 @@ relative_files = true
 line-length = 120
 exclude = "(.eggs|.git|.hg|.mypy_cache|.venv|_build|buck-out|build|dist)"
 
-[tool.isort]
-known_first_party = [
-    "torchmetrics",
-    "integrations",
-    "unittests",
-]
-skip_glob = []
-profile = "black"
-line_length = 120
-
 
 [tool.ruff]
 line-length = 120

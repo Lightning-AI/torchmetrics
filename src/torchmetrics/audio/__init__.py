@@ -12,7 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.audio.pit import PermutationInvariantTraining
-from torchmetrics.audio.sdr import ScaleInvariantSignalDistortionRatio, SignalDistortionRatio
+from torchmetrics.audio.sdr import (
+    ScaleInvariantSignalDistortionRatio,
+    SignalDistortionRatio,
+    SourceAggregatedSignalDistortionRatio,
+)
 from torchmetrics.audio.snr import (
     ComplexScaleInvariantSignalNoiseRatio,
     ScaleInvariantSignalNoiseRatio,
@@ -30,6 +34,7 @@ __all__ = [
     "PermutationInvariantTraining",
     "ScaleInvariantSignalDistortionRatio",
     "SignalDistortionRatio",
+    "SourceAggregatedSignalDistortionRatio",
     "ScaleInvariantSignalNoiseRatio",
     "SignalNoiseRatio",
     "ComplexScaleInvariantSignalNoiseRatio",

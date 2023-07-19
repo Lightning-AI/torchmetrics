@@ -19,7 +19,7 @@ from torch import tensor
 from torch.nn import Linear
 
 if module_available("lightning"):
-    from lightning import LightningModule, Trainer
+    from lightning.pytorch import LightningModule, Trainer
     from lightning.pytorch.loggers import CSVLogger
 else:
     from pytorch_lightning import LightningModule, Trainer
@@ -419,22 +419,22 @@ def test_dtype_in_pl_module_transfer(tmpdir):
             return torch.optim.SGD(self.layer.parameters(), lr=0.1)
 
     model = BoringModel()
-    assert model.metric.value.dtype == torch.float32
+    assert model.metric.sum_value.dtype == torch.float32
     model = model.half()
-    assert model.metric.value.dtype == torch.float32
+    assert model.metric.sum_value.dtype == torch.float32
 
     model = BoringModel()
-    assert model.metric.value.dtype == torch.float32
+    assert model.metric.sum_value.dtype == torch.float32
     model = model.double()
-    assert model.metric.value.dtype == torch.float32
+    assert model.metric.sum_value.dtype == torch.float32
 
     model = BoringModel(metric_dtype=torch.float16)
-    assert model.metric.value.dtype == torch.float16
+    assert model.metric.sum_value.dtype == torch.float16
     model = model.float()
-    assert model.metric.value.dtype == torch.float16
+    assert model.metric.sum_value.dtype == torch.float16
 
     model = BoringModel()
-    assert model.metric.value.dtype == torch.float32
+    assert model.metric.sum_value.dtype == torch.float32
 
     model = model.type(torch.half)
-    assert model.metric.value.dtype == torch.float32
+    assert model.metric.sum_value.dtype == torch.float32

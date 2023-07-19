@@ -140,6 +140,7 @@ class TestMAPUsingCOCOReference(MetricTester):
                 "iou_thresholds": iou_thresholds,
                 "rec_thresholds": rec_thresholds,
                 "class_metrics": False,
+                "box_format": "xywh",
             },
             check_batch=False,
             atol=1e-2,
@@ -154,7 +155,7 @@ class TestMAPUsingCOCOReference(MetricTester):
             target=target,
             metric_class=MeanAveragePrecision,
             reference_metric=partial(_compare_again_coco_fn, iou_type=iou_type, class_metrics=True),
-            metric_args={"iou_type": iou_type, "class_metrics": True},
+            metric_args={"box_format": "xywh", "iou_type": iou_type, "class_metrics": True},
             check_batch=False,
             atol=1e-1,
         )
@@ -656,3 +657,29 @@ def test_device_changing():
     metric = metric.cpu()
     val = metric.compute()
     assert isinstance(val, dict)
+
+
+@pytest.mark.parametrize(
+    ("box_format", "iou_val_expected", "map_val_expected"),
+    [
+        ("xyxy", 0.25, 1),
+        ("xywh", 0.143, 0.0),
+        ("cxcywh", 0.143, 0.0),
+    ],
+)
+def test_for_box_format(box_format, iou_val_expected, map_val_expected):
+    """Test that only the correct box format lead to a score of 1.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/1908.
+    """
+    predictions = [
+        {"boxes": torch.tensor([[0.5, 0.5, 1, 1]]), "scores": torch.tensor([1.0]), "labels": torch.tensor([0])}
+    ]
+
+    targets = [{"boxes": torch.tensor([[0, 0, 1, 1]]), "labels": torch.tensor([0])}]
+
+    metric = MeanAveragePrecision(box_format=box_format, iou_thresholds=[0.2])
+    metric.update(predictions, targets)
+    result = metric.compute()
+    assert result["map"].item() == map_val_expected
+    assert round(float(metric.coco_eval.ious[(0, 0)]), 3) == iou_val_expected
