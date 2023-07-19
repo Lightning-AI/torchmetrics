@@ -13,6 +13,7 @@
 # limitations under the License.
 from unittest import mock
 
+import pytest
 import torch
 from lightning_utilities import module_available
 from torch import tensor
@@ -28,6 +29,7 @@ else:
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import SumMetric
 from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision
+from torchmetrics.utilities.distributed import EvaluationDistributedSampler
 
 from integrations.helpers import no_warning_call
 from integrations.lightning.boring_model import BoringModel
@@ -438,3 +440,27 @@ def test_dtype_in_pl_module_transfer(tmpdir):
 
     model = model.type(torch.half)
     assert model.metric.sum_value.dtype == torch.float32
+
+
+@pytest.mark.skipif(not torch.cuda.is_available() and torch.cuda.device_count() < 2, reason="test requires GPU machine")
+def test_distributed_sampler_integration():
+    """Test the integration of the custom distributed sampler with Lightning."""
+
+    class TestModel(BoringModel):
+        def __init__(self) -> None:
+            super().__init__()
+            self.metric = SumMetric()
+
+        def test_dataloader(self):
+            dataset = torch.utils.data.TensorDataset(torch.arange(100))
+            return torch.utils.data.DataLoader(dataset, batch_size=3, sampler=EvaluationDistributedSampler(dataset))
+
+        def test_step(self, batch, batch_idx):
+            self.metric.update(batch[0])
+
+        def on_test_epoch_end(self):
+            self.log("test_metric", self.metric.compute())
+
+    trainer = Trainer(devices=2, accelerator="gpu")
+    res = trainer.test(TestModel())
+    assert res[0]["test_metric"] == torch.arange(100).sum()
