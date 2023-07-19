@@ -11,6 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""An example of how to use the distributed evaluation utilities in both Lightning and PyTorch.
+
+To run using only Pytorch:
+    python distributed_evaluation.py
+To run using Lightning:
+    python distributed_evaluation.py --use_lightning
+
+By default, this example uses the EvaluationDistributedSampler, which is a custom sampler that ensures that no extra
+samples are added to the dataset. This is important for evaluation, as we don't want to evaluate on the same samples
+multiple times.
+
+If you want to see the difference between the EvaluationDistributedSampler and the standard DistributedSampler, you
+add the flag --use_standard. This will use the standard DistributedSampler, which will add extra samples to the dataset
+and thus give incorrect results.
+"""
 import argparse
 import os
 from typing import Any, Optional, Tuple
@@ -19,15 +34,16 @@ import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
 import torchmetrics
-import torchvision.datasets as datasets
-from lightning.pytorch.utilities.types import EVAL_DATALOADERS, STEP_OUTPUT
 from torch import Tensor
-from torch.utils.data import DataLoader, Dataset, TensorDataset
+from torch.nn import Module
+from torch.utils.data import DataLoader, Dataset, DistributedSampler, TensorDataset
 from torchmetrics.utilities.distributed import EvaluationDistributedSampler
 
+_ = torch.manual_seed(42)
 
-class DummyModel(torch.nn.Module):
-    """Dummy model."""
+
+class DummyModel(Module):
+    """Dummy model consisting of a single linear layer."""
 
     def __init__(self, n_feature: int) -> None:
         super().__init__()
@@ -38,15 +54,29 @@ class DummyModel(torch.nn.Module):
         return self.linear(x)
 
 
-def use_lightning(model: torch.nn.Module, dataset: Dataset, batch_size: int, num_processes: int, gpu: bool) -> None:
+def calculate_accuracy_manually(dataset: Dataset, model: Module) -> Tensor:
+    """Basic function to calculate accuracy manually, without any distributed stuff."""
+    x, y = dataset.tensors
+    preds = model(x)
+    return (preds.argmax(dim=1) == y).float().mean()
+
+
+def use_lightning(
+    model: Module, dataset: Dataset, batch_size: int, use_standard: bool, num_processes: int, gpu: bool
+) -> None:
     """Use lightning to evaluate a model on a dataset."""
     from lightning.pytorch import LightningModule, Trainer
 
+    sampler_class = DistributedSampler if use_standard else EvaluationDistributedSampler
+
     class DummyLightningModule(LightningModule):
-        def __init__(self, model: torch.nn.Module) -> None:
+        def __init__(self, model: Module) -> None:
             super().__init__()
             self.model = model
-            self.metric = torchmetrics.classification.MultiClassAccuracy(num_classes=10)
+            self.metric = torchmetrics.classification.MulticlassAccuracy(num_classes=10, average="micro")
+
+        def forward(self, x: Tensor) -> Tensor:
+            return self.model(x)
 
         def test_step(self, batch: Tuple[Tensor, Tensor], batch_idx: int) -> None:
             preds = model(batch[0])
@@ -56,24 +86,31 @@ def use_lightning(model: torch.nn.Module, dataset: Dataset, batch_size: int, num
         def on_test_epoch_end(self) -> None:
             self.log("test_acc", self.metric.compute())
 
+        def test_dataloader(self) -> DataLoader:
+            return DataLoader(
+                dataset,
+                batch_size=batch_size,
+                sampler=sampler_class(dataset),
+            )
+
     model = DummyLightningModule(model)
 
     trainer = Trainer(
-        num_processes=num_processes,
-        accelerator="ddp_cpu" if not gpu else "ddp",
+        devices=num_processes,
+        accelerator="cpu" if not gpu else "ddp",
     )
 
-    dataloader = DataLoader(
-        dataset,
-        batch_size=batch_size,
-        sampler=EvaluationDistributedSampler(dataset),
-    )
+    res = trainer.test(model)
+    manual_res = calculate_accuracy_manually(dataset, model)
+    print(manual_res)
+    if torch.allclose(torch.tensor(res[0]["test_acc"]), manual_res):
+        print("success! result matched manual calculation")
+    else:
+        print("failure! result did not match manual calculation")
 
-    trainer.test(model, dataloaders=dataloader)
 
-
-def _use_torch_worker(
-    rank: int, model: torch.nn.Module, dataset: Dataset, batch_size: int, num_processes: int, gpu: bool
+def _use_torch_worker_fn(
+    rank: int, model: Module, dataset: Dataset, batch_size: int, use_standard: bool, num_processes: int, gpu: bool
 ) -> None:
     """Worker function for torch.distributed evaluation."""
     os.environ["MASTER_ADDR"] = "localhost"
@@ -82,13 +119,15 @@ def _use_torch_worker(
 
     device = torch.device(f"cuda:rank{rank}") if gpu else torch.device("cpu")
 
+    sampler_class = DistributedSampler if use_standard else EvaluationDistributedSampler
+
     dataloader = DataLoader(
         dataset,
         batch_size=batch_size,
-        sampler=EvaluationDistributedSampler(dataset, num_processes, rank),
+        sampler=sampler_class(dataset, num_processes, rank),
     )
 
-    metric = torchmetrics.classification.MulticlassAccuracy(num_classes=10)
+    metric = torchmetrics.classification.MulticlassAccuracy(num_classes=10, average="micro")
     metric = metric.to(device)
 
     batches, num_samples = 0, 0
@@ -106,16 +145,25 @@ def _use_torch_worker(
 
     print(f"Rank {rank} processed {num_samples} samples and {batches} batches and calculated accuracy: {res}")
 
+    manual_res = calculate_accuracy_manually(dataset, model)
+    if torch.allclose(res, manual_res):
+        print("success! result matched manual calculation")
+    else:
+        print("failure! result did not match manual calculation")
 
-def use_torch(model: torch.nn.Module, dataset: Dataset, batch_size: int, num_processes: int, gpu: bool) -> None:
+
+def use_torch(
+    model: Module, dataset: Dataset, batch_size: int, use_standard: bool, num_processes: int, gpu: bool
+) -> None:
     """Use torch.distributed to evaluate a model on a dataset."""
-    mp.spawn(_use_torch_worker, nprocs=2, args=(model, dataset, batch_size, num_processes, gpu))
+    mp.spawn(_use_torch_worker_fn, nprocs=2, args=(model, dataset, batch_size, use_standard, num_processes, gpu))
 
 
 def main() -> None:
     """Main function."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--use_lightning", action="store_true")
+    parser.add_argument("--use_standard", action="store_true")
     parser.add_argument("--num_processes", type=int, default=2)
     parser.add_argument("--batch_size", type=int, default=3)
     parser.add_argument("--gpu", action="store_true")
@@ -133,9 +181,9 @@ def main() -> None:
         )
 
     if args.use_lightning:
-        use_lightning(dummy_model, dataset, batch_size, args.num_processes, args.gpu)
+        use_lightning(dummy_model, dataset, batch_size, args.use_standard, args.num_processes, args.gpu)
     else:
-        use_torch(dummy_model, dataset, batch_size, args.num_processes, args.gpu)
+        use_torch(dummy_model, dataset, batch_size, args.use_standard, args.num_processes, args.gpu)
 
 
 if __name__ == "__main__":
