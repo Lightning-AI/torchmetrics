@@ -12,10 +12,18 @@ not part of the public API and may change at any time.
 torchmetrics.utilities.distributed
 **********************************
 
+The `distributed` utilities are used to help with syncronization of metrics across multiple processes.
+
 EvaluationDistributedSampler
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: torchmetrics.utilities.distributed.EvaluationDistributedSampler
+    :noindex:
+
+gather_all_tensors
+~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: torchmetrics.utilities.distributed.gather_all_tensors
     :noindex:
 
 ***************************

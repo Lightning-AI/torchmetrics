@@ -178,7 +178,13 @@ class EvaluationDistributedSampler(torch.utils.data.DistributedSampler):
             replicas. If ``False``, the sampler will add extra indices to make
             the data evenly divisible across the replicas. Default: ``False``.
 
-    Example:
+    For a full example on how to use this sampler, using both bare Pytorch but alo Psytorch Lightning,
+    see `torchmetrics distributed example`_ in the examples folder.
+
+    Example::
+
+        The distributed sampler is always intended to be used in conjunction with a DataLoader:
+
         >>> import torch
         >>> from torch.utils.data import DataLoader, TensorDataset
         >>> from torchmetrics.utilities.distributed import EvaluationDistributedSampler
