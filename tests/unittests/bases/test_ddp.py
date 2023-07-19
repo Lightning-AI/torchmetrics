@@ -15,12 +15,14 @@ import os
 import sys
 from copy import deepcopy
 from functools import partial
+from typing import Tuple
 
 import pytest
 import torch
 from torch import tensor
-from torchmetrics import Metric
+from torch.utils.data import DistributedSampler
 from torchmetrics.aggregation import CatMetric, SumMetric
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.distributed import EvaluationDistributedSampler, gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 
@@ -275,14 +277,16 @@ def test_sync_with_empty_lists():
     pytest.pool.map(_test_sync_with_empty_lists, range(NUM_PROCESSES))
 
 
-def _test_evaluation_distributed_dataloader(rank, dataset_size, distributed_sampler_class, expected, metric_class):
+def _test_evaluation_distributed_dataloader(
+    rank, dataset_size, batch_size, distributed_sampler_class, expected, metric_class
+):
     """Worker function for testing the EvaluationDistributedSampler."""
     metric = metric_class()
 
     dataset = torch.utils.data.TensorDataset(torch.arange(1, dataset_size + 1))
     dataloader = torch.utils.data.DataLoader(
         dataset=dataset,
-        batch_size=3,
+        batch_size=batch_size,
         sampler=distributed_sampler_class(dataset, num_replicas=NUM_PROCESSES, rank=rank, shuffle=False),
     )
 
@@ -330,17 +334,27 @@ def _test_evaluation_distributed_dataloader(rank, dataset_size, distributed_samp
 
 
 @pytest.mark.parametrize(
-    ("dataset_size", "distributed_sampler_class", "expected"),
+    ("dataset_size", "batch_size", "distributed_sampler_class", "expected"),
     [
-        (10, EvaluationDistributedSampler, (2, 5, 2, 5)),
-        (11, EvaluationDistributedSampler, (2, 6, 2, 5)),
+        (10, 1, EvaluationDistributedSampler, (5, 5, 5, 5)),
+        (11, 1, EvaluationDistributedSampler, (6, 6, 5, 5)),
+        (10, 3, EvaluationDistributedSampler, (2, 5, 2, 5)),
+        (11, 3, EvaluationDistributedSampler, (2, 6, 2, 5)),
         # standard sampler adds samples if the dataset size is not divisible by the number of processes
-        (10, torch.utils.data.DistributedSampler, (2, 5, 2, 5)),
-        (11, torch.utils.data.DistributedSampler, (2, 6, 2, 6)),
+        (10, 1, DistributedSampler, (5, 5, 5, 5)),
+        (11, 1, DistributedSampler, (6, 6, 6, 6)),
+        (10, 3, DistributedSampler, (2, 5, 2, 5)),
+        (11, 3, DistributedSampler, (2, 6, 2, 6)),
     ],
 )
 @pytest.mark.parametrize("metric_class", [SumMetric, CatMetric])
-def test_evaluation_distributed_dataloader(dataset_size, distributed_sampler_class, expected, metric_class):
+def test_evaluation_distributed_dataloader(
+    dataset_size: int,
+    batch_size: int,
+    distributed_sampler_class: DistributedSampler,
+    expected: Tuple[int, int, int, int],
+    metric_class: Metric,
+):
     """Test the EvaluationDistributedSampler.
 
     This sampler should not add additional samples to the dataset compared to the standard DistributedSampler.
@@ -350,6 +364,7 @@ def test_evaluation_distributed_dataloader(dataset_size, distributed_sampler_cla
         partial(
             _test_evaluation_distributed_dataloader,
             dataset_size=dataset_size,
+            batch_size=batch_size,
             distributed_sampler_class=distributed_sampler_class,
             expected=expected,
             metric_class=metric_class,
