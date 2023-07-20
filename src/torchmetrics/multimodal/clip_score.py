@@ -21,21 +21,19 @@ from typing_extensions import Literal
 from torchmetrics import Metric
 from torchmetrics.functional.multimodal.clip_score import _clip_score_update, _get_model_and_processor
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PESQ_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TRANSFORMERS_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["CLIPScore.plot"]
-
-_DEFAULT_MODEL: str = "openai/clip-vit-large-patch14"
 
 if _TRANSFORMERS_AVAILABLE:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
 
     def _download_clip() -> None:
-        _CLIPModel.from_pretrained(_DEFAULT_MODEL)
-        _CLIPProcessor.from_pretrained(_DEFAULT_MODEL)
+        _CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
+        _CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
 
     if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_clip):
         __doctest_skip__ = ["CLIPScore", "CLIPScore.plot"]
@@ -99,7 +97,7 @@ class CLIPScore(Metric):
             "openai/clip-vit-base-patch32",
             "openai/clip-vit-large-patch14-336",
             "openai/clip-vit-large-patch14",
-        ] = _DEFAULT_MODEL,  # type: ignore[assignment]
+        ] = "openai/clip-vit-large-patch14",  # type: ignore[assignment]
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
