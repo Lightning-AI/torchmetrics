@@ -19,7 +19,7 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics import Metric
-from torchmetrics.functional.multimodal.clip_score import _clip_score_update, _get_model_and_processor
+from torchmetrics.functional.multimodal.clip_score import _clip_score_update, _get_clip_model_and_processor
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TRANSFORMERS_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -44,14 +44,14 @@ else:
 class CLIPScore(Metric):
     r"""Calculates `CLIP Score`_ which is a text-to-image similarity metric.
 
-    CLIP is a reference free metric that can be used to evaluate the correlation between a generated caption for an
-    image and the actual content of the image. It has been found to be highly correlated with human judgement. The
+    CLIP Score is a reference free metric that can be used to evaluate the correlation between a generated caption for
+    an image and the actual content of the image. It has been found to be highly correlated with human judgement. The
     metric is defined as:
 
     .. math::
         \text{CLIPScore(I, C)} = max(100 * cos(E_I, E_C), 0)
 
-    which corresponds to the cosine similarity between visual CLIP embedding :math:`E_i` for an image :math:`i` and
+    which corresponds to the cosine similarity between visual `CLIP`_ embedding :math:`E_i` for an image :math:`i` and
     textual CLIP embedding :math:`E_C` for an caption :math:`C`. The score is bound between 0 and 100 and the closer
     to 100 the better.
 
@@ -101,7 +101,7 @@ class CLIPScore(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        self.model, self.processor = _get_model_and_processor(model_name_or_path)
+        self.model, self.processor = _get_clip_model_and_processor(model_name_or_path)
         self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
