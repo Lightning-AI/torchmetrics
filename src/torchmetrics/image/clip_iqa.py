@@ -17,7 +17,7 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.image.clip_iqa import _clip_iqa_update
-from torchmetrics.functional.multimodal.clip_score import _get_model_and_processor
+from torchmetrics.functional.multimodal.clip_score import _get_clip_model_and_processor
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PESQ_AVAILABLE, _TRANSFORMERS_AVAILABLE
@@ -57,7 +57,7 @@ class CLIPIQA(Metric):
     ) -> None:
         super().__init__(**kwargs)
 
-        self.model, self.processor = _get_model_and_processor(model_name_or_path)
+        self.model, self.processor = _get_clip_model_and_processor(model_name_or_path)
 
         text_processed = self.processor(text=["Good photo.", "Bad photo."], return_tensors="pt", padding=True)
         anchors = self.model.get_text_features(text_processed["input_ids"], text_processed["attention_mask"])
