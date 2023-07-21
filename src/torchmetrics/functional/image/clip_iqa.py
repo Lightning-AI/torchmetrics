@@ -13,6 +13,7 @@
 # limitations under the License.
 from typing import Dict, List, Literal, Optional, Tuple, Union
 
+import torch
 from torch import Tensor
 
 from torchmetrics.functional.multimodal.clip_score import _get_clip_model_and_processor
@@ -42,11 +43,11 @@ _PROMPTS: Dict[str, Tuple[str, str]] = {
 }
 
 
-def _clip_iqa_format_promts(promts: Union[str, List[str], Tuple[str, str]]) -> Tuple[List[str], Optional[List[str]]]:
+def _clip_iqa_format_prompts(prompts: Union[str, List[str], Tuple[str, str]]) -> Tuple[List[str], Optional[List[str]]]:
     """Converts the provided keywords into a list of prompts for the model to calculate the achor vectors.
 
     Args:
-        promts: A string, list of strings or tuple of strings. If a string is provided, it must be one of the
+        prompts: A string, list of strings or tuple of strings. If a string is provided, it must be one of the
             availble prompts. If a list of strings is provided, all strings must be one of the availble prompts.
             If a tuple of strings is provided, it must be of length 2 and the first string must be a positive prompt
             and the second string must be a negative prompt.
@@ -56,26 +57,45 @@ def _clip_iqa_format_promts(promts: Union[str, List[str], Tuple[str, str]]) -> T
 
     Examples::
 
-        >>> _clip_iqa_format_promts("quality")
-        ['Good photo.', 'Bad photo.']
-        >>> _clip_iqa_format_promts(["quality", "brightness"])
-        ['Good photo.', 'Bad photo.', 'Bright photo.', 'Dark photo.']
+        >>> _clip_iqa_format_prompts("quality")
+        (['Good photo.', 'Bad photo.'], None)
+        >>> _clip_iqa_format_prompts(["quality", "brightness"])
+        (['Good photo.', 'Bad photo.', 'Bright photo.', 'Dark photo.'], ['quality', 'brightness'])
     """
-    if isinstance(promts, tuple):
-        if len(promts) != 2:
+    if isinstance(prompts, tuple):
+        if len(prompts) != 2:
             raise ValueError(
-                f"Invalid prompt: {promts}. Expected a tuple of two strings, one positive and one negative"
+                f"Invalid prompt: {prompts}. Expected a tuple of two strings, one positive and one negative"
             )
-        return promts, None
-    if isinstance(promts, str):
-        if promts not in _PROMPTS:
-            raise ValueError(f"Invalid prompt: {promts}. Expected one of {_PROMPTS.keys()}")
-        return list(_PROMPTS[promts]), None
-    if isinstance(promts, list):
-        if not all(p in _PROMPTS for p in promts):
-            raise ValueError(f"Invalid prompt: {promts}. Expected all to be one of {_PROMPTS.keys()}")
-        return [e for p in promts for e in _PROMPTS[p]], promts
+        return prompts, None
+    if isinstance(prompts, str):
+        if prompts not in _PROMPTS:
+            raise ValueError(f"Invalid prompt: {prompts}. Expected one of {_PROMPTS.keys()}")
+        return list(_PROMPTS[prompts]), None
+    if isinstance(prompts, list):
+        if not all(p in _PROMPTS for p in prompts):
+            raise ValueError(f"Invalid prompt: {prompts}. Expected all to be one of {_PROMPTS.keys()}")
+        return [e for p in prompts for e in _PROMPTS[p]], prompts
     raise ValueError("promts must be a string, list of strings or tuple of strings")
+
+
+def _get_clip_iqa_anchor_vectors(
+    model: _CLIPModel, processor: _CLIPProcessor, prompts: List[str], device: torch.device
+) -> Tensor:
+    """Calculates the anchor vectors for the CLIP IQA metric.
+
+    Args:
+        model: The CLIP model
+        processor: The CLIP processor
+        prompts: A list of prompts
+        device: The device to use for the calculation
+
+    """
+    text_processed = processor(text=prompts, return_tensors="pt", padding=True)
+    anchors = model.get_text_features(
+        text_processed["input_ids"].to(device), text_processed["attention_mask"].to(device)
+    )
+    return anchors / anchors.norm(p=2, dim=-1, keepdim=True)
 
 
 def _clip_iqa_update(
@@ -95,21 +115,17 @@ def _clip_iqa_update(
         raise ValueError("Expected all images to be 3d but found image that has either more or less")
 
     device = images[0].device
-    text_processed = processor(text=prompts, return_tensors="pt", padding=True)
-    anchors = model.get_text_features(
-        text_processed["input_ids"].to(device), text_processed["attention_mask"].to(device)
-    )
-    anchors = anchors / anchors.norm(p=2, dim=-1, keepdim=True)
+    anchors = _get_clip_iqa_anchor_vectors(model, processor, prompts, device)
 
     processed_input = processor(images=[i.cpu() for i in images], return_tensors="pt", padding=True)
     img_features = model.get_image_features(processed_input["pixel_values"].to(device))
     img_features = img_features / img_features.norm(p=2, dim=-1, keepdim=True)
 
     logits_per_image = 100 * img_features @ anchors.t()
-    return logits_per_image.reshape(-1, 2, 2).softmax(-1)[:, :, 0]
+    return logits_per_image.reshape(logits_per_image.shape[0], -1, 2).softmax(-1)[:, :, 0]
 
 
-def clip_iqa(
+def clip_image_quality_assessment(
     images: Union[Tensor, List[Tensor]],
     model_name_or_path: Literal[
         "openai/clip-vit-base-patch16",
@@ -200,35 +216,28 @@ def clip_iqa(
     Example::
         Single promt:
 
-        >>> from torchmetrics.functional.image import clip_iqa
+        >>> from torchmetrics.functional.image import clip_image_quality_assessment
         >>> import torch
         >>> _ = torch.manual_seed(42)
         >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
-        >>> clip_iqa(imgs, prompts="quality")
+        >>> clip_image_quality_assessment(imgs, prompts="quality")
         >>> tensor([[0.5000], [0.5000]])
 
     Example::
         Multiple promts:
 
-        >>> from torchmetrics.functional.image import clip_iqa
+        >>> from torchmetrics.functional.image import clip_image_quality_assessment
         >>> import torch
         >>> _ = torch.manual_seed(42)
         >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
-        >>> clip_iqa(imgs, prompts=["quality", "brightness"])
+        >>> clip_image_quality_assessment(imgs, prompts=["quality", "brightness"])
         >>> {'quality': tensor([[0.5000], [0.5000]]), 'brightness': tensor([[0.5000], [0.5000]])}
 
     """
     model, processor = _get_clip_model_and_processor(model_name_or_path)
     device = images.device if isinstance(images, Tensor) else images[0].device
-    prompts, prompts_names = _clip_iqa_format_promts(prompts)
+    prompts, prompts_names = _clip_iqa_format_prompts(prompts)
     result = _clip_iqa_update(images, model.to(device), processor, prompts)
     if prompts_names is None:
         return result
     return {p: result[:, i] for i, p in enumerate(prompts_names)}
-
-
-if __name__ == "__main__":
-    import torch
-
-    img = torch.randint(255, (2, 3, 224, 224)).float()
-    out = clip_iqa(img, prompts=["quality", "brightness"])

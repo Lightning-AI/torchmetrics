@@ -57,6 +57,17 @@ class CLIPScore(Metric):
 
     .. note:: Metric is not scriptable
 
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``images`` (:class:`~torch.Tensor` or list of tensors): tensor with images feed to the feature extractor with. If
+        a single tensor it should have shape ``(N, C, H, W)``. If a list of tensors, each tensor should have shape
+        ``(C, H, W)``. ``C`` is the number of channels, ``H`` and ``W`` are the height and width of the image.
+    - ``text`` (:class:`~str` or :class:`~list` of :class:`~str`): text to compare with the images, one for each image.
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``clip_score`` (:class:`~torch.Tensor`): float scalar tensor with mean CLIP score over samples
+
     Args:
         model_name_or_path: string indicating the version of the CLIP model to use. Available models are:
 
