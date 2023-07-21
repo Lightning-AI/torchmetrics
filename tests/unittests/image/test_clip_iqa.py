@@ -11,3 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import piq
+import pytest
+import torch
+from torchmetrics.functional.image.clip_iqa import clip_iqa
+
+
+def test_compare():
+    """Compare the output of the function with the output of the reference implementation."""
+    img = torch.randint(255, (1, 3, 256, 256))
+    clip_iqa(img)
+
+    piq.CLIPIQA()(img)
+
+
+@pytest.mark.parametrize("prompts", [("Good", "Bad", "Ugly"), "something", ["quality", "ugly"]])
+def test_raises_error_on_wrong_prompts(prompts):
+    """Test that the function raises an error if the prompts argument are not valid."""
+    img = torch.randint(255, (1, 3, 256, 256))
+
+    with pytest.raises(ValueError, match="Invalid prompt:.*"):
+        clip_iqa(img, prompts=prompts)
