@@ -15,6 +15,8 @@ import inspect
 import os
 import shutil
 import sys
+from pathlib import Path
+import textwrap
 
 import torch
 
@@ -68,13 +70,27 @@ _transform_changelog(
     os.path.join(_PATH_HERE, FOLDER_GENERATED, "CHANGELOG.md"),
 )
 
+
+def _create_page_silet_images(search_dir: str, img_exts: tuple = ('.png', '.jpg', '.svg', '.gif')):
+    imgdir = Path(search_dir)
+    txt = ":orphan:"
+    for file in src_imgdir.iterdir():
+        if file.suffix not in img_exts:
+            continue
+        txt += f"\n.. image:: {search_dir}/{file.name}\n\n    :height: 0px\n    :width: 0px\n"
+    # unindent multiline string
+    txt = textwrap.dedent(txt)
+
+
 if SPHINX_FETCH_ASSETS:
     fetch_external_assets(
         docs_folder=_PATH_HERE,
         assets_folder="_static/fetched-s3-assets",
         retrieve_pattern=r"https?://[-a-zA-Z0-9_]+\.s3\.[-a-zA-Z0-9()_\\+.\\/=]+",
     )
-    # todo: seems we still have soem icons used in raw HTML missing in final buils
+    # seems we still have soem icons used in raw HTML missing in final buils
+    with open('_-silent_image.txt', 'w') as fp:
+        fp.write(_create_page_silet_images("_static/fetched-s3-assets"))
 
 # -- General configuration ---------------------------------------------------
 
