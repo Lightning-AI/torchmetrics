@@ -71,7 +71,7 @@ _transform_changelog(
 )
 
 
-def _create_page_silet_images(search_dir: str, img_exts: tuple = ('.png', '.jpg', '.svg', '.gif')):
+def _create_page_silet_images(search_dir: str, img_exts: tuple = (".png", ".jpg", ".svg", ".gif")):
     img_dir = Path(search_dir)
     txt = ":orphan:\n\n"
     for file in img_dir.iterdir():
@@ -90,7 +90,7 @@ if SPHINX_FETCH_ASSETS:
         retrieve_pattern=r"https?://[-a-zA-Z0-9_]+\.s3\.[-a-zA-Z0-9()_\\+.\\/=]+",
     )
     # seems we still have soem icons used in raw HTML missing in final buils
-    with open('_-silent-image.txt', 'w') as fp:
+    with open("_-silent-image.txt", "w") as fp:
         fp.write(_create_page_silet_images("_static/fetched-s3-assets"))
 
 # -- General configuration ---------------------------------------------------
