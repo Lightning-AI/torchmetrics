@@ -74,6 +74,7 @@ if SPHINX_FETCH_ASSETS:
         assets_folder="_static/fetched-s3-assets",
         retrieve_pattern=r"https?://[-a-zA-Z0-9_]+\.s3\.[-a-zA-Z0-9()_\\+.\\/=]+",
     )
+    # todo: seems we still have soem icons used in raw HTML missing in final buils
 
 # -- General configuration ---------------------------------------------------
 
