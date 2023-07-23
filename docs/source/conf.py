@@ -80,6 +80,7 @@ def _create_page_silet_images(search_dir: str, img_exts: tuple = ('.png', '.jpg'
         txt += f"\n.. image:: {search_dir}/{file.name}\n\n    :height: 0px\n    :width: 0px\n"
     # unindent multiline string
     txt = textwrap.dedent(txt)
+    return txt
 
 
 if SPHINX_FETCH_ASSETS:
