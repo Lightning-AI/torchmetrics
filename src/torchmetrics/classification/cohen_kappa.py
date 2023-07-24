@@ -111,7 +111,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
         """Compute metric."""
         return _cohen_kappa_reduce(self.confmat, self.weights)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -237,7 +237,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         """Compute metric."""
         return _cohen_kappa_reduce(self.confmat, self.weights)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -304,7 +304,7 @@ class CohenKappa:
         tensor(0.5000)
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass"],
         threshold: float = 0.5,
@@ -323,4 +323,4 @@ class CohenKappa:
             if not isinstance(num_classes, int):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassCohenKappa(num_classes, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")

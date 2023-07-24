@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from typing import Any, List, Optional, Sequence, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -101,6 +101,9 @@ class BinaryCalibrationError(Metric):
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
+
+    confidences: List[Tensor]
+    accuracies: List[Tensor]
 
     def __init__(
         self,
@@ -249,6 +252,9 @@ class MulticlassCalibrationError(Metric):
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Class"
 
+    confidences: List[Tensor]
+    accuracies: List[Tensor]
+
     def __init__(
         self,
         num_classes: int,
@@ -354,7 +360,7 @@ class CalibrationError:
     each argument influence and examples.
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass"],
         n_bins: int = 15,
