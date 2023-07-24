@@ -81,6 +81,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[Da
 
     It returns the name of the case in which the inputs fall, and the implied number of classes (from the ``C`` dim for
     multi-class data, or extra dim(s) for multi-label data).
+
     """
     preds_float = preds.is_floating_point()
 
@@ -263,6 +264,7 @@ def _check_classification_inputs(
     Return:
         case: The case the inputs fall in, one of 'binary', 'multi-class', 'multi-label' or
             'multi-dim multi-class'
+
     """
     # Basic validation (that does not need case/type information)
     _basic_input_validation(preds, target, threshold, multiclass, ignore_index)
@@ -399,6 +401,7 @@ def _input_format_classification(
         target: binary tensor of shape ``(N, C)`` or ``(N, C, X)``
         case: The case the inputs fall in, one of ``'binary'``, ``'multi-class'``, ``'multi-label'`` or
             ``'multi-dim multi-class'``
+
     """
     # Remove excess dimensions
     preds, target = _input_squeeze(preds, target)
@@ -477,6 +480,7 @@ def _input_format_classification_one_hot(
     Returns:
         preds: one hot tensor of shape [num_classes, -1] with predicted labels
         target: one hot tensors of shape [num_classes, -1] with true labels
+
     """
     if preds.ndim not in (target.ndim, target.ndim + 1):
         raise ValueError("preds and target must have same number of dimensions, or one additional dimension for preds")
@@ -522,6 +526,7 @@ def _check_retrieval_functional_inputs(
     Returns:
         preds: as torch.float32
         target: as torch.long if not floating point else torch.float32
+
     """
     if preds.shape != target.shape:
         raise ValueError("`preds` and `target` must be of the same shape")
@@ -556,6 +561,7 @@ def _check_retrieval_inputs(
         indexes: as ``torch.long``
         preds: as ``torch.float32``
         target: as ``torch.long``
+
     """
     if indexes.shape != preds.shape or preds.shape != target.shape:
         raise ValueError("`indexes`, `preds` and `target` must be of the same shape")
@@ -595,6 +601,7 @@ def _check_retrieval_target_and_prediction_types(
     Raises:
         ValueError:
             If ``preds`` and ``target`` don't have the same shape, if they are empty or not of the correct ``dtypes``.
+
     """
     if target.dtype not in (torch.bool, torch.long, torch.int) and not torch.is_floating_point(target):
         raise ValueError("`target` must be a tensor of booleans, integers or floats")
@@ -676,6 +683,7 @@ def check_forward_full_state_property(
         ...     input_args = {'preds': torch.randint(3, (10,)), 'target': torch.randint(3, (10,))},
         ... )
         Recommended setting `full_state_update=True`
+
     """
     init_args = init_args or {}
     input_args = input_args or {}
@@ -766,6 +774,7 @@ def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIM
 
     Returns:
         Bool indicating if the function finished within the specified timeout
+
     """
     # source: https://stackoverflow.com/a/14924210/4521646
     proc = multiprocessing.Process(target=fn)

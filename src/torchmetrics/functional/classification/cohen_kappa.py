@@ -64,6 +64,7 @@ def _binary_cohen_kappa_arg_validation(
     - ``threshold`` has to be a float in the [0,1] range
     - ``ignore_index`` has to be None or int
     - ``weights`` has to be "linear" | "quadratic" | "none" | None
+
     """
     _binary_confusion_matrix_arg_validation(threshold, ignore_index, normalize=None)
     allowed_weights = ("linear", "quadratic", "none", None)
@@ -127,6 +128,7 @@ def binary_cohen_kappa(
         >>> preds = tensor([0.35, 0.85, 0.48, 0.01])
         >>> binary_cohen_kappa(preds, target)
         tensor(0.5000)
+
     """
     if validate_args:
         _binary_cohen_kappa_arg_validation(threshold, ignore_index, weights)
@@ -146,6 +148,7 @@ def _multiclass_cohen_kappa_arg_validation(
     - ``num_classes`` has to be a int larger than 1
     - ``ignore_index`` has to be None or int
     - ``weights`` has to be "linear" | "quadratic" | "none" | None
+
     """
     _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index, normalize=None)
     allowed_weights = ("linear", "quadratic", "none", None)
@@ -214,6 +217,7 @@ def multiclass_cohen_kappa(
         ...                 [0.05, 0.82, 0.13]])
         >>> multiclass_cohen_kappa(preds, target, num_classes=3)
         tensor(0.6364)
+
     """
     if validate_args:
         _multiclass_cohen_kappa_arg_validation(num_classes, ignore_index, weights)
@@ -254,6 +258,7 @@ def cohen_kappa(
         >>> preds = tensor([0, 1, 0, 0])
         >>> cohen_kappa(preds, target, task="multiclass", num_classes=2)
         tensor(0.5000)
+
     """
     task = ClassificationTaskNoMultilabel.from_str(task)
     if task == ClassificationTaskNoMultilabel.BINARY:
