@@ -79,6 +79,7 @@ class Running(WrapperMetric):
         current_val={'mean': tensor(3.), 'sum': tensor(3.)}, running_val={'mean': tensor(2.), 'sum': tensor(6.)}
         current_val={'mean': tensor(4.), 'sum': tensor(4.)}, running_val={'mean': tensor(3.), 'sum': tensor(9.)}
         current_val={'mean': tensor(5.), 'sum': tensor(5.)}, running_val={'mean': tensor(4.), 'sum': tensor(12.)}
+
     """
 
     def __init__(self, base_metric: Metric, window: int = 5) -> None:
@@ -177,5 +178,6 @@ class Running(WrapperMetric):
             >>> for _ in range(3):
             ...     values.append(metric(torch.randn(20, 2)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

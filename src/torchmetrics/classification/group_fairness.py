@@ -99,6 +99,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
         >>> metric = BinaryGroupStatRates(num_groups=2)
         >>> metric(preds, target, groups)
         {'group_0': tensor([0., 0., 1., 0.]), 'group_1': tensor([1., 0., 0., 0.])}
+
     """
     is_differentiable = False
     higher_is_better = False
@@ -135,6 +136,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
             preds: Tensor with predictions.
             target: Tensor with true labels.
             groups: Tensor with group identifiers. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
+
         """
         group_stats = _binary_groups_stat_scores(
             preds, target, groups, self.num_groups, self.threshold, self.ignore_index, self.validate_args
@@ -203,6 +205,7 @@ class BinaryFairness(_AbstractGroupStatScores):
         >>> metric = BinaryFairness(2)
         >>> metric(preds, target, groups)
         {'DP_0_1': tensor(0.), 'EO_0_1': tensor(0.)}
+
     """
     is_differentiable = False
     higher_is_better = False
@@ -247,6 +250,7 @@ class BinaryFairness(_AbstractGroupStatScores):
             preds: Tensor with predictions.
             target: Tensor with true labels.
             groups: Tensor with group identifiers. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
+
         """
         if self.task == "demographic_parity":
             if target is not None:
@@ -316,5 +320,6 @@ class BinaryFairness(_AbstractGroupStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(20), torch.randint(2,(20,)), torch.ones(20).long()))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

@@ -80,6 +80,7 @@ class BinaryHingeLoss(Metric):
         >>> bhl = BinaryHingeLoss(squared=True)
         >>> bhl(preds, target)
         tensor(0.6905)
+
     """
     is_differentiable: bool = True
     higher_is_better: bool = False
@@ -160,6 +161,7 @@ class BinaryHingeLoss(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -220,6 +222,7 @@ class MulticlassHingeLoss(Metric):
         >>> mchl = MulticlassHingeLoss(num_classes=3, multiclass_mode='one-vs-all')
         >>> mchl(preds, target)
         tensor([0.8750, 1.1250, 1.1000])
+
     """
     is_differentiable: bool = True
     higher_is_better: bool = False
@@ -311,6 +314,7 @@ class MulticlassHingeLoss(Metric):
             >>> for _ in range(20):
             ...     values.append(metric(randn(20, 3), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -342,6 +346,7 @@ class HingeLoss:
         >>> hinge = HingeLoss(task="multiclass", num_classes=3, multiclass_mode="one-vs-all")
         >>> hinge(preds, target)
         tensor([1.3743, 1.1945, 1.2359])
+
     """
 
     def __new__(  # type: ignore[misc]

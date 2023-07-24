@@ -95,6 +95,7 @@ class BinaryCalibrationError(Metric):
         >>> bce = BinaryCalibrationError(n_bins=2, norm='max')
         >>> bce(preds, target)
         tensor(0.3167)
+
     """
     is_differentiable: bool = False
     higher_is_better: bool = False
@@ -178,6 +179,7 @@ class BinaryCalibrationError(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -244,6 +246,7 @@ class MulticlassCalibrationError(Metric):
         >>> mcce = MulticlassCalibrationError(num_classes=3, n_bins=3, norm='max')
         >>> mcce(preds, target)
         tensor(0.2333)
+
     """
     is_differentiable: bool = False
     higher_is_better: bool = False
@@ -330,6 +333,7 @@ class MulticlassCalibrationError(Metric):
             >>> for _ in range(20):
             ...     values.append(metric(randn(20,3).softmax(dim=-1), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -358,6 +362,7 @@ class CalibrationError:
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
     :mod:`BinaryCalibrationError` and :mod:`MulticlassCalibrationError` for the specific details of
     each argument influence and examples.
+
     """
 
     def __new__(  # type: ignore[misc]

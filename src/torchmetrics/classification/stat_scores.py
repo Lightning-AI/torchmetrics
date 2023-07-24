@@ -150,6 +150,7 @@ class BinaryStatScores(_AbstractStatScores):
         >>> metric(preds, target)
         tensor([[2, 3, 0, 1, 3],
                 [0, 2, 1, 3, 3]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -284,6 +285,7 @@ class MulticlassStatScores(_AbstractStatScores):
                 [[0, 1, 4, 1, 1],
                  [1, 1, 2, 2, 3],
                  [1, 2, 2, 1, 2]]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -424,6 +426,7 @@ class MultilabelStatScores(_AbstractStatScores):
                 [[0, 0, 0, 2, 2],
                  [0, 2, 0, 0, 0],
                  [0, 0, 1, 1, 1]]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -489,6 +492,7 @@ class StatScores:
         tensor([[0, 1, 2, 1, 1],
                 [1, 1, 1, 1, 2],
                 [1, 0, 3, 0, 1]])
+
     """
 
     def __new__(
