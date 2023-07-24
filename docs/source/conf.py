@@ -118,7 +118,13 @@ extensions = [
     "sphinx.ext.githubpages",
     "pt_lightning_sphinx_theme.extensions.lightning",
     "matplotlib.sphinxext.plot_directive",
+    'sphinx_reredirects'
 ]
+
+# redirects, see: https://documatt.gitlab.io/sphinx-reredirects/usage.html
+redirects = {
+     "all-metrics": "pages/all-metrics.html"
+}
 
 # Set that source code from plotting is always included
 plot_include_source = True
