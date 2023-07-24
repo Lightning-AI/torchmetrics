@@ -69,7 +69,7 @@ _transform_changelog(
 )
 
 
-#def _create_page_silet_images(search_dir: str, img_exts: tuple = (".png", ".jpg", ".svg", ".gif")):
+# def _create_page_silet_images(search_dir: str, img_exts: tuple = (".png", ".jpg", ".svg", ".gif")):
 #    img_dir = Path(search_dir)
 #    txt = ":orphan:\n\n"
 #    for file in img_dir.iterdir():
