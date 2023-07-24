@@ -47,6 +47,7 @@ def _multitask_same_as_individual_tasks(classification_metric, regression_metric
     """Update classification and regression metrics individually and together using a multitask wrapper.
 
     Return True if the results are the same.
+
     """
     classification_metric.update(_classification_preds, _classification_target)
     regression_metric.update(_regression_preds, _regression_target)

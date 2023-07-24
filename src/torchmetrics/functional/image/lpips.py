@@ -250,6 +250,7 @@ class _LPIPS(nn.Module):
             use_dropout: If dropout layers should be added
             model_path: Model path to load pretained models from
             eval_mode: If network should be in evaluation mode
+
         """
         super().__init__()
 

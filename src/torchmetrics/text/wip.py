@@ -60,6 +60,7 @@ class WordInfoPreserved(Metric):
         >>> wip = WordInfoPreserved()
         >>> wip(preds, target)
         tensor(0.3472)
+
     """
     is_differentiable: bool = False
     higher_is_better: bool = False
@@ -131,5 +132,6 @@ class WordInfoPreserved(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

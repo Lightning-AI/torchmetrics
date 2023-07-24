@@ -38,20 +38,21 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.8.0
+    rev: v3.9.0
     hooks:
       - id: pyupgrade
         args: [--py38-plus]
         name: Upgrade code
 
-#  - repo: https://github.com/PyCQA/docformatter
-#    rev: v1.5.1
-#    hooks:
-#      - id: docformatter
-#        args: [--in-place, --wrap-summaries=115, --wrap-descriptions=120]
+  - repo: https://github.com/PyCQA/docformatter
+    rev: v1.7.5
+    hooks:
+      - id: docformatter
+        additional_dependencies: [tomli]
+        args: ["--in-place"]
 
   - repo: https://github.com/psf/black
-    rev: 23.3.0
+    rev: 23.7.0
     hooks:
       - id: black
         name: Format code
@@ -82,7 +83,7 @@ repos:
           - flake8-bugbear
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.0.276
+    rev: v0.0.277
     hooks:
       - id: ruff
         args: ["--fix"]

@@ -72,6 +72,7 @@ def naive_implementation_pit_scipy(
             shape [batch]
         best_perm:
             shape [batch, spk]
+
     """
     batch_size, spk_num = target.shape[0:2]
     metric_mtx = torch.empty((batch_size, spk_num, spk_num), device=target.device)
@@ -99,6 +100,7 @@ def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Ten
 
     Returns:
         the average of best_metric
+
     """
     return metric_func(preds, target)[0].mean()
 

@@ -30,6 +30,7 @@ def _weighted_mean_absolute_percentage_error_update(
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
+
     """
     _check_same_shape(preds, target)
 
@@ -50,6 +51,7 @@ def _weighted_mean_absolute_percentage_error_compute(
         sum_abs_error: scalar with sum of absolute errors
         sum_scale: scalar with sum of target values
         epsilon: small float to prevent division by zero
+
     """
     return sum_abs_error / torch.clamp(sum_scale, min=epsilon)
 
@@ -78,6 +80,7 @@ def weighted_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Te
         >>> target = torch.randn(20,)
         >>> weighted_mean_absolute_percentage_error(preds, target)
         tensor(1.3967)
+
     """
     sum_abs_error, sum_scale = _weighted_mean_absolute_percentage_error_update(preds, target)
     return _weighted_mean_absolute_percentage_error_compute(sum_abs_error, sum_scale)
