@@ -160,6 +160,7 @@ def _squad_update(
         ... ]
         >>> _squad_update(preds_dict, targets_dict)
         (tensor(1.), tensor(1.), tensor(1))
+
     """
     f1 = tensor(0.0)
     exact_match = tensor(0.0)
@@ -184,6 +185,7 @@ def _squad_compute(f1: Tensor, exact_match: Tensor, total: Tensor) -> Dict[str, 
 
     Return:
         Dictionary containing the F1 score, Exact match score for the batch.
+
     """
     exact_match = 100.0 * exact_match / total
     f1 = 100.0 * f1 / total
@@ -243,6 +245,7 @@ def squad(preds: PREDS_TYPE, target: TARGETS_TYPE) -> Dict[str, Tensor]:
     References:
         [1] SQuAD: 100,000+ Questions for Machine Comprehension of Text by Pranav Rajpurkar, Jian Zhang, Konstantin
         Lopyrev, Percy Liang `SQuAD Metric`_ .
+
     """
     preds_dict, target_dict = _squad_input_check(preds, target)
     f1, exact_match, total = _squad_update(preds_dict, target_dict)

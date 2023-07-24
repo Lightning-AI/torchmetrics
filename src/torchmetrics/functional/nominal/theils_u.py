@@ -37,6 +37,7 @@ def _conditional_entropy_compute(confmat: Tensor) -> Tensor:
 
     Returns:
         Conditional Entropy Value
+
     """
     confmat = _drop_empty_rows_and_cols(confmat)
     total_occurrences = confmat.sum()
@@ -69,6 +70,7 @@ def _theils_u_update(
 
     Returns:
         Non-reduced confusion matrix
+
     """
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
@@ -84,6 +86,7 @@ def _theils_u_compute(confmat: Tensor) -> Tensor:
 
     Returns:
         Theil's U statistic
+
     """
     confmat = _drop_empty_rows_and_cols(confmat)
 
@@ -141,6 +144,7 @@ def theils_u(
         >>> target = torch.randint(10, (10,))
         >>> theils_u(preds, target)
         tensor(0.8530)
+
     """
     num_classes = len(torch.cat([preds, target]).unique())
     confmat = _theils_u_update(preds, target, num_classes, nan_strategy, nan_replace_value)
@@ -177,6 +181,7 @@ def theils_u_matrix(
                 [0.0143, 0.0070, 1.0000, 0.0125, 0.0206],
                 [0.0198, 0.0137, 0.0125, 1.0000, 0.0312],
                 [0.0352, 0.0065, 0.0204, 0.0308, 1.0000]])
+
     """
     _nominal_input_validation(nan_strategy, nan_replace_value)
     num_variables = matrix.shape[1]

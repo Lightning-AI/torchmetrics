@@ -26,6 +26,7 @@ class WrapperMetric(Metric):
     This class therefore overwrites all methods that are related to syncronization, and does nothing in them.
 
     Additionally, the forward method is not implemented by default as custom logic is required for each wrapper metric.
+
     """
 
     def _wrap_update(self, update: Callable) -> Callable:

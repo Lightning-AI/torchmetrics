@@ -69,6 +69,7 @@ class BoringModel(LightningModule):
 
     model = BaseTestModel()
     model.training_epoch_end = None
+
     """
 
     def __init__(self) -> None:

@@ -42,6 +42,7 @@ def _compute_chi_squared(confmat: Tensor, bias_correction: bool) -> Tensor:
     """Chi-square test of independenc of variables in a confusion matrix table.
 
     Adapted from: https://github.com/scipy/scipy/blob/v1.9.2/scipy/stats/contingency.py.
+
     """
     expected_freqs = _compute_expected_freqs(confmat)
     # Get degrees of freedom
@@ -73,6 +74,7 @@ def _drop_empty_rows_and_cols(confmat: Tensor) -> Tensor:
         >>> _drop_empty_rows_and_cols(matrix)
         tensor([[9, 6],
                 [2, 8]])
+
     """
     confmat = confmat[confmat.sum(1) != 0]
     return confmat[:, confmat.sum(0) != 0]
@@ -129,6 +131,7 @@ def _handle_nan_in_data(
     Raises:
         ValueError: If ``nan_strategy`` is not from ``['replace', 'drop']``.
         ValueError: If ``nan_strategy = replace`` and ``nan_replace_value`` is not of a type ``int`` or ``float``.
+
     """
     if nan_strategy == "replace":
         return preds.nan_to_num(nan_replace_value), target.nan_to_num(nan_replace_value)

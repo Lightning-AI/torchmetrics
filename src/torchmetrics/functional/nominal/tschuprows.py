@@ -47,6 +47,7 @@ def _tschuprows_t_update(
 
     Returns:
         Non-reduced confusion matrix
+
     """
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
@@ -63,6 +64,7 @@ def _tschuprows_t_compute(confmat: Tensor, bias_correction: bool) -> Tensor:
 
     Returns:
         Tschuprow's T statistic
+
     """
     confmat = _drop_empty_rows_and_cols(confmat)
     cm_sum = confmat.sum()
@@ -134,6 +136,7 @@ def tschuprows_t(
         >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
         >>> tschuprows_t(preds, target)
         tensor(0.4930)
+
     """
     _nominal_input_validation(nan_strategy, nan_replace_value)
     num_classes = len(torch.cat([preds, target]).unique())
@@ -175,6 +178,7 @@ def tschuprows_t_matrix(
                 [0.0000, 0.0000, 1.0000, 0.0000, 0.0649],
                 [0.0542, 0.0000, 0.0000, 1.0000, 0.1100],
                 [0.1337, 0.0000, 0.0649, 0.1100, 1.0000]])
+
     """
     _nominal_input_validation(nan_strategy, nan_replace_value)
     num_variables = matrix.shape[1]

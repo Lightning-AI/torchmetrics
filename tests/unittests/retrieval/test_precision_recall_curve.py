@@ -48,6 +48,7 @@ def _compute_precision_recall_curve(
 
     A good explanation can be found here:
     `<https://nlp.stanford.edu/IR-book/pdf/08eval.pdf>_`. (part 8.4)
+
     """
     recalls, precisions = [], []
 

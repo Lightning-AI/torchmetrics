@@ -63,6 +63,7 @@ class SpectralAngleMapper(Metric):
         >>> sam = SpectralAngleMapper()
         >>> sam(preds, target)
         tensor(0.5943)
+
     """
 
     higher_is_better: bool = False
@@ -143,5 +144,6 @@ class SpectralAngleMapper(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

@@ -25,6 +25,7 @@ def _check_input(
         x: tensor of shape ``[N,d]``
         y: if provided, a tensor of shape ``[M,d]``
         zero_diagonal: determines if the diagonal of the distance matrix should be set to zero
+
     """
     if x.ndim != 2:
         raise ValueError(f"Expected argument `x` to be a 2D tensor of shape `[N, d]` but got {x.shape}")
@@ -48,6 +49,7 @@ def _reduce_distance_matrix(distmat: Tensor, reduction: Optional[str] = None) ->
     Args:
         distmat: a ``[N,M]`` matrix
         reduction: string determining how to reduce along last dimension
+
     """
     if reduction == "mean":
         return distmat.mean(dim=-1)
