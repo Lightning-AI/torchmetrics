@@ -15,8 +15,6 @@ import inspect
 import os
 import shutil
 import sys
-from pathlib import Path
-import textwrap
 
 import torch
 
@@ -71,16 +69,16 @@ _transform_changelog(
 )
 
 
-def _create_page_silet_images(search_dir: str, img_exts: tuple = (".png", ".jpg", ".svg", ".gif")):
-    img_dir = Path(search_dir)
-    txt = ":orphan:\n\n"
-    for file in img_dir.iterdir():
-        if file.suffix not in img_exts:
-            continue
-        txt += f"\n.. image:: {search_dir}/{file.name}\n\n    :height: 0px\n    :width: 0px\n"
-    # unindent multiline string
-    txt = textwrap.dedent(txt)
-    return txt
+#def _create_page_silet_images(search_dir: str, img_exts: tuple = (".png", ".jpg", ".svg", ".gif")):
+#    img_dir = Path(search_dir)
+#    txt = ":orphan:\n\n"
+#    for file in img_dir.iterdir():
+#        if file.suffix not in img_exts:
+#            continue
+#        txt += f"\n.. image:: {search_dir}/{file.name}\n\n    :height: 0px\n    :width: 0px\n"
+#    # unindent multiline string
+#    txt = textwrap.dedent(txt)
+#    return txt
 
 
 if SPHINX_FETCH_ASSETS:
