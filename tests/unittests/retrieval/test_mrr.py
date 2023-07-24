@@ -39,6 +39,7 @@ def _reciprocal_rank(target: np.ndarray, preds: np.ndarray):
     Since the original sklearn metric works as RR only when the number of positive targets is exactly 1, here we remove
     every positive target that is not the most important. Remember that in RR only the positive target with the highest
     score is considered.
+
     """
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs

@@ -74,6 +74,7 @@ class PearsonsContingencyCoefficient(Metric):
         >>> pearsons_contingency_coefficient = PearsonsContingencyCoefficient(num_classes=5)
         >>> pearsons_contingency_coefficient(preds, target)
         tensor(0.6948)
+
     """
 
     full_state_update: bool = False
@@ -112,6 +113,7 @@ class PearsonsContingencyCoefficient(Metric):
 
                 - 1D shape: (batch_size,)
                 - 2D shape: (batch_size, num_classes)
+
         """
         confmat = _pearsons_contingency_coefficient_update(
             preds, target, self.num_classes, self.nan_strategy, self.nan_replace_value
@@ -158,5 +160,6 @@ class PearsonsContingencyCoefficient(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.randint(0, 4, (100,)), torch.randint(0, 4, (100,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

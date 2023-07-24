@@ -129,7 +129,7 @@ def test_error_on_invalid_type(metric_class=SpectralAngleMapper):
 
 
 def test_error_on_grayscale_image(metric_class=SpectralAngleMapper):
-    """Test that error is raised if number of channelse is not larger than 1."""
+    """Test that error is raised if number of channels is not larger than 1."""
     metric = metric_class()
     with pytest.raises(ValueError, match="Expected channel dimension of `preds` and `target` to be larger than 1.*"):
         metric(torch.randn([16, 1, 16, 16]), torch.randn([16, 1, 16, 16]))

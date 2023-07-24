@@ -45,6 +45,7 @@ def _pearson_corrcoef_update(
         corr_xy: current covariance estimate between x and y tensor
         n_prior: current number of observed observations
         num_outputs: Number of outputs in multioutput setting
+
     """
     # Data checking
     _check_same_shape(preds, target)
@@ -88,6 +89,7 @@ def _pearson_corrcoef_compute(
         var_y: variance estimate of y tensor
         corr_xy: covariance estimate between x and y tensor
         nb: number of observations
+
     """
     var_x /= nb - 1
     var_y /= nb - 1
@@ -122,6 +124,7 @@ def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
         >>> pearson_corrcoef(preds, target)
         tensor([1., 1.])
+
     """
     d = preds.shape[1] if preds.ndim == 2 else 1
     _temp = torch.zeros(d, dtype=preds.dtype, device=preds.device)

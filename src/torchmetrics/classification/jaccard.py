@@ -82,6 +82,7 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         >>> metric = BinaryJaccardIndex()
         >>> metric(preds, target)
         tensor(0.5000)
+
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -104,7 +105,7 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average="binary")
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -142,6 +143,7 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -204,6 +206,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         >>> metric = MulticlassJaccardIndex(num_classes=3)
         >>> metric(preds, target)
         tensor(0.6667)
+
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -232,7 +235,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average=self.average, ignore_index=self.ignore_index)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -270,6 +273,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
             >>> for _ in range(20):
             ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -330,6 +334,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         >>> metric = MultilabelJaccardIndex(num_labels=3)
         >>> metric(preds, target)
         tensor(0.5000)
+
     """
 
     is_differentiable: bool = False
@@ -365,7 +370,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average=self.average)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -403,6 +408,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -429,9 +435,10 @@ class JaccardIndex:
         >>> jaccard = JaccardIndex(task="multiclass", num_classes=2)
         >>> jaccard(pred, target)
         tensor(0.9660)
+
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
@@ -455,4 +462,4 @@ class JaccardIndex:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelJaccardIndex(num_labels, threshold, average, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")

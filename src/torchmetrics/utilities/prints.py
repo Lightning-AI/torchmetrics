@@ -23,6 +23,7 @@ def rank_zero_only(fn: Callable) -> Callable:
     """Call a function only on rank 0 in distributed settings.
 
     Meant to be used as an decorator.
+
     """
 
     @wraps(fn)
