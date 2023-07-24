@@ -253,6 +253,7 @@ def test_corner_case_due_to_dtype():
     """Test that metric works with edge case where the precision is really important for the right result.
 
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/1907
+
     """
     preds = torch.tensor(
         [0.9000, 0.9000, 0.9000, 0.9000, 0.9000, 0.8000, 0.8000, 0.0100, 0.3300, 0.3400, 0.9900, 0.6100],
