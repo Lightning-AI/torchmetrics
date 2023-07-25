@@ -130,22 +130,22 @@ class ClasswiseWrapper(WrapperMetric):
 
         if prefix is not None and not isinstance(prefix, str):
             raise ValueError(f"Expected argument `prefix` to either be `None` or a string but got {prefix}")
-        self.prefix = prefix
+        self._prefix = prefix
 
         if postfix is not None and not isinstance(postfix, str):
             raise ValueError(f"Expected argument `postfix` to either be `None` or a string but got {postfix}")
-        self.postfix = postfix
+        self._postfix = postfix
 
         self._update_count = 1
 
     def _convert(self, x: Tensor) -> Dict[str, Any]:
         # Will set the class name as prefix if neither prefix nor postfix is given
-        if not self.prefix and not self.postfix:
+        if not self._prefix and not self._postfix:
             prefix = f"{self.metric.__class__.__name__.lower()}_"
             postfix = ""
         else:
-            prefix = self.prefix or ""
-            postfix = self.postfix or ""
+            prefix = self._prefix or ""
+            postfix = self._postfix or ""
         if self.labels is None:
             return {f"{prefix}{i}{postfix}": val for i, val in enumerate(x)}
         return {f"{prefix}{lab}{postfix}": val for lab, val in zip(self.labels, x)}

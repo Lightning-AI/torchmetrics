@@ -1,7 +1,7 @@
 import pytest
 import torch
 from torchmetrics import MetricCollection
-from torchmetrics.classification import MulticlassAccuracy, MulticlassRecall
+from torchmetrics.classification import MulticlassAccuracy, MulticlassF1Score, MulticlassRecall
 from torchmetrics.wrappers import ClasswiseWrapper
 
 
@@ -120,3 +120,33 @@ def test_using_metriccollection(prefix, postfix):
         assert name in val
         name = _get_correct_name(f"multiclassrecall_{lab}")
         assert name in val
+
+
+def test_double_use_of_prefix_with_metriccollection():
+    """Test that the expected output is produced when using prefix/postfix with metric collection.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/1915
+
+    """
+    category_names = ["Tree", "Bush"]
+    num_classes = len(category_names)
+
+    input_ = torch.rand((5, 2, 3, 3))
+    target = torch.ones((5, 2, 3, 3)).long()
+
+    val_metrics = MetricCollection(
+        {
+            "accuracy": MulticlassAccuracy(num_classes=num_classes),
+            "f1": ClasswiseWrapper(
+                MulticlassF1Score(num_classes=num_classes, average="none"),
+                category_names,
+                prefix="f_score_",
+            ),
+        },
+        prefix="val/",
+    )
+
+    res = val_metrics(input_, target)
+    assert "val/accuracy" in res
+    assert "val/f_score_Tree" in res
+    assert "val/f_score_Bush" in res
