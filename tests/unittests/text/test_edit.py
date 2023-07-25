@@ -90,6 +90,8 @@ class TestEditDistance(TextTester):
     @pytest.mark.parametrize("reduction", ["none", "mean", "sum"])
     def test_edit_class(self, preds, targets, ddp, substitution_cost, reduction):
         """Test class implementation of metric."""
+        if ddp and reduction == "none":
+            pytest.skip("DDP not available for reduction='none' because order of outputs is not guaranteed.")
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
