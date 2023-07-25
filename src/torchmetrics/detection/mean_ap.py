@@ -860,8 +860,8 @@ class MeanAveragePrecision(Metric):
         super()._sync_dist(dist_sync_fn=dist_sync_fn, process_group=process_group)
 
         if "segm" in self.iou_type:
-            self.detections = self._gather_tuple_list(self.detection_mask, process_group)
-            self.groundtruths = self._gather_tuple_list(self.groundtruth_mask, process_group)
+            self.detection_mask = self._gather_tuple_list(self.detection_mask, process_group)
+            self.groundtruth_mask = self._gather_tuple_list(self.groundtruth_mask, process_group)
 
     @staticmethod
     def _gather_tuple_list(list_to_gather: List[Tuple], process_group: Optional[Any] = None) -> List[Any]:
