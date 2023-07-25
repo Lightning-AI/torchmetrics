@@ -65,6 +65,7 @@ class _LevenshteinEditDistance:
         op_substitute: cost of substitution operation
 
     """
+
     def __init__(
         self, reference_tokens: List[str], op_insert: int = 1, op_delete: int = 1, op_substitute: int = 1
     ) -> None:

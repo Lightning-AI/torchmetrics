@@ -58,6 +58,7 @@ def test_for_correctness(
 
     Test cases taken from:
     https://github.com/nltk/nltk/blob/develop/nltk/test/unit/test_distance.py
+
     """
     for s1, s2 in ((left, right), (right, left)):
         predicted = edit_distance(
