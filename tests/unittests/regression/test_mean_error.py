@@ -133,7 +133,10 @@ def _multi_target_ref_metric(preds, target, sk_fn, metric_args):
     sk_preds = preds.view(-1, num_targets).numpy()
     sk_target = target.view(-1, num_targets).numpy()
 
-    res = sk_fn(sk_target, sk_preds)
+    if metric_args and "num_outputs" in metric_args:
+        res = sk_fn(sk_target, sk_preds, multioutput="raw_values")
+    else:
+        res = sk_fn(sk_target, sk_preds)
 
     return math.sqrt(res) if (metric_args and not metric_args["squared"]) else res
 
@@ -150,6 +153,7 @@ def _multi_target_ref_metric(preds, target, sk_fn, metric_args):
     [
         (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": True}),
         (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": False}),
+        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": True, "num_outputs": num_targets}),
         (MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error, {}),
         (MeanAbsolutePercentageError, mean_absolute_percentage_error, sk_mean_abs_percentage_error, {}),
         (
