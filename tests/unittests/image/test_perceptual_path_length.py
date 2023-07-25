@@ -11,11 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import pytest
 import torch
 from torchmetrics.functional.image.perceptual_path_length import perceptual_path_length
+from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 
-class Generator(torch.nn.Module):
+class DummyGenerator(torch.nn.Module):
     """From https://github.com/toshas/torch-fidelity/blob/master/examples/sngan_cifar10.py."""
 
     def __init__(self, z_size) -> None:
@@ -51,17 +53,33 @@ class Generator(torch.nn.Module):
         return torch.randn(num_samples, self.z_size)
 
 
-def test_something():
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch_fidelity")
+@pytest.mark.parametrize(
+    ("argument", "match"),
+    [
+        ({"num_samples": 0}, "Argument `num_samples` must be a positive integer, but got 0."),
+        ({"conditional": 2}, "Argument `conditional` must be a boolean, but got 2."),
+    ],
+)
+def test_raises_error_on_wrong_arguments(argument, match):
+    """Test that appropriate errors are raised on wrong arguments."""
+    with pytest.raises(ValueError, match=match):
+        perceptual_path_length(DummyGenerator(128), **argument)
+
+
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch_fidelity")
+def test_compare():
     """Test something."""
     import torch_fidelity
 
-    generator = Generator(128)
+    generator = DummyGenerator(128)
 
-    torch_fidelity.calculate_metrics(
+    compare = torch_fidelity.calculate_metrics(
         input1=torch_fidelity.GenerativeModelModuleWrapper(generator, 128, "normal", 10),
         input1_model_num_samples=10000,
         ppl=True,
         ppl_reduction="none",
     )
 
-    perceptual_path_length(generator)
+    result = perceptual_path_length(generator)
+    assert result == compare["ppl"]

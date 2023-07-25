@@ -57,24 +57,28 @@ def _perceptual_path_length_validate_arguments(
 ) -> None:
     """Validate arguments for perceptual path length."""
     if not (isinstance(num_samples, int) and num_samples > 0):
-        raise ValueError("Argument `num_samples` must be a positive integer, but got {num_samples}.")
+        raise ValueError(f"Argument `num_samples` must be a positive integer, but got {num_samples}.")
     if not isinstance(conditional, bool):
-        raise ValueError("Argument `conditional` must be a boolean, but got {conditional}.")
+        raise ValueError(f"Argument `conditional` must be a boolean, but got {conditional}.")
     if not (isinstance(batch_size, int) and batch_size > 0):
-        raise ValueError("Argument `batch_size` must be a positive integer, but got {batch_size}.")
+        raise ValueError(f"Argument `batch_size` must be a positive integer, but got {batch_size}.")
     if interpolation_method not in ["lerp", "slerp_any", "slerp_unit"]:
         raise ValueError(
             f"Argument `interpolation_method` must be one of 'lerp', 'slerp_any', 'slerp_unit',"
             f"got {interpolation_method}."
         )
     if not (isinstance(epsilon, float) and epsilon > 0):
-        raise ValueError("Argument `epsilon` must be a positive float, but got {epsilon}.")
+        raise ValueError(f"Argument `epsilon` must be a positive float, but got {epsilon}.")
     if resize is not None and not (isinstance(resize, int) and resize > 0):
-        raise ValueError("Argument `resize` must be a positive integer or `None`, but got {resize}.")
+        raise ValueError(f"Argument `resize` must be a positive integer or `None`, but got {resize}.")
     if lower_discard is not None and not (isinstance(lower_discard, float) and 0 <= lower_discard <= 1):
-        raise ValueError("Argument `lower_discard` must be a float between 0 and 1 or `None`, but got {lower_discard}.")
+        raise ValueError(
+            f"Argument `lower_discard` must be a float between 0 and 1 or `None`, but got {lower_discard}."
+        )
     if upper_discard is not None and not (isinstance(upper_discard, float) and 0 <= upper_discard <= 1):
-        raise ValueError("Argument `upper_discard` must be a float between 0 and 1 or `None`, but got {upper_discard}.")
+        raise ValueError(
+            f"Argument `upper_discard` must be a float between 0 and 1 or `None`, but got {upper_discard}."
+        )
 
 
 def _interpolate(
