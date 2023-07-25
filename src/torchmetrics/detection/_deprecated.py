@@ -13,6 +13,7 @@ class _ModifiedPanopticQuality(ModifiedPanopticQuality):
     >>> pq_modified = _ModifiedPanopticQuality(things = {0, 1}, stuffs = {6, 7})
     >>> pq_modified(preds, target)
     tensor(0.7667, dtype=torch.float64)
+
     """
 
     def __init__(
@@ -45,6 +46,7 @@ class _PanopticQuality(PanopticQuality):
     >>> panoptic_quality = _PanopticQuality(things = {0, 1}, stuffs = {6, 7})
     >>> panoptic_quality(preds, target)
     tensor(0.5463, dtype=torch.float64)
+
     """
 
     def __init__(

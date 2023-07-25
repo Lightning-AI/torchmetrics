@@ -62,6 +62,7 @@ def test_corner_case():
     """Test corner case where preds is empty for a given target.
 
     See this issue: https://github.com/Lightning-AI/torchmetrics/issues/1889
+
     """
     target = [{"boxes": tensor([[238.0000, 74.0000, 343.0000, 275.0000]]), "labels": tensor([6])}]
     preds = [{"boxes": tensor([[], [], [], []]).T, "labels": tensor([], dtype=torch.int64), "scores": tensor([])}]

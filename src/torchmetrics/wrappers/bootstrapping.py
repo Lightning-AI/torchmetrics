@@ -40,6 +40,7 @@ def _bootstrap_sampler(
 
     Returns:
         resampled tensor
+
     """
     if sampling_strategy == "poisson":
         p = torch.distributions.Poisson(1)
@@ -83,6 +84,7 @@ class BootStrapper(WrapperMetric):
         >>> output = bootstrap.compute()
         >>> pprint(output)
         {'mean': tensor(0.2205), 'std': tensor(0.0859)}
+
     """
     full_state_update: Optional[bool] = True
 
@@ -123,6 +125,7 @@ class BootStrapper(WrapperMetric):
         """Update the state of the base metric.
 
         Any tensor passed in will be bootstrapped along dimension 0.
+
         """
         for idx in range(self.num_bootstraps):
             args_sizes = apply_to_collection(args, Tensor, len)
@@ -143,6 +146,7 @@ class BootStrapper(WrapperMetric):
 
         Always returns a dict of tensors, which can contain the following keys: ``mean``, ``std``, ``quantile`` and
         ``raw`` depending on how the class was initialized.
+
         """
         computed_vals = torch.stack([m.compute() for m in self.metrics], dim=0)
         output_dict = {}
@@ -200,5 +204,6 @@ class BootStrapper(WrapperMetric):
             >>> for _ in range(3):
             ...     values.append(metric(torch.randn(100,), torch.randn(100,)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

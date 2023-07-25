@@ -33,6 +33,7 @@ def _wil_update(
         Number of edit operations to get from the reference to the prediction, summed over all samples
         Number of words overall references
         Number of words overall predictions
+
     """
     if isinstance(preds, str):
         preds = [preds]
@@ -63,6 +64,7 @@ def _wil_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> T
 
     Returns:
         Word Information Lost score
+
     """
     return 1 - ((errors / target_total) * (errors / preds_total))
 
@@ -86,6 +88,7 @@ def word_information_lost(preds: Union[str, List[str]], target: Union[str, List[
         >>> target = ["this is the reference", "there is another one"]
         >>> word_information_lost(preds, target)
         tensor(0.6528)
+
     """
     errors, target_total, preds_total = _wil_update(preds, target)
     return _wil_compute(errors, target_total, preds_total)

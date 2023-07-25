@@ -132,6 +132,7 @@ class Dice(Metric):
         >>> dice = Dice(average='micro')
         >>> dice(preds, target)
         tensor(0.2500)
+
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -282,5 +283,6 @@ class Dice(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2,(10,)), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

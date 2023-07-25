@@ -62,6 +62,7 @@ class _TercomTokenizer:
 
     This implementation follows the implemenation from
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/tokenizers/tokenizer_ter.py.
+
     """
 
     _ASIAN_PUNCTUATION = r"([\u3001\u3002\u3008-\u3011\u3014-\u301f\uff61-\uff65\u30fb])"
@@ -81,6 +82,7 @@ class _TercomTokenizer:
             no_punctuation: An indication whteher a punctuation to be removed from the sentences.
             lowercase: An indication whether to enable case-insesitivity.
             asian_support: An indication whether asian characters to be processed.
+
         """
         self.normalize = normalize
         self.no_punctuation = no_punctuation
@@ -96,6 +98,7 @@ class _TercomTokenizer:
 
         Return:
             A tokenized and pre-processed sentence.
+
         """
         if not sentence:
             return ""
@@ -194,12 +197,13 @@ def _preprocess_sentence(sentence: str, tokenizer: _TercomTokenizer) -> str:
 
     Return:
         The pre-processed output sentence string.
+
     """
     return tokenizer(sentence.rstrip())
 
 
 def _find_shifted_pairs(pred_words: List[str], target_words: List[str]) -> Iterator[Tuple[int, int, int]]:
-    """Find matching word sub-sequences in two lists of words. Ignores sub-sequences starting at the same position.
+    """Find matching word sub-sequences in two lists of words. Ignores sub- sequences starting at the same position.
 
     Args:
         pred_words: A list of a tokenized hypothesis sentence.
@@ -215,6 +219,7 @@ def _find_shifted_pairs(pred_words: List[str], target_words: List[str]) -> Itera
             A list of reference start indices.
         length:
             A length of a word span to be considered.
+
     """
     for pred_start in range(len(pred_words)):
         for target_start in range(len(target_words)):
@@ -256,6 +261,7 @@ def _handle_corner_cases_during_shifting(
 
     Return:
         An indication whether any of conrner cases has been met.
+
     """
     # don't do the shift unless both the hypothesis was wrong and the
     # reference doesn't match hypothesis at the target position
@@ -283,6 +289,7 @@ def _perform_shift(words: List[str], start: int, length: int, target: int) -> Li
 
     Return:
         A list of shifted words.
+
     """
 
     def _shift_word_before_previous_position(words: List[str], start: int, target: int, length: int) -> List[str]:
@@ -332,6 +339,7 @@ def _shift_words(
             A list of shifted words in hypothesis sentences.
         checked_candidates:
             A number of checked hypothesis candidates to match a provided reference.
+
     """
     edit_distance, inverted_trace = cached_edit_distance(pred_words)
     trace = _flip_trace(inverted_trace)
@@ -394,6 +402,7 @@ def _translation_edit_rate(pred_words: List[str], target_words: List[str]) -> Te
 
     Return:
         A number of required edits to match hypothesis and reference sentences.
+
     """
     if len(target_words) == 0:
         return tensor(0.0)
@@ -431,6 +440,7 @@ def _compute_sentence_statistics(pred_words: List[str], target_words: List[List[
             The best (lowest) number of required edits to match hypothesis and reference sentences.
         avg_tgt_len:
             Average length of tokenized reference sentences.
+
     """
     tgt_lengths = tensor(0.0)
     best_num_edits = tensor(2e16)
@@ -454,6 +464,7 @@ def _compute_ter_score_from_statistics(num_edits: Tensor, tgt_length: Tensor) ->
 
     Return:
         A corpus-level TER score or 1 if reference_length == 0.
+
     """
     if tgt_length > 0 and num_edits > 0:
         return num_edits / tgt_length
@@ -491,6 +502,7 @@ def _ter_update(
     Raises:
         ValueError:
             If length of ``preds`` and ``target`` differs.
+
     """
     target, preds = _validate_inputs(target, preds)
 
@@ -514,6 +526,7 @@ def _ter_compute(total_num_edits: Tensor, total_tgt_length: Tensor) -> Tensor:
 
     Return:
         A corpus-level TER score.
+
     """
     return _compute_ter_score_from_statistics(total_num_edits, total_tgt_length)
 
@@ -555,6 +568,7 @@ def translation_edit_rate(
     References:
         [1] A Study of Translation Edit Rate with Targeted Human Annotation
         by Mathew Snover, Bonnie Dorr, Richard Schwartz, Linnea Micciulla and John Makhoul `TER`_
+
     """
     if not isinstance(normalize, bool):
         raise ValueError(f"Expected argument `normalize` to be of type boolean but got {normalize}.")

@@ -71,6 +71,7 @@ def intersection_over_union(
         >>> target = torch.Tensor([[110, 110, 210, 210]])
         >>> intersection_over_union(preds, target)
         tensor(0.6807)
+
     """
     if not _TORCHVISION_GREATER_EQUAL_0_8:
         raise ModuleNotFoundError(

@@ -62,6 +62,7 @@ class LogCoshError(Metric):
         >>> log_cosh_error = LogCoshError(num_outputs=3)
         >>> log_cosh_error(preds, target)
         tensor([0.9176, 0.4277, 0.2194])
+
     """
 
     is_differentiable = True
@@ -87,6 +88,7 @@ class LogCoshError(Metric):
         Raises:
             ValueError:
                 If ``preds`` or ``target`` has multiple outputs when ``num_outputs=1``
+
         """
         sum_log_cosh_error, n_obs = _log_cosh_error_update(preds, target, self.num_outputs)
         self.sum_log_cosh_error += sum_log_cosh_error
@@ -134,5 +136,6 @@ class LogCoshError(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
+
         """
         return self._plot(val, ax)

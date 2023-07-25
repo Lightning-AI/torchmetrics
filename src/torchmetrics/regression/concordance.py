@@ -65,6 +65,7 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
         >>> concordance = ConcordanceCorrCoef(num_outputs=2)
         >>> concordance(preds, target)
         tensor([0.7273, 0.9887])
+
     """
     plot_lower_bound: float = -1.0
     plot_upper_bound: float = 1.0
@@ -122,5 +123,6 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
+
         """
         return self._plot(val, ax)

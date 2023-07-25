@@ -97,6 +97,7 @@ def visual_information_fidelity(preds: Tensor, target: Tensor, sigma_n_sq: float
     Raises:
         ValueError:
             If ``data_range`` is neither a ``tuple`` nor a ``float``
+
     """
     # This code is inspired by
     # https://github.com/photosynthesis-team/piq/blob/01e16b7d8c76bc8765fb6a69560d806148b8046a/piq/vif.py and

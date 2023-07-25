@@ -40,6 +40,7 @@ def _generate_coco_inputs(iou_type):
     The inputs are generated from the official COCO results json files:
     https://github.com/cocodataset/cocoapi/tree/master/results
     and should therefore correspond directly to the result on the webpage
+
     """
     batched_preds, batched_target = MeanAveragePrecision.coco_to_tm(
         _DETECTION_BBOX if iou_type == "bbox" else _DETECTION_SEGM, _DETECTION_VAL, iou_type
@@ -148,7 +149,11 @@ class TestMAPUsingCOCOReference(MetricTester):
         )
 
     def test_map_classwise(self, iou_type, ddp):
-        """Test modular implementation for correctness with classwise=True. Needs bigger atol to be stable."""
+        """Test modular implementation for correctness with classwise=True.
+
+        Needs bigger atol to be stable.
+
+        """
         preds, target = _coco_bbox_input if iou_type == "bbox" else _coco_segm_input
         self.run_class_metric_test(
             ddp=ddp,
@@ -518,6 +523,7 @@ def test_missing_pred():
 
     Map should be lower than 1. Actually it is 0.5, but the exact value depends on where we are sampling (i.e. recall's
     values)
+
     """
     gts = [
         {"boxes": Tensor([[10, 20, 15, 25]]), "labels": IntTensor([0])},
@@ -540,6 +546,7 @@ def test_missing_gt():
 
     One good detection, one false positive. Map should be lower than 1. Actually it is 0.5, but the exact value depends
     on where we are sampling (i.e. recall's values)
+
     """
     gts = [
         {"boxes": Tensor([[10, 20, 15, 25]]), "labels": IntTensor([0])},
@@ -708,6 +715,7 @@ def test_for_box_format(box_format, iou_val_expected, map_val_expected):
     """Test that only the correct box format lead to a score of 1.
 
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/1908.
+
     """
     predictions = [
         {"boxes": torch.tensor([[0.5, 0.5, 1, 1]]), "scores": torch.tensor([1.0]), "labels": torch.tensor([0])}
