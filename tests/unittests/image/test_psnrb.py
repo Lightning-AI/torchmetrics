@@ -41,6 +41,7 @@ def _ref_metric(preds, target):
     Inspired by
     https://github.com/andrewekhalel/sewar/blob/master/sewar/full_ref.py
     that also supports batched inputs.
+
     """
     preds = preds.numpy()
     target = target.numpy()

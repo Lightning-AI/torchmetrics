@@ -678,6 +678,7 @@ def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0
 
     This takes care of FID, KID and inception score image metrics as these have a slightly different call and update
     signature than other metrics.
+
     """
     metric = metric_class()
 

@@ -89,6 +89,7 @@ class MultitaskWrapper(WrapperMetric):
          >>> metrics.compute()
          {'Classification': {'BinaryAccuracy': tensor(0.3333), 'BinaryF1Score': tensor(0.)},
           'Regression': {'MeanSquaredError': tensor(0.8333), 'MeanAbsoluteError': tensor(0.6667)}}
+
     """
 
     is_differentiable = False
@@ -119,6 +120,7 @@ class MultitaskWrapper(WrapperMetric):
         Args:
             task_preds: Dictionary associating each task to a Tensor of pred.
             task_targets: Dictionary associating each task to a Tensor of target.
+
         """
         if not self.task_metrics.keys() == task_preds.keys() == task_targets.keys():
             raise ValueError(
@@ -219,6 +221,7 @@ class MultitaskWrapper(WrapperMetric):
             >>> for _ in range(10):
             ...     values.append(metrics(preds, targets))
             >>> fig_, ax_ = metrics.plot(values)
+
         """
         if axes is not None:
             if not isinstance(axes, Sequence):

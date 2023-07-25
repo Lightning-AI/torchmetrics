@@ -56,6 +56,7 @@ class CosineSimilarity(Metric):
         >>> cosine_similarity = CosineSimilarity(reduction = 'mean')
         >>> cosine_similarity(preds, target)
         tensor(0.8536)
+
     """
     is_differentiable: bool = True
     higher_is_better: bool = True
@@ -131,5 +132,6 @@ class CosineSimilarity(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
+
         """
         return self._plot(val, ax)
