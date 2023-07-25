@@ -82,7 +82,7 @@ def _ce_compute(
         Tensor: Calibration error scalar.
     """
     if isinstance(bin_boundaries, int):
-        bin_boundaries = torch.linspace(0, 1, bin_boundaries + 1, dtype=torch.float, device=confidences.device)
+        bin_boundaries = torch.linspace(0, 1, bin_boundaries + 1, dtype=confidences.dtype, device=confidences.device)
 
     if norm not in {"l1", "l2", "max"}:
         raise ValueError(f"Argument `norm` is expected to be one of 'l1', 'l2', 'max' but got {norm}")
