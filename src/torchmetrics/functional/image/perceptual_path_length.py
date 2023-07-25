@@ -24,7 +24,13 @@ from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 
 def _validate_generator_model(generator: nn.Module, conditional: bool = False) -> None:
-    """Validate that the user provided generator has the right methods and attributes."""
+    """Validate that the user provided generator has the right methods and attributes.
+
+    Args:
+        generator: Generator model
+        conditional: Whether the generator is conditional or not (i.e. whether it takes labels as input).
+
+    """
     if not hasattr(generator, "sample"):
         raise NotImplementedError(
             "The generator must have a `sample` method with signature `sample(num_samples: int) -> Tensor` where the"
@@ -72,6 +78,15 @@ def _interpolate(
     epsilon: float = 1e-4,
     interpolation_method: Literal["lerp", "slerp_any", "slerp_unit"] = "lerp",
 ) -> Tensor:
+    """Interpolate between two sets of latents.
+
+    Args:
+        latents1: First set of latents.
+        latents2: Second set of latents.
+        epsilon: Spacing between the points on the path between latent points.
+        interpolation_method: Interpolation method to use. Choose from 'lerp', 'slerp_any', 'slerp_unit'.
+
+    """
     if latents1.shape != latents2.shape:
         raise ValueError("Latents must have the same shape.")
     if interpolation_method == "lerp":
@@ -98,7 +113,25 @@ def perceptual_path_length(
     sim_net: Optional[nn.Module] = None,
     device: Union[str, torch.device] = "cpu",
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Computes the perceptual path length (PPL) of a generator model."""
+    """Computes the perceptual path length (PPL) of a generator model.
+
+    Args:
+        generator: Generator model, with specific requirements. See above.
+        num_samples: Number of samples to use for the PPL computation.
+        conditional: Whether the generator is conditional or not (i.e. whether it takes labels as input).
+        batch_size: Batch size to use for the PPL computation.
+        interpolation_method: Interpolation method to use. Choose from 'lerp', 'slerp_any', 'slerp_unit'.
+        epsilon: Spacing between the points on the path between latent points.
+        resize: Resize images to this size before computing the similarity between generated images.
+        lower_discard: Lower quantile to discard from the distances, before computing the mean and standard deviation.
+        upper_discard: Upper quantile to discard from the distances, before computing the mean and standard deviation.
+        sim_net: Similarity network to use. If `None`, a default network is used.
+        device: Device to use for the computation.
+
+    Returns:
+        A tuple containing the mean, standard deviation and all distances.
+
+    """
     if not _TORCH_FIDELITY_AVAILABLE:
         raise ModuleNotFoundError(
             "Metric `perceptual_path_length` requires Torch Fidelity which is not installed."
