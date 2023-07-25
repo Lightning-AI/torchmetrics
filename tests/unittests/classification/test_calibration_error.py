@@ -124,6 +124,8 @@ class TestBinaryCalibrationError(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_calibration_error_dtype_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
+        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_13:
+            pytest.xfail(reason="torch.searchsorted in metric not supported before pytorch v1.13 for gpu + half")
         preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
