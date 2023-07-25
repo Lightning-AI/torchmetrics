@@ -53,7 +53,7 @@ def _mean_squared_error_compute(sum_squared_error: Tensor, n_obs: Union[int, Ten
     Example:
         >>> preds = torch.tensor([0., 1, 2, 3])
         >>> target = torch.tensor([0., 1, 2, 2])
-        >>> sum_squared_error, n_obs = _mean_squared_error_update(preds, target)
+        >>> sum_squared_error, n_obs = _mean_squared_error_update(preds, target, num_outputs=1)
         >>> _mean_squared_error_compute(sum_squared_error, n_obs)
         tensor(0.2500)
 
