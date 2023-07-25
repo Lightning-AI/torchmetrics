@@ -24,7 +24,7 @@ from torchmetrics.functional.classification.calibration_error import (
     binary_calibration_error,
     multiclass_calibration_error,
 )
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9, _TORCH_GREATER_EQUAL_1_13
 
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases
@@ -108,7 +108,8 @@ class TestBinaryCalibrationError(MetricTester):
     def test_binary_calibration_error_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-
+        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_13:
+            pytest.xfail(reason="torch.linspace in metric not supported before pytorch v1.13 for cpu + half")
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -123,6 +124,8 @@ class TestBinaryCalibrationError(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_calibration_error_dtype_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
+        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_13:
+            pytest.xfail(reason="torch.searchsorted in metric not supported before pytorch v1.13 for gpu + half")
         preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
@@ -246,3 +249,23 @@ class TestMulticlassCalibrationError(MetricTester):
             metric_args={"num_classes": NUM_CLASSES},
             dtype=dtype,
         )
+
+
+def test_corner_case_due_to_dtype():
+    """Test that metric works with edge case where the precision is really important for the right result.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/1907
+
+    """
+    preds = torch.tensor(
+        [0.9000, 0.9000, 0.9000, 0.9000, 0.9000, 0.8000, 0.8000, 0.0100, 0.3300, 0.3400, 0.9900, 0.6100],
+        dtype=torch.float64,
+    )
+    target = torch.tensor([1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0])
+
+    assert np.allclose(
+        ECE(99).measure(preds.numpy(), target.numpy()), binary_calibration_error(preds, target, n_bins=99)
+    ), "The metric should be close to the netcal implementation"
+    assert np.allclose(
+        ECE(100).measure(preds.numpy(), target.numpy()), binary_calibration_error(preds, target, n_bins=100)
+    ), "The metric should be close to the netcal implementation"
