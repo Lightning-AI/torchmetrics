@@ -25,13 +25,13 @@ def _input_validator(
     if not isinstance(iou_type, list):
         iou_type = [iou_type]
 
+    if any(i not in ["bbox", "segm"] for i in iou_type):
+        raise Exception(f"IOU type {iou_type} is not supported")
     item_val_name = []
     if "bbox" in iou_type:
         item_val_name.append("boxes")
     if "segm" in iou_type:
         item_val_name.append("masks")
-    if any(i not in ["bbox", "segm"] for i in iou_type):
-        raise Exception(f"IOU type {iou_type} is not supported")
 
     if not isinstance(preds, Sequence):
         raise ValueError(f"Expected argument `preds` to be of type Sequence, but got {preds}")
