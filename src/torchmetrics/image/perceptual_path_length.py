@@ -41,6 +41,11 @@ class PerceptualPathLength(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
+        if not _TORCH_FIDELITY_AVAILABLE:
+            raise ModuleNotFoundError(
+                "Metric `PerceptualPathLength` requires Torch Fidelity which is not installed."
+                "Install with `pip install torch-fidelity` or `pip install torchmetrics[image]`"
+            )
         _perceptual_path_length_validate_arguments(
             num_samples, conditional, batch_size, interpolation_method, epsilon, resize, lower_discard, upper_discard
         )

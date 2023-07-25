@@ -16,11 +16,16 @@ from typing import Literal, Optional, Tuple, Union
 
 import torch
 from torch import Tensor, nn
-from torch_fidelity.noise import batch_lerp, batch_slerp_any, batch_slerp_unit
-from torch_fidelity.utils import create_sample_similarity
 
 from torchmetrics.functional.image.lpips import _get_net
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
+
+if _TORCH_FIDELITY_AVAILABLE:
+    from torch_fidelity.noise import batch_lerp, batch_slerp_any, batch_slerp_unit
+    from torch_fidelity.utils import create_sample_similarity
+else:
+    batch_lerp = batch_slerp_any = batch_slerp_unit = None
+    create_sample_similarity = None
 
 
 def _validate_generator_model(generator: nn.Module, conditional: bool = False) -> None:
@@ -113,7 +118,23 @@ def perceptual_path_length(
     sim_net: Optional[nn.Module] = None,
     device: Union[str, torch.device] = "cpu",
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Computes the perceptual path length (PPL) of a generator model.
+    r"""Computes the perceptual path length (`PPL`_) of a generator model.
+
+    The perceptual path length can be used to measure the consistency of interpolation in latent-space models. It
+
+    .. math::
+        PPL = \mathbb{E}\left[\frac{1}{\epsilon^2} D(G(I(z_1, z_2, t)), G(I(z_1, z_2, t+\epsilon)))\right]
+
+    where :math:`G` is the generator, :math:`I` is the interpolation function, :math:`D` is a similarity metric,
+    :math:`z_1` and :math:`z_2` are two sets of latent points, and :math:`t` is a parameter between 0 and 1. The metric
+    thus works by interpolating between two sets of latent points, and measuring the similarity between the generated
+    images. The expectation is approximated by sampling :math:`z_1` and :math:`z_2` from the generator, and averaging
+    the calculated distanced. The similarity metric :math:`D` is by default the `LPIPS`_ metric, but can be changed by
+    setting the `sim_net` argument.
+
+    The provided generator model must have a `sample` method with signature `sample(num_samples: int) -> Tensor` where
+    the returned tensor has shape `(num_samples, z_size)`. If the generator is conditional, it must also have a
+    `num_classes` attribute.
 
     Args:
         generator: Generator model, with specific requirements. See above.
