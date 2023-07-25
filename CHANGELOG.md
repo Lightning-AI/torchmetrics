@@ -31,7 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--
+- Fixed bug in `CalibrationError` where calculations for double precision input was performed in float precision ([#1919](https://github.com/Lightning-AI/torchmetrics/pull/1919))
+
+
+- Fixed bug related to the `prefix/postfix` arguments in `MetricCollection` and `ClasswiseWrapper` being duplicated ([#1918](https://github.com/Lightning-AI/torchmetrics/pull/1918))
 
 
 ## [1.0.1] - 2023-07-13
@@ -43,8 +46,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed bug related to `MeanMetric` and broadcasting of weights when Nans are present ([#1898](https://github.com/Lightning-AI/torchmetrics/pull/1898))
 - Fixed bug related to expected input format of pycoco in `MeanAveragePrecision` ([#1913](https://github.com/Lightning-AI/torchmetrics/pull/1913))
 
-
-- Fixed bug related to the `prefix/postfix` arguments in `MetricCollection` and `ClasswiseWrapper` being duplicated ([#1918](https://github.com/Lightning-AI/torchmetrics/pull/1918))
 
 ## [1.0.0] - 2022-07-04
 
