@@ -126,6 +126,7 @@ def test_double_use_of_prefix_with_metriccollection():
     """Test that the expected output is produced when using prefix/postfix with metric collection.
 
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/1915
+
     """
     category_names = ["Tree", "Bush"]
     num_classes = len(category_names)
