@@ -444,6 +444,32 @@ def test_dtype_in_pl_module_transfer(tmpdir):
     assert model.metric.sum_value.dtype == torch.float32
 
 
+class _DistributedEvaluationTestModel(BoringModel):
+    def __init__(self, dataset, sampler_class, devices) -> None:
+        super().__init__()
+        self.linear = torch.nn.Linear(32, 10)
+        self.metric = MulticlassAccuracy(num_classes=10, average="micro")
+        self.dataset = dataset
+        self.sampler_class = sampler_class
+        self.devices = devices
+
+    def forward(self, x):
+        return self.linear(x)
+
+    def test_step(self, batch, batch_idx):
+        preds = self(batch[0])
+        target = batch[1]
+        self.metric.update(preds, target)
+
+    def on_test_epoch_end(self):
+        self.log("test_acc", self.metric.compute())
+
+    def test_dataloader(self):
+        if self.devices > 1:
+            return torch.utils.data.DataLoader(self.dataset, batch_size=3, sampler=self.sampler_class(self.dataset))
+        return torch.utils.data.DataLoader(self.dataset, batch_size=3)
+
+
 @pytest.mark.parametrize("sampler", [DistributedSampler, EvaluationDistributedSampler])
 @pytest.mark.parametrize("accelerator", ["cpu", "gpu"])
 @pytest.mark.parametrize("devices", [1, 2])
@@ -456,29 +482,7 @@ def test_distributed_sampler_integration(sampler, accelerator, devices):
 
     dataset = torch.utils.data.TensorDataset(torch.randn(199, 32), torch.randint(10, (199,)))
 
-    class TestModel(BoringModel):
-        def __init__(self) -> None:
-            super().__init__()
-            self.linear = torch.nn.Linear(32, 10)
-            self.metric = MulticlassAccuracy(num_classes=10, average="micro")
-
-        def forward(self, x):
-            return self.linear(x)
-
-        def test_step(self, batch, batch_idx):
-            preds = self(batch[0])
-            target = batch[1]
-            self.metric.update(preds, target)
-
-        def on_test_epoch_end(self):
-            self.log("test_acc", self.metric.compute())
-
-        def test_dataloader(self):
-            if devices > 1:
-                return torch.utils.data.DataLoader(dataset, batch_size=3, sampler=sampler(dataset))
-            return torch.utils.data.DataLoader(dataset, batch_size=3)
-
-    model = TestModel()
+    model = _DistributedEvaluationTestModel()
 
     trainer = Trainer(
         devices=devices,
