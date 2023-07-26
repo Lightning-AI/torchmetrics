@@ -158,33 +158,26 @@ class EvaluationDistributedSampler(torch.utils.data.DistributedSampler):
 
     Normally not adding the extra samples would lead to processes becoming out of sync, but this is handled by the
     custom syncronization in Torchmetrics. Thus this sampler does not in general secure that distributed operations
-    are working.
+    are working outside of Torchmetrics.
 
     Arguments are the same as DistributedSampler, and this implementation only overrides the __init__ method.
 
     Args:
         dataset: Dataset used for sampling.
-        num_replicas (int, optional): Number of processes participating in
-            distributed training. By default, :attr:`world_size` is retrieved from the
-            current distributed group.
-        rank (int, optional): Rank of the current process within :attr:`num_replicas`.
-            By default, :attr:`rank` is retrieved from the current distributed
-            group.
-        shuffle (bool, optional): If ``True`` (default), sampler will shuffle the
-            indices.
-        seed (int, optional): random seed used to shuffle the sampler if
-            :attr:`shuffle=True`. This number should be identical across all
-            processes in the distributed group. Default: ``0``.
-        drop_last (bool, optional): if ``True``, then the sampler will drop the
-            tail of the data to make it evenly divisible across the number of
-            replicas. If ``False``, the sampler will add extra indices to make
-            the data evenly divisible across the replicas. Default: ``False``.
+        num_replicas (int, optional): Number of processes participating in distributed training. By default,
+            :attr:`world_size` is retrieved from the current distributed group.
+        rank (int, optional): Rank of the current process within :attr:`num_replicas`. By default, :attr:`rank` is
+            retrieved from the current distributed group.
+        shuffle (bool, optional): If ``True`` (default), sampler will shuffle the indices.
+        seed (int, optional): random seed used to shuffle the sampler if :attr:`shuffle=True`. This number should be
+            identical across all processes in the distributed group.
+        drop_last (bool, optional): if ``True``, then the sampler will drop the tail of the data to make it evenly
+            divisible across the number of replicas.
 
-    For a full example on how to use this sampler, using both bare Pytorch but alo Psytorch Lightning,
+    For a full example on how to use this sampler, using both bare Pytorch but also Psytorch Lightning,
     see `torchmetrics distributed example`_ in the examples folder.
 
     Example::
-
         The distributed sampler is always intended to be used in conjunction with a DataLoader:
 
         >>> import torch
