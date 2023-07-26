@@ -83,6 +83,7 @@ def test_metrics_reset(tmpdir):
     """Tests that metrics are reset correctly after the end of the train/val/test epoch.
 
     Taken from: `Metric Test for Reset`_
+
     """
 
     class TestModel(BoringModel):

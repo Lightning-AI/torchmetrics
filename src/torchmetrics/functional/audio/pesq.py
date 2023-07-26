@@ -81,6 +81,7 @@ def perceptual_evaluation_speech_quality(
         tensor(2.2076)
         >>> perceptual_evaluation_speech_quality(preds, target, 16000, 'wb')
         tensor(1.7359)
+
     """
     if not _PESQ_AVAILABLE:
         raise ModuleNotFoundError(

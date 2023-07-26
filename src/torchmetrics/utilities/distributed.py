@@ -32,6 +32,7 @@ def reduce(x: Tensor, reduction: Literal["elementwise_mean", "sum", "none", None
 
     Raise:
         ValueError if an invalid reduction parameter was given
+
     """
     if reduction == "elementwise_mean":
         return torch.mean(x)
@@ -107,6 +108,7 @@ def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tens
     Return:
         gathered_result: list with size equal to the process group where
             ``gathered_result[i]`` corresponds to result tensor from process ``i``
+
     """
     if group is None:
         group = torch.distributed.group.WORLD

@@ -105,6 +105,7 @@ class BinaryFBetaScore(BinaryStatScores):
         >>> metric = BinaryFBetaScore(beta=2.0, multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0.5882, 0.0000])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -176,6 +177,7 @@ class BinaryFBetaScore(BinaryStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -278,6 +280,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
         >>> mcfbs(preds, target)
         tensor([[0.9091, 0.0000, 0.5000],
                 [0.0000, 0.3571, 0.4545]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -354,6 +357,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
             >>> for _ in range(20):
             ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -452,6 +456,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
         >>> mlfbs(preds, target)
         tensor([[0.8333, 0.8333, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -530,6 +535,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -598,6 +604,7 @@ class BinaryF1Score(BinaryFBetaScore):
         >>> metric = BinaryF1Score(multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0.5000, 0.0000])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -660,6 +667,7 @@ class BinaryF1Score(BinaryFBetaScore):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -760,6 +768,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
         >>> mcf1s(preds, target)
         tensor([[0.8000, 0.0000, 0.5000],
                 [0.0000, 0.4000, 0.4000]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -827,6 +836,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
             >>> for _ in range(20):
             ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -923,6 +933,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
         >>> mlf1s(preds, target)
         tensor([[0.6667, 0.6667, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -990,6 +1001,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -1018,6 +1030,7 @@ class FBetaScore:
         >>> f_beta = FBetaScore(task="multiclass", num_classes=3, beta=0.5)
         >>> f_beta(preds, target)
         tensor(0.3333)
+
     """
 
     def __new__(
@@ -1079,6 +1092,7 @@ class F1Score:
         >>> f1 = F1Score(task="multiclass", num_classes=3)
         >>> f1(preds, target)
         tensor(0.3333)
+
     """
 
     def __new__(

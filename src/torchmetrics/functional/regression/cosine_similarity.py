@@ -28,6 +28,7 @@ def _cosine_similarity_update(
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
+
     """
     _check_same_shape(preds, target)
     preds = preds.float()
@@ -51,6 +52,7 @@ def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: Optiona
         >>> preds, target = _cosine_similarity_update(preds, target)
         >>> _cosine_similarity_compute(preds, target, 'none')
         tensor([ 1.0000, -1.0000])
+
     """
     dot_product = (preds * target).sum(dim=-1)
     preds_norm = preds.norm(dim=-1)
@@ -88,6 +90,7 @@ def cosine_similarity(preds: Tensor, target: Tensor, reduction: Optional[str] = 
         ...                       [-1, -2, -3, -4]])
         >>> cosine_similarity(preds, target, 'none')
         tensor([ 1.0000, -1.0000])
+
     """
     preds, target = _cosine_similarity_update(preds, target)
     return _cosine_similarity_compute(preds, target, reduction)

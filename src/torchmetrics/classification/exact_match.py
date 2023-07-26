@@ -91,6 +91,7 @@ class MulticlassExactMatch(Metric):
         >>> metric = MulticlassExactMatch(num_classes=3, multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([1., 0.])
+
     """
     is_differentiable = False
     higher_is_better = True
@@ -186,6 +187,7 @@ class MulticlassExactMatch(Metric):
             >>> for _ in range(20):
             ...     values.append(metric(randint(3, (20,5)), randint(3, (20,5))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -251,6 +253,7 @@ class MultilabelExactMatch(Metric):
         >>> metric = MultilabelExactMatch(num_labels=3, multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0., 0.])
+
     """
 
     is_differentiable = False
@@ -351,6 +354,7 @@ class MultilabelExactMatch(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2, (20, 3, 5)), randint(2, (20, 3, 5))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -379,6 +383,7 @@ class ExactMatch:
         >>> metric = ExactMatch(task="multiclass", num_classes=3, multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([1., 0.])
+
     """
 
     def __new__(

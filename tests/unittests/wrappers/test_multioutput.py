@@ -109,6 +109,7 @@ class TestMultioutputWrapper(MetricTester):
 
         Tests that the multioutput wrapper properly slices and computes outputs along the output dimension for both
         classification and regression metrics, by comparing to the metric if they had been calculated sequentially.
+
         """
         self.run_class_metric_test(
             ddp,
