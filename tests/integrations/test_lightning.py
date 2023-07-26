@@ -457,12 +457,14 @@ class _DistributedEvaluationTestModel(BoringModel):
         return self.linear(x)
 
     def test_step(self, batch, batch_idx):
-        preds = self(batch[0])
+        preds = self(batch[0]).argmax(dim=1)
         target = batch[1]
         self.metric.update(preds, target)
 
     def on_test_epoch_end(self):
-        self.log("test_acc", self.metric.compute())
+        result = self.metric.compute()
+        self.log("test_acc", result)
+        self.log("samples_seen", self.metric.tp + self.metric.fn)
 
     def test_dataloader(self):
         if self.devices > 1:
@@ -482,7 +484,7 @@ def test_distributed_sampler_integration(sampler, accelerator, devices):
 
     dataset = torch.utils.data.TensorDataset(torch.randn(199, 32), torch.randint(10, (199,)))
 
-    model = _DistributedEvaluationTestModel()
+    model = _DistributedEvaluationTestModel(dataset, sampler, devices)
 
     trainer = Trainer(
         devices=devices,
@@ -493,6 +495,8 @@ def test_distributed_sampler_integration(sampler, accelerator, devices):
 
     if sampler == DistributedSampler and devices > 1:
         # normal sampler adds extra samples which skrews up the results
+        assert torch.allclose(torch.tensor(res[0]["samples_seen"], dtype=torch.long), torch.tensor(len(dataset) + 1))
         assert not torch.allclose(torch.tensor(res[0]["test_acc"]), manual_res)
     else:
+        assert torch.allclose(torch.tensor(res[0]["samples_seen"], dtype=torch.long), torch.tensor(len(dataset)))
         assert torch.allclose(torch.tensor(res[0]["test_acc"]), manual_res)
