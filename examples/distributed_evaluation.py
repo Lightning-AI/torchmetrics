@@ -97,7 +97,7 @@ def use_lightning(
 
     trainer = Trainer(
         devices=num_processes,
-        accelerator="cpu" if not gpu else "ddp",
+        accelerator="cpu" if not gpu else "gpu",
     )
 
     res = trainer.test(model)

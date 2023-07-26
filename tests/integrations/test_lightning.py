@@ -18,6 +18,7 @@ import torch
 from lightning_utilities import module_available
 from torch import tensor
 from torch.nn import Linear
+from torch.utils.data import DistributedSampler
 
 if module_available("lightning"):
     from lightning.pytorch import LightningModule, Trainer
@@ -28,7 +29,7 @@ else:
 
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import SumMetric
-from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision
+from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision, MulticlassAccuracy
 from torchmetrics.utilities.distributed import EvaluationDistributedSampler
 
 from integrations.helpers import no_warning_call
@@ -442,25 +443,51 @@ def test_dtype_in_pl_module_transfer(tmpdir):
     assert model.metric.sum_value.dtype == torch.float32
 
 
-@pytest.mark.skipif(not torch.cuda.is_available() and torch.cuda.device_count() < 2, reason="test requires GPU machine")
-def test_distributed_sampler_integration():
+@pytest.mark.parametrize("sampler", [DistributedSampler, EvaluationDistributedSampler])
+@pytest.mark.parametrize("accelerator", ["cpu", "gpu"])
+@pytest.mark.parametrize("devices", [1, 2])
+def test_distributed_sampler_integration(sampler, accelerator, devices):
     """Test the integration of the custom distributed sampler with Lightning."""
+    if not torch.cuda.is_available() and accelerator == "gpu":
+        pytest.skip("test requires GPU machine")
+    if torch.cuda.is_available() and accelerator == "gpu" and torch.cuda.device_count() < 2 and devices > 1:
+        pytest.skip("test requires GPU machine with at least 2 GPUs")
+
+    dataset = torch.utils.data.TensorDataset(torch.randn(199, 32), torch.randint(10, (199,)))
 
     class TestModel(BoringModel):
         def __init__(self) -> None:
             super().__init__()
-            self.metric = SumMetric()
+            self.linear = torch.nn.Linear(32, 10)
+            self.metric = MulticlassAccuracy(num_classes=10, average="micro")
 
-        def test_dataloader(self):
-            dataset = torch.utils.data.TensorDataset(torch.arange(100))
-            return torch.utils.data.DataLoader(dataset, batch_size=3, sampler=EvaluationDistributedSampler(dataset))
+        def forward(self, x):
+            return self.linear(x)
 
         def test_step(self, batch, batch_idx):
-            self.metric.update(batch[0])
+            preds = self(batch[0])
+            target = batch[1]
+            self.metric.update(preds, target)
 
         def on_test_epoch_end(self):
-            self.log("test_metric", self.metric.compute())
+            self.log("test_acc", self.metric.compute())
 
-    trainer = Trainer(devices=2, accelerator="gpu")
-    res = trainer.test(TestModel())
-    assert res[0]["test_metric"] == torch.arange(100).sum()
+        def test_dataloader(self):
+            if devices > 1:
+                return torch.utils.data.DataLoader(dataset, batch_size=3, sampler=sampler(dataset))
+            return torch.utils.data.DataLoader(dataset, batch_size=3)
+
+    model = TestModel()
+
+    trainer = Trainer(
+        devices=devices,
+        accelerator=accelerator,
+    )
+    res = trainer.test(model)
+    manual_res = (model(dataset.tensors[0]).argmax(dim=1) == dataset.tensors[1]).float().mean()
+
+    if sampler == DistributedSampler and devices > 1:
+        # normal sampler adds extra samples which skrews up the results
+        assert not torch.allclose(torch.tensor(res[0]["test_acc"]), manual_res)
+    else:
+        assert torch.allclose(torch.tensor(res[0]["test_acc"]), manual_res)
