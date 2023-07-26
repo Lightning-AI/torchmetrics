@@ -376,8 +376,9 @@ def test_evaluation_distributed_dataloader(
 ):
     """Test the EvaluationDistributedSampler.
 
-    This sampler should not add additional samples to the dataset compared to the standard DistributedSampler.
-    Thus we expect different results.
+    This sampler should not add additional samples to the dataset compared to the standard DistributedSampler. Thus we
+    expect different results.
+
     """
     pytest.pool.map(
         partial(
