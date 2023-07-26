@@ -278,7 +278,15 @@ def test_sync_with_empty_lists():
 
 
 def _test_evaluation_distributed_dataloader(
-    rank, dataset_size, batch_size, distributed_sampler_class, expected, metric_class
+    rank,
+    dataset_size,
+    batch_size,
+    distributed_sampler_class,
+    rank_0_batches,
+    rank_0_samples,
+    rank_1_batches,
+    rank_1_samples,
+    metric_class,
 ):
     """Worker function for testing the EvaluationDistributedSampler."""
     metric = metric_class()
@@ -298,11 +306,11 @@ def _test_evaluation_distributed_dataloader(
 
     res = metric.compute()
     if rank == 0:
-        assert batch_count == expected[0], f"The number of batches did not match, got {batch_count}"
-        assert sample_count == expected[1], f"The number of samples did not match, got {sample_count}"
+        assert batch_count == rank_0_batches, f"The number of batches did not match, got {batch_count}"
+        assert sample_count == rank_0_samples, f"The number of samples did not match, got {sample_count}"
     if rank == 1:
-        assert batch_count == expected[2], f"The number of batches did not match, got {batch_count}"
-        assert sample_count == expected[3], f"The number of samples did not match, got {sample_count}"
+        assert batch_count == rank_1_batches, f"The number of batches did not match, got {batch_count}"
+        assert sample_count == rank_1_samples, f"The number of samples did not match, got {sample_count}"
 
     if metric_class == SumMetric:
         if distributed_sampler_class == EvaluationDistributedSampler:
@@ -334,17 +342,25 @@ def _test_evaluation_distributed_dataloader(
 
 
 @pytest.mark.parametrize(
-    ("dataset_size", "batch_size", "distributed_sampler_class", "expected"),
+    (
+        "dataset_size",
+        "batch_size",
+        "distributed_sampler_class",
+        "rank_0_batches",
+        "rank_0_samples",
+        "rank_1_batches",
+        "rank_1_samples",
+    ),
     [
-        (10, 1, EvaluationDistributedSampler, (5, 5, 5, 5)),
-        (11, 1, EvaluationDistributedSampler, (6, 6, 5, 5)),
-        (10, 3, EvaluationDistributedSampler, (2, 5, 2, 5)),
-        (11, 3, EvaluationDistributedSampler, (2, 6, 2, 5)),
+        (10, 1, EvaluationDistributedSampler, 5, 5, 5, 5),
+        (11, 1, EvaluationDistributedSampler, 6, 6, 5, 5),
+        (10, 3, EvaluationDistributedSampler, 2, 5, 2, 5),
+        (11, 3, EvaluationDistributedSampler, 2, 6, 2, 5),
         # standard sampler adds samples if the dataset size is not divisible by the number of processes
-        (10, 1, DistributedSampler, (5, 5, 5, 5)),
-        (11, 1, DistributedSampler, (6, 6, 6, 6)),
-        (10, 3, DistributedSampler, (2, 5, 2, 5)),
-        (11, 3, DistributedSampler, (2, 6, 2, 6)),
+        (10, 1, DistributedSampler, 5, 5, 5, 5),
+        (11, 1, DistributedSampler, 6, 6, 6, 6),
+        (10, 3, DistributedSampler, 2, 5, 2, 5),
+        (11, 3, DistributedSampler, 2, 6, 2, 6),
     ],
 )
 @pytest.mark.parametrize("metric_class", [SumMetric, CatMetric])
@@ -352,7 +368,10 @@ def test_evaluation_distributed_dataloader(
     dataset_size: int,
     batch_size: int,
     distributed_sampler_class: DistributedSampler,
-    expected: Tuple[int, int, int, int],
+    rank_0_batches: int,
+    rank_0_samples: int,
+    rank_1_batches: int,
+    rank_1_samples: int,
     metric_class: Metric,
 ):
     """Test the EvaluationDistributedSampler.
@@ -366,7 +385,10 @@ def test_evaluation_distributed_dataloader(
             dataset_size=dataset_size,
             batch_size=batch_size,
             distributed_sampler_class=distributed_sampler_class,
-            expected=expected,
+            rank_0_batches=rank_0_batches,
+            rank_0_samples=rank_0_samples,
+            rank_1_batches=rank_1_batches,
+            rank_1_samples=rank_1_samples,
             metric_class=metric_class,
         ),
         range(NUM_PROCESSES),
