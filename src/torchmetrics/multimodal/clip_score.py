@@ -76,7 +76,7 @@ class CLIPScore(Metric):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(42)
-        >>> from torchmetrics.multimodal import CLIPScore
+        >>> from torchmetrics.multimodal.clip_score import CLIPScore
         >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
         >>> score = metric(torch.randint(255, (3, 224, 224)), "a photo of a cat")
         >>> print(score.detach())
@@ -148,7 +148,7 @@ class CLIPScore(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.multimodal import CLIPScore
+            >>> from torchmetrics.multimodal.clip_score import CLIPScore
             >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
             >>> metric.update(torch.randint(255, (3, 224, 224)), "a photo of a cat")
             >>> fig_, ax_ = metric.plot()
@@ -158,7 +158,7 @@ class CLIPScore(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.multimodal import CLIPScore
+            >>> from torchmetrics.multimodal.clip_score import CLIPScore
             >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
             >>> values = [ ]
             >>> for _ in range(10):
