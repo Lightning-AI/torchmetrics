@@ -37,7 +37,7 @@ could be do like this:
 
     ax.set_fontsize(fs=20)
     fig.set_title("This is a nice plot")
-    fig.save_fig("my_awesome_plot.png")
+    fig.savefig("my_awesome_plot.png")
 
 If you want to include a Torchmetrics plot in a bigger figure that has subfigures and subaxes, all ``.plot`` methods
 support an optional `ax` argument where you can pass in the subaxes you want the plot to be inserted into:
