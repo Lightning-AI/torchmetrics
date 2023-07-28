@@ -25,10 +25,10 @@ from unittests.image import _SAMPLE_IMAGE, _SAMPLE_IMAGE2
 @pytest.mark.parametrize(
     ("prompts", "match"),
     [
-        ("quality", "Argument `prompts` must be a list containing strings or tuples of strings"),
-        (["quality", 1], "Argument `prompts` must be a list containing strings or tuples of strings"),
-        ([("quality", "quality", "quality")], "If a tuple is provided in argument `prompts`, it must be of length 2"),
-        (["quality", "something"], "All elements of `prompts` must be one of.*"),
+        ("quality", "Argument `prompts` must be a tuple containing strings or tuples of strings"),
+        (("quality", 1), "Argument `prompts` must be a tuple containing strings or tuples of strings"),
+        ((("quality", "quality", "quality"),), "If a tuple is provided in argument `prompts`, it must be of length 2"),
+        (("quality", "something"), "All elements of `prompts` must be one of.*"),
     ],
 )
 def test_raises_error_on_wrong_prompts(prompts, match):
@@ -75,7 +75,7 @@ def test_for_correctness_sample_images(path):
     ],
 )
 def test_other_models(model):
-    """Test that the function works with other models and prompts."""
+    """Test that the function works with other models."""
     img = Image.open(_SAMPLE_IMAGE)
     img = PILToTensor()(img)
     img = img.float()[None]
@@ -90,34 +90,34 @@ def test_other_models(model):
 @pytest.mark.parametrize(
     "prompts",
     [
-        ["quality"],
-        ["brightness"],
-        ["noisiness"],
-        ["colorfullness"],
-        ["sharpness"],
-        ["contrast"],
-        ["complexity"],
-        ["natural"],
-        ["happy"],
-        ["scary"],
-        ["new"],
-        ["warm"],
-        ["real"],
-        ["beutiful"],
-        ["lonely"],
-        ["relaxing"],
+        ("quality",),
+        ("brightness",),
+        ("noisiness",),
+        ("colorfullness",),
+        ("sharpness",),
+        ("contrast",),
+        ("complexity",),
+        ("natural",),
+        ("happy",),
+        ("scary",),
+        ("new",),
+        ("warm",),
+        ("real",),
+        ("beutiful",),
+        ("lonely",),
+        ("relaxing",),
         # some random combinations
-        ["quality", "brightness"],
-        ["quality", "brightness", "noisiness"],
-        ["quality", "brightness", "noisiness", "colorfullness"],
+        ("quality", "brightness"),
+        ("quality", "brightness", "noisiness"),
+        ("quality", "brightness", "noisiness", "colorfullness"),
         # custom prompts
-        [("Photo of a cat", "Photo of a dog")],
-        [("Photo of a cat", "Photo of a dog"), "quality"],
-        [("Photo of a cat", "Photo of a dog"), "quality", ("Colorful photo", "Black and white photo")],
+        (("Photo of a cat", "Photo of a dog"),),
+        (("Photo of a cat", "Photo of a dog"), "quality"),
+        (("Photo of a cat", "Photo of a dog"), "quality", ("Colorful photo", "Black and white photo")),
     ],
 )
 def test_prompt(prompts):
-    """Test that the function works with other models and prompts."""
+    """Test that the function works with other prompts."""
     img = Image.open(_SAMPLE_IMAGE)
     img = PILToTensor()(img)
     img = img.float()[None]
@@ -130,6 +130,6 @@ def test_prompt(prompts):
         assert isinstance(result, dict)
         for i, (k, v) in enumerate(result.items()):
             assert isinstance(k, str)
-            assert k == prompts[i] if isinstance(prompts[i], str) else "user_defined" in prompts[i]
+            assert k == prompts[i] if isinstance(prompts[i], str) else "user_defined_" in k
             assert isinstance(v, Tensor)
             assert 0 < v < 1

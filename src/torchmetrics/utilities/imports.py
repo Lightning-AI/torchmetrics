@@ -54,5 +54,6 @@ _MATPLOTLIB_AVAILABLE: bool = package_available("matplotlib")
 _SCIENCEPLOT_AVAILABLE: bool = package_available("scienceplots")
 _MULTIPROCESSING_AVAILABLE: bool = package_available("multiprocessing")
 _XLA_AVAILABLE: bool = package_available("torch_xla")
+_PIQ_AVAILABLE: bool = package_available("piq")
 
 _LATEX_AVAILABLE: bool = shutil.which("latex") is not None

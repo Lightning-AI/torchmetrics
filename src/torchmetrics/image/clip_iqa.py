@@ -17,11 +17,12 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.image.clip_iqa import (
+    _clip_iqa_compute,
     _clip_iqa_format_prompts,
+    _clip_iqa_get_anchor_vectors,
     _clip_iqa_update,
-    _get_clip_iqa_anchor_vectors,
+    _get_clip_iqa_model_and_processor,
 )
-from torchmetrics.functional.multimodal.clip_score import _get_clip_model_and_processor
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.data import dim_zero_cat
@@ -46,7 +47,7 @@ else:
     __doctest_skip__ = ["CLIPScore", "CLIPScore.plot"]
 
 
-class CLIPIQA(Metric):
+class CLIPImageQualityAssessment(Metric):
     """Calculates `CLIP-IQA`_, that can be used to measure the visual content of images.
 
     The metric is based on the `CLIP`_ model, which is a neural network trained on a variety of (image, text) pairs to
@@ -79,9 +80,7 @@ class CLIPIQA(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``images`` (:class:`~torch.Tensor` or list of tensors): tensor with images feed to the feature extractor with. If
-        a single tensor it should have shape ``(N, C, H, W)``. If a list of tensors, each tensor should have shape
-        ``(C, H, W)``. ``C`` is the number of channels, ``H`` and ``W`` are the height and width of the image.
+    - ``images`` (:class:`~torch.Tensor`): tensor with images feed to the feature extractor with shape ``(N,C,H,W)``
 
     As output of `forward` and `compute` the metric returns the following output
 
@@ -92,37 +91,65 @@ class CLIPIQA(Metric):
     Args:
         model_name_or_path: string indicating the version of the CLIP model to use. Available models are:
 
+            - `"clip_iqa"`, model corresponding to the CLIP-IQA paper.
             - `"openai/clip-vit-base-patch16"`
             - `"openai/clip-vit-base-patch32"`
             - `"openai/clip-vit-large-patch14-336"`
             - `"openai/clip-vit-large-patch14"`
 
-        prompts: A string, list of strings or tuple of strings. If a string is provided, it must be one of the
-            availble prompts. If a list of strings is provided, all strings must be one of the availble prompts.
-            If a tuple of strings is provided, it must be of length 2 and the first string must be a positive prompt
-            and the second string must be a negative prompt.
-
+        data_range: The maximum value of the input tensor. For example, if the input images are in range [0, 255],
+            data_range should be 255. The images are normalized by this value.
+        prompts: A string, tuple of strings or nested tuple of strings. If a string is provided, it must be one of the
+            availble prompts. If a tuple of strings is provided, all strings must be one of the availble prompts.
+            If a nested tuple of strings is provided, it must be of length 2 and the first string must be a positive
+            prompt and the second string must be a negative prompt.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    .. note:: If using the default `clip_iqa` model, the package `piq` must be installed. Either install with
+        `pip install piq` or `pip install torchmetrics[image]`.
+
+    Raises:
+        ModuleNotFoundError:
+            If transformers package is not installed or version is lower than 4.10.0
+        ValueError:
+            If promts is a tuple and it is not of length 2
+        ValueError:
+            If promts is a string and it is not one of the available promts
+        ValueError:
+            If promts is a list of strings and not all strings are one of the available promts
 
     Example::
         Single promt:
 
-        >>> from torchmetrics.functional.image import clip_iqa
+        >>> from torchmetrics.image import CLIPImageQualityAssessment
         >>> import torch
         >>> _ = torch.manual_seed(42)
         >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
-        >>> clip_iqa(imgs, prompts="quality")
-        >>> tensor([[0.5000], [0.5000]])
+        >>> metric = CLIPImageQualityAssessment()
+        >>> metric(imgs)
+        tensor([0.8894, 0.8902])
 
     Example::
         Multiple promts:
 
-        >>> from torchmetrics.functional.image import clip_iqa
+        >>> from torchmetrics.image import CLIPImageQualityAssessment
         >>> import torch
         >>> _ = torch.manual_seed(42)
         >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
-        >>> clip_iqa(imgs, prompts=["quality", "brightness"])
-        >>> {'quality': tensor([[0.5000], [0.5000]]), 'brightness': tensor([[0.5000], [0.5000]])}
+        >>> metric = CLIPImageQualityAssessment(prompts=("quality", "brightness"))
+        >>> metric(imgs)
+        {'quality': tensor([0.8894, 0.8902]), 'brightness': tensor([0.5507, 0.5208])}
+
+    Example::
+        Custom promts. Must always be a tuple of length 2, with a positive and negative prompt.
+
+        >>> from torchmetrics.image import CLIPImageQualityAssessment
+        >>> import torch
+        >>> _ = torch.manual_seed(42)
+        >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
+        >>> metric = CLIPImageQualityAssessment(prompts=(("Super good photo.", "Super bad photo."), "brightness"))
+        >>> metric(imgs)
+        {'user_defined_0': tensor([0.9652, 0.9629]), 'brightness': tensor([0.5507, 0.5208])}
 
     """
 
@@ -133,45 +160,43 @@ class CLIPIQA(Metric):
             "openai/clip-vit-base-patch32",
             "openai/clip-vit-large-patch14-336",
             "openai/clip-vit-large-patch14",
-        ] = _DEFAULT_MODEL,  # type: ignore[assignment]
-        prompts: Union[
-            Literal[
-                "quality",
-                "brightness",
-                "noisiness",
-                "colorfullness",
-                "sharpness",
-                "contrast",
-                "complexity",
-                "natural",
-                "happy",
-                "scary",
-                "new",
-                "warm",
-                "real",
-                "beutiful",
-                "lonely",
-                "relaxing",
-            ],
-            List[str],
-            Tuple[str, str],
-        ] = "quality",
+        ] = "clip_iqa",
+        data_range: Union[int, float] = 1.0,
+        prompts: Tuple[Union[str, Tuple[str, str]]] = ("quality",),
         **kwargs: Any
     ) -> None:
         super().__init__(**kwargs)
+        if not (isinstance(data_range, (int, float)) and data_range > 0):
+            raise ValueError("Argument `data_range` should be a positive number.")
+        self.data_range = data_range
 
-        prompts = _clip_iqa_format_prompts(prompts)
-        self.model, self.processor = _get_clip_model_and_processor(model_name_or_path)
-        anchors = _get_clip_iqa_anchor_vectors(prompts, self.model, self.processor, self.device)
+        prompts_list, prompts_name = _clip_iqa_format_prompts(prompts)
+        self.prompts_list = prompts_list
+        self.prompts_name = prompts_name
+
+        self.model, self.processor = _get_clip_iqa_model_and_processor(model_name_or_path)
+        self.model_name_or_path = model_name_or_path
+
+        with torch.inference_mode():
+            anchors = _clip_iqa_get_anchor_vectors(
+                model_name_or_path, self.model, self.processor, self.prompts_list, self.device
+            )
         self.register_buffer("anchors", anchors)
 
-        self.add_state("score_list", torch.tensor([], dtype=torch.float32), dist_reduce_fx=None)
+        self.add_state("probs_list", [], dist_reduce_fx="cat")
 
     def update(self, images: Tensor) -> None:
         """Update metric state with new data."""
-        probs = _clip_iqa_update(images, self.model, self.processor)
-        self.score_list.append(probs)
+        with torch.inference_mode():
+            img_features = _clip_iqa_update(
+                self.model_name_or_path, images, self.model, self.processor, self.data_range, self.device
+            )
+            probs = _clip_iqa_compute(img_features, self.anchors, self.prompts_name, format_as_dict=False)
+            self.probs_list.append(probs)
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return dim_zero_cat(self.score_list)
+        probs = dim_zero_cat(self.probs_list)
+        if len(self.prompts_name) == 1:
+            return probs.squeeze()
+        return {p: probs[:, i] for i, p in enumerate(self.prompts_name)}
