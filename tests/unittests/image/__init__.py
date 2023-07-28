@@ -17,4 +17,3 @@ from unittests import _PATH_ROOT
 
 _SAMPLE_IMAGE = os.path.join(_PATH_ROOT, "_data", "image", "i01_01_5.bmp")
 _SAMPLE_IMAGE2 = os.path.join(_PATH_ROOT, "_data", "image", "I01.BMP")
-
