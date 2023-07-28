@@ -10,6 +10,7 @@ sphinx-autodoc-typehints >=1.0
 sphinx-paramlinks >=0.5.1
 sphinx-togglebutton >=0.2
 sphinx-copybutton >=0.3
+sphinx-reredirects ==0.1.2
 
 lightning >=1.8.0, <3.0.0
 lightning-utilities >=0.9.0
