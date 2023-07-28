@@ -21,9 +21,9 @@ from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
 from torchmetrics.utilities.data import _cumsum
-from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_10
+from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
 
-if _TRANSFORMERS_GREATER_EQUAL_4_10:
+if _TRANSFORMERS_GREATER_EQUAL_4_4:
     from transformers import AutoModelForMaskedLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizerBase
 else:
     PreTrainedModel = PreTrainedTokenizerBase = None

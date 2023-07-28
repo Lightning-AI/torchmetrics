@@ -55,7 +55,7 @@ def _compare_fn(preds, target, model_name_or_path):
 
 @pytest.mark.parametrize("model_name_or_path", ["openai/clip-vit-base-patch32"])
 @pytest.mark.parametrize("inputs", [_random_input])
-@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_10, reason="test requires bert_score")
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_10, reason="test requires transformers>=4.10")
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 class TestCLIPScore(MetricTester):
     """Test class for `CLIPScore` metric."""
