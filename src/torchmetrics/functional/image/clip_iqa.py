@@ -61,6 +61,7 @@ def _clip_iqa_format_prompts(prompts: Union[str, List[str], Tuple[str, str]]) ->
         (['Good photo.', 'Bad photo.'], None)
         >>> _clip_iqa_format_prompts(["quality", "brightness"])
         (['Good photo.', 'Bad photo.', 'Bright photo.', 'Dark photo.'], ['quality', 'brightness'])
+
     """
     if isinstance(prompts, tuple):
         if len(prompts) != 2:
