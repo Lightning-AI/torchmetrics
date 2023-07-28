@@ -29,6 +29,7 @@ def _pairwise_linear_similarity_update(
         x: tensor of shape ``[N,d]``
         y: tensor of shape ``[M,d]``
         zero_diagonal: determines if the diagonal of the distance matrix should be set to zero
+
     """
     x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
 
@@ -77,6 +78,7 @@ def pairwise_linear_similarity(
         tensor([[ 0., 21., 34.],
                 [21.,  0., 55.],
                 [34., 55.,  0.]])
+
     """
     distance = _pairwise_linear_similarity_update(x, y, zero_diagonal)
     return _reduce_distance_matrix(distance, reduction)

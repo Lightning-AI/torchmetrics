@@ -87,6 +87,7 @@ class SignalDistortionRatio(Metric):
         ...     mode="speaker-wise", eval_func="max")
         >>> pit(preds, target)
         tensor(-11.6051)
+
     """
 
     sum_sdr: Tensor
@@ -164,6 +165,7 @@ class SignalDistortionRatio(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(8000), torch.rand(8000)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -198,6 +200,7 @@ class ScaleInvariantSignalDistortionRatio(Metric):
         >>> si_sdr = ScaleInvariantSignalDistortionRatio()
         >>> si_sdr(preds, target)
         tensor(18.4030)
+
     """
 
     is_differentiable = True
@@ -271,6 +274,7 @@ class ScaleInvariantSignalDistortionRatio(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -315,6 +319,7 @@ class SourceAggregatedSignalDistortionRatio(Metric):
         ...     mode="permutation-wise", eval_func="max")
         >>> pit(preds, target)
         tensor(-41.2790)
+
     """
 
     msum: Tensor
@@ -390,5 +395,6 @@ class SourceAggregatedSignalDistortionRatio(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(2,8000), torch.rand(2,8000)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

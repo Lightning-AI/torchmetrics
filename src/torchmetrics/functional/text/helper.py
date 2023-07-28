@@ -51,36 +51,35 @@ class _EditOperations(str, Enum):
     OP_UNDEFINED = "undefined"
 
 
-class _EditOperationsCost(IntEnum):
-    """Enumerations for the Levenhstein edit operation costs."""
-
-    OP_INSERT = 1
-    OP_DELETE = 1
-    OP_SUBSTITUTE = 1
-    OP_NOTHING = 0
-    OP_UNDEFINED = _INT_INFINITY
-
-
 class _LevenshteinEditDistance:
     """A convenience class for calculating the Levenshtein edit distance.
 
     Class will cache some intermediate values to hasten the calculation. The implementation follows the implemenation
-    from https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/lib_ter.py, where the most of this
-    implementation is adapted and copied from.
+    from https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/lib_ter.py,
+    where the most of this implementation is adapted and copied from.
+
+    Args:
+        reference_tokens: list of reference tokens
+        op_insert: cost of insertion operation
+        op_delete: cost of deletion operation
+        op_substitute: cost of substitution operation
+
     """
 
-    def __init__(self, reference_tokens: List[str]) -> None:
-        """Initialize _LevenshteinEditDistance object.
-
-        Args:
-            reference_tokens:
-                A tokenized reference sentence.
-        """
+    def __init__(
+        self, reference_tokens: List[str], op_insert: int = 1, op_delete: int = 1, op_substitute: int = 1
+    ) -> None:
         self.reference_tokens = reference_tokens
         self.reference_len = len(reference_tokens)
 
         self.cache: Dict[str, Tuple[int, str]] = {}
         self.cache_size = 0
+
+        self.op_insert = op_insert
+        self.op_delete = op_delete
+        self.op_substitute = op_substitute
+        self.op_nothing = 0
+        self.op_undefined = _INT_INFINITY
 
     def __call__(self, prediction_tokens: List[str]) -> Tuple[int, Tuple[_EditOperations, ...]]:
         """Calculate edit distance between self._words_ref and the hypothesis. Uses cache to skip some computations.
@@ -90,6 +89,7 @@ class _LevenshteinEditDistance:
 
         Return:
             A tuple of a calculated edit distance and a trace of executed operations.
+
         """
         # Use cached edit distance for already computed words
         start_position, cached_edit_distance = self._find_cache(prediction_tokens)
@@ -117,6 +117,7 @@ class _LevenshteinEditDistance:
 
         Returns:
             Edit distance between the predicted sentence and the reference sentence
+
         """
         prediction_len = len(prediction_tokens)
 
@@ -140,15 +141,15 @@ class _LevenshteinEditDistance:
             for j in range(min_j, max_j):
                 if j == 0:
                     edit_distance[i][j] = (
-                        edit_distance[i - 1][j][0] + _EditOperationsCost.OP_DELETE,
+                        edit_distance[i - 1][j][0] + self.op_delete,
                         _EditOperations.OP_DELETE,
                     )
                 else:
                     if prediction_tokens[i - 1] == self.reference_tokens[j - 1]:
-                        cost_substitute = _EditOperationsCost.OP_NOTHING
+                        cost_substitute = self.op_nothing
                         operation_substitute = _EditOperations.OP_NOTHING
                     else:
-                        cost_substitute = _EditOperationsCost.OP_SUBSTITUTE
+                        cost_substitute = self.op_substitute
                         operation_substitute = _EditOperations.OP_SUBSTITUTE
 
                     # Tercom prefers no-op/sub, then insertion, then deletion. But since we flip the trace and compute
@@ -157,8 +158,8 @@ class _LevenshteinEditDistance:
                     # Copied from: https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py.
                     operations = (
                         (edit_distance[i - 1][j - 1][0] + cost_substitute, operation_substitute),
-                        (edit_distance[i - 1][j][0] + _EditOperationsCost.OP_DELETE, _EditOperations.OP_DELETE),
-                        (edit_distance[i][j - 1][0] + _EditOperationsCost.OP_INSERT, _EditOperations.OP_INSERT),
+                        (edit_distance[i - 1][j][0] + self.op_delete, _EditOperations.OP_DELETE),
+                        (edit_distance[i][j - 1][0] + self.op_insert, _EditOperations.OP_INSERT),
                     )
 
                     for operation_cost, operation_name in operations:
@@ -186,6 +187,7 @@ class _LevenshteinEditDistance:
         Raises:
             ValueError:
                 If an unknown operation has been applied.
+
         """
         trace: Tuple[_EditOperations, ...] = ()
         i = prediction_len
@@ -217,6 +219,7 @@ class _LevenshteinEditDistance:
             edit_distance:
                 A matrix of the Levenshtedin edit distance. The element part of the matrix is a tuple of an edit
                 operation cost and an edit operation itself.
+
         """
         if self.cache_size >= _MAX_CACHE_SIZE:
             return
@@ -251,6 +254,7 @@ class _LevenshteinEditDistance:
             edit_distance:
                 A matrix of the cached Levenshtedin edit distance. The element part of the matrix is a tuple of an edit
                 operation cost and an edit operation itself.
+
         """
         node = self.cache
         start_position = 0
@@ -265,8 +269,7 @@ class _LevenshteinEditDistance:
 
         return start_position, edit_distance
 
-    @staticmethod
-    def _get_empty_row(length: int) -> List[Tuple[int, _EditOperations]]:
+    def _get_empty_row(self, length: int) -> List[Tuple[int, _EditOperations]]:
         """Precomputed empty matrix row for Levenhstein edit distance.
 
         Args:
@@ -274,11 +277,11 @@ class _LevenshteinEditDistance:
 
         Return:
             A list of tuples containing infinite edit operation costs and yet undefined edit operations.
-        """
-        return [(int(_EditOperationsCost.OP_UNDEFINED), _EditOperations.OP_UNDEFINED)] * (length + 1)
 
-    @staticmethod
-    def _get_initial_row(length: int) -> List[Tuple[int, _EditOperations]]:
+        """
+        return [(int(self.op_undefined), _EditOperations.OP_UNDEFINED)] * (length + 1)
+
+    def _get_initial_row(self, length: int) -> List[Tuple[int, _EditOperations]]:
         """First row corresponds to insertion operations of the reference, so we do 1 edit operation per reference word.
 
         Args:
@@ -286,8 +289,9 @@ class _LevenshteinEditDistance:
 
         Return:
             A list of tuples containing edit operation costs of insert and insert edit operations.
+
         """
-        return [(i * _EditOperationsCost.OP_INSERT, _EditOperations.OP_INSERT) for i in range(length + 1)]
+        return [(i * self.op_insert, _EditOperations.OP_INSERT) for i in range(length + 1)]
 
 
 def _validate_inputs(
@@ -307,6 +311,7 @@ def _validate_inputs(
     Raises:
         ValueError:
             If length of `ref_corpus` and `hypothesis_corpus` differs.
+
     """
     if isinstance(hypothesis_corpus, str):
         hypothesis_corpus = [hypothesis_corpus]
@@ -329,6 +334,7 @@ def _edit_distance(prediction_tokens: List[str], reference_tokens: List[str]) ->
         reference_tokens: A tokenized reference sentence
     Returns:
         Edit distance between the predicted sentence and the reference sentence
+
     """
     dp = [[0] * (len(reference_tokens) + 1) for _ in range(len(prediction_tokens) + 1)]
     for i in range(len(prediction_tokens) + 1):
@@ -355,6 +361,7 @@ def _flip_trace(trace: Tuple[_EditOperations, ...]) -> Tuple[_EditOperations, ..
     Return:
         inverted_trace:
             A tuple of inverted edit operations.
+
     """
     _flip_operations: Dict[_EditOperations, _EditOperations] = {
         _EditOperations.OP_INSERT: _EditOperations.OP_DELETE,
@@ -385,6 +392,7 @@ def _trace_to_alignment(trace: Tuple[_EditOperations, ...]) -> Tuple[Dict[int, i
     Raises:
         ValueError:
             If an unknown operation is
+
     """
     reference_position = hypothesis_position = -1
     reference_errors: List[int] = []

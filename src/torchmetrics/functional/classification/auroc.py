@@ -167,6 +167,7 @@ def binary_auroc(
         tensor(0.5000)
         >>> binary_auroc(preds, target, thresholds=5)
         tensor(0.5000)
+
     """
     if validate_args:
         _binary_auroc_arg_validation(max_fpr, thresholds, ignore_index)
@@ -279,6 +280,7 @@ def multiclass_auroc(
         tensor(0.5333)
         >>> multiclass_auroc(preds, target, num_classes=5, average=None, thresholds=5)
         tensor([1.0000, 1.0000, 0.3333, 0.3333, 0.0000])
+
     """
     if validate_args:
         _multiclass_auroc_arg_validation(num_classes, average, thresholds, ignore_index)
@@ -410,6 +412,7 @@ def multilabel_auroc(
         tensor(0.6528)
         >>> multilabel_auroc(preds, target, num_labels=3, average=None, thresholds=5)
         tensor([0.6250, 0.5000, 0.8333])
+
     """
     if validate_args:
         _multilabel_auroc_arg_validation(num_labels, average, thresholds, ignore_index)
@@ -458,6 +461,7 @@ def auroc(
         >>> target = torch.tensor([0, 1, 1, 2, 2])
         >>> auroc(preds, target, task='multiclass', num_classes=3)
         tensor(0.7778)
+
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:

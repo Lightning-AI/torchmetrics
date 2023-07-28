@@ -20,6 +20,7 @@ def _modified_panoptic_quality(
     >>> target = tensor([[[0, 1], [0, 0], [6, 0], [7, 0], [6, 0], [255, 0]]])
     >>> _modified_panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7})
     tensor(0.7667, dtype=torch.float64)
+
     """
     _deprecated_root_import_func("modified_panoptic_quality", "detection")
     return modified_panoptic_quality(
@@ -53,6 +54,7 @@ def _panoptic_quality(
     ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
     >>> _panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7})
     tensor(0.5463, dtype=torch.float64)
+
     """
     _deprecated_root_import_func("panoptic_quality", "detection")
     return panoptic_quality(

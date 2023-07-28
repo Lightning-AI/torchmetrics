@@ -75,6 +75,7 @@ class RetrievalRecall(RetrievalMetric):
         >>> r2 = RetrievalRecall(top_k=2)
         >>> r2(preds, target, indexes=indexes)
         tensor(0.7500)
+
     """
 
     is_differentiable: bool = False
@@ -141,5 +142,6 @@ class RetrievalRecall(RetrievalMetric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(10,), torch.randint(2, (10,)), indexes=torch.randint(2,(10,))))
             >>> fig, ax = metric.plot(values)
+
         """
         return self._plot(val, ax)

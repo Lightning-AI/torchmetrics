@@ -60,6 +60,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
         >>> target = torch.rand(2, 1, 10, 10)
         >>> metric(preds, target)
         tensor(7.2893)
+
     """
     is_differentiable: bool = True
     higher_is_better: bool = True
@@ -135,5 +136,6 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(2, 1, 10, 10), torch.rand(2, 1, 10, 10)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

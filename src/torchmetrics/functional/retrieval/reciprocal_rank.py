@@ -37,6 +37,7 @@ def retrieval_reciprocal_rank(preds: Tensor, target: Tensor) -> Tensor:
         >>> target = torch.tensor([False, True, False])
         >>> retrieval_reciprocal_rank(preds, target)
         tensor(0.5000)
+
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 

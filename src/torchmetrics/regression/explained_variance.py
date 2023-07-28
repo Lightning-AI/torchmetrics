@@ -79,6 +79,7 @@ class ExplainedVariance(Metric):
         >>> explained_variance = ExplainedVariance(multioutput='raw_values')
         >>> explained_variance(preds, target)
         tensor([0.9677, 1.0000])
+
     """
     is_differentiable: bool = True
     higher_is_better: bool = True
@@ -168,5 +169,6 @@ class ExplainedVariance(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
+
         """
         return self._plot(val, ax)

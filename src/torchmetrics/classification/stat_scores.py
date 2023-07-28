@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Tuple, Union
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -40,6 +40,11 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class _AbstractStatScores(Metric):
+    tp: Union[List[Tensor], Tensor]
+    fp: Union[List[Tensor], Tensor]
+    tn: Union[List[Tensor], Tensor]
+    fn: Union[List[Tensor], Tensor]
+
     # define common functions
     def _create_state(
         self,
@@ -145,6 +150,7 @@ class BinaryStatScores(_AbstractStatScores):
         >>> metric(preds, target)
         tensor([[2, 3, 0, 1, 3],
                 [0, 2, 1, 3, 3]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -279,6 +285,7 @@ class MulticlassStatScores(_AbstractStatScores):
                 [[0, 1, 4, 1, 1],
                  [1, 1, 2, 2, 3],
                  [1, 2, 2, 1, 2]]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -419,6 +426,7 @@ class MultilabelStatScores(_AbstractStatScores):
                 [[0, 0, 0, 2, 2],
                  [0, 2, 0, 0, 0],
                  [0, 0, 1, 1, 1]]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -484,6 +492,7 @@ class StatScores:
         tensor([[0, 1, 2, 1, 1],
                 [1, 1, 1, 1, 2],
                 [1, 0, 3, 0, 1]])
+
     """
 
     def __new__(
