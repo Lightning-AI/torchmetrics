@@ -90,7 +90,7 @@ Or directly from conda
 .. customcalloutitem::
    :description: View the full list of metrics and filter by task and data type.
    :header: Metrics
-   :button_link: all-metrics.html
+   :button_link: pages/all-metrics.html
 
 
 .. customcalloutitem::
@@ -128,7 +128,7 @@ Or directly from conda
    :caption: User Guide
 
    pages/quickstart
-   all-metrics
+   pages/all-metrics
    pages/overview
    pages/plotting
    pages/implement
