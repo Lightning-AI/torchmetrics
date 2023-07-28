@@ -21,7 +21,6 @@ env:
   PYPI_CACHE: "_ci-cache_PyPI"
   PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: 'python'
   TOKENIZERS_PARALLELISM: false
-  SPHINX_FETCH_ASSETS: 1  # todo: consider not downloading on PRs
 
 jobs:
   make-doctest:
