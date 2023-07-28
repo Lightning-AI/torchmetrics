@@ -21,7 +21,7 @@ from typing_extensions import Literal
 from torchmetrics import Metric
 from torchmetrics.functional.multimodal.clip_score import _clip_score_update, _get_model_and_processor
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PESQ_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_10
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
@@ -29,7 +29,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 _DEFAULT_MODEL: str = "openai/clip-vit-large-patch14"
 
-if _TRANSFORMERS_AVAILABLE:
+if _TRANSFORMERS_GREATER_EQUAL_4_10:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
 

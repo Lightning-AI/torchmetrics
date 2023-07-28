@@ -23,12 +23,12 @@ from torchmetrics.functional.text.ter import translation_edit_rate
 from torchmetrics.functional.text.wer import word_error_rate
 from torchmetrics.functional.text.wil import word_information_lost
 from torchmetrics.functional.text.wip import word_information_preserved
-from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 from torchmetrics.utilities.prints import _deprecated_root_import_func
 
 __doctest_requires__ = {("_rouge_score"): ["nltk"]}
 
-if not _TRANSFORMERS_AVAILABLE:
+if not _TRANSFORMERS_GREATER_EQUAL_4_4:
     __doctest_skip__ = ["_bert_score", "_infolm"]
 
 SQUAD_SINGLE_TARGET_TYPE = Dict[str, Union[str, Dict[str, Union[List[str], List[int]]]]]

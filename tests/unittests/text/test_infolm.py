@@ -17,7 +17,7 @@ import pytest
 import torch
 from torchmetrics.functional.text.infolm import infolm
 from torchmetrics.text.infolm import InfoLM
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
 from unittests.text.helpers import TextTester, skip_on_connection_issues
 from unittests.text.inputs import HYPOTHESIS_A, HYPOTHESIS_C, _inputs_single_reference
@@ -97,7 +97,7 @@ def reference_infolm_score(preds, target, model_name, information_measure, idf, 
     ["preds", "targets"],
     [(_inputs_single_reference.preds, _inputs_single_reference.targets)],
 )
-@pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>=4.4")
 class TestInfoLM(TextTester):
     """Test class for `InfoLM` metric."""
 

@@ -28,9 +28,9 @@ from torchmetrics.functional.text.helper_embedding_metric import (
     _load_tokenizer_and_model,
 )
 from torchmetrics.utilities.enums import EnumStr
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
-if _TRANSFORMERS_AVAILABLE:
+if _TRANSFORMERS_GREATER_EQUAL_4_4:
     from transformers import PreTrainedModel, PreTrainedTokenizerBase
 else:
     PreTrainedModel = PreTrainedTokenizerBase = None

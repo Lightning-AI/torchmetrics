@@ -25,9 +25,9 @@ from torchmetrics.functional.text.ter import translation_edit_rate
 from torchmetrics.functional.text.wer import word_error_rate
 from torchmetrics.functional.text.wil import word_information_lost
 from torchmetrics.functional.text.wip import word_information_preserved
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
-if _TRANSFORMERS_AVAILABLE:
+if _TRANSFORMERS_GREATER_EQUAL_4_4:
     from torchmetrics.functional.text.bert import bert_score
     from torchmetrics.functional.text.infolm import infolm
 
