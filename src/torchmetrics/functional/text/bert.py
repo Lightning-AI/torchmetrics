@@ -33,12 +33,12 @@ from torchmetrics.functional.text.helper_embedding_metric import (
 )
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
-from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
 
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL = "roberta-large"
 
-if _TRANSFORMERS_AVAILABLE:
+if _TRANSFORMERS_GREATER_EQUAL_4_4:
     from transformers import AutoModel, AutoTokenizer
 
     def _download_model() -> None:
@@ -347,10 +347,10 @@ def bert_score(
         )
 
     if model is None:
-        if not _TRANSFORMERS_AVAILABLE:
+        if not _TRANSFORMERS_GREATER_EQUAL_4_4:
             raise ModuleNotFoundError(
                 "`bert_score` metric with default models requires `transformers` package be installed."
-                " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."
+                " Either install with `pip install transformers>=4.4` or `pip install torchmetrics[text]`."
             )
         if model_name_or_path is None:
             rank_zero_warn(

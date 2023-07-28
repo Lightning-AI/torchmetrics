@@ -19,7 +19,7 @@ import pytest
 from torch import Tensor
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.text.bert import BERTScore
-from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
 from typing_extensions import Literal
 
 from unittests.text.helpers import TextTester, skip_on_connection_issues
@@ -42,7 +42,7 @@ MODEL_NAME = "albert-base-v2"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
-@pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers")
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 @skip_on_connection_issues()
 def _reference_bert_score(
@@ -86,7 +86,7 @@ def _reference_bert_score(
     ["preds", "targets"],
     [(_inputs_single_reference.preds, _inputs_single_reference.targets)],
 )
-@pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires transformers")
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers")
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 class TestBERTScore(TextTester):
     """Tests for BERTScore."""
