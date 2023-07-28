@@ -72,6 +72,7 @@ def _clip_iqa_format_prompts(prompts: List[Union[str, Tuple[str, str]]] = ["qual
         (['Good photo.', 'Bad photo.'], None)
         >>> _clip_iqa_format_prompts(["quality", "brightness"])
         (['Good photo.', 'Bad photo.', 'Bright photo.', 'Dark photo.'], ['quality', 'brightness'])
+
     """
     if not isinstance(prompts, List):
         raise ValueError("Argument `prompts` must be a list containing strings or tuples of strings")

@@ -54,6 +54,12 @@ relative_files = true
 line-length = 120
 exclude = "(.eggs|.git|.hg|.mypy_cache|.venv|_build|buck-out|build|dist)"
 
+[tool.docformatter]
+recursive = true
+wrap-summaries = 120
+wrap-descriptions = 120
+blank = true
+
 
 [tool.ruff]
 line-length = 120
@@ -154,21 +160,12 @@ warn_no_return = "False"
 # TODO: the goal is for this to be empty
 [[tool.mypy.overrides]]
 module = [
-    "torchmetrics.classification.calibration_error",
-    "torchmetrics.classification.cohen_kappa",
-    "torchmetrics.classification.confusion_matrix",
     "torchmetrics.classification.exact_match",
     "torchmetrics.classification.f_beta",
-    "torchmetrics.classification.group_fairness",
-    "torchmetrics.classification.hamming",
-    "torchmetrics.classification.hinge",
-    "torchmetrics.classification.jaccard",
-    "torchmetrics.classification.matthews_corrcoef",
     "torchmetrics.classification.precision_recall",
     "torchmetrics.classification.ranking",
     "torchmetrics.classification.recall_at_fixed_precision",
     "torchmetrics.classification.roc",
-    "torchmetrics.classification.specificity",
     "torchmetrics.classification.stat_scores",
     "torchmetrics.detection._mean_ap",
     "torchmetrics.detection.mean_ap",

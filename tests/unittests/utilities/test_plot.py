@@ -149,6 +149,7 @@ from torchmetrics.text import (
     BLEUScore,
     CharErrorRate,
     CHRFScore,
+    EditDistance,
     ExtendedEditDistance,
     InfoLM,
     MatchErrorRate,
@@ -593,6 +594,7 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
         pytest.param(WordErrorRate, _text_input_1, _text_input_2, id="word error rate"),
         pytest.param(CharErrorRate, _text_input_1, _text_input_2, id="character error rate"),
         pytest.param(ExtendedEditDistance, _text_input_1, _text_input_2, id="extended edit distance"),
+        pytest.param(EditDistance, _text_input_1, _text_input_2, id="edit distance"),
         pytest.param(MatchErrorRate, _text_input_1, _text_input_2, id="match error rate"),
         pytest.param(BLEUScore, _text_input_3, _text_input_4, id="bleu score"),
         pytest.param(CHRFScore, _text_input_3, _text_input_4, id="bleu score"),
@@ -676,6 +678,7 @@ def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0
 
     This takes care of FID, KID and inception score image metrics as these have a slightly different call and update
     signature than other metrics.
+
     """
     metric = metric_class()
 

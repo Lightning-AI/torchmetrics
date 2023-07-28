@@ -142,6 +142,7 @@ def clip_score(
         >>> score = clip_score(torch.randint(255, (3, 224, 224)), "a photo of a cat", "openai/clip-vit-base-patch16")
         >>> print(score.detach())
         tensor(24.4255)
+
     """
     model, processor = _get_clip_model_and_processor(model_name_or_path)
     device = images.device if isinstance(images, Tensor) else images[0].device

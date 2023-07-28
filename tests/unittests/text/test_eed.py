@@ -28,6 +28,7 @@ def _rwth_manual_metric(preds, targets) -> Tensor:
 
     The results were obtained w.r.t. the examples defined in `tests.text.inputs` with the script from
     https://github.com/rwth-i6/ExtendedEditDistance.
+
     """
     ans_1 = tensor(0.24248056001808083)
     ans_2 = tensor(0.19152276295133436)
