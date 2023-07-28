@@ -14,19 +14,22 @@
 import piq
 import pytest
 import torch
-from torchmetrics.functional.image.clip_iqa import clip_image_quality_assessment
-from unittests.image import _SAMPLE_IMAGE, _SAMPLE_IMAGE2
 from PIL import Image
-from torchvision.transforms import PILToTensor
 from torch import Tensor
+from torchmetrics.functional.image.clip_iqa import clip_image_quality_assessment
+from torchvision.transforms import PILToTensor
 
-@pytest.mark.parametrize("prompts, match",
+from unittests.image import _SAMPLE_IMAGE, _SAMPLE_IMAGE2
+
+
+@pytest.mark.parametrize(
+    ("prompts", "match"),
     [
         ("quality", "Argument `prompts` must be a list containing strings or tuples of strings"),
         (["quality", 1], "Argument `prompts` must be a list containing strings or tuples of strings"),
         ([("quality", "quality", "quality")], "If a tuple is provided in argument `prompts`, it must be of length 2"),
         (["quality", "something"], "All elements of `prompts` must be one of.*"),
-    ]
+    ],
 )
 def test_raises_error_on_wrong_prompts(prompts, match):
     """Test that the function raises an error if the prompts argument are not valid."""
@@ -47,8 +50,10 @@ def test_for_correctness_random_images(shapes):
     result = clip_image_quality_assessment(img)
     assert torch.allclose(result, reference_score)
 
+
 @pytest.mark.parametrize("path", [_SAMPLE_IMAGE])
 def test_for_correctness_sample_images(path):
+    """Compare the output of the function with the output of the reference implementation."""
     img = Image.open(path)
     img = PILToTensor()(img)
     img = img.float()[None]
@@ -59,12 +64,16 @@ def test_for_correctness_sample_images(path):
     result = clip_image_quality_assessment(img, data_range=255)
     assert torch.allclose(reference_score, result)
 
-@pytest.mark.parametrize("model", [
-    "openai/clip-vit-base-patch16",
-    "openai/clip-vit-base-patch32",
-    "openai/clip-vit-large-patch14-336",
-    "openai/clip-vit-large-patch14"
-])
+
+@pytest.mark.parametrize(
+    "model",
+    [
+        "openai/clip-vit-base-patch16",
+        "openai/clip-vit-base-patch32",
+        "openai/clip-vit-large-patch14-336",
+        "openai/clip-vit-large-patch14",
+    ],
+)
 def test_other_models(model):
     """Test that the function works with other models and prompts."""
     img = Image.open(_SAMPLE_IMAGE)
@@ -77,7 +86,9 @@ def test_other_models(model):
     result = clip_image_quality_assessment(img, data_range=255, model_name_or_path=model)
     assert reference_score - 0.2 < result < reference_score + 0.2
 
-@pytest.mark.parametrize("prompts",
+
+@pytest.mark.parametrize(
+    "prompts",
     [
         ["quality"],
         ["brightness"],
@@ -103,7 +114,7 @@ def test_other_models(model):
         [("Photo of a cat", "Photo of a dog")],
         [("Photo of a cat", "Photo of a dog"), "quality"],
         [("Photo of a cat", "Photo of a dog"), "quality", ("Colorful photo", "Black and white photo")],
-    ]
+    ],
 )
 def test_prompt(prompts):
     """Test that the function works with other models and prompts."""

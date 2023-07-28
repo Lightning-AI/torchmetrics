@@ -54,7 +54,7 @@ def _get_clip_iqa_model_and_processor(model_name_or_path: str) -> Tuple[_CLIPMod
     return _get_clip_model_and_processor(model_name_or_path)
 
 
-def _clip_iqa_format_prompts(prompts: List[Union[str, Tuple[str, str]]] = ["quality"]) -> Tuple[List[str], List[str]]:
+def _clip_iqa_format_prompts(prompts: Tuple[Union[str, Tuple[str, str]]] = ("quality")) -> Tuple[List[str], List[str]]:
     """Converts the provided keywords into a list of prompts for the model to calculate the achor vectors.
 
     Args:
@@ -74,8 +74,8 @@ def _clip_iqa_format_prompts(prompts: List[Union[str, Tuple[str, str]]] = ["qual
         (['Good photo.', 'Bad photo.', 'Bright photo.', 'Dark photo.'], ['quality', 'brightness'])
 
     """
-    if not isinstance(prompts, List):
-        raise ValueError("Argument `prompts` must be a list containing strings or tuples of strings")
+    if not isinstance(prompts, tuple):
+        raise ValueError("Argument `prompts` must be a tuple containing strings or tuples of strings")
 
     prompts_names = []
     prompts_list = []
@@ -92,7 +92,7 @@ def _clip_iqa_format_prompts(prompts: List[Union[str, Tuple[str, str]]] = ["qual
             prompts_list.extend(_PROMPTS[p])
         if isinstance(p, tuple) and len(p) != 2:
             raise ValueError("If a tuple is provided in argument `prompts`, it must be of length 2")
-        elif isinstance(p, tuple):
+        if isinstance(p, tuple):
             prompts_names.append(f"user_defined_{count}")
             prompts_list.extend(p)
             count += 1
@@ -100,13 +100,16 @@ def _clip_iqa_format_prompts(prompts: List[Union[str, Tuple[str, str]]] = ["qual
     return prompts_list, prompts_names
 
 
-def _clip_iqa_get_anchor_vectors(model_name_or_path, model, processor, prompts_list, device):
+def _clip_iqa_get_anchor_vectors(
+    model_name_or_path: str, model: _CLIPModel, processor: _CLIPProcessor, prompts_list: Tuple[str], device: str
+) -> Tensor:
     """Calculates the anchor vectors for the CLIP IQA metric.
 
     Args:
+        model_name_or_path: string indicating the version of the CLIP model to use.
         model: The CLIP model
         processor: The CLIP processor
-        prompts: A list of prompts
+        prompts_list: A list of prompts
         device: The device to use for the calculation
 
     """
@@ -128,12 +131,12 @@ def _clip_iqa_get_anchor_vectors(model_name_or_path, model, processor, prompts_l
 
 
 def _clip_iqa_update(
-    model_name_or_path,
+    model_name_or_path: str,
     images: Tensor,
     model: _CLIPModel,
     processor: _CLIPProcessor,
-    data_range,
-    device,
+    data_range: Union[int, float],
+    device: str,
 ) -> Tensor:
     images = images / float(data_range)
     """Update function for CLIP IQA."""
@@ -152,7 +155,7 @@ def _clip_iqa_compute(
     img_features: Tensor,
     anchors: Tensor,
     prompts_names: List[str],
-):
+) -> Union[Tensor, Dict[str, Tensor]]:
     logits_per_image = 100 * img_features @ anchors.t()
     probs = logits_per_image.reshape(logits_per_image.shape[0], -1, 2).softmax(-1)[:, :, 0]
     if len(prompts_names) == 1:
@@ -170,7 +173,7 @@ def clip_image_quality_assessment(
         "openai/clip-vit-large-patch14",
     ] = "clip_iqa",
     data_range: Union[int, float] = 1.0,
-    prompts: List[Union[str, Tuple[str, str]]] = ["quality"],
+    prompts: Tuple[Union[str, Tuple[str, str]]] = ("quality"),
 ) -> Union[Tensor, Dict[str, Tensor]]:
     """Calculates `CLIP-IQA`_, that can be used to measure the visual content of images.
 
@@ -207,6 +210,8 @@ def clip_image_quality_assessment(
         model_name_or_path: string indicating the version of the CLIP model to use. Available models are
             `"openai/clip-vit-base-patch16"`, `"openai/clip-vit-base-patch32"`, `"openai/clip-vit-large-patch14-336"`
             and `"openai/clip-vit-large-patch14"`,
+        data_range: The maximum value of the input tensor. For example, if the input images are in range [0, 255],
+            data_range should be 255. The images are normalized by this value.
         prompts: A string, list of strings or tuple of strings. If a string is provided, it must be one of the
             availble prompts. If a list of strings is provided, all strings must be one of the availble prompts.
             If a tuple of strings is provided, it must be of length 2 and the first string must be a positive prompt
