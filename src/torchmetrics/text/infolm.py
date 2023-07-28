@@ -28,13 +28,13 @@ from torchmetrics.functional.text.infolm import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["InfoLM.plot"]
 
-if not _TRANSFORMERS_AVAILABLE:
+if not _TRANSFORMERS_GREATER_EQUAL_4_4:
     __doctest_skip__ = ["InfoLM", "InfoLM.plot"]
 
 
