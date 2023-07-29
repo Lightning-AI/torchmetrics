@@ -131,9 +131,9 @@ from torchmetrics.functional.text._deprecated import _translation_edit_rate as t
 from torchmetrics.functional.text._deprecated import _word_error_rate as word_error_rate
 from torchmetrics.functional.text._deprecated import _word_information_lost as word_information_lost
 from torchmetrics.functional.text._deprecated import _word_information_preserved as word_information_preserved
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
-if _TRANSFORMERS_AVAILABLE:
+if _TRANSFORMERS_GREATER_EQUAL_4_4:
     from torchmetrics.functional.text._deprecated import _bert_score as bert_score
     from torchmetrics.functional.text._deprecated import _infolm as infolm
 
