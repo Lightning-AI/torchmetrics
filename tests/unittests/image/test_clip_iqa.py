@@ -11,15 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from functools import partial
+
 import piq
 import pytest
 import torch
 from PIL import Image
 from torch import Tensor
 from torchmetrics.functional.image.clip_iqa import clip_image_quality_assessment
+from torchmetrics.image.clip_iqa import CLIPImageQualityAssessment
 from torchvision.transforms import PILToTensor
 
-from unittests.image import _SAMPLE_IMAGE, _SAMPLE_IMAGE2
+from unittests.helpers.testers import MetricTester
+from unittests.image import _SAMPLE_IMAGE
 
 
 @pytest.mark.parametrize(
@@ -39,16 +43,55 @@ def test_raises_error_on_wrong_prompts(prompts, match):
         clip_image_quality_assessment(img, prompts=prompts)
 
 
-@pytest.mark.parametrize("shapes", [(1, 3, 256, 256), (2, 3, 256, 256), (2, 3, 128, 128)])
-def test_for_correctness_random_images(shapes):
-    """Compare the output of the function with the output of the reference implementation."""
-    img = torch.rand(shapes)
+class CLIPTesterClass(CLIPImageQualityAssessment):
+    """Tester class for `CLIPImageQualityAssessment` metric overriding its update method."""
 
-    reference = piq.CLIPIQA()
-    reference_score = reference(img)
+    def update(self, preds, target):
+        """Override the update method to support two input arguments."""
+        super().update(preds)
 
-    result = clip_image_quality_assessment(img)
-    assert torch.allclose(result, reference_score)
+    def compute(self):
+        """Override the compute method."""
+        return super().compute().sum()
+
+
+def _clip_iqa_tester(preds, target):
+    """Tester function for `clip_image_quality_assessment` that supports two input arguments."""
+    return clip_image_quality_assessment(preds)
+
+
+def _reference(preds, target, reduce=False):
+    """Reference implementation of `CLIPImageQualityAssessment` metric."""
+    res = piq.CLIPIQA()(preds).squeeze()
+    return res.sum() if reduce else res
+
+
+class TestCLIPIQA(MetricTester):
+    """Test clip iqa metric."""
+
+    @pytest.mark.parametrize("ddp", [False])
+    def test_clip_iqa(self, ddp):
+        """Test class implementation of metric."""
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=torch.rand(2, 1, 3, 128, 128),
+            target=torch.rand(2, 1, 3, 128, 128),
+            metric_class=CLIPTesterClass,
+            reference_metric=partial(_reference, reduce=True),
+            check_scriptable=False,
+            check_state_dict=False,
+        )
+
+    @pytest.mark.parametrize("shapes", [(2, 1, 3, 256, 256), (2, 2, 3, 256, 256), (2, 2, 3, 128, 128)])
+    def test_clip_iqa_functional(self, shapes):
+        """Test functional implementation of metric."""
+        img = torch.rand(shapes)
+        self.run_functional_metric_test(
+            preds=img,
+            target=img,
+            metric_functional=_clip_iqa_tester,
+            reference_metric=_reference,
+        )
 
 
 @pytest.mark.parametrize("path", [_SAMPLE_IMAGE])
@@ -84,6 +127,7 @@ def test_other_models(model):
     reference_score = reference(img)
 
     result = clip_image_quality_assessment(img, data_range=255, model_name_or_path=model)
+    # allow large difference between scores due to different models, but still in the same ballpark
     assert reference_score - 0.2 < result < reference_score + 0.2
 
 
@@ -117,7 +161,7 @@ def test_other_models(model):
     ],
 )
 def test_prompt(prompts):
-    """Test that the function works with other prompts."""
+    """Test that the function works with other prompts, and that output is as expected."""
     img = Image.open(_SAMPLE_IMAGE)
     img = PILToTensor()(img)
     img = img.float()[None]

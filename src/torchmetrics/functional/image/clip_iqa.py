@@ -290,6 +290,8 @@ def clip_image_quality_assessment(
 
     model, processor = _get_clip_iqa_model_and_processor(model_name_or_path)
     device = images.device
+    model = model.to(device)
+
     with torch.inference_mode():
         anchors = _clip_iqa_get_anchor_vectors(model_name_or_path, model, processor, prompts_list, device)
         img_features = _clip_iqa_update(model_name_or_path, images, model, processor, data_range, device)
