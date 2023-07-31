@@ -13,8 +13,7 @@
 # limitations under the License.
 from typing import Collection
 
-import torch
-from torch import Tensor, tensor
+from torch import Tensor
 
 from torchmetrics.functional.detection._panoptic_quality_common import (
     _get_category_id_to_continuous_id,

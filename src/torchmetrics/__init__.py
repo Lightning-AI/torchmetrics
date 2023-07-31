@@ -214,6 +214,8 @@ __all__ = [
     "RetrievalRecallAtFixedPrecision",
     "ROC",
     "RootMeanSquaredErrorUsingSlidingWindow",
+    "RunningMean",
+    "RunningSum",
     "SacreBLEUScore",
     "SignalDistortionRatio",
     "ScaleInvariantSignalDistortionRatio",
