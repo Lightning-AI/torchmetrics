@@ -13,6 +13,7 @@
 # limitations under the License.
 import pytest
 import torch
+from torch import nn
 from torchmetrics.functional.image.perceptual_path_length import perceptual_path_length
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
@@ -59,12 +60,63 @@ class DummyGenerator(torch.nn.Module):
     [
         ({"num_samples": 0}, "Argument `num_samples` must be a positive integer, but got 0."),
         ({"conditional": 2}, "Argument `conditional` must be a boolean, but got 2."),
+        ({"batch_size": 0}, "Argument `batch_size` must be a positive integer, but got 0."),
+        ({"interpolation_method": "wrong"}, "Argument `interpolation_method` must be one of.*"),
+        ({"epsilon": 0}, "Argument `epsilon` must be a positive float, but got 0."),
+        ({"resize": 0}, "Argument `resize` must be a positive integer or `None`, but got 0."),
+        ({"lower_discard": -1}, "Argument `lower_discard` must be a float between 0 and 1 or `None`, but got -1"),
+        ({"upper_discard": 2}, "Argument `upper_discard` must be a float between 0 and 1 or `None`, but got 2"),
     ],
 )
 def test_raises_error_on_wrong_arguments(argument, match):
     """Test that appropriate errors are raised on wrong arguments."""
     with pytest.raises(ValueError, match=match):
         perceptual_path_length(DummyGenerator(128), **argument)
+
+
+class _WrongGenerator1(nn.Module):
+    pass
+
+
+class _WrongGenerator2(nn.Module):
+    sample = 1
+
+
+class _WrongGenerator3(nn.Module):
+    def sample(self, n):
+        return torch.randn(n, 2)
+
+
+class _WrongGenerator4(nn.Module):
+    def sample(self, n):
+        return torch.randn(n, 2)
+
+    @property
+    def num_classes(self):
+        return [10, 10]
+
+
+@pytest.mark.parametrize(
+    ("generator", "errortype", "match"),
+    [
+        (_WrongGenerator1(), NotImplementedError, "The generator must have a `sample` method.*"),
+        (_WrongGenerator2(), ValueError, "The generator's `sample` method must be callable."),
+        (
+            _WrongGenerator3(),
+            AttributeError,
+            "The generator must have a `num_classes` attribute when `conditional=True`.",
+        ),
+        (
+            _WrongGenerator4(),
+            ValueError,
+            "The generator's `num_classes` attribute must be an integer when `conditional=True`.",
+        ),
+    ],
+)
+def test_raises_error_on_wrong_generator(generator, errortype, match):
+    """Test that appropriate errors are raised on wrong generator."""
+    with pytest.raises(errortype, match=match):
+        perceptual_path_length(generator, conditional=True)
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch_fidelity")

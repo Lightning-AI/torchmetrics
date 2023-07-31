@@ -52,10 +52,10 @@ def _validate_generator_model(generator: _GeneratorType, conditional: bool = Fal
         )
     if not callable(generator.sample):
         raise ValueError("The generator's `sample` method must be callable.")
-    if conditional and not hasattr(generator, "num_classes") and not isinstance(generator.num_classes, int):
-        raise AttributeError(
-            "The generator must have a `num_classes` attribute when `conditional=True`, which is a integer."
-        )
+    if conditional and not hasattr(generator, "num_classes"):
+        raise AttributeError("The generator must have a `num_classes` attribute when `conditional=True`.")
+    if conditional and not isinstance(generator.num_classes, int):
+        raise ValueError("The generator's `num_classes` attribute must be an integer when `conditional=True`.")
 
 
 def _perceptual_path_length_validate_arguments(
