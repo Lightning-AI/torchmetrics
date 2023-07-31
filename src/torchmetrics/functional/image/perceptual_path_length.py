@@ -18,7 +18,7 @@ import torch
 from torch import Tensor, nn
 
 from torchmetrics.functional.image.lpips import _get_net
-from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
+from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_10
 
 if _TORCH_FIDELITY_AVAILABLE:
     from torch_fidelity.noise import batch_lerp, batch_slerp_any, batch_slerp_unit
@@ -193,7 +193,8 @@ def perceptual_path_length(
             "lpips-vgg16", sample_similarity_resize=resize, cuda=device == "cuda", verbose=False
         )
 
-    with torch.inference_mode():
+    decorator = torch.inference_mode if _TORCH_GREATER_EQUAL_1_10 else torch.no_grad
+    with decorator():
         distances = []
         num_batches = math.ceil(num_samples / batch_size)
         for batch_idx in range(num_batches):
