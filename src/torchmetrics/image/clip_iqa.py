@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Literal, Optional, Tuple, Union
+from typing import Any, List, Literal, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -27,24 +27,23 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_10
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["CLIPScore.plot"]
-
-_DEFAULT_MODEL: str = "openai/clip-vit-large-patch14"
+    __doctest_skip__ = ["CLIPImageQualityAssessment.plot"]
 
 if _TRANSFORMERS_GREATER_EQUAL_4_10:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
 
     def _download_clip() -> None:
-        _CLIPModel.from_pretrained(_DEFAULT_MODEL)
-        _CLIPProcessor.from_pretrained(_DEFAULT_MODEL)
+        _CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
+        _CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
 
     if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_clip):
-        __doctest_skip__ = ["CLIPScore", "CLIPScore.plot"]
+        __doctest_skip__ = ["CLIPImageQualityAssessment", "CLIPImageQualityAssessment.plot"]
 else:
-    __doctest_skip__ = ["CLIPScore", "CLIPScore.plot"]
+    __doctest_skip__ = ["CLIPImageQualityAssessment", "CLIPImageQualityAssessment.plot"]
 
 
 class CLIPImageQualityAssessment(Metric):
@@ -200,3 +199,43 @@ class CLIPImageQualityAssessment(Metric):
         if len(self.prompts_name) == 1:
             return probs.squeeze()
         return {p: probs[:, i] for i, p in enumerate(self.prompts_name)}
+
+    def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.image.clip_iqa import CLIPImageQualityAssessment
+            >>> metric = CLIPImageQualityAssessment()
+            >>> metric.update(torch.rand(1, 3, 224, 224))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.image.clip_iqa import CLIPImageQualityAssessment
+            >>> metric = CLIPImageQualityAssessment()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.rand(1, 3, 224, 224)))
+            >>> fig_, ax_ = metric.plot(values)
+
+        """
+        return self._plot(val, ax)
