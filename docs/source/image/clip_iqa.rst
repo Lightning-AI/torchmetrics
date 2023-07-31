@@ -20,5 +20,5 @@ ________________
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.image.clip_iqa
+.. autofunction:: torchmetrics.functional.image.clip_image_quality_assessment
     :noindex:
