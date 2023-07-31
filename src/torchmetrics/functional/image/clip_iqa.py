@@ -17,9 +17,9 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.multimodal.clip_score import _get_clip_model_and_processor
-from torchmetrics.utilities.imports import _PIQ_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _PIQ_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_10
 
-if _TRANSFORMERS_AVAILABLE:
+if _TRANSFORMERS_GREATER_EQUAL_4_10:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
 
