@@ -17,11 +17,25 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.multimodal.clip_score import _get_clip_model_and_processor
+from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _PIQ_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_10
 
 if _TRANSFORMERS_GREATER_EQUAL_4_10:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
+
+    def _download_clip() -> None:
+        _CLIPModel.from_pretrained("openai/clip-vit-base-patch16")
+        _CLIPProcessor.from_pretrained("openai/clip-vit-base-patch16")
+
+    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_clip):
+        __doctest_skip__ = ["clip_score"]
+
+else:
+    __doctest_skip__ = ["clip_image_quality_assessment"]
+    _CLIPModel = None
+    _CLIPProcessor = None
+
 
 _PROMPTS: Dict[str, Tuple[str, str]] = {
     "quality": ("Good photo.", "Bad photo."),
