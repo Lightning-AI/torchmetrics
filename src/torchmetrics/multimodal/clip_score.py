@@ -97,10 +97,10 @@ class CLIPScore(Metric):
     higher_is_better: bool = True
     full_state_update: bool = True
     plot_lower_bound: float = 0.0
+    plot_upper_bound = 100.0
 
     score: Tensor
     n_samples: Tensor
-    plot_upper_bound = 100.0
 
     def __init__(
         self,
@@ -109,7 +109,7 @@ class CLIPScore(Metric):
             "openai/clip-vit-base-patch32",
             "openai/clip-vit-large-patch14-336",
             "openai/clip-vit-large-patch14",
-        ] = "openai/clip-vit-large-patch14",  # type: ignore[assignment]
+        ] = "openai/clip-vit-large-patch14",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)

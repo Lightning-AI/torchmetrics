@@ -57,7 +57,15 @@ _PROMPTS: Dict[str, Tuple[str, str]] = {
 }
 
 
-def _get_clip_iqa_model_and_processor(model_name_or_path: str) -> Tuple[_CLIPModel, _CLIPProcessor]:
+def _get_clip_iqa_model_and_processor(
+    model_name_or_path: Literal[
+        "clip_iqa",
+        "openai/clip-vit-base-patch16",
+        "openai/clip-vit-base-patch32",
+        "openai/clip-vit-large-patch14-336",
+        "openai/clip-vit-large-patch14",
+    ]
+) -> Tuple[_CLIPModel, _CLIPProcessor]:
     """Extract the CLIP model and processor from the model name or path."""
     if model_name_or_path == "clip_iqa":
         if not _PIQ_AVAILABLE:
@@ -76,7 +84,7 @@ def _get_clip_iqa_model_and_processor(model_name_or_path: str) -> Tuple[_CLIPMod
     return _get_clip_model_and_processor(model_name_or_path)
 
 
-def _clip_iqa_format_prompts(prompts: Tuple[Union[str, Tuple[str, str]]] = ("quality")) -> Tuple[List[str], List[str]]:
+def _clip_iqa_format_prompts(prompts: Tuple[Union[str, Tuple[str, str]]] = ("quality",)) -> Tuple[List[str], List[str]]:
     """Converts the provided keywords into a list of prompts for the model to calculate the achor vectors.
 
     Args:
@@ -105,8 +113,8 @@ def _clip_iqa_format_prompts(prompts: Tuple[Union[str, Tuple[str, str]]] = ("qua
     if not isinstance(prompts, tuple):
         raise ValueError("Argument `prompts` must be a tuple containing strings or tuples of strings")
 
-    prompts_names = []
-    prompts_list = []
+    prompts_names: List[str] = []
+    prompts_list: List[str] = []
     count = 0
     for p in prompts:
         if not isinstance(p, (str, tuple)):
@@ -129,7 +137,11 @@ def _clip_iqa_format_prompts(prompts: Tuple[Union[str, Tuple[str, str]]] = ("qua
 
 
 def _clip_iqa_get_anchor_vectors(
-    model_name_or_path: str, model: _CLIPModel, processor: _CLIPProcessor, prompts_list: List[str], device: str
+    model_name_or_path: str,
+    model: _CLIPModel,
+    processor: _CLIPProcessor,
+    prompts_list: List[str],
+    device: Union[str, torch.device],
 ) -> Tensor:
     """Calculates the anchor vectors for the CLIP IQA metric.
 
@@ -164,7 +176,7 @@ def _clip_iqa_update(
     model: _CLIPModel,
     processor: _CLIPProcessor,
     data_range: Union[int, float],
-    device: str,
+    device: Union[str, torch.device],
 ) -> Tensor:
     images = images / float(data_range)
     """Update function for CLIP IQA."""

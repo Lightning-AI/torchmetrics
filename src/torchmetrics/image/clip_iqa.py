@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Literal, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Literal, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -152,9 +152,19 @@ class CLIPImageQualityAssessment(Metric):
 
     """
 
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    full_state_update: bool = True
+    plot_lower_bound = 0.0
+    plot_upper_bound = 100.0
+
+    anchors: Tensor
+    probs_list: List[Tensor]
+
     def __init__(
         self,
         model_name_or_path: Literal[
+            "clip_iqa",
             "openai/clip-vit-base-patch16",
             "openai/clip-vit-base-patch32",
             "openai/clip-vit-large-patch14-336",
@@ -191,9 +201,11 @@ class CLIPImageQualityAssessment(Metric):
                 self.model_name_or_path, images, self.model, self.processor, self.data_range, self.device
             )
             probs = _clip_iqa_compute(img_features, self.anchors, self.prompts_name, format_as_dict=False)
+            if not isinstance(probs, Tensor):
+                raise ValueError("Output probs should be a tensor")
             self.probs_list.append(probs)
 
-    def compute(self) -> Tensor:
+    def compute(self) -> Union[Tensor, Dict[str, Tensor]]:
         """Compute metric."""
         probs = dim_zero_cat(self.probs_list)
         if len(self.prompts_name) == 1:
