@@ -22,7 +22,7 @@ from PIL import Image
 from torch import Tensor
 from torchmetrics.functional.image.clip_iqa import clip_image_quality_assessment
 from torchmetrics.image.clip_iqa import CLIPImageQualityAssessment
-from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
+from torchmetrics.utilities.imports import _PIQ_GREATER_EQUAL_0_8, _TRANSFORMERS_GREATER_EQUAL_4_10
 from torchvision.transforms import PILToTensor
 
 from unittests.helpers.testers import MetricTester
@@ -70,6 +70,7 @@ def _reference(preds, target, reduce=False):
     return res.sum() if reduce else res
 
 
+@pytest.mark.skipif(not _PIQ_GREATER_EQUAL_0_8, reason="test requires piq>=0.8")
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_10, reason="test requires transformers>=4.10")
 class TestCLIPIQA(MetricTester):
     """Test clip iqa metric."""
@@ -102,6 +103,8 @@ class TestCLIPIQA(MetricTester):
 
 
 @skip_on_connection_issues()
+@pytest.mark.skipif(not _PIQ_GREATER_EQUAL_0_8, reason="test requires piq>=0.8")
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_10, reason="test requires transformers>=4.10")
 @pytest.mark.parametrize("path", [_SAMPLE_IMAGE])
 def test_for_correctness_sample_images(path):
     """Compare the output of the function with the output of the reference implementation."""
@@ -117,6 +120,8 @@ def test_for_correctness_sample_images(path):
 
 
 @skip_on_connection_issues()
+@pytest.mark.skipif(not _PIQ_GREATER_EQUAL_0_8, reason="test requires piq>=0.8")
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_10, reason="test requires transformers>=4.10")
 @pytest.mark.parametrize(
     "model",
     [
@@ -141,6 +146,8 @@ def test_other_models(model):
 
 
 @skip_on_connection_issues()
+@pytest.mark.skipif(not _PIQ_GREATER_EQUAL_0_8, reason="test requires piq>=0.8")
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_10, reason="test requires transformers>=4.10")
 @pytest.mark.parametrize(
     "prompts",
     [
@@ -190,6 +197,8 @@ def test_prompt(prompts):
 
 
 @skip_on_connection_issues()
+@pytest.mark.skipif(not _PIQ_GREATER_EQUAL_0_8, reason="test requires piq>=0.8")
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_10, reason="test requires transformers>=4.10")
 def test_plot_method():
     """Test the plot method of CLIPScore seperately in this file due to the skipping conditions."""
     metric = CLIPImageQualityAssessment()

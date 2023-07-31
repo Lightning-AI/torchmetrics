@@ -18,7 +18,7 @@ from torch import Tensor
 
 from torchmetrics.functional.multimodal.clip_score import _get_clip_model_and_processor
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
-from torchmetrics.utilities.imports import _PIQ_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_10
+from torchmetrics.utilities.imports import _PIQ_GREATER_EQUAL_0_8, _TRANSFORMERS_GREATER_EQUAL_4_10
 
 if _TRANSFORMERS_GREATER_EQUAL_4_10:
     from transformers import CLIPModel as _CLIPModel
@@ -68,10 +68,10 @@ def _get_clip_iqa_model_and_processor(
 ) -> Tuple[_CLIPModel, _CLIPProcessor]:
     """Extract the CLIP model and processor from the model name or path."""
     if model_name_or_path == "clip_iqa":
-        if not _PIQ_AVAILABLE:
+        if not _PIQ_GREATER_EQUAL_0_8:
             raise ValueError(
                 "For metric `clip_iqa` to work with argument `model_name_or_path` set to default value `'clip_iqa'`"
-                ", package piq must be installed. Either install with `pip install piq` or"
+                ", package `piq` version v0.8.0 or later must be installed. Either install with `pip install piq` or"
                 "`pip install torchmetrics[image]`"
             )
 
