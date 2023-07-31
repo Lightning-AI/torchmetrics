@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.retrieval.average_precision import RetrievalMAP
-from torchmetrics.retrieval.base import RetrievalMetric
 from torchmetrics.retrieval.fall_out import RetrievalFallOut
 from torchmetrics.retrieval.hit_rate import RetrievalHitRate
 from torchmetrics.retrieval.ndcg import RetrievalNormalizedDCG

@@ -14,7 +14,6 @@
 
 from typing import Any, Dict, List, Optional, Sequence, Union
 
-import torch
 from torch import Tensor
 
 from torchmetrics.functional.image.rase import relative_average_spectral_error

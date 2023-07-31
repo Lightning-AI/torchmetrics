@@ -20,14 +20,13 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-from pycocotools import mask
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from torch import IntTensor, Tensor
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
-from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL, _SAMPLE_DETECTION_SEGMENTATION
+from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL
 from unittests.helpers.testers import MetricTester
 
 _pytest_condition = not (_PYCOCOTOOLS_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)

@@ -13,9 +13,7 @@
 # limitations under the License.
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
 
-__all__ = []
-
 if _TRANSFORMERS_GREATER_EQUAL_4_10:
     from torchmetrics.multimodal.clip_score import CLIPScore
 
-    __all__.append("CLIPScore")
+    __all__ = ["CLIPScore"]

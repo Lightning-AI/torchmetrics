@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # this is just a bypass for this module name collision with build-in one
-from typing import Any, Callable, Dict, Optional, Sequence, Union
+from typing import Any, Dict, Optional, Sequence, Union
 
 from torch import Tensor, nn
 

@@ -18,7 +18,7 @@ from typing import Any, Dict, Hashable, Iterable, Iterator, List, Optional, Sequ
 
 import torch
 from torch import Tensor
-from torch.nn import Module, ModuleDict
+from torch.nn import ModuleDict
 from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
