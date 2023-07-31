@@ -17,5 +17,5 @@ ________________
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.image.lpip.learned_perceptual_image_patch_similarity
+.. autofunction:: torchmetrics.functional.image.learned_perceptual_image_patch_similarity
     :noindex:
