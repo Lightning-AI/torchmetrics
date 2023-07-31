@@ -46,6 +46,7 @@ class RelativeAverageSpectralError(Metric):
         Relative Average Spectral Error (RASE)
 
     Example:
+        >>> import torch
         >>> from torchmetrics.image import RelativeAverageSpectralError
         >>> g = torch.manual_seed(22)
         >>> preds = torch.rand(4, 3, 16, 16)
