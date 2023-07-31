@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
-from typing import Literal, Optional, Tuple, Union
+from typing import Callable, Literal, Optional, Tuple, Union
 
 import torch
 from torch import Tensor, nn
@@ -28,7 +28,16 @@ else:
     create_sample_similarity = None
 
 
-def _validate_generator_model(generator: nn.Module, conditional: bool = False) -> None:
+class _GeneratorType(nn.Module):
+    @property
+    def num_classes(self) -> int:
+        raise NotImplementedError
+
+    def sample(self, num_samples: int) -> Tensor:
+        raise NotImplementedError
+
+
+def _validate_generator_model(generator: _GeneratorType, conditional: bool = False) -> None:
     """Validate that the user provided generator has the right methods and attributes.
 
     Args:
@@ -41,8 +50,12 @@ def _validate_generator_model(generator: nn.Module, conditional: bool = False) -
             "The generator must have a `sample` method with signature `sample(num_samples: int) -> Tensor` where the"
             " returned tensor has shape `(num_samples, z_size)`."
         )
-    if conditional and not hasattr(generator, "num_classes"):
-        raise AttributeError("The generator must have a `num_classes` attribute when `conditional=True`.")
+    if not callable(generator.sample):
+        raise ValueError("The generator's `sample` method must be callable.")
+    if conditional and not hasattr(generator, "num_classes") and not isinstance(generator.num_classes, int):
+        raise AttributeError(
+            "The generator must have a `num_classes` attribute when `conditional=True`, which is a integer."
+        )
 
 
 def _perceptual_path_length_validate_arguments(
@@ -110,7 +123,7 @@ def _interpolate(
 
 
 def perceptual_path_length(
-    generator: nn.Module,
+    generator: _GeneratorType,
     num_samples: int = 10_000,
     conditional: bool = False,
     batch_size: int = 128,
@@ -163,7 +176,7 @@ def perceptual_path_length(
             "Install with `pip install torch-fidelity` or `pip install torchmetrics[image]`"
         )
     _perceptual_path_length_validate_arguments(
-        num_samples, conditional, batch_size, interpolation_method, epsilon, lower_discard, upper_discard
+        num_samples, conditional, batch_size, interpolation_method, epsilon, resize, lower_discard, upper_discard
     )
     _validate_generator_model(generator, conditional)
     generator = generator.to(device)

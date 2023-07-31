@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Literal, Optional, Tuple
 
 from torch import Tensor, nn
 from torch_fidelity.utils import create_sample_similarity
 
 from torchmetrics.functional.image.perceptual_path_length import (
+    _GeneratorType,
     _perceptual_path_length_validate_arguments,
     _validate_generator_model,
     perceptual_path_length,
@@ -62,12 +63,12 @@ class PerceptualPathLength(Metric):
             "lpips-vgg16", sample_similarity_resize=resize, cuda=self.device == "cuda", verbose=False
         )
 
-    def update(self, generator: nn.Module) -> None:
+    def update(self, generator: _GeneratorType) -> None:
         """Update the generator model."""
         _validate_generator_model(generator, self.conditional)
         self.generator = generator
 
-    def compute(self) -> Dict[str, Tensor]:
+    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
         """Compute the perceptual path length."""
         return perceptual_path_length(
             generator=self.generator,
@@ -77,7 +78,7 @@ class PerceptualPathLength(Metric):
             epsilon=self.epsilon,
             resize=self.resize,
             lower_discard=self.lower_discard,
-            uppper_discard=self.upper_discard,
+            upper_discard=self.upper_discard,
             sim_net=self.sim_net,
             device=self.device,
         )
