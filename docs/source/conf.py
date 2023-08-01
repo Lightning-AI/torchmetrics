@@ -122,7 +122,21 @@ extensions = [
 ]
 
 # redirects, see: https://documatt.gitlab.io/sphinx-reredirects/usage.html
-redirects = {"all-metrics": "pages/all-metrics.html"}
+redirects = {
+    "all-metrics": "pages/all-metrics.html",
+    "pages/aggregation/*": "../pages/aggregation/$source.html",
+    "pages/audio/*": "../pages/audio/$source.html",
+    "pages/classification/*": "../pages/classification/$source.html",
+    "pages/detection/*": "../pages/detection/$source.html",
+    "pages/image/*": "../pages/image/$source.html",
+    "pages/multimodal/*": "../pages/multimodal/$source.html",
+    "pages/nominal/*": "../pages/nominal/$source.html",
+    "pages/pairwise/*": "../pages/pairwise/$source.html",
+    "pages/regression/*": "../pages/regression/$source.html",
+    "pages/retrieval/*": "../pages/retrieval/$source.html",
+    "pages/text/*": "../pages/text/$source.html",
+    "pages/wrappers/*": "../pages/wrappers/$source.html",
+}
 
 # Set that source code from plotting is always included
 plot_include_source = True
