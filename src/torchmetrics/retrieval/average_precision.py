@@ -38,8 +38,7 @@ class RetrievalMAP(RetrievalMetric):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``rmap`` (:class:`~torch.Tensor`): A tensor with the mean average precision of the predictions ``preds``
-      w.r.t. the labels ``target``
+    - ``map@k`` (:class:`~torch.Tensor`): A single-value tensor with the mean average precision (MAP) of the predictions ``preds`` w.r.t. the labels ``target``.
 
     All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
     so that for example, a tensor of shape ``(N, M)`` is treated as ``(N * M, )``. Predictions will be first grouped by
@@ -54,8 +53,7 @@ class RetrievalMAP(RetrievalMetric):
             - ``'skip'``: skip those queries; if all queries are skipped, ``0.0`` is returned
             - ``'error'``: raise a ``ValueError``
 
-        ignore_index:
-            Ignore predictions where the target is equal to this number.
+        ignore_index: Ignore predictions where the target is equal to this number.
         top_k: consider only the top k elements for each query (default: ``None``, which considers them all)
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
