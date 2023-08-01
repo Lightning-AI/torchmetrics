@@ -38,7 +38,8 @@ class RetrievalMRR(RetrievalMetric):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``mrr@k`` (:class:`~torch.Tensor`): A single-value tensor with the reciprocal rank (RR) of the predictions ``preds`` w.r.t. the labels ``target``.
+    - ``mrr@k`` (:class:`~torch.Tensor`): A single-value tensor with the reciprocal rank (RR)
+    of the predictions ``preds`` w.r.t. the labels ``target``.
 
     All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
     so that for example, a tensor of shape ``(N, M)`` is treated as ``(N * M, )``. Predictions will be first grouped by
