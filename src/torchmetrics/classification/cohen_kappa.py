@@ -283,7 +283,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         return self._plot(val, ax)
 
 
-class CohenKappa:
+class CohenKappa(Metric):
     r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement.
 
     .. math::
@@ -329,3 +329,15 @@ class CohenKappa:
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassCohenKappa(num_classes, **kwargs)
         raise ValueError(f"Task {task} not supported!")
+
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update metric state."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
+        )
+
+    def compute(self) -> None:
+        """Compute metric."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
+        )

@@ -470,7 +470,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
         )
 
 
-class ROC:
+class ROC(Metric):
     r"""Compute the Receiver Operating Characteristic (ROC).
 
     The curve consist of multiple pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at
@@ -556,4 +556,16 @@ class ROC:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelROC(num_labels, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")
+
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update metric state."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
+        )
+
+    def compute(self) -> None:
+        """Compute metric."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
+        )

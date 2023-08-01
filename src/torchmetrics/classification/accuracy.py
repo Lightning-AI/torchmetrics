@@ -445,7 +445,7 @@ class MultilabelAccuracy(MultilabelStatScores):
         return self._plot(val, ax)
 
 
-class Accuracy:
+class Accuracy(Metric):
     r"""Compute `Accuracy`_.
 
     .. math::
@@ -511,3 +511,15 @@ class Accuracy:
                 )
             return MultilabelAccuracy(num_labels, threshold, average, **kwargs)
         raise ValueError(f"Not handled value: {task}")
+
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update metric state."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
+        )
+
+    def compute(self) -> None:
+        """Compute metric."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
+        )

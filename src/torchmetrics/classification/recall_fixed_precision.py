@@ -460,7 +460,7 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
         return self._plot(val, ax)
 
 
-class RecallAtFixedPrecision:
+class RecallAtFixedPrecision(Metric):
     r"""Compute the highest possible recall value given the minimum precision thresholds provided.
 
     This is done by first calculating the precision-recall curve for different thresholds and the find the recall for
@@ -500,4 +500,16 @@ class RecallAtFixedPrecision:
             return MultilabelRecallAtFixedPrecision(
                 num_labels, min_precision, thresholds, ignore_index, validate_args, **kwargs
             )
-        return None  # type: ignore[return-value]
+        raise ValueError(f"Task {task} not supported!")
+
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update metric state."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
+        )
+
+    def compute(self) -> None:
+        """Compute metric."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
+        )

@@ -573,7 +573,7 @@ class MultilabelPrecisionRecallCurve(Metric):
         return plot_curve(curve, score=score, ax=ax, label_names=("Precision", "Recall"), name=self.__class__.__name__)
 
 
-class PrecisionRecallCurve:
+class PrecisionRecallCurve(Metric):
     r"""Compute the precision-recall curve.
 
     The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
@@ -638,3 +638,15 @@ class PrecisionRecallCurve:
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelPrecisionRecallCurve(num_labels, **kwargs)
         raise ValueError(f"Task {task} not supported!")
+
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update metric state."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
+        )
+
+    def compute(self) -> None:
+        """Compute metric."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
+        )

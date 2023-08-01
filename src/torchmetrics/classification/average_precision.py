@@ -465,7 +465,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         return self._plot(val, ax)
 
 
-class AveragePrecision:
+class AveragePrecision(Metric):
     r"""Compute the average precision (AP) score.
 
     The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
@@ -526,3 +526,15 @@ class AveragePrecision:
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelAveragePrecision(num_labels, average, **kwargs)
         raise ValueError(f"Task {task} not supported!")
+
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update metric state."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
+        )
+
+    def compute(self) -> None:
+        """Compute metric."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
+        )

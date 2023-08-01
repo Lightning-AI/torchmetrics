@@ -338,7 +338,7 @@ class MulticlassCalibrationError(Metric):
         return self._plot(val, ax)
 
 
-class CalibrationError:
+class CalibrationError(Metric):
     r"""`Top-label Calibration Error`_.
 
     The expected calibration error can be used to quantify how well a given model is calibrated e.g. how well the
@@ -385,3 +385,15 @@ class CalibrationError:
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassCalibrationError(num_classes, **kwargs)
         raise ValueError(f"Not handled value: {task}")
+
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update metric state."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
+        )
+
+    def compute(self) -> None:
+        """Compute metric."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
+        )

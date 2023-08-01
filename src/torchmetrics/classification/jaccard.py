@@ -413,7 +413,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         return self._plot(val, ax)
 
 
-class JaccardIndex:
+class JaccardIndex(Metric):
     r"""Calculate the Jaccard index for multilabel tasks.
 
     The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
@@ -463,3 +463,15 @@ class JaccardIndex:
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelJaccardIndex(num_labels, threshold, average, **kwargs)
         raise ValueError(f"Task {task} not supported!")
+
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update metric state."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
+        )
+
+    def compute(self) -> None:
+        """Compute metric."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
+        )

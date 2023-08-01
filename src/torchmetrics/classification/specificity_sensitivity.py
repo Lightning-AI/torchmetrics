@@ -322,7 +322,7 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
         )
 
 
-class SpecificityAtSensitivity:
+class SpecificityAtSensitivity(Metric):
     r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
@@ -362,4 +362,16 @@ class SpecificityAtSensitivity:
             return MultilabelSpecificityAtSensitivity(
                 num_labels, min_sensitivity, thresholds, ignore_index, validate_args, **kwargs
             )
-        return None  # type: ignore[return-value]
+        raise ValueError(f"Task {task} not supported!")
+
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update metric state."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
+        )
+
+    def compute(self) -> None:
+        """Compute metric."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
+        )

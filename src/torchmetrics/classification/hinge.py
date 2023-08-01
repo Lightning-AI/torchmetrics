@@ -319,7 +319,7 @@ class MulticlassHingeLoss(Metric):
         return self._plot(val, ax)
 
 
-class HingeLoss:
+class HingeLoss(Metric):
     r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
@@ -374,3 +374,15 @@ class HingeLoss:
                 )
             return MulticlassHingeLoss(num_classes, squared, multiclass_mode, **kwargs)
         raise ValueError(f"Unsupported task `{task}`")
+
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update metric state."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
+        )
+
+    def compute(self) -> None:
+        """Compute metric."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
+        )
