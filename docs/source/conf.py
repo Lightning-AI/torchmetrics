@@ -95,7 +95,7 @@ if SPHINX_FETCH_ASSETS:
 
 # If your documentation needs a minimal Sphinx version, state it here.
 
-needs_sphinx = "6.2"
+needs_sphinx = "5.3"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -126,7 +126,8 @@ redirects = {"all-metrics": "pages/all-metrics.html"}
 
 # Set that source code from plotting is always included
 plot_include_source = True
-plot_html_show_source_link = True
+plot_html_show_formats = False
+plot_html_show_source_link = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
