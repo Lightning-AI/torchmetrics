@@ -23,6 +23,7 @@ from torchmetrics.utilities.imports import _LATEX_AVAILABLE, _MATPLOTLIB_AVAILAB
 
 if _MATPLOTLIB_AVAILABLE:
     import matplotlib
+    import matplotlib.axes
     import matplotlib.pyplot as plt
 
     _PLOT_OUT_TYPE = Tuple[plt.Figure, Union[matplotlib.axes.Axes, np.ndarray]]
