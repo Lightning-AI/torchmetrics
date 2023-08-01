@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 from functools import partial
 
 import matplotlib
@@ -105,10 +106,10 @@ class TestCLIPIQA(MetricTester):
 @skip_on_connection_issues()
 @pytest.mark.skipif(not _PIQ_GREATER_EQUAL_0_8, reason="test requires piq>=0.8")
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_10, reason="test requires transformers>=4.10")
-@pytest.mark.parametrize("path", [_SAMPLE_IMAGE])
-def test_for_correctness_sample_images(path):
+@pytest.mark.skipif(not os.path.isfile(_SAMPLE_IMAGE), reason="test image not found")
+def test_for_correctness_sample_images():
     """Compare the output of the function with the output of the reference implementation."""
-    img = Image.open(path)
+    img = Image.open(_SAMPLE_IMAGE)
     img = PILToTensor()(img)
     img = img.float()[None]
 
@@ -131,6 +132,7 @@ def test_for_correctness_sample_images(path):
         "openai/clip-vit-large-patch14",
     ],
 )
+@pytest.mark.skipif(not os.path.isfile(_SAMPLE_IMAGE), reason="test image not found")
 def test_other_models(model):
     """Test that the function works with other models."""
     img = Image.open(_SAMPLE_IMAGE)
@@ -177,6 +179,7 @@ def test_other_models(model):
         (("Photo of a cat", "Photo of a dog"), "quality", ("Colorful photo", "Black and white photo")),
     ],
 )
+@pytest.mark.skipif(not os.path.isfile(_SAMPLE_IMAGE), reason="test image not found")
 def test_prompt(prompts):
     """Test that the function works with other prompts, and that output is as expected."""
     img = Image.open(_SAMPLE_IMAGE)
