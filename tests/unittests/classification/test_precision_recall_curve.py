@@ -11,13 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import operator
 from functools import partial
 
 import numpy as np
 import pytest
 import torch
-from lightning_utilities import compare_version
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import precision_recall_curve as sk_precision_recall_curve
