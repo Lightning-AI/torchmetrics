@@ -58,6 +58,6 @@ if _LPIPS_AVAILABLE:
     __all__.append("LearnedPerceptualImagePatchSimilarity")
 
 if _TRANSFORMERS_GREATER_EQUAL_4_10:
-    from torchmetrics.image.clip_iqa import CLIPImageQualityAssessment
+    from torchmetrics.image.clip_iqa import CLIPImageQualityAssessment  # noqa: F401
 
     __all__.append("CLIPImageQualityAssessment")
