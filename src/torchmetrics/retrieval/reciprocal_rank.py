@@ -54,7 +54,7 @@ class RetrievalMRR(RetrievalMetric):
             - ``'error'``: raise a ``ValueError``
 
         ignore_index: Ignore predictions where the target is equal to this number.
-        top_k: consider only the top k elements for each query (default: ``None``, which considers them all)
+        top_k: Consider only the top k elements for each query (default: ``None``, which considers them all)
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -63,7 +63,7 @@ class RetrievalMRR(RetrievalMetric):
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
         ValueError:
-            If ``top_k`` is not ``None`` or an integer larger than 0.
+            If ``top_k`` is not ``None`` or not an integer greater than 0.
 
     Example:
         >>> from torch import tensor
