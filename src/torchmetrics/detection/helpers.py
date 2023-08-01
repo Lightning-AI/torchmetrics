@@ -25,13 +25,10 @@ def _input_validator(
     if not isinstance(iou_type, list):
         iou_type = [iou_type]
 
-    if any(i not in ["bbox", "segm"] for i in iou_type):
+    if any(tp not in {"bbox", "segm"} for tp in iou_type):
         raise Exception(f"IOU type {iou_type} is not supported")
-    item_val_name = []
-    if "bbox" in iou_type:
-        item_val_name.append("boxes")
-    if "segm" in iou_type:
-        item_val_name.append("masks")
+    name_map = {"bbox": "boxes", "segm": "masks"}
+    item_val_name = [name_map[tp] for tp in iou_type]
 
     if not isinstance(preds, Sequence):
         raise ValueError(f"Expected argument `preds` to be of type Sequence, but got {preds}")
@@ -67,14 +64,14 @@ def _input_validator(
         for ivn in item_val_name:
             if item[ivn].size(0) != item["labels"].size(0):
                 raise ValueError(
-                    f"Input {ivn} and labels of sample {i} in targets have a"
+                    f"Input '{ivn}' and labels of sample {i} in targets have a"
                     f" different length (expected {item[ivn].size(0)} labels, got {item['labels'].size(0)})"
                 )
     for i, item in enumerate(preds):
         for ivn in item_val_name:
             if not (item[ivn].size(0) == item["labels"].size(0) == item["scores"].size(0)):
                 raise ValueError(
-                    f"Input {ivn}, labels and scores of sample {i} in predictions have a"
+                    f"Input '{ivn}', labels and scores of sample {i} in predictions have a"
                     f" different length (expected {item[ivn].size(0)} labels and scores,"
                     f" got {item['labels'].size(0)} labels and {item['scores'].size(0)})"
                 )
@@ -91,7 +88,7 @@ def _validate_iou_type_arg(iou_type: Union[Literal["bbox", "segm"], List[str]] =
     allowed_iou_types = ("segm", "bbox")
     if not isinstance(iou_type, list):
         iou_type = [iou_type]
-    if any(i_type not in allowed_iou_types for i_type in iou_type):
+    if any(tp not in allowed_iou_types for tp in iou_type):
         raise ValueError(
             f"Expected argument `iou_type` to be one of {allowed_iou_types} or a list of, but got {iou_type}"
         )
