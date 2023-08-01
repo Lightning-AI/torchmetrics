@@ -36,6 +36,8 @@ else:
     _CLIPModel = None
     _CLIPProcessor = None
 
+if not _PIQ_GREATER_EQUAL_0_8:
+    __doctest_skip__ = ["clip_image_quality_assessment"]
 
 _PROMPTS: Dict[str, Tuple[str, str]] = {
     "quality": ("Good photo.", "Bad photo."),
