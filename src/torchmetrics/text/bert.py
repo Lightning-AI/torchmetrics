@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
-from warnings import warn
 
 import torch
 from torch import Tensor

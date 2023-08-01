@@ -3,28 +3,15 @@ license_file = "LICENSE"
 description-file = "README.md"
 
 [build-system]
-requires = [
-    "setuptools",
-    "wheel",
-]
+requires = ["setuptools", "wheel"]
 
 
 [tool.check-manifest]
-ignore = [
-    "*.yml",
-    ".github",
-    ".github/*"
-]
+ignore = ["*.yml", ".github", ".github/*"]
 
 
 [tool.pytest.ini_options]
-norecursedirs = [
-    ".git",
-    ".github",
-    "dist",
-    "build",
-    "docs",
-]
+norecursedirs = [".git", ".github", "dist", "build", "docs"]
 addopts = [
     "--strict-markers",
     "--doctest-modules",
@@ -38,10 +25,7 @@ xfail_strict = true
 junit_duration_report = "call"
 
 [tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "pass",
-]
+exclude_lines = ["pragma: no cover", "pass"]
 
 [tool.coverage.run]
 parallel = true
@@ -65,44 +49,44 @@ blank = true
 line-length = 120
 # Enable Pyflakes `E` and `F` codes by default.
 select = [
-    "E", "W",  # see: https://pypi.org/project/pycodestyle
-    "F",  # see: https://pypi.org/project/pyflakes
-    "I",  #see: https://pypi.org/project/isort/
-    "D",  # see: https://pypi.org/project/pydocstyle
-    "N",  # see: https://pypi.org/project/pep8-naming
-    "S",  # see: https://pypi.org/project/flake8-bandit
+    "E",
+    "W", # see: https://pypi.org/project/pycodestyle
+    "F", # see: https://pypi.org/project/pyflakes
+    "I", #see: https://pypi.org/project/isort/
+    "D", # see: https://pypi.org/project/pydocstyle
+    "N", # see: https://pypi.org/project/pep8-naming
+    "S", # see: https://pypi.org/project/flake8-bandit
 ]
 extend-select = [
-    "A",  # see: https://pypi.org/project/flake8-builtins
-    "B",  # see: https://pypi.org/project/flake8-bugbear
-    "C4",  # see: https://pypi.org/project/flake8-comprehensions
-    "PT",  # see: https://pypi.org/project/flake8-pytest-style
+    "A",    # see: https://pypi.org/project/flake8-builtins
+    "B",    # see: https://pypi.org/project/flake8-bugbear
+    "C4",   # see: https://pypi.org/project/flake8-comprehensions
+    "PT",   # see: https://pypi.org/project/flake8-pytest-style
     "RET",  # see: https://pypi.org/project/flake8-return
     "SIM",  # see: https://pypi.org/project/flake8-simplify
     "YTT",  # see: https://pypi.org/project/flake8-2020
     "ANN",  # see: https://pypi.org/project/flake8-annotations
     "TID",  # see: https://pypi.org/project/flake8-tidy-imports/
     "T10",  # see: https://pypi.org/project/flake8-debugger
-    "Q",  # see: https://pypi.org/project/flake8-quotes
+    "Q",    # see: https://pypi.org/project/flake8-quotes
     "RUF",  # Ruff-specific rules
     "EXE",  # see: https://pypi.org/project/flake8-executable
     "ISC",  # see: https://pypi.org/project/flake8-implicit-str-concat
     "PIE",  # see: https://pypi.org/project/flake8-pie
     "PLE",  # see: https://pypi.org/project/pylint/
-    "PERF",  # see: https://pypi.org/project/perflint/
+    "PERF", # see: https://pypi.org/project/perflint/
     "PYI",  # see: https://pypi.org/project/flake8-pyi/
 ]
 ignore = [
-    "E731",  # Do not assign a lambda expression, use a def
-    "F401",  # Imports of __all__
-    "D100",  # todo: Missing docstring in public module
-    "D104",  # todo: Missing docstring in public package
-    "D107",  # Missing docstring in `__init__`
-    "ANN101",  # Missing type annotation for `self` in method
-    "ANN102",  # Missing type annotation for `cls` in classmethod
-    "S301",  # todo: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue  # todo
-    "S310",  # todo: Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.  # todo
-    "B905",  # todo: `zip()` without an explicit `strict=` parameter
+    "E731",   # Do not assign a lambda expression, use a def
+    "D100",   # todo: Missing docstring in public module
+    "D104",   # todo: Missing docstring in public package
+    "D107",   # Missing docstring in `__init__`
+    "ANN101", # Missing type annotation for `self` in method
+    "ANN102", # Missing type annotation for `cls` in classmethod
+    "S301",   # todo: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue  # todo
+    "S310",   # todo: Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.  # todo
+    "B905",   # todo: `zip()` without an explicit `strict=` parameter
 ]
 # Exclude a variety of commonly ignored directories.
 exclude = [
@@ -114,7 +98,7 @@ exclude = [
     "_build",
     "build",
     "dist",
-    "docs"
+    "docs",
 ]
 ignore-init-module-imports = true
 unfixable = ["F401"]
@@ -122,9 +106,7 @@ unfixable = ["F401"]
 [tool.ruff.per-file-ignores]
 "setup.py" = ["ANN202", "ANN401"]
 "src/**" = ["ANN401"]
-"tests/**" = [
-    "S101", "ANN001", "ANN201", "ANN202", "ANN401"
-]
+"tests/**" = ["S101", "ANN001", "ANN201", "ANN202", "ANN401"]
 
 [tool.ruff.pydocstyle]
 # Use Google-style docstrings.
@@ -139,9 +121,7 @@ max-complexity = 10
 
 
 [tool.mypy]
-files = [
-    "src/torchmetrics",
-]
+files = ["src/torchmetrics"]
 install_types = "True"
 non_interactive = "True"
 disallow_untyped_defs = "True"

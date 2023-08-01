@@ -15,7 +15,6 @@
 from collections import namedtuple
 from functools import partial
 
-import numpy as np
 import pytest
 import sewar
 import torch
@@ -23,7 +22,7 @@ from torchmetrics.functional import relative_average_spectral_error
 from torchmetrics.functional.image.helper import _uniform_filter
 from torchmetrics.image import RelativeAverageSpectralError
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE
 from unittests.helpers.testers import MetricTester
 
 Input = namedtuple("Input", ["preds", "target", "window_size"])
