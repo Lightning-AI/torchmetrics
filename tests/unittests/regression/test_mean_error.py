@@ -132,10 +132,8 @@ def _single_target_ref_metric(preds, target, sk_fn, metric_args):
 def _multi_target_ref_metric(preds, target, sk_fn, metric_args):
     sk_preds = preds.view(-1, num_targets).numpy()
     sk_target = target.view(-1, num_targets).numpy()
-
     sk_kwargs = {"multioutput": "raw_values"} if metric_args and "num_outputs" in metric_args else {}
     res = sk_fn(sk_target, sk_preds, **sk_kwargs)
-
     return math.sqrt(res) if (metric_args and not metric_args["squared"]) else res
 
 
