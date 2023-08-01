@@ -28,6 +28,7 @@ def _spectral_distortion_index_update(preds: Tensor, target: Tensor) -> Tuple[Te
     Args:
         preds: Low resolution multispectral image
         target: High resolution fused image
+
     """
     if preds.dtype != target.dtype:
         raise TypeError(
@@ -70,6 +71,7 @@ def _spectral_distortion_index_compute(
         >>> preds, target = _spectral_distortion_index_update(preds, target)
         >>> _spectral_distortion_index_compute(preds, target)
         tensor(0.0234)
+
     """
     length = preds.shape[1]
 
@@ -143,6 +145,7 @@ def spectral_distortion_index(
         >>> target = torch.rand([16, 3, 16, 16])
         >>> spectral_distortion_index(preds, target)
         tensor(0.0234)
+
     """
     if not isinstance(p, int) or p <= 0:
         raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")

@@ -14,15 +14,12 @@
 from copy import deepcopy
 from typing import Any, List, Optional, Sequence, Tuple, Union
 
-import numpy as np
 import torch
 from torch import Tensor
-from torch.autograd import Function
 from torch.nn import Module
 from torch.nn.functional import adaptive_avg_pool2d
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_info
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -75,6 +72,7 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
 
         Corresponding license file (Apache License, Version 2.0):
         https://github.com/toshas/torch-fidelity/blob/master/LICENSE.md
+
         """
         vassert(torch.is_tensor(x) and x.dtype == torch.uint8, "Expecting image as torch.Tensor with dtype=torch.uint8")
         features = {}
@@ -171,6 +169,7 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor) -> Te
 
     Returns:
         Scalar value of the distance between sets.
+
     """
     a = (mu1 - mu2).square().sum(dim=-1)
     b = sigma1.trace() + sigma2.trace()
@@ -254,6 +253,7 @@ class FrechetInceptionDistance(Metric):
         >>> fid.update(imgs_dist2, real=False)
         >>> fid.compute()
         tensor(12.7202)
+
     """
 
     higher_is_better: bool = False
@@ -371,6 +371,7 @@ class FrechetInceptionDistance(Metric):
 
         Arguments:
             dst_type (type or string): the desired type.
+
         """
         out = super().set_dtype(dst_type)
         if isinstance(out.inception, NoTrainInceptionV3):
@@ -423,7 +424,6 @@ class FrechetInceptionDistance(Metric):
             ...     values.append(metric.compute())
             ...     metric.reset()
             >>> fig_, ax_ = metric.plot(values)
-
 
         """
         return self._plot(val, ax)

@@ -11,12 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 from typing import Any, ClassVar, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
-from torch.nn import Module
 from typing_extensions import Literal
 
 from torchmetrics.functional.image.lpips import _LPIPS, _lpips_compute, _lpips_update, _NoTrainLpips
@@ -89,6 +87,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         >>> img2 = (torch.rand(10, 3, 100, 100) * 2) - 1
         >>> lpips(img1, img2)
         tensor(0.1046, grad_fn=<SqueezeBackward0>)
+
     """
 
     is_differentiable: bool = True
@@ -183,5 +182,6 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
             >>> for _ in range(3):
             ...     values.append(metric(torch.rand(10, 3, 100, 100), torch.rand(10, 3, 100, 100)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

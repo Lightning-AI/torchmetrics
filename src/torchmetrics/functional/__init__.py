@@ -46,7 +46,6 @@ from torchmetrics.functional.classification import (
     specificity,
     stat_scores,
 )
-from torchmetrics.functional.detection._deprecated import _modified_panoptic_quality as modified_panoptic_quality
 from torchmetrics.functional.detection._deprecated import _panoptic_quality as panoptic_quality
 from torchmetrics.functional.image._deprecated import (
     _error_relative_global_dimensionless_synthesis as error_relative_global_dimensionless_synthesis,
@@ -131,11 +130,11 @@ from torchmetrics.functional.text._deprecated import _translation_edit_rate as t
 from torchmetrics.functional.text._deprecated import _word_error_rate as word_error_rate
 from torchmetrics.functional.text._deprecated import _word_information_lost as word_information_lost
 from torchmetrics.functional.text._deprecated import _word_information_preserved as word_information_preserved
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
-if _TRANSFORMERS_AVAILABLE:
-    from torchmetrics.functional.text._deprecated import _bert_score as bert_score
-    from torchmetrics.functional.text._deprecated import _infolm as infolm
+if _TRANSFORMERS_GREATER_EQUAL_4_4:
+    from torchmetrics.functional.text._deprecated import _bert_score as bert_score  # noqa: F401
+    from torchmetrics.functional.text._deprecated import _infolm as infolm  # noqa: F401
 
 __all__ = [
     "accuracy",

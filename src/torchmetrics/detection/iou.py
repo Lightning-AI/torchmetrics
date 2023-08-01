@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -185,6 +185,7 @@ class IntersectionOverUnion(Metric):
                 If any class is not type int and of length 1
             ValueError:
                 If any score is not type float and of length 1
+
         """
         _input_validator(preds, target)
 
@@ -304,5 +305,6 @@ class IntersectionOverUnion(Metric):
             >>> for _ in range(20):
             ...     vals.append(metric(preds, target()))
             >>> fig_, ax_ = metric.plot(vals)
+
         """
         return self._plot(val, ax)

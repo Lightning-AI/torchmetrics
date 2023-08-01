@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import math
-import warnings
 from typing import Optional, Tuple
 
 import torch
@@ -53,6 +51,7 @@ def _symmetric_toeplitz(vector: Tensor) -> Tensor:
 
     Returns:
         a symmetric Toeplitz matrix of shape [..., L, L]
+
     """
     vec_exp = torch.cat([torch.flip(vector, dims=(-1,)), vector[..., 1:]], dim=-1)
     v_len = vector.shape[-1]
@@ -76,6 +75,7 @@ def _compute_autocorr_crosscorr(target: Tensor, preds: Tensor, corr_len: int) ->
     Returns:
         the auto correlation of `target` of shape [..., corr_len]
         the cross correlation of `target` and `preds` of shape [..., corr_len]
+
     """
     # the valid length for the signal after convolution
     n_fft = 2 ** math.ceil(math.log2(preds.shape[-1] + target.shape[-1] - 1))
@@ -150,6 +150,7 @@ def signal_distortion_ratio(
                 [0, 1],
                 [1, 0],
                 [0, 1]])
+
     """
     _check_same_shape(preds, target)
 
@@ -225,6 +226,7 @@ def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
         >>> scale_invariant_signal_distortion_ratio(preds, target)
         tensor(18.4030)
+
     """
     _check_same_shape(preds, target)
     eps = torch.finfo(preds.dtype).eps
@@ -285,6 +287,7 @@ def source_aggregated_signal_distortion_ratio(
                 [1, 0],
                 [0, 1],
                 [1, 0]])
+
     """
     _check_same_shape(preds, target)
     if preds.ndim < 2:

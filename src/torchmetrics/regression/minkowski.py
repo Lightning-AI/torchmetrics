@@ -50,6 +50,7 @@ class MinkowskiDistance(Metric):
         >>> minkowski_distance = MinkowskiDistance(3)
         >>> minkowski_distance(preds, target)
         tensor(5.1220)
+
     """
 
     is_differentiable: Optional[bool] = True
@@ -114,5 +115,6 @@ class MinkowskiDistance(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
+
         """
         return self._plot(val, ax)

@@ -146,6 +146,7 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         >>> mifid.update(imgs_dist2, real=False)
         >>> mifid.compute()
         tensor(3003.3691)
+
     """
     higher_is_better: bool = False
     is_differentiable: bool = False
@@ -291,7 +292,6 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
             ...     values.append(metric.compute())
             ...     metric.reset()
             >>> fig_, ax_ = metric.plot(values)
-
 
         """
         return self._plot(val, ax)
