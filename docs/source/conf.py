@@ -68,28 +68,12 @@ _transform_changelog(
     os.path.join(_PATH_HERE, FOLDER_GENERATED, "CHANGELOG.md"),
 )
 
-
-# def _create_page_silet_images(search_dir: str, img_exts: tuple = (".png", ".jpg", ".svg", ".gif")):
-#    img_dir = Path(search_dir)
-#    txt = ":orphan:\n\n"
-#    for file in img_dir.iterdir():
-#        if file.suffix not in img_exts:
-#            continue
-#        txt += f"\n.. image:: {search_dir}/{file.name}\n\n    :height: 0px\n    :width: 0px\n"
-#    # unindent multiline string
-#    txt = textwrap.dedent(txt)
-#    return txt
-
-
 if SPHINX_FETCH_ASSETS:
     fetch_external_assets(
         docs_folder=_PATH_HERE,
         assets_folder="_static/fetched-s3-assets",
         retrieve_pattern=r"https?://[-a-zA-Z0-9_]+\.s3\.[-a-zA-Z0-9()_\\+.\\/=]+",
     )
-    # seems we still have soem icons used in raw HTML missing in final buils
-    # with open("_silent-images.rst", "w") as fp:
-    #     fp.write(_create_page_silet_images("_static/fetched-s3-assets"))
 
 # -- General configuration ---------------------------------------------------
 
@@ -118,11 +102,7 @@ extensions = [
     "sphinx.ext.githubpages",
     "pt_lightning_sphinx_theme.extensions.lightning",
     "matplotlib.sphinxext.plot_directive",
-    "sphinx_reredirects",
 ]
-
-# redirects, see: https://documatt.gitlab.io/sphinx-reredirects/usage.html
-redirects = {"all-metrics": "pages/all-metrics.html"}
 
 # Set that source code from plotting is always included
 plot_include_source = True
