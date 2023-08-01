@@ -20,7 +20,6 @@ from typing import Any, Callable, ClassVar, Dict
 import pytest
 import torch
 from torch import IntTensor, Tensor
-from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 Input = namedtuple("Input", ["preds", "target"])
