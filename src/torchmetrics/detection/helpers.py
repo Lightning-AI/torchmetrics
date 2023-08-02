@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict, List, Literal, Sequence, Union
+from typing import Dict, Literal, Sequence, Tuple, Union
 
 from torch import Tensor
 
@@ -23,7 +23,7 @@ def _input_validator(
 ) -> None:
     """Ensure the correct input format of `preds` and `targets`."""
     if isinstance(iou_type, str):
-        iou_type = [iou_type]
+        iou_type = (iou_type,)
 
     if any(tp not in {"bbox", "segm"} for tp in iou_type):
         raise Exception(f"IOU type {iou_type} is not supported")
@@ -84,10 +84,10 @@ def _fix_empty_tensors(boxes: Tensor) -> Tensor:
     return boxes
 
 
-def _validate_iou_type_arg(iou_type: Union[Literal["bbox", "segm"], List[str]] = "bbox") -> List[str]:
+def _validate_iou_type_arg(iou_type: Union[Literal["bbox", "segm"], Tuple[str]] = "bbox") -> Tuple[str]:
     allowed_iou_types = ("segm", "bbox")
     if isinstance(iou_type, str):
-        iou_type = [iou_type]
+        iou_type = (iou_type,)
     if any(tp not in allowed_iou_types for tp in iou_type):
         raise ValueError(
             f"Expected argument `iou_type` to be one of {allowed_iou_types} or a list of, but got {iou_type}"
