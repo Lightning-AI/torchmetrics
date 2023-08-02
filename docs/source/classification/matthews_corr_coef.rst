@@ -12,9 +12,6 @@ Matthews Correlation Coefficient
 Module Interface
 ________________
 
-MatthewsCorrCoef
-^^^^^^^^^^^^^^^^
-
 .. autoclass:: torchmetrics.MatthewsCorrCoef
     :noindex:
     :exclude-members: update, compute

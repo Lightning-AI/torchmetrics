@@ -10,9 +10,6 @@ Hinge Loss
 Module Interface
 ________________
 
-HingeLoss
-^^^^^^^^^
-
 .. autoclass:: torchmetrics.HingeLoss
     :noindex:
     :exclude-members: update, compute

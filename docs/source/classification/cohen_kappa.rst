@@ -12,9 +12,6 @@ Cohen Kappa
 Module Interface
 ________________
 
-CohenKappa
-^^^^^^^^^^
-
 .. autoclass:: torchmetrics.CohenKappa
     :noindex:
     :exclude-members: update, compute

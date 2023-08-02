@@ -10,9 +10,6 @@ Specificity At Sensitivity
 Module Interface
 ________________
 
-SpecificityAtSensitivity
-^^^^^^^^^^^^^^^^^^^^^^^^
-
 .. autoclass:: torchmetrics.SpecificityAtSensitivity
     :noindex:
     :exclude-members: update, compute

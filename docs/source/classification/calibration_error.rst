@@ -12,9 +12,6 @@ Calibration Error
 Module Interface
 ________________
 
-CalibrationError
-^^^^^^^^^^^^^^^^
-
 .. autoclass:: torchmetrics.CalibrationError
     :noindex:
     :exclude-members: update, compute

@@ -10,9 +10,6 @@ Exact Match
 Module Interface
 ________________
 
-ExactMatch
-^^^^^^^^^^
-
 .. autoclass:: torchmetrics.ExactMatch
     :noindex:
     :exclude-members: update, compute

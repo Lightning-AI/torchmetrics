@@ -10,9 +10,6 @@ Recall
 Module Interface
 ________________
 
-Recall
-^^^^^^
-
 .. autoclass:: torchmetrics.Recall
     :noindex:
     :exclude-members: update, compute

@@ -10,9 +10,6 @@ Recall At Fixed Precision
 Module Interface
 ________________
 
-RecallAtFixedPrecision
-^^^^^^^^^^^^^^^^^^^^^^
-
 .. autoclass:: torchmetrics.RecallAtFixedPrecision
     :noindex:
     :exclude-members: update, compute

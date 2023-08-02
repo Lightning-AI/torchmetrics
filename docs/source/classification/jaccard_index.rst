@@ -10,9 +10,6 @@ Jaccard Index
 Module Interface
 ________________
 
-JaccardIndex
-^^^^^^^^^^^^
-
 .. autoclass:: torchmetrics.JaccardIndex
     :noindex:
     :exclude-members: update, compute

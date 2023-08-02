@@ -10,9 +10,6 @@ F-1 Score
 Module Interface
 ________________
 
-F1Score
-^^^^^^^
-
 .. autoclass:: torchmetrics.F1Score
     :noindex:
     :exclude-members: update, compute

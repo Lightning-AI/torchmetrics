@@ -12,9 +12,6 @@ F-Beta Score
 Module Interface
 ________________
 
-FBetaScore
-^^^^^^^^^^
-
 .. autoclass:: torchmetrics.FBetaScore
     :noindex:
     :exclude-members: update, compute

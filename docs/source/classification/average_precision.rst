@@ -10,9 +10,6 @@ Average Precision
 Module Interface
 ________________
 
-AveragePrecision
-^^^^^^^^^^^^^^^^
-
 .. autoclass:: torchmetrics.AveragePrecision
     :noindex:
     :exclude-members: update, compute

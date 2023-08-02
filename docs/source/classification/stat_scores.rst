@@ -12,9 +12,6 @@ Stat Scores
 Module Interface
 ________________
 
-StatScores
-^^^^^^^^^^
-
 .. autoclass:: torchmetrics.StatScores
     :noindex:
     :exclude-members: update, compute

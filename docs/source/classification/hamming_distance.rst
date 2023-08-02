@@ -10,9 +10,6 @@ Hamming Distance
 Module Interface
 ________________
 
-HammingDistance
-^^^^^^^^^^^^^^^
-
 .. autoclass:: torchmetrics.HammingDistance
     :noindex:
     :exclude-members: update, compute

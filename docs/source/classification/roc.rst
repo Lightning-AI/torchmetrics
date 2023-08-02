@@ -10,9 +10,6 @@ ROC
 Module Interface
 ________________
 
-ROC
-^^^
-
 .. autoclass:: torchmetrics.ROC
     :noindex:
     :exclude-members: update, compute
