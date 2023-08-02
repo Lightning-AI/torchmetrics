@@ -10,9 +10,13 @@ Specificity
 Module Interface
 ________________
 
+Specificity
+^^^^^^^^^^^
+
 .. autoclass:: torchmetrics.Specificity
     :noindex:
     :exclude-members: update, compute
+    :special-members: __new__
 
 BinarySpecificity
 ^^^^^^^^^^^^^^^^^

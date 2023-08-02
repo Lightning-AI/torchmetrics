@@ -16,6 +16,7 @@ HammingDistance
 .. autoclass:: torchmetrics.HammingDistance
     :noindex:
     :exclude-members: update, compute
+    :special-members: __new__
 
 BinaryHammingDistance
 ^^^^^^^^^^^^^^^^^^^^^

@@ -10,9 +10,13 @@ Precision Recall Curve
 Module Interface
 ________________
 
+PrecisionRecallCurve
+^^^^^^^^^^^^^^^^^^^^
+
 .. autoclass:: torchmetrics.PrecisionRecallCurve
     :noindex:
     :exclude-members: update, compute
+    :special-members: __new__
 
 BinaryPrecisionRecallCurve
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

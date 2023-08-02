@@ -18,6 +18,7 @@ CohenKappa
 .. autoclass:: torchmetrics.CohenKappa
     :noindex:
     :exclude-members: update, compute
+    :special-members: __new__
 
 BinaryCohenKappa
 ^^^^^^^^^^^^^^^^

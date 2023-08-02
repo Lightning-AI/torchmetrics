@@ -16,11 +16,6 @@ import os
 import shutil
 import sys
 
-import torch
-
-# this removes "Initializes internal Module state, shared by both nn.Module and ScriptModule." from the docs
-torch.nn.Module.__init__.__doc__ = ""
-
 import pt_lightning_sphinx_theme
 from lightning_utilities.docs import fetch_external_assets
 from lightning_utilities.docs.formatting import _transform_changelog
@@ -393,7 +388,7 @@ autosummary_generate = True
 
 autodoc_member_order = "groupwise"
 
-autoclass_content = "both"
+autoclass_content = "class"
 
 autodoc_default_options = {
     "members": True,

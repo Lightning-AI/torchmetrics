@@ -12,9 +12,13 @@ AUROC
 Module Interface
 ________________
 
+AUROC
+^^^^^
+
 .. autoclass:: torchmetrics.AUROC
     :noindex:
     :exclude-members: update, compute
+    :special-members: __new__
 
 BinaryAUROC
 ^^^^^^^^^^^
