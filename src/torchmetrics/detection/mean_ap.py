@@ -156,7 +156,7 @@ class MeanAveragePrecision(Metric):
 
         iou_type:
             Type of input (either masks or bounding-boxes) used for computing IOU. Supported IOU types are
-            ``"bbox"`` or ``"segm"`` or both as a list.
+            ``"bbox"`` or ``"segm"`` or both as a tuple.
         iou_thresholds:
             IoU thresholds for evaluation. If set to ``None`` it corresponds to the stepped range ``[0.5,...,0.95]``
             with step ``0.05``. Else provide a list of floats.

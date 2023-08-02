@@ -19,10 +19,10 @@ from torch import Tensor
 def _input_validator(
     preds: Sequence[Dict[str, Tensor]],
     targets: Sequence[Dict[str, Tensor]],
-    iou_type: Union[Literal["bbox", "segm"], List[str]] = "bbox",
+    iou_type: Union[Literal["bbox", "segm"], Tuple[Literal["bbox", "segm"]]] = "bbox",
 ) -> None:
     """Ensure the correct input format of `preds` and `targets`."""
-    if not isinstance(iou_type, list):
+    if isinstance(iou_type, str):
         iou_type = [iou_type]
 
     if any(tp not in {"bbox", "segm"} for tp in iou_type):
@@ -86,7 +86,7 @@ def _fix_empty_tensors(boxes: Tensor) -> Tensor:
 
 def _validate_iou_type_arg(iou_type: Union[Literal["bbox", "segm"], List[str]] = "bbox") -> List[str]:
     allowed_iou_types = ("segm", "bbox")
-    if not isinstance(iou_type, list):
+    if isinstance(iou_type, str):
         iou_type = [iou_type]
     if any(tp not in allowed_iou_types for tp in iou_type):
         raise ValueError(
