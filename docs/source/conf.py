@@ -69,6 +69,7 @@ _transform_changelog(
     os.path.join(_PATH_HERE, FOLDER_GENERATED, "CHANGELOG.md"),
 )
 
+
 def _set_root_image_path(page_path: str):
     """Set relative path to be from the root, drop all `../` in images used gallery."""
     with open(page_path, encoding="UTF-8") as fo:
@@ -79,6 +80,7 @@ def _set_root_image_path(page_path: str):
         body = body.replace(occur, occur_)
     with open(page_path, "w", encoding="UTF-8") as fo:
         fo.write(body)
+
 
 if SPHINX_FETCH_ASSETS:
     fetch_external_assets(
