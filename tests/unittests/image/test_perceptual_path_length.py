@@ -13,8 +13,10 @@
 # limitations under the License.
 import pytest
 import torch
+import torch_fidelity
 from torch import nn
 from torchmetrics.functional.image.perceptual_path_length import perceptual_path_length
+from torchmetrics.image.perceptual_path_length import PerceptualPathLength
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 
@@ -73,6 +75,9 @@ def test_raises_error_on_wrong_arguments(argument, match):
     with pytest.raises(ValueError, match=match):
         perceptual_path_length(DummyGenerator(128), **argument)
 
+    with pytest.raises(ValueError, match=match):
+        PerceptualPathLength(**argument)
+
 
 class _WrongGenerator1(nn.Module):
     pass
@@ -118,20 +123,38 @@ def test_raises_error_on_wrong_generator(generator, errortype, match):
     with pytest.raises(errortype, match=match):
         perceptual_path_length(generator, conditional=True)
 
+    ppl = PerceptualPathLength(conditional=True)
+    with pytest.raises(errortype, match=match):
+        ppl.update(generator=generator)
+
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch_fidelity")
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU machine")
 def test_compare():
-    """Test something."""
-    import torch_fidelity
+    """Test against torch_fidelity.
 
+    Because it is a sample based metric, the results are not deterministic. Thus we need a large amount of samples to
+    even get close to the reference value. Even then we are going to allow a 5% deviation on the mean and 5% deviation
+    on the standard deviation.
+
+    """
     generator = DummyGenerator(128)
 
     compare = torch_fidelity.calculate_metrics(
         input1=torch_fidelity.GenerativeModelModuleWrapper(generator, 128, "normal", 10),
-        input1_model_num_samples=10000,
+        input1_model_num_samples=50000,
         ppl=True,
         ppl_reduction="none",
+        input_model_num_classes=0,
+        ppl_discard_percentile_lower=None,
+        ppl_discard_percentile_higher=None,
     )
+    compare = torch.tensor(compare["perceptual_path_length_raw"])
 
-    result = perceptual_path_length(generator)
-    assert result == compare["ppl"]
+    result = perceptual_path_length(
+        generator, num_samples=50000, conditional=False, lower_discard=None, upper_discard=None, device="cuda"
+    )
+    result = result[-1].cpu()
+
+    assert 0.95 * result.mean() <= compare.mean() <= 1.05 * result.mean()
+    assert 0.95 * result.std() <= compare.std() <= 1.05 * result.std()
