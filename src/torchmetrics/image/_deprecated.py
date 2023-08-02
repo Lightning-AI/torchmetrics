@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 from typing_extensions import Literal
 

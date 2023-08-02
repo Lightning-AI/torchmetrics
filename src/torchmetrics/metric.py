@@ -17,7 +17,6 @@
 import builtins
 import functools
 import inspect
-import os
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
