@@ -45,11 +45,13 @@ if _TORCH_FIDELITY_AVAILABLE:
     from torchmetrics.image.fid import FrechetInceptionDistance
     from torchmetrics.image.inception import InceptionScore
     from torchmetrics.image.kid import KernelInceptionDistance
+    from torchmetrics.image.perceptual_path_length import PerceptualPathLength
 
     __all__ += [
         "FrechetInceptionDistance",
         "InceptionScore",
         "KernelInceptionDistance",
+        "PerceptualPathLength",
     ]
 
 if _LPIPS_AVAILABLE:

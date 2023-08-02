@@ -126,7 +126,7 @@ def perceptual_path_length(
     generator: _GeneratorType,
     num_samples: int = 10_000,
     conditional: bool = False,
-    batch_size: int = 128,
+    batch_size: int = 64,
     interpolation_method: Literal["lerp", "slerp_any", "slerp_unit"] = "lerp",
     epsilon: float = 1e-4,
     resize: Optional[int] = 64,
@@ -137,7 +137,8 @@ def perceptual_path_length(
 ) -> Tuple[Tensor, Tensor, Tensor]:
     r"""Computes the perceptual path length (`PPL`_) of a generator model.
 
-    The perceptual path length can be used to measure the consistency of interpolation in latent-space models. It
+    The perceptual path length can be used to measure the consistency of interpolation in latent-space models. It is
+    defined as
 
     .. math::
         PPL = \mathbb{E}\left[\frac{1}{\epsilon^2} D(G(I(z_1, z_2, t)), G(I(z_1, z_2, t+\epsilon)))\right]
@@ -169,6 +170,25 @@ def perceptual_path_length(
     Returns:
         A tuple containing the mean, standard deviation and all distances.
 
+    Example::
+        >>> from torchmetrics.functional.image import perceptual_path_length
+        >>> import torch
+        >>> _ = torch.manual_seed(42)
+        >>> class DummyGenerator(torch.nn.Module):
+        ...    def __init__(self, z_size) -> None:
+        ...       super().__init__()
+        ...       self.z_size = z_size
+        ...       self.model = torch.nn.Linear(z_size, 3*128*128)
+        ...    def forward(self, z):
+        ...       return self.model(z).reshape(-1, 3, 128, 128)
+        ...    def sample(self, num_samples):
+        ...      return torch.randn(num_samples, self.z_size)
+        >>> generator = DummyGenerator(2)
+        >>> perceptual_path_length(generator, num_samples=10)  # doctest: +NORMALIZE_WHITESPACE
+        (tensor(0.0756),
+        tensor(0.0678),
+        tensor([0.0489, 0.1433, 0.1778, 0.1632, 0.0255, 0.0511, 0.0024, 0.0613, 0.0071]))
+
     """
     if not _TORCH_FIDELITY_AVAILABLE:
         raise ModuleNotFoundError(
@@ -190,7 +210,10 @@ def perceptual_path_length(
 
     if sim_net is None:
         sim_net = create_sample_similarity(
-            "lpips-vgg16", sample_similarity_resize=resize, cuda=device == "cuda", verbose=False
+            "lpips-vgg16",
+            sample_similarity_resize=resize,
+            cuda=device == "cuda",
+            verbose=False,
         )
 
     decorator = torch.inference_mode if _TORCH_GREATER_EQUAL_1_10 else torch.no_grad
@@ -213,12 +236,16 @@ def perceptual_path_length(
 
             similarity = sim_net(out1, out2)
             dist = similarity / epsilon**2
-            distances.append(dist.detach().cpu())
+            distances.append(dist.detach())
 
         distances = torch.cat(distances)
 
         lower = torch.quantile(distances, lower_discard, interpolation="lower") if lower_discard is not None else 0.0
-        upper = torch.quantile(distances, upper_discard, interpolation="lower") if upper_discard is not None else 1.0
+        upper = (
+            torch.quantile(distances, upper_discard, interpolation="lower")
+            if upper_discard is not None
+            else max(distances)
+        )
         distances = distances[(distances >= lower) & (distances <= upper)]
 
         return distances.mean(), distances.std(), distances

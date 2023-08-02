@@ -27,7 +27,92 @@ from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 
 class PerceptualPathLength(Metric):
-    """Computes the perceptual path length (PPL) of a generator."""
+    r"""Computes the perceptual path length (`PPL`_) of a generator model.
+
+    The perceptual path length can be used to measure the consistency of interpolation in latent-space models. It is
+    defined as
+
+    .. math::
+        PPL = \mathbb{E}\left[\frac{1}{\epsilon^2} D(G(I(z_1, z_2, t)), G(I(z_1, z_2, t+\epsilon)))\right]
+
+    where :math:`G` is the generator, :math:`I` is the interpolation function, :math:`D` is a similarity metric,
+    :math:`z_1` and :math:`z_2` are two sets of latent points, and :math:`t` is a parameter between 0 and 1. The metric
+    thus works by interpolating between two sets of latent points, and measuring the similarity between the generated
+    images. The expectation is approximated by sampling :math:`z_1` and :math:`z_2` from the generator, and averaging
+    the calculated distanced. The similarity metric :math:`D` is by default the `LPIPS`_ metric, but can be changed by
+    setting the `sim_net` argument.
+
+    The provided generator model must have a `sample` method with signature `sample(num_samples: int) -> Tensor` where
+    the returned tensor has shape `(num_samples, z_size)`. If the generator is conditional, it must also have a
+    `num_classes` attribute.
+
+    .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
+        is installed. Either install as ``pip install torchmetrics[image]`` or ``pip install torch-fidelity``
+
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``generator`` (:class:`~torch.nn.Module`):  Generator model, with specific requirements. See above.
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``ppl_mean`` (:class:`~torch.Tensor`): float scalar tensor with mean PPL value over distances
+    - ``ppl_std`` (:class:`~torch.Tensor`): float scalar tensor with std PPL value over distances
+    - ``ppl_raw`` (:class:`~torch.Tensor`): float scalar tensor with raw PPL distances
+
+    Args:
+        num_samples: Number of samples to use for the PPL computation.
+        conditional: Whether the generator is conditional or not (i.e. whether it takes labels as input).
+        batch_size: Batch size to use for the PPL computation.
+        interpolation_method: Interpolation method to use. Choose from 'lerp', 'slerp_any', 'slerp_unit'.
+        epsilon: Spacing between the points on the path between latent points.
+        resize: Resize images to this size before computing the similarity between generated images.
+        lower_discard: Lower quantile to discard from the distances, before computing the mean and standard deviation.
+        upper_discard: Upper quantile to discard from the distances, before computing the mean and standard deviation.
+        sim_net: Similarity network to use. If `None`, a default network is used.
+        device: Device to use for the computation.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Raises:
+        ModuleNotFoundError:
+            If ``torch-fidelity`` is not installed.
+        ValueError:
+            If ``num_samples`` is not a positive integer.
+        ValueError:
+            If `conditional` is not a boolean.
+        ValueError:
+            If ``batch_size`` is not a positive integer.
+        ValueError:
+            If ``interpolation_method`` is not one of 'lerp', 'slerp_any', 'slerp_unit'.
+        ValueError:
+            If ``epsilon`` is not a positive float.
+        ValueError:
+            If ``resize`` is not a positive integer.
+        ValueError:
+            If ``lower_discard`` is not a float between 0 and 1 or None.
+        ValueError:
+            If ``upper_discard`` is not a float between 0 and 1 or None.
+
+    Example::
+        >>> from torchmetrics.image import PerceptualPathLength
+        >>> import torch
+        >>> _ = torch.manual_seed(42)
+        >>> class DummyGenerator(torch.nn.Module):
+        ...    def __init__(self, z_size) -> None:
+        ...       super().__init__()
+        ...       self.z_size = z_size
+        ...       self.model = torch.nn.Linear(z_size, 3*128*128)
+        ...    def forward(self, z):
+        ...       return self.model(z).reshape(-1, 3, 128, 128)
+        ...    def sample(self, num_samples):
+        ...      return torch.randn(num_samples, self.z_size)
+        >>> generator = DummyGenerator(2)
+        >>> ppl = PerceptualPathLength(num_samples=10)
+        >>> ppl(generator)  # doctest: +NORMALIZE_WHITESPACE
+        (tensor(0.0699),
+        tensor(0.0519),
+        tensor([0.1599, 0.0093, 0.0903, 0.0771, 0.0465, 0.0950, 0.1164, 0.0022, 0.0324]))
+
+    """
 
     def __init__(
         self,
