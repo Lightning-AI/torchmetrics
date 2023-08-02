@@ -99,10 +99,10 @@ class RetrievalMRR(RetrievalMetric):
 
         if top_k is not None and not isinstance(top_k, int) and top_k <= 0:
             raise ValueError(f"Argument ``top_k`` has to be a positive integer or None, but got {top_k}")
-        self.k = top_k
+        self.top_k = top_k
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_reciprocal_rank(preds, target, top_k=self.k)
+        return retrieval_reciprocal_rank(preds, target, top_k=self.top_k)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
