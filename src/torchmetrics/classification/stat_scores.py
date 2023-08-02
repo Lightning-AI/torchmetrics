@@ -17,6 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.functional.classification.stat_scores import (
     _binary_stat_scores_arg_validation,
     _binary_stat_scores_compute,
@@ -472,7 +473,7 @@ class MultilabelStatScores(_AbstractStatScores):
         return _multilabel_stat_scores_compute(tp, fp, tn, fn, self.average, self.multidim_average)
 
 
-class StatScores(Metric):
+class StatScores(_ClassificationTaskWrapper):
     r"""Compute the number of true positives, false positives, true negatives, false negatives and the support.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
@@ -527,15 +528,3 @@ class StatScores(Metric):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelStatScores(num_labels, threshold, average, **kwargs)
         raise ValueError(f"Task {task} not supported!")
-
-    def update(self, *args: Any, **kwargs: Any) -> None:
-        """Update metric state."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
-        )
-
-    def compute(self) -> None:
-        """Compute metric."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
-        )

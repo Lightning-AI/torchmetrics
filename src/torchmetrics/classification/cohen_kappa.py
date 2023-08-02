@@ -16,6 +16,7 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.confusion_matrix import BinaryConfusionMatrix, MulticlassConfusionMatrix
 from torchmetrics.functional.classification.cohen_kappa import (
     _binary_cohen_kappa_arg_validation,
@@ -283,7 +284,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         return self._plot(val, ax)
 
 
-class CohenKappa(Metric):
+class CohenKappa(_ClassificationTaskWrapper):
     r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement.
 
     .. math::
@@ -329,15 +330,3 @@ class CohenKappa(Metric):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassCohenKappa(num_classes, **kwargs)
         raise ValueError(f"Task {task} not supported!")
-
-    def update(self, *args: Any, **kwargs: Any) -> None:
-        """Update metric state."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
-        )
-
-    def compute(self) -> None:
-        """Compute metric."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
-        )

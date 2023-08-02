@@ -16,6 +16,7 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.f_beta import (
     _binary_fbeta_score_arg_validation,
@@ -1006,7 +1007,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
         return self._plot(val, ax)
 
 
-class FBetaScore(Metric):
+class FBetaScore(_ClassificationTaskWrapper):
     r"""Compute `F-score`_ metric.
 
     .. math::
@@ -1067,20 +1068,8 @@ class FBetaScore(Metric):
             return MultilabelFBetaScore(beta, num_labels, threshold, average, **kwargs)
         raise ValueError(f"Task {task} not supported!")
 
-    def update(self, *args: Any, **kwargs: Any) -> None:
-        """Update metric state."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
-        )
 
-    def compute(self) -> None:
-        """Compute metric."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
-        )
-
-
-class F1Score(Metric):
+class F1Score(_ClassificationTaskWrapper):
     r"""Compute F-1 score.
 
     .. math::
@@ -1138,15 +1127,3 @@ class F1Score(Metric):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelF1Score(num_labels, threshold, average, **kwargs)
         raise ValueError(f"Task {task} not supported!")
-
-    def update(self, *args: Any, **kwargs: Any) -> None:
-        """Update metric state."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
-        )
-
-    def compute(self) -> None:
-        """Compute metric."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
-        )

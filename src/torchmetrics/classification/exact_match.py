@@ -17,6 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.functional.classification.exact_match import (
     _exact_match_reduce,
     _multiclass_exact_match_update,
@@ -359,7 +360,7 @@ class MultilabelExactMatch(Metric):
         return self._plot(val, ax)
 
 
-class ExactMatch(Metric):
+class ExactMatch(_ClassificationTaskWrapper):
     r"""Compute Exact match (also known as subset accuracy).
 
     Exact Match is a stricter version of accuracy where all labels have to match exactly for the sample to be
@@ -411,15 +412,3 @@ class ExactMatch(Metric):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelExactMatch(num_labels, threshold, **kwargs)
         raise ValueError(f"Task {task} not supported!")
-
-    def update(self, *args: Any, **kwargs: Any) -> None:
-        """Update metric state."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
-        )
-
-    def compute(self) -> None:
-        """Compute metric."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
-        )

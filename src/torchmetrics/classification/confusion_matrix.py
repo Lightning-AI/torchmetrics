@@ -17,6 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.functional.classification.confusion_matrix import (
     _binary_confusion_matrix_arg_validation,
     _binary_confusion_matrix_compute,
@@ -432,7 +433,7 @@ class MultilabelConfusionMatrix(Metric):
         return fig, ax
 
 
-class ConfusionMatrix(Metric):
+class ConfusionMatrix(_ClassificationTaskWrapper):
     r"""Compute the `confusion matrix`_.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
@@ -492,15 +493,3 @@ class ConfusionMatrix(Metric):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelConfusionMatrix(num_labels, threshold, **kwargs)
         raise ValueError(f"Task {task} not supported!")
-
-    def update(self, *args: Any, **kwargs: Any) -> None:
-        """Update metric state."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
-        )
-
-    def compute(self) -> None:
-        """Compute metric."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
-        )

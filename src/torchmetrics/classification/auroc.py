@@ -16,6 +16,7 @@ from typing import Any, List, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.precision_recall_curve import (
     BinaryPrecisionRecallCurve,
     MulticlassPrecisionRecallCurve,
@@ -460,7 +461,7 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         return self._plot(val, ax)
 
 
-class AUROC(Metric):
+class AUROC(_ClassificationTaskWrapper):
     r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_).
 
     The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for

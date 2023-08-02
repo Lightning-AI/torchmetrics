@@ -17,6 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.functional.classification.hinge import (
     _binary_confusion_matrix_format,
     _binary_hinge_loss_arg_validation,
@@ -319,7 +320,7 @@ class MulticlassHingeLoss(Metric):
         return self._plot(val, ax)
 
 
-class HingeLoss(Metric):
+class HingeLoss(_ClassificationTaskWrapper):
     r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
@@ -374,15 +375,3 @@ class HingeLoss(Metric):
                 )
             return MulticlassHingeLoss(num_classes, squared, multiclass_mode, **kwargs)
         raise ValueError(f"Unsupported task `{task}`")
-
-    def update(self, *args: Any, **kwargs: Any) -> None:
-        """Update metric state."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
-        )
-
-    def compute(self) -> None:
-        """Compute metric."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
-        )

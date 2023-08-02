@@ -17,6 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.functional.classification.auroc import _reduce_auroc
 from torchmetrics.functional.classification.precision_recall_curve import (
     _adjust_threshold_arg,
@@ -573,7 +574,7 @@ class MultilabelPrecisionRecallCurve(Metric):
         return plot_curve(curve, score=score, ax=ax, label_names=("Precision", "Recall"), name=self.__class__.__name__)
 
 
-class PrecisionRecallCurve(Metric):
+class PrecisionRecallCurve(_ClassificationTaskWrapper):
     r"""Compute the precision-recall curve.
 
     The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
@@ -638,15 +639,3 @@ class PrecisionRecallCurve(Metric):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelPrecisionRecallCurve(num_labels, **kwargs)
         raise ValueError(f"Task {task} not supported!")
-
-    def update(self, *args: Any, **kwargs: Any) -> None:
-        """Update metric state."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
-        )
-
-    def compute(self) -> None:
-        """Compute metric."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
-        )

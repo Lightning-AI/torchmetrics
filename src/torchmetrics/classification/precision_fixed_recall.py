@@ -16,6 +16,7 @@ from typing import Any, List, Optional, Sequence, Tuple, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.precision_recall_curve import (
     BinaryPrecisionRecallCurve,
     MulticlassPrecisionRecallCurve,
@@ -465,7 +466,7 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
         return self._plot(val, ax)
 
 
-class PrecisionAtFixedRecall(Metric):
+class PrecisionAtFixedRecall(_ClassificationTaskWrapper):
     r"""Compute the highest possible recall value given the minimum precision thresholds provided.
 
     This is done by first calculating the precision-recall curve for different thresholds and the find the recall for
@@ -506,15 +507,3 @@ class PrecisionAtFixedRecall(Metric):
                 num_labels, min_recall, thresholds, ignore_index, validate_args, **kwargs
             )
         raise ValueError(f"Task {task} not supported!")
-
-    def update(self, *args: Any, **kwargs: Any) -> None:
-        """Update metric state."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
-        )
-
-    def compute(self) -> None:
-        """Compute metric."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
-        )

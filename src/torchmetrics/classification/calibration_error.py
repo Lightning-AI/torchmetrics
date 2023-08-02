@@ -16,6 +16,7 @@ from typing import Any, List, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.functional.classification.calibration_error import (
     _binary_calibration_error_arg_validation,
     _binary_calibration_error_tensor_validation,
@@ -338,7 +339,7 @@ class MulticlassCalibrationError(Metric):
         return self._plot(val, ax)
 
 
-class CalibrationError(Metric):
+class CalibrationError(_ClassificationTaskWrapper):
     r"""`Top-label Calibration Error`_.
 
     The expected calibration error can be used to quantify how well a given model is calibrated e.g. how well the
@@ -385,15 +386,3 @@ class CalibrationError(Metric):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassCalibrationError(num_classes, **kwargs)
         raise ValueError(f"Not handled value: {task}")
-
-    def update(self, *args: Any, **kwargs: Any) -> None:
-        """Update metric state."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
-        )
-
-    def compute(self) -> None:
-        """Compute metric."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
-        )
