@@ -11,11 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
 
-__all__ = []
-
-if _TRANSFORMERS_AVAILABLE:
+if _TRANSFORMERS_GREATER_EQUAL_4_10:
     from torchmetrics.functional.multimodal.clip_score import clip_score
 
-    __all__.append("clip_score")
+    __all__ = ["clip_score"]

@@ -25,12 +25,7 @@ from torchmetrics.text.ter import TranslationEditRate
 from torchmetrics.text.wer import WordErrorRate
 from torchmetrics.text.wil import WordInfoLost
 from torchmetrics.text.wip import WordInfoPreserved
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
-
-if _TRANSFORMERS_AVAILABLE:
-    from torchmetrics.text.bert import BERTScore
-    from torchmetrics.text.infolm import InfoLM
-
+from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
 __all__ = [
     "BLEUScore",
@@ -48,3 +43,10 @@ __all__ = [
     "WordInfoLost",
     "WordInfoPreserved",
 ]
+
+if _TRANSFORMERS_GREATER_EQUAL_4_4:
+    from torchmetrics.text.bert import BERTScore  # noqa: F401
+    from torchmetrics.text.infolm import InfoLM  # noqa: F401
+
+    __all__.append("BERTScore")
+    __all__.append("InfoLM")

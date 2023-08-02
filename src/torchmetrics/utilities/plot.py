@@ -23,6 +23,7 @@ from torchmetrics.utilities.imports import _LATEX_AVAILABLE, _MATPLOTLIB_AVAILAB
 
 if _MATPLOTLIB_AVAILABLE:
     import matplotlib
+    import matplotlib.axes
     import matplotlib.pyplot as plt
 
     _PLOT_OUT_TYPE = Tuple[plt.Figure, Union[matplotlib.axes.Axes, np.ndarray]]
@@ -42,7 +43,7 @@ else:
 
 
 if _SCIENCEPLOT_AVAILABLE:
-    import scienceplots
+    import scienceplots  # noqa: F401
 
     _style = ["science", "no-latex"]
 
