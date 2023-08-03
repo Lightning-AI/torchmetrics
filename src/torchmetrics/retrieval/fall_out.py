@@ -40,7 +40,7 @@ class RetrievalFallOut(RetrievalMetric):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``fo`` (:class:`~torch.Tensor`): A tensor with the computed metric
+    - ``fo@k`` (:class:`~torch.Tensor`): A tensor with the computed metric
 
     All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
     so that for example, a tensor of shape ``(N, M)`` is treated as ``(N * M, )``. Predictions will be first grouped by
@@ -55,9 +55,8 @@ class RetrievalFallOut(RetrievalMetric):
             - ``'skip'``: skip those queries; if all queries are skipped, ``0.0`` is returned
             - ``'error'``: raise a ``ValueError``
 
-        ignore_index:
-            Ignore predictions where the target is equal to this number.
-        top_k: consider only the top k elements for each query (default: `None`, which considers them all)
+        ignore_index: Ignore predictions where the target is equal to this number.
+        top_k: Consider only the top k elements for each query (default: `None`, which considers them all)
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -66,7 +65,7 @@ class RetrievalFallOut(RetrievalMetric):
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
         ValueError:
-            If ``top_k`` parameter is not `None` or an integer larger than 0.
+            If ``top_k`` is not ``None`` or not an integer greater than 0.
 
     Example:
         >>> from torchmetrics.retrieval import RetrievalFallOut
