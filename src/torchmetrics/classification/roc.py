@@ -142,19 +142,23 @@ class BinaryROC(BinaryPrecisionRecallCurve):
         .. plot::
             :scale: 75
 
-            >>> from torch import randn, randint
-            >>> import torch.nn.functional as F
+            >>> from torch import rand, randint
             >>> from torchmetrics.classification import BinaryROC
-            >>> preds = F.softmax(randn(20, 2), dim=1)
+            >>> preds = rand(20)
             >>> target = randint(2, (20,))
             >>> metric = BinaryROC()
-            >>> metric.update(preds[:, 1], target)
-            >>> fig_, ax_ = metric.plot()
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot(score=True)
+
         """
-        curve = curve or self.compute()
-        score = _auc_compute_without_check(curve[0], curve[1], 1.0) if not curve and score is True else None
+        curve_computed = curve or self.compute()
+        score = (
+            _auc_compute_without_check(curve_computed[0], curve_computed[1], 1.0)
+            if not curve and score is True
+            else None
+        )
         return plot_curve(
-            curve,
+            curve_computed,
             score=score,
             ax=ax,
             label_names=("False positive rate", "True positive rate"),
@@ -293,18 +297,20 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
             :scale: 75
 
             >>> from torch import randn, randint
-            >>> import torch.nn.functional as F
-            >>> from torchmetrics.classification import BinaryROC
-            >>> preds = F.softmax(randn(20, 2), dim=1)
-            >>> target = randint(2, (20,))
-            >>> metric = BinaryROC()
-            >>> metric.update(preds[:, 1], target)
-            >>> fig_, ax_ = metric.plot()
+            >>> from torchmetrics.classification import MulticlassROC
+            >>> preds = randn(20, 3).softmax(dim=-1)
+            >>> target = randint(3, (20,))
+            >>> metric = MulticlassROC(num_classes=3)
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot(score=True)
+
         """
-        curve = curve or self.compute()
-        score = _reduce_auroc(curve[0], curve[1], average=None) if not curve and score is True else None
+        curve_computed = curve or self.compute()
+        score = (
+            _reduce_auroc(curve_computed[0], curve_computed[1], average=None) if not curve and score is True else None
+        )
         return plot_curve(
-            curve,
+            curve_computed,
             score=score,
             ax=ax,
             label_names=("False positive rate", "True positive rate"),
@@ -444,19 +450,21 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
         .. plot::
             :scale: 75
 
-            >>> from torch import randn, randint
-            >>> import torch.nn.functional as F
-            >>> from torchmetrics.classification import BinaryROC
-            >>> preds = F.softmax(randn(20, 2), dim=1)
-            >>> target = randint(2, (20,))
-            >>> metric = BinaryROC()
-            >>> metric.update(preds[:, 1], target)
-            >>> fig_, ax_ = metric.plot()
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import MultilabelROC
+            >>> preds = rand(20, 3)
+            >>> target = randint(2, (20,3))
+            >>> metric = MultilabelROC(num_labels=3)
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot(score=True)
+
         """
-        curve = curve or self.compute()
-        score = _reduce_auroc(curve[0], curve[1], average=None) if not curve and score is True else None
+        curve_computed = curve or self.compute()
+        score = (
+            _reduce_auroc(curve_computed[0], curve_computed[1], average=None) if not curve and score is True else None
+        )
         return plot_curve(
-            curve,
+            curve_computed,
             score=score,
             ax=ax,
             label_names=("False positive rate", "True positive rate"),
