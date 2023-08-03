@@ -16,6 +16,7 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.functional.classification.calibration_error import (
     _binary_calibration_error_arg_validation,
     _binary_calibration_error_tensor_validation,
@@ -328,7 +329,7 @@ class MulticlassCalibrationError(Metric):
         return self._plot(val, ax)
 
 
-class CalibrationError:
+class CalibrationError(_ClassificationTaskWrapper):
     r"""`Top-label Calibration Error`_.
 
     The expected calibration error can be used to quantify how well a given model is calibrated e.g. how well the

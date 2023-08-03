@@ -16,6 +16,7 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.specificity import _specificity_reduce
 from torchmetrics.metric import Metric
@@ -429,7 +430,7 @@ class MultilabelSpecificity(MultilabelStatScores):
         return self._plot(val, ax)
 
 
-class Specificity:
+class Specificity(_ClassificationTaskWrapper):
     r"""Compute `Specificity`_.
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
