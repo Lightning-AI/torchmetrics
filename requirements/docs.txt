@@ -1,16 +1,15 @@
-sphinx >6.0, <7.0
+sphinx >5.0, <6.0
 myst-parser
 nbsphinx >=0.8
 pandoc >=1.0
 docutils >=0.16
 sphinxcontrib-fulltoc >=1.0
 sphinxcontrib-mockautodoc
-https://github.com/Lightning-AI/lightning_sphinx_theme/archive/master.zip#egg=pt-lightning-sphinx-theme
+pt-lightning-sphinx-theme @ https://github.com/Lightning-AI/lightning_sphinx_theme/archive/master.zip
 sphinx-autodoc-typehints >=1.0
 sphinx-paramlinks >=0.5.1
 sphinx-togglebutton >=0.2
 sphinx-copybutton >=0.3
-sphinx-reredirects ==0.1.2
 
 lightning >=1.8.0, <3.0.0
 lightning-utilities >=0.9.0
