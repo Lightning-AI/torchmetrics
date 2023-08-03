@@ -23,12 +23,14 @@ from torchmetrics.classification.precision_recall_curve import (
     BinaryPrecisionRecallCurve,
     MulticlassPrecisionRecallCurve,
     MultilabelPrecisionRecallCurve,
+    PrecisionRecallCurve,
 )
 from torchmetrics.functional.classification.precision_recall_curve import (
     binary_precision_recall_curve,
     multiclass_precision_recall_curve,
     multilabel_precision_recall_curve,
 )
+from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
@@ -428,3 +430,24 @@ def test_empty_state_dict(metric, thresholds):
     """Test that metric have an empty state dict."""
     m = metric(thresholds=thresholds)
     assert m.state_dict() == {}, "Metric state dict should be empty."
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryPrecisionRecallCurve, {"task": "binary"}),
+        (MulticlassPrecisionRecallCurve, {"task": "multiclass", "num_classes": 3}),
+        (MultilabelPrecisionRecallCurve, {"task": "multilabel", "num_labels": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=PrecisionRecallCurve):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

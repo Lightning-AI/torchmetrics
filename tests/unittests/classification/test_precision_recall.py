@@ -28,6 +28,8 @@ from torchmetrics.classification.precision_recall import (
     MulticlassRecall,
     MultilabelPrecision,
     MultilabelRecall,
+    Precision,
+    Recall,
 )
 from torchmetrics.functional.classification.precision_recall import (
     binary_precision,
@@ -37,6 +39,7 @@ from torchmetrics.functional.classification.precision_recall import (
     multilabel_precision,
     multilabel_recall,
 )
+from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
@@ -585,3 +588,28 @@ def test_corner_case():
     metric = MulticlassRecall(num_classes=3, average="macro", ignore_index=0)
     res = metric(preds, target)
     assert res == 1.0
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs", "base_metric"),
+    [
+        (BinaryPrecision, {"task": "binary"}, Precision),
+        (MulticlassPrecision, {"task": "multiclass", "num_classes": 3}, Precision),
+        (MultilabelPrecision, {"task": "multilabel", "num_labels": 3}, Precision),
+        (None, {"task": "not_valid_task"}, Precision),
+        (BinaryRecall, {"task": "binary"}, Recall),
+        (MulticlassRecall, {"task": "multiclass", "num_classes": 3}, Recall),
+        (MultilabelRecall, {"task": "multilabel", "num_labels": 3}, Recall),
+        (None, {"task": "not_valid_task"}, Recall),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

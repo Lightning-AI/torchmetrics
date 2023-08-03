@@ -16,6 +16,7 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.confusion_matrix import (
     BinaryConfusionMatrix,
     MulticlassConfusionMatrix,
@@ -413,7 +414,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         return self._plot(val, ax)
 
 
-class JaccardIndex:
+class JaccardIndex(_ClassificationTaskWrapper):
     r"""Calculate the Jaccard index for multilabel tasks.
 
     The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic

@@ -16,6 +16,7 @@ from typing import Any, List, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.precision_recall_curve import (
     BinaryPrecisionRecallCurve,
     MulticlassPrecisionRecallCurve,
@@ -460,7 +461,7 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         return self._plot(val, ax)
 
 
-class AUROC:
+class AUROC(_ClassificationTaskWrapper):
     r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_).
 
     The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
@@ -518,3 +519,15 @@ class AUROC:
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelAUROC(num_labels, average, **kwargs)
         raise ValueError(f"Task {task} not supported!")
+
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update metric state."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
+        )
+
+    def compute(self) -> None:
+        """Compute metric."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
+        )
