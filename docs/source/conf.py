@@ -13,6 +13,7 @@
 import glob
 import inspect
 import os
+import re
 import shutil
 import sys
 
@@ -68,12 +69,28 @@ _transform_changelog(
     os.path.join(_PATH_HERE, FOLDER_GENERATED, "CHANGELOG.md"),
 )
 
+
+def _set_root_image_path(page_path: str):
+    """Set relative path to be from the root, drop all `../` in images used gallery."""
+    with open(page_path, encoding="UTF-8") as fo:
+        body = fo.read()
+    found = re.findall(r"   :image: (.*)\.svg", body)
+    for occur in found:
+        occur_ = occur.replace("../", "")
+        body = body.replace(occur, occur_)
+    with open(page_path, "w", encoding="UTF-8") as fo:
+        fo.write(body)
+
+
 if SPHINX_FETCH_ASSETS:
     fetch_external_assets(
         docs_folder=_PATH_HERE,
         assets_folder="_static/fetched-s3-assets",
         retrieve_pattern=r"https?://[-a-zA-Z0-9_]+\.s3\.[-a-zA-Z0-9()_\\+.\\/=]+",
     )
+    all_pages = glob.glob(os.path.join(_PATH_HERE, "**", "*.rst"), recursive=True)
+    for page in all_pages:
+        _set_root_image_path(page)
 
 # -- General configuration ---------------------------------------------------
 
