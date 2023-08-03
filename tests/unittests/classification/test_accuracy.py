@@ -26,6 +26,7 @@ from torchmetrics.functional.classification.accuracy import (
     multiclass_accuracy,
     multilabel_accuracy,
 )
+from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _input_binary, _multiclass_cases, _multilabel_cases
@@ -64,16 +65,6 @@ def _sklearn_accuracy_binary(preds, target, ignore_index, multidim_average):
         true, pred = remove_ignore_index(true, pred, ignore_index)
         res.append(_sklearn_accuracy(true, pred))
     return np.stack(res)
-
-
-def test_accuracy_raises_invalid_task():
-    """Tests accuracy task enum from Accuracy."""
-    task = "NotValidTask"
-    ignore_index = None
-    multidim_average = "global"
-
-    with pytest.raises(ValueError, match=r"Invalid *"):
-        Accuracy(threshold=THRESHOLD, task=task, ignore_index=ignore_index, multidim_average=multidim_average)
 
 
 def test_accuracy_functional_raises_invalid_task():
@@ -557,3 +548,24 @@ def test_corner_cases():
     metric = MulticlassAccuracy(num_classes=3, average="macro", ignore_index=0)
     res = metric(preds, target)
     assert res == 1.0
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryAccuracy, {"task": "binary"}),
+        (MulticlassAccuracy, {"task": "multiclass", "num_classes": 3}),
+        (MultilabelAccuracy, {"task": "multilabel", "num_labels": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=Accuracy):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

@@ -16,6 +16,7 @@ from typing import Any, List, Optional, Tuple, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.precision_recall_curve import (
     BinaryPrecisionRecallCurve,
     MulticlassPrecisionRecallCurve,
@@ -475,7 +476,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
         )
 
 
-class ROC:
+class ROC(_ClassificationTaskWrapper):
     r"""Compute the Receiver Operating Characteristic (ROC).
 
     The curve consist of multiple pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at
@@ -561,4 +562,4 @@ class ROC:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelROC(num_labels, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")
