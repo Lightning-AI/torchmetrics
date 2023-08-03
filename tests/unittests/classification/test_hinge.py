@@ -20,8 +20,9 @@ from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import hinge_loss as sk_hinge
 from sklearn.preprocessing import OneHotEncoder
-from torchmetrics.classification.hinge import BinaryHingeLoss, MulticlassHingeLoss
+from torchmetrics.classification.hinge import BinaryHingeLoss, HingeLoss, MulticlassHingeLoss
 from torchmetrics.functional.classification.hinge import binary_hinge_loss, multiclass_hinge_loss
+from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases
@@ -227,3 +228,23 @@ class TestMulticlassHingeLoss(MetricTester):
             metric_args={"num_classes": NUM_CLASSES},
             dtype=dtype,
         )
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryHingeLoss, {"task": "binary"}),
+        (MulticlassHingeLoss, {"task": "multiclass", "num_classes": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=HingeLoss):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

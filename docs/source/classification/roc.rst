@@ -13,6 +13,7 @@ ________________
 .. autoclass:: torchmetrics.ROC
     :noindex:
     :exclude-members: update, compute
+    :special-members: __new__
 
 BinaryROC
 ^^^^^^^^^

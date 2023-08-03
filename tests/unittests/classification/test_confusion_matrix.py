@@ -20,6 +20,7 @@ from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from torchmetrics.classification.confusion_matrix import (
     BinaryConfusionMatrix,
+    ConfusionMatrix,
     MulticlassConfusionMatrix,
     MultilabelConfusionMatrix,
 )
@@ -28,6 +29,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     multiclass_confusion_matrix,
     multilabel_confusion_matrix,
 )
+from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
@@ -362,3 +364,24 @@ def test_warning_on_nan():
         match=".* NaN values found in confusion matrix have been replaced with zeros.",
     ):
         multiclass_confusion_matrix(preds, target, num_classes=5, normalize="true")
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryConfusionMatrix, {"task": "binary"}),
+        (MulticlassConfusionMatrix, {"task": "multiclass", "num_classes": 3}),
+        (MultilabelConfusionMatrix, {"task": "multilabel", "num_labels": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=ConfusionMatrix):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

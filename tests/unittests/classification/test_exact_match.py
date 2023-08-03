@@ -17,8 +17,9 @@ import numpy as np
 import pytest
 import torch
 from scipy.special import expit as sigmoid
-from torchmetrics.classification.exact_match import MulticlassExactMatch, MultilabelExactMatch
+from torchmetrics.classification.exact_match import ExactMatch, MulticlassExactMatch, MultilabelExactMatch
 from torchmetrics.functional.classification.exact_match import multiclass_exact_match, multilabel_exact_match
+from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _multiclass_cases, _multilabel_cases
@@ -273,3 +274,23 @@ class TestMultilabelExactMatch(MetricTester):
             metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
             dtype=dtype,
         )
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (MulticlassExactMatch, {"task": "multiclass", "num_classes": 3}),
+        (MultilabelExactMatch, {"task": "multilabel", "num_labels": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=ExactMatch):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)
