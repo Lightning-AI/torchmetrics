@@ -13,6 +13,7 @@ ________________
 .. autoclass:: torchmetrics.HingeLoss
     :noindex:
     :exclude-members: update, compute
+    :special-members: __new__
 
 BinaryHingeLoss
 ^^^^^^^^^^^^^^^

@@ -16,6 +16,7 @@ from typing import Any, List, Optional, Sequence, Tuple, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.precision_recall_curve import (
     BinaryPrecisionRecallCurve,
     MulticlassPrecisionRecallCurve,
@@ -320,7 +321,7 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
         )
 
 
-class SpecificityAtSensitivity:
+class SpecificityAtSensitivity(_ClassificationTaskWrapper):
     r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
@@ -359,4 +360,4 @@ class SpecificityAtSensitivity:
             return MultilabelSpecificityAtSensitivity(
                 num_labels, min_sensitivity, thresholds, ignore_index, validate_args, **kwargs
             )
-        return None  # type: ignore[return-value]
+        raise ValueError(f"Task {task} not supported!")

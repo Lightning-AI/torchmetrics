@@ -17,6 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.functional.classification.hinge import (
     _binary_confusion_matrix_format,
     _binary_hinge_loss_arg_validation,
@@ -309,7 +310,7 @@ class MulticlassHingeLoss(Metric):
         return self._plot(val, ax)
 
 
-class HingeLoss:
+class HingeLoss(_ClassificationTaskWrapper):
     r"""Compute the mean `Hinge loss`_ typically used for Support Vector Machines (SVMs).
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the

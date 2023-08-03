@@ -13,6 +13,7 @@ ________________
 .. autoclass:: torchmetrics.Specificity
     :noindex:
     :exclude-members: update, compute
+    :special-members: __new__
 
 BinarySpecificity
 ^^^^^^^^^^^^^^^^^

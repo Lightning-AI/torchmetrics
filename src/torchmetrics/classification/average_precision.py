@@ -16,6 +16,7 @@ from typing import Any, List, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.precision_recall_curve import (
     BinaryPrecisionRecallCurve,
     MulticlassPrecisionRecallCurve,
@@ -460,7 +461,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         return self._plot(val, ax)
 
 
-class AveragePrecision:
+class AveragePrecision(_ClassificationTaskWrapper):
     r"""Compute the average precision (AP) score.
 
     The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
