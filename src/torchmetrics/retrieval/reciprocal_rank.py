@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Sequence, Union
+from typing import Any, Optional, Sequence, Union
 
 from torch import Tensor
 
@@ -38,8 +38,8 @@ class RetrievalMRR(RetrievalMetric):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``mrr`` (:class:`~torch.Tensor`): A single-value tensor with the reciprocal rank (RR) of the predictions
-      ``preds`` w.r.t. the labels ``target``
+    - ``mrr@k`` (:class:`~torch.Tensor`): A single-value tensor with the reciprocal rank (RR)
+      of the predictions ``preds`` w.r.t. the labels ``target``.
 
     All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
     so that for example, a tensor of shape ``(N, M)`` is treated as ``(N * M, )``. Predictions will be first grouped by
@@ -55,6 +55,7 @@ class RetrievalMRR(RetrievalMetric):
             - ``'error'``: raise a ``ValueError``
 
         ignore_index: Ignore predictions where the target is equal to this number.
+        top_k: Consider only the top k elements for each query (default: ``None``, which considers them all)
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -62,6 +63,8 @@ class RetrievalMRR(RetrievalMetric):
             If ``empty_target_action`` is not one of ``error``, ``skip``, ``neg`` or ``pos``.
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
+        ValueError:
+            If ``top_k`` is not ``None`` or not an integer greater than 0.
 
     Example:
         >>> from torch import tensor
@@ -81,8 +84,25 @@ class RetrievalMRR(RetrievalMetric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
+    def __init__(
+        self,
+        empty_target_action: str = "neg",
+        ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(
+            empty_target_action=empty_target_action,
+            ignore_index=ignore_index,
+            **kwargs,
+        )
+
+        if top_k is not None and not isinstance(top_k, int) and top_k <= 0:
+            raise ValueError(f"Argument ``top_k`` has to be a positive integer or None, but got {top_k}")
+        self.top_k = top_k
+
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return retrieval_reciprocal_rank(preds, target)
+        return retrieval_reciprocal_rank(preds, target, top_k=self.top_k)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
