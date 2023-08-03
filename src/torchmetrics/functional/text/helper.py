@@ -29,7 +29,7 @@
 # limitations under the License.
 
 import math
-from enum import Enum, IntEnum, unique
+from enum import Enum, unique
 from typing import Dict, List, Sequence, Tuple, Union
 
 # Tercom-inspired limits

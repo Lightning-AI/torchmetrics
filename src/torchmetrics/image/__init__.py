@@ -53,6 +53,6 @@ if _TORCH_FIDELITY_AVAILABLE:
     ]
 
 if _LPIPS_AVAILABLE:
-    from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
+    from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity  # noqa: F401
 
     __all__.append("LearnedPerceptualImagePatchSimilarity")

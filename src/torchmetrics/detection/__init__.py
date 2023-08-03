@@ -13,7 +13,6 @@
 # limitations under the License.
 from torchmetrics.detection.panoptic_qualities import ModifiedPanopticQuality, PanopticQuality
 from torchmetrics.utilities.imports import (
-    _TORCHVISION_AVAILABLE,
     _TORCHVISION_GREATER_EQUAL_0_8,
     _TORCHVISION_GREATER_EQUAL_0_13,
 )

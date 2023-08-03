@@ -19,11 +19,16 @@ import torch
 from netcal.metrics import ECE, MCE
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
-from torchmetrics.classification.calibration_error import BinaryCalibrationError, MulticlassCalibrationError
+from torchmetrics.classification.calibration_error import (
+    BinaryCalibrationError,
+    CalibrationError,
+    MulticlassCalibrationError,
+)
 from torchmetrics.functional.classification.calibration_error import (
     binary_calibration_error,
     multiclass_calibration_error,
 )
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9, _TORCH_GREATER_EQUAL_1_13
 
 from unittests import NUM_CLASSES
@@ -269,3 +274,23 @@ def test_corner_case_due_to_dtype():
     assert np.allclose(
         ECE(100).measure(preds.numpy(), target.numpy()), binary_calibration_error(preds, target, n_bins=100)
     ), "The metric should be close to the netcal implementation"
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryCalibrationError, {"task": "binary"}),
+        (MulticlassCalibrationError, {"task": "multiclass", "num_classes": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=CalibrationError):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

@@ -14,7 +14,6 @@
 
 from typing import Any, Dict, List, Optional, Sequence, Union
 
-import torch
 from torch import Tensor
 
 from torchmetrics.functional.image.rase import relative_average_spectral_error
@@ -47,6 +46,7 @@ class RelativeAverageSpectralError(Metric):
         Relative Average Spectral Error (RASE)
 
     Example:
+        >>> import torch
         >>> from torchmetrics.image import RelativeAverageSpectralError
         >>> g = torch.manual_seed(22)
         >>> preds = torch.rand(4, 3, 16, 16)

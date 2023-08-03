@@ -24,6 +24,8 @@ from torch import Tensor
 from torchmetrics.classification.f_beta import (
     BinaryF1Score,
     BinaryFBetaScore,
+    F1Score,
+    FBetaScore,
     MulticlassF1Score,
     MulticlassFBetaScore,
     MultilabelF1Score,
@@ -37,6 +39,7 @@ from torchmetrics.functional.classification.f_beta import (
     multilabel_f1_score,
     multilabel_fbeta_score,
 )
+from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
@@ -577,3 +580,28 @@ def test_corner_case():
         f1_score = MulticlassF1Score(num_classes=i, average="macro")
         res = f1_score(preds, target)
         assert res == torch.tensor([0.77777779])
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs", "base_metric"),
+    [
+        (BinaryF1Score, {"task": "binary"}, F1Score),
+        (MulticlassF1Score, {"task": "multiclass", "num_classes": 3}, F1Score),
+        (MultilabelF1Score, {"task": "multilabel", "num_labels": 3}, F1Score),
+        (None, {"task": "not_valid_task"}, F1Score),
+        (BinaryFBetaScore, {"task": "binary", "beta": 2.0}, FBetaScore),
+        (MulticlassFBetaScore, {"task": "multiclass", "num_classes": 3, "beta": 2.0}, FBetaScore),
+        (MultilabelFBetaScore, {"task": "multilabel", "num_labels": 3, "beta": 2.0}, FBetaScore),
+        (None, {"task": "not_valid_task"}, FBetaScore),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

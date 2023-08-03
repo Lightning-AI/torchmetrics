@@ -12,12 +12,10 @@ Confusion Matrix
 Module Interface
 ________________
 
-ConfusionMatrix
-^^^^^^^^^^^^^^^
-
 .. autoclass:: torchmetrics.ConfusionMatrix
     :noindex:
     :exclude-members: update, compute
+    :special-members: __new__
 
 BinaryConfusionMatrix
 ^^^^^^^^^^^^^^^^^^^^^

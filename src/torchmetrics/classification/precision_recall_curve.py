@@ -17,6 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.functional.classification.auroc import _reduce_auroc
 from torchmetrics.functional.classification.precision_recall_curve import (
     _adjust_threshold_arg,
@@ -197,19 +198,24 @@ class BinaryPrecisionRecallCurve(Metric):
         .. plot::
             :scale: 75
 
-            >>> from torch import randn, randint
-            >>> import torch.nn.functional as F
-            >>> from torchmetrics.classification import BinaryROC
-            >>> preds = F.softmax(randn(20, 2), dim=1)
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import BinaryPrecisionRecallCurve
+            >>> preds = rand(20)
             >>> target = randint(2, (20,))
-            >>> metric = BinaryROC()
-            >>> metric.update(preds[:, 1], target)
-            >>> fig_, ax_ = metric.plot()
+            >>> metric = BinaryPrecisionRecallCurve()
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot(score=True)
 
         """
-        curve = curve or self.compute()
-        score = _auc_compute_without_check(curve[0], curve[1], 1.0) if not curve and score is True else None
-        return plot_curve(curve, score=score, ax=ax, label_names=("Precision", "Recall"), name=self.__class__.__name__)
+        curve_computed = curve or self.compute()
+        score = (
+            _auc_compute_without_check(curve_computed[0], curve_computed[1], 1.0)
+            if not curve and score is True
+            else None
+        )
+        return plot_curve(
+            curve_computed, score=score, ax=ax, label_names=("Precision", "Recall"), name=self.__class__.__name__
+        )
 
 
 class MulticlassPrecisionRecallCurve(Metric):
@@ -374,18 +380,21 @@ class MulticlassPrecisionRecallCurve(Metric):
             :scale: 75
 
             >>> from torch import randn, randint
-            >>> import torch.nn.functional as F
-            >>> from torchmetrics.classification import BinaryROC
-            >>> preds = F.softmax(randn(20, 2), dim=1)
-            >>> target = randint(2, (20,))
-            >>> metric = BinaryROC()
-            >>> metric.update(preds[:, 1], target)
-            >>> fig_, ax_ = metric.plot()
+            >>> from torchmetrics.classification import MulticlassPrecisionRecallCurve
+            >>> preds = randn(20, 3).softmax(dim=-1)
+            >>> target = randint(3, (20,))
+            >>> metric = MulticlassPrecisionRecallCurve(num_classes=3)
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot(score=True)
 
         """
-        curve = curve or self.compute()
-        score = _reduce_auroc(curve[0], curve[1], average=None) if not curve and score is True else None
-        return plot_curve(curve, score=score, ax=ax, label_names=("Precision", "Recall"), name=self.__class__.__name__)
+        curve_computed = curve or self.compute()
+        score = (
+            _reduce_auroc(curve_computed[0], curve_computed[1], average=None) if not curve and score is True else None
+        )
+        return plot_curve(
+            curve_computed, score=score, ax=ax, label_names=("Precision", "Recall"), name=self.__class__.__name__
+        )
 
 
 class MultilabelPrecisionRecallCurve(Metric):
@@ -558,22 +567,25 @@ class MultilabelPrecisionRecallCurve(Metric):
         .. plot::
             :scale: 75
 
-            >>> from torch import randn, randint
-            >>> import torch.nn.functional as F
-            >>> from torchmetrics.classification import BinaryROC
-            >>> preds = F.softmax(randn(20, 2), dim=1)
-            >>> target = randint(2, (20,))
-            >>> metric = BinaryROC()
-            >>> metric.update(preds[:, 1], target)
-            >>> fig_, ax_ = metric.plot()
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import MultilabelPrecisionRecallCurve
+            >>> preds = rand(20, 3)
+            >>> target = randint(2, (20,3))
+            >>> metric = MultilabelPrecisionRecallCurve(num_labels=3)
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot(score=True)
 
         """
-        curve = curve or self.compute()
-        score = _reduce_auroc(curve[0], curve[1], average=None) if not curve and score is True else None
-        return plot_curve(curve, score=score, ax=ax, label_names=("Precision", "Recall"), name=self.__class__.__name__)
+        curve_computed = curve or self.compute()
+        score = (
+            _reduce_auroc(curve_computed[0], curve_computed[1], average=None) if not curve and score is True else None
+        )
+        return plot_curve(
+            curve_computed, score=score, ax=ax, label_names=("Precision", "Recall"), name=self.__class__.__name__
+        )
 
 
-class PrecisionRecallCurve:
+class PrecisionRecallCurve(_ClassificationTaskWrapper):
     r"""Compute the precision-recall curve.
 
     The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the

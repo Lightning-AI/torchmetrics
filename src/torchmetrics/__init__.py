@@ -52,6 +52,7 @@ from torchmetrics.classification import (  # noqa: E402
     Recall,
     RecallAtFixedPrecision,
     Specificity,
+    SpecificityAtSensitivity,
     StatScores,
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
@@ -214,6 +215,8 @@ __all__ = [
     "RetrievalRecallAtFixedPrecision",
     "ROC",
     "RootMeanSquaredErrorUsingSlidingWindow",
+    "RunningMean",
+    "RunningSum",
     "SacreBLEUScore",
     "SignalDistortionRatio",
     "ScaleInvariantSignalDistortionRatio",
@@ -221,6 +224,7 @@ __all__ = [
     "SignalNoiseRatio",
     "SpearmanCorrCoef",
     "Specificity",
+    "SpecificityAtSensitivity",
     "SpectralAngleMapper",
     "SpectralDistortionIndex",
     "SQuAD",
