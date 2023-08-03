@@ -25,6 +25,7 @@ if _TORCH_FIDELITY_AVAILABLE:
 else:
     batch_lerp = batch_slerp_any = batch_slerp_unit = None
     create_sample_similarity = None
+    __doctest_skip__ = ["perceptual_path_length"]
 
 
 class _GeneratorType(nn.Module):

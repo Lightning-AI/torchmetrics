@@ -14,7 +14,6 @@
 from typing import Any, Literal, Optional, Tuple
 
 from torch import Tensor
-from torch_fidelity.utils import create_sample_similarity
 
 from torchmetrics.functional.image.perceptual_path_length import (
     _GeneratorType,
@@ -24,6 +23,12 @@ from torchmetrics.functional.image.perceptual_path_length import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
+
+if _TORCH_FIDELITY_AVAILABLE:
+    from torch_fidelity.utils import create_sample_similarity
+else:
+    create_sample_similarity = None
+    __doctest_skip__ = ["PerceptualPathLength"]
 
 
 class PerceptualPathLength(Metric):
