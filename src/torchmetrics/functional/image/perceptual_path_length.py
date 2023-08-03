@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
-from typing import Callable, Literal, Optional, Tuple, Union
+from typing import Literal, Optional, Tuple, Union
 
 import torch
 from torch import Tensor, nn
 
-from torchmetrics.functional.image.lpips import _get_net
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_10
 
 if _TORCH_FIDELITY_AVAILABLE:

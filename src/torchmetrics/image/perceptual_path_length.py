@@ -13,7 +13,7 @@
 # limitations under the License.
 from typing import Any, Literal, Optional, Tuple
 
-from torch import Tensor, nn
+from torch import Tensor
 from torch_fidelity.utils import create_sample_similarity
 
 from torchmetrics.functional.image.perceptual_path_length import (
