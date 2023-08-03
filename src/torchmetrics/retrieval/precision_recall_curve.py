@@ -108,7 +108,7 @@ class RetrievalPrecisionRecallCurve(Metric):
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
         ValueError:
-            If ``max_k`` parameter is not `None` or an integer larger than 0.
+            If ``max_k`` parameter is not `None` or not an integer larger than 0.
 
     Example:
         >>> from torch import tensor

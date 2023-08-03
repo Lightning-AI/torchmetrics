@@ -13,6 +13,7 @@
 import glob
 import inspect
 import os
+import re
 import shutil
 import sys
 
@@ -69,16 +70,16 @@ _transform_changelog(
 )
 
 
-# def _create_page_silet_images(search_dir: str, img_exts: tuple = (".png", ".jpg", ".svg", ".gif")):
-#    img_dir = Path(search_dir)
-#    txt = ":orphan:\n\n"
-#    for file in img_dir.iterdir():
-#        if file.suffix not in img_exts:
-#            continue
-#        txt += f"\n.. image:: {search_dir}/{file.name}\n\n    :height: 0px\n    :width: 0px\n"
-#    # unindent multiline string
-#    txt = textwrap.dedent(txt)
-#    return txt
+def _set_root_image_path(page_path: str):
+    """Set relative path to be from the root, drop all `../` in images used gallery."""
+    with open(page_path, encoding="UTF-8") as fo:
+        body = fo.read()
+    found = re.findall(r"   :image: (.*)\.svg", body)
+    for occur in found:
+        occur_ = occur.replace("../", "")
+        body = body.replace(occur, occur_)
+    with open(page_path, "w", encoding="UTF-8") as fo:
+        fo.write(body)
 
 
 if SPHINX_FETCH_ASSETS:
@@ -87,15 +88,15 @@ if SPHINX_FETCH_ASSETS:
         assets_folder="_static/fetched-s3-assets",
         retrieve_pattern=r"https?://[-a-zA-Z0-9_]+\.s3\.[-a-zA-Z0-9()_\\+.\\/=]+",
     )
-    # seems we still have soem icons used in raw HTML missing in final buils
-    # with open("_silent-images.rst", "w") as fp:
-    #     fp.write(_create_page_silet_images("_static/fetched-s3-assets"))
+    all_pages = glob.glob(os.path.join(_PATH_HERE, "**", "*.rst"), recursive=True)
+    for page in all_pages:
+        _set_root_image_path(page)
 
 # -- General configuration ---------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
 
-needs_sphinx = "6.2"
+needs_sphinx = "5.3"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -118,15 +119,12 @@ extensions = [
     "sphinx.ext.githubpages",
     "pt_lightning_sphinx_theme.extensions.lightning",
     "matplotlib.sphinxext.plot_directive",
-    "sphinx_reredirects",
 ]
-
-# redirects, see: https://documatt.gitlab.io/sphinx-reredirects/usage.html
-redirects = {"all-metrics": "pages/all-metrics.html"}
 
 # Set that source code from plotting is always included
 plot_include_source = True
-plot_html_show_source_link = True
+plot_html_show_formats = False
+plot_html_show_source_link = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

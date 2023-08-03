@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [UnReleased] - 2022-MM-DD
+## [UnReleased] - 2023-MM-DD
 
 ### Added
 
@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Added warning to `PearsonCorrCoeff` if input has a very small variance for its given dtype ([#1926](https://github.com/Lightning-AI/torchmetrics/pull/1926))
+
+
+- Added `top_k` argument to `RetrievalMRR` in retrieval package ([#1961](https://github.com/Lightning-AI/torchmetrics/pull/1961))
 
 
 - Added `EvaluationDistributedSampler` to utility for proper distributed evaluation ([#1886](https://github.com/Lightning-AI/torchmetrics/pull/1886))
@@ -44,6 +47,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed bug related to the `prefix/postfix` arguments in `MetricCollection` and `ClasswiseWrapper` being duplicated ([#1918](https://github.com/Lightning-AI/torchmetrics/pull/1918))
 
 
+- Fixed missing AUC score when plotting classification metrics that support the `score` argument ([#1948](https://github.com/Lightning-AI/torchmetrics/pull/1948))
+
+
 ## [1.0.1] - 2023-07-13
 
 ### Fixed
@@ -54,7 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed bug related to expected input format of pycoco in `MeanAveragePrecision` ([#1913](https://github.com/Lightning-AI/torchmetrics/pull/1913))
 
 
-## [1.0.0] - 2022-07-04
+## [1.0.0] - 2023-07-04
 
 ### Added
 
