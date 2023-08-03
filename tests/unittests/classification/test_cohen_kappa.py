@@ -18,8 +18,9 @@ import pytest
 import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import cohen_kappa_score as sk_cohen_kappa
-from torchmetrics.classification.cohen_kappa import BinaryCohenKappa, MulticlassCohenKappa
+from torchmetrics.classification.cohen_kappa import BinaryCohenKappa, CohenKappa, MulticlassCohenKappa
 from torchmetrics.functional.classification.cohen_kappa import binary_cohen_kappa, multiclass_cohen_kappa
+from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases
@@ -225,3 +226,23 @@ class TestMulticlassCohenKappa(MetricTester):
             metric_args={"num_classes": NUM_CLASSES},
             dtype=dtype,
         )
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryCohenKappa, {"task": "binary"}),
+        (MulticlassCohenKappa, {"task": "multiclass", "num_classes": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=CohenKappa):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

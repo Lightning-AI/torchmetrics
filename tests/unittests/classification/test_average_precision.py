@@ -20,6 +20,7 @@ from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import average_precision_score as sk_average_precision_score
 from torchmetrics.classification.average_precision import (
+    AveragePrecision,
     BinaryAveragePrecision,
     MulticlassAveragePrecision,
     MultilabelAveragePrecision,
@@ -30,6 +31,7 @@ from torchmetrics.functional.classification.average_precision import (
     multilabel_average_precision,
 )
 from torchmetrics.functional.classification.precision_recall_curve import binary_precision_recall_curve
+from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
@@ -394,3 +396,24 @@ def test_valid_input_thresholds(metric, thresholds):
     with pytest.warns(None) as record:
         metric(thresholds=thresholds)
     assert len(record) == 0
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryAveragePrecision, {"task": "binary"}),
+        (MulticlassAveragePrecision, {"task": "multiclass", "num_classes": 3}),
+        (MultilabelAveragePrecision, {"task": "multilabel", "num_labels": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=AveragePrecision):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

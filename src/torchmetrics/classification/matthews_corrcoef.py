@@ -16,6 +16,7 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.confusion_matrix import (
     BinaryConfusionMatrix,
     MulticlassConfusionMatrix,
@@ -366,7 +367,7 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
         return self._plot(val, ax)
 
 
-class MatthewsCorrCoef:
+class MatthewsCorrCoef(_ClassificationTaskWrapper):
     r"""Calculate `Matthews correlation coefficient`_ .
 
     This metric measures the general correlation or quality of a classification.
