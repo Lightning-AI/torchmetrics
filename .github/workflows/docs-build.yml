@@ -123,7 +123,7 @@ jobs:
 
 
   deploy-docs:
-    needs: [make-doctest, make-html]
+    needs: [make-check, make-html]
     if: github.repository_owner == 'Lightning-AI' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
