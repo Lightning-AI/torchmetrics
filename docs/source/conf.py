@@ -105,7 +105,7 @@ extensions = [
     "sphinx.ext.linkcode",
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
-    "sphinx.ext.imgmath",
+    "sphinx.ext.mathjax",
     "myst_parser",
     "sphinx.ext.autosectionlabel",
     "nbsphinx",
