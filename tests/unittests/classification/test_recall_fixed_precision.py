@@ -24,12 +24,14 @@ from torchmetrics.classification.recall_fixed_precision import (
     BinaryRecallAtFixedPrecision,
     MulticlassRecallAtFixedPrecision,
     MultilabelRecallAtFixedPrecision,
+    RecallAtFixedPrecision,
 )
 from torchmetrics.functional.classification.recall_fixed_precision import (
     binary_recall_at_fixed_precision,
     multiclass_recall_at_fixed_precision,
     multilabel_recall_at_fixed_precision,
 )
+from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
@@ -420,3 +422,24 @@ def test_valid_input_thresholds(metric, thresholds):
     with pytest.warns(None) as record:
         metric(min_precision=0.5, thresholds=thresholds)
     assert len(record) == 0
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryRecallAtFixedPrecision, {"task": "binary", "min_precision": 0.5}),
+        (MulticlassRecallAtFixedPrecision, {"task": "multiclass", "num_classes": 3, "min_precision": 0.5}),
+        (MultilabelRecallAtFixedPrecision, {"task": "multilabel", "num_labels": 3, "min_precision": 0.5}),
+        (None, {"task": "not_valid_task", "min_precision": 0.5}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=RecallAtFixedPrecision):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

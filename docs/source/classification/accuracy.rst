@@ -13,7 +13,7 @@ ________________
 .. autoclass:: torchmetrics.Accuracy
     :noindex:
     :exclude-members: update, compute
-
+    :special-members: __new__
 
 BinaryAccuracy
 ^^^^^^^^^^^^^^

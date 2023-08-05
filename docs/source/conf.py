@@ -13,13 +13,9 @@
 import glob
 import inspect
 import os
+import re
 import shutil
 import sys
-
-import torch
-
-# this removes "Initializes internal Module state, shared by both nn.Module and ScriptModule." from the docs
-torch.nn.Module.__init__.__doc__ = ""
 
 import pt_lightning_sphinx_theme
 from lightning_utilities.docs import fetch_external_assets
@@ -69,16 +65,16 @@ _transform_changelog(
 )
 
 
-# def _create_page_silet_images(search_dir: str, img_exts: tuple = (".png", ".jpg", ".svg", ".gif")):
-#    img_dir = Path(search_dir)
-#    txt = ":orphan:\n\n"
-#    for file in img_dir.iterdir():
-#        if file.suffix not in img_exts:
-#            continue
-#        txt += f"\n.. image:: {search_dir}/{file.name}\n\n    :height: 0px\n    :width: 0px\n"
-#    # unindent multiline string
-#    txt = textwrap.dedent(txt)
-#    return txt
+def _set_root_image_path(page_path: str):
+    """Set relative path to be from the root, drop all `../` in images used gallery."""
+    with open(page_path, encoding="UTF-8") as fo:
+        body = fo.read()
+    found = re.findall(r"   :image: (.*)\.svg", body)
+    for occur in found:
+        occur_ = occur.replace("../", "")
+        body = body.replace(occur, occur_)
+    with open(page_path, "w", encoding="UTF-8") as fo:
+        fo.write(body)
 
 
 if SPHINX_FETCH_ASSETS:
@@ -87,9 +83,9 @@ if SPHINX_FETCH_ASSETS:
         assets_folder="_static/fetched-s3-assets",
         retrieve_pattern=r"https?://[-a-zA-Z0-9_]+\.s3\.[-a-zA-Z0-9()_\\+.\\/=]+",
     )
-    # seems we still have soem icons used in raw HTML missing in final buils
-    # with open("_silent-images.rst", "w") as fp:
-    #     fp.write(_create_page_silet_images("_static/fetched-s3-assets"))
+    all_pages = glob.glob(os.path.join(_PATH_HERE, "**", "*.rst"), recursive=True)
+    for page in all_pages:
+        _set_root_image_path(page)
 
 # -- General configuration ---------------------------------------------------
 
@@ -109,7 +105,7 @@ extensions = [
     "sphinx.ext.linkcode",
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
-    "sphinx.ext.imgmath",
+    "sphinx.ext.mathjax",
     "myst_parser",
     "sphinx.ext.autosectionlabel",
     "nbsphinx",
@@ -118,11 +114,7 @@ extensions = [
     "sphinx.ext.githubpages",
     "pt_lightning_sphinx_theme.extensions.lightning",
     "matplotlib.sphinxext.plot_directive",
-    "sphinx_reredirects",
 ]
-
-# redirects, see: https://documatt.gitlab.io/sphinx-reredirects/usage.html
-redirects = {"all-metrics": "pages/all-metrics.html"}
 
 # Set that source code from plotting is always included
 plot_include_source = True
@@ -394,7 +386,7 @@ autosummary_generate = True
 
 autodoc_member_order = "groupwise"
 
-autoclass_content = "both"
+autoclass_content = "class"
 
 autodoc_default_options = {
     "members": True,
