@@ -218,7 +218,7 @@ if __name__ == "__main__":
 ### Implementing your own Module metric
 
 Implementing your own metric is as easy as subclassing an [`torch.nn.Module`](https://pytorch.org/docs/stable/generated/torch.nn.Module.html). Simply, subclass `torchmetrics.Metric`
-and implement the following methods:
+and just implement the `update` and `compute` methods:
 
 ```python
 import torch
@@ -227,6 +227,7 @@ from torchmetrics import Metric
 
 class MyAccuracy(Metric):
     def __init__(self):
+        # remember to call super
         super().__init__()
         # call `self.add_state`for every internal state that is needed for the metrics computations
         # dist_reduce_fx indicates the function that should be used to reduce
@@ -234,17 +235,24 @@ class MyAccuracy(Metric):
         self.add_state("correct", default=torch.tensor(0), dist_reduce_fx="sum")
         self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
-        # update metric states
-        preds, target = self._input_format(preds, target)
+    def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:
+        # extract predicted class index for computing accuracy
+        preds = preds.argmax(dim=-1)
         assert preds.shape == target.shape
-
+        # update metric states
         self.correct += torch.sum(preds == target)
         self.total += target.numel()
 
-    def compute(self):
+    def compute(self) -> torch.Tensor:
         # compute final result
         return self.correct.float() / self.total
+
+
+my_metric = MyAccuracy()
+preds = torch.randn(10, 5).softmax(dim=-1)
+target = torch.randint(5, (10,))
+
+print(my_metric(preds, target))
 ```
 
 ### Functional metrics
