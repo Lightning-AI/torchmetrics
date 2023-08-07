@@ -24,6 +24,7 @@ from typing_extensions import Literal
 
 from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import (
     _MATPLOTLIB_AVAILABLE,
     _PYCOCOTOOLS_AVAILABLE,
@@ -238,6 +239,8 @@ class MeanAveragePrecision(Metric):
     groundtruth_crowds: List[Tensor]
     groundtruth_area: List[Tensor]
 
+    warn_on_many_detections: bool = True
+
     def __init__(
         self,
         box_format: Literal["xyxy", "xywh", "cxcywh"] = "xyxy",
@@ -327,7 +330,7 @@ class MeanAveragePrecision(Metric):
         _input_validator(preds, target, iou_type=self.iou_type)
 
         for item in preds:
-            detections = self._get_safe_item_values(item)
+            detections = self._get_safe_item_values(item, warn=self.warn_on_many_detections)
 
             self.detections.append(detections)
             self.detection_labels.append(item["labels"])
@@ -540,11 +543,12 @@ class MeanAveragePrecision(Metric):
         with open(f"{name}_target.json", "w") as f:
             f.write(target_json)
 
-    def _get_safe_item_values(self, item: Dict[str, Any]) -> Union[Tensor, Tuple]:
+    def _get_safe_item_values(self, item: Dict[str, Any], warn: bool = False) -> Union[Tensor, Tuple]:
         """Convert and return the boxes or masks from the item depending on the iou_type.
 
         Args:
             item: input dictionary containing the boxes or masks
+            warn: whether to warn if the number of boxes or masks exceeds the max_detection_thresholds
 
         Returns:
             boxes or masks depending on the iou_type
@@ -554,12 +558,16 @@ class MeanAveragePrecision(Metric):
             boxes = _fix_empty_tensors(item["boxes"])
             if boxes.numel() > 0:
                 boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xywh")
+            if warn and len(boxes) > self.max_detection_thresholds[-1]:
+                _warning_on_too_many_detections(self.max_detection_thresholds[-1])
             return boxes
         if self.iou_type == "segm":
             masks = []
             for i in item["masks"].cpu().numpy():
                 rle = mask_utils.encode(np.asfortranarray(i))
                 masks.append((tuple(rle["size"]), rle["counts"]))
+            if warn and len(masks) > self.max_detection_thresholds[-1]:
+                _warning_on_too_many_detections(self.max_detection_thresholds[-1])
             return tuple(masks)
         raise Exception(f"IOU type {self.iou_type} is not supported")
 
@@ -741,3 +749,13 @@ class MeanAveragePrecision(Metric):
         dist.all_gather_object(list_gathered, list_to_gather, group=process_group)
 
         return [list_gathered[rank][idx] for idx in range(len(list_gathered[0])) for rank in range(world_size)]
+
+
+def _warning_on_too_many_detections(limit: int) -> None:
+    rank_zero_warn(
+        f"Encountered more than {limit} detections in a single image. This means that certain detections with the"
+        " lowest scores will be ignored, that may have an undesirable impact on performance. Please consider adjusting"
+        " the `max_detection_threshold` to suit your use case. To disable this warning, set attribute class"
+        " `warn_on_many_detections=False`, after initializing the metric.",
+        UserWarning,
+    )
