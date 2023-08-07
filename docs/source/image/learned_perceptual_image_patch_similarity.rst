@@ -3,6 +3,8 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/image_classification.svg
    :tags: Image
 
+.. include:: ../links.rst
+
 #################################################
 Learned Perceptual Image Patch Similarity (LPIPS)
 #################################################
