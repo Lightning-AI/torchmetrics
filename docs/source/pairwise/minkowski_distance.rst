@@ -3,6 +3,8 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/translation.svg
    :tags: Pairwise
 
+.. include:: ../links.rst
+
 ##################
 Minkowski Distance
 ##################

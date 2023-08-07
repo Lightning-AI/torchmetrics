@@ -3,6 +3,8 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/text_classification.svg
    :tags: Retrieval
 
+.. include:: ../links.rst
+
 ##################
 Retrieval Hit Rate
 ##################
