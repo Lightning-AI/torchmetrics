@@ -20,6 +20,7 @@ from scipy.special import expit as sigmoid
 from sklearn.metrics import matthews_corrcoef as sk_matthews_corrcoef
 from torchmetrics.classification.matthews_corrcoef import (
     BinaryMatthewsCorrCoef,
+    MatthewsCorrCoef,
     MulticlassMatthewsCorrCoef,
     MultilabelMatthewsCorrCoef,
 )
@@ -28,6 +29,7 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
     multiclass_matthews_corrcoef,
     multilabel_matthews_corrcoef,
 )
+from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
@@ -361,3 +363,24 @@ def test_corner_cases(metric_fn, preds, target, expected):
     """Test the corner cases of perfect classifiers or completely random classifiers that they work as expected."""
     out = metric_fn(preds, target)
     assert out == expected
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryMatthewsCorrCoef, {"task": "binary"}),
+        (MulticlassMatthewsCorrCoef, {"task": "multiclass", "num_classes": 3}),
+        (MultilabelMatthewsCorrCoef, {"task": "multilabel", "num_labels": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=MatthewsCorrCoef):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

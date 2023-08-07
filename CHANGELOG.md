@@ -20,10 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `EditDistance` to text package ([#1906](https://github.com/Lightning-AI/torchmetrics/pull/1906))
 
 
-- Added warning to `PearsonCorrCoeff` if input has a very small variance for its given dtype ([#1926](https://github.com/Lightning-AI/torchmetrics/pull/1926))
-
-
 - Added `top_k` argument to `RetrievalMRR` in retrieval package ([#1961](https://github.com/Lightning-AI/torchmetrics/pull/1961))
+
+
+- Added warning to `MeanAveragePrecision` if too many detections are observed ([#1978](https://github.com/Lightning-AI/torchmetrics/pull/1978))
 
 
 - Added `EvaluationDistributedSampler` to utility for proper distributed evaluation ([#1886](https://github.com/Lightning-AI/torchmetrics/pull/1886))
@@ -41,12 +41,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+-
+
+
+## [1.0.2] - 2023-08-02
+
+### Added
+
+- Added warning to `PearsonCorrCoeff` if input has a very small variance for its given dtype ([#1926](https://github.com/Lightning-AI/torchmetrics/pull/1926))
+
+### Changed
+
+- Changed all non-task specific classification metrics to be true subtypes of `Metric` ([#1963](https://github.com/Lightning-AI/torchmetrics/pull/1963))
+
+### Fixed
+
 - Fixed bug in `CalibrationError` where calculations for double precision input was performed in float precision ([#1919](https://github.com/Lightning-AI/torchmetrics/pull/1919))
-
-
 - Fixed bug related to the `prefix/postfix` arguments in `MetricCollection` and `ClasswiseWrapper` being duplicated ([#1918](https://github.com/Lightning-AI/torchmetrics/pull/1918))
-
-
 - Fixed missing AUC score when plotting classification metrics that support the `score` argument ([#1948](https://github.com/Lightning-AI/torchmetrics/pull/1948))
 
 

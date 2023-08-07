@@ -19,12 +19,18 @@ import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from sklearn.metrics import jaccard_score as sk_jaccard_index
-from torchmetrics.classification.jaccard import BinaryJaccardIndex, MulticlassJaccardIndex, MultilabelJaccardIndex
+from torchmetrics.classification.jaccard import (
+    BinaryJaccardIndex,
+    JaccardIndex,
+    MulticlassJaccardIndex,
+    MultilabelJaccardIndex,
+)
 from torchmetrics.functional.classification.jaccard import (
     binary_jaccard_index,
     multiclass_jaccard_index,
     multilabel_jaccard_index,
 )
+from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
@@ -359,3 +365,24 @@ def test_corner_case():
     assert torch.allclose(res, torch.ones_like(res))
     res = multiclass_jaccard_index(pred, target, num_classes=10, average="none")
     assert torch.allclose(res, out)
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryJaccardIndex, {"task": "binary"}),
+        (MulticlassJaccardIndex, {"task": "multiclass", "num_classes": 3}),
+        (MultilabelJaccardIndex, {"task": "multilabel", "num_labels": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=JaccardIndex):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

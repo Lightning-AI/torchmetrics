@@ -15,6 +15,7 @@ ________________
 .. autoclass:: torchmetrics.Precision
     :noindex:
     :exclude-members: update, compute
+    :special-members: __new__
 
 BinaryPrecision
 ^^^^^^^^^^^^^^^
