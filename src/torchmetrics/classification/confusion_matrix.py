@@ -51,6 +51,17 @@ if not _MATPLOTLIB_AVAILABLE:
 class BinaryConfusionMatrix(Metric):
     r"""Compute the `confusion matrix`_ for binary tasks.
 
+    The confusion matrix :math:`C` is constructed such that :math:`C_{i, j}` is equal to the number of observations
+    known to be in class :math:`i` but predicted to be in class :math:`j`. Thus row indices of the confusion matrix
+    correspond to the true class labels and column indices correspond to the predicted class labels.
+
+    For binary tasks, the confusion matrix is a 2x2 matrix with the following structure:
+
+    - :math:`C_{0, 0}`: True negatives
+    - :math:`C_{0, 1}`: False positives
+    - :math:`C_{1, 0}`: False negatives
+    - :math:`C_{1, 1}`: True positives
+
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, ...)``. If preds is a floating point
@@ -175,6 +186,17 @@ class BinaryConfusionMatrix(Metric):
 
 class MulticlassConfusionMatrix(Metric):
     r"""Compute the `confusion matrix`_ for multiclass tasks.
+
+    The confusion matrix :math:`C` is constructed such that :math:`C_{i, j}` is equal to the number of observations
+    known to be in class :math:`i` but predicted to be in class :math:`j`. Thus row indices of the confusion matrix
+    correspond to the true class labels and column indices correspond to the predicted class labels.
+
+    For multiclass tasks, the confusion matrix is a NxN matrix, where:
+
+    - :math:`C_{i, i}` represents the number of true positives for class :math:`i`
+    - :math:`\sum_{j=1, j\neq i}^N C_{i, j}` represents the number of false negatives for class :math:`i`
+    - :math:`\sum_{i=1, i\neq j}^N C_{i, j}` represents the number of false positives for class :math:`i`
+    - the sum of the remaining cells in the matrix represents the number of true negatives for class :math:`i`
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -304,6 +326,18 @@ class MulticlassConfusionMatrix(Metric):
 
 class MultilabelConfusionMatrix(Metric):
     r"""Compute the `confusion matrix`_ for multilabel tasks.
+
+    The confusion matrix :math:`C` is constructed such that :math:`C_{i, j}` is equal to the number of observations
+    known to be in class :math:`i` but predicted to be in class :math:`j`. Thus row indices of the confusion matrix
+    correspond to the true class labels and column indices correspond to the predicted class labels.
+
+    For multilabel tasks, the confusion matrix is a Nx2x2 tensor, where each 2x2 matrix corresponds to the confusion
+    for that label. The structure of each 2x2 matrix is as follows:
+
+    - :math:`C_{0, 0}`: True negatives
+    - :math:`C_{0, 1}`: False positives
+    - :math:`C_{1, 0}`: False negatives
+    - :math:`C_{1, 1}`: True positives
 
     As input to 'update' the metric accepts the following input:
 
