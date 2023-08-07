@@ -1,6 +1,6 @@
 
-.. _scikit-learn's implementation of SMAPE: https://github.com/scikit-learn/scikit-learn/blob/15a949460/sklearn/metrics/_regression.py#L197
-.. _scikit-learn's implementation of MAPE: https://github.com/scikit-learn/scikit-learn/blob/15a949460/sklearn/metrics/_regression.py#L197
+.. _scikit-learn's implementation of SMAPE: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html
+.. _scikit-learn's implementation of MAPE: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html
 .. _Mean Average Precision: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Mean_average_precision
 .. _Fall-out: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Fall-out
 .. _Normalized Discounted Cumulative Gain: https://en.wikipedia.org/wiki/Discounted_cumulative_gain
