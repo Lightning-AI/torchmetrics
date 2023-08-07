@@ -3,6 +3,8 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/object_detection.svg
    :tags: Detection
 
+.. include:: ../links.rst
+
 ##########################################
 Generalized Intersection Over Union (gIoU)
 ##########################################
