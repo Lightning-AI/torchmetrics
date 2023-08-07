@@ -36,12 +36,12 @@ if not _MATPLOTLIB_AVAILABLE:
 class PanopticQuality(Metric):
     r"""Compute the `Panoptic Quality`_ for panoptic segmentations.
 
-        .. math::
-            PQ = \frac{IOU}{TP + 0.5 FP + 0.5 FN}
+    .. math::
+        PQ = \frac{IOU}{TP + 0.5 FP + 0.5 FN}
 
-        where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives,
-        the number of true postitives, false positives and false negatives. This metric is inspired by the PQ
-        implementation of panopticapi, a standard implementation for the PQ metric for panoptic segmentation.
+    where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives,
+    the number of true postitives, false positives and false negatives. This metric is inspired by the PQ
+    implementation of panopticapi, a standard implementation for the PQ metric for panoptic segmentation.
 
     .. note:
         Points in the target tensor that do not map to a known category ID are automatically ignored in the metric
@@ -226,8 +226,8 @@ class ModifiedPanopticQuality(Metric):
     .. math::
         PQ^{\dagger}_c = \frac{IOU_c}{|S_c|}
 
-    where IOU_c is the sum of the intersection over union of all matching segments for a given class, and \|S_c| is
-    the overall number of segments in the ground truth for that class.
+    where :math:`IOU_c` is the sum of the intersection over union of all matching segments for a given class, and
+    :math:`|S_c|` is the overall number of segments in the ground truth for that class.
 
     .. note:
         Points in the target tensor that do not map to a known category ID are automatically ignored in the metric
