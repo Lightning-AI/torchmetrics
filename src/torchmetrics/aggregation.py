@@ -657,7 +657,7 @@ class RunningMean(Running):
 class RunningSum(Running):
     """Aggregate a stream of value into their sum over a running window.
 
-    Using this metric compared to `MeanMetric` allows for calculating metrics over a running window of values, instead
+    Using this metric compared to `SumMetric` allows for calculating metrics over a running window of values, instead
     of the whole history of values. This is beneficial when you want to get a better estimate of the metric during
     training and don't want to wait for the whole training to finish to get epoch level estimates.
 

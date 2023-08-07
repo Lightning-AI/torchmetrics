@@ -43,7 +43,6 @@ def panoptic_quality(
     true postitives, false positives and false negatives. This metric is inspired by the PQ implementation of
     panopticapi, a standard implementation for the PQ metric for object detection.
 
-
     .. note:
         Points in the target tensor that do not map to a known category ID are automatically ignored in the metric
         computation.
@@ -120,8 +119,8 @@ def modified_panoptic_quality(
     .. math::
         PQ^{\dagger}_c = \frac{IOU_c}{|S_c|}
 
-    where IOU_c is the sum of the intersection over union of all matching segments for a given class, and \|S_c| is
-    the overall number of segments in the ground truth for that class.
+    where :math:`IOU_c` is the sum of the intersection over union of all matching segments for a given class, and
+    :math:`|S_c|` is the overall number of segments in the ground truth for that class.
 
     .. note:
         Points in the target tensor that do not map to a known category ID are automatically ignored in the metric
@@ -151,7 +150,7 @@ def modified_panoptic_quality(
         TypeError:
             If ``preds`` or ``target`` is not an ``torch.Tensor``.
         ValueError:
-             If ``preds`` or ``target`` has different shape.
+            If ``preds`` or ``target`` has different shape.
         ValueError:
             If ``preds`` has less than 3 dimensions.
         ValueError:
