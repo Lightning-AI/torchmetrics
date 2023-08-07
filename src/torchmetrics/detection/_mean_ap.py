@@ -210,9 +210,8 @@ class MeanAveragePrecision(Metric):
         The default properties are also accessible via fields and will raise an ``AttributeError`` if not available.
 
     .. note::
-        This metric is following the mAP implementation of
-        `pycocotools <https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools>`_,
-        a standard implementation for the mAP metric for object detection.
+        This metric is following the mAP implementation of `pycocotools`_ a standard implementation for the mAP metric
+        for object detection.
 
     .. note::
         This metric requires you to have `torchvision` version 0.8.0 or newer installed

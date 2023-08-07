@@ -29,15 +29,16 @@ if not _MATPLOTLIB_AVAILABLE:
 class MinkowskiDistance(Metric):
     r"""Compute `Minkowski Distance`_.
 
-    .. math:: d_{\text{Minkowski}} = \\sum_{i}^N (| y_i - \\hat{y_i} |^p)^\frac{1}{p}
+    .. math::
+        d_{\text{Minkowski}} = \sum_{i}^N (| y_i - \hat{y_i} |^p)^\frac{1}{p}
+
+    where
+        :math: `y` is a tensor of target values,
+        :math: `\hat{y}` is a tensor of predictions,
+        :math: `\p` is a non-negative integer or floating-point number
 
     This metric can be seen as generalized version of the standard euclidean distance which corresponds to minkowski
     distance with p=2.
-
-    where
-        :math:`y` is a tensor of target values,
-        :math:`\\hat{y}` is a tensor of predictions,
-        :math: `\\p` is a non-negative integer or floating-point number
 
     Args:
         p: int or float larger than 1, exponent to which the difference between preds and target is to be raised
