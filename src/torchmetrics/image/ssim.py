@@ -230,7 +230,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``msssim`` (: :class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average MSSSIM
+    - ``msssim`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average MSSSIM
       value over sample else returns tensor of shape ``(N,)`` with SSIM values per sample
 
     Args:
