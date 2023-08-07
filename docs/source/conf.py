@@ -423,6 +423,12 @@ from torchmetrics import Metric
 """
 coverage_skip_undoc_in_source = True
 
+# skip false positive linkcheck errors from anchors
+linkcheck_anchors = False
+
+# ignore all links in any CHANGELOG file
+linkcheck_exclude_documents = [r"^(.*\/)*CHANGELOG.*$"]
+
 # jstor and sciencedirect cannot be accessed from python, but links work fine in a local doc
 linkcheck_ignore = [
     "https://www.jstor.org/stable/2332303",
