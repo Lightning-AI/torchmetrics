@@ -62,7 +62,7 @@ jobs:
       - name: Check External Links
         if: ${{ matrix.check == 'linkcheck' }}
         working-directory: ./docs
-        run: make --jobs $(nproc) linkcheck
+        run: make --jobs $(nproc) linkcheck SPHINXOPTS="--keep-going"
         # ToDO: comment on PR if any link failed
         #continue-on-error: true
 
