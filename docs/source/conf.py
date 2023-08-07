@@ -441,6 +441,16 @@ linkcheck_ignore = [
     "https://ieeexplore.ieee.org/abstract/document/1643671",
     # A Non-Intrusive Quality and Intelligibility Measure of Reverberant and Dereverberated Speech
     "https://ieeexplore.ieee.org/abstract/document/5547575",
+    # An Algorithm for Predicting the Intelligibility of Speech Masked by Modulated Noise Maskers
+    "https://ieeexplore.ieee.org/abstract/document/7539284",
+    # A short-time objective intelligibility measure for time-frequency weighted noisy speech
+    "https://ieeexplore.ieee.org/abstract/document/5495701",
+    # An Algorithm for Intelligibility Prediction of Time–Frequency Weighted Noisy Speech
+    "https://ieeexplore.ieee.org/abstract/document/5713237",
+    # A universal image quality index
+    "https://ieeexplore.ieee.org/abstract/document/995823",
+    # On the Performance Evaluation of Pan-Sharpening Techniques
+    "https://ieeexplore.ieee.org/abstract/document/4317530",
     # Robust parameter estimation with a small bias against heavy contamination
     "https://www.sciencedirect.com/science/article/pii/S0047259X08000456",
 ]
