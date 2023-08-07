@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix support for int input for when `multidim_average="samplewise"` in classification metrics  ([#1977](https://github.com/Lightning-AI/torchmetrics/pull/1977))
+
+
 - Fixed x/y labels when plotting confusion matrices ([#1976](https://github.com/Lightning-AI/torchmetrics/pull/1976))
 
 
