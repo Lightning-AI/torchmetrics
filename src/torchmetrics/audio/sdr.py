@@ -178,11 +178,11 @@ class ScaleInvariantSignalDistortionRatio(Metric):
     As input to `forward` and `update` the metric accepts the following input
 
     - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
-    - ``target`` (: :class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+    - ``target`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``si_sdr`` (: :class:`~torch.Tensor`): float scalar tensor with average SI-SDR value over samples
+    - ``si_sdr`` (:class:`~torch.Tensor`): float scalar tensor with average SI-SDR value over samples
 
     Args:
         zero_mean: if to zero mean target and preds or not
