@@ -434,7 +434,9 @@ linkcheck_ignore = [
     # The Treatment of Ties in Ranking Problems
     "https://www.jstor.org/stable/2332303",
     # Quality Assessment of Deblocked Images
-    "https://ieeexplore.ieee.org/document/5535179",
+    "https://ieeexplore.ieee.org/abstract/document/5535179",
+    # Image information and visual quality
+    "https://ieeexplore.ieee.org/abstract/document/1576816",
     # Robust parameter estimation with a small bias against heavy contamination
     "https://www.sciencedirect.com/science/article/pii/S0047259X08000456",
 ]
