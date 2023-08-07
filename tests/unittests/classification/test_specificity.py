@@ -19,12 +19,18 @@ import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from torch import Tensor, tensor
-from torchmetrics.classification.specificity import BinarySpecificity, MulticlassSpecificity, MultilabelSpecificity
+from torchmetrics.classification.specificity import (
+    BinarySpecificity,
+    MulticlassSpecificity,
+    MultilabelSpecificity,
+    Specificity,
+)
 from torchmetrics.functional.classification.specificity import (
     binary_specificity,
     multiclass_specificity,
     multilabel_specificity,
 )
+from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
@@ -565,3 +571,24 @@ def test_corner_cases():
     metric = MulticlassSpecificity(num_classes=3, average="macro", ignore_index=0)
     res = metric(preds, target)
     assert res == 1.0
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinarySpecificity, {"task": "binary"}),
+        (MulticlassSpecificity, {"task": "multiclass", "num_classes": 3}),
+        (MultilabelSpecificity, {"task": "multilabel", "num_labels": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=Specificity):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

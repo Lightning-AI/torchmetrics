@@ -17,6 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.functional.classification.auroc import _reduce_auroc
 from torchmetrics.functional.classification.precision_recall_curve import (
     _adjust_threshold_arg,
@@ -584,7 +585,7 @@ class MultilabelPrecisionRecallCurve(Metric):
         )
 
 
-class PrecisionRecallCurve:
+class PrecisionRecallCurve(_ClassificationTaskWrapper):
     r"""Compute the precision-recall curve.
 
     The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the

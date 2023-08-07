@@ -13,7 +13,7 @@ sphinx:
 # Optionally build your docs in additional formats such as PDF and ePub
 formats:
   - htmlzip
-  - pdf
+  # - pdf  # building both takes too log :(
 
 build:
   os: "ubuntu-22.04"
