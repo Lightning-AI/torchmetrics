@@ -25,9 +25,9 @@ def _input_validator(
     if isinstance(iou_type, str):
         iou_type = (iou_type,)
 
-    if any(tp not in {"bbox", "segm"} for tp in iou_type):
-        raise Exception(f"IOU type {iou_type} is not supported")
     name_map = {"bbox": "boxes", "segm": "masks"}
+    if any(tp not in name_map for tp in iou_type):
+        raise Exception(f"IOU type {iou_type} is not supported")
     item_val_name = [name_map[tp] for tp in iou_type]
 
     if not isinstance(preds, Sequence):
