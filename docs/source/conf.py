@@ -439,6 +439,8 @@ linkcheck_ignore = [
     "https://ieeexplore.ieee.org/abstract/document/1576816",
     # Performance measurement in blind audio source separation
     "https://ieeexplore.ieee.org/abstract/document/1643671",
+    # A Non-Intrusive Quality and Intelligibility Measure of Reverberant and Dereverberated Speech
+    "https://ieeexplore.ieee.org/abstract/document/5547575",
     # Robust parameter estimation with a small bias against heavy contamination
     "https://www.sciencedirect.com/science/article/pii/S0047259X08000456",
 ]
