@@ -214,6 +214,7 @@ class GeneralizedDiceScore:
         >>> generalized_dice_score = GeneralizedDiceScore(num_classes=3)
         >>> generalized_dice_score(preds, target)
         tensor(0.3478)
+
     """
 
     def __new__(
