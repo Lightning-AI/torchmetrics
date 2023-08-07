@@ -13,13 +13,9 @@
 import glob
 import inspect
 import os
+import re
 import shutil
 import sys
-
-import torch
-
-# this removes "Initializes internal Module state, shared by both nn.Module and ScriptModule." from the docs
-torch.nn.Module.__init__.__doc__ = ""
 
 import pt_lightning_sphinx_theme
 from lightning_utilities.docs import fetch_external_assets
@@ -68,18 +64,34 @@ _transform_changelog(
     os.path.join(_PATH_HERE, FOLDER_GENERATED, "CHANGELOG.md"),
 )
 
+
+def _set_root_image_path(page_path: str):
+    """Set relative path to be from the root, drop all `../` in images used gallery."""
+    with open(page_path, encoding="UTF-8") as fo:
+        body = fo.read()
+    found = re.findall(r"   :image: (.*)\.svg", body)
+    for occur in found:
+        occur_ = occur.replace("../", "")
+        body = body.replace(occur, occur_)
+    with open(page_path, "w", encoding="UTF-8") as fo:
+        fo.write(body)
+
+
 if SPHINX_FETCH_ASSETS:
     fetch_external_assets(
         docs_folder=_PATH_HERE,
         assets_folder="_static/fetched-s3-assets",
         retrieve_pattern=r"https?://[-a-zA-Z0-9_]+\.s3\.[-a-zA-Z0-9()_\\+.\\/=]+",
     )
+    all_pages = glob.glob(os.path.join(_PATH_HERE, "**", "*.rst"), recursive=True)
+    for page in all_pages:
+        _set_root_image_path(page)
 
 # -- General configuration ---------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
 
-needs_sphinx = "6.2"
+needs_sphinx = "5.3"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -93,7 +105,7 @@ extensions = [
     "sphinx.ext.linkcode",
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
-    "sphinx.ext.imgmath",
+    "sphinx.ext.mathjax",
     "myst_parser",
     "sphinx.ext.autosectionlabel",
     "nbsphinx",
@@ -106,7 +118,8 @@ extensions = [
 
 # Set that source code from plotting is always included
 plot_include_source = True
-plot_html_show_source_link = True
+plot_html_show_formats = False
+plot_html_show_source_link = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -373,7 +386,7 @@ autosummary_generate = True
 
 autodoc_member_order = "groupwise"
 
-autoclass_content = "both"
+autoclass_content = "class"
 
 autodoc_default_options = {
     "members": True,

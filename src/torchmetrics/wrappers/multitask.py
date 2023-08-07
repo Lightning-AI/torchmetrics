@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # this is just a bypass for this module name collision with build-in one
-from typing import Any, Callable, Dict, Optional, Sequence, Union
+from typing import Any, Dict, Optional, Sequence, Union
 
 from torch import Tensor, nn
 
@@ -20,12 +20,13 @@ from torchmetrics.collections import MetricCollection
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+from torchmetrics.wrappers.abstract import WrapperMetric
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MultitaskWrapper.plot"]
 
 
-class MultitaskWrapper(Metric):
+class MultitaskWrapper(WrapperMetric):
     """Wrapper class for computing different metrics on different tasks in the context of multitask learning.
 
     In multitask learning the different tasks requires different metrics to be evaluated. This wrapper allows
@@ -88,6 +89,7 @@ class MultitaskWrapper(Metric):
          >>> metrics.compute()
          {'Classification': {'BinaryAccuracy': tensor(0.3333), 'BinaryF1Score': tensor(0.)},
           'Regression': {'MeanSquaredError': tensor(0.8333), 'MeanAbsoluteError': tensor(0.6667)}}
+
     """
 
     is_differentiable = False
@@ -118,6 +120,7 @@ class MultitaskWrapper(Metric):
         Args:
             task_preds: Dictionary associating each task to a Tensor of pred.
             task_targets: Dictionary associating each task to a Tensor of target.
+
         """
         if not self.task_metrics.keys() == task_preds.keys() == task_targets.keys():
             raise ValueError(
@@ -151,14 +154,6 @@ class MultitaskWrapper(Metric):
         for metric in self.task_metrics.values():
             metric.reset()
         super().reset()
-
-    def _wrap_update(self, update: Callable) -> Callable:
-        """Overwrite to do nothing."""
-        return update
-
-    def _wrap_compute(self, compute: Callable) -> Callable:
-        """Overwrite to do nothing."""
-        return compute
 
     def plot(
         self, val: Optional[Union[Dict, Sequence[Dict]]] = None, axes: Optional[Sequence[_AX_TYPE]] = None
@@ -226,6 +221,7 @@ class MultitaskWrapper(Metric):
             >>> for _ in range(10):
             ...     values.append(metrics(preds, targets))
             >>> fig_, ax_ = metrics.plot(values)
+
         """
         if axes is not None:
             if not isinstance(axes, Sequence):

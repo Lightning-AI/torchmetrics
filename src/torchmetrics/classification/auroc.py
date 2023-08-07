@@ -16,6 +16,7 @@ from typing import Any, List, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.precision_recall_curve import (
     BinaryPrecisionRecallCurve,
     MulticlassPrecisionRecallCurve,
@@ -95,6 +96,7 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
         >>> b_auroc = BinaryAUROC(thresholds=5)
         >>> b_auroc(preds, target)
         tensor(0.5000)
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -158,6 +160,7 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(20,), torch.randint(2, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -234,6 +237,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         >>> mc_auroc = MulticlassAUROC(num_classes=5, average=None, thresholds=5)
         >>> mc_auroc(preds, target)
         tensor([1.0000, 1.0000, 0.3333, 0.3333, 0.0000])
+
     """
 
     is_differentiable: bool = False
@@ -303,6 +307,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
             >>> for _ in range(10):
             ...     values.append(metric(torch.randn(20, 3), torch.randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -382,6 +387,7 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         >>> ml_auroc = MultilabelAUROC(num_labels=3, average=None, thresholds=5)
         >>> ml_auroc(preds, target)
         tensor([0.6250, 0.5000, 0.8333])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -450,11 +456,12 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(20,3), torch.randint(2, (20,3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
 
-class AUROC:
+class AUROC(_ClassificationTaskWrapper):
     r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_).
 
     The AUROC score summarizes the ROC curve into an single number that describes the performance of a model for
@@ -483,6 +490,7 @@ class AUROC:
         >>> auroc = AUROC(task="multiclass", num_classes=3)
         >>> auroc(preds, target)
         tensor(0.7778)
+
     """
 
     def __new__(  # type: ignore[misc]
@@ -511,3 +519,15 @@ class AUROC:
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelAUROC(num_labels, average, **kwargs)
         raise ValueError(f"Task {task} not supported!")
+
+    def update(self, *args: Any, **kwargs: Any) -> None:
+        """Update metric state."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
+        )
+
+    def compute(self) -> None:
+        """Compute metric."""
+        raise NotImplementedError(
+            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
+        )

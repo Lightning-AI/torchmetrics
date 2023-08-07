@@ -23,6 +23,7 @@ from torchmetrics.utilities.imports import _LATEX_AVAILABLE, _MATPLOTLIB_AVAILAB
 
 if _MATPLOTLIB_AVAILABLE:
     import matplotlib
+    import matplotlib.axes
     import matplotlib.pyplot as plt
 
     _PLOT_OUT_TYPE = Tuple[plt.Figure, Union[matplotlib.axes.Axes, np.ndarray]]
@@ -42,7 +43,7 @@ else:
 
 
 if _SCIENCEPLOT_AVAILABLE:
-    import scienceplots
+    import scienceplots  # noqa: F401
 
     _style = ["science", "no-latex"]
 
@@ -86,6 +87,7 @@ def plot_single_or_multi_val(
     Raises:
         ModuleNotFoundError:
             If `matplotlib` is not installed
+
     """
     _error_on_missing_matplotlib()
     fig, ax = plt.subplots() if ax is None else (None, ax)
@@ -181,6 +183,7 @@ def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> Union[np.ndarray, _AX
     """Reduce `axs` to `nb` Axes.
 
     All further Axes are removed from the figure.
+
     """
     if isinstance(axs, _AX_TYPE):
         return axs
@@ -217,6 +220,7 @@ def plot_confusion_matrix(
     Raises:
         ModuleNotFoundError:
             If `matplotlib` is not installed
+
     """
     _error_on_missing_matplotlib()
 

@@ -16,6 +16,7 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.accuracy import _accuracy_reduce
 from torchmetrics.metric import Metric
@@ -89,6 +90,7 @@ class BinaryAccuracy(BinaryStatScores):
         >>> metric = BinaryAccuracy(multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0.3333, 0.1667])
+
     """
     is_differentiable = False
     higher_is_better = True
@@ -139,6 +141,7 @@ class BinaryAccuracy(BinaryStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -235,6 +238,7 @@ class MulticlassAccuracy(MulticlassStatScores):
         >>> mca(preds, target)
         tensor([[1.0000, 0.0000, 0.5000],
                 [0.0000, 0.3333, 0.5000]])
+
     """
     is_differentiable = False
     higher_is_better = True
@@ -286,6 +290,7 @@ class MulticlassAccuracy(MulticlassStatScores):
             >>> for _ in range(20):
             ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -382,6 +387,7 @@ class MultilabelAccuracy(MultilabelStatScores):
         >>> mla(preds, target)
         tensor([[0.5000, 0.5000, 0.0000],
                 [0.0000, 0.0000, 0.5000]])
+
     """
     is_differentiable = False
     higher_is_better = True
@@ -435,11 +441,12 @@ class MultilabelAccuracy(MultilabelStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
 
-class Accuracy:
+class Accuracy(_ClassificationTaskWrapper):
     r"""Compute `Accuracy`_.
 
     .. math::
@@ -465,6 +472,7 @@ class Accuracy:
         >>> accuracy = Accuracy(task="multiclass", num_classes=3, top_k=2)
         >>> accuracy(preds, target)
         tensor(0.6667)
+
     """
 
     def __new__(  # type: ignore[misc]

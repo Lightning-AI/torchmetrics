@@ -11,19 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 from torch import Tensor
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+from torchmetrics.wrappers.abstract import WrapperMetric
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["ClasswiseWrapper.plot"]
 
 
-class ClasswiseWrapper(Metric):
+class ClasswiseWrapper(WrapperMetric):
     """Wrapper metric for altering the output of classification metrics.
 
     This metric works together with classification metrics that returns multiple values (one value per class) such that
@@ -108,6 +109,7 @@ class ClasswiseWrapper(Metric):
          'multiclassrecall_horse': tensor(0.),
          'multiclassrecall_fish': tensor(0.3333),
          'multiclassrecall_dog': tensor(0.4000)}
+
     """
 
     def __init__(
@@ -128,22 +130,22 @@ class ClasswiseWrapper(Metric):
 
         if prefix is not None and not isinstance(prefix, str):
             raise ValueError(f"Expected argument `prefix` to either be `None` or a string but got {prefix}")
-        self.prefix = prefix
+        self._prefix = prefix
 
         if postfix is not None and not isinstance(postfix, str):
             raise ValueError(f"Expected argument `postfix` to either be `None` or a string but got {postfix}")
-        self.postfix = postfix
+        self._postfix = postfix
 
         self._update_count = 1
 
     def _convert(self, x: Tensor) -> Dict[str, Any]:
         # Will set the class name as prefix if neither prefix nor postfix is given
-        if not self.prefix and not self.postfix:
+        if not self._prefix and not self._postfix:
             prefix = f"{self.metric.__class__.__name__.lower()}_"
             postfix = ""
         else:
-            prefix = self.prefix or ""
-            postfix = self.postfix or ""
+            prefix = self._prefix or ""
+            postfix = self._postfix or ""
         if self.labels is None:
             return {f"{prefix}{i}{postfix}": val for i, val in enumerate(x)}
         return {f"{prefix}{lab}{postfix}": val for lab, val in zip(self.labels, x)}
@@ -163,14 +165,6 @@ class ClasswiseWrapper(Metric):
     def reset(self) -> None:
         """Reset metric."""
         self.metric.reset()
-
-    def _wrap_update(self, update: Callable) -> Callable:
-        """Overwrite to do nothing."""
-        return update
-
-    def _wrap_compute(self, compute: Callable) -> Callable:
-        """Overwrite to do nothing."""
-        return compute
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -212,5 +206,6 @@ class ClasswiseWrapper(Metric):
             >>> for _ in range(3):
             ...     values.append(metric(torch.randint(3, (20,)), torch.randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

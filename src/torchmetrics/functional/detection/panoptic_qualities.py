@@ -13,8 +13,7 @@
 # limitations under the License.
 from typing import Collection
 
-import torch
-from torch import Tensor, tensor
+from torch import Tensor
 
 from torchmetrics.functional.detection._panoptic_quality_common import (
     _get_category_id_to_continuous_id,
@@ -92,6 +91,7 @@ def panoptic_quality(
         ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
         >>> panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7})
         tensor(0.5463, dtype=torch.float64)
+
     """
     things, stuffs = _parse_categories(things, stuffs)
     _validate_inputs(preds, target)
@@ -163,6 +163,7 @@ def modified_panoptic_quality(
         >>> target = tensor([[[0, 1], [0, 0], [6, 0], [7, 0], [6, 0], [255, 0]]])
         >>> modified_panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7})
         tensor(0.7667, dtype=torch.float64)
+
     """
     things, stuffs = _parse_categories(things, stuffs)
     _validate_inputs(preds, target)

@@ -16,6 +16,7 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.precision_recall import _precision_recall_reduce
 from torchmetrics.metric import Metric
@@ -95,6 +96,7 @@ class BinaryPrecision(BinaryStatScores):
         >>> metric = BinaryPrecision(multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0.4000, 0.0000])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -147,6 +149,7 @@ class BinaryPrecision(BinaryStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -245,6 +248,7 @@ class MulticlassPrecision(MulticlassStatScores):
         >>> mcp(preds, target)
         tensor([[0.6667, 0.0000, 0.5000],
                 [0.0000, 0.5000, 0.3333]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -298,6 +302,7 @@ class MulticlassPrecision(MulticlassStatScores):
             >>> for _ in range(20):
             ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -393,6 +398,7 @@ class MultilabelPrecision(MultilabelStatScores):
         >>> mlp(preds, target)
         tensor([[0.5000, 0.5000, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -446,6 +452,7 @@ class MultilabelPrecision(MultilabelStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -511,6 +518,7 @@ class BinaryRecall(BinaryStatScores):
         >>> metric = BinaryRecall(multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0.6667, 0.0000])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -563,6 +571,7 @@ class BinaryRecall(BinaryStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -660,6 +669,7 @@ class MulticlassRecall(MulticlassStatScores):
         >>> mcr(preds, target)
         tensor([[1.0000, 0.0000, 0.5000],
                 [0.0000, 0.3333, 0.5000]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -713,6 +723,7 @@ class MulticlassRecall(MulticlassStatScores):
             >>> for _ in range(20):
             ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -807,6 +818,7 @@ class MultilabelRecall(MultilabelStatScores):
         >>> mlr(preds, target)
         tensor([[1., 1., 0.],
                 [0., 0., 0.]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -860,11 +872,12 @@ class MultilabelRecall(MultilabelStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
 
-class Precision:
+class Precision(_ClassificationTaskWrapper):
     r"""Compute `Precision`_.
 
     .. math:: \text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
@@ -889,6 +902,7 @@ class Precision:
         >>> precision = Precision(task="multiclass", average='micro', num_classes=3)
         >>> precision(preds, target)
         tensor(0.2500)
+
     """
 
     def __new__(
@@ -922,10 +936,10 @@ class Precision:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelPrecision(num_labels, threshold, average, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")
 
 
-class Recall:
+class Recall(_ClassificationTaskWrapper):
     r"""Compute `Recall`_.
 
     .. math:: \text{Recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
@@ -950,6 +964,7 @@ class Recall:
         >>> recall = Recall(task="multiclass", average='micro', num_classes=3)
         >>> recall(preds, target)
         tensor(0.2500)
+
     """
 
     def __new__(

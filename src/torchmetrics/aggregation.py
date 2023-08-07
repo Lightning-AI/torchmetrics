@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, List, Optional, Sequence, Union
+from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -39,14 +39,15 @@ class BaseAggregator(Metric):
             - ``'ignore'``: all `nan` values are silently removed
             - a float: if a float is provided will impude any `nan` values with this value
 
+        state_name: name of the metric state
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
             If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+
     """
 
-    value: Tensor
     is_differentiable = None
     higher_is_better = None
     full_state_update: bool = False
@@ -56,6 +57,7 @@ class BaseAggregator(Metric):
         fn: Union[Callable, str],
         default_value: Union[Tensor, List],
         nan_strategy: Union[str, float] = "error",
+        state_name: str = "value",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -67,34 +69,46 @@ class BaseAggregator(Metric):
             )
 
         self.nan_strategy = nan_strategy
-        self.add_state("value", default=default_value, dist_reduce_fx=fn)
+        self.add_state(state_name, default=default_value, dist_reduce_fx=fn)
+        self.state_name = state_name
 
-    def _cast_and_nan_check_input(self, x: Union[float, Tensor]) -> Tensor:
+    def _cast_and_nan_check_input(
+        self, x: Union[float, Tensor], weight: Optional[Union[float, Tensor]] = None
+    ) -> Tuple[Tensor, Tensor]:
         """Convert input ``x`` to a tensor and check for Nans."""
         if not isinstance(x, Tensor):
             x = torch.as_tensor(x, dtype=torch.float32, device=self.device)
+        if weight is not None and not isinstance(weight, Tensor):
+            weight = torch.as_tensor(weight, dtype=torch.float32, device=self.device)
 
         nans = torch.isnan(x)
-        if nans.any():
+        if weight is not None:
+            nans_weight = torch.isnan(weight)
+        else:
+            nans_weight = torch.zeros_like(nans).bool()
+            weight = torch.ones_like(x)
+        if nans.any() or nans_weight.any():
             if self.nan_strategy == "error":
                 raise RuntimeError("Encounted `nan` values in tensor")
             if self.nan_strategy in ("ignore", "warn"):
                 if self.nan_strategy == "warn":
                     rank_zero_warn("Encounted `nan` values in tensor. Will be removed.", UserWarning)
-                x = x[~nans]
+                x = x[~(nans | nans_weight)]
+                weight = weight[~(nans | nans_weight)]
             else:
                 if not isinstance(self.nan_strategy, float):
                     raise ValueError(f"`nan_strategy` shall be float but you pass {self.nan_strategy}")
-                x[nans] = self.nan_strategy
+                x[nans | nans_weight] = self.nan_strategy
+                weight[nans | nans_weight] = self.nan_strategy
 
-        return x.float()
+        return x.float(), weight.float()
 
     def update(self, value: Union[float, Tensor]) -> None:
         """Overwrite in child class."""
 
     def compute(self) -> Tensor:
         """Compute the aggregated value."""
-        return self.value
+        return getattr(self, self.state_name)
 
 
 class MaxMetric(BaseAggregator):
@@ -130,9 +144,11 @@ class MaxMetric(BaseAggregator):
         >>> metric.update(tensor([2, 3]))
         >>> metric.compute()
         tensor(3.)
+
     """
 
     full_state_update: bool = True
+    max_value: Tensor
 
     def __init__(
         self,
@@ -143,6 +159,7 @@ class MaxMetric(BaseAggregator):
             "max",
             -torch.tensor(float("inf")),
             nan_strategy,
+            state_name="max_value",
             **kwargs,
         )
 
@@ -152,10 +169,11 @@ class MaxMetric(BaseAggregator):
         Args:
             value: Either a float or tensor containing data. Additional tensor
                 dimensions will be flattened
+
         """
-        value = self._cast_and_nan_check_input(value)
+        value, _ = self._cast_and_nan_check_input(value)
         if value.numel():  # make sure tensor not empty
-            self.value = torch.max(self.value, torch.max(value))
+            self.max_value = torch.max(self.max_value, torch.max(value))
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -193,6 +211,7 @@ class MaxMetric(BaseAggregator):
             >>> for i in range(10):
             ...     values.append(metric(i))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -230,9 +249,11 @@ class MinMetric(BaseAggregator):
         >>> metric.update(tensor([2, 3]))
         >>> metric.compute()
         tensor(1.)
+
     """
 
     full_state_update: bool = True
+    min_value: Tensor
 
     def __init__(
         self,
@@ -243,6 +264,7 @@ class MinMetric(BaseAggregator):
             "min",
             torch.tensor(float("inf")),
             nan_strategy,
+            state_name="min_value",
             **kwargs,
         )
 
@@ -252,10 +274,11 @@ class MinMetric(BaseAggregator):
         Args:
             value: Either a float or tensor containing data. Additional tensor
                 dimensions will be flattened
+
         """
-        value = self._cast_and_nan_check_input(value)
+        value, _ = self._cast_and_nan_check_input(value)
         if value.numel():  # make sure tensor not empty
-            self.value = torch.min(self.value, torch.min(value))
+            self.min_value = torch.min(self.min_value, torch.min(value))
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -293,6 +316,7 @@ class MinMetric(BaseAggregator):
             >>> for i in range(10):
             ...     values.append(metric(i))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -330,7 +354,10 @@ class SumMetric(BaseAggregator):
         >>> metric.update(tensor([2, 3]))
         >>> metric.compute()
         tensor(6.)
+
     """
+
+    sum_value: Tensor
 
     def __init__(
         self,
@@ -341,6 +368,7 @@ class SumMetric(BaseAggregator):
             "sum",
             torch.tensor(0.0),
             nan_strategy,
+            state_name="sum_value",
             **kwargs,
         )
 
@@ -350,10 +378,11 @@ class SumMetric(BaseAggregator):
         Args:
             value: Either a float or tensor containing data. Additional tensor
                 dimensions will be flattened
+
         """
-        value = self._cast_and_nan_check_input(value)
+        value, _ = self._cast_and_nan_check_input(value)
         if value.numel():
-            self.value += value.sum()
+            self.sum_value += value.sum()
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -392,6 +421,7 @@ class SumMetric(BaseAggregator):
             >>> for i in range(10):
             ...     values.append(metric([i, i+1]))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -429,7 +459,10 @@ class CatMetric(BaseAggregator):
         >>> metric.update(tensor([2, 3]))
         >>> metric.compute()
         tensor([1., 2., 3.])
+
     """
+
+    value: Tensor
 
     def __init__(
         self,
@@ -444,8 +477,9 @@ class CatMetric(BaseAggregator):
         Args:
             value: Either a float or tensor containing data. Additional tensor
                 dimensions will be flattened
+
         """
-        value = self._cast_and_nan_check_input(value)
+        value, _ = self._cast_and_nan_check_input(value)
         if value.numel():
             self.value.append(value)
 
@@ -490,7 +524,10 @@ class MeanMetric(BaseAggregator):
         >>> metric.update(torch.tensor([2, 3]))
         >>> metric.compute()
         tensor(2.)
+
     """
+
+    mean_value: Tensor
 
     def __init__(
         self,
@@ -501,6 +538,7 @@ class MeanMetric(BaseAggregator):
             "sum",
             torch.tensor(0.0),
             nan_strategy,
+            state_name="mean_value",
             **kwargs,
         )
         self.add_state("weight", default=torch.tensor(0.0), dist_reduce_fx="sum")
@@ -515,20 +553,24 @@ class MeanMetric(BaseAggregator):
                 the average. Shape of weight should be able to broadcast with
                 the shape of `value`. Default to `1.0` corresponding to simple
                 harmonic average.
+
         """
-        value = self._cast_and_nan_check_input(value)
-        weight = self._cast_and_nan_check_input(weight)
+        # broadcast weight to value shape
+        if not isinstance(value, Tensor):
+            value = torch.as_tensor(value, dtype=torch.float32, device=self.device)
+        if weight is not None and not isinstance(weight, Tensor):
+            weight = torch.as_tensor(weight, dtype=torch.float32, device=self.device)
+        weight = torch.broadcast_to(weight, value.shape)
+        value, weight = self._cast_and_nan_check_input(value, weight)
 
         if value.numel() == 0:
             return
-        # broadcast weight to value shape
-        weight = torch.broadcast_to(weight, value.shape)
-        self.value += (value * weight).sum()
+        self.mean_value += (value * weight).sum()
         self.weight += weight.sum()
 
     def compute(self) -> Tensor:
         """Compute the aggregated value."""
-        return self.value / self.weight
+        return self.mean_value / self.weight
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -566,6 +608,7 @@ class MeanMetric(BaseAggregator):
             >>> for i in range(10):
             ...     values.append(metric([i, i+1]))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -615,6 +658,7 @@ class RunningMean(Running):
         current_val=tensor(3.), running_val=tensor(2.), total_val=tensor(1.5000)
         current_val=tensor(4.), running_val=tensor(3.), total_val=tensor(2.)
         current_val=tensor(5.), running_val=tensor(4.), total_val=tensor(2.5000)
+
     """
 
     def __init__(
@@ -671,6 +715,7 @@ class RunningSum(Running):
         current_val=tensor(3.), running_val=tensor(6.), total_val=tensor(6)
         current_val=tensor(4.), running_val=tensor(9.), total_val=tensor(10)
         current_val=tensor(5.), running_val=tensor(12.), total_val=tensor(15)
+
     """
 
     def __init__(

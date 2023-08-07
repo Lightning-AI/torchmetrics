@@ -24,6 +24,7 @@ from torchmetrics.classification.specificity_sensitivity import (
     BinarySpecificityAtSensitivity,
     MulticlassSpecificityAtSensitivity,
     MultilabelSpecificityAtSensitivity,
+    SpecificityAtSensitivity,
 )
 from torchmetrics.functional.classification.specificity_sensitivity import (
     _convert_fpr_to_specificity,
@@ -31,6 +32,7 @@ from torchmetrics.functional.classification.specificity_sensitivity import (
     multiclass_specificity_at_sensitivity,
     multilabel_specificity_at_sensitivity,
 )
+from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
@@ -455,3 +457,24 @@ def test_valid_input_thresholds(metric, thresholds):
     with pytest.warns(None) as record:
         metric(min_sensitivity=0.5, thresholds=thresholds)
     assert len(record) == 0
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinarySpecificityAtSensitivity, {"task": "binary", "min_sensitivity": 0.5}),
+        (MulticlassSpecificityAtSensitivity, {"task": "multiclass", "num_classes": 3, "min_sensitivity": 0.5}),
+        (MultilabelSpecificityAtSensitivity, {"task": "multilabel", "num_labels": 3, "min_sensitivity": 0.5}),
+        (None, {"task": "not_valid_task", "min_sensitivity": 0.5}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=SpecificityAtSensitivity):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

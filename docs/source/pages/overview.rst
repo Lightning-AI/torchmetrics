@@ -1,7 +1,7 @@
 .. testsetup:: *
 
     import torch
-    from lightning import LightningModule
+    from lightning.pytorch import LightningModule
 
 ##################
 Structure Overview

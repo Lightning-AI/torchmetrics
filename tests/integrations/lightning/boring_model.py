@@ -17,7 +17,7 @@ from lightning_utilities import module_available
 from torch.utils.data import Dataset
 
 if module_available("lightning"):
-    from lightning import LightningModule
+    from lightning.pytorch import LightningModule
 else:
     from pytorch_lightning import LightningModule
 
@@ -69,6 +69,7 @@ class BoringModel(LightningModule):
 
     model = BaseTestModel()
     model.training_epoch_end = None
+
     """
 
     def __init__(self) -> None:

@@ -33,6 +33,7 @@ def _wer_update(
     Returns:
         Number of edit operations to get from the reference to the prediction, summed over all samples
         Number of words overall references
+
     """
     if isinstance(preds, str):
         preds = [preds]
@@ -57,6 +58,7 @@ def _wer_compute(errors: Tensor, total: Tensor) -> Tensor:
 
     Returns:
         Word error rate score
+
     """
     return errors / total
 
@@ -79,6 +81,7 @@ def word_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]])
         >>> target = ["this is the reference", "there is another one"]
         >>> word_error_rate(preds=preds, target=target)
         tensor(0.5000)
+
     """
     errors, total = _wer_update(preds, target)
     return _wer_compute(errors, total)

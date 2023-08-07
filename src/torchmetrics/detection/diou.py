@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Sequence, Union
+from typing import Any, Optional, Sequence, Union
 
 from torch import Tensor
 
@@ -181,5 +181,6 @@ class DistanceIntersectionOverUnion(IntersectionOverUnion):
             >>> for _ in range(20):
             ...     vals.append(metric(preds, target()))
             >>> fig_, ax_ = metric.plot(vals)
+
         """
         return self._plot(val, ax)

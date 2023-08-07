@@ -25,6 +25,7 @@ from torchmetrics.functional.image.ssim import (
 )
 from torchmetrics.functional.image.tv import total_variation
 from torchmetrics.functional.image.uqi import universal_image_quality_index
+from torchmetrics.functional.image.vif import visual_information_fidelity
 
 __all__ = [
     "spectral_distortion_index",
@@ -39,4 +40,5 @@ __all__ = [
     "structural_similarity_index_measure",
     "total_variation",
     "universal_image_quality_index",
+    "visual_information_fidelity",
 ]

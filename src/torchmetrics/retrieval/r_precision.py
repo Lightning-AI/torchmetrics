@@ -38,7 +38,7 @@ class RetrievalRPrecision(RetrievalMetric):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``p2`` (:class:`~torch.Tensor`): A single-value tensor with the r-precision of the predictions ``preds``
+    - ``rp`` (:class:`~torch.Tensor`): A single-value tensor with the r-precision of the predictions ``preds``
       w.r.t. the labels ``target``.
 
     All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
@@ -54,8 +54,7 @@ class RetrievalRPrecision(RetrievalMetric):
             - ``'skip'``: skip those queries; if all queries are skipped, ``0.0`` is returned
             - ``'error'``: raise a ``ValueError``
 
-        ignore_index:
-            Ignore predictions where the target is equal to this number.
+        ignore_index: Ignore predictions where the target is equal to this number.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -73,6 +72,7 @@ class RetrievalRPrecision(RetrievalMetric):
         >>> p2 = RetrievalRPrecision()
         >>> p2(preds, target, indexes=indexes)
         tensor(0.7500)
+
     """
 
     is_differentiable: bool = False
@@ -122,5 +122,6 @@ class RetrievalRPrecision(RetrievalMetric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(10,), torch.randint(2, (10,)), indexes=torch.randint(2,(10,))))
             >>> fig, ax = metric.plot(values)
+
         """
         return self._plot(val, ax)

@@ -20,14 +20,13 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-from pycocotools import mask
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from torch import IntTensor, Tensor
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
-from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL, _SAMPLE_DETECTION_SEGMENTATION
+from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL
 from unittests.helpers.testers import MetricTester
 
 _pytest_condition = not (_PYCOCOTOOLS_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
@@ -39,6 +38,7 @@ def _generate_coco_inputs(iou_type):
     The inputs are generated from the official COCO results json files:
     https://github.com/cocodataset/cocoapi/tree/master/results
     and should therefore correspond directly to the result on the webpage
+
     """
     batched_preds, batched_target = MeanAveragePrecision.coco_to_tm(
         _DETECTION_BBOX if iou_type == "bbox" else _DETECTION_SEGM, _DETECTION_VAL, iou_type
@@ -140,13 +140,18 @@ class TestMAPUsingCOCOReference(MetricTester):
                 "iou_thresholds": iou_thresholds,
                 "rec_thresholds": rec_thresholds,
                 "class_metrics": False,
+                "box_format": "xywh",
             },
             check_batch=False,
             atol=1e-2,
         )
 
     def test_map_classwise(self, iou_type, ddp):
-        """Test modular implementation for correctness with classwise=True. Needs bigger atol to be stable."""
+        """Test modular implementation for correctness with classwise=True.
+
+        Needs bigger atol to be stable.
+
+        """
         preds, target = _coco_bbox_input if iou_type == "bbox" else _coco_segm_input
         self.run_class_metric_test(
             ddp=ddp,
@@ -154,7 +159,7 @@ class TestMAPUsingCOCOReference(MetricTester):
             target=target,
             metric_class=MeanAveragePrecision,
             reference_metric=partial(_compare_again_coco_fn, iou_type=iou_type, class_metrics=True),
-            metric_args={"iou_type": iou_type, "class_metrics": True},
+            metric_args={"box_format": "xywh", "iou_type": iou_type, "class_metrics": True},
             check_batch=False,
             atol=1e-1,
         )
@@ -480,6 +485,7 @@ def test_missing_pred():
 
     Map should be lower than 1. Actually it is 0.5, but the exact value depends on where we are sampling (i.e. recall's
     values)
+
     """
     gts = [
         {"boxes": Tensor([[10, 20, 15, 25]]), "labels": IntTensor([0])},
@@ -502,6 +508,7 @@ def test_missing_gt():
 
     One good detection, one false positive. Map should be lower than 1. Actually it is 0.5, but the exact value depends
     on where we are sampling (i.e. recall's values)
+
     """
     gts = [
         {"boxes": Tensor([[10, 20, 15, 25]]), "labels": IntTensor([0])},
@@ -621,19 +628,19 @@ def test_error_on_wrong_input():
         )
 
 
-def _generate_random_segm_input(device):
+def _generate_random_segm_input(device, batch_size=2, num_preds_size=10, num_gt_size=10, random_size=True):
     """Generate random inputs for mAP when iou_type=segm."""
     preds = []
     targets = []
-    for _ in range(2):
+    for _ in range(batch_size):
         result = {}
-        num_preds = torch.randint(0, 10, (1,)).item()
+        num_preds = torch.randint(0, num_preds_size, (1,)).item() if random_size else num_preds_size
         result["scores"] = torch.rand((num_preds,), device=device)
         result["labels"] = torch.randint(0, 10, (num_preds,), device=device)
         result["masks"] = torch.randint(0, 2, (num_preds, 10, 10), device=device).bool()
         preds.append(result)
         gt = {}
-        num_gt = torch.randint(0, 10, (1,)).item()
+        num_gt = torch.randint(0, num_gt_size, (1,)).item() if random_size else num_gt_size
         gt["labels"] = torch.randint(0, 10, (num_gt,), device=device)
         gt["masks"] = torch.randint(0, 2, (num_gt, 10, 10), device=device).bool()
         targets.append(gt)
@@ -656,3 +663,50 @@ def test_device_changing():
     metric = metric.cpu()
     val = metric.compute()
     assert isinstance(val, dict)
+
+
+@pytest.mark.parametrize(
+    ("box_format", "iou_val_expected", "map_val_expected"),
+    [
+        ("xyxy", 0.25, 1),
+        ("xywh", 0.143, 0.0),
+        ("cxcywh", 0.143, 0.0),
+    ],
+)
+def test_for_box_format(box_format, iou_val_expected, map_val_expected):
+    """Test that only the correct box format lead to a score of 1.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/1908.
+
+    """
+    predictions = [
+        {"boxes": torch.tensor([[0.5, 0.5, 1, 1]]), "scores": torch.tensor([1.0]), "labels": torch.tensor([0])}
+    ]
+
+    targets = [{"boxes": torch.tensor([[0, 0, 1, 1]]), "labels": torch.tensor([0])}]
+
+    metric = MeanAveragePrecision(box_format=box_format, iou_thresholds=[0.2])
+    metric.update(predictions, targets)
+    result = metric.compute()
+    assert result["map"].item() == map_val_expected
+    assert round(float(metric.coco_eval.ious[(0, 0)]), 3) == iou_val_expected
+
+
+@pytest.mark.parametrize("iou_type", ["bbox", "segm"])
+def test_warning_on_many_detections(iou_type):
+    """Test that a warning is raised when there are many detections."""
+    if iou_type == "bbox":
+        preds = [
+            {
+                "boxes": torch.tensor([[0.5, 0.5, 1, 1]]).repeat(101, 1),
+                "scores": torch.tensor([1.0]).repeat(101),
+                "labels": torch.tensor([0]).repeat(101),
+            }
+        ]
+        targets = [{"boxes": torch.tensor([[0, 0, 1, 1]]), "labels": torch.tensor([0])}]
+    else:
+        preds, targets = _generate_random_segm_input("cpu", 1, 101, 10, False)
+
+    metric = MeanAveragePrecision(iou_type=iou_type)
+    with pytest.warns(UserWarning, match="Encountered more than 100 detections in a single image.*"):
+        metric.update(preds, targets)

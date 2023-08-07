@@ -24,6 +24,7 @@ from typing_extensions import Literal
 
 from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import (
     _MATPLOTLIB_AVAILABLE,
     _PYCOCOTOOLS_AVAILABLE,
@@ -145,7 +146,15 @@ class MeanAveragePrecision(Metric):
 
     Args:
         box_format:
-            Input format of given boxes. Supported formats are ``[`xyxy`, `xywh`, `cxcywh`]``.
+            Input format of given boxes. Supported formats are:
+
+                - 'xyxy': boxes are represented via corners, x1, y1 being top left and x2, y2 being bottom right.
+                - 'xywh' : boxes are represented via corner, width and height, x1, y2 being top left, w, h being
+                  width and height. This is the default format used by pycoco and all input formats will be converted
+                  to this.
+                - 'cxcywh': boxes are represented via centre, width and height, cx, cy being center of box, w, h being
+                  width and height.
+
         iou_type:
             Type of input (either masks or bounding-boxes) used for computing IOU.
             Supported IOU types are ``["bbox", "segm"]``. If using ``"segm"``, masks should be provided in input.
@@ -215,6 +224,7 @@ class MeanAveragePrecision(Metric):
          'mar_large': tensor(0.6000),
          'mar_medium': tensor(-1.),
          'mar_small': tensor(-1.)}
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -230,9 +240,11 @@ class MeanAveragePrecision(Metric):
     groundtruth_crowds: List[Tensor]
     groundtruth_area: List[Tensor]
 
+    warn_on_many_detections: bool = True
+
     def __init__(
         self,
-        box_format: str = "xyxy",
+        box_format: Literal["xyxy", "xywh", "cxcywh"] = "xyxy",
         iou_type: Literal["bbox", "segm"] = "bbox",
         iou_thresholds: Optional[List[float]] = None,
         rec_thresholds: Optional[List[float]] = None,
@@ -315,11 +327,12 @@ class MeanAveragePrecision(Metric):
                 If any class is not type int and of length 1
             ValueError:
                 If any score is not type float and of length 1
+
         """
         _input_validator(preds, target, iou_type=self.iou_type)
 
         for item in preds:
-            detections = self._get_safe_item_values(item)
+            detections = self._get_safe_item_values(item, warn=self.warn_on_many_detections)
 
             self.detections.append(detections)
             self.detection_labels.append(item["labels"])
@@ -345,27 +358,27 @@ class MeanAveragePrecision(Metric):
             coco_target.createIndex()
             coco_preds.createIndex()
 
-            coco_eval = COCOeval(coco_target, coco_preds, iouType=self.iou_type)
-            coco_eval.params.iouThrs = np.array(self.iou_thresholds, dtype=np.float64)
-            coco_eval.params.recThrs = np.array(self.rec_thresholds, dtype=np.float64)
-            coco_eval.params.maxDets = self.max_detection_thresholds
+            self.coco_eval = COCOeval(coco_target, coco_preds, iouType=self.iou_type)
+            self.coco_eval.params.iouThrs = np.array(self.iou_thresholds, dtype=np.float64)
+            self.coco_eval.params.recThrs = np.array(self.rec_thresholds, dtype=np.float64)
+            self.coco_eval.params.maxDets = self.max_detection_thresholds
 
-            coco_eval.evaluate()
-            coco_eval.accumulate()
-            coco_eval.summarize()
-            stats = coco_eval.stats
+            self.coco_eval.evaluate()
+            self.coco_eval.accumulate()
+            self.coco_eval.summarize()
+            stats = self.coco_eval.stats
 
         # if class mode is enabled, evaluate metrics per class
         if self.class_metrics:
             map_per_class_list = []
             mar_100_per_class_list = []
             for class_id in self._get_classes():
-                coco_eval.params.catIds = [class_id]
+                self.coco_eval.params.catIds = [class_id]
                 with contextlib.redirect_stdout(io.StringIO()):
-                    coco_eval.evaluate()
-                    coco_eval.accumulate()
-                    coco_eval.summarize()
-                    class_stats = coco_eval.stats
+                    self.coco_eval.evaluate()
+                    self.coco_eval.accumulate()
+                    self.coco_eval.summarize()
+                    class_stats = self.coco_eval.stats
 
                 map_per_class_list.append(torch.tensor([class_stats[0]]))
                 mar_100_per_class_list.append(torch.tensor([class_stats[8]]))
@@ -532,11 +545,12 @@ class MeanAveragePrecision(Metric):
         with open(f"{name}_target.json", "w") as f:
             f.write(target_json)
 
-    def _get_safe_item_values(self, item: Dict[str, Any]) -> Union[Tensor, Tuple]:
+    def _get_safe_item_values(self, item: Dict[str, Any], warn: bool = False) -> Union[Tensor, Tuple]:
         """Convert and return the boxes or masks from the item depending on the iou_type.
 
         Args:
             item: input dictionary containing the boxes or masks
+            warn: whether to warn if the number of boxes or masks exceeds the max_detection_thresholds
 
         Returns:
             boxes or masks depending on the iou_type
@@ -545,13 +559,17 @@ class MeanAveragePrecision(Metric):
         if self.iou_type == "bbox":
             boxes = _fix_empty_tensors(item["boxes"])
             if boxes.numel() > 0:
-                boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
+                boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xywh")
+            if warn and len(boxes) > self.max_detection_thresholds[-1]:
+                _warning_on_too_many_detections(self.max_detection_thresholds[-1])
             return boxes
         if self.iou_type == "segm":
             masks = []
             for i in item["masks"].cpu().numpy():
                 rle = mask_utils.encode(np.asfortranarray(i))
                 masks.append((tuple(rle["size"]), rle["counts"]))
+            if warn and len(masks) > self.max_detection_thresholds[-1]:
+                _warning_on_too_many_detections(self.max_detection_thresholds[-1])
             return tuple(masks)
         raise Exception(f"IOU type {self.iou_type} is not supported")
 
@@ -571,7 +589,9 @@ class MeanAveragePrecision(Metric):
     ) -> Dict:
         """Transforms and returns all cached targets or predictions in COCO format.
 
-        Format is defined at https://cocodataset.org/#format-data
+        Format is defined at
+        https://cocodataset.org/#format-data
+
         """
         images = []
         annotations = []
@@ -686,6 +706,7 @@ class MeanAveragePrecision(Metric):
             >>> for _ in range(20):
             ...     vals.append(metric(preds(), target))
             >>> fig_, ax_ = metric.plot(vals)
+
         """
         return self._plot(val, ax)
 
@@ -698,6 +719,7 @@ class MeanAveragePrecision(Metric):
 
         Excludes the detections and groundtruths from the casting when the iou_type is set to `segm` as the state is
         no longer a tensor but a tuple.
+
         """
         return super()._apply(fn, exclude_state=("detections", "groundtruths") if self.iou_type == "segm" else "")
 
@@ -733,3 +755,13 @@ class MeanAveragePrecision(Metric):
         dist.all_gather_object(list_gathered, list_to_gather, group=process_group)
 
         return [list_gathered[rank][idx] for idx in range(len(list_gathered[0])) for rank in range(world_size)]
+
+
+def _warning_on_too_many_detections(limit: int) -> None:
+    rank_zero_warn(
+        f"Encountered more than {limit} detections in a single image. This means that certain detections with the"
+        " lowest scores will be ignored, that may have an undesirable impact on performance. Please consider adjusting"
+        " the `max_detection_threshold` to suit your use case. To disable this warning, set attribute class"
+        " `warn_on_many_detections=False`, after initializing the metric.",
+        UserWarning,
+    )

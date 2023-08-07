@@ -20,12 +20,13 @@ from torch import Tensor
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+from torchmetrics.wrappers.abstract import WrapperMetric
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MinMaxMetric.plot"]
 
 
-class MinMaxMetric(Metric):
+class MinMaxMetric(WrapperMetric):
     """Wrapper metric that tracks both the minimum and maximum of a scalar/tensor across an experiment.
 
     The min/max value will be updated each time ``.compute`` is called.
@@ -56,6 +57,7 @@ class MinMaxMetric(Metric):
         >>> minmax_metric.update(preds_2, labels)
         >>> pprint(minmax_metric.compute())
         {'max': tensor(1.), 'min': tensor(0.7500), 'raw': tensor(0.7500)}
+
     """
 
     full_state_update: Optional[bool] = True
@@ -85,6 +87,7 @@ class MinMaxMetric(Metric):
 
         Returns a dictionary that consists of the computed value (``raw``), as well as the minimum (``min``) and maximum
         (``max``) values.
+
         """
         val = self._base_metric.compute()
         if not self._is_suitable_val(val):
@@ -94,6 +97,10 @@ class MinMaxMetric(Metric):
         self.max_val = val if self.max_val.to(val.device) < val else self.max_val.to(val.device)
         self.min_val = val if self.min_val.to(val.device) > val else self.min_val.to(val.device)
         return {"raw": val, "max": self.max_val, "min": self.min_val}
+
+    def forward(self, *args: Any, **kwargs: Any) -> Any:
+        """Use the original forward method of the base metric class."""
+        return super(WrapperMetric, self).forward(*args, **kwargs)
 
     def reset(self) -> None:
         """Set ``max_val`` and ``min_val`` to the initialization bounds and resets the base metric."""
@@ -149,5 +156,6 @@ class MinMaxMetric(Metric):
             >>> for _ in range(3):
             ...     values.append(metric(torch.randint(2, (20,)), torch.randint(2, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

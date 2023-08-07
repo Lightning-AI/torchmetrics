@@ -28,9 +28,9 @@ from torchmetrics.functional.text.helper_embedding_metric import (
     _load_tokenizer_and_model,
 )
 from torchmetrics.utilities.enums import EnumStr
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
-if _TRANSFORMERS_AVAILABLE:
+if _TRANSFORMERS_GREATER_EQUAL_4_4:
     from transformers import PreTrainedModel, PreTrainedTokenizerBase
 else:
     PreTrainedModel = PreTrainedTokenizerBase = None
@@ -98,6 +98,7 @@ class _InformationMeasure:
             If information measure is AB divergence and parameter `alpha`, `beta` or `alpha + beta` equal 0.
         ValueError:
             If information measure is Rényi divergence and parameter `alpha` equals 1.
+
     """
 
     def __init__(
@@ -152,6 +153,7 @@ class _InformationMeasure:
 
         Return:
             Kullback-Leibler divergence between discrete distributions of predicted and reference sentences.
+
         """
         return torch.sum(target_distribution * torch.log(preds_distribution / target_distribution), dim=-1)
 
@@ -166,6 +168,7 @@ class _InformationMeasure:
 
         Return:
             Alpha divergence between discrete distributions of predicted and reference sentences.
+
         """
         _alpha_denom = self.alpha * (self.alpha - 1)
         return (
@@ -183,6 +186,7 @@ class _InformationMeasure:
 
         Return:
             AB divergence between discrete distributions of predicted and reference sentences.
+
         """
         a = torch.log(torch.sum(target_distribution ** (self.beta + self.alpha), dim=-1))
         a /= self.beta * (self.beta + self.alpha)
@@ -204,6 +208,7 @@ class _InformationMeasure:
 
         Return:
             Beta divergence between discrete distributions of predicted and reference sentences.
+
         """
         self.alpha = 1.0
         return self._calculate_ab_divergence(preds_distribution, target_distribution)
@@ -219,6 +224,7 @@ class _InformationMeasure:
 
         Return:
             Rényi divergence between discrete distributions of predicted and reference sentences.
+
         """
         return (
             torch.log(torch.sum(target_distribution**self.alpha * preds_distribution ** (1 - self.alpha), dim=-1))
@@ -236,6 +242,7 @@ class _InformationMeasure:
 
         Return:
             L1 distance between discrete distributions of predicted and reference sentences.
+
         """
         return torch.norm(target_distribution - preds_distribution, p=1, dim=-1)
 
@@ -251,6 +258,7 @@ class _InformationMeasure:
 
         Return:
             L2 distance between discrete distributions of predicted and reference sentences.
+
         """
         return torch.norm(target_distribution - preds_distribution, p=2, dim=-1)
 
@@ -266,6 +274,7 @@ class _InformationMeasure:
 
         Return:
             L-infinity distance between discrete distributions of predicted and reference sentences.
+
         """
         return torch.norm(target_distribution - preds_distribution, p=float("inf"), dim=-1)
 
@@ -281,6 +290,7 @@ class _InformationMeasure:
 
         Return:
             Fisher-Rao distance between discrete distributions of predicted and reference sentences.
+
         """
         return 2 * torch.acos(torch.clamp(torch.sqrt(preds_distribution * target_distribution).sum(-1), 0, 1))
 
@@ -304,6 +314,7 @@ def _get_dataloader(
 
     Return:
         An instance of ``torch.utils.data.DataLoader`` used for iterating over examples.
+
     """
     dataset = TokenizedDataset(input_ids, attention_mask, idf)
     return DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
@@ -318,6 +329,7 @@ def _get_special_tokens_map(tokenizer: PreTrainedTokenizerBase) -> Dict[str, int
 
     Return:
         A dictionary containing: mask_token_id, pad_token_id, sep_token_id and cls_token_id.
+
     """
     return {
         "mask_token_id": tokenizer.mask_token_id,
@@ -346,6 +358,7 @@ def _get_token_mask(input_ids: Tensor, pad_token_id: int, sep_token_id: int, cls
 
     Return:
         Tensor mask of 0s and 1s that masks all special tokens in the ``input_ids`` tensor.
+
     """
     token_mask = input_ids.eq(pad_token_id) | input_ids.eq(sep_token_id) | input_ids.eq(cls_token_id)
     return ~token_mask
@@ -372,6 +385,7 @@ def _get_batch_distribution(
 
     Return:
         A discrete probability distribution.
+
     """
     seq_len = batch["input_ids"].shape[1]
     prob_distribution_batch_list: List[Tensor] = []
@@ -432,6 +446,7 @@ def _get_data_distribution(
 
     Return:
         A discrete probability distribution.
+
     """
     device = model.device
     prob_distribution: List[Tensor] = []
@@ -463,6 +478,7 @@ def _infolm_update(
 
     Return:
         Tokenizerd ``preds`` and ``target`` sentences represented with ``input_ids`` and ``attention_mask`` tensors.
+
     """
     # HuggingFace tokenizer expects an input to be of a type str or List[str]
     if not isinstance(preds, (str, list)):
@@ -509,6 +525,7 @@ def _infolm_compute(
 
     Return:
         A corpus-level InfoLM score.
+
     """
     preds_distribution = _get_data_distribution(model, preds_dataloader, temperature, idf, special_tokens_map, verbose)
     target_distribution = _get_data_distribution(
@@ -606,6 +623,7 @@ def infolm(
     References:
         [1] InfoLM: A New Metric to Evaluate Summarization & Data2Text Generation by Pierre Colombo, Chloé Clavel and
         Pablo Piantanida `InfoLM`_
+
     """
     tokenizer, model = _load_tokenizer_and_model(model_name_or_path, device)
     information_measure_cls = _InformationMeasure(information_measure, alpha, beta)

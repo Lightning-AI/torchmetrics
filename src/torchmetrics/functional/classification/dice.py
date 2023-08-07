@@ -177,6 +177,7 @@ def dice(
         >>> target = torch.tensor([1, 1, 2, 0])
         >>> dice(preds, target, average='micro')
         tensor(0.2500)
+
     """
     rank_zero_warn(
         "The `dice` function was deprecated in v0.10 and will be removed in v0.11. Use `f1score` function instead"

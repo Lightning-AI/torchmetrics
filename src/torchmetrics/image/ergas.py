@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, List, Optional, Sequence, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -62,6 +62,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         >>> ergas = ErrorRelativeGlobalDimensionlessSynthesis()
         >>> torch.round(ergas(preds, target))
         tensor(154.)
+
     """
 
     higher_is_better: bool = False
@@ -144,5 +145,6 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

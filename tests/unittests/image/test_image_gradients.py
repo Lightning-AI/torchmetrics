@@ -61,6 +61,7 @@ def test_image_gradients(batch_size=1, height=5, width=5, channels=1):
     """Test whether the module correctly calculates gradients for known input.
 
     Example input-output pair taken from TF's implementation of image- gradients
+
     """
     image = torch.arange(0, batch_size * height * width * channels, dtype=torch.float32)
     image = torch.reshape(image, (batch_size, channels, height, width))

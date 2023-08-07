@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
+
 import numpy as np
 import pytest
 from sklearn.metrics import label_ranking_average_precision_score
@@ -33,15 +35,23 @@ from unittests.retrieval.helpers import (
 seed_all(42)
 
 
-def _reciprocal_rank(target: np.ndarray, preds: np.ndarray):
+def _reciprocal_rank_at_k(target: np.ndarray, preds: np.ndarray, top_k: Optional[int] = None):
     """Adaptation of `sklearn.metrics.label_ranking_average_precision_score`.
 
     Since the original sklearn metric works as RR only when the number of positive targets is exactly 1, here we remove
     every positive target that is not the most important. Remember that in RR only the positive target with the highest
     score is considered.
+
     """
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs
+
+    # take k largest predictions here because sklearn does not allow it
+    if top_k is not None:
+        top_k = min(top_k, len(preds))
+        ind = np.argpartition(preds, -top_k)[-top_k:]
+        target = target[ind]
+        preds = preds[ind]
 
     # going to remove T targets that are not ranked as highest
     indexes = preds[target.astype(bool)]
@@ -60,6 +70,7 @@ class TestMRR(RetrievalMetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
+    @pytest.mark.parametrize("top_k", [None, 1, 4, 10])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_class_metric(
         self,
@@ -69,9 +80,10 @@ class TestMRR(RetrievalMetricTester):
         target: Tensor,
         empty_target_action: str,
         ignore_index: int,
+        top_k: int,
     ):
         """Test class implementation of metric."""
-        metric_args = {"empty_target_action": empty_target_action, "ignore_index": ignore_index}
+        metric_args = {"empty_target_action": empty_target_action, "ignore_index": ignore_index, "top_k": top_k}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -79,12 +91,13 @@ class TestMRR(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalMRR,
-            reference_metric=_reciprocal_rank,
+            reference_metric=_reciprocal_rank_at_k,
             metric_args=metric_args,
         )
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
+    @pytest.mark.parametrize("top_k", [None, 1, 4, 10])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments_ignore_index)
     def test_class_metric_ignore_index(
         self,
@@ -93,9 +106,10 @@ class TestMRR(RetrievalMetricTester):
         preds: Tensor,
         target: Tensor,
         empty_target_action: str,
+        top_k: int,
     ):
         """Test class implementation of metric with ignore_index argument."""
-        metric_args = {"empty_target_action": empty_target_action, "ignore_index": -100}
+        metric_args = {"empty_target_action": empty_target_action, "ignore_index": -100, "top_k": top_k}
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -103,19 +117,21 @@ class TestMRR(RetrievalMetricTester):
             preds=preds,
             target=target,
             metric_class=RetrievalMRR,
-            reference_metric=_reciprocal_rank,
+            reference_metric=_reciprocal_rank_at_k,
             metric_args=metric_args,
         )
 
     @pytest.mark.parametrize(**_default_metric_functional_input_arguments)
-    def test_functional_metric(self, preds: Tensor, target: Tensor):
+    @pytest.mark.parametrize("top_k", [None, 1, 4, 10])
+    def test_functional_metric(self, preds: Tensor, target: Tensor, top_k: int):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=retrieval_reciprocal_rank,
-            reference_metric=_reciprocal_rank,
+            reference_metric=_reciprocal_rank_at_k,
             metric_args={},
+            top_k=top_k,
         )
 
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)

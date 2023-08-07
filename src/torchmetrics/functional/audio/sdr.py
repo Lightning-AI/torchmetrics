@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import math
-import warnings
 from typing import Optional, Tuple
 
 import torch
@@ -53,6 +51,7 @@ def _symmetric_toeplitz(vector: Tensor) -> Tensor:
 
     Returns:
         a symmetric Toeplitz matrix of shape [..., L, L]
+
     """
     vec_exp = torch.cat([torch.flip(vector, dims=(-1,)), vector[..., 1:]], dim=-1)
     v_len = vector.shape[-1]
@@ -76,6 +75,7 @@ def _compute_autocorr_crosscorr(target: Tensor, preds: Tensor, corr_len: int) ->
     Returns:
         the auto correlation of `target` of shape [..., corr_len]
         the cross correlation of `target` and `preds` of shape [..., corr_len]
+
     """
     # the valid length for the signal after convolution
     n_fft = 2 ** math.ceil(math.log2(preds.shape[-1] + target.shape[-1] - 1))
@@ -150,6 +150,7 @@ def signal_distortion_ratio(
                 [0, 1],
                 [1, 0],
                 [0, 1]])
+
     """
     _check_same_shape(preds, target)
 
@@ -225,6 +226,7 @@ def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
         >>> scale_invariant_signal_distortion_ratio(preds, target)
         tensor(18.4030)
+
     """
     _check_same_shape(preds, target)
     eps = torch.finfo(preds.dtype).eps
@@ -241,4 +243,70 @@ def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_
     noise = target_scaled - preds
 
     val = (torch.sum(target_scaled**2, dim=-1) + eps) / (torch.sum(noise**2, dim=-1) + eps)
+    return 10 * torch.log10(val)
+
+
+def source_aggregated_signal_distortion_ratio(
+    preds: Tensor,
+    target: Tensor,
+    scale_invariant: bool = True,
+    zero_mean: bool = False,
+) -> Tensor:
+    """`Source-aggregated signal-to-distortion ratio`_ (SA-SDR).
+
+    The SA-SDR is proposed to provide a stable gradient for meeting style source separation, where
+    one-speaker and multiple-speaker scenes coexist.
+
+    Args:
+        preds: float tensor with shape ``(..., spk, time)``
+        target: float tensor with shape ``(..., spk, time)``
+        scale_invariant: if True, scale the targets of different speakers with the same alpha
+        zero_mean: If to zero mean target and preds or not
+
+    Returns:
+        SA-SDR with shape ``(...)``
+
+    Example:
+        >>> import torch
+        >>> from torchmetrics.functional.audio import source_aggregated_signal_distortion_ratio
+        >>> g = torch.manual_seed(1)
+        >>> preds = torch.randn(2, 8000)  # [..., spk, time]
+        >>> target = torch.randn(2, 8000)
+        >>> source_aggregated_signal_distortion_ratio(preds, target)
+        tensor(-41.6579)
+        >>> # use with permutation_invariant_training
+        >>> from torchmetrics.functional.audio import permutation_invariant_training
+        >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
+        >>> target = torch.randn(4, 2, 8000)
+        >>> best_metric, best_perm = permutation_invariant_training(preds, target,
+        ...     source_aggregated_signal_distortion_ratio, mode="permutation-wise")
+        >>> best_metric
+        tensor([-37.9511, -41.9124, -42.7369, -42.5155])
+        >>> best_perm
+        tensor([[1, 0],
+                [1, 0],
+                [0, 1],
+                [1, 0]])
+
+    """
+    _check_same_shape(preds, target)
+    if preds.ndim < 2:
+        raise RuntimeError(f"The preds and target should have the shape (..., spk, time), but {preds.shape} found")
+
+    eps = torch.finfo(preds.dtype).eps
+
+    if zero_mean:
+        target = target - torch.mean(target, dim=-1, keepdim=True)
+        preds = preds - torch.mean(preds, dim=-1, keepdim=True)
+
+    if scale_invariant:
+        # scale the targets of different speakers with the same alpha (shape [..., 1, 1])
+        alpha = ((preds * target).sum(dim=-1, keepdim=True).sum(dim=-2, keepdim=True) + eps) / (
+            (target**2).sum(dim=-1, keepdim=True).sum(dim=-2, keepdim=True) + eps
+        )
+        target = alpha * target
+
+    distortion = target - preds
+
+    val = ((target**2).sum(dim=-1).sum(dim=-1) + eps) / ((distortion**2).sum(dim=-1).sum(dim=-1) + eps)
     return 10 * torch.log10(val)

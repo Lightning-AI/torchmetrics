@@ -122,6 +122,7 @@ class BinaryFairnessTester(MetricTester):
             metric_functional: functional version of the metric
             metric_args: dict with additional arguments used for class initialization
             groups: Tensor with group identifiers. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
+
         """
         metric_args = metric_args or {}
         # only floating point tensors can require grad
@@ -163,6 +164,7 @@ class BinaryFairnessTester(MetricTester):
             dtype: dtype to run test with
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
+
         """
         metric_args = metric_args or {}
         functional_metric_args = {
@@ -200,6 +202,7 @@ class BinaryFairnessTester(MetricTester):
             dtype: dtype to run test with
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
+
         """
         metric_args = metric_args or {}
         functional_metric_args = {

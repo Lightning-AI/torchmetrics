@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import csv
-import os
 import urllib
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
-from warnings import warn
 
 import torch
 from torch import Tensor
@@ -33,12 +31,12 @@ from torchmetrics.functional.text.helper_embedding_metric import (
 )
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
-from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
 
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL = "roberta-large"
 
-if _TRANSFORMERS_AVAILABLE:
+if _TRANSFORMERS_GREATER_EQUAL_4_4:
     from transformers import AutoModel, AutoTokenizer
 
     def _download_model() -> None:
@@ -89,6 +87,7 @@ def _get_embeddings_and_idf_scale(
     Raises:
         ValueError:
             If ``all_layers = True`` and a model, which is not from the ``transformers`` package, is used.
+
     """
     embeddings_list: List[Tensor] = []
     idf_scale_list: List[Tensor] = []
@@ -154,6 +153,7 @@ def _get_precision_recall_f1(
 
     Return:
         Tensors containing precision, recall and F1 score, respectively.
+
     """
     # Dimensions: b = batch_size, l = num_layers, p = predictions_seq_len, r = references_seq_len, d = bert_dim
     cos_sim = torch.einsum("blpd, blrd -> blpr", preds_embeddings, target_embeddings)
@@ -176,6 +176,7 @@ def _read_csv_from_local_file(baseline_path: str) -> Tensor:
     """Read baseline from csv file from the local file.
 
     This method implemented to avoid `pandas` dependency.
+
     """
     with open(baseline_path) as fname:
         csv_file = csv.reader(fname)
@@ -187,6 +188,7 @@ def _read_csv_from_url(baseline_url: str) -> Tensor:
     """Read baseline from csv file from URL.
 
     This method is implemented to avoid `pandas` dependency.
+
     """
     with urllib.request.urlopen(baseline_url) as http_request:
         baseline_list = [
@@ -328,6 +330,7 @@ def bert_score(
         >>> target = ["hello there", "master kenobi"]
         >>> pprint(bert_score(preds, target))
         {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
+
     """
     if len(preds) != len(target):
         raise ValueError("Number of predicted and reference sententes must be the same!")
@@ -342,10 +345,10 @@ def bert_score(
         )
 
     if model is None:
-        if not _TRANSFORMERS_AVAILABLE:
+        if not _TRANSFORMERS_GREATER_EQUAL_4_4:
             raise ModuleNotFoundError(
                 "`bert_score` metric with default models requires `transformers` package be installed."
-                " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."
+                " Either install with `pip install transformers>=4.4` or `pip install torchmetrics[text]`."
             )
         if model_name_or_path is None:
             rank_zero_warn(

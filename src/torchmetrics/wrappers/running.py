@@ -18,12 +18,13 @@ from torch import Tensor
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+from torchmetrics.wrappers.abstract import WrapperMetric
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["Running.plot"]
 
 
-class Running(Metric):
+class Running(WrapperMetric):
     """Running wrapper for metrics.
 
     Using this wrapper allows for calculating metrics over a running window of values, instead of the whole history of
@@ -78,6 +79,7 @@ class Running(Metric):
         current_val={'mean': tensor(3.), 'sum': tensor(3.)}, running_val={'mean': tensor(2.), 'sum': tensor(6.)}
         current_val={'mean': tensor(4.), 'sum': tensor(4.)}, running_val={'mean': tensor(3.), 'sum': tensor(9.)}
         current_val={'mean': tensor(5.), 'sum': tensor(5.)}, running_val={'mean': tensor(4.), 'sum': tensor(12.)}
+
     """
 
     def __init__(self, base_metric: Metric, window: int = 5) -> None:
@@ -176,5 +178,6 @@ class Running(Metric):
             >>> for _ in range(3):
             ...     values.append(metric(torch.randn(20, 2)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

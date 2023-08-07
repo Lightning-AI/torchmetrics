@@ -17,6 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.functional.classification.confusion_matrix import (
     _binary_confusion_matrix_arg_validation,
     _binary_confusion_matrix_compute,
@@ -94,10 +95,13 @@ class BinaryConfusionMatrix(Metric):
         >>> bcm(preds, target)
         tensor([[2, 0],
                 [1, 1]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+
+    confmat: Tensor
 
     def __init__(
         self,
@@ -160,6 +164,7 @@ class BinaryConfusionMatrix(Metric):
             >>> metric = MulticlassConfusionMatrix(num_classes=5)
             >>> metric.update(randint(5, (20,)), randint(5, (20,)))
             >>> fig_, ax_ = metric.plot()
+
         """
         val = val if val is not None else self.compute()
         if not isinstance(val, Tensor):
@@ -219,10 +224,13 @@ class MulticlassConfusionMatrix(Metric):
         tensor([[1, 1, 0],
                 [0, 1, 0],
                 [0, 0, 1]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+
+    confmat: Tensor
 
     def __init__(
         self,
@@ -285,6 +293,7 @@ class MulticlassConfusionMatrix(Metric):
             >>> metric = MulticlassConfusionMatrix(num_classes=5)
             >>> metric.update(randint(5, (20,)), randint(5, (20,)))
             >>> fig_, ax_ = metric.plot()
+
         """
         val = val if val is not None else self.compute()
         if not isinstance(val, Tensor):
@@ -342,10 +351,13 @@ class MultilabelConfusionMatrix(Metric):
         tensor([[[1, 0], [0, 1]],
                 [[1, 0], [1, 0]],
                 [[0, 1], [0, 1]]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
+
+    confmat: Tensor
 
     def __init__(
         self,
@@ -412,6 +424,7 @@ class MultilabelConfusionMatrix(Metric):
             >>> metric = MulticlassConfusionMatrix(num_classes=5)
             >>> metric.update(randint(5, (20,)), randint(5, (20,)))
             >>> fig_, ax_ = metric.plot()
+
         """
         val = val if val is not None else self.compute()
         if not isinstance(val, Tensor):
@@ -420,7 +433,7 @@ class MultilabelConfusionMatrix(Metric):
         return fig, ax
 
 
-class ConfusionMatrix:
+class ConfusionMatrix(_ClassificationTaskWrapper):
     r"""Compute the `confusion matrix`_.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
@@ -452,9 +465,10 @@ class ConfusionMatrix:
         tensor([[[1, 0], [0, 1]],
                 [[1, 0], [1, 0]],
                 [[0, 1], [0, 1]]])
+
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
@@ -478,4 +492,4 @@ class ConfusionMatrix:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelConfusionMatrix(num_labels, threshold, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")

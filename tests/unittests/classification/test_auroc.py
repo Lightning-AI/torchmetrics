@@ -19,9 +19,10 @@ import torch
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import roc_auc_score as sk_roc_auc_score
-from torchmetrics.classification.auroc import BinaryAUROC, MulticlassAUROC, MultilabelAUROC
+from torchmetrics.classification.auroc import AUROC, BinaryAUROC, MulticlassAUROC, MultilabelAUROC
 from torchmetrics.functional.classification.auroc import binary_auroc, multiclass_auroc, multilabel_auroc
 from torchmetrics.functional.classification.roc import binary_roc
+from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
@@ -393,3 +394,38 @@ def test_valid_input_thresholds(metric, thresholds):
     with pytest.warns(None) as record:
         metric(thresholds=thresholds)
     assert len(record) == 0
+
+
+@pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
+def test_corner_case_max_fpr(max_fpr):
+    """Check that metric returns 0 when one class is missing and `max_fpr` is set."""
+    preds = torch.tensor([0.1, 0.2, 0.3, 0.4])
+    target = torch.tensor([0, 0, 0, 0])
+    metric = BinaryAUROC(max_fpr=max_fpr)
+    assert metric(preds, target) == 0.0
+
+    preds = torch.tensor([0.5, 0.6, 0.7, 0.8])
+    target = torch.tensor([1, 1, 1, 1])
+    metric = BinaryAUROC(max_fpr=max_fpr)
+    assert metric(preds, target) == 0.0
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryAUROC, {"task": "binary"}),
+        (MulticlassAUROC, {"task": "multiclass", "num_classes": 3}),
+        (MultilabelAUROC, {"task": "multilabel", "num_labels": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=AUROC):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

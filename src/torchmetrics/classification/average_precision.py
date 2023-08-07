@@ -16,6 +16,7 @@ from typing import Any, List, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.precision_recall_curve import (
     BinaryPrecisionRecallCurve,
     MulticlassPrecisionRecallCurve,
@@ -102,6 +103,7 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
         >>> bap = BinaryAveragePrecision(thresholds=5)
         >>> bap(preds, target)
         tensor(0.6667)
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -233,6 +235,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         >>> mcap = MulticlassAveragePrecision(num_classes=5, average=None, thresholds=5)
         >>> mcap(preds, target)
         tensor([1.0000, 1.0000, 0.2500, 0.2500, -0.0000])
+
     """
 
     is_differentiable: bool = False
@@ -302,6 +305,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
             >>> for _ in range(10):
             ...     values.append(metric(torch.randn(20, 3), torch.randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -386,6 +390,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         >>> mlap = MultilabelAveragePrecision(num_labels=3, average=None, thresholds=5)
         >>> mlap(preds, target)
         tensor([0.7500, 0.6667, 0.9167])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -456,11 +461,12 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(20,3), torch.randint(2, (20,3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
 
-class AveragePrecision:
+class AveragePrecision(_ClassificationTaskWrapper):
     r"""Compute the average precision (AP) score.
 
     The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
@@ -493,6 +499,7 @@ class AveragePrecision:
         >>> average_precision = AveragePrecision(task="multiclass", num_classes=5, average=None)
         >>> average_precision(pred, target)
         tensor([1.0000, 1.0000, 0.2500, 0.2500,    nan])
+
     """
 
     def __new__(  # type: ignore[misc]
