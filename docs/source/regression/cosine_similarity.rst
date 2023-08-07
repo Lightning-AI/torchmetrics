@@ -3,6 +3,8 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/tabular_classification.svg
    :tags: Regression
 
+.. include:: ../links.rst
+
 #################
 Cosine Similarity
 #################
