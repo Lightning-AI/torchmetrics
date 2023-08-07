@@ -27,7 +27,7 @@ elif not _MATPLOTLIB_AVAILABLE:
 
 
 class DistanceIntersectionOverUnion(IntersectionOverUnion):
-    r"""Computes Distance Intersection Over Union (DIoU) <https://arxiv.org/abs/1911.08287v1>`_.
+    r"""Computes Distance Intersection Over Union (`DIoU`_).
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -55,7 +55,7 @@ class DistanceIntersectionOverUnion(IntersectionOverUnion):
     - ``diou_dict``: A dictionary containing the following key-values:
 
         - diou: (:class:`~torch.Tensor`)
-        - diou/cl_{cl}: (:class:`~torch.Tensor`), if argument ``class metrics=True``
+        - diou/cl_{cl}: (:class:`~torch.Tensor`), if argument ``class_metrics=True``
 
     Args:
         box_format:

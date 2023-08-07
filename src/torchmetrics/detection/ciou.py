@@ -27,7 +27,7 @@ elif not _MATPLOTLIB_AVAILABLE:
 
 
 class CompleteIntersectionOverUnion(IntersectionOverUnion):
-    r"""Computes Complete Intersection Over Union (CIoU) <https://arxiv.org/abs/2005.03572>`_.
+    r"""Computes Complete Intersection Over Union (`CIoU`_).
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -55,7 +55,7 @@ class CompleteIntersectionOverUnion(IntersectionOverUnion):
     - ``ciou_dict``: A dictionary containing the following key-values:
 
         - ciou: (:class:`~torch.Tensor`)
-        - ciou/cl_{cl}: (:class:`~torch.Tensor`), if argument ``class metrics=True``
+        - ciou/cl_{cl}: (:class:`~torch.Tensor`), if argument ``class_metrics=True``
 
     Args:
         box_format:
