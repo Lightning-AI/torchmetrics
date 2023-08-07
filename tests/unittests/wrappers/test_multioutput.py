@@ -1,16 +1,17 @@
 from collections import namedtuple
 from functools import partial
+from typing import Any
 
 import pytest
 import torch
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import r2_score as sk_r2score
 from torch import Tensor, tensor
-
 from torchmetrics import Metric
 from torchmetrics.classification import ConfusionMatrix, MulticlassAccuracy
 from torchmetrics.regression import R2Score
 from torchmetrics.wrappers.multioutput import MultioutputWrapper
+
 from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -25,7 +26,7 @@ class _MultioutputMetric(Metric):
         self,
         base_metric_class,
         num_outputs: int = 1,
-        **kwargs,
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self.metric = MultioutputWrapper(
@@ -42,7 +43,7 @@ class _MultioutputMetric(Metric):
         return self.metric.compute()
 
     @torch.jit.unused
-    def forward(self, *args, **kwargs):
+    def forward(self, *args: Any, **kwargs: Any):
         """Run forward on the underlying metric."""
         return self.metric(*args, **kwargs)
 
@@ -77,10 +78,7 @@ def _multi_target_sk_r2score(preds, target, adjusted=0, multioutput="raw_values"
 
 def _multi_target_sk_accuracy(preds, target, num_outputs):
     """Compute accuracy over multiple outputs."""
-    accs = []
-    for i in range(num_outputs):
-        accs.append(accuracy_score(torch.argmax(preds[:, :, i], dim=1), target[:, i]))
-    return accs
+    return [accuracy_score(torch.argmax(preds[:, :, i], dim=1), target[:, i]) for i in range(num_outputs)]
 
 
 @pytest.mark.parametrize(
@@ -111,6 +109,7 @@ class TestMultioutputWrapper(MetricTester):
 
         Tests that the multioutput wrapper properly slices and computes outputs along the output dimension for both
         classification and regression metrics, by comparing to the metric if they had been calculated sequentially.
+
         """
         self.run_class_metric_test(
             ddp,

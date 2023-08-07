@@ -49,7 +49,6 @@ class UniversalImageQualityIndex(Metric):
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
 
-        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Return:
@@ -63,6 +62,7 @@ class UniversalImageQualityIndex(Metric):
         >>> uqi = UniversalImageQualityIndex()
         >>> uqi(preds, target)
         tensor(0.9216)
+
     """
 
     is_differentiable: bool = True
@@ -79,7 +79,6 @@ class UniversalImageQualityIndex(Metric):
         kernel_size: Sequence[int] = (11, 11),
         sigma: Sequence[float] = (1.5, 1.5),
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        data_range: Optional[float] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -93,7 +92,6 @@ class UniversalImageQualityIndex(Metric):
         self.add_state("target", default=[], dist_reduce_fx="cat")
         self.kernel_size = kernel_size
         self.sigma = sigma
-        self.data_range = data_range
         self.reduction = reduction
 
     def update(self, preds: Tensor, target: Tensor) -> None:
@@ -106,7 +104,7 @@ class UniversalImageQualityIndex(Metric):
         """Compute explained variance over state."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
-        return _uqi_compute(preds, target, self.kernel_size, self.sigma, self.reduction, self.data_range)
+        return _uqi_compute(preds, target, self.kernel_size, self.sigma, self.reduction)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -150,5 +148,6 @@ class UniversalImageQualityIndex(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

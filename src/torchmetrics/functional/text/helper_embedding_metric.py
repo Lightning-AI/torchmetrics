@@ -21,9 +21,9 @@ from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
 from torchmetrics.utilities.data import _cumsum
-from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
 
-if _TRANSFORMERS_AVAILABLE:
+if _TRANSFORMERS_GREATER_EQUAL_4_4:
     from transformers import AutoModelForMaskedLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizerBase
 else:
     PreTrainedModel = PreTrainedTokenizerBase = None
@@ -40,6 +40,7 @@ def _process_attention_mask_for_special_tokens(attention_mask: Tensor) -> Tensor
 
     Return:
         A processed attention mask.
+
     """
     # Make attention_mask zero for [CLS] token
     attention_mask[:, 0] = 0
@@ -56,6 +57,7 @@ def _input_data_collator(
 
     This function trims the model inputs to the longest sequence within the batch and put the input on the proper
     device.
+
     """
     max_len = int(batch["attention_mask"].sum(1).max().item())
     input_ids = batch["input_ids"][:, :max_len].to(device)
@@ -115,6 +117,7 @@ def _preprocess_text(
     Raises:
         BaseException:
             If a tokenization with a user's own tokenizer is not successful.
+
     """
     if not own_tokenizer:
         tokenized_data = tokenizer(
@@ -123,8 +126,8 @@ def _preprocess_text(
     else:
         try:
             tokenized_data = tokenizer(text, max_length)
-        except BaseException as e:
-            raise BaseException(f"Tokenization was not successful: {e}")
+        except BaseException as ex:
+            raise RuntimeError(f"Tokenization was not successful: {ex}") from ex
 
     if sort_according_length:
         input_ids, attention_mask, sorting_indices = _sort_data_according_length(
@@ -143,6 +146,7 @@ def _get_progress_bar(dataloader: DataLoader, verbose: bool = False) -> Union[Da
 
     Function will return either the dataloader itself when `verbose = False`, or it wraps the dataloader with
     `tqdm.auto.tqdm`, when `verbose = True` to display a progress bar during the embbeddings calculation.
+
     """
     return tqdm.auto.tqdm(dataloader) if verbose else dataloader
 
@@ -171,6 +175,7 @@ def _load_tokenizer_and_model(
 
     Return:
         Initialized `transformers`' tokenizer and model.
+
     """
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
     model = AutoModelForMaskedLM.from_pretrained(model_name_or_path)
@@ -202,6 +207,7 @@ class TextDataset(Dataset):
             preprocess_text_fn: A function used for processing the input sentences.
             idf: An indication of whether calculate token inverse document frequencies to weight the model embeddings.
             tokens_idf: Inverse document frequencies (these should be calculated on reference sentences).
+
         """
         _text = preprocess_text_fn(text, tokenizer, max_length)
         if isinstance(_text, tuple):
@@ -234,6 +240,7 @@ class TextDataset(Dataset):
 
         Return:
             A python dictionary containing inverse document frequences for token ids.
+
         """
         token_counter: Counter = Counter()
         for tokens in map(self._set_of_tokens, self.text["input_ids"]):
@@ -273,6 +280,7 @@ class TokenizedDataset(TextDataset):
             idf:
                 An indication of whether calculate token inverse document frequencies to weight the model embeddings.
             tokens_idf: Inverse document frequencies (these should be calculated on reference sentences).
+
         """
         text = dict(
             zip(

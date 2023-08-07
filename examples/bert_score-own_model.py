@@ -14,16 +14,15 @@
 """An example of how to use BERTScore with a user's defined/own model and tokenizer.
 
 To run: python bert_score-own_model.py
+
 """
 
 from pprint import pprint
 from typing import Dict, List, Union
 
 import torch
-import torch.nn as nn
-from torch import Tensor
+from torch import Tensor, nn
 from torch.nn import Module
-
 from torchmetrics.text.bert import BERTScore
 
 _NUM_LAYERS = 2
@@ -38,6 +37,7 @@ class UserTokenizer:
     The user's defined tokenizer is expected to return either token IDs or token embeddings that are fed into the model.
     The tokenizer vocabulary should contain some special tokens, such as a `<pad>` token so that a tokenization will run
     successfully in batches.
+
     """
 
     CLS_TOKEN = "<cls>"  # noqa: S105
@@ -67,6 +67,7 @@ class UserTokenizer:
 
         Return:
             Python dictionary containing the keys `input_ids` and `attention_mask` with corresponding values.
+
         """
         output_dict: Dict[str, Tensor] = {}
         if isinstance(sentences, str):
@@ -109,6 +110,7 @@ def user_forward_fn(model: Module, batch: Dict[str, Tensor]) -> Tensor:
 
     Return:
         The model output.
+
     """
     return model(batch["input_ids"])
 

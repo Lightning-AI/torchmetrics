@@ -46,7 +46,6 @@ from torchmetrics.functional.classification import (
     specificity,
     stat_scores,
 )
-from torchmetrics.functional.detection._deprecated import _modified_panoptic_quality as modified_panoptic_quality
 from torchmetrics.functional.detection._deprecated import _panoptic_quality as panoptic_quality
 from torchmetrics.functional.image._deprecated import (
     _error_relative_global_dimensionless_synthesis as error_relative_global_dimensionless_synthesis,
@@ -72,6 +71,7 @@ from torchmetrics.functional.image._deprecated import _universal_image_quality_i
 from torchmetrics.functional.nominal import (
     cramers_v,
     cramers_v_matrix,
+    fleiss_kappa,
     pearsons_contingency_coefficient,
     pearsons_contingency_coefficient_matrix,
     theils_u,
@@ -100,6 +100,7 @@ from torchmetrics.functional.regression import (
     minkowski_distance,
     pearson_corrcoef,
     r2_score,
+    relative_squared_error,
     spearman_corrcoef,
     symmetric_mean_absolute_percentage_error,
     tweedie_deviance_score,
@@ -129,9 +130,9 @@ from torchmetrics.functional.text._deprecated import _translation_edit_rate as t
 from torchmetrics.functional.text._deprecated import _word_error_rate as word_error_rate
 from torchmetrics.functional.text._deprecated import _word_information_lost as word_information_lost
 from torchmetrics.functional.text._deprecated import _word_information_preserved as word_information_preserved
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
-if _TRANSFORMERS_AVAILABLE:
+if _TRANSFORMERS_GREATER_EQUAL_4_4:
     from torchmetrics.functional.text._deprecated import _bert_score as bert_score  # noqa: F401
     from torchmetrics.functional.text._deprecated import _infolm as infolm  # noqa: F401
 
@@ -157,6 +158,7 @@ __all__ = [
     "extended_edit_distance",
     "f1_score",
     "fbeta_score",
+    "fleiss_kappa",
     "hamming_distance",
     "hinge_loss",
     "image_gradients",
@@ -190,6 +192,7 @@ __all__ = [
     "r2_score",
     "recall",
     "relative_average_spectral_error",
+    "relative_squared_error",
     "retrieval_average_precision",
     "retrieval_fall_out",
     "retrieval_hit_rate",

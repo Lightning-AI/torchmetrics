@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Sequence, Union
+from typing import Any, Optional, Sequence, Union
 
 from torch import Tensor
 
@@ -27,7 +27,7 @@ elif not _MATPLOTLIB_AVAILABLE:
 
 
 class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
-    r"""Compute Generalized Intersection Over Union (GIoU) <https://arxiv.org/abs/1902.09630>`_.
+    r"""Compute Generalized Intersection Over Union (`GIoU`_).
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -90,6 +90,7 @@ class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
     Raises:
         ModuleNotFoundError:
             If torchvision is not installed with version 0.8.0 or newer.
+
     """
     _iou_type: str = "giou"
     _invalid_val: float = -1.0
@@ -175,5 +176,6 @@ class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
             >>> for _ in range(20):
             ...     vals.append(metric(preds, target()))
             >>> fig_, ax_ = metric.plot(vals)
+
         """
         return self._plot(val, ax)

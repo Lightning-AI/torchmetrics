@@ -46,6 +46,13 @@ else:
 
 
 def _get_net(net: str, pretrained: bool) -> nn.modules.container.Sequential:
+    """Get torchvision network.
+
+    Args:
+        net: Name of network
+        pretrained: If pretrained weights should be used
+
+    """
     if _TORCHVISION_GREATER_EQUAL_0_13:
         if pretrained:
             pretrained_features = getattr(tv, net)(weights=getattr(tv, _weight_map[net]).IMAGENET1K_V1).features
@@ -67,10 +74,10 @@ class SqueezeNet(torch.nn.Module):
         slices = []
         feature_ranges = [range(2), range(2, 5), range(5, 8), range(8, 10), range(10, 11), range(11, 12), range(12, 13)]
         for feature_range in feature_ranges:
-            slice = torch.nn.Sequential()
+            seq = torch.nn.Sequential()
             for i in feature_range:
-                slice.add_module(str(i), pretrained_features[i])
-            slices.append(slice)
+                seq.add_module(str(i), pretrained_features[i])
+            slices.append(seq)
 
         self.slices = nn.ModuleList(slices)
         if not requires_grad:
@@ -82,8 +89,8 @@ class SqueezeNet(torch.nn.Module):
         squeeze_output = namedtuple("squeeze_output", ["relu1", "relu2", "relu3", "relu4", "relu5", "relu6", "relu7"])
 
         relus = []
-        for slice in self.slices:
-            x = slice(x)
+        for slice_ in self.slices:
+            x = slice_(x)
             relus.append(x)
         return squeeze_output(*relus)
 
@@ -243,6 +250,7 @@ class _LPIPS(nn.Module):
             use_dropout: If dropout layers should be added
             model_path: Model path to load pretained models from
             eval_mode: If network should be in evaluation mode
+
         """
         super().__init__()
 
@@ -380,8 +388,8 @@ def learned_perceptual_image_patch_similarity(
         >>> from torchmetrics.functional.image.lpips import learned_perceptual_image_patch_similarity
         >>> img1 = (torch.rand(10, 3, 100, 100) * 2) - 1
         >>> img2 = (torch.rand(10, 3, 100, 100) * 2) - 1
-        >>> learned_perceptual_image_patch_similarity(img1, img2, net_type='vgg')
-        tensor(0.3485, grad_fn=<DivBackward0>)
+        >>> learned_perceptual_image_patch_similarity(img1, img2, net_type='squeeze')
+        tensor(0.1008, grad_fn=<DivBackward0>)
 
     """
     net = _NoTrainLpips(net=net_type)

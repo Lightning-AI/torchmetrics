@@ -84,8 +84,8 @@ class KernelInceptionDistance(Metric):
     subsets to be able to both get the mean and standard deviation of KID.
 
     Using the default feature extraction (Inception v3 using the original weights from `kid ref2`_), the input is
-    expected to be mini-batches of 3-channel RGB images of shape ``(3 x H x W)``. If argument ``normalize``
-    is ``True`` images are expected to be dtype ``float`` and have values in the ``[0, 1]`` range, else if
+    expected to be mini-batches of 3-channel RGB images of shape ``(3xHxW)``. If argument ``normalize``
+    is ``True`` images are expected to be dtype ``float`` and have values in the ``[0,1]`` range, else if
     ``normalize`` is set to ``False`` images are expected to have dtype ``uint8`` and take values in the ``[0, 255]``
     range. All images will be resized to 299 x 299 which is the size of the original training data. The boolian
     flag ``real`` determines if the images should update the statistics of the real distribution or the
@@ -154,6 +154,7 @@ class KernelInceptionDistance(Metric):
         >>> kid_mean, kid_std = kid.compute()
         >>> print((kid_mean, kid_std))
         (tensor(0.0337), tensor(0.0023))
+
     """
     higher_is_better: bool = False
     is_differentiable: bool = False
@@ -193,7 +194,7 @@ class KernelInceptionDistance(Metric):
             valid_int_input = ("logits_unbiased", 64, 192, 768, 2048)
             if feature not in valid_int_input:
                 raise ValueError(
-                    f"Integer input to argument `feature` must be one of {valid_int_input}," f" but got {feature}."
+                    f"Integer input to argument `feature` must be one of {valid_int_input}, but got {feature}."
                 )
 
             self.inception: Module = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
@@ -248,6 +249,7 @@ class KernelInceptionDistance(Metric):
         """Calculate KID score based on accumulated extracted features from the two distributions.
 
         Implementation inspired by `Fid Score`_
+
         """
         real_features = dim_zero_cat(self.real_features)
         fake_features = dim_zero_cat(self.fake_features)
@@ -327,6 +329,7 @@ class KernelInceptionDistance(Metric):
             ...     values.append(metric.compute()[0])
             ...     metric.reset()
             >>> fig_, ax_ = metric.plot(values)
+
         """
         val = val or self.compute()[0]  # by default we select the mean to plot
         return self._plot(val, ax)

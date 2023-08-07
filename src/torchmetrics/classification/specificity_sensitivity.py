@@ -11,11 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.precision_recall_curve import (
     BinaryPrecisionRecallCurve,
     MulticlassPrecisionRecallCurve,
@@ -33,7 +34,6 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat as _cat
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = [
@@ -99,6 +99,7 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
         >>> metric = BinarySpecificityAtSensitivity(min_sensitivity=0.5, thresholds=5)
         >>> metric(preds, target)
         (tensor(1.), tensor(0.2500))
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -122,8 +123,8 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        state = [_cat(self.preds), _cat(self.target)] if self.thresholds is None else self.confmat  # type: ignore
-        return _binary_specificity_at_sensitivity_compute(state, self.thresholds, self.min_sensitivity)  # type: ignore
+        state = (_cat(self.preds), _cat(self.target)) if self.thresholds is None else self.confmat
+        return _binary_specificity_at_sensitivity_compute(state, self.thresholds, self.min_sensitivity)
 
 
 class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
@@ -188,6 +189,7 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
         >>> metric = MulticlassSpecificityAtSensitivity(num_classes=5, min_sensitivity=0.5, thresholds=5)
         >>> metric(preds, target)
         (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 0.0000e+00, 0.0000e+00, 1.0000e+06]))
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -217,9 +219,9 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        state = [_cat(self.preds), _cat(self.target)] if self.thresholds is None else self.confmat  # type: ignore
+        state = (_cat(self.preds), _cat(self.target)) if self.thresholds is None else self.confmat
         return _multiclass_specificity_at_sensitivity_compute(
-            state, self.num_classes, self.thresholds, self.min_sensitivity  # type: ignore
+            state, self.num_classes, self.thresholds, self.min_sensitivity
         )
 
 
@@ -287,6 +289,7 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
         >>> metric = MultilabelSpecificityAtSensitivity(num_labels=3, min_sensitivity=0.5, thresholds=5)
         >>> metric(preds, target)
         (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.5000, 0.2500]))
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -314,13 +317,13 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
-        state = [_cat(self.preds), _cat(self.target)] if self.thresholds is None else self.confmat  # type: ignore
+        state = (_cat(self.preds), _cat(self.target)) if self.thresholds is None else self.confmat
         return _multilabel_specificity_at_sensitivity_compute(
-            state, self.num_labels, self.thresholds, self.ignore_index, self.min_sensitivity  # type: ignore
+            state, self.num_labels, self.thresholds, self.ignore_index, self.min_sensitivity
         )
 
 
-class SpecificityAtSensitivity:
+class SpecificityAtSensitivity(_ClassificationTaskWrapper):
     r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
@@ -330,6 +333,7 @@ class SpecificityAtSensitivity:
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :mod:`BinarySpecificityAtSensitivity`, :func:`MulticlassSpecificityAtSensitivity` and
     :func:`MultilabelSpecificityAtSensitivity` for the specific details of each argument influence and examples.
+
     """
 
     def __new__(  # type: ignore[misc]
@@ -359,4 +363,4 @@ class SpecificityAtSensitivity:
             return MultilabelSpecificityAtSensitivity(
                 num_labels, min_sensitivity, thresholds, ignore_index, validate_args, **kwargs
             )
-        return None  # type: ignore[return-value]
+        raise ValueError(f"Task {task} not supported!")

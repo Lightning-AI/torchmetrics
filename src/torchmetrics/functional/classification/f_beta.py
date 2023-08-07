@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Optional
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -31,7 +30,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_tensor_validation,
     _multilabel_stat_scores_update,
 )
-from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.compute import _adjust_weights_safe_divide, _safe_divide
 from torchmetrics.utilities.enums import ClassificationTask
 
 
@@ -43,6 +42,7 @@ def _fbeta_reduce(
     beta: float,
     average: Optional[Literal["binary", "micro", "macro", "weighted", "none"]],
     multidim_average: Literal["global", "samplewise"] = "global",
+    multilabel: bool = False,
 ) -> Tensor:
     beta2 = beta**2
     if average == "binary":
@@ -54,10 +54,7 @@ def _fbeta_reduce(
         return _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
 
     fbeta_score = _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
-    if average is None or average == "none":
-        return fbeta_score
-    weights = tp + fn if average == "weighted" else torch.ones_like(fbeta_score)
-    return _safe_divide(weights * fbeta_score, weights.sum(-1, keepdim=True)).sum(-1)
+    return _adjust_weights_safe_divide(fbeta_score, average, multilabel, tp, fp, fn)
 
 
 def _binary_fbeta_score_arg_validation(
@@ -136,6 +133,7 @@ def binary_fbeta_score(
         ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> binary_fbeta_score(preds, target, beta=2.0, multidim_average='samplewise')
         tensor([0.5882, 0.0000])
+
     """
     if validate_args:
         _binary_fbeta_score_arg_validation(beta, threshold, multidim_average, ignore_index)
@@ -253,6 +251,7 @@ def multiclass_fbeta_score(
         >>> multiclass_fbeta_score(preds, target, beta=2.0, num_classes=3, multidim_average='samplewise', average=None)
         tensor([[0.9091, 0.0000, 0.5000],
                 [0.0000, 0.3571, 0.4545]])
+
     """
     if validate_args:
         _multiclass_fbeta_score_arg_validation(beta, num_classes, top_k, average, multidim_average, ignore_index)
@@ -369,13 +368,14 @@ def multilabel_fbeta_score(
         >>> multilabel_fbeta_score(preds, target, num_labels=3, beta=2.0, multidim_average='samplewise', average=None)
         tensor([[0.8333, 0.8333, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
+
     """
     if validate_args:
         _multilabel_fbeta_score_arg_validation(beta, num_labels, threshold, average, multidim_average, ignore_index)
         _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
-    return _fbeta_reduce(tp, fp, tn, fn, beta, average=average, multidim_average=multidim_average)
+    return _fbeta_reduce(tp, fp, tn, fn, beta, average=average, multidim_average=multidim_average, multilabel=True)
 
 
 def binary_f1_score(
@@ -440,6 +440,7 @@ def binary_f1_score(
         ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> binary_f1_score(preds, target, multidim_average='samplewise')
         tensor([0.5000, 0.0000])
+
     """
     return binary_fbeta_score(
         preds=preds,
@@ -544,6 +545,7 @@ def multiclass_f1_score(
         >>> multiclass_f1_score(preds, target, num_classes=3, multidim_average='samplewise', average=None)
         tensor([[0.8000, 0.0000, 0.5000],
                 [0.0000, 0.4000, 0.4000]])
+
     """
     return multiclass_fbeta_score(
         preds=preds,
@@ -647,6 +649,7 @@ def multilabel_f1_score(
         >>> multilabel_f1_score(preds, target, num_labels=3, multidim_average='samplewise', average=None)
         tensor([[0.6667, 0.6667, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
+
     """
     return multilabel_fbeta_score(
         preds=preds,
@@ -692,6 +695,7 @@ def fbeta_score(
         >>> preds = tensor([0, 2, 1, 0, 0, 1])
         >>> fbeta_score(preds, target, task="multiclass", num_classes=3, beta=0.5)
         tensor(0.3333)
+
     """
     task = ClassificationTask.from_str(task)
     assert multidim_average is not None  # noqa: S101  # needed for mypy
@@ -711,7 +715,7 @@ def fbeta_score(
         return multilabel_fbeta_score(
             preds, target, beta, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    return None
+    raise ValueError(f"Unsupported task `{task}` passed.")
 
 
 def f1_score(
@@ -743,6 +747,7 @@ def f1_score(
         >>> preds = tensor([0, 2, 1, 0, 0, 1])
         >>> f1_score(preds, target, task="multiclass", num_classes=3)
         tensor(0.3333)
+
     """
     task = ClassificationTask.from_str(task)
     assert multidim_average is not None  # noqa: S101  # needed for mypy
@@ -762,4 +767,4 @@ def f1_score(
         return multilabel_f1_score(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    return None
+    raise ValueError(f"Unsupported task `{task}` passed.")

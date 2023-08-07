@@ -23,7 +23,6 @@ from sklearn.metrics.pairwise import (
     manhattan_distances,
     pairwise_distances,
 )
-
 from torchmetrics.functional import (
     pairwise_cosine_similarity,
     pairwise_euclidean_distance,
@@ -32,6 +31,7 @@ from torchmetrics.functional import (
     pairwise_minkowski_distance,
 )
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester

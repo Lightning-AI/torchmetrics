@@ -19,10 +19,10 @@ from functools import partial
 import pytest
 import torch
 from torch import tensor
-
 from torchmetrics import Metric
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
+
 from unittests import NUM_PROCESSES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
@@ -143,7 +143,7 @@ def _test_state_dict_is_synced(rank, tmpdir):
         def compute(self):
             return self.x // self.c
 
-        def __repr__(self):
+        def __repr__(self) -> str:
             return f"DummyCatMetric(x={self.x}, c={self.c})"
 
     metric = DummyCatMetric()

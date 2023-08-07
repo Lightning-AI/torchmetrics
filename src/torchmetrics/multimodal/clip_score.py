@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 from typing import Any, List, Optional, Sequence, Union
 
 import torch
@@ -21,7 +20,7 @@ from typing_extensions import Literal
 from torchmetrics import Metric
 from torchmetrics.functional.multimodal.clip_score import _clip_score_update, _get_model_and_processor
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PESQ_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_10
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
@@ -29,7 +28,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 _DEFAULT_MODEL: str = "openai/clip-vit-large-patch14"
 
-if _TRANSFORMERS_AVAILABLE:
+if _TRANSFORMERS_GREATER_EQUAL_4_10:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
 
@@ -76,11 +75,12 @@ class CLIPScore(Metric):
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(42)
-        >>> from torchmetrics.multimodal import CLIPScore
+        >>> from torchmetrics.multimodal.clip_score import CLIPScore
         >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
         >>> score = metric(torch.randint(255, (3, 224, 224)), "a photo of a cat")
         >>> print(score.detach())
         tensor(24.7691)
+
     """
 
     is_differentiable: bool = False
@@ -90,7 +90,6 @@ class CLIPScore(Metric):
 
     score: Tensor
     n_samples: Tensor
-    plot_lower_bound = 0.0
     plot_upper_bound = 100.0
 
     def __init__(
@@ -120,6 +119,7 @@ class CLIPScore(Metric):
                 If not all images have format [C, H, W]
             ValueError:
                 If the number of images and captions do not match
+
         """
         score, n_samples = _clip_score_update(images, text, self.model, self.processor)
         self.score += score.sum(0)
@@ -149,7 +149,7 @@ class CLIPScore(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.multimodal import CLIPScore
+            >>> from torchmetrics.multimodal.clip_score import CLIPScore
             >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
             >>> metric.update(torch.randint(255, (3, 224, 224)), "a photo of a cat")
             >>> fig_, ax_ = metric.plot()
@@ -159,11 +159,12 @@ class CLIPScore(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.multimodal import CLIPScore
+            >>> from torchmetrics.multimodal.clip_score import CLIPScore
             >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
             >>> values = [ ]
             >>> for _ in range(10):
             ...     values.append(metric(torch.randint(255, (3, 224, 224)), "a photo of a cat"))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

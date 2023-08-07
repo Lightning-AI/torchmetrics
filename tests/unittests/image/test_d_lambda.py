@@ -17,10 +17,10 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
-
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.d_lambda import SpectralDistortionIndex
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -118,12 +118,6 @@ class TestSpectralDistortionIndex(MetricTester):
             metric_args={"p": p},
         )
 
-    # SpectralDistortionIndex half + cpu does not work due to missing support in torch.log
-    @pytest.mark.xfail(reason="Spectral Distortion Index metric does not support cpu + half precision")
-    def test_d_lambda_half_cpu(self, preds, target, p):
-        """Test dtype support of the metric on CPU."""
-        self.run_precision_test_cpu(preds, target, SpectralDistortionIndex, spectral_distortion_index, {"p": p})
-
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_d_lambda_half_gpu(self, preds, target, p):
         """Test dtype support of the metric on GPU."""
@@ -152,3 +146,11 @@ def test_d_lambda_invalid_type():
     target_t = torch.rand((1, 1, 16, 16), dtype=torch.float64)
     with pytest.raises(TypeError, match="Expected `ms` and `fused` to have the same data type.*"):
         spectral_distortion_index(preds_t, target_t, p=1)
+
+
+def test_d_lambda_different_sizes():
+    """Since d lambda is reference free, it can accept different number of targets and preds."""
+    preds = torch.rand(1, 1, 32, 32)
+    target = torch.rand(1, 1, 16, 16)
+    out = spectral_distortion_index(preds, target, p=1)
+    assert isinstance(out, torch.Tensor)

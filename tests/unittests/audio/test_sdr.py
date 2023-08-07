@@ -21,10 +21,10 @@ import torch
 from mir_eval.separation import bss_eval_sources
 from scipy.io import wavfile
 from torch import Tensor
-
 from torchmetrics.audio import SignalDistortionRatio
 from torchmetrics.functional import signal_distortion_ratio
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_11
+
 from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB, _SAMPLE_NUMPY_ISSUE_895
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -71,9 +71,7 @@ original_impl_compute_permutation = partial(_sdr_original_batch)
     "preds, target, ref_metric",
     [
         (inputs_1spk.preds, inputs_1spk.target, original_impl_compute_permutation),
-        # (inputs_1spk.preds, inputs_1spk.target, original_impl_no_compute_permutation, False),
         (inputs_2spk.preds, inputs_2spk.target, original_impl_compute_permutation),
-        # (inputs_2spk.preds, inputs_2spk.target, original_impl_no_compute_permutation, False),
     ],
 )
 class TestSDR(MetricTester):

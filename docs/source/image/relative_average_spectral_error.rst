@@ -12,12 +12,12 @@ Relative Average Spectral Error (RASE)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.RelativeAverageSpectralError
+.. autoclass:: torchmetrics.image.RelativeAverageSpectralError
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.relative_average_spectral_error
+.. autofunction:: torchmetrics.functional.image.relative_average_spectral_error
     :noindex:

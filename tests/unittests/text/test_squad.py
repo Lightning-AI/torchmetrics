@@ -4,9 +4,9 @@ import pytest
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
-
 from torchmetrics.functional.text import squad
 from torchmetrics.text.squad import SQuAD
+
 from unittests.helpers.testers import _assert_allclose, _assert_tensor
 from unittests.text.inputs import _inputs_squad_batch_match, _inputs_squad_exact_match, _inputs_squad_exact_mismatch
 

@@ -110,6 +110,7 @@ class KendallRankCorrCoef(Metric):
         >>> kendall = KendallRankCorrCoef(t_test=True, alternative='two-sided', num_outputs=2)
         >>> kendall(preds, target)
         (tensor([1., 1.]), tensor([nan, nan]))
+
     """
     is_differentiable = False
     higher_is_better = None
@@ -201,5 +202,6 @@ class KendallRankCorrCoef(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
+
         """
         return self._plot(val, ax)

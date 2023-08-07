@@ -23,6 +23,7 @@ class _BLEUScore(BLEUScore):
     >>> bleu = _BLEUScore()
     >>> bleu(preds, target)
     tensor(0.7598)
+
     """
 
     def __init__(
@@ -33,7 +34,7 @@ class _BLEUScore(BLEUScore):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("BLEUScore", "text")
-        return super().__init__(n_gram=n_gram, smooth=smooth, weights=weights, **kwargs)
+        super().__init__(n_gram=n_gram, smooth=smooth, weights=weights, **kwargs)
 
 
 class _CharErrorRate(CharErrorRate):
@@ -44,6 +45,7 @@ class _CharErrorRate(CharErrorRate):
     >>> cer = _CharErrorRate()
     >>> cer(preds, target)
     tensor(0.3415)
+
     """
 
     def __init__(
@@ -51,7 +53,7 @@ class _CharErrorRate(CharErrorRate):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("CharErrorRate", "text")
-        return super().__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class _CHRFScore(CHRFScore):
@@ -62,6 +64,7 @@ class _CHRFScore(CHRFScore):
     >>> chrf = _CHRFScore()
     >>> chrf(preds, target)
     tensor(0.8640)
+
     """
 
     def __init__(
@@ -75,7 +78,7 @@ class _CHRFScore(CHRFScore):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("CHRFScore", "text")
-        return super().__init__(
+        super().__init__(
             n_char_order=n_char_order,
             n_word_order=n_word_order,
             beta=beta,
@@ -94,6 +97,7 @@ class _ExtendedEditDistance(ExtendedEditDistance):
     >>> eed = _ExtendedEditDistance()
     >>> eed(preds=preds, target=target)
     tensor(0.3078)
+
     """
 
     def __init__(
@@ -107,7 +111,7 @@ class _ExtendedEditDistance(ExtendedEditDistance):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("ExtendedEditDistance", "text")
-        return super().__init__(
+        super().__init__(
             language=language,
             return_sentence_level_score=return_sentence_level_score,
             alpha=alpha,
@@ -126,6 +130,7 @@ class _MatchErrorRate(MatchErrorRate):
     >>> mer = _MatchErrorRate()
     >>> mer(preds, target)
     tensor(0.4444)
+
     """
 
     def __init__(
@@ -133,7 +138,7 @@ class _MatchErrorRate(MatchErrorRate):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("MatchErrorRate", "text")
-        return super().__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class _Perplexity(Perplexity):
@@ -146,6 +151,7 @@ class _Perplexity(Perplexity):
     >>> perp = _Perplexity(ignore_index=-100)
     >>> perp(preds, target)
     tensor(5.2545)
+
     """
 
     def __init__(
@@ -154,7 +160,7 @@ class _Perplexity(Perplexity):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("Perplexity", "text")
-        return super().__init__(ignore_index=ignore_index, **kwargs)
+        super().__init__(ignore_index=ignore_index, **kwargs)
 
 
 class _SacreBLEUScore(SacreBLEUScore):
@@ -165,6 +171,7 @@ class _SacreBLEUScore(SacreBLEUScore):
     >>> sacre_bleu = _SacreBLEUScore()
     >>> sacre_bleu(preds, target)
     tensor(0.7598)
+
     """
 
     def __init__(
@@ -177,7 +184,7 @@ class _SacreBLEUScore(SacreBLEUScore):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("SacreBLEUScore", "text")
-        return super().__init__(
+        super().__init__(
             n_gram=n_gram, smooth=smooth, tokenize=tokenize, lowercase=lowercase, weights=weights, **kwargs
         )
 
@@ -190,11 +197,12 @@ class _SQuAD(SQuAD):
     >>> squad = _SQuAD()
     >>> squad(preds, target)
     {'exact_match': tensor(100.), 'f1': tensor(100.)}
+
     """
 
     def __init__(self, **kwargs: Any) -> None:
         _deprecated_root_import_class("SQuAD", "text")
-        return super().__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class _TranslationEditRate(TranslationEditRate):
@@ -205,6 +213,7 @@ class _TranslationEditRate(TranslationEditRate):
     >>> ter = _TranslationEditRate()
     >>> ter(preds, target)
     tensor(0.1538)
+
     """
 
     def __init__(
@@ -217,7 +226,7 @@ class _TranslationEditRate(TranslationEditRate):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("TranslationEditRate", "text")
-        return super().__init__(
+        super().__init__(
             normalize=normalize,
             no_punctuation=no_punctuation,
             lowercase=lowercase,
@@ -235,11 +244,12 @@ class _WordErrorRate(WordErrorRate):
     >>> wer = _WordErrorRate()
     >>> wer(preds, target)
     tensor(0.5000)
+
     """
 
     def __init__(self, **kwargs: Any) -> None:
         _deprecated_root_import_class("WordErrorRate", "text")
-        return super().__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class _WordInfoLost(WordInfoLost):
@@ -250,11 +260,12 @@ class _WordInfoLost(WordInfoLost):
     >>> wil = _WordInfoLost()
     >>> wil(preds, target)
     tensor(0.6528)
+
     """
 
     def __init__(self, **kwargs: Any) -> None:
         _deprecated_root_import_class("WordInfoLost", "text")
-        return super().__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class _WordInfoPreserved(WordInfoPreserved):
@@ -265,8 +276,9 @@ class _WordInfoPreserved(WordInfoPreserved):
     >>> wip = WordInfoPreserved()
     >>> wip(preds, target)
     tensor(0.3472)
+
     """
 
     def __init__(self, **kwargs: Any) -> None:
         _deprecated_root_import_class("WordInfoPreserved", "text")
-        return super().__init__(**kwargs)
+        super().__init__(**kwargs)

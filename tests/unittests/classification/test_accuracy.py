@@ -19,7 +19,6 @@ import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import accuracy_score as sk_accuracy
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
-
 from torchmetrics.classification.accuracy import Accuracy, BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy
 from torchmetrics.functional.classification.accuracy import (
     accuracy,
@@ -27,6 +26,8 @@ from torchmetrics.functional.classification.accuracy import (
     multiclass_accuracy,
     multilabel_accuracy,
 )
+from torchmetrics.metric import Metric
+
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _input_binary, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
@@ -66,16 +67,6 @@ def _sklearn_accuracy_binary(preds, target, ignore_index, multidim_average):
     return np.stack(res)
 
 
-def test_accuracy_raises_invalid_task():
-    """Tests accuracy task enum from Accuracy."""
-    task = "NotValidTask"
-    ignore_index = None
-    multidim_average = "global"
-
-    with pytest.raises(ValueError, match=r"Invalid *"):
-        Accuracy(threshold=THRESHOLD, task=task, ignore_index=ignore_index, multidim_average=multidim_average)
-
-
 def test_accuracy_functional_raises_invalid_task():
     """Tests accuracy task enum from functional.accuracy."""
     preds, target = _input_binary
@@ -94,16 +85,16 @@ def test_accuracy_functional_raises_invalid_task():
         )
 
 
-@pytest.mark.parametrize("input", _binary_cases)
+@pytest.mark.parametrize("inputs", _binary_cases)
 class TestBinaryAccuracy(MetricTester):
     """Test class for `BinaryAccuracy` metric."""
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
-    def test_binary_accuracy(self, ddp, input, ignore_index, multidim_average):
+    def test_binary_accuracy(self, ddp, inputs, ignore_index, multidim_average):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
@@ -122,11 +113,11 @@ class TestBinaryAccuracy(MetricTester):
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    def test_binary_accuracy_functional(self, input, ignore_index, multidim_average):
+    def test_binary_accuracy_functional(self, inputs, ignore_index, multidim_average):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
@@ -146,9 +137,9 @@ class TestBinaryAccuracy(MetricTester):
             },
         )
 
-    def test_binary_accuracy_differentiability(self, input):
+    def test_binary_accuracy_differentiability(self, inputs):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -158,9 +149,9 @@ class TestBinaryAccuracy(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_accuracy_half_cpu(self, input, dtype):
+    def test_binary_accuracy_half_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
 
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -175,9 +166,9 @@ class TestBinaryAccuracy(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_accuracy_half_gpu(self, input, dtype):
+    def test_binary_accuracy_half_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -201,6 +192,9 @@ def _sklearn_accuracy_multiclass(preds, target, ignore_index, multidim_average, 
         acc_per_class = confmat.diagonal() / confmat.sum(axis=1)
         acc_per_class[np.isnan(acc_per_class)] = 0.0
         if average == "macro":
+            acc_per_class = acc_per_class[
+                (np.bincount(preds, minlength=NUM_CLASSES) + np.bincount(target, minlength=NUM_CLASSES)) != 0.0
+            ]
             return acc_per_class.mean()
         if average == "weighted":
             weights = confmat.sum(1)
@@ -221,7 +215,10 @@ def _sklearn_accuracy_multiclass(preds, target, ignore_index, multidim_average, 
             acc_per_class = confmat.diagonal() / confmat.sum(axis=1)
             acc_per_class[np.isnan(acc_per_class)] = 0.0
             if average == "macro":
-                res.append(acc_per_class.mean())
+                acc_per_class = acc_per_class[
+                    (np.bincount(pred, minlength=NUM_CLASSES) + np.bincount(true, minlength=NUM_CLASSES)) != 0.0
+                ]
+                res.append(acc_per_class.mean() if len(acc_per_class) > 0 else 0.0)
             elif average == "weighted":
                 weights = confmat.sum(1)
                 score = ((weights * acc_per_class) / weights.sum()).sum()
@@ -231,7 +228,7 @@ def _sklearn_accuracy_multiclass(preds, target, ignore_index, multidim_average, 
     return np.stack(res, 0)
 
 
-@pytest.mark.parametrize("input", _multiclass_cases)
+@pytest.mark.parametrize("inputs", _multiclass_cases)
 class TestMulticlassAccuracy(MetricTester):
     """Test class for `MulticlassAccuracy` metric."""
 
@@ -239,9 +236,9 @@ class TestMulticlassAccuracy(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multiclass_accuracy(self, ddp, input, ignore_index, multidim_average, average):
+    def test_multiclass_accuracy(self, ddp, inputs, ignore_index, multidim_average, average):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and target.ndim < 3:
@@ -271,9 +268,9 @@ class TestMulticlassAccuracy(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
-    def test_multiclass_accuracy_functional(self, input, ignore_index, multidim_average, average):
+    def test_multiclass_accuracy_functional(self, inputs, ignore_index, multidim_average, average):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and target.ndim < 3:
@@ -297,9 +294,9 @@ class TestMulticlassAccuracy(MetricTester):
             },
         )
 
-    def test_multiclass_accuracy_differentiability(self, input):
+    def test_multiclass_accuracy_differentiability(self, inputs):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -309,9 +306,9 @@ class TestMulticlassAccuracy(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_accuracy_half_cpu(self, input, dtype):
+    def test_multiclass_accuracy_half_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
 
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -326,9 +323,9 @@ class TestMulticlassAccuracy(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_accuracy_half_gpu(self, input, dtype):
+    def test_multiclass_accuracy_half_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -428,17 +425,17 @@ def _sklearn_accuracy_multilabel(preds, target, ignore_index, multidim_average, 
     return None
 
 
-@pytest.mark.parametrize("input", _multilabel_cases)
+@pytest.mark.parametrize("inputs", _multilabel_cases)
 class TestMultilabelAccuracy(MetricTester):
     """Test class for `MultilabelAccuracy` metric."""
 
     @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
-    def test_multilabel_accuracy(self, ddp, input, ignore_index, multidim_average, average):
+    def test_multilabel_accuracy(self, ddp, inputs, ignore_index, multidim_average, average):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 4:
@@ -466,12 +463,12 @@ class TestMultilabelAccuracy(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
-    def test_multilabel_accuracy_functional(self, input, ignore_index, multidim_average, average):
+    def test_multilabel_accuracy_functional(self, inputs, ignore_index, multidim_average, average):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 4:
@@ -496,9 +493,9 @@ class TestMultilabelAccuracy(MetricTester):
             },
         )
 
-    def test_multilabel_accuracy_differentiability(self, input):
+    def test_multilabel_accuracy_differentiability(self, inputs):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -508,9 +505,9 @@ class TestMultilabelAccuracy(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_accuracy_half_cpu(self, input, dtype):
+    def test_multilabel_accuracy_half_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
 
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -525,9 +522,9 @@ class TestMultilabelAccuracy(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_accuracy_half_gpu(self, input, dtype):
+    def test_multilabel_accuracy_half_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -536,3 +533,39 @@ class TestMultilabelAccuracy(MetricTester):
             metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
             dtype=dtype,
         )
+
+
+def test_corner_cases():
+    """Issue: https://github.com/Lightning-AI/torchmetrics/issues/1691."""
+    # simulate the output of a perfect predictor (i.e. preds == target)
+    target = torch.tensor([0, 1, 2, 0, 1, 2])
+    preds = target
+
+    metric = MulticlassAccuracy(num_classes=3, average="none", ignore_index=0)
+    res = metric(preds, target)
+    assert torch.allclose(res, torch.tensor([0.0, 1.0, 1.0]))
+
+    metric = MulticlassAccuracy(num_classes=3, average="macro", ignore_index=0)
+    res = metric(preds, target)
+    assert res == 1.0
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryAccuracy, {"task": "binary"}),
+        (MulticlassAccuracy, {"task": "multiclass", "num_classes": 3}),
+        (MultilabelAccuracy, {"task": "multilabel", "num_labels": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=Accuracy):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

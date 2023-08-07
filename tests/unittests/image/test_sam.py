@@ -18,9 +18,9 @@ import pytest
 import torch
 from torch import Tensor
 from torch.nn import functional as F  # noqa: N812
-
 from torchmetrics.functional.image.sam import spectral_angle_mapper
 from torchmetrics.image.sam import SpectralAngleMapper
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -129,7 +129,7 @@ def test_error_on_invalid_type(metric_class=SpectralAngleMapper):
 
 
 def test_error_on_grayscale_image(metric_class=SpectralAngleMapper):
-    """Test that error is raised if number of channelse is not larger than 1."""
+    """Test that error is raised if number of channels is not larger than 1."""
     metric = metric_class()
     with pytest.raises(ValueError, match="Expected channel dimension of `preds` and `target` to be larger than 1.*"):
         metric(torch.randn([16, 1, 16, 16]), torch.randn([16, 1, 16, 16]))

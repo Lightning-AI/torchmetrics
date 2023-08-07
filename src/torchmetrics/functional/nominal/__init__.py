@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.functional.nominal.cramers import cramers_v, cramers_v_matrix
+from torchmetrics.functional.nominal.fleiss_kappa import fleiss_kappa
 from torchmetrics.functional.nominal.pearson import (
     pearsons_contingency_coefficient,
     pearsons_contingency_coefficient_matrix,
@@ -22,6 +23,7 @@ from torchmetrics.functional.nominal.tschuprows import tschuprows_t, tschuprows_
 __all__ = [
     "cramers_v",
     "cramers_v_matrix",
+    "fleiss_kappa",
     "pearsons_contingency_coefficient",
     "pearsons_contingency_coefficient_matrix",
     "theils_u",

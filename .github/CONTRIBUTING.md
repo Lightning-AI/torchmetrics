@@ -40,7 +40,7 @@ help you or finish it with you :\]_
 
 1. Add/update the relevant tests!
 
-- [This PR](https://github.com/Lightning-AI/metrics/pull/98) is a good example for adding a new metric
+- [This PR](https://github.com/Lightning-AI/torchmetrics/pull/98) is a good example for adding a new metric
 
 ### Test cases:
 

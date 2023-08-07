@@ -73,6 +73,7 @@ class PeakSignalNoiseRatio(Metric):
         >>> target = torch.tensor([[3.0, 2.0], [1.0, 0.0]])
         >>> psnr(preds, target)
         tensor(2.5527)
+
     """
     is_differentiable: bool = True
     higher_is_better: bool = True
@@ -131,8 +132,8 @@ class PeakSignalNoiseRatio(Metric):
         if self.dim is None:
             if self.data_range is None:
                 # keep track of min and max target values
-                self.min_target = min(target.min(), self.min_target)
-                self.max_target = max(target.max(), self.max_target)
+                self.min_target = torch.minimum(target.min(), self.min_target)
+                self.max_target = torch.maximum(target.max(), self.max_target)
 
             self.sum_squared_error += sum_squared_error
             self.total += n_obs
@@ -194,5 +195,6 @@ class PeakSignalNoiseRatio(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

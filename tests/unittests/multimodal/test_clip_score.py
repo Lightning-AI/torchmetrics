@@ -18,12 +18,12 @@ import matplotlib
 import matplotlib.pyplot as plt
 import pytest
 import torch
+from torchmetrics.functional.multimodal.clip_score import clip_score
+from torchmetrics.multimodal.clip_score import CLIPScore
+from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
 from transformers import CLIPModel as _CLIPModel
 from transformers import CLIPProcessor as _CLIPProcessor
 
-from torchmetrics.functional.multimodal.clip_score import clip_score
-from torchmetrics.multimodal.clip_score import CLIPScore
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 from unittests.text.helpers import skip_on_connection_issues
@@ -54,18 +54,18 @@ def _compare_fn(preds, target, model_name_or_path):
 
 
 @pytest.mark.parametrize("model_name_or_path", ["openai/clip-vit-base-patch32"])
-@pytest.mark.parametrize("input", [_random_input])
-@pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires bert_score")
+@pytest.mark.parametrize("inputs", [_random_input])
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_10, reason="test requires transformers>=4.10")
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 class TestCLIPScore(MetricTester):
     """Test class for `CLIPScore` metric."""
 
     @pytest.mark.parametrize("ddp", [True, False])
     @skip_on_connection_issues()
-    def test_clip_score(self, input, model_name_or_path, ddp):
+    def test_clip_score(self, inputs, model_name_or_path, ddp):
         """Test class implementation of metric."""
         # images are preds and targets are captions
-        preds, target = input
+        preds, target = inputs
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -79,9 +79,9 @@ class TestCLIPScore(MetricTester):
         )
 
     @skip_on_connection_issues()
-    def test_clip_score_functional(self, input, model_name_or_path):
+    def test_clip_score_functional(self, inputs, model_name_or_path):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         self.run_functional_metric_test(
             preds=preds,
             target=target,
@@ -91,9 +91,9 @@ class TestCLIPScore(MetricTester):
         )
 
     @skip_on_connection_issues()
-    def test_clip_score_differentiability(self, input, model_name_or_path):
+    def test_clip_score_differentiability(self, inputs, model_name_or_path):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -103,14 +103,14 @@ class TestCLIPScore(MetricTester):
         )
 
     @skip_on_connection_issues()
-    def test_error_on_not_same_amount_of_input(self, input, model_name_or_path):
+    def test_error_on_not_same_amount_of_input(self, inputs, model_name_or_path):
         """Test that an error is raised if the number of images and text examples does not match."""
         metric = CLIPScore(model_name_or_path=model_name_or_path)
         with pytest.raises(ValueError, match="Expected the number of images and text examples to be the same.*"):
             metric(torch.randint(255, (2, 3, 64, 64)), "28-year-old chef found dead in San Francisco mall")
 
     @skip_on_connection_issues()
-    def test_error_on_wrong_image_format(self, input, model_name_or_path):
+    def test_error_on_wrong_image_format(self, inputs, model_name_or_path):
         """Test that an error is raised if not all images are [c, h, w] format."""
         metric = CLIPScore(model_name_or_path=model_name_or_path)
         with pytest.raises(
@@ -119,10 +119,10 @@ class TestCLIPScore(MetricTester):
             metric(torch.randint(255, (64, 64)), "28-year-old chef found dead in San Francisco mall")
 
     @skip_on_connection_issues()
-    def test_plot_method(self, input, model_name_or_path):
+    def test_plot_method(self, inputs, model_name_or_path):
         """Test the plot method of CLIPScore seperately in this file due to the skipping conditions."""
         metric = CLIPScore(model_name_or_path=model_name_or_path)
-        preds, target = input
+        preds, target = inputs
         metric.update(preds[0], target[0])
         fig, ax = metric.plot()
         assert isinstance(fig, plt.Figure)

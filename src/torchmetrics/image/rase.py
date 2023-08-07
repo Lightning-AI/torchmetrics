@@ -14,7 +14,6 @@
 
 from typing import Any, Dict, List, Optional, Sequence, Union
 
-import torch
 from torch import Tensor
 
 from torchmetrics.functional.image.rase import relative_average_spectral_error
@@ -47,6 +46,7 @@ class RelativeAverageSpectralError(Metric):
         Relative Average Spectral Error (RASE)
 
     Example:
+        >>> import torch
         >>> from torchmetrics.image import RelativeAverageSpectralError
         >>> g = torch.manual_seed(22)
         >>> preds = torch.rand(4, 3, 16, 16)
@@ -57,6 +57,7 @@ class RelativeAverageSpectralError(Metric):
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.
+
     """
 
     higher_is_better: bool = False
@@ -131,5 +132,6 @@ class RelativeAverageSpectralError(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(4, 3, 16, 16), torch.rand(4, 3, 16, 16)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

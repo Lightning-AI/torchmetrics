@@ -31,7 +31,7 @@ authors:
 doi: 10.21105/joss.04101
 license: "Apache-2.0"
 url: "https://www.pytorchlightning.ai"
-repository-code: "https://github.com/Lightning-AI/metrics"
+repository-code: "https://github.com/Lightning-AI/torchmetrics"
 date-released: 2022-02-11
 keywords:
   - machine learning

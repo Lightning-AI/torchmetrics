@@ -20,9 +20,9 @@ import pytest
 import torch
 from dython.nominal import cramers_v as dython_cramers_v
 from lightning_utilities.core.imports import compare_version
-
 from torchmetrics.functional.nominal.cramers import cramers_v, cramers_v_matrix
 from torchmetrics.nominal.cramers import CramersV
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers.testers import MetricTester
 

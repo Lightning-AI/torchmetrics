@@ -23,6 +23,7 @@ def rank_zero_only(fn: Callable) -> Callable:
     """Call a function only on rank 0 in distributed settings.
 
     Meant to be used as an decorator.
+
     """
 
     @wraps(fn)
@@ -39,7 +40,7 @@ rank_zero_only.rank = getattr(rank_zero_only, "rank", int(os.environ.get("LOCAL_
 
 
 def _warn(*args: Any, **kwargs: Any) -> None:
-    warnings.warn(*args, **kwargs)
+    warnings.warn(*args, **kwargs)  # noqa: B028
 
 
 def _info(*args: Any, **kwargs: Any) -> None:

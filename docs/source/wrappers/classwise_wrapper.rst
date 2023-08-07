@@ -12,5 +12,5 @@ Classwise Wrapper
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.ClasswiseWrapper
+.. autoclass:: torchmetrics.wrappers.ClasswiseWrapper
     :noindex:

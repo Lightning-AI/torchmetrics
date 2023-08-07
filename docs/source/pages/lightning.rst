@@ -2,7 +2,7 @@
 
     import torch
     from torch.nn import Module
-    from lightning import LightningModule
+    from lightning.pytorch import LightningModule
     from torchmetrics import Metric
 
 #################################

@@ -18,7 +18,6 @@ import pytest
 import torch
 from torch.nn import Module
 from torch.utils.data import Dataset
-
 from torchmetrics.image.inception import InceptionScore
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
@@ -98,10 +97,10 @@ class _ImgDataset(Dataset):
     def __init__(self, imgs) -> None:
         self.imgs = imgs
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx) -> torch.Tensor:
         return self.imgs[idx]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.imgs.shape[0]
 
 

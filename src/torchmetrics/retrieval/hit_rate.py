@@ -38,7 +38,7 @@ class RetrievalHitRate(RetrievalMetric):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``hr2`` (:class:`~torch.Tensor`): A single-value tensor with the hit rate (at ``top_k``) of the predictions
+    - ``hr@k`` (:class:`~torch.Tensor`): A single-value tensor with the hit rate (at ``top_k``) of the predictions
       ``preds`` w.r.t. the labels ``target``
 
     All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
@@ -55,9 +55,8 @@ class RetrievalHitRate(RetrievalMetric):
             - ``'skip'``: skip those queries; if all queries are skipped, ``0.0`` is returned
             - ``'error'``: raise a ``ValueError``
 
-        ignore_index:
-            Ignore predictions where the target is equal to this number.
-        top_k: consider only the top k elements for each query (default: ``None``, which considers them all)
+        ignore_index: Ignore predictions where the target is equal to this number.
+        top_k: Consider only the top k elements for each query (default: ``None``, which considers them all)
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -66,7 +65,7 @@ class RetrievalHitRate(RetrievalMetric):
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
         ValueError:
-            If ``top_k`` parameter is not `None` or an integer larger than 0.
+            If ``top_k`` is not ``None`` or not an integer greater than 0.
 
     Example:
         >>> from torch import tensor
@@ -77,6 +76,7 @@ class RetrievalHitRate(RetrievalMetric):
         >>> hr2 = RetrievalHitRate(top_k=2)
         >>> hr2(preds, target, indexes=indexes)
         tensor(0.5000)
+
     """
 
     is_differentiable: bool = False
@@ -143,5 +143,6 @@ class RetrievalHitRate(RetrievalMetric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(10,), torch.randint(2, (10,)), indexes=torch.randint(2,(10,))))
             >>> fig, ax = metric.plot(values)
+
         """
         return self._plot(val, ax)

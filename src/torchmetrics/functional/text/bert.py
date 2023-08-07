@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import csv
-import os
 import urllib
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
-from warnings import warn
 
 import torch
 from torch import Tensor
@@ -31,13 +29,14 @@ from torchmetrics.functional.text.helper_embedding_metric import (
     _output_data_collator,
     _process_attention_mask_for_special_tokens,
 )
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
-from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
 
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL = "roberta-large"
 
-if _TRANSFORMERS_AVAILABLE:
+if _TRANSFORMERS_GREATER_EQUAL_4_4:
     from transformers import AutoModel, AutoTokenizer
 
     def _download_model() -> None:
@@ -88,6 +87,7 @@ def _get_embeddings_and_idf_scale(
     Raises:
         ValueError:
             If ``all_layers = True`` and a model, which is not from the ``transformers`` package, is used.
+
     """
     embeddings_list: List[Tensor] = []
     idf_scale_list: List[Tensor] = []
@@ -153,6 +153,7 @@ def _get_precision_recall_f1(
 
     Return:
         Tensors containing precision, recall and F1 score, respectively.
+
     """
     # Dimensions: b = batch_size, l = num_layers, p = predictions_seq_len, r = references_seq_len, d = bert_dim
     cos_sim = torch.einsum("blpd, blrd -> blpr", preds_embeddings, target_embeddings)
@@ -175,6 +176,7 @@ def _read_csv_from_local_file(baseline_path: str) -> Tensor:
     """Read baseline from csv file from the local file.
 
     This method implemented to avoid `pandas` dependency.
+
     """
     with open(baseline_path) as fname:
         csv_file = csv.reader(fname)
@@ -186,6 +188,7 @@ def _read_csv_from_url(baseline_url: str) -> Tensor:
     """Read baseline from csv file from URL.
 
     This method is implemented to avoid `pandas` dependency.
+
     """
     with urllib.request.urlopen(baseline_url) as http_request:
         baseline_list = [
@@ -213,8 +216,8 @@ def _load_baseline(
         baseline_url = f"{url_base}/{lang}/{model_name_or_path}.tsv"
         baseline = _read_csv_from_url(baseline_url)
     else:
-        baseline = None
-        warn("Baseline was not successfully loaded. No baseline is going to be used.")
+        rank_zero_warn("Baseline was not successfully loaded. No baseline is going to be used.")
+        return None
 
     return baseline
 
@@ -327,6 +330,7 @@ def bert_score(
         >>> target = ["hello there", "master kenobi"]
         >>> pprint(bert_score(preds, target))
         {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
+
     """
     if len(preds) != len(target):
         raise ValueError("Number of predicted and reference sententes must be the same!")
@@ -341,13 +345,13 @@ def bert_score(
         )
 
     if model is None:
-        if not _TRANSFORMERS_AVAILABLE:
+        if not _TRANSFORMERS_GREATER_EQUAL_4_4:
             raise ModuleNotFoundError(
                 "`bert_score` metric with default models requires `transformers` package be installed."
-                " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."
+                " Either install with `pip install transformers>=4.4` or `pip install torchmetrics[text]`."
             )
         if model_name_or_path is None:
-            warn(
+            rank_zero_warn(
                 "The argument `model_name_or_path` was not specified while it is required when default"
                 " `transformers` model are used."
                 f"It is, therefore, used the default recommended model - {_DEFAULT_MODEL}."
@@ -366,7 +370,7 @@ def bert_score(
                 f" Please use num_layers <= {model.config.num_hidden_layers}"
             )
     except AttributeError:
-        warn("It was not possible to retrieve the parameter `num_layers` from the model specification.")
+        rank_zero_warn("It was not possible to retrieve the parameter `num_layers` from the model specification.")
 
     _are_empty_lists = all(isinstance(text, list) and len(text) == 0 for text in (preds, target))
     _are_valid_lists = all(
@@ -376,7 +380,7 @@ def bert_score(
         isinstance(text, dict) and isinstance(text["input_ids"], Tensor) for text in (preds, target)
     )
     if _are_empty_lists:
-        warn("Predictions and references are empty.")
+        rank_zero_warn("Predictions and references are empty.")
         output_dict: Dict[str, Union[Tensor, List[float], str]] = {
             "precision": [0.0],
             "recall": [0.0],

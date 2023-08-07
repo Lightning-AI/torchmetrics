@@ -14,6 +14,7 @@
 from torchmetrics.text.bleu import BLEUScore
 from torchmetrics.text.cer import CharErrorRate
 from torchmetrics.text.chrf import CHRFScore
+from torchmetrics.text.edit import EditDistance
 from torchmetrics.text.eed import ExtendedEditDistance
 from torchmetrics.text.mer import MatchErrorRate
 from torchmetrics.text.perplexity import Perplexity
@@ -24,17 +25,13 @@ from torchmetrics.text.ter import TranslationEditRate
 from torchmetrics.text.wer import WordErrorRate
 from torchmetrics.text.wil import WordInfoLost
 from torchmetrics.text.wip import WordInfoPreserved
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
-
-if _TRANSFORMERS_AVAILABLE:
-    from torchmetrics.text.bert import BERTScore  # noqa: F401
-    from torchmetrics.text.infolm import InfoLM  # noqa: F401
-
+from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
 __all__ = [
     "BLEUScore",
     "CharErrorRate",
     "CHRFScore",
+    "EditDistance",
     "ExtendedEditDistance",
     "MatchErrorRate",
     "Perplexity",
@@ -46,3 +43,10 @@ __all__ = [
     "WordInfoLost",
     "WordInfoPreserved",
 ]
+
+if _TRANSFORMERS_GREATER_EQUAL_4_4:
+    from torchmetrics.text.bert import BERTScore  # noqa: F401
+    from torchmetrics.text.infolm import InfoLM  # noqa: F401
+
+    __all__.append("BERTScore")
+    __all__.append("InfoLM")

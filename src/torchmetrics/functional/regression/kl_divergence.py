@@ -30,6 +30,7 @@ def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
         q: prior or approximate distribution with shape ``[N, d]``
         log_prob: bool indicating if input is log-probabilities or probabilities. If given as probabilities,
             will normalize to make sure the distributes sum to 1
+
     """
     _check_same_shape(p, q)
     if p.ndim != 2 or q.ndim != 2:
@@ -67,6 +68,7 @@ def _kld_compute(
         >>> measures, total = _kld_update(p, q, log_prob=False)
         >>> _kld_compute(measures, total)
         tensor(0.0853)
+
     """
     if reduction == "sum":
         return measures.sum()
@@ -107,6 +109,7 @@ def kl_divergence(
         >>> q = tensor([[1/3, 1/3, 1/3]])
         >>> kl_divergence(p, q)
         tensor(0.0853)
+
     """
     measures, total = _kld_update(p, q, log_prob)
     return _kld_compute(measures, total, reduction)

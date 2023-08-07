@@ -11,13 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
+
 import numpy as np
 import pytest
 from sklearn.metrics import ndcg_score
 from torch import Tensor
-
 from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg
 from torchmetrics.retrieval.ndcg import RetrievalNormalizedDCG
+
 from unittests.helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,
@@ -34,7 +36,7 @@ from unittests.retrieval.helpers import (
 seed_all(42)
 
 
-def _ndcg_at_k(target: np.ndarray, preds: np.ndarray, top_k: int = None):
+def _ndcg_at_k(target: np.ndarray, preds: np.ndarray, top_k: Optional[int] = None):
     """Adapting `from sklearn.metrics.ndcg_score`."""
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs

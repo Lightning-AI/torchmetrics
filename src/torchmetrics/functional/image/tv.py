@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Optional, Tuple, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -31,7 +31,7 @@ def _total_variation_update(img: Tensor) -> Tuple[Tensor, int]:
 
 
 def _total_variation_compute(
-    score: Tensor, num_elements: int, reduction: Literal["mean", "sum", "none", None]
+    score: Tensor, num_elements: Union[int, Tensor], reduction: Optional[Literal["mean", "sum", "none"]]
 ) -> Tensor:
     """Compute final total variation score."""
     if reduction == "mean":
@@ -43,7 +43,7 @@ def _total_variation_compute(
     raise ValueError("Expected argument `reduction` to either be 'sum', 'mean', 'none' or None")
 
 
-def total_variation(img: Tensor, reduction: Literal["mean", "sum", "none", None] = "sum") -> Tensor:
+def total_variation(img: Tensor, reduction: Optional[Literal["mean", "sum", "none"]] = "sum") -> Tensor:
     """Compute total variation loss.
 
     Args:
@@ -70,6 +70,7 @@ def total_variation(img: Tensor, reduction: Literal["mean", "sum", "none", None]
         >>> img = torch.rand(5, 3, 28, 28)
         >>> total_variation(img)
         tensor(7546.8018)
+
     """
     # code adapted from:
     # from kornia.losses import total_variation as kornia_total_variation

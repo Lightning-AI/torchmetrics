@@ -18,9 +18,9 @@ import numpy as np
 import pytest
 import torch
 from scipy.stats import pearsonr
-
 from torchmetrics.functional.regression.concordance import concordance_corrcoef
 from torchmetrics.regression.concordance import ConcordanceCorrCoef
+
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester

@@ -3,6 +3,8 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/tabular_classification.svg
    :tags: Classification
 
+.. include:: ../links.rst
+
 ###########
 Specificity
 ###########
@@ -13,6 +15,7 @@ ________________
 .. autoclass:: torchmetrics.Specificity
     :noindex:
     :exclude-members: update, compute
+    :special-members: __new__
 
 BinarySpecificity
 ^^^^^^^^^^^^^^^^^

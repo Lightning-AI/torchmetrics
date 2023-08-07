@@ -3,12 +3,19 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/tabular_classification.svg
    :tags: Classification
 
+.. include:: ../links.rst
+
 ##########################
 Specificity At Sensitivity
 ##########################
 
 Module Interface
 ________________
+
+.. autoclass:: torchmetrics.SpecificityAtSensitivity
+    :noindex:
+    :exclude-members: update, compute
+    :special-members: __new__
 
 BinarySpecificityAtSensitivity
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

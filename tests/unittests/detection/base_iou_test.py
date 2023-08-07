@@ -15,13 +15,11 @@ from abc import ABC
 from collections import namedtuple
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Callable, Dict
+from typing import Any, Callable, ClassVar, Dict
 
 import pytest
 import torch
 from torch import IntTensor, Tensor
-
-from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 Input = namedtuple("Input", ["preds", "target"])
@@ -143,11 +141,11 @@ def compare_fn(preds: Any, target: Any, result: Any):
 class BaseTestIntersectionOverUnion(ABC):
     """Base Test the Intersection over Union metric for object detection predictions."""
 
-    data: Dict[str, TestCaseData] = {
+    data: ClassVar[Dict[str, TestCaseData]] = {
         "iou_variant": TestCaseData(data=_inputs, result={"iou": torch.Tensor([0])}),
         "fn_iou_variant": TestCaseData(data=_box_inputs, result=None),
     }
-    metric_class: Metric
+    metric_class: ClassVar
     metric_fn: Callable[[Tensor, Tensor, bool, float], Tensor]
 
     def test_iou_variant(self, compute_on_cpu: bool, ddp: bool):

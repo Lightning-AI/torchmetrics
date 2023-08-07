@@ -2,7 +2,7 @@ r"""Root package info."""
 import logging as __logging
 import os
 
-from torchmetrics.__about__ import *  # noqa: F401, F403
+from torchmetrics.__about__ import *  # noqa: F403
 
 _logger = __logging.getLogger("torchmetrics")
 _logger.addHandler(__logging.StreamHandler())
@@ -12,7 +12,15 @@ _PACKAGE_ROOT = os.path.dirname(__file__)
 _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
 from torchmetrics import functional  # noqa: E402
-from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric  # noqa: E402
+from torchmetrics.aggregation import (  # noqa: E402
+    CatMetric,
+    MaxMetric,
+    MeanMetric,
+    MinMetric,
+    RunningMean,
+    RunningSum,
+    SumMetric,
+)
 from torchmetrics.audio._deprecated import _PermutationInvariantTraining as PermutationInvariantTraining  # noqa: E402
 from torchmetrics.audio._deprecated import (  # noqa: E402
     _ScaleInvariantSignalDistortionRatio as ScaleInvariantSignalDistortionRatio,
@@ -44,6 +52,7 @@ from torchmetrics.classification import (  # noqa: E402
     Recall,
     RecallAtFixedPrecision,
     Specificity,
+    SpecificityAtSensitivity,
     StatScores,
 )
 from torchmetrics.collections import MetricCollection  # noqa: E402
@@ -68,7 +77,13 @@ from torchmetrics.image._deprecated import (  # noqa: E402
 from torchmetrics.image._deprecated import _TotalVariation as TotalVariation  # noqa: E402
 from torchmetrics.image._deprecated import _UniversalImageQualityIndex as UniversalImageQualityIndex  # noqa: E402
 from torchmetrics.metric import Metric  # noqa: E402
-from torchmetrics.nominal import CramersV, PearsonsContingencyCoefficient, TheilsU, TschuprowsT  # noqa: E402
+from torchmetrics.nominal import (  # noqa: E402
+    CramersV,
+    FleissKappa,
+    PearsonsContingencyCoefficient,
+    TheilsU,
+    TschuprowsT,
+)
 from torchmetrics.regression import (  # noqa: E402
     ConcordanceCorrCoef,
     CosineSimilarity,
@@ -83,6 +98,7 @@ from torchmetrics.regression import (  # noqa: E402
     MinkowskiDistance,
     PearsonCorrCoef,
     R2Score,
+    RelativeSquaredError,
     SpearmanCorrCoef,
     SymmetricMeanAbsolutePercentageError,
     TweedieDevianceScore,
@@ -120,6 +136,7 @@ from torchmetrics.wrappers import (  # noqa: E402
     MetricTracker,
     MinMaxMetric,
     MultioutputWrapper,
+    MultitaskWrapper,
 )
 
 __all__ = [
@@ -147,6 +164,7 @@ __all__ = [
     "ExtendedEditDistance",
     "F1Score",
     "FBetaScore",
+    "FleissKappa",
     "HammingDistance",
     "HingeLoss",
     "JaccardIndex",
@@ -164,10 +182,12 @@ __all__ = [
     "Metric",
     "MetricCollection",
     "MetricTracker",
+    "MinkowskiDistance",
     "MinMaxMetric",
     "MinMetric",
     "ModifiedPanopticQuality",
     "MultioutputWrapper",
+    "MultitaskWrapper",
     "MultiScaleStructuralSimilarityIndexMeasure",
     "PanopticQuality",
     "PearsonCorrCoef",
@@ -182,6 +202,7 @@ __all__ = [
     "Recall",
     "RecallAtFixedPrecision",
     "RelativeAverageSpectralError",
+    "RelativeSquaredError",
     "RetrievalFallOut",
     "RetrievalHitRate",
     "RetrievalMAP",
@@ -194,6 +215,8 @@ __all__ = [
     "RetrievalRecallAtFixedPrecision",
     "ROC",
     "RootMeanSquaredErrorUsingSlidingWindow",
+    "RunningMean",
+    "RunningSum",
     "SacreBLEUScore",
     "SignalDistortionRatio",
     "ScaleInvariantSignalDistortionRatio",
@@ -201,6 +224,7 @@ __all__ = [
     "SignalNoiseRatio",
     "SpearmanCorrCoef",
     "Specificity",
+    "SpecificityAtSensitivity",
     "SpectralAngleMapper",
     "SpectralDistortionIndex",
     "SQuAD",

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, List, Optional, Sequence, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -61,6 +61,7 @@ class SpectralDistortionIndex(Metric):
         >>> sdi = SpectralDistortionIndex()
         >>> sdi(preds, target)
         tensor(0.0234)
+
     """
 
     higher_is_better: bool = True
@@ -148,5 +149,6 @@ class SpectralDistortionIndex(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

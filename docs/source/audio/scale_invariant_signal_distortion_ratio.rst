@@ -12,12 +12,12 @@ Scale-Invariant Signal-to-Distortion Ratio (SI-SDR)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.ScaleInvariantSignalDistortionRatio
+.. autoclass:: torchmetrics.audio.ScaleInvariantSignalDistortionRatio
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.scale_invariant_signal_distortion_ratio
+.. autofunction:: torchmetrics.functional.audio.scale_invariant_signal_distortion_ratio
     :noindex:

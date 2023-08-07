@@ -17,9 +17,9 @@ from functools import partial
 import pytest
 import torch
 from skimage.metrics import structural_similarity
-
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.uqi import UniversalImageQualityIndex
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -48,7 +48,7 @@ for size, channel, coef, multichannel, dtype in [
     )
 
 
-def _skimage_uqi(preds, target, data_range, multichannel, kernel_size):
+def _skimage_uqi(preds, target, multichannel, kernel_size):
     c, h, w = preds.shape[-3:]
     sk_preds = preds.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
     sk_target = target.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
@@ -59,7 +59,7 @@ def _skimage_uqi(preds, target, data_range, multichannel, kernel_size):
     return skimage_uqi(
         sk_target,
         sk_preds,
-        data_range=data_range,
+        data_range=1.0,
         multichannel=multichannel,
         gaussian_weights=True,
         win_size=kernel_size,
@@ -87,8 +87,8 @@ class TestUQI(MetricTester):
             preds,
             target,
             UniversalImageQualityIndex,
-            partial(_skimage_uqi, data_range=1.0, multichannel=multichannel, kernel_size=kernel_size),
-            metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size)},
+            partial(_skimage_uqi, multichannel=multichannel, kernel_size=kernel_size),
+            metric_args={"kernel_size": (kernel_size, kernel_size)},
         )
 
     def test_uqi_functional(self, preds, target, multichannel, kernel_size):
@@ -97,8 +97,8 @@ class TestUQI(MetricTester):
             preds,
             target,
             universal_image_quality_index,
-            partial(_skimage_uqi, data_range=1.0, multichannel=multichannel, kernel_size=kernel_size),
-            metric_args={"data_range": 1.0, "kernel_size": (kernel_size, kernel_size)},
+            partial(_skimage_uqi, multichannel=multichannel, kernel_size=kernel_size),
+            metric_args={"kernel_size": (kernel_size, kernel_size)},
         )
 
     # UQI half + cpu does not work due to missing support in torch.log
@@ -106,14 +106,20 @@ class TestUQI(MetricTester):
     def test_uqi_half_cpu(self, preds, target, multichannel, kernel_size):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
-            preds, target, UniversalImageQualityIndex, universal_image_quality_index, {"data_range": 1.0}
+            preds,
+            target,
+            UniversalImageQualityIndex,
+            universal_image_quality_index,
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_uqi_half_gpu(self, preds, target, multichannel, kernel_size):
         """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
-            preds, target, UniversalImageQualityIndex, universal_image_quality_index, {"data_range": 1.0}
+            preds,
+            target,
+            UniversalImageQualityIndex,
+            universal_image_quality_index,
         )
 
 

@@ -29,7 +29,7 @@ from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 def _binning_bucketize(
     confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Compute calibration bins using ``torch.bucketize``. Use for pytorch >= 1.6.
+    """Compute calibration bins using ``torch.bucketize``. Use for ``pytorch >=1.6``.
 
     Args:
         confidences: The confidence (i.e. predicted prob) of the top1 prediction.
@@ -38,6 +38,7 @@ def _binning_bucketize(
 
     Returns:
         tuple with binned accuracy, binned confidence and binned probabilities
+
     """
     accuracies = accuracies.to(dtype=confidences.dtype)
     acc_bin = torch.zeros(len(bin_boundaries), device=confidences.device, dtype=confidences.dtype)
@@ -80,9 +81,10 @@ def _ce_compute(
 
     Returns:
         Tensor: Calibration error scalar.
+
     """
     if isinstance(bin_boundaries, int):
-        bin_boundaries = torch.linspace(0, 1, bin_boundaries + 1, dtype=torch.float, device=confidences.device)
+        bin_boundaries = torch.linspace(0, 1, bin_boundaries + 1, dtype=confidences.dtype, device=confidences.device)
 
     if norm not in {"l1", "l2", "max"}:
         raise ValueError(f"Argument `norm` is expected to be one of 'l1', 'l2', 'max' but got {norm}")
@@ -131,7 +133,7 @@ def _binary_calibration_error_tensor_validation(
         )
 
 
-def _binary_calibration_error_update(preds: Tensor, target: Tensor) -> Tensor:
+def _binary_calibration_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     confidences, accuracies = preds, target
     return confidences, accuracies
 
@@ -193,6 +195,7 @@ def binary_calibration_error(
         tensor(0.2918)
         >>> binary_calibration_error(preds, target, n_bins=2, norm='max')
         tensor(0.3167)
+
     """
     if validate_args:
         _binary_calibration_error_arg_validation(n_bins, norm, ignore_index)
@@ -235,7 +238,7 @@ def _multiclass_calibration_error_tensor_validation(
 def _multiclass_calibration_error_update(
     preds: Tensor,
     target: Tensor,
-) -> Tensor:
+) -> Tuple[Tensor, Tensor]:
     if not torch.all((preds >= 0) * (preds <= 1)):
         preds = preds.softmax(1)
     confidences, predictions = preds.max(dim=1)
@@ -305,6 +308,7 @@ def multiclass_calibration_error(
         tensor(0.2082)
         >>> multiclass_calibration_error(preds, target, num_classes=3, n_bins=3, norm='max')
         tensor(0.2333)
+
     """
     if validate_args:
         _multiclass_calibration_error_arg_validation(num_classes, n_bins, norm, ignore_index)
@@ -317,7 +321,7 @@ def multiclass_calibration_error(
 def calibration_error(
     preds: Tensor,
     target: Tensor,
-    task: Literal["binary", "multiclass"] = None,
+    task: Literal["binary", "multiclass"],
     n_bins: int = 15,
     norm: Literal["l1", "l2", "max"] = "l1",
     num_classes: Optional[int] = None,
@@ -347,6 +351,7 @@ def calibration_error(
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
     :func:`binary_calibration_error` and :func:`multiclass_calibration_error` for the specific details of
     each argument influence and examples.
+
     """
     task = ClassificationTaskNoMultilabel.from_str(task)
     assert norm is not None  # noqa: S101  # needed for mypy

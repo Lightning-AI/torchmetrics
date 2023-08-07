@@ -13,11 +13,15 @@ sphinx:
 # Optionally build your docs in additional formats such as PDF and ePub
 formats:
   - htmlzip
-  - pdf
+  # - pdf  # building both takes too log :(
+
+build:
+  os: "ubuntu-22.04"
+  tools:
+      python: "3.9"
 
 # Optionally set the version of Python and requirements required to build your docs
 python:
-  version: "3.8"
   install:
     - requirements: requirements/docs.txt
     - method: pip

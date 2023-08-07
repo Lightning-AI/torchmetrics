@@ -21,10 +21,9 @@ import numpy as np
 import pytest
 import torch
 from torch import Tensor, tensor
-
 from torchmetrics import Metric
-from torchmetrics.detection.mean_ap import MAPMetricResults
 from torchmetrics.utilities.data import _flatten, apply_to_collection
+
 from unittests import NUM_PROCESSES
 
 
@@ -54,9 +53,6 @@ def _assert_tensor(tm_result: Any, key: Optional[str] = None) -> None:
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
         assert isinstance(tm_result[key], Tensor)
-    elif isinstance(tm_result, MAPMetricResults):
-        for val_index in [a for a in dir(tm_result) if not a.startswith("__")]:
-            assert isinstance(tm_result[val_index], Tensor)
     else:
         assert isinstance(tm_result, Tensor)
 
@@ -82,7 +78,7 @@ def _class_test(
     metric_class: Metric,
     reference_metric: Callable,
     dist_sync_on_step: bool,
-    metric_args: dict = None,
+    metric_args: Optional[dict] = None,
     check_dist_sync_on_step: bool = True,
     check_batch: bool = True,
     atol: float = 1e-8,
@@ -115,6 +111,7 @@ def _class_test(
         check_state_dict: bool indicating if metric should be tested that its state_dict by default is empty
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
+
     """
     assert len(preds) == len(target)
     num_batches = len(preds)
@@ -153,6 +150,7 @@ def _class_test(
     for i in range(rank, num_batches, world_size):
         batch_kwargs_update = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
+        # compute batch stats and aggregate for global stats
         batch_result = metric(preds[i], target[i], **batch_kwargs_update)
 
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
@@ -232,7 +230,7 @@ def _functional_test(
     target: Union[Tensor, list],
     metric_functional: Callable,
     reference_metric: Callable,
-    metric_args: dict = None,
+    metric_args: Optional[dict] = None,
     atol: float = 1e-8,
     device: str = "cpu",
     fragment_kwargs: bool = False,
@@ -251,6 +249,7 @@ def _functional_test(
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
+
     """
     p_size = preds.shape[0] if isinstance(preds, Tensor) else len(preds)
     t_size = target.shape[0] if isinstance(target, Tensor) else len(target)
@@ -302,6 +301,7 @@ def _assert_dtype_support(
         dtype: dtype to run test with
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
+
     """
     y_hat = preds[0].to(dtype=dtype, device=device) if preds[0].is_floating_point() else preds[0].to(device)
     y = target[0].to(dtype=dtype, device=device) if target[0].is_floating_point() else target[0].to(device)
@@ -322,6 +322,7 @@ class MetricTester:
     Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup once and
     that pool of processes are used for all tests. All tests should subclass from this and implement a new method called
     `test_metric_name` where the method `self.run_metric_test` is called inside.
+
     """
 
     atol: float = 1e-8
@@ -332,7 +333,7 @@ class MetricTester:
         target: Tensor,
         metric_functional: Callable,
         reference_metric: Callable,
-        metric_args: dict = None,
+        metric_args: Optional[dict] = None,
         fragment_kwargs: bool = False,
         **kwargs_update: Any,
     ):
@@ -347,6 +348,7 @@ class MetricTester:
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
+
         """
         device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
 
@@ -370,11 +372,12 @@ class MetricTester:
         metric_class: Metric,
         reference_metric: Callable,
         dist_sync_on_step: bool = False,
-        metric_args: dict = None,
+        metric_args: Optional[dict] = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,
         fragment_kwargs: bool = False,
         check_scriptable: bool = True,
+        atol: Optional[float] = None,
         **kwargs_update: Any,
     ):
         """Core method that should be used for testing class. Call this inside testing methods.
@@ -393,9 +396,12 @@ class MetricTester:
                 calculated across devices for each batch (and not just at the end)
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
             check_scriptable: bool indicating if metric should also be tested if it can be scripted
+            atol: absolute tolerance used for comparison of results, if None will use self.atol
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
+
         """
+        atol = atol or self.atol
         metric_args = metric_args or {}
         if ddp:
             if sys.platform == "win32":
@@ -412,7 +418,7 @@ class MetricTester:
                     metric_args=metric_args,
                     check_dist_sync_on_step=check_dist_sync_on_step,
                     check_batch=check_batch,
-                    atol=self.atol,
+                    atol=atol,
                     fragment_kwargs=fragment_kwargs,
                     check_scriptable=check_scriptable,
                     **kwargs_update,
@@ -433,7 +439,7 @@ class MetricTester:
                 metric_args=metric_args,
                 check_dist_sync_on_step=check_dist_sync_on_step,
                 check_batch=check_batch,
-                atol=self.atol,
+                atol=atol,
                 device=device,
                 fragment_kwargs=fragment_kwargs,
                 check_scriptable=check_scriptable,
@@ -449,7 +455,7 @@ class MetricTester:
         metric_args: Optional[dict] = None,
         dtype: torch.dtype = torch.half,
         **kwargs_update: Any,
-    ):
+    ) -> None:
         """Test if a metric can be used with half precision tensors on cpu.
 
         Args:
@@ -461,6 +467,7 @@ class MetricTester:
             dtype: dtype to run test with
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
+
         """
         metric_args = metric_args or {}
         _assert_dtype_support(
@@ -482,7 +489,7 @@ class MetricTester:
         metric_args: Optional[dict] = None,
         dtype: torch.dtype = torch.half,
         **kwargs_update: Any,
-    ):
+    ) -> None:
         """Test if a metric can be used with half precision tensors on gpu.
 
         Args:
@@ -494,6 +501,7 @@ class MetricTester:
             dtype: dtype to run test with
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
+
         """
         metric_args = metric_args or {}
         _assert_dtype_support(
@@ -513,7 +521,7 @@ class MetricTester:
         metric_module: Metric,
         metric_functional: Optional[Callable] = None,
         metric_args: Optional[dict] = None,
-    ):
+    ) -> None:
         """Test if a metric is differentiable or not.
 
         Args:
@@ -522,6 +530,7 @@ class MetricTester:
             metric_module: the metric module to test
             metric_functional: functional version of the metric
             metric_args: dict with additional arguments used for class initialization
+
         """
         metric_args = metric_args or {}
         # only floating point tensors can require grad
@@ -549,17 +558,15 @@ class DummyMetric(Metric):
     name = "Dummy"
     full_state_update: Optional[bool] = True
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.add_state("x", tensor(0.0), dist_reduce_fx="sum")
 
     def update(self):
         """Update state."""
-        pass
 
     def compute(self):
         """Compute value."""
-        pass
 
 
 class DummyListMetric(Metric):
@@ -568,12 +575,13 @@ class DummyListMetric(Metric):
     name = "DummyList"
     full_state_update: Optional[bool] = True
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.add_state("x", [], dist_reduce_fx="cat")
 
-    def update(self, x=torch.tensor(1)):
+    def update(self, x=None):
         """Update state."""
+        x = torch.tensor(1) if x is None else x
         self.x.append(x)
 
     def compute(self):
@@ -611,6 +619,14 @@ class DummyMetricMultiOutput(DummyMetricSum):
     def compute(self):
         """Compute value."""
         return [self.x, self.x]
+
+
+class DummyMetricMultiOutputDict(DummyMetricSum):
+    """DummyMetricMultiOutput for testing core components."""
+
+    def compute(self):
+        """Compute value."""
+        return {"output1": self.x, "output2": self.x}
 
 
 def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:

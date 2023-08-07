@@ -12,12 +12,12 @@ Retrieval Mean Average Precision (MAP)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.RetrievalMAP
+.. autoclass:: torchmetrics.retrieval.RetrievalMAP
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.retrieval_average_precision
+.. autofunction:: torchmetrics.functional.retrieval.retrieval_average_precision
     :noindex:

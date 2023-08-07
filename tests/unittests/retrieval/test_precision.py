@@ -11,12 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
+
 import numpy as np
 import pytest
 from torch import Tensor
-
 from torchmetrics.functional.retrieval.precision import retrieval_precision
 from torchmetrics.retrieval.precision import RetrievalPrecision
+
 from unittests.helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,
@@ -36,11 +38,12 @@ from unittests.retrieval.helpers import (
 seed_all(42)
 
 
-def _precision_at_k(target: np.ndarray, preds: np.ndarray, top_k: int = None, adaptive_k: bool = False):
+def _precision_at_k(target: np.ndarray, preds: np.ndarray, top_k: Optional[int] = None, adaptive_k: bool = False):
     """Didn't find a reliable implementation of Precision in Information Retrieval, so, reimplementing here.
 
-    A good explanation can be found `here
-    <https://web.stanford.edu/class/cs276/handouts/EvaluationNew-handout-1-per.pdf>_`.
+    A good explanation can be found
+    `here <https://web.stanford.edu/class/cs276/handouts/EvaluationNew-handout-1-per.pdf>_`.
+
     """
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs

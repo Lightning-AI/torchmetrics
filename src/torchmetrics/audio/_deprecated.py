@@ -16,19 +16,22 @@ class _PermutationInvariantTraining(PermutationInvariantTraining):
     >>> _ = torch.manual_seed(42)
     >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
     >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
-    >>> pit = _PermutationInvariantTraining(scale_invariant_signal_noise_ratio, 'max')
+    >>> pit = _PermutationInvariantTraining(scale_invariant_signal_noise_ratio,
+    ...     mode="speaker-wise", eval_func="max")
     >>> pit(preds, target)
     tensor(-2.1065)
+
     """
 
     def __init__(
         self,
         metric_func: Callable,
+        mode: Literal["speaker-wise", "permutation-wise"] = "speaker-wise",
         eval_func: Literal["max", "min"] = "max",
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("PermutationInvariantTraining", "audio")
-        return super().__init__(metric_func=metric_func, eval_func=eval_func, **kwargs)
+        super().__init__(metric_func=metric_func, mode=mode, eval_func=eval_func, **kwargs)
 
 
 class _ScaleInvariantSignalDistortionRatio(ScaleInvariantSignalDistortionRatio):
@@ -40,6 +43,7 @@ class _ScaleInvariantSignalDistortionRatio(ScaleInvariantSignalDistortionRatio):
     >>> si_sdr = _ScaleInvariantSignalDistortionRatio()
     >>> si_sdr(preds, target)
     tensor(18.4030)
+
     """
 
     def __init__(
@@ -48,7 +52,7 @@ class _ScaleInvariantSignalDistortionRatio(ScaleInvariantSignalDistortionRatio):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("ScaleInvariantSignalDistortionRatio", "audio")
-        return super().__init__(zero_mean=zero_mean, **kwargs)
+        super().__init__(zero_mean=zero_mean, **kwargs)
 
 
 class _ScaleInvariantSignalNoiseRatio(ScaleInvariantSignalNoiseRatio):
@@ -60,6 +64,7 @@ class _ScaleInvariantSignalNoiseRatio(ScaleInvariantSignalNoiseRatio):
     >>> si_snr = _ScaleInvariantSignalNoiseRatio()
     >>> si_snr(preds, target)
     tensor(15.0918)
+
     """
 
     def __init__(
@@ -67,7 +72,7 @@ class _ScaleInvariantSignalNoiseRatio(ScaleInvariantSignalNoiseRatio):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("ScaleInvariantSignalNoiseRatio", "audio")
-        return super().__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class _SignalDistortionRatio(SignalDistortionRatio):
@@ -84,9 +89,11 @@ class _SignalDistortionRatio(SignalDistortionRatio):
     >>> from torchmetrics.functional import signal_distortion_ratio
     >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
     >>> target = torch.randn(4, 2, 8000)
-    >>> pit = _PermutationInvariantTraining(signal_distortion_ratio, 'max')
+    >>> pit = _PermutationInvariantTraining(signal_distortion_ratio,
+    ...     mode="speaker-wise", eval_func="max")
     >>> pit(preds, target)
     tensor(-11.6051)
+
     """
 
     def __init__(
@@ -98,7 +105,7 @@ class _SignalDistortionRatio(SignalDistortionRatio):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("SignalDistortionRatio", "audio")
-        return super().__init__(
+        super().__init__(
             use_cg_iter=use_cg_iter, filter_length=filter_length, zero_mean=zero_mean, load_diag=load_diag, **kwargs
         )
 
@@ -112,6 +119,7 @@ class _SignalNoiseRatio(SignalNoiseRatio):
     >>> snr = _SignalNoiseRatio()
     >>> snr(preds, target)
     tensor(16.1805)
+
     """
 
     def __init__(
@@ -120,4 +128,4 @@ class _SignalNoiseRatio(SignalNoiseRatio):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("SignalNoiseRatio", "audio")
-        return super().__init__(zero_mean=zero_mean, **kwargs)
+        super().__init__(zero_mean=zero_mean, **kwargs)

@@ -19,7 +19,6 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.image.uqi import universal_image_quality_index
-from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
 
@@ -29,15 +28,20 @@ def _spectral_distortion_index_update(preds: Tensor, target: Tensor) -> Tuple[Te
     Args:
         preds: Low resolution multispectral image
         target: High resolution fused image
+
     """
     if preds.dtype != target.dtype:
         raise TypeError(
             f"Expected `ms` and `fused` to have the same data type. Got ms: {preds.dtype} and fused: {target.dtype}."
         )
-    _check_same_shape(preds, target)
     if len(preds.shape) != 4:
         raise ValueError(
             f"Expected `preds` and `target` to have BxCxHxW shape. Got preds: {preds.shape} and target: {target.shape}."
+        )
+    if preds.shape[:2] != target.shape[:2]:
+        raise ValueError(
+            "Expected `preds` and `target` to have same batch and channel sizes."
+            f"Got preds: {preds.shape} and target: {target.shape}."
         )
     return preds, target
 
@@ -67,15 +71,32 @@ def _spectral_distortion_index_compute(
         >>> preds, target = _spectral_distortion_index_update(preds, target)
         >>> _spectral_distortion_index_compute(preds, target)
         tensor(0.0234)
+
     """
     length = preds.shape[1]
-    m1 = torch.zeros((length, length))
-    m2 = torch.zeros((length, length))
+
+    m1 = torch.zeros((length, length), device=preds.device)
+    m2 = torch.zeros((length, length), device=preds.device)
 
     for k in range(length):
-        for r in range(k, length):
-            m1[k, r] = m1[r, k] = universal_image_quality_index(target[:, k : k + 1, :, :], target[:, r : r + 1, :, :])
-            m2[k, r] = m2[r, k] = universal_image_quality_index(preds[:, k : k + 1, :, :], preds[:, r : r + 1, :, :])
+        num = length - (k + 1)
+        if num == 0:
+            continue
+        stack1 = target[:, k : k + 1, :, :].repeat(num, 1, 1, 1)
+        stack2 = torch.cat([target[:, r : r + 1, :, :] for r in range(k + 1, length)], dim=0)
+        score = [
+            s.mean() for s in universal_image_quality_index(stack1, stack2, reduction="none").split(preds.shape[0])
+        ]
+        m1[k, k + 1 :] = torch.stack(score, 0)
+
+        stack1 = preds[:, k : k + 1, :, :].repeat(num, 1, 1, 1)
+        stack2 = torch.cat([preds[:, r : r + 1, :, :] for r in range(k + 1, length)], dim=0)
+        score = [
+            s.mean() for s in universal_image_quality_index(stack1, stack2, reduction="none").split(preds.shape[0])
+        ]
+        m2[k, k + 1 :] = torch.stack(score, 0)
+    m1 = m1 + m1.T
+    m2 = m2 + m2.T
 
     diff = torch.pow(torch.abs(m1 - m2), p)
     # Special case: when number of channels (L) is 1, there will be only one element in M1 and M2. Hence no need to sum.
@@ -124,6 +145,7 @@ def spectral_distortion_index(
         >>> target = torch.rand([16, 3, 16, 16])
         >>> spectral_distortion_index(preds, target)
         tensor(0.0234)
+
     """
     if not isinstance(p, int) or p <= 0:
         raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")

@@ -3,6 +3,8 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/tabular_classification.svg
    :tags: Classification
 
+.. include:: ../links.rst
+
 #############
 Jaccard Index
 #############
@@ -10,12 +12,10 @@ Jaccard Index
 Module Interface
 ________________
 
-JaccardIndex
-^^^^^^^^^^^^
-
 .. autoclass:: torchmetrics.JaccardIndex
     :noindex:
     :exclude-members: update, compute
+    :special-members: __new__
 
 BinaryJaccardIndex
 ^^^^^^^^^^^^^^^^^^

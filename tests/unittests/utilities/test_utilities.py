@@ -17,7 +17,6 @@ import numpy as np
 import pytest
 import torch
 from torch import tensor
-
 from torchmetrics.regression import MeanSquaredError, PearsonCorrCoef
 from torchmetrics.utilities import check_forward_full_state_property, rank_zero_debug, rank_zero_info, rank_zero_warn
 from torchmetrics.utilities.checks import _allclose_recursive
@@ -154,7 +153,7 @@ def test_check_full_state_update_fn(capsys, metric_class, expected):
 
 
 @pytest.mark.parametrize(
-    ("input", "expected"),
+    ("inputs", "expected"),
     [
         ((torch.ones(2), torch.ones(2)), True),
         ((torch.rand(2), torch.rand(2)), False),
@@ -164,9 +163,9 @@ def test_check_full_state_update_fn(capsys, metric_class, expected):
         (({f"{i}": torch.rand(2) for i in range(2)}, {f"{i}": torch.rand(2) for i in range(2)}), False),
     ],
 )
-def test_recursive_allclose(input, expected):
+def test_recursive_allclose(inputs, expected):
     """Test the recursive allclose works as expected."""
-    res = _allclose_recursive(*input)
+    res = _allclose_recursive(*inputs)
     assert res == expected
 
 
@@ -179,6 +178,7 @@ def test_cumsum_still_not_supported():
     """Make sure that cumsum on gpu and deterministic mode still fails.
 
     If this test begins to passes, it means newer Pytorch versions support this and we can drop internal support.
+
     """
     torch.use_deterministic_algorithms(True)
     with pytest.raises(RuntimeError, match="cumsum_cuda_kernel does not have a deterministic implementation.*"):

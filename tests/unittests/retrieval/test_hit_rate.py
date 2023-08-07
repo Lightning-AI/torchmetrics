@@ -11,12 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
+
 import numpy as np
 import pytest
 from torch import Tensor
-
 from torchmetrics.functional.retrieval.hit_rate import retrieval_hit_rate
 from torchmetrics.retrieval.hit_rate import RetrievalHitRate
+
 from unittests.helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,
@@ -34,7 +36,7 @@ from unittests.retrieval.helpers import (
 seed_all(42)
 
 
-def _hit_rate_at_k(target: np.ndarray, preds: np.ndarray, top_k: int = None):
+def _hit_rate_at_k(target: np.ndarray, preds: np.ndarray, top_k: Optional[int] = None):
     """Didn't find a reliable implementation of Hit Rate in Information Retrieval, so, reimplementing here."""
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs

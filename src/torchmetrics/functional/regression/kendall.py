@@ -178,6 +178,7 @@ def _get_p_value_for_t_value_from_dist(t_value: Tensor) -> Tensor:
     """Obtain p-value for a given Tensor of t-values. Handle ``nan`` which cannot be passed into torch distributions.
 
     When t-value is ``nan``, a resulted p-value should be alson ``nan``.
+
     """
     device = t_value
     normal_dist = torch.distributions.normal.Normal(torch.tensor([0.0]).to(device), torch.tensor([1.0]).to(device))
@@ -224,8 +225,8 @@ def _calculate_p_value(
 def _kendall_corrcoef_update(
     preds: Tensor,
     target: Tensor,
-    concat_preds: List[Tensor] = [],
-    concat_target: List[Tensor] = [],
+    concat_preds: Optional[List[Tensor]] = None,
+    concat_target: Optional[List[Tensor]] = None,
     num_outputs: int = 1,
 ) -> Tuple[List[Tensor], List[Tensor]]:
     """Update variables required to compute Kendall rank correlation coefficient.
@@ -239,7 +240,10 @@ def _kendall_corrcoef_update(
 
     Raises:
         RuntimeError: If ``preds`` and ``target`` do not have the same shape
+
     """
+    concat_preds = concat_preds or []
+    concat_target = concat_target or []
     # Data checking
     _check_same_shape(preds, target)
     _check_data_shape_to_num_outputs(preds, target, num_outputs)
@@ -271,6 +275,7 @@ def _kendall_corrcoef_compute(
             - 'two-sided': the rank correlation is nonzero
             - 'less': the rank correlation is negative (less than zero)
             - 'greater':  the rank correlation is positive (greater than zero)
+
     """
     (
         concordant_pairs,
@@ -386,6 +391,7 @@ def kendall_rank_corrcoef(
         >>> target = torch.tensor([[3, -0.5], [2, 1]])
         >>> kendall_rank_corrcoef(preds, target, t_test=True, alternative='two-sided')
             (tensor([1., 1.]), tensor([nan, nan]))
+
     """
     if not isinstance(t_test, bool):
         raise ValueError(f"Argument `t_test` is expected to be of a type `bool`, but got {type(t_test)}.")

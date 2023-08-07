@@ -17,9 +17,9 @@ import numpy as np
 import pytest
 import torch
 from sewar.utils import _compute_bef
-
 from torchmetrics.functional.image.psnrb import peak_signal_noise_ratio_with_blocked_effect
 from torchmetrics.image import PeakSignalNoiseRatioWithBlockedEffect
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -41,6 +41,7 @@ def _ref_metric(preds, target):
     Inspired by
     https://github.com/andrewekhalel/sewar/blob/master/sewar/full_ref.py
     that also supports batched inputs.
+
     """
     preds = preds.numpy()
     target = target.numpy()

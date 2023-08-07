@@ -35,6 +35,11 @@ if not _MATPLOTLIB_AVAILABLE:
 class _AbstractGroupStatScores(Metric):
     """Create and update states for computing group stats tp, fp, tn and fn."""
 
+    tp: Tensor
+    fp: Tensor
+    tn: Tensor
+    fn: Tensor
+
     def _create_states(self, num_groups: int) -> None:
         default = lambda: torch.zeros(num_groups, dtype=torch.long)
         self.add_state("tp", default(), dist_reduce_fx="sum")
@@ -94,6 +99,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
         >>> metric = BinaryGroupStatRates(num_groups=2)
         >>> metric(preds, target, groups)
         {'group_0': tensor([0., 0., 1., 0.]), 'group_1': tensor([1., 0., 0., 0.])}
+
     """
     is_differentiable = False
     higher_is_better = False
@@ -123,13 +129,14 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
 
         self._create_states(self.num_groups)
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor, groups: torch.Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor, groups: Tensor) -> None:
         """Update state with predictions, target and group identifiers.
 
         Args:
             preds: Tensor with predictions.
             target: Tensor with true labels.
             groups: Tensor with group identifiers. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
+
         """
         group_stats = _binary_groups_stat_scores(
             preds, target, groups, self.num_groups, self.threshold, self.ignore_index, self.validate_args
@@ -139,7 +146,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
 
     def compute(
         self,
-    ) -> Dict[str, torch.Tensor]:
+    ) -> Dict[str, Tensor]:
         """Compute tp, fp, tn and fn rates based on inputs passed in to ``update`` previously."""
         results = torch.stack((self.tp, self.fp, self.tn, self.fn), dim=1)
 
@@ -198,6 +205,7 @@ class BinaryFairness(_AbstractGroupStatScores):
         >>> metric = BinaryFairness(2)
         >>> metric(preds, target, groups)
         {'DP_0_1': tensor(0.), 'EO_0_1': tensor(0.)}
+
     """
     is_differentiable = False
     higher_is_better = False
@@ -235,13 +243,14 @@ class BinaryFairness(_AbstractGroupStatScores):
 
         self._create_states(self.num_groups)
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor, groups: Optional[torch.Tensor] = None) -> None:
+    def update(self, preds: Tensor, target: Tensor, groups: Tensor) -> None:
         """Update state with predictions, groups, and target.
 
         Args:
             preds: Tensor with predictions.
             target: Tensor with true labels.
             groups: Tensor with group identifiers. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
+
         """
         if self.task == "demographic_parity":
             if target is not None:
@@ -291,23 +300,26 @@ class BinaryFairness(_AbstractGroupStatScores):
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint
+            >>> import torch
+            >>> _ = torch.manual_seed(42)
             >>> # Example plotting a single value
             >>> from torchmetrics.classification import BinaryFairness
             >>> metric = BinaryFairness(2)
-            >>> metric.update(rand(20), randint(2,(20,)), randint(2,(20,)))
+            >>> metric.update(torch.rand(20), torch.randint(2,(20,)), torch.randint(2,(20,)))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
             :scale: 75
 
-            >>> from torch import rand, randint, ones
+            >>> import torch
+            >>> _ = torch.manual_seed(42)
             >>> # Example plotting multiple values
             >>> from torchmetrics.classification import BinaryFairness
             >>> metric = BinaryFairness(2)
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(rand(20), randint(2,(20,)), ones(20).long()))
+            ...     values.append(metric(torch.rand(20), torch.randint(2,(20,)), torch.ones(20).long()))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

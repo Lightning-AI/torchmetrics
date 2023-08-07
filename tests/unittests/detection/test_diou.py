@@ -11,15 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Callable, Dict
+from typing import Callable, ClassVar, Dict
 
 import pytest
 import torch
 from torch import Tensor
-
 from torchmetrics.detection.diou import DistanceIntersectionOverUnion
 from torchmetrics.functional.detection.diou import distance_intersection_over_union
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_13
+
 from unittests.detection.base_iou_test import BaseTestIntersectionOverUnion, TestCaseData, _box_inputs, _inputs
 from unittests.helpers.testers import MetricTester
 
@@ -48,12 +49,12 @@ _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0
 class TestDistanceIntersectionOverUnion(MetricTester, BaseTestIntersectionOverUnion):
     """Test the Distance Intersection over Union metric for object detection predictions."""
 
-    data: Dict[str, TestCaseData] = {
+    data: ClassVar[Dict[str, TestCaseData]] = {
         "iou_variant": TestCaseData(data=_inputs, result={DistanceIntersectionOverUnion._iou_type: diou}),
         "iou_variant_respect": TestCaseData(
             data=_inputs, result={DistanceIntersectionOverUnion._iou_type: diou_dontrespect}
         ),
         "fn_iou_variant": TestCaseData(data=_box_inputs, result=box_diou),
     }
-    metric_class = DistanceIntersectionOverUnion
-    metric_fn: Callable[[Tensor, Tensor, bool, float], Tensor] = distance_intersection_over_union
+    metric_class: ClassVar[Metric] = DistanceIntersectionOverUnion
+    metric_fn: ClassVar[Callable[[Tensor, Tensor, bool, float], Tensor]] = distance_intersection_over_union

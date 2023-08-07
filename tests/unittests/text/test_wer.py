@@ -1,10 +1,10 @@
 from typing import Callable, List, Union
 
 import pytest
-
 from torchmetrics.functional.text.wer import word_error_rate
 from torchmetrics.text.wer import WordErrorRate
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
+
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 

@@ -12,17 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from copy import deepcopy
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
-import numpy as np
 import torch
 from torch import Tensor
-from torch.autograd import Function
 from torch.nn import Module
 from torch.nn.functional import adaptive_avg_pool2d
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_info
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -37,7 +34,7 @@ if _TORCH_FIDELITY_AVAILABLE:
     from torch_fidelity.interpolate_compat_tensorflow import interpolate_bilinear_2d_like_tensorflow1x
 else:
 
-    class _FeatureExtractorInceptionV3(Module):
+    class _FeatureExtractorInceptionV3(Module):  # type: ignore[no-redef]
         pass
 
     vassert = None
@@ -66,7 +63,7 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
         """Force network to always be in evaluation mode."""
         return super().train(False)
 
-    def _torch_fidelity_forward(self, x: Tensor) -> Tensor:
+    def _torch_fidelity_forward(self, x: Tensor) -> Tuple[Tensor, ...]:
         """Forward method of inception net.
 
         Copy of the forward method from this file:
@@ -75,6 +72,7 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
 
         Corresponding license file (Apache License, Version 2.0):
         https://github.com/toshas/torch-fidelity/blob/master/LICENSE.md
+
         """
         vassert(torch.is_tensor(x) and x.dtype == torch.uint8, "Expecting image as torch.Tensor with dtype=torch.uint8")
         features = {}
@@ -171,6 +169,7 @@ def _compute_fid(mu1: Tensor, sigma1: Tensor, mu2: Tensor, sigma2: Tensor) -> Te
 
     Returns:
         Scalar value of the distance between sets.
+
     """
     a = (mu1 - mu2).square().sum(dim=-1)
     b = sigma1.trace() + sigma2.trace()
@@ -191,8 +190,8 @@ class FrechetInceptionDistance(Metric):
     The metric was originally proposed in `fid ref1`_.
 
     Using the default feature extraction (Inception v3 using the original weights from `fid ref2`_), the input is
-    expected to be mini-batches of 3-channel RGB images of shape ``(3 x H x W)``. If argument ``normalize``
-    is ``True`` images are expected to be dtype ``float`` and have values in the ``[0, 1]`` range, else if
+    expected to be mini-batches of 3-channel RGB images of shape ``(3xHxW)``. If argument ``normalize``
+    is ``True`` images are expected to be dtype ``float`` and have values in the ``[0,1]`` range, else if
     ``normalize`` is set to ``False`` images are expected to have dtype ``uint8`` and take values in the ``[0, 255]``
     range. All images will be resized to 299 x 299 which is the size of the original training data. The boolian
     flag ``real`` determines if the images should update the statistics of the real distribution or the
@@ -254,6 +253,7 @@ class FrechetInceptionDistance(Metric):
         >>> fid.update(imgs_dist2, real=False)
         >>> fid.compute()
         tensor(12.7202)
+
     """
 
     higher_is_better: bool = False
@@ -268,6 +268,8 @@ class FrechetInceptionDistance(Metric):
     fake_features_sum: Tensor
     fake_features_cov_sum: Tensor
     fake_features_num_samples: Tensor
+
+    inception: Module
 
     def __init__(
         self,
@@ -369,6 +371,7 @@ class FrechetInceptionDistance(Metric):
 
         Arguments:
             dst_type (type or string): the desired type.
+
         """
         out = super().set_dtype(dst_type)
         if isinstance(out.inception, NoTrainInceptionV3):
@@ -421,7 +424,6 @@ class FrechetInceptionDistance(Metric):
             ...     values.append(metric.compute())
             ...     metric.reset()
             >>> fig_, ax_ = metric.plot(values)
-
 
         """
         return self._plot(val, ax)

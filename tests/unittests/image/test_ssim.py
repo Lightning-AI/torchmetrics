@@ -20,9 +20,9 @@ import torch
 from pytorch_msssim import ssim
 from skimage.metrics import structural_similarity
 from torch import Tensor
-
 from torchmetrics.functional import structural_similarity_index_measure
 from torchmetrics.image import StructuralSimilarityIndexMeasure
+
 from unittests import NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -269,6 +269,7 @@ def test_ssim_invalid_inputs(pred, target, kernel, sigma, match):
 
     Checks that that an value errors are raised if input sizes are different, kernel length and sigma does not match
     size or invalid values are provided.
+
     """
     pred = torch.rand(pred)
     target = torch.rand(target)

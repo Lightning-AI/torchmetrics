@@ -17,9 +17,9 @@ from functools import partial
 import pytest
 import torch
 from scipy.stats import pearsonr
-
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.regression.pearson import PearsonCorrCoef, _final_aggregation
+
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -100,8 +100,6 @@ class TestPearsonCorrCoef(MetricTester):
             metric_functional=pearson_corrcoef,
         )
 
-    # Pearson half + cpu does not work due to missing support in torch.sqrt
-    @pytest.mark.xfail(reason="PearsonCorrCoef metric does not support cpu + half precision")
     def test_pearson_corrcoef_half_cpu(self, preds, target):
         """Test dtype support of the metric on CPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
@@ -142,3 +140,12 @@ def test_final_aggregation_function(shapes):
     output = _final_aggregation(input_fn(), input_fn(), input_fn(), input_fn(), input_fn(), torch.randint(10, shapes))
     assert all(isinstance(out, torch.Tensor) for out in output)
     assert all(out.ndim == input_fn().ndim - 1 for out in output)
+
+
+@pytest.mark.parametrize(("dtype", "scale"), [(torch.float16, 1e-4), (torch.float32, 1e-8), (torch.float64, 1e-16)])
+def test_pearsons_warning_on_small_input(dtype, scale):
+    """Check that a user warning is raised for small input."""
+    preds = scale * torch.randn(100, dtype=dtype)
+    target = scale * torch.randn(100, dtype=dtype)
+    with pytest.warns(UserWarning, match="The variance of predictions or target is close to zero.*"):
+        pearson_corrcoef(preds, target)

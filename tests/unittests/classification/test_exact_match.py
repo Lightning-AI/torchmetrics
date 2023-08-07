@@ -17,9 +17,10 @@ import numpy as np
 import pytest
 import torch
 from scipy.special import expit as sigmoid
-
-from torchmetrics.classification.exact_match import MulticlassExactMatch, MultilabelExactMatch
+from torchmetrics.classification.exact_match import ExactMatch, MulticlassExactMatch, MultilabelExactMatch
 from torchmetrics.functional.classification.exact_match import multiclass_exact_match, multilabel_exact_match
+from torchmetrics.metric import Metric
+
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
@@ -44,16 +45,16 @@ def _baseline_exact_match_multiclass(preds, target, ignore_index, multidim_avera
     return correct / total
 
 
-@pytest.mark.parametrize("input", _multiclass_cases)
+@pytest.mark.parametrize("inputs", _multiclass_cases)
 class TestMulticlassExactMatch(MetricTester):
     """Test class for `MulticlassExactMatch` metric."""
 
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multiclass_exact_match(self, ddp, input, ignore_index, multidim_average):
+    def test_multiclass_exact_match(self, ddp, inputs, ignore_index, multidim_average):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if target.ndim < 3:
@@ -80,9 +81,9 @@ class TestMulticlassExactMatch(MetricTester):
 
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    def test_multiclass_exact_match_functional(self, input, ignore_index, multidim_average):
+    def test_multiclass_exact_match_functional(self, inputs, ignore_index, multidim_average):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if target.ndim < 3:
@@ -104,9 +105,9 @@ class TestMulticlassExactMatch(MetricTester):
             },
         )
 
-    def test_multiclass_exact_match_differentiability(self, input):
+    def test_multiclass_exact_match_differentiability(self, inputs):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -116,9 +117,9 @@ class TestMulticlassExactMatch(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_exact_match_half_cpu(self, input, dtype):
+    def test_multiclass_exact_match_half_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
 
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -133,9 +134,9 @@ class TestMulticlassExactMatch(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_exact_match_half_gpu(self, input, dtype):
+    def test_multiclass_exact_match_half_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -171,16 +172,16 @@ def _baseline_exact_match_multilabel(preds, target, ignore_index, multidim_avera
     return correct / total
 
 
-@pytest.mark.parametrize("input", _multilabel_cases)
+@pytest.mark.parametrize("inputs", _multilabel_cases)
 class TestMultilabelExactMatch(MetricTester):
     """Test class for `MultilabelExactMatch` metric."""
 
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    def test_multilabel_exact_match(self, ddp, input, ignore_index, multidim_average):
+    def test_multilabel_exact_match(self, ddp, inputs, ignore_index, multidim_average):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 4:
@@ -208,9 +209,9 @@ class TestMultilabelExactMatch(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    def test_multilabel_exact_match_functional(self, input, ignore_index, multidim_average):
+    def test_multilabel_exact_match_functional(self, inputs, ignore_index, multidim_average):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 4:
@@ -233,9 +234,9 @@ class TestMultilabelExactMatch(MetricTester):
             },
         )
 
-    def test_multilabel_exact_match_differentiability(self, input):
+    def test_multilabel_exact_match_differentiability(self, inputs):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -245,9 +246,9 @@ class TestMultilabelExactMatch(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_exact_match_half_cpu(self, input, dtype):
+    def test_multilabel_exact_match_half_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
 
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
@@ -262,9 +263,9 @@ class TestMultilabelExactMatch(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_exact_match_half_gpu(self, input, dtype):
+    def test_multilabel_exact_match_half_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -273,3 +274,23 @@ class TestMultilabelExactMatch(MetricTester):
             metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
             dtype=dtype,
         )
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (MulticlassExactMatch, {"task": "multiclass", "num_classes": 3}),
+        (MultilabelExactMatch, {"task": "multilabel", "num_labels": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=ExactMatch):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

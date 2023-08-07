@@ -11,11 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Tuple, Union
+from typing import Any, Optional, Sequence, Union
 
 import torch
 from torch import Tensor, tensor
-from typing_extensions import Literal
 
 from torchmetrics.functional.image.psnrb import _psnrb_compute, _psnrb_update
 from torchmetrics.metric import Metric
@@ -60,6 +59,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
         >>> target = torch.rand(2, 1, 10, 10)
         >>> metric(preds, target)
         tensor(7.2893)
+
     """
     is_differentiable: bool = True
     higher_is_better: bool = True
@@ -135,5 +135,6 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(2, 1, 10, 10), torch.rand(2, 1, 10, 10)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

@@ -11,8 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Union
-
 from lightning_utilities.core.enums import StrEnum
 from typing_extensions import Literal
 
@@ -41,12 +39,15 @@ class EnumStr(StrEnum):
         Traceback (most recent call last):
           ...
         ValueError: Invalid Task: expected one of ['a', 'b'], but got c.
+
         """
         try:
             me = super().from_str(value.replace("-", "_"), source=source)
-        except ValueError:
+        except ValueError as err:
             _allowed_im = [m.lower() for m in cls._member_names_]
-            raise ValueError(f"Invalid {cls._name()}: expected one of {cls._allowed_matches(source)}, but got {value}.")
+            raise ValueError(
+                f"Invalid {cls._name()}: expected one of {cls._allowed_matches(source)}, but got {value}."
+            ) from err
         return cls(me)
 
 
@@ -55,6 +56,7 @@ class DataType(EnumStr):
 
     >>> "Binary" in list(DataType)
     True
+
     """
 
     @staticmethod
@@ -76,6 +78,7 @@ class AverageMethod(EnumStr):
     True
     >>> AverageMethod.NONE == 'none'
     True
+
     """
 
     @staticmethod
@@ -105,6 +108,7 @@ class ClassificationTask(EnumStr):
 
     >>> "binary" in list(ClassificationTask)
     True
+
     """
 
     @staticmethod
@@ -121,6 +125,7 @@ class ClassificationTaskNoBinary(EnumStr):
 
     >>> "binary" in list(ClassificationTaskNoBinary)
     False
+
     """
 
     @staticmethod
@@ -136,6 +141,7 @@ class ClassificationTaskNoMultilabel(EnumStr):
 
     >>> "multilabel" in list(ClassificationTaskNoMultilabel)
     False
+
     """
 
     @staticmethod

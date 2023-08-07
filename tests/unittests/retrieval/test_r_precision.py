@@ -14,9 +14,9 @@
 import numpy as np
 import pytest
 from torch import Tensor
-
 from torchmetrics.functional.retrieval.r_precision import retrieval_r_precision
 from torchmetrics.retrieval.r_precision import RetrievalRPrecision
+
 from unittests.helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,
@@ -35,8 +35,9 @@ seed_all(42)
 def _r_precision(target: np.ndarray, preds: np.ndarray):
     """Didn't find a reliable implementation of R-Precision in Information Retrieval, so, reimplementing here.
 
-    A good explanation can be found `here
-    <https://web.stanford.edu/class/cs276/handouts/EvaluationNew-handout-1-per.pdf>_`.
+    A good explanation can be found
+    `here <https://web.stanford.edu/class/cs276/handouts/EvaluationNew-handout-1-per.pdf>_`.
+
     """
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs

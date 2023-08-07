@@ -12,12 +12,12 @@ Retrieval Fall-Out
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.RetrievalFallOut
+.. autoclass:: torchmetrics.retrieval.RetrievalFallOut
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.retrieval_fall_out
+.. autofunction:: torchmetrics.functional.retrieval.retrieval_fall_out
     :noindex:

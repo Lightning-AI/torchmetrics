@@ -35,7 +35,7 @@ LUT_PYTHON_TORCH = {
     "3.11": "1.13",
 }
 _path = lambda *ds: os.path.join(_PATH_ROOT, *ds)
-REQUIREMENTS_FILES = tuple(glob.glob(_path("requirements", "*.txt")) + [_path("requirements.txt")])
+REQUIREMENTS_FILES = (*glob.glob(_path("requirements", "*.txt")), _path("requirements.txt"))
 
 
 def request_url(url: str, auth_token: Optional[str] = None) -> Optional[dict]:
@@ -72,6 +72,7 @@ class AssistantCLI:
         """Set minimal torch version according to Python actual version.
 
         >>> AssistantCLI.set_min_torch_by_python("../requirements.txt")
+
         """
         py_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
         if py_ver not in LUT_PYTHON_TORCH:
@@ -114,7 +115,7 @@ class AssistantCLI:
         """Determine what domains were changed in particular PR."""
         if not pr:
             return "unittests"
-        url = f"https://api.github.com/repos/Lightning-AI/metrics/pulls/{pr}/files"
+        url = f"https://api.github.com/repos/Lightning-AI/torchmetrics/pulls/{pr}/files"
         logging.debug(url)
         data = request_url(url, auth_token)
         if not data:

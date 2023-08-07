@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import inspect
-import unittest.mock as mock
 from functools import partial
 from typing import Any, Callable, Dict, Optional
+from unittest import mock
 
 import numpy as np
 import pandas as pd
@@ -23,20 +23,23 @@ import torch
 from fairlearn.metrics import MetricFrame, selection_rate, true_positive_rate
 from scipy.special import expit as sigmoid
 from torch import Tensor
-
 from torchmetrics import Metric
 from torchmetrics.classification.group_fairness import BinaryFairness
 from torchmetrics.functional.classification.group_fairness import binary_fairness
 from torchmetrics.utilities.imports import _PYTHON_LOWER_3_8
+
 from unittests import THRESHOLD
 from unittests.classification.inputs import _group_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests.helpers.testers import (
+    MetricTester,
+    _assert_dtype_support,
+    inject_ignore_index,
+    remove_ignore_index_groups,
+)
 from unittests.helpers.testers import _assert_allclose as _core_assert_allclose
-from unittests.helpers.testers import _assert_dtype_support
 from unittests.helpers.testers import _assert_requires_grad as _core_assert_requires_grad
 from unittests.helpers.testers import _assert_tensor as _core_assert_tensor
-from unittests.helpers.testers import inject_ignore_index, remove_ignore_index_groups
 
 seed_all(42)
 
@@ -109,7 +112,7 @@ class BinaryFairnessTester(MetricTester):
         metric_functional: Optional[Callable] = None,
         metric_args: Optional[dict] = None,
         groups: Optional[Tensor] = None,
-    ):
+    ) -> None:
         """Test if a metric is differentiable or not.
 
         Args:
@@ -119,6 +122,7 @@ class BinaryFairnessTester(MetricTester):
             metric_functional: functional version of the metric
             metric_args: dict with additional arguments used for class initialization
             groups: Tensor with group identifiers. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
+
         """
         metric_args = metric_args or {}
         # only floating point tensors can require grad
@@ -148,7 +152,7 @@ class BinaryFairnessTester(MetricTester):
         metric_args: Optional[dict] = None,
         dtype: torch.dtype = torch.half,
         **kwargs_update: Any,
-    ):
+    ) -> None:
         """Test if a metric can be used with half precision tensors on cpu.
 
         Args:
@@ -160,6 +164,7 @@ class BinaryFairnessTester(MetricTester):
             dtype: dtype to run test with
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
+
         """
         metric_args = metric_args or {}
         functional_metric_args = {
@@ -185,7 +190,7 @@ class BinaryFairnessTester(MetricTester):
         metric_args: Optional[dict] = None,
         dtype: torch.dtype = torch.half,
         **kwargs_update: Any,
-    ):
+    ) -> None:
         """Test if a metric can be used with half precision tensors on gpu.
 
         Args:
@@ -197,6 +202,7 @@ class BinaryFairnessTester(MetricTester):
             dtype: dtype to run test with
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
+
         """
         metric_args = metric_args or {}
         functional_metric_args = {

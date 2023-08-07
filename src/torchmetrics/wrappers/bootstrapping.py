@@ -22,6 +22,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities import apply_to_collection
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+from torchmetrics.wrappers.abstract import WrapperMetric
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["BootStrapper.plot"]
@@ -39,18 +40,18 @@ def _bootstrap_sampler(
 
     Returns:
         resampled tensor
+
     """
     if sampling_strategy == "poisson":
         p = torch.distributions.Poisson(1)
         n = p.sample((size,))
         return torch.arange(size).repeat_interleave(n.long(), dim=0)
     if sampling_strategy == "multinomial":
-        idx = torch.multinomial(torch.ones(size), num_samples=size, replacement=True)
-        return idx
+        return torch.multinomial(torch.ones(size), num_samples=size, replacement=True)
     raise ValueError("Unknown sampling strategy")
 
 
-class BootStrapper(Metric):
+class BootStrapper(WrapperMetric):
     r"""Using `Turn a Metric into a Bootstrapped`_.
 
     That can automate the process of getting confidence intervals for metric values. This wrapper
@@ -83,6 +84,7 @@ class BootStrapper(Metric):
         >>> output = bootstrap.compute()
         >>> pprint(output)
         {'mean': tensor(0.2205), 'std': tensor(0.0859)}
+
     """
     full_state_update: Optional[bool] = True
 
@@ -100,7 +102,7 @@ class BootStrapper(Metric):
         super().__init__(**kwargs)
         if not isinstance(base_metric, Metric):
             raise ValueError(
-                "Expected base metric to be an instance of torchmetrics.Metric" f" but received {base_metric}"
+                f"Expected base metric to be an instance of torchmetrics.Metric but received {base_metric}"
             )
 
         self.metrics = ModuleList([deepcopy(base_metric) for _ in range(num_bootstraps)])
@@ -123,6 +125,7 @@ class BootStrapper(Metric):
         """Update the state of the base metric.
 
         Any tensor passed in will be bootstrapped along dimension 0.
+
         """
         for idx in range(self.num_bootstraps):
             args_sizes = apply_to_collection(args, Tensor, len)
@@ -143,6 +146,7 @@ class BootStrapper(Metric):
 
         Always returns a dict of tensors, which can contain the following keys: ``mean``, ``std``, ``quantile`` and
         ``raw`` depending on how the class was initialized.
+
         """
         computed_vals = torch.stack([m.compute() for m in self.metrics], dim=0)
         output_dict = {}
@@ -155,6 +159,10 @@ class BootStrapper(Metric):
         if self.raw:
             output_dict["raw"] = computed_vals
         return output_dict
+
+    def forward(self, *args: Any, **kwargs: Any) -> Any:
+        """Use the original forward method of the base metric class."""
+        return super(WrapperMetric, self).forward(*args, **kwargs)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -196,5 +204,6 @@ class BootStrapper(Metric):
             >>> for _ in range(3):
             ...     values.append(metric(torch.randn(100,), torch.randn(100,)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

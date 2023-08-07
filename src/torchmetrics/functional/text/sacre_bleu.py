@@ -39,7 +39,7 @@
 
 import re
 from functools import partial
-from typing import Optional, Sequence
+from typing import ClassVar, Optional, Sequence
 
 import torch
 from torch import Tensor, tensor
@@ -81,6 +81,7 @@ class _SacreBLEUTokenizer:
     """Tokenizer used for SacreBLEU calculation.
 
     Source: https://github.com/mjpost/sacrebleu/tree/master/sacrebleu/tokenizers
+
     """
 
     _REGEX = (
@@ -109,7 +110,7 @@ class _SacreBLEUTokenizer:
             (regex.compile(r"(\p{S})"), r" \1 "),
         )
 
-    _TOKENIZE_FN = {
+    _TOKENIZE_FN: ClassVar[dict] = {
         "none": "_tokenize_base",
         "13a": "_tokenize_13a",
         "zh": "_tokenize_zh",
@@ -142,6 +143,7 @@ class _SacreBLEUTokenizer:
 
         Return:
             the tokenized line
+
         """
         for _re, repl in cls._REGEX:
             line = _re.sub(repl, line)
@@ -157,6 +159,7 @@ class _SacreBLEUTokenizer:
 
         Return:
             whether the input char is a Chinese character.
+
         """
         return any(start <= uchar <= end for start, end in _UCODE_RANGES)
 
@@ -169,18 +172,20 @@ class _SacreBLEUTokenizer:
 
         Return:
             the tokenized line
+
         """
         return line
 
     @classmethod
     def _tokenize_13a(cls, line: str) -> str:
-        """Tokenizes an line using a relatively minimal tokenization that is equivalent to mteval-v13a, used by WMT.
+        """Tokenizes a line using a relatively minimal tokenization that is equivalent to mteval-v13a, used by WMT.
 
         Args:
             line: input sentence
 
         Return:
             tokenized sentence
+
         """
         # language-independent part:
         line = line.replace("<skipped>", "")
@@ -193,7 +198,7 @@ class _SacreBLEUTokenizer:
             line = line.replace("&lt;", "<")
             line = line.replace("&gt;", ">")
 
-        return cls._tokenize_regex(line)
+        return cls._tokenize_regex(f" {line} ")
 
     @classmethod
     def _tokenize_zh(cls, line: str) -> str:
@@ -208,6 +213,7 @@ class _SacreBLEUTokenizer:
 
         Return:
             tokenized sentence
+
         """
         line = line.strip()
         line_in_chars = ""
@@ -248,6 +254,7 @@ class _SacreBLEUTokenizer:
 
         Return:
             The tokenized string.
+
         """
         for _re, repl in cls._INT_REGEX:
             line = _re.sub(repl, line)
@@ -263,6 +270,7 @@ class _SacreBLEUTokenizer:
 
         Return:
             the tokenized line
+
         """
         return " ".join(char for char in line)
 
@@ -290,7 +298,7 @@ def sacre_bleu_score(
         preds: An iterable of machine translated corpus
         target: An iterable of iterables of reference corpus
         n_gram: Gram value ranged from 1 to 4
-        smooth: Whether to apply smoothing – see [2]
+        smooth: Whether to apply smoothing - see [2]
         tokenize: Tokenization technique to be used.
             Supported tokenization: ['none', '13a', 'zh', 'intl', 'char']
         lowercase: If ``True``, BLEU score over lowercased text is calculated.
@@ -320,6 +328,7 @@ def sacre_bleu_score(
 
         [3] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
+
     """
     if tokenize not in AVAILABLE_TOKENIZERS:
         raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")

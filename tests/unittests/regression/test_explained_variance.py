@@ -17,9 +17,9 @@ from functools import partial
 import pytest
 import torch
 from sklearn.metrics import explained_variance_score
-
 from torchmetrics.functional import explained_variance
 from torchmetrics.regression import ExplainedVariance
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester

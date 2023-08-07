@@ -18,7 +18,6 @@ import numpy as np
 import pytest
 from sklearn.metrics import auc as _sk_auc
 from torch import tensor
-
 from torchmetrics.utilities.compute import auc
 from unittests import NUM_BATCHES
 from unittests.helpers import seed_all

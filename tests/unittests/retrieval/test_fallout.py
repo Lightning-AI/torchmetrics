@@ -11,12 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
+
 import numpy as np
 import pytest
 from torch import Tensor
-
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
 from torchmetrics.retrieval.fall_out import RetrievalFallOut
+
 from unittests.helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,
@@ -34,10 +36,11 @@ from unittests.retrieval.helpers import (
 seed_all(42)
 
 
-def _fallout_at_k(target: np.ndarray, preds: np.ndarray, top_k: int = None):
+def _fallout_at_k(target: np.ndarray, preds: np.ndarray, top_k: Optional[int] = None):
     """Didn't find a reliable implementation of Fall-out in Information Retrieval, so, reimplementing here.
 
     See Wikipedia for `Fall-out`_ for more information about the metric definition.
+
     """
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs

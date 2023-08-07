@@ -16,6 +16,7 @@ from typing import Any, List, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.precision_recall_curve import (
     BinaryPrecisionRecallCurve,
     MulticlassPrecisionRecallCurve,
@@ -102,6 +103,7 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
         >>> bap = BinaryAveragePrecision(thresholds=5)
         >>> bap(preds, target)
         tensor(0.6667)
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -109,12 +111,12 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    def compute(self) -> Tensor:
+    def compute(self) -> Tensor:  # type: ignore[override]
         """Compute metric."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _binary_average_precision_compute(state, self.thresholds)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -158,7 +160,7 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
 
 
 class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
-    r"""Compute the average precision (AP) score for binary tasks.
+    r"""Compute the average precision (AP) score for multiclass tasks.
 
     The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
     difference in recall from the previous threshold as weight:
@@ -233,6 +235,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         >>> mcap = MulticlassAveragePrecision(num_classes=5, average=None, thresholds=5)
         >>> mcap(preds, target)
         tensor([1.0000, 1.0000, 0.2500, 0.2500, -0.0000])
+
     """
 
     is_differentiable: bool = False
@@ -259,12 +262,12 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         self.average = average
         self.validate_args = validate_args
 
-    def compute(self) -> Tensor:
+    def compute(self) -> Tensor:  # type: ignore[override]
         """Compute metric."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multiclass_average_precision_compute(state, self.num_classes, self.average, self.thresholds)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -302,12 +305,13 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
             >>> for _ in range(10):
             ...     values.append(metric(torch.randn(20, 3), torch.randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
 
 class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
-    r"""Compute the average precision (AP) score for binary tasks.
+    r"""Compute the average precision (AP) score for multilabel tasks.
 
     The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
     difference in recall from the previous threshold as weight:
@@ -386,6 +390,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         >>> mlap = MultilabelAveragePrecision(num_labels=3, average=None, thresholds=5)
         >>> mlap(preds, target)
         tensor([0.7500, 0.6667, 0.9167])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -411,14 +416,14 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         self.average = average
         self.validate_args = validate_args
 
-    def compute(self) -> Tensor:
+    def compute(self) -> Tensor:  # type: ignore[override]
         """Compute metric."""
-        state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
+        state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multilabel_average_precision_compute(
             state, self.num_labels, self.average, self.thresholds, self.ignore_index
         )
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -456,11 +461,12 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(20,3), torch.randint(2, (20,3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
 
-class AveragePrecision:
+class AveragePrecision(_ClassificationTaskWrapper):
     r"""Compute the average precision (AP) score.
 
     The AP score summarizes a precision-recall curve as an weighted mean of precisions at each threshold, with the
@@ -493,9 +499,10 @@ class AveragePrecision:
         >>> average_precision = AveragePrecision(task="multiclass", num_classes=5, average=None)
         >>> average_precision(pred, target)
         tensor([1.0000, 1.0000, 0.2500, 0.2500,    nan])
+
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
@@ -519,4 +526,4 @@ class AveragePrecision:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelAveragePrecision(num_labels, average, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")

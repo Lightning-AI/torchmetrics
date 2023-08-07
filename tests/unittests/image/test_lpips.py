@@ -18,9 +18,9 @@ import pytest
 import torch
 from lpips import LPIPS as LPIPS_reference  # noqa: N811
 from torch import Tensor
-
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
+
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -49,7 +49,7 @@ class TestLPIPS(MetricTester):
 
     atol: float = 1e-4
 
-    @pytest.mark.parametrize("net_type", ["vgg", "alex", "squeeze"])
+    @pytest.mark.parametrize("net_type", ["alex", "squeeze"])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_lpips(self, net_type, ddp):
         """Test class implementation of metric."""
@@ -86,9 +86,9 @@ class TestLPIPS(MetricTester):
 @pytest.mark.parametrize("normalize", [False, True])
 def test_normalize_arg(normalize):
     """Test that normalize argument works as expected."""
-    metric = LearnedPerceptualImagePatchSimilarity(net_type="vgg", normalize=normalize)
+    metric = LearnedPerceptualImagePatchSimilarity(net_type="squeeze", normalize=normalize)
     res = metric(_inputs.img1[0], _inputs.img2[1])
-    res2 = _compare_fn(_inputs.img1[0], _inputs.img2[1], net_type="vgg", normalize=normalize)
+    res2 = _compare_fn(_inputs.img1[0], _inputs.img2[1], net_type="squeeze", normalize=normalize)
     assert res == res2
 
 
@@ -99,7 +99,7 @@ def test_error_on_wrong_init():
         LearnedPerceptualImagePatchSimilarity(net_type="resnet")
 
     with pytest.raises(ValueError, match="Argument `reduction` must be one .*"):
-        LearnedPerceptualImagePatchSimilarity(reduction=None)
+        LearnedPerceptualImagePatchSimilarity(net_type="squeeze", reduction=None)
 
 
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")

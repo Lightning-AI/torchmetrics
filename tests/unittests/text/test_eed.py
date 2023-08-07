@@ -16,9 +16,9 @@ from functools import partial
 
 import pytest
 from torch import Tensor, tensor
-
 from torchmetrics.functional.text.eed import extended_edit_distance
 from torchmetrics.text.eed import ExtendedEditDistance
+
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_single_reference, _inputs_single_sentence_multiple_references
 
@@ -28,6 +28,7 @@ def _rwth_manual_metric(preds, targets) -> Tensor:
 
     The results were obtained w.r.t. the examples defined in `tests.text.inputs` with the script from
     https://github.com/rwth-i6/ExtendedEditDistance.
+
     """
     ans_1 = tensor(0.24248056001808083)
     ans_2 = tensor(0.19152276295133436)

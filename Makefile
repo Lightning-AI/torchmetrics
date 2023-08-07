@@ -1,5 +1,6 @@
 .PHONY: test clean docs env data
 
+export FREEZE_REQUIREMENTS=1
 # assume you have installed need packages
 export SPHINX_MOCK_REQUIREMENTS=1
 
@@ -26,15 +27,12 @@ test: clean env data
 	cd tests && python -m coverage report
 
 docs: clean
-	FREEZE_REQUIREMENTS=1 pip install -e . --quiet -r requirements/docs.txt
+	pip install -e . --quiet -r requirements/docs.txt
 	# apt-get install -y texlive-latex-extra dvipng texlive-pictures texlive-fonts-recommended cm-super
-	python -m sphinx -b html -W --keep-going docs/source docs/build
+	TOKENIZERS_PARALLELISM=false python -m sphinx -b html -W --keep-going docs/source docs/build
 
 env:
-	export FREEZE_REQUIREMENTS=1
-	pip install -e . -U
-	python ./requirements/adjust-versions.py requirements/image.txt
-	pip install -r requirements/devel.txt
+	pip install -e . -U -r requirements/devel.txt
 
 data:
 	python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"

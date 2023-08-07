@@ -31,6 +31,7 @@ def reduce(x: Tensor, reduction: Literal["elementwise_mean", "sum", "none", None
 
     Raise:
         ValueError if an invalid reduction parameter was given
+
     """
     if reduction == "elementwise_mean":
         return torch.mean(x)
@@ -84,9 +85,7 @@ def class_reduce(
     if class_reduction == "none" or class_reduction is None:
         return fraction
 
-    raise ValueError(
-        f"Reduction parameter {class_reduction} unknown." f" Choose between one of these: {valid_reduction}"
-    )
+    raise ValueError(f"Reduction parameter {class_reduction} unknown. Choose between one of these: {valid_reduction}")
 
 
 def _simple_gather_all_tensors(result: Tensor, group: Any, world_size: int) -> List[Tensor]:
@@ -108,6 +107,7 @@ def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tens
     Return:
         gathered_result: list with size equal to the process group where
             ``gathered_result[i]`` corresponds to result tensor from process ``i``
+
     """
     if group is None:
         group = torch.distributed.group.WORLD

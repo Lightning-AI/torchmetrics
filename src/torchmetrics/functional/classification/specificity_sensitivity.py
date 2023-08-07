@@ -156,6 +156,7 @@ def binary_specificity_at_sensitivity(
         (tensor(1.), tensor(0.4000))
         >>> binary_specificity_at_sensitivity(preds, target, min_sensitivity=0.5, thresholds=5)
         (tensor(1.), tensor(0.2500))
+
     """
     if validate_args:
         _binary_specificity_at_sensitivity_arg_validation(min_sensitivity, thresholds, ignore_index)
@@ -183,7 +184,7 @@ def _multiclass_specificity_at_sensitivity_compute(
     num_classes: int,
     thresholds: Optional[Tensor],
     min_sensitivity: float,
-) -> Union[Tensor, Tuple[Tensor, Tensor], Tuple[List[Tensor], List[Tensor]]]:
+) -> Tuple[Tensor, Tensor]:
     fpr, sensitivity, thresholds = _multiclass_roc_compute(state, num_classes, thresholds)
     specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
@@ -269,6 +270,7 @@ def multiclass_specificity_at_sensitivity(
         (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 5.0000e-02, 5.0000e-02, 1.0000e+06]))
         >>> multiclass_specificity_at_sensitivity(preds, target, num_classes=5, min_sensitivity=0.5, thresholds=5)
         (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 0.0000e+00, 0.0000e+00, 1.0000e+06]))
+
     """
     if validate_args:
         _multiclass_specificity_at_sensitivity_arg_validation(num_classes, min_sensitivity, thresholds, ignore_index)
@@ -277,9 +279,7 @@ def multiclass_specificity_at_sensitivity(
         preds, target, num_classes, thresholds, ignore_index
     )
     state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
-    return _multiclass_specificity_at_sensitivity_compute(
-        state, num_classes, thresholds, min_sensitivity
-    )  # type: ignore
+    return _multiclass_specificity_at_sensitivity_compute(state, num_classes, thresholds, min_sensitivity)
 
 
 def _multilabel_specificity_at_sensitivity_arg_validation(
@@ -391,6 +391,7 @@ def multilabel_specificity_at_sensitivity(
         (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.6500, 0.3500]))
         >>> multilabel_specificity_at_sensitivity(preds, target, num_labels=3, min_sensitivity=0.5, thresholds=5)
         (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.5000, 0.2500]))
+
     """
     if validate_args:
         _multilabel_specificity_at_sensitivity_arg_validation(num_labels, min_sensitivity, thresholds, ignore_index)
@@ -422,6 +423,7 @@ def specicity_at_sensitivity(
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :func:`binary_specificity_at_sensitivity`, :func:`multiclass_specicity_at_sensitivity` and
     :func:`multilabel_specifity_at_sensitvity` for the specific details of each argument influence and examples.
+
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
@@ -440,4 +442,4 @@ def specicity_at_sensitivity(
         return multilabel_specificity_at_sensitivity(  # type: ignore
             preds, target, num_labels, min_sensitivity, thresholds, ignore_index, validate_args
         )
-    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy
+    raise ValueError(f"Not handled value: {task}")

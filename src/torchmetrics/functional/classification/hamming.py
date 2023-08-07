@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Optional
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -31,7 +30,7 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_tensor_validation,
     _multilabel_stat_scores_update,
 )
-from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.compute import _adjust_weights_safe_divide, _safe_divide
 from torchmetrics.utilities.enums import ClassificationTask
 
 
@@ -67,6 +66,7 @@ def _hamming_distance_reduce(
             - ``samplewise``: Statistic will be calculated independently for each sample on the ``N`` axis.
 
         multilabel: If input is multilabel or not
+
     """
     if average == "binary":
         return 1 - _safe_divide(tp + tn, tp + fp + tn + fn)
@@ -80,10 +80,7 @@ def _hamming_distance_reduce(
         return 1 - _safe_divide(tp, tp + fn)
 
     score = 1 - _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else 1 - _safe_divide(tp, tp + fn)
-    if average is None or average == "none":
-        return score
-    weights = tp + fn if average == "weighted" else torch.ones_like(score)
-    return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
+    return _adjust_weights_safe_divide(score, average, multilabel, tp, fp, fn)
 
 
 def binary_hamming_distance(
@@ -152,6 +149,7 @@ def binary_hamming_distance(
         ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> binary_hamming_distance(preds, target, multidim_average='samplewise')
         tensor([0.6667, 0.8333])
+
     """
     if validate_args:
         _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
@@ -258,6 +256,7 @@ def multiclass_hamming_distance(
         >>> multiclass_hamming_distance(preds, target, num_classes=3, multidim_average='samplewise', average=None)
         tensor([[0.0000, 1.0000, 0.5000],
                 [1.0000, 0.6667, 0.5000]])
+
     """
     if validate_args:
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
@@ -362,6 +361,7 @@ def multilabel_hamming_distance(
         >>> multilabel_hamming_distance(preds, target, num_labels=3, multidim_average='samplewise', average=None)
         tensor([[0.5000, 0.5000, 1.0000],
                 [1.0000, 1.0000, 0.5000]])
+
     """
     if validate_args:
         _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
@@ -404,6 +404,7 @@ def hamming_distance(
         >>> preds = tensor([[0, 1], [0, 1]])
         >>> hamming_distance(preds, target, task="binary")
         tensor(0.2500)
+
     """
     task = ClassificationTask.from_str(task)
     assert multidim_average is not None  # noqa: S101  # needed for mypy
@@ -423,4 +424,4 @@ def hamming_distance(
         return multilabel_hamming_distance(
             preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy
+    raise ValueError(f"Not handled value: {task}")

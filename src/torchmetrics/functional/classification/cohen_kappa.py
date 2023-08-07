@@ -48,7 +48,7 @@ def _cohen_kappa_reduce(confmat: Tensor, weights: Optional[Literal["linear", "qu
         w_mat = torch.abs(w_mat - w_mat.T) if weights == "linear" else torch.pow(w_mat - w_mat.T, 2.0)
     else:
         raise ValueError(
-            f"Received {weights} for argument ``weights`` but should be either" " None, 'linear' or 'quadratic'"
+            f"Received {weights} for argument ``weights`` but should be either None, 'linear' or 'quadratic'"
         )
     k = torch.sum(w_mat * confmat) / torch.sum(w_mat * expected)
     return 1 - k
@@ -64,6 +64,7 @@ def _binary_cohen_kappa_arg_validation(
     - ``threshold`` has to be a float in the [0,1] range
     - ``ignore_index`` has to be None or int
     - ``weights`` has to be "linear" | "quadratic" | "none" | None
+
     """
     _binary_confusion_matrix_arg_validation(threshold, ignore_index, normalize=None)
     allowed_weights = ("linear", "quadratic", "none", None)
@@ -127,6 +128,7 @@ def binary_cohen_kappa(
         >>> preds = tensor([0.35, 0.85, 0.48, 0.01])
         >>> binary_cohen_kappa(preds, target)
         tensor(0.5000)
+
     """
     if validate_args:
         _binary_cohen_kappa_arg_validation(threshold, ignore_index, weights)
@@ -146,6 +148,7 @@ def _multiclass_cohen_kappa_arg_validation(
     - ``num_classes`` has to be a int larger than 1
     - ``ignore_index`` has to be None or int
     - ``weights`` has to be "linear" | "quadratic" | "none" | None
+
     """
     _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index, normalize=None)
     allowed_weights = ("linear", "quadratic", "none", None)
@@ -214,6 +217,7 @@ def multiclass_cohen_kappa(
         ...                 [0.05, 0.82, 0.13]])
         >>> multiclass_cohen_kappa(preds, target, num_classes=3)
         tensor(0.6364)
+
     """
     if validate_args:
         _multiclass_cohen_kappa_arg_validation(num_classes, ignore_index, weights)
@@ -254,6 +258,7 @@ def cohen_kappa(
         >>> preds = tensor([0, 1, 0, 0])
         >>> cohen_kappa(preds, target, task="multiclass", num_classes=2)
         tensor(0.5000)
+
     """
     task = ClassificationTaskNoMultilabel.from_str(task)
     if task == ClassificationTaskNoMultilabel.BINARY:
@@ -262,4 +267,4 @@ def cohen_kappa(
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         return multiclass_cohen_kappa(preds, target, num_classes, weights, ignore_index, validate_args)
-    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy
+    raise ValueError(f"Not handled value: {task}")

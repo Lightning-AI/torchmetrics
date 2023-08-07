@@ -49,13 +49,13 @@ def _binary_roc_compute(
         tns = state[:, 0, 0]
         tpr = _safe_divide(tps, tps + fns).flip(0)
         fpr = _safe_divide(fps, fps + tns).flip(0)
-        thresholds = thresholds.flip(0)
+        thres = thresholds.flip(0)
     else:
-        fps, tps, thresholds = _binary_clf_curve(preds=state[0], target=state[1], pos_label=pos_label)
+        fps, tps, thres = _binary_clf_curve(preds=state[0], target=state[1], pos_label=pos_label)
         # Add an extra threshold position to make sure that the curve starts at (0, 0)
         tps = torch.cat([torch.zeros(1, dtype=tps.dtype, device=tps.device), tps])
         fps = torch.cat([torch.zeros(1, dtype=fps.dtype, device=fps.device), fps])
-        thresholds = torch.cat([torch.ones(1, dtype=thresholds.dtype, device=thresholds.device), thresholds])
+        thres = torch.cat([torch.ones(1, dtype=thres.dtype, device=thres.device), thres])
 
         if fps[-1] <= 0:
             rank_zero_warn(
@@ -63,7 +63,7 @@ def _binary_roc_compute(
                 " Returning zero tensor in false positive score",
                 UserWarning,
             )
-            fpr = torch.zeros_like(thresholds)
+            fpr = torch.zeros_like(thres)
         else:
             fpr = fps / fps[-1]
 
@@ -73,11 +73,11 @@ def _binary_roc_compute(
                 " Returning zero tensor in true positive score",
                 UserWarning,
             )
-            tpr = torch.zeros_like(thresholds)
+            tpr = torch.zeros_like(thres)
         else:
             tpr = tps / tps[-1]
 
-    return fpr, tpr, thresholds
+    return fpr, tpr, thres
 
 
 def binary_roc(
@@ -149,6 +149,7 @@ def binary_roc(
         (tensor([0.0000, 0.5000, 0.5000, 0.5000, 1.0000]),
          tensor([0., 0., 1., 1., 1.]),
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
+
     """
     if validate_args:
         _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
@@ -170,15 +171,15 @@ def _multiclass_roc_compute(
         tns = state[:, :, 0, 0]
         tpr = _safe_divide(tps, tps + fns).flip(0).T
         fpr = _safe_divide(fps, fps + tns).flip(0).T
-        thresholds = thresholds.flip(0)
+        thres = thresholds.flip(0)
     else:
-        fpr, tpr, thresholds = [], [], []
+        fpr, tpr, thres = [], [], []  # type: ignore[assignment]
         for i in range(num_classes):
-            res = _binary_roc_compute([state[0][:, i], state[1]], thresholds=None, pos_label=i)
+            res = _binary_roc_compute((state[0][:, i], state[1]), thresholds=None, pos_label=i)
             fpr.append(res[0])
             tpr.append(res[1])
-            thresholds.append(res[2])
-    return fpr, tpr, thresholds
+            thres.append(res[2])
+    return fpr, tpr, thres
 
 
 def multiclass_roc(
@@ -278,6 +279,7 @@ def multiclass_roc(
                  [0., 0., 0., 0., 1.],
                  [0., 0., 0., 0., 0.]]),
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
+
     """
     if validate_args:
         _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
@@ -302,9 +304,9 @@ def _multilabel_roc_compute(
         tns = state[:, :, 0, 0]
         tpr = _safe_divide(tps, tps + fns).flip(0).T
         fpr = _safe_divide(fps, fps + tns).flip(0).T
-        thresholds = thresholds.flip(0)
+        thres = thresholds.flip(0)
     else:
-        fpr, tpr, thresholds = [], [], []
+        fpr, tpr, thres = [], [], []  # type: ignore[assignment]
         for i in range(num_labels):
             preds = state[0][:, i]
             target = state[1][:, i]
@@ -312,11 +314,11 @@ def _multilabel_roc_compute(
                 idx = target == ignore_index
                 preds = preds[~idx]
                 target = target[~idx]
-            res = _binary_roc_compute([preds, target], thresholds=None, pos_label=1)
+            res = _binary_roc_compute((preds, target), thresholds=None, pos_label=1)
             fpr.append(res[0])
             tpr.append(res[1])
-            thresholds.append(res[2])
-    return fpr, tpr, thresholds
+            thres.append(res[2])
+    return fpr, tpr, thres
 
 
 def multilabel_roc(
@@ -419,6 +421,7 @@ def multilabel_roc(
                  [0.0000, 0.0000, 1.0000, 1.0000, 1.0000],
                  [0.0000, 0.3333, 0.3333, 0.6667, 1.0000]]),
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
+
     """
     if validate_args:
         _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
@@ -493,6 +496,7 @@ def roc(
         [tensor([1.0000, 0.8603, 0.8191, 0.3584, 0.2286]),
          tensor([1.0000, 0.7576, 0.3680, 0.3468, 0.0745]),
          tensor([1.0000, 0.1837, 0.1338, 0.1183, 0.1138])]
+
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
@@ -505,4 +509,4 @@ def roc(
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_roc(preds, target, num_labels, thresholds, ignore_index, validate_args)
-    return None
+    raise ValueError(f"Task {task} not supported, expected one of {ClassificationTask}.")

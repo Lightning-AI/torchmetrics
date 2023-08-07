@@ -12,6 +12,6 @@ Minimum
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.MinMetric
+.. autoclass:: torchmetrics.aggregation.MinMetric
     :noindex:
     :exclude-members: update, compute

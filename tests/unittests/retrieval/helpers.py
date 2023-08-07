@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Callable, Dict, List, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 import numpy as np
 import pytest
@@ -56,6 +56,7 @@ def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, 
         >>> indexes = torch.tensor([0, 0, 0, 1, 1, 1, 1])
         >>> get_group_indexes(indexes)
         [tensor([0, 1, 2]), tensor([3, 4, 5, 6])]
+
     """
     structure, dtype = (tensor, torch.long) if isinstance(indexes, Tensor) else (np.array, np.int64)
 
@@ -73,12 +74,12 @@ def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, 
 def _compute_sklearn_metric(
     preds: Union[Tensor, array],
     target: Union[Tensor, array],
-    indexes: np.ndarray = None,
-    metric: Callable = None,
+    indexes: Optional[np.ndarray] = None,
+    metric: Optional[Callable] = None,
     empty_target_action: str = "skip",
-    ignore_index: int = None,
+    ignore_index: Optional[int] = None,
     reverse: bool = False,
-    **kwargs,
+    **kwargs: Any,
 ) -> Tensor:
     """Compute metric with multiple iterations over every query predictions set."""
     if indexes is None:
@@ -380,9 +381,9 @@ def _errors_test_class_metric(
     target: Tensor,
     metric_class: Metric,
     message: str = "",
-    metric_args: dict = None,
+    metric_args: Optional[dict] = None,
     exception_type: Type[Exception] = ValueError,
-    kwargs_update: dict = None,
+    kwargs_update: Optional[dict] = None,
 ):
     """Check types, parameters and errors.
 
@@ -396,6 +397,7 @@ def _errors_test_class_metric(
         exception_type: callable function that is used for comparison
         kwargs_update: Additional keyword arguments that will be passed with indexes, preds and
             target when running update on the metric.
+
     """
     metric_args = metric_args or {}
     kwargs_update = kwargs_update or {}
@@ -410,7 +412,7 @@ def _errors_test_functional_metric(
     metric_functional: Metric,
     message: str = "",
     exception_type: Type[Exception] = ValueError,
-    kwargs_update: dict = None,
+    kwargs_update: Optional[dict] = None,
 ):
     """Check types, parameters and errors.
 
@@ -422,6 +424,7 @@ def _errors_test_functional_metric(
         exception_type: callable function that is used for comparison
         kwargs_update: Additional keyword arguments that will be passed with indexes, preds and
             target when running update on the metric.
+
     """
     kwargs_update = kwargs_update or {}
     with pytest.raises(exception_type, match=message):
@@ -466,7 +469,7 @@ class RetrievalMetricTester(MetricTester):
         reference_metric: Callable,
         metric_args: dict,
         reverse: bool = False,
-        **kwargs,
+        **kwargs: Any,
     ):
         """Test functional implementation of metric."""
         _ref_metric_adapted = partial(_compute_sklearn_metric, metric=reference_metric, reverse=reverse, **metric_args)
@@ -534,10 +537,10 @@ class RetrievalMetricTester(MetricTester):
         target: Tensor,
         metric_class: Metric,
         message: str = "",
-        metric_args: dict = None,
+        metric_args: Optional[dict] = None,
         exception_type: Type[Exception] = ValueError,
-        kwargs_update: dict = None,
-    ):
+        kwargs_update: Optional[dict] = None,
+    ) -> None:
         """Test that specific errors are raised for incorrect input."""
         _errors_test_class_metric(
             indexes=indexes,
@@ -557,8 +560,8 @@ class RetrievalMetricTester(MetricTester):
         metric_functional: Callable,
         message: str = "",
         exception_type: Type[Exception] = ValueError,
-        kwargs_update: dict = None,
-    ):
+        kwargs_update: Optional[dict] = None,
+    ) -> None:
         """Test that specific errors are raised for incorrect input."""
         _errors_test_functional_metric(
             preds=preds,

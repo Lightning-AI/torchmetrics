@@ -102,6 +102,7 @@ class MetricTracker(ModuleList):
         >>> pprint(tracker.compute_all())
         {'ExplainedVariance': tensor([-0.8969, -1.0206, -0.8298, -0.9199, -1.1622]),
          'MeanSquaredError': tensor([1.8218, 2.0268, 1.9491, 1.9800, 2.2481])}
+
     """
 
     def __init__(self, metric: Union[Metric, MetricCollection], maximize: Union[bool, List[bool]] = True) -> None:
@@ -158,6 +159,7 @@ class MetricTracker(ModuleList):
         Raises:
             ValueError:
                 If `self.increment` have not been called before this method is called.
+
         """
         self._check_for_increment("compute_all")
         # The i!=0 accounts for the self._base_metric should be ignored
@@ -211,6 +213,7 @@ class MetricTracker(ModuleList):
 
             In addtion the value in all cases may be ``None`` if the underlying metric does have a proper defined way
             of being optimal or in the case where a nested structure of metrics are being tracked.
+
         """
         res = self.compute_all()
         if isinstance(res, list):
@@ -249,7 +252,7 @@ class MetricTracker(ModuleList):
                     fn = torch.max if maximize[i] else torch.min
                     out = fn(v, 0)
                     value[k], idx[k] = out[0].item(), out[1].item()
-                except (ValueError, RuntimeError) as error:
+                except (ValueError, RuntimeError) as error:  # noqa: PERF203 # todo
                     rank_zero_warn(
                         f"Encountered the following error when trying to get the best metric for metric {k}:"
                         f"{error} this is probably due to the 'best' not being defined for this metric."

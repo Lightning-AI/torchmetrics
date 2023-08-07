@@ -11,9 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
-from warnings import warn
 
 import torch
 from torch import Tensor
@@ -22,9 +20,10 @@ from torch.nn import Module
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.helper_embedding_metric import _preprocess_text
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
@@ -33,7 +32,7 @@ if not _MATPLOTLIB_AVAILABLE:
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL: str = "roberta-large"
 
-if _TRANSFORMERS_AVAILABLE:
+if _TRANSFORMERS_GREATER_EQUAL_4_4:
     from transformers import AutoModel, AutoTokenizer
 
     def _download_model() -> None:
@@ -118,6 +117,7 @@ class BERTScore(Metric):
         >>> bertscore = BERTScore()
         >>> pprint(bertscore(preds, target))
         {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
+
     """
 
     is_differentiable: bool = False
@@ -174,13 +174,13 @@ class BERTScore(Metric):
             self.tokenizer = user_tokenizer
             self.user_tokenizer = True
         else:
-            if not _TRANSFORMERS_AVAILABLE:
+            if not _TRANSFORMERS_GREATER_EQUAL_4_4:
                 raise ModuleNotFoundError(
                     "`BERTScore` metric with default tokenizers requires `transformers` package be installed."
-                    " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."
+                    " Either install with `pip install transformers>=4.4` or `pip install torchmetrics[text]`."
                 )
             if model_name_or_path is None:
-                warn(
+                rank_zero_warn(
                     "The argument `model_name_or_path` was not specified while it is required when the default"
                     " `transformers` model is used."
                     f" It will use the default recommended model - {_DEFAULT_MODEL!r}."
@@ -197,6 +197,7 @@ class BERTScore(Metric):
         """Store predictions/references for computing BERT scores.
 
         It is necessary to store sentences in a tokenized form to ensure the DDP mode working.
+
         """
         if not isinstance(preds, list):
             preds = list(preds)
@@ -300,6 +301,7 @@ class BERTScore(Metric):
             ...     val = {k: tensor(v).mean() for k,v in val.items()}  # convert into single value per key
             ...     values.append(val)
             >>> fig_, ax_ = metric.plot(values)
+
         """
         if val is None:  # default average score across sentences
             val = self.compute()  # type: ignore

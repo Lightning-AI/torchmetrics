@@ -19,15 +19,18 @@ from torch import tensor
 from torch.nn import Linear
 
 if module_available("lightning"):
-    from lightning import LightningModule, Trainer
+    from lightning.pytorch import LightningModule, Trainer
+    from lightning.pytorch.loggers import CSVLogger
 else:
     from pytorch_lightning import LightningModule, Trainer
+    from pytorch_lightning.loggers import CSVLogger
 
-from integrations.helpers import no_warning_call
-from integrations.lightning.boring_model import BoringModel
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import SumMetric
 from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision
+
+from integrations.helpers import no_warning_call
+from integrations.lightning.boring_model import BoringModel
 
 
 class DiffMetric(SumMetric):
@@ -77,6 +80,7 @@ def test_metrics_reset(tmpdir):
     """Tests that metrics are reset correctly after the end of the train/val/test epoch.
 
     Taken from: `Metric Test for Reset`_
+
     """
 
     class TestModel(BoringModel):
@@ -118,13 +122,13 @@ def test_metrics_reset(tmpdir):
 
             return loss
 
-        def training_step(self, batch, batch_idx, *args, **kwargs):
+        def training_step(self, batch, batch_idx):
             return self._step("train", batch)
 
-        def validation_step(self, batch, batch_idx, *args, **kwargs):
+        def validation_step(self, batch, batch_idx):
             return self._step("val", batch)
 
-        def test_step(self, batch, batch_idx, *args, **kwargs):
+        def test_step(self, batch, batch_idx):
             return self._step("test", batch)
 
         def _assert_epoch_end(self, stage):
@@ -179,34 +183,69 @@ def test_metric_lightning_log(tmpdir):
     class TestModel(BoringModel):
         def __init__(self) -> None:
             super().__init__()
-            self.metric_step = SumMetric()
-            self.metric_epoch = SumMetric()
-            self.register_buffer("sum", torch.tensor(0.0))
-            self.outs = []
 
-        def on_train_epoch_start(self):
-            self.sum = torch.tensor(0.0, device=self.sum.device)
+            # initiliaze one metric for every combination of `on_step` and `on_epoch` and `forward` and `update`
+            self.metric_update = SumMetric()
+            self.metric_update_step = SumMetric()
+            self.metric_update_epoch = SumMetric()
+
+            self.metric_forward = SumMetric()
+            self.metric_forward_step = SumMetric()
+            self.metric_forward_epoch = SumMetric()
+
+            self.compo_update = SumMetric() + SumMetric()
+            self.compo_update_step = SumMetric() + SumMetric()
+            self.compo_update_epoch = SumMetric() + SumMetric()
+
+            self.compo_forward = SumMetric() + SumMetric()
+            self.compo_forward_step = SumMetric() + SumMetric()
+            self.compo_forward_epoch = SumMetric() + SumMetric()
+
+            self.sum = []
 
         def training_step(self, batch, batch_idx):
             x = batch
-            self.metric_step(x.sum())
-            self.sum += x.sum()
-            self.log("sum_step", self.metric_step, on_epoch=True, on_step=False)
-            self.outs.append(x)
-            return self.step(x)
+            s = x.sum()
 
-        def on_train_epoch_end(self):
-            self.log("sum_epoch", self.metric_epoch(torch.stack(self.outs)))
-            self.outs = []
+            for metric in [self.metric_update, self.metric_update_step, self.metric_update_epoch]:
+                metric.update(s)
+            for metric in [self.metric_forward, self.metric_forward_step, self.metric_forward_epoch]:
+                _ = metric(s)
+            for metric in [self.compo_update, self.compo_update_step, self.compo_update_epoch]:
+                metric.update(s)
+            for metric in [self.compo_forward, self.compo_forward_step, self.compo_forward_epoch]:
+                _ = metric(s)
+
+            self.sum.append(s)
+
+            self.log("metric_update", self.metric_update)
+            self.log("metric_update_step", self.metric_update_step, on_epoch=False, on_step=True)
+            self.log("metric_update_epoch", self.metric_update_epoch, on_epoch=True, on_step=False)
+
+            self.log("metric_forward", self.metric_forward)
+            self.log("metric_forward_step", self.metric_forward_step, on_epoch=False, on_step=True)
+            self.log("metric_forward_epoch", self.metric_forward_epoch, on_epoch=True, on_step=False)
+
+            self.log("compo_update", self.compo_update)
+            self.log("compo_update_step", self.compo_update_step, on_epoch=False, on_step=True)
+            self.log("compo_update_epoch", self.compo_update_epoch, on_epoch=True, on_step=False)
+
+            self.log("compo_forward", self.compo_forward)
+            self.log("compo_forward_step", self.compo_forward_step, on_epoch=False, on_step=True)
+            self.log("compo_forward_epoch", self.compo_forward_epoch, on_epoch=True, on_step=False)
+
+            return self.step(x)
 
     model = TestModel()
 
+    logger = CSVLogger("tmpdir/logs")
     trainer = Trainer(
         default_root_dir=tmpdir,
         limit_train_batches=2,
         limit_val_batches=0,
         max_epochs=2,
         log_every_n_steps=1,
+        logger=logger,
     )
     with no_warning_call(
         UserWarning,
@@ -214,9 +253,67 @@ def test_metric_lightning_log(tmpdir):
     ):
         trainer.fit(model)
 
-    logged = trainer.logged_metrics
-    assert torch.allclose(tensor(logged["sum_step"]), model.sum, atol=2e-4)
-    assert torch.allclose(tensor(logged["sum_epoch"]), model.sum, atol=2e-4)
+    logged_metrics = logger._experiment.metrics
+
+    epoch_0_step_0 = logged_metrics[0]
+    assert "metric_forward" in epoch_0_step_0
+    assert epoch_0_step_0["metric_forward"] == model.sum[0]
+    assert "metric_forward_step" in epoch_0_step_0
+    assert epoch_0_step_0["metric_forward_step"] == model.sum[0]
+    assert "compo_forward" in epoch_0_step_0
+    assert epoch_0_step_0["compo_forward"] == 2 * model.sum[0]
+    assert "compo_forward_step" in epoch_0_step_0
+    assert epoch_0_step_0["compo_forward_step"] == 2 * model.sum[0]
+
+    epoch_0_step_1 = logged_metrics[1]
+    assert "metric_forward" in epoch_0_step_1
+    assert epoch_0_step_1["metric_forward"] == model.sum[1]
+    assert "metric_forward_step" in epoch_0_step_1
+    assert epoch_0_step_1["metric_forward_step"] == model.sum[1]
+    assert "compo_forward" in epoch_0_step_1
+    assert epoch_0_step_1["compo_forward"] == 2 * model.sum[1]
+    assert "compo_forward_step" in epoch_0_step_1
+    assert epoch_0_step_1["compo_forward_step"] == 2 * model.sum[1]
+
+    epoch_0 = logged_metrics[2]
+    assert "metric_update_epoch" in epoch_0
+    assert epoch_0["metric_update_epoch"] == sum([model.sum[0], model.sum[1]])
+    assert "metric_forward_epoch" in epoch_0
+    assert epoch_0["metric_forward_epoch"] == sum([model.sum[0], model.sum[1]])
+    assert "compo_update_epoch" in epoch_0
+    assert epoch_0["compo_update_epoch"] == 2 * sum([model.sum[0], model.sum[1]])
+    assert "compo_forward_epoch" in epoch_0
+    assert epoch_0["compo_forward_epoch"] == 2 * sum([model.sum[0], model.sum[1]])
+
+    epoch_1_step_0 = logged_metrics[3]
+    assert "metric_forward" in epoch_1_step_0
+    assert epoch_1_step_0["metric_forward"] == model.sum[2]
+    assert "metric_forward_step" in epoch_1_step_0
+    assert epoch_1_step_0["metric_forward_step"] == model.sum[2]
+    assert "compo_forward" in epoch_1_step_0
+    assert epoch_1_step_0["compo_forward"] == 2 * model.sum[2]
+    assert "compo_forward_step" in epoch_1_step_0
+    assert epoch_1_step_0["compo_forward_step"] == 2 * model.sum[2]
+
+    epoch_1_step_1 = logged_metrics[4]
+    assert "metric_forward" in epoch_1_step_1
+    assert epoch_1_step_1["metric_forward"] == model.sum[3]
+    assert "metric_forward_step" in epoch_1_step_1
+    assert epoch_1_step_1["metric_forward_step"] == model.sum[3]
+    assert "compo_forward" in epoch_1_step_1
+    assert epoch_1_step_1["compo_forward"] == 2 * model.sum[3]
+    assert "compo_forward_step" in epoch_1_step_1
+    assert epoch_1_step_1["compo_forward_step"] == 2 * model.sum[3]
+
+    epoch_1 = logged_metrics[5]
+    assert "metric_update_epoch" in epoch_1
+    assert epoch_1["metric_update_epoch"] == sum([model.sum[2], model.sum[3]])
+    assert "metric_forward_epoch" in epoch_1
+    assert epoch_1["metric_forward_epoch"] == sum([model.sum[2], model.sum[3]])
+    assert "compo_update_epoch" in epoch_1
+    assert epoch_1["compo_update_epoch"] == 2 * sum([model.sum[2], model.sum[3]])
+    assert "compo_forward_epoch" in epoch_1
+    assert epoch_1["compo_forward_epoch"] == 2 * sum([model.sum[2], model.sum[3]])
 
 
 def test_metric_collection_lightning_log(tmpdir):
@@ -323,22 +420,22 @@ def test_dtype_in_pl_module_transfer(tmpdir):
             return torch.optim.SGD(self.layer.parameters(), lr=0.1)
 
     model = BoringModel()
-    assert model.metric.value.dtype == torch.float32
+    assert model.metric.sum_value.dtype == torch.float32
     model = model.half()
-    assert model.metric.value.dtype == torch.float32
+    assert model.metric.sum_value.dtype == torch.float32
 
     model = BoringModel()
-    assert model.metric.value.dtype == torch.float32
+    assert model.metric.sum_value.dtype == torch.float32
     model = model.double()
-    assert model.metric.value.dtype == torch.float32
+    assert model.metric.sum_value.dtype == torch.float32
 
     model = BoringModel(metric_dtype=torch.float16)
-    assert model.metric.value.dtype == torch.float16
+    assert model.metric.sum_value.dtype == torch.float16
     model = model.float()
-    assert model.metric.value.dtype == torch.float16
+    assert model.metric.sum_value.dtype == torch.float16
 
     model = BoringModel()
-    assert model.metric.value.dtype == torch.float32
+    assert model.metric.sum_value.dtype == torch.float32
 
     model = model.type(torch.half)
-    assert model.metric.value.dtype == torch.float32
+    assert model.metric.sum_value.dtype == torch.float32

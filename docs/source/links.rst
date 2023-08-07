@@ -31,6 +31,7 @@
 .. _spearmans rank correlation coefficient: https://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient
 .. _WordErrorRate: https://en.wikipedia.org/wiki/Word_error_rate
 .. _FID: https://en.wikipedia.org/wiki/Fr%C3%A9chet_inception_distance
+.. _MIFID: https://arxiv.org/abs/2106.03062
 .. _mean-squared-error: https://en.wikipedia.org/wiki/Mean_squared_error
 .. _SSIM: https://en.wikipedia.org/wiki/Structural_similarity
 .. _explained variance: https://en.wikipedia.org/wiki/Explained_variation
@@ -116,7 +117,12 @@
 .. _sdr ref2: https://arxiv.org/abs/2110.06440
 .. _Scale-invariant signal-to-distortion ratio: https://arxiv.org/abs/1811.02508
 .. _Scale-invariant signal-to-noise ratio: https://arxiv.org/abs/1711.00541
+.. _Source-aggregated signal-to-distortion ratio: https://arxiv.org/abs/2110.15581
+.. _Complex scale-invariant signal-to-noise ratio: https://arxiv.org/abs/2011.09162
 .. _Signal-to-noise ratio: https://arxiv.org/abs/1811.02508
+.. _Speech-to-Reverberation Modulation Energy Ratio: https://ieeexplore.ieee.org/document/5547575
+.. _SRMRToolbox: https://github.com/MuSAELab/SRMRToolbox
+.. _SRMRpy: https://github.com/jfsantos/SRMRpy
 .. _Permutation invariant training: https://arxiv.org/abs/1607.00325
 .. _ranking ref1: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
 .. _Spectral Distortion Index: https://www.ingentaconnect.com/content/asprs/pers/2008/00000074/00000002/art00003;jsessionid=nzjnb3v9xxr1.x-ic-live-03
@@ -130,9 +136,15 @@
 .. _Spectral Angle Mapper: https://ntrs.nasa.gov/citations/19940012238
 .. _Multilabel coverage error: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
 .. _Panoptic Quality: https://arxiv.org/abs/1801.00868
-.. _torchmetrics mAP example: https://github.com/Lightning-AI/metrics/blob/master/examples/detection_map.py
+.. _torchmetrics mAP example: https://github.com/Lightning-AI/torchmetrics/blob/master/examples/detection_map.py
 .. _Peak Signal to Noise Ratio With Blocked Effect: https://ieeexplore.ieee.org/abstract/document/5535179
 .. _Minkowski Distance: https://en.wikipedia.org/wiki/Minkowski_distance
 .. _Demographic parity: http://www.fairmlbook.org/
 .. _Equal opportunity: https://proceedings.neurips.cc/paper/2016/hash/9d2682367c3935defcb1f9e247a97c0d-Abstract.html
 .. _Seamless Scene Segmentation paper: https://arxiv.org/abs/1905.01220
+.. _Fleiss kappa: https://en.wikipedia.org/wiki/Fleiss%27_kappa
+.. _VIF: https://ieeexplore.ieee.org/abstract/document/1576816
+.. _CIOU: https://arxiv.org/abs/2005.03572
+.. _DIOU: https://arxiv.org/abs/1911.08287v1
+.. _GIOU: https://arxiv.org/abs/1902.09630
+.. _pycocotools: https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools

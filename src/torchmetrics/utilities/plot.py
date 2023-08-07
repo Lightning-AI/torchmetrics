@@ -23,6 +23,7 @@ from torchmetrics.utilities.imports import _LATEX_AVAILABLE, _MATPLOTLIB_AVAILAB
 
 if _MATPLOTLIB_AVAILABLE:
     import matplotlib
+    import matplotlib.axes
     import matplotlib.pyplot as plt
 
     _PLOT_OUT_TYPE = Tuple[plt.Figure, Union[matplotlib.axes.Axes, np.ndarray]]
@@ -86,6 +87,7 @@ def plot_single_or_multi_val(
     Raises:
         ModuleNotFoundError:
             If `matplotlib` is not installed
+
     """
     _error_on_missing_matplotlib()
     fig, ax = plt.subplots() if ax is None else (None, ax)
@@ -147,8 +149,12 @@ def plot_single_or_multi_val(
     xlim = ax.get_xlim()
     factor = 0.1 * (xlim[1] - xlim[0])
 
-    y_ = [lower_bound, upper_bound] if lower_bound or upper_bound else []
-    ax.hlines(y_, xlim[0], xlim[1], linestyles="dashed", colors="k")
+    y_lines = []
+    if lower_bound is not None:
+        y_lines.append(lower_bound)
+    if upper_bound is not None:
+        y_lines.append(upper_bound)
+    ax.hlines(y_lines, xlim[0], xlim[1], linestyles="dashed", colors="k")
     if higher_is_better is not None:
         if lower_bound is not None and not higher_is_better:
             ax.set_xlim(xlim[0] - factor, xlim[1])
@@ -177,6 +183,7 @@ def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> Union[np.ndarray, _AX
     """Reduce `axs` to `nb` Axes.
 
     All further Axes are removed from the figure.
+
     """
     if isinstance(axs, _AX_TYPE):
         return axs
@@ -213,6 +220,7 @@ def plot_confusion_matrix(
     Raises:
         ModuleNotFoundError:
             If `matplotlib` is not installed
+
     """
     _error_on_missing_matplotlib()
 
@@ -241,8 +249,8 @@ def plot_confusion_matrix(
         if fig_label is not None:
             ax.set_title(f"Label {fig_label[i]}", fontsize=15)
         ax.imshow(confmat[i].cpu().detach() if confmat.ndim == 3 else confmat.cpu().detach())
-        ax.set_xlabel("True class", fontsize=15)
-        ax.set_ylabel("Predicted class", fontsize=15)
+        ax.set_xlabel("Predicted class", fontsize=15)
+        ax.set_ylabel("True class", fontsize=15)
         ax.set_xticks(list(range(n_classes)))
         ax.set_yticks(list(range(n_classes)))
         ax.set_xticklabels(labels, rotation=45, fontsize=10)

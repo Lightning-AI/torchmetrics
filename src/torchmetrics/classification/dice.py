@@ -132,6 +132,7 @@ class Dice(Metric):
         >>> dice = Dice(average='micro')
         >>> dice(preds, target)
         tensor(0.2500)
+
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -184,7 +185,7 @@ class Dice(Metric):
         if num_classes and ignore_index is not None and (not ignore_index < num_classes or num_classes == 1):
             raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
 
-        default: Callable = lambda: []
+        default: Callable = list
         reduce_fn: Optional[str] = "cat"
         if mdmc_average != "samplewise" and average != "samples":
             if average == "micro":
@@ -282,5 +283,6 @@ class Dice(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2,(10,)), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

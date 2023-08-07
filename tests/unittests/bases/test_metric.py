@@ -14,6 +14,7 @@
 import os
 import pickle
 from collections import OrderedDict
+from typing import Any
 from unittest.mock import Mock
 
 import cloudpickle
@@ -23,9 +24,9 @@ import pytest
 import torch
 from torch import Tensor, tensor
 from torch.nn import Module
-
 from torchmetrics.classification import BinaryAccuracy
 from torchmetrics.regression import PearsonCorrCoef
+
 from unittests.helpers import seed_all
 from unittests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
 from unittests.helpers.utilities import no_warning_call
@@ -43,6 +44,12 @@ def test_error_on_wrong_input():
 
     with pytest.raises(ValueError, match="Expected keyword argument `compute_on_cpu` to be an `bool` bu.*"):
         DummyMetric(compute_on_cpu=None)
+
+    with pytest.raises(ValueError, match="Expected keyword argument `sync_on_compute` to be a `bool` but.*"):
+        DummyMetric(sync_on_compute=None)
+
+    with pytest.raises(ValueError, match="Expected keyword argument `compute_with_cache` to be a `bool` but got.*"):
+        DummyMetric(compute_with_cache=None)
 
     with pytest.raises(ValueError, match="Unexpected keyword arguments: `foo`"):
         DummyMetric(foo=True)
@@ -150,7 +157,8 @@ def test_update():
     assert a._computed is None
 
 
-def test_compute():
+@pytest.mark.parametrize("compute_with_cache", [True, False])
+def test_compute(compute_with_cache):
     """Test that `compute` method works as expected."""
 
     class A(DummyMetric):
@@ -160,17 +168,17 @@ def test_compute():
         def compute(self):
             return self.x
 
-    a = A()
+    a = A(compute_with_cache=compute_with_cache)
     assert a.compute() == 0
     assert a.x == 0
     a.update(1)
     assert a._computed is None
     assert a.compute() == 1
-    assert a._computed == 1
+    assert a._computed == 1 if compute_with_cache else a._computed is None
     a.update(2)
     assert a._computed is None
     assert a.compute() == 3
-    assert a._computed == 3
+    assert a._computed == 3 if compute_with_cache else a._computed is None
 
     # called without update, should return cached value
     a._computed = 5
@@ -454,6 +462,30 @@ def test_constant_memory(device, requires_grad):
         assert base_memory_level >= memory, "memory increased above base level"
 
 
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
+def test_constant_memory_on_repeat_init():
+    """Test that when initializing a metric multiple times the memory does not increase.
+
+    This only works for metrics with `compute_with_cache=False` as otherwise the cache will keep a refence that python
+    gc will not be able to collect and clean.
+
+    """
+
+    def mem():
+        return torch.cuda.memory_allocated() / 1024**2
+
+    x = torch.randn(10000).cuda()
+
+    for i in range(100):
+        m = DummyListMetric(compute_with_cache=False).cuda()
+        m(x)
+        if i == 0:
+            after_one_iter = mem()
+
+        # allow for 5% flucturation due to measuring
+        assert after_one_iter * 1.05 >= mem(), "memory increased too much above base level"
+
+
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires gpu")
 def test_specific_error_on_wrong_device():
     """Test that a specific error is raised if we detect input and metric are on different devices."""
@@ -473,7 +505,7 @@ def test_no_warning_on_custom_forward(metric_class):
     class UnsetProperty(metric_class):
         full_state_update = None
 
-        def forward(self, *args, **kwargs):
+        def forward(self, *args: Any, **kwargs: Any):
             self.update(*args, **kwargs)
 
     with no_warning_call(
@@ -502,7 +534,7 @@ def test_no_iteration_allowed():
     """Test that no iteration of metric is allowed."""
     metric = DummyMetric()
     with pytest.raises(TypeError, match="'DummyMetric' object is not iterable"):  # noqa: PT012
-        for m in metric:
+        for _m in metric:
             continue
 
 

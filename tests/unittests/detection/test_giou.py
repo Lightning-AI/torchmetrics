@@ -11,15 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Callable, Dict
+from typing import Callable, ClassVar, Dict
 
 import pytest
 import torch
 from torch import Tensor
-
 from torchmetrics.detection.giou import GeneralizedIntersectionOverUnion
 from torchmetrics.functional.detection.giou import generalized_intersection_over_union
+from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+
 from unittests.detection.base_iou_test import BaseTestIntersectionOverUnion, TestCaseData, _box_inputs, _inputs
 from unittests.helpers.testers import MetricTester
 
@@ -48,12 +49,12 @@ _pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0
 class TestGeneralizedIntersectionOverUnion(MetricTester, BaseTestIntersectionOverUnion):
     """Test the Generalized Intersection over Union metric for object detection predictions."""
 
-    data: Dict[str, TestCaseData] = {
+    data: ClassVar[Dict[str, TestCaseData]] = {
         "iou_variant": TestCaseData(data=_inputs, result={GeneralizedIntersectionOverUnion._iou_type: giou}),
         "iou_variant_respect": TestCaseData(
             data=_inputs, result={GeneralizedIntersectionOverUnion._iou_type: giou_dontrespect}
         ),
         "fn_iou_variant": TestCaseData(data=_box_inputs, result=box_giou),
     }
-    metric_class = GeneralizedIntersectionOverUnion
-    metric_fn: Callable[[Tensor, Tensor, bool, float], Tensor] = generalized_intersection_over_union
+    metric_class: ClassVar[Metric] = GeneralizedIntersectionOverUnion
+    metric_fn: ClassVar[Callable[[Tensor, Tensor, bool, float], Tensor]] = generalized_intersection_over_union

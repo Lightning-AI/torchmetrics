@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Sequence, Tuple, Union
+from typing import Optional, Sequence, Tuple
 
 import torch
 from torch import Tensor
@@ -29,6 +29,7 @@ def _uqi_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
+
     """
     if preds.dtype != target.dtype:
         raise TypeError(
@@ -50,8 +51,7 @@ def _uqi_compute(
     kernel_size: Sequence[int] = (11, 11),
     sigma: Sequence[float] = (1.5, 1.5),
     reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
-    data_range: Optional[float] = None,
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+) -> Tensor:
     """Compute Universal Image Quality Index.
 
     Args:
@@ -65,14 +65,13 @@ def _uqi_compute(
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
 
-        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
-
     Example:
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> preds, target = _uqi_update(preds, target)
         >>> _uqi_compute(preds, target)
         tensor(0.9216)
+
     """
     if len(kernel_size) != 2 or len(sigma) != 2:
         raise ValueError(
@@ -85,9 +84,6 @@ def _uqi_compute(
 
     if any(y <= 0 for y in sigma):
         raise ValueError(f"Expected `sigma` to have positive number. Got {sigma}.")
-
-    if data_range is None:
-        data_range = max(preds.max() - preds.min(), target.max() - target.min())
 
     device = preds.device
     channel = preds.size(1)
@@ -112,7 +108,7 @@ def _uqi_compute(
     sigma_pred_target = output_list[4] - mu_pred_target
 
     upper = 2 * sigma_pred_target
-    lower = sigma_pred_sq + sigma_target_sq
+    lower = sigma_pred_sq + sigma_target_sq + torch.finfo(sigma_pred_sq.dtype).eps
 
     uqi_idx = ((2 * mu_pred_target) * upper) / ((mu_pred_sq + mu_target_sq) * lower)
     uqi_idx = uqi_idx[..., pad_h:-pad_h, pad_w:-pad_w]
@@ -126,7 +122,6 @@ def universal_image_quality_index(
     kernel_size: Sequence[int] = (11, 11),
     sigma: Sequence[float] = (1.5, 1.5),
     reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
-    data_range: Optional[float] = None,
 ) -> Tensor:
     """Universal Image Quality Index.
 
@@ -140,8 +135,6 @@ def universal_image_quality_index(
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
-
-        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
 
     Return:
         Tensor with UniversalImageQualityIndex score
@@ -172,6 +165,7 @@ def universal_image_quality_index(
         [2] Zhou Wang, A. C. Bovik, H. R. Sheikh and E. P. Simoncelli, "Image quality assessment: from error visibility
         to structural similarity," in IEEE Transactions on Image Processing, vol. 13, no. 4, pp. 600-612, April 2004,
         doi: 10.1109/TIP.2003.819861.
+
     """
     preds, target = _uqi_update(preds, target)
-    return _uqi_compute(preds, target, kernel_size, sigma, reduction, data_range)
+    return _uqi_compute(preds, target, kernel_size, sigma, reduction)

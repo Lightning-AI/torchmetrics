@@ -11,12 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Optional
+
 import numpy as np
 import pytest
 from torch import Tensor
-
 from torchmetrics.functional.retrieval.recall import retrieval_recall
 from torchmetrics.retrieval.recall import RetrievalRecall
+
 from unittests.helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,
@@ -34,10 +36,11 @@ from unittests.retrieval.helpers import (
 seed_all(42)
 
 
-def _recall_at_k(target: np.ndarray, preds: np.ndarray, top_k: int = None):
+def _recall_at_k(target: np.ndarray, preds: np.ndarray, top_k: Optional[int] = None):
     """Didn't find a reliable implementation of Recall in Information Retrieval, so, reimplementing here.
 
     See wikipedia for more information about definition.
+
     """
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs

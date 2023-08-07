@@ -12,12 +12,12 @@ Structural Similarity Index Measure (SSIM)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.StructuralSimilarityIndexMeasure
+.. autoclass:: torchmetrics.image.StructuralSimilarityIndexMeasure
     :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.structural_similarity_index_measure
+.. autofunction:: torchmetrics.functional.image.structural_similarity_index_measure
     :noindex:

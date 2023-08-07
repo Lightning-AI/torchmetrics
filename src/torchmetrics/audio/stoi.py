@@ -71,14 +71,15 @@ class ShortTimeObjectiveIntelligibility(Metric):
         >>> stoi = ShortTimeObjectiveIntelligibility(8000, False)
         >>> stoi(preds, target)
         tensor(-0.0100)
+
     """
     sum_stoi: Tensor
     total: Tensor
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
-    plot_lower_bound: float = -20.0
-    plot_upper_bound: float = 5.0
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,
@@ -153,5 +154,6 @@ class ShortTimeObjectiveIntelligibility(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

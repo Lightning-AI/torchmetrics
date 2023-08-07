@@ -20,9 +20,8 @@ import numpy as np
 import pytest
 import torch
 from torch import Tensor
-from torch.multiprocessing import set_start_method
-
 from torchmetrics import Metric
+
 from unittests import NUM_PROCESSES
 from unittests.helpers.testers import MetricTester, _assert_allclose, _assert_requires_grad, _assert_tensor
 
@@ -59,15 +58,15 @@ def _class_test(
     metric_class: Metric,
     ref_metric: Callable,
     dist_sync_on_step: bool,
-    metric_args: dict = None,
+    metric_args: Optional[dict] = None,
     check_dist_sync_on_step: bool = True,
     check_batch: bool = True,
     atol: float = 1e-8,
     device: str = "cpu",
     fragment_kwargs: bool = False,
     check_scriptable: bool = True,
-    key: str = None,
-    ignore_order: bool = None,
+    key: Optional[str] = None,
+    ignore_order: Optional[bool] = None,
     **kwargs_update: Any,
 ):
     """Comparison between class metric and reference metric.
@@ -95,6 +94,7 @@ def _class_test(
         ignore_order: Ignore order of prediction accross processes when DDP is used.
         kwargs_update: Additional keyword arguments that will be passed with preds and
             targets when running update on the metric.
+
     """
     if not metric_args:
         metric_args = {}
@@ -177,12 +177,12 @@ def _functional_test(
     targets: TEXT_METRIC_INPUT,
     metric_functional: Callable,
     ref_metric: Callable,
-    metric_args: dict = None,
+    metric_args: Optional[dict] = None,
     atol: float = 1e-8,
     device: str = "cpu",
     fragment_kwargs: bool = False,
-    key: str = None,
-    **kwargs_update,
+    key: Optional[str] = None,
+    **kwargs_update: Any,
 ):
     """Comparison between functional metric and reference metric.
 
@@ -199,6 +199,7 @@ def _functional_test(
             the ref_metric.
         kwargs_update: Additional keyword arguments that will be passed with preds and
             targets when running update on the metric.
+
     """
     if not metric_args:
         metric_args = {}
@@ -228,7 +229,7 @@ def _assert_half_support(
     preds: TEXT_METRIC_INPUT,
     targets: TEXT_METRIC_INPUT,
     device: str = "cpu",
-    **kwargs_update,
+    **kwargs_update: Any,
 ):
     """Test if an metric can be used with half precision tensors.
 
@@ -240,6 +241,7 @@ def _assert_half_support(
         device: determine device, either "cpu" or "cuda"
         kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
+
     """
     y_hat = preds[0]
     y = targets[0]
@@ -258,6 +260,7 @@ class TextTester(MetricTester):
     Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup once and
     that pool of processes are used for all tests. All tests for text metrics should subclass from this and implement
     a new method called `test_metric_name` where the method `self.run_metric_test` is called inside.
+
     """
 
     def run_functional_metric_test(
@@ -266,10 +269,10 @@ class TextTester(MetricTester):
         targets: TEXT_METRIC_INPUT,
         metric_functional: Callable,
         reference_metric: Callable,
-        metric_args: dict = None,
+        metric_args: Optional[dict] = None,
         fragment_kwargs: bool = False,
-        key: str = None,
-        **kwargs_update,
+        key: Optional[str] = None,
+        **kwargs_update: Any,
     ):
         """Core method that should be used for testing functions. Call this inside testing method.
 
@@ -284,6 +287,7 @@ class TextTester(MetricTester):
                 against the ref_metric.
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
+
         """
         device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
 
@@ -308,14 +312,14 @@ class TextTester(MetricTester):
         metric_class: Metric,
         reference_metric: Callable,
         dist_sync_on_step: bool = False,
-        metric_args: dict = None,
+        metric_args: Optional[dict] = None,
         check_dist_sync_on_step: bool = True,
         check_batch: bool = True,
         fragment_kwargs: bool = False,
         check_scriptable: bool = True,
-        key: str = None,
-        ignore_order: bool = None,
-        **kwargs_update,
+        key: Optional[str] = None,
+        ignore_order: Optional[bool] = None,
+        **kwargs_update: Any,
     ):
         """Core method that should be used for testing class. Call this inside testing methods.
 
@@ -339,6 +343,7 @@ class TextTester(MetricTester):
             ignore_order: Ignore order of prediction accross processes when DDP is used.
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
+
         """
         if not metric_args:
             metric_args = {}
@@ -394,9 +399,9 @@ class TextTester(MetricTester):
         targets: TEXT_METRIC_INPUT,
         metric_module: Metric,
         metric_functional: Callable,
-        metric_args: dict = None,
-        **kwargs_update,
-    ):
+        metric_args: Optional[dict] = None,
+        **kwargs_update: Any,
+    ) -> None:
         """Test if a metric can be used with half precision tensors on cpu.
 
         Args:
@@ -407,6 +412,7 @@ class TextTester(MetricTester):
             metric_args: dict with additional arguments used for class initialization
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
+
         """
         metric_args = metric_args or {}
         _assert_half_support(
@@ -419,9 +425,9 @@ class TextTester(MetricTester):
         targets: TEXT_METRIC_INPUT,
         metric_module: Metric,
         metric_functional: Callable,
-        metric_args: dict = None,
-        **kwargs_update,
-    ):
+        metric_args: Optional[dict] = None,
+        **kwargs_update: Any,
+    ) -> None:
         """Test if a metric can be used with half precision tensors on gpu.
 
         Args:
@@ -432,6 +438,7 @@ class TextTester(MetricTester):
             metric_args: dict with additional arguments used for class initialization
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
+
         """
         metric_args = metric_args or {}
         _assert_half_support(
@@ -444,9 +451,9 @@ class TextTester(MetricTester):
         targets: TEXT_METRIC_INPUT,
         metric_module: Metric,
         metric_functional: Callable,
-        metric_args: dict = None,
-        key: str = None,
-    ):
+        metric_args: Optional[dict] = None,
+        key: Optional[str] = None,
+    ) -> None:
         """Test if a metric is differentiable or not.
 
         Args:
@@ -457,6 +464,7 @@ class TextTester(MetricTester):
             metric_args: dict with additional arguments used for class initialization
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
                 against the ref_metric.
+
         """
         metric_args = metric_args or {}
         # only floating point tensors can require grad
@@ -475,6 +483,7 @@ def skip_on_connection_issues(reason: str = "Unable to load checkpoints from Hug
     """Handle download related tests if they fail due to connection issues.
 
     The tests run normally if no connection issue arises, and they're marked as skipped otherwise.
+
     """
     _error_msg_starts = ["We couldn't connect to", "Connection error", "Can't load", "`nltk` resource `punkt` is"]
 

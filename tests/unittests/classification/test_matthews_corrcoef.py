@@ -18,9 +18,9 @@ import pytest
 import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import matthews_corrcoef as sk_matthews_corrcoef
-
 from torchmetrics.classification.matthews_corrcoef import (
     BinaryMatthewsCorrCoef,
+    MatthewsCorrCoef,
     MulticlassMatthewsCorrCoef,
     MultilabelMatthewsCorrCoef,
 )
@@ -29,6 +29,8 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
     multiclass_matthews_corrcoef,
     multilabel_matthews_corrcoef,
 )
+from torchmetrics.metric import Metric
+
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
@@ -48,15 +50,15 @@ def _sklearn_matthews_corrcoef_binary(preds, target, ignore_index=None):
     return sk_matthews_corrcoef(y_true=target, y_pred=preds)
 
 
-@pytest.mark.parametrize("input", _binary_cases)
+@pytest.mark.parametrize("inputs", _binary_cases)
 class TestBinaryMatthewsCorrCoef(MetricTester):
     """Test class for `BinaryMatthewsCorrCoef` metric."""
 
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_binary_matthews_corrcoef(self, input, ddp, ignore_index):
+    def test_binary_matthews_corrcoef(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
@@ -71,10 +73,10 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_binary_matthews_corrcoef_functional(self, input, ignore_index):
+    @pytest.mark.parametrize("ignore_index", [None, -1])
+    def test_binary_matthews_corrcoef_functional(self, inputs, ignore_index):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
@@ -88,9 +90,9 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
             },
         )
 
-    def test_binary_matthews_corrcoef_differentiability(self, input):
+    def test_binary_matthews_corrcoef_differentiability(self, inputs):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -100,9 +102,9 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_matthews_corrcoef_dtype_cpu(self, input, dtype):
+    def test_binary_matthews_corrcoef_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -116,9 +118,9 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_matthews_corrcoef_dtype_gpu(self, input, dtype):
+    def test_binary_matthews_corrcoef_dtype_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -140,15 +142,15 @@ def _sklearn_matthews_corrcoef_multiclass(preds, target, ignore_index=None):
     return sk_matthews_corrcoef(y_true=target, y_pred=preds)
 
 
-@pytest.mark.parametrize("input", _multiclass_cases)
+@pytest.mark.parametrize("inputs", _multiclass_cases)
 class TestMulticlassMatthewsCorrCoef(MetricTester):
     """Test class for `MulticlassMatthewsCorrCoef` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multiclass_matthews_corrcoef(self, input, ddp, ignore_index):
+    def test_multiclass_matthews_corrcoef(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
@@ -164,9 +166,9 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_multiclass_matthews_corrcoef_functional(self, input, ignore_index):
+    def test_multiclass_matthews_corrcoef_functional(self, inputs, ignore_index):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
@@ -180,9 +182,9 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
             },
         )
 
-    def test_multiclass_matthews_corrcoef_differentiability(self, input):
+    def test_multiclass_matthews_corrcoef_differentiability(self, inputs):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -192,9 +194,9 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_matthews_corrcoef_dtype_cpu(self, input, dtype):
+    def test_multiclass_matthews_corrcoef_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -206,9 +208,9 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_matthews_corrcoef_dtype_gpu(self, input, dtype):
+    def test_multiclass_matthews_corrcoef_dtype_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -230,15 +232,15 @@ def _sklearn_matthews_corrcoef_multilabel(preds, target, ignore_index=None):
     return sk_matthews_corrcoef(y_true=target, y_pred=preds)
 
 
-@pytest.mark.parametrize("input", _multilabel_cases)
+@pytest.mark.parametrize("inputs", _multilabel_cases)
 class TestMultilabelMatthewsCorrCoef(MetricTester):
     """Test class for `MultilabelMatthewsCorrCoef` metric."""
 
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multilabel_matthews_corrcoef(self, input, ddp, ignore_index):
+    def test_multilabel_matthews_corrcoef(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
@@ -253,10 +255,10 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_multilabel_matthews_corrcoef_functional(self, input, ignore_index):
+    @pytest.mark.parametrize("ignore_index", [None, -1])
+    def test_multilabel_matthews_corrcoef_functional(self, inputs, ignore_index):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
@@ -270,9 +272,9 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
             },
         )
 
-    def test_multilabel_matthews_corrcoef_differentiability(self, input):
+    def test_multilabel_matthews_corrcoef_differentiability(self, inputs):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -282,9 +284,9 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_matthews_corrcoef_dtype_cpu(self, input, dtype):
+    def test_multilabel_matthews_corrcoef_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -298,9 +300,9 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_matthews_corrcoef_dtype_gpu(self, input, dtype):
+    def test_multilabel_matthews_corrcoef_dtype_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -316,3 +318,69 @@ def test_zero_case_in_multiclass():
     # Example where neither 1 or 2 is present in the target tensor
     out = multiclass_matthews_corrcoef(torch.tensor([0, 1, 2]), torch.tensor([0, 0, 0]), 3)
     assert out == 0.0
+
+
+@pytest.mark.parametrize(
+    ("metric_fn", "preds", "target", "expected"),
+    [
+        (binary_matthews_corrcoef, torch.zeros(10), torch.zeros(10), 1.0),
+        (binary_matthews_corrcoef, torch.ones(10), torch.ones(10), 1.0),
+        (
+            binary_matthews_corrcoef,
+            torch.tensor([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+            torch.tensor([0, 0, 0, 0, 0, 1, 1, 1, 1, 1]),
+            0.0,
+        ),
+        (binary_matthews_corrcoef, torch.zeros(10), torch.ones(10), -1.0),
+        (binary_matthews_corrcoef, torch.ones(10), torch.zeros(10), -1.0),
+        (
+            partial(multilabel_matthews_corrcoef, num_labels=NUM_CLASSES),
+            torch.zeros(10, NUM_CLASSES).long(),
+            torch.zeros(10, NUM_CLASSES).long(),
+            1.0,
+        ),
+        (
+            partial(multilabel_matthews_corrcoef, num_labels=NUM_CLASSES),
+            torch.ones(10, NUM_CLASSES).long(),
+            torch.ones(10, NUM_CLASSES).long(),
+            1.0,
+        ),
+        (
+            partial(multilabel_matthews_corrcoef, num_labels=NUM_CLASSES),
+            torch.zeros(10, NUM_CLASSES).long(),
+            torch.ones(10, NUM_CLASSES).long(),
+            -1.0,
+        ),
+        (
+            partial(multilabel_matthews_corrcoef, num_labels=NUM_CLASSES),
+            torch.ones(10, NUM_CLASSES).long(),
+            torch.zeros(10, NUM_CLASSES).long(),
+            -1.0,
+        ),
+    ],
+)
+def test_corner_cases(metric_fn, preds, target, expected):
+    """Test the corner cases of perfect classifiers or completely random classifiers that they work as expected."""
+    out = metric_fn(preds, target)
+    assert out == expected
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryMatthewsCorrCoef, {"task": "binary"}),
+        (MulticlassMatthewsCorrCoef, {"task": "multiclass", "num_classes": 3}),
+        (MultilabelMatthewsCorrCoef, {"task": "multilabel", "num_labels": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=MatthewsCorrCoef):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

@@ -16,6 +16,7 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.confusion_matrix import (
     BinaryConfusionMatrix,
     MulticlassConfusionMatrix,
@@ -78,6 +79,7 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
         >>> metric = BinaryMatthewsCorrCoef()
         >>> metric(preds, target)
         tensor(0.5774)
+
     """
 
     is_differentiable: bool = False
@@ -99,7 +101,7 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
         """Compute metric."""
         return _matthews_corrcoef_reduce(self.confmat)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -137,6 +139,7 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -187,6 +190,7 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
         >>> metric = MulticlassMatthewsCorrCoef(num_classes=3)
         >>> metric(preds, target)
         tensor(0.7000)
+
     """
 
     is_differentiable: bool = False
@@ -209,7 +213,7 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
         """Compute metric."""
         return _matthews_corrcoef_reduce(self.confmat)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -247,6 +251,7 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
             >>> for _ in range(20):
             ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -295,6 +300,7 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
         >>> metric = MultilabelMatthewsCorrCoef(num_labels=3)
         >>> metric(preds, target)
         tensor(0.3333)
+
     """
 
     is_differentiable: bool = False
@@ -318,7 +324,7 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
         """Compute metric."""
         return _matthews_corrcoef_reduce(self.confmat)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -356,11 +362,12 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
 
-class MatthewsCorrCoef:
+class MatthewsCorrCoef(_ClassificationTaskWrapper):
     r"""Calculate `Matthews correlation coefficient`_ .
 
     This metric measures the general correlation or quality of a classification.
@@ -377,11 +384,12 @@ class MatthewsCorrCoef:
         >>> matthews_corrcoef = MatthewsCorrCoef(task='binary')
         >>> matthews_corrcoef(preds, target)
         tensor(0.5774)
+
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
-        task: Literal["binary", "multiclass", "multilabel"] = None,
+        task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
@@ -402,4 +410,4 @@ class MatthewsCorrCoef:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelMatthewsCorrCoef(num_labels, threshold, **kwargs)
-        return None
+        raise ValueError(f"Not handled value: {task}")

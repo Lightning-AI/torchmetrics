@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 from typing_extensions import Literal
 
@@ -23,6 +23,7 @@ class _ErrorRelativeGlobalDimensionlessSynthesis(ErrorRelativeGlobalDimensionles
     >>> ergas = _ErrorRelativeGlobalDimensionlessSynthesis()
     >>> torch.round(ergas(preds, target))
     tensor(154.)
+
     """
 
     def __init__(
@@ -32,7 +33,7 @@ class _ErrorRelativeGlobalDimensionlessSynthesis(ErrorRelativeGlobalDimensionles
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("ErrorRelativeGlobalDimensionlessSynthesis", "image")
-        return super().__init__(ratio=ratio, reduction=reduction, **kwargs)
+        super().__init__(ratio=ratio, reduction=reduction, **kwargs)
 
 
 class _MultiScaleStructuralSimilarityIndexMeasure(MultiScaleStructuralSimilarityIndexMeasure):
@@ -44,6 +45,7 @@ class _MultiScaleStructuralSimilarityIndexMeasure(MultiScaleStructuralSimilarity
     >>> ms_ssim = _MultiScaleStructuralSimilarityIndexMeasure(data_range=1.0)
     >>> ms_ssim(preds, target)
     tensor(0.9627)
+
     """
 
     def __init__(
@@ -60,7 +62,7 @@ class _MultiScaleStructuralSimilarityIndexMeasure(MultiScaleStructuralSimilarity
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("MultiScaleStructuralSimilarityIndexMeasure", "image")
-        return super().__init__(
+        super().__init__(
             gaussian_kernel=gaussian_kernel,
             kernel_size=kernel_size,
             sigma=sigma,
@@ -83,6 +85,7 @@ class _PeakSignalNoiseRatio(PeakSignalNoiseRatio):
     >>> target = tensor([[3.0, 2.0], [1.0, 0.0]])
     >>> psnr(preds, target)
     tensor(2.5527)
+
     """
 
     def __init__(
@@ -94,7 +97,7 @@ class _PeakSignalNoiseRatio(PeakSignalNoiseRatio):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("PeakSignalNoiseRatio", "image")
-        return super().__init__(data_range=data_range, base=base, reduction=reduction, dim=dim, **kwargs)
+        super().__init__(data_range=data_range, base=base, reduction=reduction, dim=dim, **kwargs)
 
 
 class _RelativeAverageSpectralError(RelativeAverageSpectralError):
@@ -107,6 +110,7 @@ class _RelativeAverageSpectralError(RelativeAverageSpectralError):
     >>> rase = _RelativeAverageSpectralError()
     >>> rase(preds, target)
     tensor(5114.6641)
+
     """
 
     def __init__(
@@ -115,7 +119,7 @@ class _RelativeAverageSpectralError(RelativeAverageSpectralError):
         **kwargs: Dict[str, Any],
     ) -> None:
         _deprecated_root_import_class("RelativeAverageSpectralError", "image")
-        return super().__init__(window_size=window_size, **kwargs)
+        super().__init__(window_size=window_size, **kwargs)
 
 
 class _RootMeanSquaredErrorUsingSlidingWindow(RootMeanSquaredErrorUsingSlidingWindow):
@@ -128,6 +132,7 @@ class _RootMeanSquaredErrorUsingSlidingWindow(RootMeanSquaredErrorUsingSlidingWi
     >>> rmse_sw = RootMeanSquaredErrorUsingSlidingWindow()
     >>> rmse_sw(preds, target)
     tensor(0.3999)
+
     """
 
     def __init__(
@@ -136,7 +141,7 @@ class _RootMeanSquaredErrorUsingSlidingWindow(RootMeanSquaredErrorUsingSlidingWi
         **kwargs: Dict[str, Any],
     ) -> None:
         _deprecated_root_import_class("RootMeanSquaredErrorUsingSlidingWindow", "image")
-        return super().__init__(window_size=window_size, **kwargs)
+        super().__init__(window_size=window_size, **kwargs)
 
 
 class _SpectralAngleMapper(SpectralAngleMapper):
@@ -148,6 +153,7 @@ class _SpectralAngleMapper(SpectralAngleMapper):
     >>> sam = _SpectralAngleMapper()
     >>> sam(preds, target)
     tensor(0.5943)
+
     """
 
     def __init__(
@@ -156,7 +162,7 @@ class _SpectralAngleMapper(SpectralAngleMapper):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("SpectralAngleMapper", "image")
-        return super().__init__(reduction=reduction, **kwargs)
+        super().__init__(reduction=reduction, **kwargs)
 
 
 class _SpectralDistortionIndex(SpectralDistortionIndex):
@@ -169,13 +175,14 @@ class _SpectralDistortionIndex(SpectralDistortionIndex):
     >>> sdi = _SpectralDistortionIndex()
     >>> sdi(preds, target)
     tensor(0.0234)
+
     """
 
     def __init__(
         self, p: int = 1, reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean", **kwargs: Any
     ) -> None:
         _deprecated_root_import_class("SpectralDistortionIndex", "image")
-        return super().__init__(p=p, reduction=reduction, **kwargs)
+        super().__init__(p=p, reduction=reduction, **kwargs)
 
 
 class _StructuralSimilarityIndexMeasure(StructuralSimilarityIndexMeasure):
@@ -187,6 +194,7 @@ class _StructuralSimilarityIndexMeasure(StructuralSimilarityIndexMeasure):
     >>> ssim = _StructuralSimilarityIndexMeasure(data_range=1.0)
     >>> ssim(preds, target)
     tensor(0.9219)
+
     """
 
     def __init__(
@@ -203,7 +211,7 @@ class _StructuralSimilarityIndexMeasure(StructuralSimilarityIndexMeasure):
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("StructuralSimilarityIndexMeasure", "image")
-        return super().__init__(
+        super().__init__(
             gaussian_kernel=gaussian_kernel,
             sigma=sigma,
             kernel_size=kernel_size,
@@ -226,11 +234,12 @@ class _TotalVariation(TotalVariation):
     >>> img = torch.rand(5, 3, 28, 28)
     >>> tv(img)
     tensor(7546.8018)
+
     """
 
     def __init__(self, reduction: Literal["mean", "sum", "none", None] = "sum", **kwargs: Any) -> None:
         _deprecated_root_import_class("TotalVariation", "image")
-        return super().__init__(reduction=reduction, **kwargs)
+        super().__init__(reduction=reduction, **kwargs)
 
 
 class _UniversalImageQualityIndex(UniversalImageQualityIndex):
@@ -242,6 +251,7 @@ class _UniversalImageQualityIndex(UniversalImageQualityIndex):
     >>> uqi = _UniversalImageQualityIndex()
     >>> uqi(preds, target)
     tensor(0.9216)
+
     """
 
     def __init__(
@@ -249,10 +259,7 @@ class _UniversalImageQualityIndex(UniversalImageQualityIndex):
         kernel_size: Sequence[int] = (11, 11),
         sigma: Sequence[float] = (1.5, 1.5),
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        data_range: Optional[float] = None,
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("UniversalImageQualityIndex", "image")
-        return super().__init__(
-            kernel_size=kernel_size, sigma=sigma, reduction=reduction, data_range=data_range, **kwargs
-        )
+        super().__init__(kernel_size=kernel_size, sigma=sigma, reduction=reduction, **kwargs)

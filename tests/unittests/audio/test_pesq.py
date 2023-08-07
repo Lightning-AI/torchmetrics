@@ -19,9 +19,9 @@ import torch
 from pesq import pesq as pesq_backend
 from scipy.io import wavfile
 from torch import Tensor
-
 from torchmetrics.audio import PerceptualEvaluationSpeechQuality
 from torchmetrics.functional.audio import perceptual_evaluation_speech_quality
+
 from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester

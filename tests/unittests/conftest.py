@@ -17,10 +17,11 @@ import sys
 
 import pytest
 import torch
-from torch.multiprocessing import Pool, set_start_method
+from torch.multiprocessing import Pool, set_sharing_strategy, set_start_method
 
 with contextlib.suppress(RuntimeError):
     set_start_method("spawn")
+    set_sharing_strategy("file_system")
 
 NUM_PROCESSES = 2  # torch.cuda.device_count() if torch.cuda.is_available() else 2
 NUM_BATCHES = 2 * NUM_PROCESSES  # Need to be divisible with the number of processes
@@ -50,13 +51,21 @@ def setup_ddp(rank, world_size):
 
 
 def pytest_sessionstart():
-    """Global initialization of multiprocessing pool. Runs before any test."""
+    """Global initialization of multiprocessing pool.
+
+    Runs before any test.
+
+    """
     pool = Pool(processes=NUM_PROCESSES)
     pool.starmap(setup_ddp, [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)])
     pytest.pool = pool
 
 
 def pytest_sessionfinish():
-    """Correctly closes the global multiprocessing pool. Runs after all tests."""
+    """Correctly closes the global multiprocessing pool.
+
+    Runs after all tests.
+
+    """
     pytest.pool.close()
     pytest.pool.join()

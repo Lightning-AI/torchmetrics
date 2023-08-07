@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from typing import Any, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor, tensor
@@ -60,6 +60,7 @@ class TotalVariation(Metric):
         >>> img = torch.rand(5, 3, 28, 28)
         >>> tv(img)
         tensor(7546.8018)
+
     """
 
     full_state_update: bool = False
@@ -67,30 +68,32 @@ class TotalVariation(Metric):
     higher_is_better: bool = False
     plot_lower_bound: float = 0.0
 
-    def __init__(self, reduction: Literal["mean", "sum", "none", None] = "sum", **kwargs: Any) -> None:
+    num_elements: Tensor
+    score_list: List[Tensor]
+    score: Tensor
+
+    def __init__(self, reduction: Optional[Literal["mean", "sum", "none"]] = "sum", **kwargs: Any) -> None:
         super().__init__(**kwargs)
         if reduction is not None and reduction not in ("sum", "mean", "none"):
             raise ValueError("Expected argument `reduction` to either be 'sum', 'mean', 'none' or None")
         self.reduction = reduction
 
-        if self.reduction is None or self.reduction == "none":
-            self.add_state("score", default=[], dist_reduce_fx="cat")
-        else:
-            self.add_state("score", default=tensor(0, dtype=torch.float), dist_reduce_fx="sum")
+        self.add_state("score_list", default=[], dist_reduce_fx="cat")
+        self.add_state("score", default=tensor(0, dtype=torch.float), dist_reduce_fx="sum")
         self.add_state("num_elements", default=tensor(0, dtype=torch.int), dist_reduce_fx="sum")
 
     def update(self, img: Tensor) -> None:
         """Update current score with batch of input images."""
         score, num_elements = _total_variation_update(img)
         if self.reduction is None or self.reduction == "none":
-            self.score.append(score)
+            self.score_list.append(score)
         else:
             self.score += score.sum()
         self.num_elements += num_elements
 
     def compute(self) -> Tensor:
         """Compute final total variation."""
-        score = dim_zero_cat(self.score) if self.reduction is None or self.reduction == "none" else self.score
+        score = dim_zero_cat(self.score_list) if self.reduction is None or self.reduction == "none" else self.score
         return _total_variation_compute(score, self.num_elements, self.reduction)
 
     def plot(
@@ -131,5 +134,6 @@ class TotalVariation(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(5, 3, 28, 28)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

@@ -18,22 +18,22 @@ import pytest
 import speechmetrics
 import torch
 from torch import Tensor
-
 from torchmetrics.audio import ScaleInvariantSignalNoiseRatio
 from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
+
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Time = 100
+NUM_SAMPLES = 100
 
 Input = namedtuple("Input", ["preds", "target"])
 
 inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, Time),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, Time),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, NUM_SAMPLES),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, NUM_SAMPLES),
 )
 
 speechmetrics_sisdr = speechmetrics.load("sisdr")

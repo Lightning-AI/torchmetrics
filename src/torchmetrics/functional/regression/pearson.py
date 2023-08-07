@@ -11,12 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import math
 from typing import Tuple
 
 import torch
 from torch import Tensor
 
 from torchmetrics.functional.regression.utils import _check_data_shape_to_num_outputs
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 
 
@@ -45,6 +47,7 @@ def _pearson_corrcoef_update(
         corr_xy: current covariance estimate between x and y tensor
         n_prior: current number of observed observations
         num_outputs: Number of outputs in multioutput setting
+
     """
     # Data checking
     _check_same_shape(preds, target)
@@ -88,10 +91,26 @@ def _pearson_corrcoef_compute(
         var_y: variance estimate of y tensor
         corr_xy: covariance estimate between x and y tensor
         nb: number of observations
+
     """
     var_x /= nb - 1
     var_y /= nb - 1
     corr_xy /= nb - 1
+    # if var_x, var_y is float16 and on cpu, make it bfloat16 as sqrt is not supported for float16
+    # on cpu, remove this after https://github.com/pytorch/pytorch/issues/54774 is fixed
+    if var_x.dtype == torch.float16 and var_x.device == torch.device("cpu"):
+        var_x = var_x.bfloat16()
+        var_y = var_y.bfloat16()
+
+    bound = math.sqrt(torch.finfo(var_x.dtype).eps)
+    if (var_x < bound).any() or (var_y < bound).any():
+        rank_zero_warn(
+            "The variance of predictions or target is close to zero. This can cause instability in Pearson correlation"
+            "coefficient, leading to wrong results. Consider re-scaling the input if possible or computing using a"
+            f"larger dtype (currently using {var_x.dtype}).",
+            UserWarning,
+        )
+
     corrcoef = (corr_xy / (var_x * var_y).sqrt()).squeeze()
     return torch.clamp(corrcoef, -1.0, 1.0)
 
@@ -116,6 +135,7 @@ def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         >>> preds = torch.tensor([[2.5, 0.0], [2, 8]])
         >>> pearson_corrcoef(preds, target)
         tensor([1., 1.])
+
     """
     d = preds.shape[1] if preds.ndim == 2 else 1
     _temp = torch.zeros(d, dtype=preds.dtype, device=preds.device)

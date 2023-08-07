@@ -17,12 +17,12 @@ from typing import Optional
 import pytest
 from scipy.spatial.distance import dice as sc_dice
 from torch import Tensor, tensor
-
 from torchmetrics.classification import Dice
 from torchmetrics.functional import dice
 from torchmetrics.functional.classification.stat_scores import _del_column
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
+
 from unittests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
 from unittests.classification.inputs import _input_multiclass as _input_mcls
 from unittests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
@@ -54,6 +54,7 @@ def _scipy_dice(
 
     Return:
         Float dice score
+
     """
     sk_preds, sk_target, mode = _input_format_classification(preds, target)
 

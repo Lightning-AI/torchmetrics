@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Tuple, Union
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -43,6 +43,7 @@ def _retrieval_recall_at_fixed_precision(
 
     Returns:
         Maximum recall value, corresponding it best k
+
     """
     try:
         max_recall, best_k = max((r, k) for p, r, k in zip(precision, recall, top_k) if p >= min_precision)
@@ -107,7 +108,7 @@ class RetrievalPrecisionRecallCurve(Metric):
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
         ValueError:
-            If ``max_k`` parameter is not `None` or an integer larger than 0.
+            If ``max_k`` parameter is not `None` or not an integer larger than 0.
 
     Example:
         >>> from torch import tensor
@@ -123,11 +124,16 @@ class RetrievalPrecisionRecallCurve(Metric):
         tensor([0.5000, 0.5000, 1.0000, 1.0000])
         >>> top_k
         tensor([1, 2, 3, 4])
+
     """
 
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
+
+    indexes: List[Tensor]
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,
@@ -321,6 +327,7 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
         >>> r = RetrievalRecallAtFixedPrecision(min_precision=0.8)
         >>> r(preds, target, indexes=indexes)
         (tensor(0.5000), tensor(1))
+
     """
 
     higher_is_better = True
@@ -347,7 +354,7 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
 
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
         precisions, recalls, top_k = super().compute()
 
@@ -391,6 +398,7 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(10,), torch.randint(2, (10,)), indexes=torch.randint(2,(10,)))[0])
             >>> fig, ax = metric.plot(values)
+
         """
         val = val or self.compute()[0]
         return self._plot(val, ax)

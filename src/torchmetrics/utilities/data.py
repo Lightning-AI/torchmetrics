@@ -14,7 +14,6 @@
 import sys
 from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
 
-import numpy as np
 import torch
 from torch import Tensor
 
@@ -27,7 +26,8 @@ METRIC_EPS = 1e-6
 
 def dim_zero_cat(x: Union[Tensor, List[Tensor]]) -> Tensor:
     """Concatenation along the zero dimension."""
-    x = x if isinstance(x, (list, tuple)) else [x]
+    if isinstance(x, torch.Tensor):
+        return x
     x = [y.unsqueeze(0) if y.numel() == 1 and y.ndim == 0 else y for y in x]
     if not x:  # empty list
         raise ValueError("No samples to concatenate")
@@ -90,6 +90,7 @@ def to_onehot(
         tensor([[0, 1, 0, 0],
                 [0, 0, 1, 0],
                 [0, 0, 0, 1]])
+
     """
     if num_classes is None:
         num_classes = int(label_tensor.max().detach().item() + 1)
@@ -122,6 +123,7 @@ def select_topk(prob_tensor: Tensor, topk: int = 1, dim: int = 1) -> Tensor:
         >>> select_topk(x, topk=2)
         tensor([[0, 1, 1],
                 [1, 1, 0]], dtype=torch.int32)
+
     """
     zeros = torch.zeros_like(prob_tensor)
     if topk == 1:  # argmax has better performance than topk
@@ -145,6 +147,7 @@ def to_categorical(x: Tensor, argmax_dim: int = 1) -> Tensor:
         >>> x = torch.tensor([[0.2, 0.5], [0.9, 0.1]])
         >>> to_categorical(x)
         tensor([1, 0])
+
     """
     return torch.argmax(x, dim=argmax_dim)
 
@@ -178,6 +181,7 @@ def apply_to_collection(
         [64, 0, 4, 36, 49]
         >>> apply_to_collection(dict(abc=123), dtype=int, function=lambda x: x ** 2)
         {'abc': 15129}
+
     """
     elem_type = type(data)
 
@@ -243,8 +247,8 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
 def _cumsum(x: Tensor, dim: Optional[int] = 0, dtype: Optional[torch.dtype] = None) -> Tensor:
     if torch.are_deterministic_algorithms_enabled() and x.is_cuda and x.is_floating_point() and sys.platform != "win32":
         rank_zero_warn(
-            "You are trying to use a metric in deterministic mode on GPU that uses `torch.cumsum` which is currently"
-            "not supported. Instead the tensor will be casted to CPU, compute the `cumsum` and then casted back to GPU"
+            "You are trying to use a metric in deterministic mode on GPU that uses `torch.cumsum`, which is currently "
+            "not supported. The tensor will be copied to the CPU memory to compute it and then copied back to GPU. "
             "Expect some slowdowns.",
             TorchMetricsUserWarning,
         )
@@ -260,6 +264,7 @@ def _flexible_bincount(x: Tensor) -> Tensor:
 
     Returns:
         Number of occurrences for each unique element in x
+
     """
     # make sure elements in x start from 0
     x = x - x.min()

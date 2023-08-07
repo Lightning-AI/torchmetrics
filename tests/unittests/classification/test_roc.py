@@ -19,9 +19,10 @@ import torch
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import roc_curve as sk_roc_curve
-
-from torchmetrics.classification.roc import BinaryROC, MulticlassROC, MultilabelROC
+from torchmetrics.classification.roc import ROC, BinaryROC, MulticlassROC, MultilabelROC
 from torchmetrics.functional.classification.roc import binary_roc, multiclass_roc, multilabel_roc
+from torchmetrics.metric import Metric
+
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
@@ -41,15 +42,15 @@ def _sklearn_roc_binary(preds, target, ignore_index=None):
     return [np.nan_to_num(x, nan=0.0) for x in [fpr, tpr, thresholds]]
 
 
-@pytest.mark.parametrize("input", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
+@pytest.mark.parametrize("inputs", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinaryROC(MetricTester):
     """Test class for `BinaryROC` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_binary_roc(self, input, ddp, ignore_index):
+    def test_binary_roc(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
@@ -65,9 +66,9 @@ class TestBinaryROC(MetricTester):
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_binary_roc_functional(self, input, ignore_index):
+    def test_binary_roc_functional(self, inputs, ignore_index):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
@@ -81,9 +82,9 @@ class TestBinaryROC(MetricTester):
             },
         )
 
-    def test_binary_roc_differentiability(self, input):
+    def test_binary_roc_differentiability(self, inputs):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -93,9 +94,9 @@ class TestBinaryROC(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_roc_dtype_cpu(self, input, dtype):
+    def test_binary_roc_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -109,9 +110,9 @@ class TestBinaryROC(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_roc_dtype_gpu(self, input, dtype):
+    def test_binary_roc_dtype_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -122,9 +123,9 @@ class TestBinaryROC(MetricTester):
         )
 
     @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
-    def test_binary_roc_threshold_arg(self, input, threshold_fn):
+    def test_binary_roc_threshold_arg(self, inputs, threshold_fn):
         """Test that different types of `thresholds` argument lead to same result."""
-        preds, target = input
+        preds, target = inputs
         for pred, true in zip(preds, target):
             p1, r1, t1 = binary_roc(pred, true, thresholds=None)
             p2, r2, t2 = binary_roc(pred, true, thresholds=threshold_fn(t1.flip(0)))
@@ -154,16 +155,16 @@ def _sklearn_roc_multiclass(preds, target, ignore_index=None):
 
 
 @pytest.mark.parametrize(
-    "input", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+    "inputs", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
 class TestMulticlassROC(MetricTester):
     """Test class for `MulticlassROC` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multiclass_roc(self, input, ddp, ignore_index):
+    def test_multiclass_roc(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
@@ -180,9 +181,9 @@ class TestMulticlassROC(MetricTester):
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_multiclass_roc_functional(self, input, ignore_index):
+    def test_multiclass_roc_functional(self, inputs, ignore_index):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
@@ -197,9 +198,9 @@ class TestMulticlassROC(MetricTester):
             },
         )
 
-    def test_multiclass_roc_differentiability(self, input):
+    def test_multiclass_roc_differentiability(self, inputs):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -209,9 +210,9 @@ class TestMulticlassROC(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_roc_dtype_cpu(self, input, dtype):
+    def test_multiclass_roc_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
         if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
         self.run_precision_test_cpu(
@@ -225,9 +226,9 @@ class TestMulticlassROC(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_roc_dtype_gpu(self, input, dtype):
+    def test_multiclass_roc_dtype_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -238,9 +239,9 @@ class TestMulticlassROC(MetricTester):
         )
 
     @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
-    def test_multiclass_roc_threshold_arg(self, input, threshold_fn):
+    def test_multiclass_roc_threshold_arg(self, inputs, threshold_fn):
         """Test that different types of `thresholds` argument lead to same result."""
-        preds, target = input
+        preds, target = inputs
         for pred, true in zip(preds, target):
             p1, r1, t1 = multiclass_roc(pred, true, num_classes=NUM_CLASSES, thresholds=None)
             for i, t in enumerate(t1):
@@ -262,16 +263,16 @@ def _sklearn_roc_multilabel(preds, target, ignore_index=None):
 
 
 @pytest.mark.parametrize(
-    "input", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+    "inputs", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
 class TestMultilabelROC(MetricTester):
     """Test class for `MultilabelROC` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multilabel_roc(self, input, ddp, ignore_index):
+    def test_multilabel_roc(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_class_metric_test(
@@ -288,9 +289,9 @@ class TestMultilabelROC(MetricTester):
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_multilabel_roc_functional(self, input, ignore_index):
+    def test_multilabel_roc_functional(self, inputs, ignore_index):
         """Test functional implementation of metric."""
-        preds, target = input
+        preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
         self.run_functional_metric_test(
@@ -305,9 +306,9 @@ class TestMultilabelROC(MetricTester):
             },
         )
 
-    def test_multiclass_roc_differentiability(self, input):
+    def test_multiclass_roc_differentiability(self, inputs):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        preds, target = input
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -317,9 +318,9 @@ class TestMultilabelROC(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_roc_dtype_cpu(self, input, dtype):
+    def test_multilabel_roc_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
-        preds, target = input
+        preds, target = inputs
         if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
             pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
         self.run_precision_test_cpu(
@@ -333,9 +334,9 @@ class TestMultilabelROC(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_roc_dtype_gpu(self, input, dtype):
+    def test_multiclass_roc_dtype_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        preds, target = input
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -346,9 +347,9 @@ class TestMultilabelROC(MetricTester):
         )
 
     @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
-    def test_multilabel_roc_threshold_arg(self, input, threshold_fn):
+    def test_multilabel_roc_threshold_arg(self, inputs, threshold_fn):
         """Test that different types of `thresholds` argument lead to same result."""
-        preds, target = input
+        preds, target = inputs
         for pred, true in zip(preds, target):
             p1, r1, t1 = multilabel_roc(pred, true, num_labels=NUM_CLASSES, thresholds=None)
             for i, t in enumerate(t1):
@@ -373,3 +374,24 @@ def test_valid_input_thresholds(metric, thresholds):
     with pytest.warns(None) as record:
         metric(thresholds=thresholds)
     assert len(record) == 0
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryROC, {"task": "binary"}),
+        (MulticlassROC, {"task": "multiclass", "num_classes": 3}),
+        (MultilabelROC, {"task": "multilabel", "num_labels": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=ROC):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

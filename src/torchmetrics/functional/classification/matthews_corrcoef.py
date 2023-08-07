@@ -35,9 +35,21 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
-    """Reduce an un-normalized confusion matrix of shape (n_classes, n_classes) into the matthews corrcoef score."""
+    """Reduce an un-normalized confusion matrix of shape (n_classes, n_classes) into the matthews corrcoef score.
+
+    See: https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-019-6413-7 for more info.
+
+    """
     # convert multilabel into binary
     confmat = confmat.sum(0) if confmat.ndim == 3 else confmat
+
+    if confmat.numel() == 4:  # binary case
+        tn, fp, fn, tp = confmat.reshape(-1)
+        if tp + tn != 0 and fp + fn == 0:
+            return torch.tensor(1.0, dtype=confmat.dtype, device=confmat.device)
+
+        if tp + tn == 0 and fp + fn != 0:
+            return torch.tensor(-1.0, dtype=confmat.dtype, device=confmat.device)
 
     tk = confmat.sum(dim=-1).float()
     pk = confmat.sum(dim=-2).float()
@@ -48,10 +60,22 @@ def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
     cov_ypyp = s**2 - sum(pk * pk)
     cov_ytyt = s**2 - sum(tk * tk)
 
+    numerator = cov_ytyp
     denom = cov_ypyp * cov_ytyt
-    if denom == 0:
+
+    if denom == 0 and confmat.numel() == 4:
+        if tp == 0 or tn == 0:
+            a = tp + tn
+
+        if fp == 0 or fn == 0:
+            b = fp + fn
+
+        eps = torch.tensor(torch.finfo(torch.float32).eps, dtype=torch.float32, device=confmat.device)
+        numerator = torch.sqrt(eps) * (a - b)
+        denom = (tp + fp + eps) * (tp + fn + eps) * (tn + fp + eps) * (tn + fn + eps)
+    elif denom == 0:
         return torch.tensor(0, dtype=confmat.dtype, device=confmat.device)
-    return cov_ytyp / torch.sqrt(denom)
+    return numerator / torch.sqrt(denom)
 
 
 def binary_matthews_corrcoef(
@@ -98,6 +122,7 @@ def binary_matthews_corrcoef(
         >>> preds = tensor([0.35, 0.85, 0.48, 0.01])
         >>> binary_matthews_corrcoef(preds, target)
         tensor(0.5774)
+
     """
     if validate_args:
         _binary_confusion_matrix_arg_validation(threshold, ignore_index, normalize=None)
@@ -154,6 +179,7 @@ def multiclass_matthews_corrcoef(
         ...                 [0.05, 0.82, 0.13]])
         >>> multiclass_matthews_corrcoef(preds, target, num_classes=3)
         tensor(0.7000)
+
     """
     if validate_args:
         _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index, normalize=None)
@@ -208,6 +234,7 @@ def multilabel_matthews_corrcoef(
         >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_matthews_corrcoef(preds, target, num_labels=3)
         tensor(0.3333)
+
     """
     if validate_args:
         _multilabel_confusion_matrix_arg_validation(num_labels, threshold, ignore_index, normalize=None)
@@ -242,6 +269,7 @@ def matthews_corrcoef(
         >>> preds = tensor([0, 1, 0, 0])
         >>> matthews_corrcoef(preds, target, task="multiclass", num_classes=2)
         tensor(0.5774)
+
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
@@ -254,4 +282,4 @@ def matthews_corrcoef(
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_matthews_corrcoef(preds, target, num_labels, threshold, ignore_index, validate_args)
-    raise ValueError(f"Not handled value: {task}")  # this is for compliant of mypy
+    raise ValueError(f"Not handled value: {task}")

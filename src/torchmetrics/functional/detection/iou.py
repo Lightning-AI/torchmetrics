@@ -38,7 +38,7 @@ def _iou_update(
 def _iou_compute(iou: torch.Tensor, labels_eq: bool = True) -> torch.Tensor:
     if labels_eq:
         return iou.diag().mean()
-    return iou.mean()
+    return iou.mean() if iou.numel() > 0 else torch.tensor(0.0).to(iou.device)
 
 
 def intersection_over_union(
@@ -71,6 +71,7 @@ def intersection_over_union(
         >>> target = torch.Tensor([[110, 110, 210, 210]])
         >>> intersection_over_union(preds, target)
         tensor(0.6807)
+
     """
     if not _TORCHVISION_GREATER_EQUAL_0_8:
         raise ModuleNotFoundError(

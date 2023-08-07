@@ -78,6 +78,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
         >>> wb_pesq = PerceptualEvaluationSpeechQuality(16000, 'wb')
         >>> wb_pesq(preds, target)
         tensor(1.7359)
+
     """
 
     sum_pesq: Tensor
@@ -85,7 +86,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
-    plot_lower_bound: float = 1.0
+    plot_lower_bound: float = -0.5
     plot_upper_bound: float = 4.5
 
     def __init__(
@@ -163,5 +164,6 @@ class PerceptualEvaluationSpeechQuality(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(8000), torch.rand(8000)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

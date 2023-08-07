@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import re
-import urllib.request
 from collections import Counter
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
-from urllib.request import HTTPError
 
 import torch
 from torch import Tensor, tensor
@@ -45,19 +43,20 @@ def _ensure_nltk_punkt_is_downloaded() -> None:
     """Check whether `nltk` `punkt` is downloaded.
 
     If not, try to download if a machine is connected to the internet.
+
     """
     import nltk
 
     try:
-        nltk.data.find("tokenizers/punkt.zip")
+        nltk.data.find("tokenizers/punkt")
     except LookupError:
         try:
             nltk.download("punkt", quiet=True, force=False, halt_on_error=False, raise_on_error=True)
-        except ValueError:
+        except ValueError as err:
             raise OSError(
                 "`nltk` resource `punkt` is not available on a disk and cannot be downloaded as a machine is not "
                 "connected to the internet."
-            )
+            ) from err
 
 
 def _split_sentence(x: str) -> Sequence[str]:
@@ -82,6 +81,7 @@ def _compute_metrics(hits_or_lcs: int, pred_len: int, target_len: int) -> Dict[s
         hits_or_lcs: A number of matches or a length of the longest common subsequence.
         pred_len: A length of a tokenized predicted sentence.
         target_len: A length of a tokenized target sentence.
+
     """
     precision = hits_or_lcs / pred_len
     recall = hits_or_lcs / target_len
@@ -101,6 +101,7 @@ def _lcs(
         pred_tokens: A tokenized predicted sentence.
         target_tokens: A tokenized target sentence.
         return_full_table: If the full table of logest common subsequence should be returned or just the largest
+
     """
     lcs = [[0] * (len(pred_tokens) + 1) for _ in range(len(target_tokens) + 1)]
     for i in range(1, len(target_tokens) + 1):
@@ -123,6 +124,7 @@ def _backtracked_lcs(
         lcs_table: A table containing information for the calculation of the longest common subsequence.
         pred_tokens: A tokenized predicted sentence.
         target_tokens: A tokenized target sentence.
+
     """
     i = len(pred_tokens)
     j = len(target_tokens)
@@ -145,6 +147,7 @@ def _union_lcs(pred_tokens_list: Sequence[Sequence[str]], target_tokens: Sequenc
     Args:
         pred_tokens_list: A tokenized predicted sentence split by ``'\n'``.
         target_tokens: A tokenized single part of target sentence split by ``'\n'``.
+
     """
 
     def lcs_ind(pred_tokens: Sequence[str], target_tokens: Sequence[str]) -> Sequence[int]:
@@ -180,6 +183,7 @@ def _normalize_and_tokenize_text(
         tokenizer:
             A user's own tokenizer function. If this is ``None``, splitting by spaces is default
             This function must take a ``str`` and return ``Sequence[str]``
+
     """
     # If normalizer is none, replace any non-alpha-numeric characters with spaces.
     text = normalizer(text) if callable(normalizer) else re.sub(r"[^a-z0-9]+", " ", text.lower())
@@ -202,6 +206,7 @@ def _rouge_n_score(pred: Sequence[str], target: Sequence[str], n_gram: int) -> D
         pred: A predicted sentence.
         target: A target sentence.
         n_gram: N-gram overlap.
+
     """
 
     def _create_ngrams(tokens: Sequence[str], n: int) -> Counter:
@@ -226,6 +231,7 @@ def _rouge_l_score(pred: Sequence[str], target: Sequence[str]) -> Dict[str, Tens
     Args:
         pred: A predicted sentence.
         target: A target sentence.
+
     """
     pred_len, target_len = len(pred), len(target)
     if 0 in (pred_len, target_len):
@@ -248,6 +254,7 @@ def _rouge_lsum_score(pred: Sequence[Sequence[str]], target: Sequence[Sequence[s
 
     References:
         [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin. https://aclanthology.org/W04-1013/
+
     """
     pred_len = sum(map(len, pred))
     target_len = sum(map(len, target))
@@ -327,6 +334,7 @@ def _rouge_score_update(
                {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
                {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
                {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}]}
+
     """
     results: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}
 
@@ -367,7 +375,7 @@ def _rouge_score_update(
             highest_idx = int(torch.argmax(all_fmeasure).item())
 
             for rouge_key in rouge_keys_values:
-                results[rouge_key].append(list_results[highest_idx][rouge_key])
+                results[rouge_key].append(list_results[highest_idx][rouge_key])  # todo
 
         elif accumulate == "avg":
             new_result_avg: Dict[Union[int, str], Dict[str, Tensor]] = {
@@ -386,7 +394,7 @@ def _rouge_score_update(
                 }
 
             for rouge_key in rouge_keys_values:
-                results[rouge_key].append(new_result_avg[rouge_key])
+                results[rouge_key].append(new_result_avg[rouge_key])  # todo
 
     return results
 
@@ -396,6 +404,7 @@ def _rouge_score_compute(sentence_results: Dict[str, List[Tensor]]) -> Dict[str,
 
     Args:
         sentence_results: Rouge-N/Rouge-L/Rouge-LSum metrics calculated for single sentence.
+
     """
     results: Dict[str, Tensor] = {}
     # Obtain mean scores for individual rouge metrics
@@ -469,6 +478,7 @@ def rouge_score(
 
     References:
         [1] ROUGE: A Package for Automatic Evaluation of Summaries by Chin-Yew Lin. https://aclanthology.org/W04-1013/
+
     """
     if use_stemmer:
         if not _NLTK_AVAILABLE:
@@ -503,14 +513,12 @@ def rouge_score(
         accumulate=accumulate,
     )
 
-    output: Dict[str, List[Tensor]] = {}
-    for rouge_key in rouge_keys_values:
-        for tp in ["fmeasure", "precision", "recall"]:
-            output[f"rouge{rouge_key}_{tp}"] = []
-
+    output: Dict[str, List[Tensor]] = {
+        f"rouge{rouge_key}_{tp}": [] for rouge_key in rouge_keys_values for tp in ["fmeasure", "precision", "recall"]
+    }
     for rouge_key, metrics in sentence_results.items():
         for metric in metrics:
             for tp, value in metric.items():
-                output[f"rouge{rouge_key}_{tp}"].append(value)
+                output[f"rouge{rouge_key}_{tp}"].append(value)  # todo
 
     return _rouge_score_compute(output)
