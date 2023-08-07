@@ -145,3 +145,7 @@
 .. _Fleiss kappa: https://en.wikipedia.org/wiki/Fleiss%27_kappa
 .. _VIF: https://ieeexplore.ieee.org/abstract/document/1576816
 .. _PPL : https://arxiv.org/pdf/1812.04948.pdf
+.. _CIOU: https://arxiv.org/abs/2005.03572
+.. _DIOU: https://arxiv.org/abs/1911.08287v1
+.. _GIOU: https://arxiv.org/abs/1902.09630
+.. _pycocotools: https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools
