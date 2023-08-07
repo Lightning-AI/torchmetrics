@@ -147,11 +147,11 @@ class ScaleInvariantSignalNoiseRatio(Metric):
     As input to `forward` and `update` the metric accepts the following input
 
     - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
-    - ``target`` (: :class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+    - ``target`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``si_snr`` (: :class:`~torch.Tensor`): float scalar tensor with average SI-SNR value over samples
+    - ``si_snr`` (:class:`~torch.Tensor`): float scalar tensor with average SI-SNR value over samples
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -245,15 +245,15 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
 
     As input to `forward` and `update` the metric accepts the following input
 
-    - ``preds`` (:class:`~torch.Tensor`): real/complex float tensor with shape ``(..., frequency, time, 2)``\
-        / ``(..., frequency, time)``
+    - ``preds`` (:class:`~torch.Tensor`): real float tensor with shape ``(...,frequency,time,2)`` or complex float
+      tensor with shape ``(..., frequency,time)``
 
-    - ``target`` (: :class:`~torch.Tensor`): real/complex float tensor with shape ``(..., frequency, time, 2)``\
-        / ``(..., frequency, time)``
+    - ``target`` (:class:`~torch.Tensor`): real float tensor with shape ``(...,frequency,time,2)`` or complex float
+      tensor with shape ``(..., frequency,time)``
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``c_si_snr`` (: :class:`~torch.Tensor`): float scalar tensor with average C-SI-SNR value over samples
+    - ``c_si_snr`` (:class:`~torch.Tensor`): float scalar tensor with average C-SI-SNR value over samples
 
     Args:
         zero_mean: if to zero mean target and preds or not
