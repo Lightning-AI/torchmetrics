@@ -146,3 +146,7 @@
 .. _VIF: https://ieeexplore.ieee.org/abstract/document/1576816
 .. _CLIP-IQA: https://arxiv.org/abs/2207.12396
 .. _CLIP: https://arxiv.org/abs/2103.00020
+.. _CIOU: https://arxiv.org/abs/2005.03572
+.. _DIOU: https://arxiv.org/abs/1911.08287v1
+.. _GIOU: https://arxiv.org/abs/1902.09630
+.. _pycocotools: https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools
