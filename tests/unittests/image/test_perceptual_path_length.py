@@ -11,13 +11,52 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from operator import attrgetter
+
 import pytest
 import torch
 import torch_fidelity
 from torch import nn
-from torchmetrics.functional.image.perceptual_path_length import perceptual_path_length
+from torch_fidelity.sample_similarity_lpips import SampleSimilarityLPIPS
+from torch_fidelity.utils import batch_interp
+from torchmetrics.functional.image.lpips import _LPIPS
+from torchmetrics.functional.image.perceptual_path_length import _interpolate, perceptual_path_length
 from torchmetrics.image.perceptual_path_length import PerceptualPathLength
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
+
+
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch_fidelity")
+@pytest.mark.parametrize("interpolation_method", ["lerp", "slerp_any", "slerp_unit"])
+def test_interpolation_methods(interpolation_method):
+    """Test that interpolation method works as expected."""
+    latent1 = torch.randn(100, 25)
+    latent2 = torch.randn(100, 25)
+
+    res1 = _interpolate(latent1, latent2, 1e-4, interpolation_method)
+    res2 = batch_interp(latent1, latent2, 1e-4, interpolation_method)
+    assert torch.allclose(res1, res2)
+
+
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch_fidelity")
+def test_sim_net():
+    """Check that the similiarity network is the same as the one used in torch_fidelity."""
+    compare = SampleSimilarityLPIPS("sample_similarity", resize=64)
+    simnet = _LPIPS(net="vgg", resize=64)
+
+    # check that the weights are the same
+    for name, weight in compare.named_parameters():
+        getter = attrgetter(name)
+        weight2 = getter(simnet)
+        assert torch.allclose(weight, weight2)
+
+    img1 = torch.rand(1, 3, 64, 64)
+    img2 = torch.rand(1, 3, 64, 64)
+
+    # note that by default the two networks expect different scaling of the images
+    out = compare(255 * img1, 255 * img2)
+    out2 = simnet(2 * img1 - 1, 2 * img2 - 1)
+
+    assert torch.allclose(out, out2)
 
 
 class DummyGenerator(torch.nn.Module):
