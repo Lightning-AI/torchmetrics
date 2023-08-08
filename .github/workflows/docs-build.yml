@@ -23,7 +23,7 @@ env:
   TOKENIZERS_PARALLELISM: false
 
 jobs:
-  make-check:
+  docs-check:
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
@@ -123,7 +123,7 @@ jobs:
 
 
   deploy-docs:
-    needs: [make-check, make-html]
+    needs: [docs-check, make-html]
     if: github.repository_owner == 'Lightning-AI' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
