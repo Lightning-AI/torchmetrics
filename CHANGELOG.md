@@ -7,26 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
-## [UnReleased] - 2023-08-DD
+## [1.0.3] - 2023-08-08
 
 ### Added
 
 - Added warning to `MeanAveragePrecision` if too many detections are observed ([#1978](https://github.com/Lightning-AI/torchmetrics/pull/1978))
 
-
-### Changed
-
--
-
-
 ### Fixed
 
 - Fix support for int input for when `multidim_average="samplewise"` in classification metrics  ([#1977](https://github.com/Lightning-AI/torchmetrics/pull/1977))
-
-
 - Fixed x/y labels when plotting confusion matrices ([#1976](https://github.com/Lightning-AI/torchmetrics/pull/1976))
-
-
 - Fixed IOU compute in cuda ([#1982](https://github.com/Lightning-AI/torchmetrics/pull/1982))
 
 
