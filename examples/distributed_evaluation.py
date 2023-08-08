@@ -66,7 +66,10 @@ def use_lightning(
     model: Module, dataset: Dataset, batch_size: int, use_standard: bool, num_processes: int, gpu: bool
 ) -> None:
     """Use lightning to evaluate a model on a dataset."""
-    from lightning.pytorch import LightningModule, Trainer
+    if module_available("lightning"):
+        from lightning.pytorch import LightningModule, Trainer
+    else:
+        from pytorch_lightning import LightningModule, Trainer
 
     sampler_class = DistributedSampler if use_standard else EvaluationDistributedSampler
 
