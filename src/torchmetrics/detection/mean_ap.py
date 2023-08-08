@@ -25,6 +25,7 @@ from typing_extensions import Literal
 from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.data import apply_to_collection
 from torchmetrics.utilities.imports import (
     _MATPLOTLIB_AVAILABLE,
     _PYCOCOTOOLS_AVAILABLE,
@@ -168,7 +169,23 @@ class MeanAveragePrecision(Metric):
             Thresholds on max detections per image. If set to `None` will use thresholds ``[1, 10, 100]``.
             Else, please provide a list of ints.
         class_metrics:
-            Option to enable per-class metrics for mAP and mAR_100. Has a performance impact.
+            Option to enable per-class metrics for mAP and mAR_100. Has a performance impact that scales linearly with
+            the number of classes in the dataset.
+        extended_summary:
+            Option to enable extended summary with additional metrics including IOU, precision and recall. The output
+            dictionary will contain the following extra key-values:
+
+                - ``ious``: a dictionary containing the IoU values for every image/class combination e.g.
+                  ``ious[(0,0)]`` would contain the IoU for image 0 and class 0. Each value is a tensor with shape
+                  ``(n,m)`` where ``n`` is the number of detections and ``m`` is the number of ground truth boxes for
+                  that image/class combination.
+                - ``precision``: a tensor of shape ``(TxRxKxAxM)`` containing the precision values. Here ``T`` is the
+                  number of IoU thresholds, ``R`` is the number of recall thresholds, ``K`` is the number of classes,
+                  ``A`` is the number of areas and ``M`` is the number of max detections per image.
+                - ``recall``: a tensor of shape ``(TxKxAxM)`` containing the recall values. Here ``T`` is the number of
+                  IoU thresholds, ``K`` is the number of classes, ``A`` is the number of areas and ``M`` is the number
+                  of max detections per image.
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -250,6 +267,7 @@ class MeanAveragePrecision(Metric):
         rec_thresholds: Optional[List[float]] = None,
         max_detection_thresholds: Optional[List[int]] = None,
         class_metrics: bool = False,
+        extended_summary: bool = False,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -298,6 +316,10 @@ class MeanAveragePrecision(Metric):
         if not isinstance(class_metrics, bool):
             raise ValueError("Expected argument `class_metrics` to be a boolean")
         self.class_metrics = class_metrics
+
+        if not isinstance(extended_summary, bool):
+            raise ValueError("Expected argument `extended_summary` to be a boolean")
+        self.extended_summary = extended_summary
 
         self.add_state("detections", default=[], dist_reduce_fx=None)
         self.add_state("detection_scores", default=[], dist_reduce_fx=None)
@@ -358,27 +380,35 @@ class MeanAveragePrecision(Metric):
             coco_target.createIndex()
             coco_preds.createIndex()
 
-            self.coco_eval = COCOeval(coco_target, coco_preds, iouType=self.iou_type)
-            self.coco_eval.params.iouThrs = np.array(self.iou_thresholds, dtype=np.float64)
-            self.coco_eval.params.recThrs = np.array(self.rec_thresholds, dtype=np.float64)
-            self.coco_eval.params.maxDets = self.max_detection_thresholds
+            coco_eval = COCOeval(coco_target, coco_preds, iouType=self.iou_type)
+            coco_eval.params.iouThrs = np.array(self.iou_thresholds, dtype=np.float64)
+            coco_eval.params.recThrs = np.array(self.rec_thresholds, dtype=np.float64)
+            coco_eval.params.maxDets = self.max_detection_thresholds
 
-            self.coco_eval.evaluate()
-            self.coco_eval.accumulate()
-            self.coco_eval.summarize()
-            stats = self.coco_eval.stats
+            coco_eval.evaluate()
+            coco_eval.accumulate()
+            coco_eval.summarize()
+            stats = coco_eval.stats
+
+        summary = {}
+        if self.extended_summary:
+            summary = {
+                "ious": apply_to_collection(coco_eval.ious, np.ndarray, lambda x: torch.tensor(x, dtype=torch.float32)),
+                "precision": torch.tensor(coco_eval.eval["precision"]),  # precision has shape (TxRxKxAxM)
+                "recall": torch.tensor(coco_eval.eval["recall"]),  # recall has shape (TxKxAxM)
+            }
 
         # if class mode is enabled, evaluate metrics per class
         if self.class_metrics:
             map_per_class_list = []
             mar_100_per_class_list = []
             for class_id in self._get_classes():
-                self.coco_eval.params.catIds = [class_id]
+                coco_eval.params.catIds = [class_id]
                 with contextlib.redirect_stdout(io.StringIO()):
-                    self.coco_eval.evaluate()
-                    self.coco_eval.accumulate()
-                    self.coco_eval.summarize()
-                    class_stats = self.coco_eval.stats
+                    coco_eval.evaluate()
+                    coco_eval.accumulate()
+                    coco_eval.summarize()
+                    class_stats = coco_eval.stats
 
                 map_per_class_list.append(torch.tensor([class_stats[0]]))
                 mar_100_per_class_list.append(torch.tensor([class_stats[8]]))
@@ -405,6 +435,7 @@ class MeanAveragePrecision(Metric):
             "map_per_class": map_per_class_values,
             "mar_100_per_class": mar_100_per_class_values,
             "classes": torch.tensor(self._get_classes(), dtype=torch.int32),
+            **summary,
         }
 
     @staticmethod
