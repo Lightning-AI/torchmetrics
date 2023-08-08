@@ -17,14 +17,10 @@ from typing import Literal, Optional, Tuple, Union
 import torch
 from torch import Tensor, nn
 
-from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_10
+from torchmetrics.functional.image.lpips import _LPIPS
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_10, _TORCHVISION_AVAILABLE
 
-if _TORCH_FIDELITY_AVAILABLE:
-    from torch_fidelity.noise import batch_lerp, batch_slerp_any, batch_slerp_unit
-    from torch_fidelity.utils import create_sample_similarity
-else:
-    batch_lerp = batch_slerp_any = batch_slerp_unit = None
-    create_sample_similarity = None
+if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["perceptual_path_length"]
 
 
@@ -102,6 +98,8 @@ def _interpolate(
 ) -> Tensor:
     """Interpolate between two sets of latents.
 
+    Inspired by: https://github.com/toshas/torch-fidelity/blob/master/torch_fidelity/noise.py
+
     Args:
         latents1: First set of latents.
         latents2: Second set of latents.
@@ -109,14 +107,30 @@ def _interpolate(
         interpolation_method: Interpolation method to use. Choose from 'lerp', 'slerp_any', 'slerp_unit'.
 
     """
+    eps = 1e-7
     if latents1.shape != latents2.shape:
         raise ValueError("Latents must have the same shape.")
     if interpolation_method == "lerp":
-        return batch_lerp(latents1, latents2, epsilon)
+        return latents1 + (latents2 - latents1) * epsilon
     if interpolation_method == "slerp_any":
-        return batch_slerp_unit(latents1, latents2, epsilon)
+        ndims = latents1.dim() - 1
+        z_size = latents1.shape[-1]
+        latents1_norm = latents1 / (latents1**2).sum(dim=-1, keepdim=True).sqrt().clamp_min(eps)
+        latents2_norm = latents2 / (latents2**2).sum(dim=-1, keepdim=True).sqrt().clamp_min(eps)
+        d = (latents1_norm * latents2_norm).sum(dim=-1, keepdim=True)
+        mask_zero = (latents1_norm.norm(dim=-1, keepdim=True) < eps) | (latents2_norm.norm(dim=-1, keepdim=True) < eps)
+        mask_collinear = (d > 1 - eps) | (d < -1 + eps)
+        mask_lerp = (mask_zero | mask_collinear).repeat([1 for _ in range(ndims)] + [z_size])
+        omega = d.acos()
+        denom = omega.sin().clamp_min(eps)
+        coef_latents1 = ((1 - epsilon) * omega).sin() / denom
+        coef_latents2 = (epsilon * omega).sin() / denom
+        out = coef_latents1 * latents1 + coef_latents2 * latents2
+        out[mask_lerp] = _interpolate(latents1, latents2, epsilon, interpolation_method="lerp")[mask_lerp]
+        return out
     if interpolation_method == "slerp_unit":
-        return batch_slerp_any(latents1, latents2, epsilon)
+        out = _interpolate(latents1=latents1, latents2=latents2, epsilon=epsilon, interpolation_method="slerp_any")
+        return out / (out**2).sum(dim=-1, keepdim=True).sqrt().clamp_min(eps)
     raise ValueError(
         f"Interpolation method {interpolation_method} not supported. Choose from 'lerp', 'slerp_any', 'slerp_unit'."
     )
@@ -132,7 +146,7 @@ def perceptual_path_length(
     resize: Optional[int] = 64,
     lower_discard: Optional[float] = 0.01,
     upper_discard: Optional[float] = 0.99,
-    sim_net: Optional[nn.Module] = None,
+    sim_net: Union[nn.Module, Literal["alex", "vgg", "squeeze"]] = "vgg",
     device: Union[str, torch.device] = "cpu",
 ) -> Tuple[Tensor, Tensor, Tensor]:
     r"""Computes the perceptual path length (`PPL`_) of a generator model.
@@ -152,7 +166,9 @@ def perceptual_path_length(
 
     The provided generator model must have a `sample` method with signature `sample(num_samples: int) -> Tensor` where
     the returned tensor has shape `(num_samples, z_size)`. If the generator is conditional, it must also have a
-    `num_classes` attribute.
+    `num_classes` attribute. The `forward` method of the generator must have signature `forward(z: Tensor) -> Tensor`
+    if `conditional=False`, and `forward(z: Tensor, labels: Tensor) -> Tensor` if `conditional=True`. The returned
+    tensor should have shape `(num_samples, C, H, W)` and be scaled to the range [0, 255].
 
     Args:
         generator: Generator model, with specific requirements. See above.
@@ -164,7 +180,8 @@ def perceptual_path_length(
         resize: Resize images to this size before computing the similarity between generated images.
         lower_discard: Lower quantile to discard from the distances, before computing the mean and standard deviation.
         upper_discard: Upper quantile to discard from the distances, before computing the mean and standard deviation.
-        sim_net: Similarity network to use. If `None`, a default network is used.
+        sim_net: Similarity network to use. Can be a `nn.Module` or one of 'alex', 'vgg', 'squeeze', where the three
+            latter options correspond to the pretrained networks from the `LPIPS`_ paper.
         device: Device to use for the computation.
 
     Returns:
@@ -178,22 +195,22 @@ def perceptual_path_length(
         ...    def __init__(self, z_size) -> None:
         ...       super().__init__()
         ...       self.z_size = z_size
-        ...       self.model = torch.nn.Linear(z_size, 3*128*128)
+        ...       self.model = torch.nn.Sequential(torch.nn.Linear(z_size, 3*128*128), torch.nn.Sigmoid())
         ...    def forward(self, z):
-        ...       return self.model(z).reshape(-1, 3, 128, 128)
+        ...       return 255 * (self.model(z).reshape(-1, 3, 128, 128) + 1)
         ...    def sample(self, num_samples):
         ...      return torch.randn(num_samples, self.z_size)
         >>> generator = DummyGenerator(2)
         >>> perceptual_path_length(generator, num_samples=10)  # doctest: +NORMALIZE_WHITESPACE
-        (tensor(0.0756),
-        tensor(0.0678),
-        tensor([0.0489, 0.1433, 0.1778, 0.1632, 0.0255, 0.0511, 0.0024, 0.0613, 0.0071]))
+        (tensor(0.1945),
+        tensor(0.1222),
+        tensor([0.0990, 0.4173, 0.1628, 0.3573, 0.1875, 0.0335, 0.1095, 0.1887, 0.1953]))
 
     """
-    if not _TORCH_FIDELITY_AVAILABLE:
+    if not _TORCHVISION_AVAILABLE:
         raise ModuleNotFoundError(
-            "Metric `perceptual_path_length` requires Torch Fidelity which is not installed."
-            "Install with `pip install torch-fidelity` or `pip install torchmetrics[image]`"
+            "Metric `perceptual_path_length` requires torchvision which is not installed."
+            "Install with `pip install torchvision` or `pip install torchmetrics[image]`"
         )
     _perceptual_path_length_validate_arguments(
         num_samples, conditional, batch_size, interpolation_method, epsilon, resize, lower_discard, upper_discard
@@ -208,13 +225,12 @@ def perceptual_path_length(
     if conditional:
         labels = torch.randint(0, generator.num_classes, (num_samples,)).to(device)
 
-    if sim_net is None:
-        sim_net = create_sample_similarity(
-            "lpips-vgg16",
-            sample_similarity_resize=resize,
-            cuda=device == "cuda",
-            verbose=False,
-        )
+    if sim_net in ["alex", "vgg", "squeeze"]:
+        sim_net = _LPIPS(pretrained=True, net=sim_net, resize=resize)
+    elif isinstance(sim_net, nn.Module):
+        sim_net = sim_net
+    else:
+        raise ValueError(f"sim_net must be a nn.Module or one of 'alex', 'vgg', 'squeeze', got {sim_net}")
 
     decorator = torch.inference_mode if _TORCH_GREATER_EQUAL_1_10 else torch.no_grad
     with decorator():
@@ -234,7 +250,11 @@ def perceptual_path_length(
 
             out1, out2 = outputs.chunk(2, dim=0)
 
-            similarity = sim_net(out1, out2)
+            # rescale to lpips expected domain: [0, 255] -> [0, 1] -> [-1, 1]
+            out1_rescale = 2 * (out1 / 255) - 1
+            out2_rescale = 2 * (out2 / 255) - 1
+
+            similarity = sim_net(out1_rescale, out2_rescale)
             dist = similarity / epsilon**2
             distances.append(dist.detach())
 

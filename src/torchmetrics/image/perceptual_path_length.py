@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Literal, Optional, Tuple
+from typing import Any, Literal, Optional, Tuple, Union
 
-from torch import Tensor
+from torch import Tensor, nn
 
+from torchmetrics.functional.image.lpips import _LPIPS
 from torchmetrics.functional.image.perceptual_path_length import (
     _GeneratorType,
     _perceptual_path_length_validate_arguments,
@@ -22,12 +23,9 @@ from torchmetrics.functional.image.perceptual_path_length import (
     perceptual_path_length,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
-if _TORCH_FIDELITY_AVAILABLE:
-    from torch_fidelity.utils import create_sample_similarity
-else:
-    create_sample_similarity = None
+if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["PerceptualPathLength"]
 
 
@@ -49,10 +47,12 @@ class PerceptualPathLength(Metric):
 
     The provided generator model must have a `sample` method with signature `sample(num_samples: int) -> Tensor` where
     the returned tensor has shape `(num_samples, z_size)`. If the generator is conditional, it must also have a
-    `num_classes` attribute.
+    `num_classes` attribute. The `forward` method of the generator must have signature `forward(z: Tensor) -> Tensor`
+    if `conditional=False`, and `forward(z: Tensor, labels: Tensor) -> Tensor` if `conditional=True`. The returned
+    tensor should have shape `(num_samples, C, H, W)` and be scaled to the range [0, 255].
 
-    .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
-        is installed. Either install as ``pip install torchmetrics[image]`` or ``pip install torch-fidelity``
+    .. note:: using this metric with the default feature extractor requires that ``torchvision`` is installed.
+        Either install as ``pip install torchmetrics[image]`` or ``pip install torchvision``
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -73,8 +73,8 @@ class PerceptualPathLength(Metric):
         resize: Resize images to this size before computing the similarity between generated images.
         lower_discard: Lower quantile to discard from the distances, before computing the mean and standard deviation.
         upper_discard: Upper quantile to discard from the distances, before computing the mean and standard deviation.
-        sim_net: Similarity network to use. If `None`, a default network is used.
-        device: Device to use for the computation.
+        sim_net: Similarity network to use. Can be a `nn.Module` or one of 'alex', 'vgg', 'squeeze', where the three
+            latter options correspond to the pretrained networks from the `LPIPS`_ paper.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -105,17 +105,17 @@ class PerceptualPathLength(Metric):
         ...    def __init__(self, z_size) -> None:
         ...       super().__init__()
         ...       self.z_size = z_size
-        ...       self.model = torch.nn.Linear(z_size, 3*128*128)
+        ...       self.model = torch.nn.Sequential(torch.nn.Linear(z_size, 3*128*128), torch.nn.Sigmoid())
         ...    def forward(self, z):
-        ...       return self.model(z).reshape(-1, 3, 128, 128)
+        ...       return 255 * (self.model(z).reshape(-1, 3, 128, 128) + 1)
         ...    def sample(self, num_samples):
         ...      return torch.randn(num_samples, self.z_size)
         >>> generator = DummyGenerator(2)
         >>> ppl = PerceptualPathLength(num_samples=10)
         >>> ppl(generator)  # doctest: +NORMALIZE_WHITESPACE
-        (tensor(0.0699),
-        tensor(0.0519),
-        tensor([0.1599, 0.0093, 0.0903, 0.0771, 0.0465, 0.0950, 0.1164, 0.0022, 0.0324]))
+        (tensor(0.2371),
+        tensor(0.1763),
+        tensor([0.3502, 0.1362, 0.2535, 0.0902, 0.1784, 0.0769, 0.5871, 0.0691, 0.3921]))
 
     """
 
@@ -129,13 +129,14 @@ class PerceptualPathLength(Metric):
         resize: Optional[int] = 64,
         lower_discard: Optional[float] = 0.01,
         upper_discard: Optional[float] = 0.99,
+        sim_net: Union[nn.Module, Literal["alex", "vgg", "squeeze"]] = "vgg",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        if not _TORCH_FIDELITY_AVAILABLE:
+        if not _TORCHVISION_AVAILABLE:
             raise ModuleNotFoundError(
-                "Metric `PerceptualPathLength` requires Torch Fidelity which is not installed."
-                "Install with `pip install torch-fidelity` or `pip install torchmetrics[image]`"
+                "Metric `PerceptualPathLength` requires torchvision which is not installed."
+                "Install with `pip install torchvision` or `pip install torchmetrics[image]`"
             )
         _perceptual_path_length_validate_arguments(
             num_samples, conditional, batch_size, interpolation_method, epsilon, resize, lower_discard, upper_discard
@@ -149,9 +150,12 @@ class PerceptualPathLength(Metric):
         self.lower_discard = lower_discard
         self.upper_discard = upper_discard
 
-        self.sim_net = create_sample_similarity(
-            "lpips-vgg16", sample_similarity_resize=resize, cuda=self.device == "cuda", verbose=False
-        )
+        if sim_net in ["alex", "vgg", "squeeze"]:
+            self.sim_net = _LPIPS(pretrained=True, net=sim_net, resize=resize)
+        elif isinstance(sim_net, nn.Module):
+            self.sim_net = sim_net
+        else:
+            raise ValueError(f"sim_net must be a nn.Module or one of 'alex', 'vgg', 'squeeze', got {sim_net}")
 
     def update(self, generator: _GeneratorType) -> None:
         """Update the generator model."""
