@@ -423,8 +423,34 @@ from torchmetrics import Metric
 """
 coverage_skip_undoc_in_source = True
 
+# skip false positive linkcheck errors from anchors
+linkcheck_anchors = False
+
+# ignore all links in any CHANGELOG file
+linkcheck_exclude_documents = [r"^(.*\/)*CHANGELOG.*$"]
+
 # jstor and sciencedirect cannot be accessed from python, but links work fine in a local doc
 linkcheck_ignore = [
+    # The Treatment of Ties in Ranking Problems
     "https://www.jstor.org/stable/2332303",
+    # Quality Assessment of Deblocked Images
+    "https://ieeexplore.ieee.org/abstract/document/5535179",
+    # Image information and visual quality
+    "https://ieeexplore.ieee.org/abstract/document/1576816",
+    # Performance measurement in blind audio source separation
+    "https://ieeexplore.ieee.org/abstract/document/1643671",
+    # A Non-Intrusive Quality and Intelligibility Measure of Reverberant and Dereverberated Speech
+    "https://ieeexplore.ieee.org/abstract/document/5547575",
+    # An Algorithm for Predicting the Intelligibility of Speech Masked by Modulated Noise Maskers
+    "https://ieeexplore.ieee.org/abstract/document/7539284",
+    # A short-time objective intelligibility measure for time-frequency weighted noisy speech
+    "https://ieeexplore.ieee.org/abstract/document/5495701",
+    # An Algorithm for Intelligibility Prediction of Time–Frequency Weighted Noisy Speech
+    "https://ieeexplore.ieee.org/abstract/document/5713237",
+    # A universal image quality index
+    "https://ieeexplore.ieee.org/abstract/document/995823",
+    # On the Performance Evaluation of Pan-Sharpening Techniques
+    "https://ieeexplore.ieee.org/abstract/document/4317530",
+    # Robust parameter estimation with a small bias against heavy contamination
     "https://www.sciencedirect.com/science/article/pii/S0047259X08000456",
 ]
