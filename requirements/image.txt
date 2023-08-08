@@ -3,5 +3,5 @@
 
 scipy >1.0.0, <1.11.0
 torchvision >=0.8, <=0.15.2
-torch-fidelity @ git+https://github.com/toshas/torch-fidelity@master
+torch-fidelity <=0.3.0
 lpips <=0.1.4
