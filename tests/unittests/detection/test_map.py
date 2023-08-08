@@ -16,6 +16,7 @@ import io
 from collections import namedtuple
 from copy import deepcopy
 from functools import partial
+from itertools import product
 
 import numpy as np
 import pytest
@@ -685,11 +686,11 @@ def test_for_box_format(box_format, iou_val_expected, map_val_expected):
 
     targets = [{"boxes": torch.tensor([[0, 0, 1, 1]]), "labels": torch.tensor([0])}]
 
-    metric = MeanAveragePrecision(box_format=box_format, iou_thresholds=[0.2])
+    metric = MeanAveragePrecision(box_format=box_format, iou_thresholds=[0.2], extended_summary=True)
     metric.update(predictions, targets)
     result = metric.compute()
     assert result["map"].item() == map_val_expected
-    assert round(float(metric.coco_eval.ious[(0, 0)]), 3) == iou_val_expected
+    assert round(float(result["ious"][(0, 0)]), 3) == iou_val_expected
 
 
 @pytest.mark.parametrize("iou_type", ["bbox", "segm"])
@@ -710,3 +711,49 @@ def test_warning_on_many_detections(iou_type):
     metric = MeanAveragePrecision(iou_type=iou_type)
     with pytest.warns(UserWarning, match="Encountered more than 100 detections in a single image.*"):
         metric.update(preds, targets)
+
+
+@pytest.mark.parametrize(
+    ("preds", "target", "expected_iou_len", "iou_keys", "precision_shape", "recall_shape"),
+    [
+        (
+            [[{"boxes": torch.tensor([[0.5, 0.5, 1, 1]]), "scores": torch.tensor([1.0]), "labels": torch.tensor([0])}]],
+            [[{"boxes": torch.tensor([[0, 0, 1, 1]]), "labels": torch.tensor([0])}]],
+            1,  # 1 image x 1 class = 1
+            [(0, 0)],
+            (10, 101, 1, 4, 3),
+            (10, 1, 4, 3),
+        ),
+        (
+            _inputs.preds,
+            _inputs.target,
+            24,  # 4 images x 6 classes = 24
+            product([0, 1, 2, 3], [0, 1, 2, 3, 4, 49]),
+            (10, 101, 6, 4, 3),
+            (10, 6, 4, 3),
+        ),
+    ],
+)
+def test_for_extended_stats(preds, target, expected_iou_len, iou_keys, precision_shape, recall_shape):
+    """Test that extended stats are computed correctly."""
+    metric = MeanAveragePrecision(extended_summary=True)
+    for (
+        p,
+        t,
+    ) in zip(preds, target):
+        metric.update(p, t)
+    result = metric.compute()
+
+    ious = result["ious"]
+    assert isinstance(ious, dict)
+    assert len(ious) == expected_iou_len
+    for key in ious:
+        assert key in iou_keys
+
+    precision = result["precision"]
+    assert isinstance(precision, Tensor)
+    assert precision.shape == precision_shape
+
+    recall = result["recall"]
+    assert isinstance(recall, Tensor)
+    assert recall.shape == recall_shape
