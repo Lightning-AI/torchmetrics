@@ -374,10 +374,10 @@ def _multiclass_stat_scores_update(
             preds_oh = torch.movedim(select_topk(preds, topk=top_k, dim=1), 1, -1)
         else:
             preds_oh = torch.nn.functional.one_hot(
-                preds, num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
+                preds.long(), num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
             )
         target_oh = torch.nn.functional.one_hot(
-            target, num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
+            target.long(), num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
         )
         if ignore_index is not None:
             if 0 <= ignore_index <= num_classes - 1:
