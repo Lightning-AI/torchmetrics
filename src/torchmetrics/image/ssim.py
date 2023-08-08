@@ -28,7 +28,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class StructuralSimilarityIndexMeasure(Metric):
-    """Compute Structual Similarity Index Measure (SSIM_).
+    """Compute Structural Similarity Index Measure (SSIM_).
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
