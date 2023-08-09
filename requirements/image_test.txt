@@ -6,3 +6,4 @@ kornia >=0.6.7, <0.7.1
 pytorch-msssim ==1.0.0
 sewar >=0.4.4, <=0.4.6
 numpy <1.25.0
+torch-fidelity @ git+https://github.com/toshas/torch-fidelity@master
