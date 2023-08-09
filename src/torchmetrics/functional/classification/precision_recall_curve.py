@@ -195,7 +195,7 @@ def _binary_precision_recall_curve_format(
         preds = preds[idx]
         target = target[idx]
 
-    if not input_format:
+    if input_format:
         if input_format == "logits":
             preds = preds.sigmoid()
         if (input_format == "auto" or input_format is True) and not torch.all((preds >= 0) * (preds <= 1)):
