@@ -1,6 +1,6 @@
 
-.. _scikit-learn's implementation of SMAPE: https://github.com/scikit-learn/scikit-learn/blob/15a949460/sklearn/metrics/_regression.py#L197
-.. _scikit-learn's implementation of MAPE: https://github.com/scikit-learn/scikit-learn/blob/15a949460/sklearn/metrics/_regression.py#L197
+.. _scikit-learn's implementation of SMAPE: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html
+.. _scikit-learn's implementation of MAPE: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.mean_absolute_percentage_error.html
 .. _Mean Average Precision: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Mean_average_precision
 .. _Fall-out: https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Fall-out
 .. _Normalized Discounted Cumulative Gain: https://en.wikipedia.org/wiki/Discounted_cumulative_gain
@@ -42,7 +42,7 @@
 .. _LPIPS: https://arxiv.org/abs/1801.03924
 .. _Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR): https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173
 .. _Tweedie Deviance Score: https://en.wikipedia.org/wiki/Tweedie_distribution#The_Tweedie_deviance
-.. _Permutation Invariant Training of Deep Models: https://ieeexplore.ieee.org/document/7952154
+.. _Permutation Invariant Training of Deep Models: https://ieeexplore.ieee.org/abstract/document/7952154
 .. _Top-label Calibration Error: https://arxiv.org/pdf/1909.10155.pdf
 .. _Gradient Computation of Image: https://en.wikipedia.org/wiki/Image_gradient
 .. _R2 Score_Coefficient Determination: https://en.wikipedia.org/wiki/Coefficient_of_determination
@@ -82,7 +82,7 @@
 .. _TER: https://aclanthology.org/2006.amta-papers.25.pdf
 .. _ExtendedEditDistance: https://aclanthology.org/W19-5359.pdf
 .. _MultiScaleSSIM: https://ece.uwaterloo.ca/~z70wang/publications/msssim.pdf
-.. _UniversalImageQualityIndex: https://ieeexplore.ieee.org/document/995823
+.. _UniversalImageQualityIndex: https://ieeexplore.ieee.org/abstract/document/995823
 .. _SpectralDistortionIndex: https://www.semanticscholar.org/paper/Multispectral-and-panchromatic-data-fusion-without-Alparone-Aiazzi/b6db12e3785326577cb95fd743fecbf5bc66c7c9
 .. _RelativeAverageSpectralError: https://www.semanticscholar.org/paper/Data-Fusion.-Definitions-and-Architectures-Fusion-Wald/51b2b81e5124b3bb7ec53517a5dd64d8e348cadf
 .. _WMAPE: https://en.wikipedia.org/wiki/WMAPE
@@ -110,23 +110,23 @@
 .. _pesq package: https://github.com/ludlows/python-pesq
 .. _Cees Taal's website: http://www.ceestaal.nl/code/
 .. _pystoi package: https://github.com/mpariente/pystoi
-.. _stoi ref1: https://ieeexplore.ieee.org/document/5495701
-.. _stoi ref2: https://ieeexplore.ieee.org/document/5713237
-.. _stoi ref3: https://ieeexplore.ieee.org/document/7539284
-.. _sdr ref1: https://ieeexplore.ieee.org/document/1643671
+.. _stoi ref1: https://ieeexplore.ieee.org/abstract/document/5495701
+.. _stoi ref2: https://ieeexplore.ieee.org/abstract/document/5713237
+.. _stoi ref3: https://ieeexplore.ieee.org/abstract/document/7539284
+.. _sdr ref1: https://ieeexplore.ieee.org/abstract/document/1643671
 .. _sdr ref2: https://arxiv.org/abs/2110.06440
 .. _Scale-invariant signal-to-distortion ratio: https://arxiv.org/abs/1811.02508
 .. _Scale-invariant signal-to-noise ratio: https://arxiv.org/abs/1711.00541
 .. _Source-aggregated signal-to-distortion ratio: https://arxiv.org/abs/2110.15581
 .. _Complex scale-invariant signal-to-noise ratio: https://arxiv.org/abs/2011.09162
 .. _Signal-to-noise ratio: https://arxiv.org/abs/1811.02508
-.. _Speech-to-Reverberation Modulation Energy Ratio: https://ieeexplore.ieee.org/document/5547575
+.. _Speech-to-Reverberation Modulation Energy Ratio: https://ieeexplore.ieee.org/abstract/document/5547575
 .. _SRMRToolbox: https://github.com/MuSAELab/SRMRToolbox
 .. _SRMRpy: https://github.com/jfsantos/SRMRpy
 .. _Permutation invariant training: https://arxiv.org/abs/1607.00325
 .. _ranking ref1: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
 .. _Spectral Distortion Index: https://www.ingentaconnect.com/content/asprs/pers/2008/00000074/00000002/art00003;jsessionid=nzjnb3v9xxr1.x-ic-live-03
-.. _Relative dimensionless global error synthesis: https://ieeexplore.ieee.org/document/4317530
+.. _Relative dimensionless global error synthesis: https://ieeexplore.ieee.org/abstract/document/4317530
 .. _fid ref1: https://arxiv.org/abs/1512.00567
 .. _fid ref2: https://arxiv.org/abs/1706.08500
 .. _inception ref1: https://arxiv.org/abs/1606.03498
