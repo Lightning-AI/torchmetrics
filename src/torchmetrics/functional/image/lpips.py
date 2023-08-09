@@ -186,7 +186,7 @@ def spatial_average(in_tens: Tensor, keepdim: bool = True) -> Tensor:
     return in_tens.mean([2, 3], keepdim=keepdim)
 
 
-def upsam(in_tens: Tensor, out_hw: Tuple[int, int] = (64, 64)) -> Tensor:
+def upsam(in_tens: Tensor, out_hw: Tuple[int, ...] = (64, 64)) -> Tensor:
     """Upsample input with bilinear interpolation."""
     return nn.Upsample(size=out_hw, mode="bilinear", align_corners=False)(in_tens)
 
@@ -195,6 +195,13 @@ def normalize_tensor(in_feat: Tensor, eps: float = 1e-10) -> Tensor:
     """Normalize tensors."""
     norm_factor = torch.sqrt(torch.sum(in_feat**2, dim=1, keepdim=True))
     return in_feat / (norm_factor + eps)
+
+
+def resize_tensor(x: Tensor, size: int = 64) -> Tensor:
+    """https://github.com/toshas/torch-fidelity/blob/master/torch_fidelity/sample_similarity_lpips.py#L127C22-L132."""
+    if x.shape[-1] > size and x.shape[-2] > size:
+        return torch.nn.functional.interpolate(x, (size, size), mode="area")
+    return torch.nn.functional.interpolate(x, (size, size), mode="bilinear", align_corners=False)
 
 
 class ScalingLayer(nn.Module):
@@ -238,6 +245,7 @@ class _LPIPS(nn.Module):
         use_dropout: bool = True,
         model_path: Optional[str] = None,
         eval_mode: bool = True,
+        resize: Optional[int] = None,
     ) -> None:
         """Initializes a perceptual loss torch.nn.Module.
 
@@ -250,6 +258,7 @@ class _LPIPS(nn.Module):
             use_dropout: If dropout layers should be added
             model_path: Model path to load pretained models from
             eval_mode: If network should be in evaluation mode
+            resize: If input should be resized to this size
 
         """
         super().__init__()
@@ -258,6 +267,7 @@ class _LPIPS(nn.Module):
         self.pnet_tune = pnet_tune
         self.pnet_rand = pnet_rand
         self.spatial = spatial
+        self.resize = resize
         self.scaling_layer = ScalingLayer()
 
         if self.pnet_type in ["vgg", "vgg16"]:
@@ -298,13 +308,19 @@ class _LPIPS(nn.Module):
 
     def forward(
         self, in0: Tensor, in1: Tensor, retperlayer: bool = False, normalize: bool = False
-    ) -> Union[int, Tuple[int, List[Tensor]]]:
+    ) -> Union[Tensor, Tuple[Tensor, List[Tensor]]]:
         if normalize:  # turn on this flag if input is [0,1] so it can be adjusted to [-1, +1]
             in0 = 2 * in0 - 1
             in1 = 2 * in1 - 1
 
-        # v0.0 - original release had a bug, where input was not scaled
+        # normalize input
         in0_input, in1_input = self.scaling_layer(in0), self.scaling_layer(in1)
+
+        # resize input if needed
+        if self.resize is not None:
+            in0_input = resize_tensor(in0_input, size=self.resize)
+            in1_input = resize_tensor(in1_input, size=self.resize)
+
         outs0, outs1 = self.net.forward(in0_input), self.net.forward(in1_input)
         feats0, feats1, diffs = {}, {}, {}
 
@@ -312,17 +328,14 @@ class _LPIPS(nn.Module):
             feats0[kk], feats1[kk] = normalize_tensor(outs0[kk]), normalize_tensor(outs1[kk])
             diffs[kk] = (feats0[kk] - feats1[kk]) ** 2
 
-        if self.spatial:
-            res = [
-                upsam(self.lins[kk](diffs[kk]), out_hw=in0.shape[2:]) for kk in range(self.L)  # type: ignore[arg-type]
-            ]
-        else:
-            res = [spatial_average(self.lins[kk](diffs[kk]), keepdim=True) for kk in range(self.L)]
+        res = []
+        for kk in range(self.L):
+            if self.spatial:
+                res.append(upsam(self.lins[kk](diffs[kk]), out_hw=tuple(in0.shape[2:])))
+            else:
+                res.append(spatial_average(self.lins[kk](diffs[kk]), keepdim=True))
 
-        val = 0
-        for layer in range(self.L):
-            val += res[layer]  # type: ignore[assignment]
-
+        val: Tensor = sum(res)  # type: ignore[assignment]
         if retperlayer:
             return (val, res)
         return val
