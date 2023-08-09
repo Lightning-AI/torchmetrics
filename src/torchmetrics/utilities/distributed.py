@@ -175,7 +175,7 @@ class EvaluationDistributedSampler(torch.utils.data.DistributedSampler):
             divisible across the number of replicas.
 
     For a full example on how to use this sampler, using both bare Pytorch but also Psytorch Lightning,
-    see `torchmetrics distributed example`_ in the examples folder.
+    checkout the `distributed_evaluation.py` file in the examples folder.
 
     Example::
         The distributed sampler is always intended to be used in conjunction with a DataLoader:
