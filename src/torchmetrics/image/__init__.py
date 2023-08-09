@@ -23,7 +23,7 @@ from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure, 
 from torchmetrics.image.tv import TotalVariation
 from torchmetrics.image.uqi import UniversalImageQualityIndex
 from torchmetrics.image.vif import VisualInformationFidelity
-from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCH_FIDELITY_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_10
+from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE, _TORCHVISION_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_10
 
 __all__ = [
     "SpectralDistortionIndex",
@@ -52,10 +52,11 @@ if _TORCH_FIDELITY_AVAILABLE:
         "KernelInceptionDistance",
     ]
 
-if _LPIPS_AVAILABLE:
-    from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity  # noqa: F401
+if _TORCHVISION_AVAILABLE:
+    from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
+    from torchmetrics.image.perceptual_path_length import PerceptualPathLength
 
-    __all__.append("LearnedPerceptualImagePatchSimilarity")
+    __all__ += ["LearnedPerceptualImagePatchSimilarity", "PerceptualPathLength"]
 
 if _TRANSFORMERS_GREATER_EQUAL_4_10:
     from torchmetrics.image.clip_iqa import CLIPImageQualityAssessment  # noqa: F401
