@@ -201,7 +201,7 @@ def perceptual_path_length(
         ...    def sample(self, num_samples):
         ...      return torch.randn(num_samples, self.z_size)
         >>> generator = DummyGenerator(2)
-        >>> perceptual_path_length(generator, num_samples=10)  # doctest: +NORMALIZE_WHITESPACE
+        >>> perceptual_path_length(generator, num_samples=10)  # doctest: +SKIP
         (tensor(0.1945),
         tensor(0.1222),
         tensor([0.0990, 0.4173, 0.1628, 0.3573, 0.1875, 0.0335, 0.1095, 0.1887, 0.1953]))

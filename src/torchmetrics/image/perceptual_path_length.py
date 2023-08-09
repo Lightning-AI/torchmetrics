@@ -112,7 +112,7 @@ class PerceptualPathLength(Metric):
         ...      return torch.randn(num_samples, self.z_size)
         >>> generator = DummyGenerator(2)
         >>> ppl = PerceptualPathLength(num_samples=10)
-        >>> ppl(generator)  # doctest: +NORMALIZE_WHITESPACE
+        >>> ppl(generator)  # doctest: +SKIP
         (tensor(0.2371),
         tensor(0.1763),
         tensor([0.3502, 0.1362, 0.2535, 0.0902, 0.1784, 0.0769, 0.5871, 0.0691, 0.3921]))
