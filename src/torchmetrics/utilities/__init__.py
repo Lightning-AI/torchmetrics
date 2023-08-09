@@ -17,11 +17,12 @@ from torchmetrics.utilities.distributed import EvaluationDistributedSampler, cla
 from torchmetrics.utilities.prints import rank_zero_debug, rank_zero_info, rank_zero_warn
 
 __all__ = [
-    "check_forward_full_state_property",
     "apply_to_collection",
+    "check_forward_full_state_property",
     "class_reduce",
-    "reduce",
+    "EvaluationDistributedSampler",
     "rank_zero_debug",
     "rank_zero_info",
     "rank_zero_warn",
+    "reduce",
 ]
