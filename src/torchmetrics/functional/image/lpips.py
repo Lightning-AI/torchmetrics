@@ -186,7 +186,7 @@ def spatial_average(in_tens: Tensor, keepdim: bool = True) -> Tensor:
     return in_tens.mean([2, 3], keepdim=keepdim)
 
 
-def upsam(in_tens: Tensor, out_hw: Tuple[int, int] = (64, 64)) -> Tensor:
+def upsam(in_tens: Tensor, out_hw: Tuple[int, ...] = (64, 64)) -> Tensor:
     """Upsample input with bilinear interpolation."""
     return nn.Upsample(size=out_hw, mode="bilinear", align_corners=False)(in_tens)
 
@@ -308,7 +308,7 @@ class _LPIPS(nn.Module):
 
     def forward(
         self, in0: Tensor, in1: Tensor, retperlayer: bool = False, normalize: bool = False
-    ) -> Union[int, Tuple[int, List[Tensor]]]:
+    ) -> Union[Tensor, Tuple[Tensor, List[Tensor]]]:
         if normalize:  # turn on this flag if input is [0,1] so it can be adjusted to [-1, +1]
             in0 = 2 * in0 - 1
             in1 = 2 * in1 - 1
@@ -328,14 +328,14 @@ class _LPIPS(nn.Module):
             feats0[kk], feats1[kk] = normalize_tensor(outs0[kk]), normalize_tensor(outs1[kk])
             diffs[kk] = (feats0[kk] - feats1[kk]) ** 2
 
-        if self.spatial:
-            res = [
-                upsam(self.lins[kk](diffs[kk]), out_hw=in0.shape[2:]) for kk in range(self.L)  # type: ignore[arg-type]
-            ]
-        else:
-            res = [spatial_average(self.lins[kk](diffs[kk]), keepdim=True) for kk in range(self.L)]
+        res = []
+        for kk in range(self.L):
+            if self.spatial:
+                res.append(upsam(self.lins[kk](diffs[kk]), out_hw=tuple(in0.shape[2:])))
+            else:
+                res.append(spatial_average(self.lins[kk](diffs[kk]), keepdim=True))
 
-        val = sum(res)
+        val: Tensor = sum(res)  # type: ignore[assignment]
         if retperlayer:
             return (val, res)
         return val

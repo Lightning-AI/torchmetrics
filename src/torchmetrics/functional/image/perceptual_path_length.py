@@ -225,10 +225,10 @@ def perceptual_path_length(
     if conditional:
         labels = torch.randint(0, generator.num_classes, (num_samples,)).to(device)
 
-    if sim_net in ["alex", "vgg", "squeeze"]:
-        sim_net = _LPIPS(pretrained=True, net=sim_net, resize=resize)
-    elif isinstance(sim_net, nn.Module):
-        sim_net = sim_net
+    if isinstance(sim_net, nn.Module):
+        net = sim_net
+    elif sim_net in ["alex", "vgg", "squeeze"]:
+        net = _LPIPS(pretrained=True, net=sim_net, resize=resize)
     else:
         raise ValueError(f"sim_net must be a nn.Module or one of 'alex', 'vgg', 'squeeze', got {sim_net}")
 
@@ -254,7 +254,7 @@ def perceptual_path_length(
             out1_rescale = 2 * (out1 / 255) - 1
             out2_rescale = 2 * (out2 / 255) - 1
 
-            similarity = sim_net(out1_rescale, out2_rescale)
+            similarity = net(out1_rescale, out2_rescale)
             dist = similarity / epsilon**2
             distances.append(dist.detach())
 

@@ -150,10 +150,10 @@ class PerceptualPathLength(Metric):
         self.lower_discard = lower_discard
         self.upper_discard = upper_discard
 
-        if sim_net in ["alex", "vgg", "squeeze"]:
-            self.sim_net = _LPIPS(pretrained=True, net=sim_net, resize=resize)
-        elif isinstance(sim_net, nn.Module):
-            self.sim_net = sim_net
+        if isinstance(sim_net, nn.Module):
+            self.net = sim_net
+        elif sim_net in ["alex", "vgg", "squeeze"]:
+            self.net = _LPIPS(pretrained=True, net=sim_net, resize=resize)
         else:
             raise ValueError(f"sim_net must be a nn.Module or one of 'alex', 'vgg', 'squeeze', got {sim_net}")
 
@@ -173,6 +173,6 @@ class PerceptualPathLength(Metric):
             resize=self.resize,
             lower_discard=self.lower_discard,
             upper_discard=self.upper_discard,
-            sim_net=self.sim_net,
+            sim_net=self.net,
             device=self.device,
         )
