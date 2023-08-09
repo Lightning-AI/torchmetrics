@@ -93,6 +93,7 @@ def _adjust_threshold_arg(
 def _binary_precision_recall_curve_arg_validation(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
+    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
 ) -> None:
     """Validate non tensor input.
 
@@ -120,9 +121,17 @@ def _binary_precision_recall_curve_arg_validation(
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
 
+    if input_format not in ("auto", "probs", "scores"):
+        raise ValueError(
+            f"Expected argument `input_format` to be one of 'auto', 'probs' or 'scores', but got {input_format}"
+        )
+
 
 def _binary_precision_recall_curve_tensor_validation(
-    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
+    preds: Tensor,
+    target: Tensor,
+    ignore_index: Optional[int] = None,
+    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
 ) -> None:
     """Validate tensor input.
 
@@ -145,6 +154,12 @@ def _binary_precision_recall_curve_tensor_validation(
             f" but got tensor with dtype {preds.dtype}"
         )
 
+    if input_format == "probs" and not torch.all((preds >= 0) * (preds <= 1)):
+        raise ValueError(
+            "Expected argument `preds` to be a tensor with values in the [0,1] range,"
+            f" but got tensor with values {preds}"
+        )
+
     # Check that target only contains {0,1} values or value in ignore_index
     unique_values = torch.unique(target)
     if ignore_index is None:
@@ -163,7 +178,7 @@ def _binary_precision_recall_curve_format(
     target: Tensor,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
-    format_input: bool = True,
+    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
 ) -> Tuple[Tensor, Tensor, Optional[Tensor]]:
     """Convert all input to the right format.
 
@@ -180,8 +195,10 @@ def _binary_precision_recall_curve_format(
         preds = preds[idx]
         target = target[idx]
 
-    if format_input:
-        if not torch.all((preds >= 0) * (preds <= 1)):
+    if not input_format:
+        if input_format == "logits":
+            preds = preds.sigmoid()
+        if (input_format == "auto" or input_format is True) and not torch.all((preds >= 0) * (preds <= 1)):
             preds = preds.sigmoid()
         target = target.long()
 
@@ -291,7 +308,7 @@ def binary_precision_recall_curve(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-    format_input: bool = True,
+    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
 ) -> Tuple[Tensor, Tensor, Tensor]:
     r"""Compute the precision-recall curve for binary tasks.
 
@@ -332,7 +349,16 @@ def binary_precision_recall_curve(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        format_input: if input should be formatted
+        input_format: str or bool specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'`` or ``True``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and do nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor before calculating the metric.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. No
+                transformation will be applied to the tensor, but values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor before calculating the metric.
+            - ``False``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         (tuple): a tuple of 3 tensors containing:
@@ -356,10 +382,10 @@ def binary_precision_recall_curve(
 
     """
     if validate_args:
-        _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
-        _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)
+        _binary_precision_recall_curve_arg_validation(thresholds, ignore_index, input_format)
+        _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index, input_format)
     preds, target, thresholds = _binary_precision_recall_curve_format(
-        preds, target, thresholds, ignore_index, format_input
+        preds, target, thresholds, ignore_index, input_format
     )
     state = _binary_precision_recall_curve_update(preds, target, thresholds)
     return _binary_precision_recall_curve_compute(state, thresholds)
