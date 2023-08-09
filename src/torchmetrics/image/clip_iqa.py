@@ -26,8 +26,15 @@ from torchmetrics.functional.image.clip_iqa import (
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_10
+from torchmetrics.utilities.imports import (
+    _MATPLOTLIB_AVAILABLE,
+    _PIQ_GREATER_EQUAL_0_8,
+    _TRANSFORMERS_GREATER_EQUAL_4_10,
+)
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _PIQ_GREATER_EQUAL_0_8:
+    __doctest_skip__ = ["CLIPImageQualityAssessment", "CLIPImageQualityAssessment.plot"]
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["CLIPImageQualityAssessment.plot"]
