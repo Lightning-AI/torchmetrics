@@ -27,13 +27,14 @@ else:
     from pytorch_lightning import LightningModule, Trainer
     from pytorch_lightning.loggers import CSVLogger
 
-from integrations.helpers import no_warning_call
-from integrations.lightning.boring_model import BoringModel
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import SumMetric
 from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision, MulticlassAccuracy
 from torchmetrics.utilities.distributed import EvaluationDistributedSampler
 from torchmetrics.utilities.imports import _LIGHTNING_GREATER_EQUAL_2_0
+
+from integrations.helpers import no_warning_call
+from integrations.lightning.boring_model import BoringModel
 
 
 class DiffMetric(SumMetric):
