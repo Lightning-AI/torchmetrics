@@ -445,13 +445,11 @@ def test_dtype_in_pl_module_transfer(tmpdir):
 
 
 class _DistributedEvaluationTestModel(BoringModel):
-    def __init__(self, dataset, sampler_class, devices) -> None:
+    def __init__(self, dataloader) -> None:
         super().__init__()
         self.linear = torch.nn.Linear(32, 10)
         self.metric = MulticlassAccuracy(num_classes=10, average="micro")
-        self.dataset = dataset
-        self.sampler_class = sampler_class
-        self.devices = devices
+        self.dataloader = dataloader
 
     def forward(self, x):
         return self.linear(x)
@@ -462,29 +460,38 @@ class _DistributedEvaluationTestModel(BoringModel):
         self.metric.update(preds, target)
 
     def on_test_epoch_end(self):
+        self.metric._should_unsync = False
         result = self.metric.compute()
         self.log("test_acc", result)
         self.log("samples_seen", self.metric.tp + self.metric.fn)
 
     def test_dataloader(self):
-        if self.devices > 1:
-            return torch.utils.data.DataLoader(self.dataset, batch_size=3, sampler=self.sampler_class(self.dataset))
-        return torch.utils.data.DataLoader(self.dataset, batch_size=3)
+        return self.dataloader()
 
 
-@pytest.mark.parametrize("sampler", [DistributedSampler, EvaluationDistributedSampler])
+@pytest.mark.parametrize("sampler_class", [DistributedSampler, EvaluationDistributedSampler])
 @pytest.mark.parametrize("accelerator", ["cpu", "gpu"])
 @pytest.mark.parametrize("devices", [1, 2])
-def test_distributed_sampler_integration(sampler, accelerator, devices):
+def test_distributed_sampler_integration(sampler_class, accelerator, devices):
     """Test the integration of the custom distributed sampler with Lightning."""
     if not torch.cuda.is_available() and accelerator == "gpu":
         pytest.skip("test requires GPU machine")
     if torch.cuda.is_available() and accelerator == "gpu" and torch.cuda.device_count() < 2 and devices > 1:
         pytest.skip("test requires GPU machine with at least 2 GPUs")
 
-    dataset = torch.utils.data.TensorDataset(torch.randn(199, 32), torch.randint(10, (199,)))
+    n_data = 199
+    dataset = torch.utils.data.TensorDataset(
+        torch.arange(n_data).unsqueeze(1).repeat(1, 32).float(),
+        torch.arange(10).repeat(20)[:n_data],
+    )
+    if devices > 1:
+        dataloader = lambda: torch.utils.data.DataLoader(
+            dataset, batch_size=3, sampler=sampler_class(dataset, shuffle=False)
+        )
+    else:
+        dataloader = lambda: torch.utils.data.DataLoader(dataset, batch_size=3, shuffle=False)
 
-    model = _DistributedEvaluationTestModel(dataset, sampler, devices)
+    model = _DistributedEvaluationTestModel(dataloader)
 
     trainer = Trainer(
         devices=devices,
@@ -493,7 +500,7 @@ def test_distributed_sampler_integration(sampler, accelerator, devices):
     res = trainer.test(model)
     manual_res = (model(dataset.tensors[0]).argmax(dim=1) == dataset.tensors[1]).float().mean()
 
-    if sampler == DistributedSampler and devices > 1:
+    if sampler_class == DistributedSampler and devices > 1:
         # normal sampler adds extra samples which skrews up the results
         assert torch.allclose(torch.tensor(res[0]["samples_seen"], dtype=torch.long), torch.tensor(len(dataset) + 1))
         assert not torch.allclose(torch.tensor(res[0]["test_acc"]), manual_res)
