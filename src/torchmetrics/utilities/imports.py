@@ -18,6 +18,7 @@ import sys
 from distutils.version import LooseVersion
 from typing import Optional
 
+from lightning_utilities import module_available
 from lightning_utilities.core.imports import compare_version, package_available
 
 _PYTHON_VERSION = ".".join(map(str, [sys.version_info.major, sys.version_info.minor, sys.version_info.micro]))
@@ -28,6 +29,11 @@ _TORCH_GREATER_EQUAL_1_10: Optional[bool] = compare_version("torch", operator.ge
 _TORCH_GREATER_EQUAL_1_11: Optional[bool] = compare_version("torch", operator.ge, "1.11.0")
 _TORCH_GREATER_EQUAL_1_12: Optional[bool] = compare_version("torch", operator.ge, "1.12.0")
 _TORCH_GREATER_EQUAL_1_13: Optional[bool] = compare_version("torch", operator.ge, "1.13.0")
+
+if module_available("lightning"):
+    _LIGHTNING_GREATER_EQUAL_2_0: Optional[bool] = compare_version("lightning", operator.ge, "2.0.0")
+else:
+    _LIGHTNING_GREATER_EQUAL_2_0: Optional[bool] = compare_version("pytorch_lightning", operator.ge, "2.0.0")
 
 _JIWER_AVAILABLE: bool = package_available("jiwer")
 _NLTK_AVAILABLE: bool = package_available("nltk")

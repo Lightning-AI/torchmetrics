@@ -33,6 +33,7 @@ from torchmetrics import MetricCollection
 from torchmetrics.aggregation import SumMetric
 from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision, MulticlassAccuracy
 from torchmetrics.utilities.distributed import EvaluationDistributedSampler
+from torchmetrics.utilities.imports import _LIGHTNING_GREATER_EQUAL_2_0
 
 
 class DiffMetric(SumMetric):
@@ -472,6 +473,7 @@ class _DistributedEvaluationTestModel(BoringModel):
         return DataLoader(self.dataset, batch_size=3, shuffle=False)
 
 
+@pytest.mark.skipif(not _LIGHTNING_GREATER_EQUAL_2_0, reason="Test requires newer Lightning 2.0 version")
 @pytest.mark.parametrize("sampler_class", [DistributedSampler, EvaluationDistributedSampler])
 @pytest.mark.parametrize("accelerator", ["cpu", "gpu"])
 @pytest.mark.parametrize("devices", [1, 2])
