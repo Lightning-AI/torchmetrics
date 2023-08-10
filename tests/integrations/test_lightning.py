@@ -18,7 +18,7 @@ import torch
 from lightning_utilities import module_available
 from torch import tensor
 from torch.nn import Linear
-from torch.utils.data import DistributedSampler
+from torch.utils.data import DataLoader, DistributedSampler
 
 if module_available("lightning"):
     from lightning.pytorch import LightningModule, Trainer
@@ -27,13 +27,12 @@ else:
     from pytorch_lightning import LightningModule, Trainer
     from pytorch_lightning.loggers import CSVLogger
 
+from integrations.helpers import no_warning_call
+from integrations.lightning.boring_model import BoringModel
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import SumMetric
 from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision, MulticlassAccuracy
 from torchmetrics.utilities.distributed import EvaluationDistributedSampler
-
-from integrations.helpers import no_warning_call
-from integrations.lightning.boring_model import BoringModel
 
 
 class DiffMetric(SumMetric):
@@ -445,11 +444,13 @@ def test_dtype_in_pl_module_transfer(tmpdir):
 
 
 class _DistributedEvaluationTestModel(BoringModel):
-    def __init__(self, dataloader) -> None:
+    def __init__(self, dataset, sampler_class, devices) -> None:
         super().__init__()
         self.linear = torch.nn.Linear(32, 10)
         self.metric = MulticlassAccuracy(num_classes=10, average="micro")
-        self.dataloader = dataloader
+        self.dataset = dataset
+        self.sampler_class = sampler_class
+        self.devices = devices
 
     def forward(self, x):
         return self.linear(x)
@@ -466,7 +467,9 @@ class _DistributedEvaluationTestModel(BoringModel):
         self.log("samples_seen", self.metric.tp + self.metric.fn)
 
     def test_dataloader(self):
-        return self.dataloader()
+        if self.devices > 1:
+            return DataLoader(self.dataset, batch_size=3, sampler=self.sampler_class(self.dataset, shuffle=False))
+        return DataLoader(self.dataset, batch_size=3, shuffle=False)
 
 
 @pytest.mark.parametrize("sampler_class", [DistributedSampler, EvaluationDistributedSampler])
@@ -484,14 +487,8 @@ def test_distributed_sampler_integration(sampler_class, accelerator, devices):
         torch.arange(n_data).unsqueeze(1).repeat(1, 32).float(),
         torch.arange(10).repeat(20)[:n_data],
     )
-    if devices > 1:
-        dataloader = lambda: torch.utils.data.DataLoader(
-            dataset, batch_size=3, sampler=sampler_class(dataset, shuffle=False)
-        )
-    else:
-        dataloader = lambda: torch.utils.data.DataLoader(dataset, batch_size=3, shuffle=False)
 
-    model = _DistributedEvaluationTestModel(dataloader)
+    model = _DistributedEvaluationTestModel(dataset, sampler_class, devices)
 
     trainer = Trainer(
         devices=devices,
