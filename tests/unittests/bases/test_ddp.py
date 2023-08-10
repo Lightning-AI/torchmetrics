@@ -20,11 +20,11 @@ import pytest
 import torch
 from torch import tensor
 from torch.utils.data import DistributedSampler
+
 from torchmetrics.aggregation import CatMetric, SumMetric
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.distributed import EvaluationDistributedSampler, gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
-
 from unittests import NUM_PROCESSES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
@@ -340,6 +340,7 @@ def _test_evaluation_distributed_dataloader(
             assert len(res) == dataset_size, "The result of the metric did not match the expected result"
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 @pytest.mark.parametrize(
     (
         "dataset_size",
