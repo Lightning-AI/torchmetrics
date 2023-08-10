@@ -20,11 +20,11 @@ import pytest
 import torch
 from torch import tensor
 from torch.utils.data import DistributedSampler
-
 from torchmetrics.aggregation import CatMetric, SumMetric
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.distributed import EvaluationDistributedSampler, gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
+
 from unittests import NUM_PROCESSES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
