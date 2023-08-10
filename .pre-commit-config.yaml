@@ -71,16 +71,29 @@ repos:
               docs/paper_JOSS/paper.md
           )$
 
-  - repo: https://github.com/asottile/yesqa
-    rev: v1.5.0
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
     hooks:
-      - id: yesqa
-        additional_dependencies:
-          - pep8-naming
-          - flake8-pytest-style
-          - flake8-bandit
-          - flake8-builtins
-          - flake8-bugbear
+      # Enforce that # type: ignore annotations always occur with specific codes. Sample annotations: # type: ignore[attr-defined], # type: ignore[attr-defined, name-def
+      - id: python-check-blanket-noqa
+      # Enforce that # type: ignore annotations always occur with specific codes. Sample annotations: # type: ignore[attr-defined], # type: ignore[attr-defined, name-defined]
+      #- id: python-check-blanket-type-ignore  # TODO
+      # Prevent common mistakes of assert mck.not_called(), assert mck.called_once_with(...) and mck.assert_called.
+      - id: python-check-mock-methods
+      # A quick check for the eval() built-in function
+      #- id: python-no-eval broken check - https://github.com/pre-commit/pygrep-hooks/issues/135
+      # A quick check for the deprecated .warn() method of python loggers
+      - id: python-no-log-warn
+      # Enforce that python3.6+ type annotations are used instead of type comments
+      #- id: python-use-type-annotations # false positive - https://github.com/pre-commit/pygrep-hooks/issues/154
+      # Detect common mistake of using single backticks when writing rst
+      #- id: rst-backticks  # todo
+      # Detect mistake of rst directive not ending with double colon or space before the double colon
+      - id: rst-directive-colons
+      # Detect mistake of inline code touching normal text in rst
+      - id: rst-inline-touching-normal
+      # Forbid files which have a UTF-8 Unicode replacement character
+      - id: text-unicode-replacement-char
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.0.277
