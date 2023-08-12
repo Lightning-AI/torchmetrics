@@ -13,12 +13,18 @@
 # limitations under the License.
 import pytest
 import torch
+from monai.metrics.utils import get_code_to_measure_table
 from scipy.ndimage.morphology import binary_erosion as scibinary_erosion
 from scipy.ndimage.morphology import distance_transform_cdt as scidistance_transform_cdt
 from scipy.ndimage.morphology import distance_transform_edt as scidistance_transform_edt
 from scipy.ndimage.morphology import generate_binary_structure as scigenerate_binary_structure
 
-from torchmetrics.functional.segmentation.helper import binary_erosion, distance_transform, generate_binary_structure
+from torchmetrics.functional.segmentation.helper import (
+    binary_erosion,
+    distance_transform,
+    generate_binary_structure,
+    get_table,
+)
 
 
 @pytest.mark.parametrize("rank", [2, 3, 4])
@@ -152,3 +158,15 @@ def test_distance_transform(case, metric):
     else:
         scidistance = scidistance_transform_cdt(case, metric=metric)
     assert torch.allclose(distance, torch.from_numpy(scidistance).float())
+
+
+@pytest.mark.parametrize("dim", [2, 3])
+@pytest.mark.parametrize("spacing", [1, 2])
+def test_table_for_surface_score(dim, spacing):
+    """Test the table for surface score function."""
+    spacing = dim * (spacing,)
+    ref_table, ref_kernel = get_code_to_measure_table(spacing)
+    table, kernel = get_table(spacing)
+
+    assert torch.allclose(ref_table.float(), table)
+    assert torch.allclose(ref_kernel, kernel)

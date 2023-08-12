@@ -301,7 +301,20 @@ def get_surface_distance(
     return dis[preds]
 
 
-def table_contour_length(spacing: Tuple[int, int], device: Optional[torch.device] = None) -> Tensor:
+def get_table(spacing: Tuple[int, ...], device: Optional[torch.device] = None) -> Tuple[Tensor, Tensor]:
+    """Create a table that maps neighbour codes to the contour length or surface area of the corresponding contour.
+
+    Args:
+        spacing: The spacing between pixels along each spatial dimension.
+        device: The device on which the table should be created.
+
+    """
+    if len(spacing) == 2:
+        return table_contour_length(spacing, device)
+    return table_surface_area(spacing, device)
+
+
+def table_contour_length(spacing: Tuple[int, int], device: Optional[torch.device] = None) -> Tuple[Tensor, Tensor]:
     """Create a table that maps neighbour codes to the contour length of the corresponding contour.
 
     Adopted from:
@@ -350,7 +363,7 @@ def table_contour_length(spacing: Tuple[int, int], device: Optional[torch.device
     return table, kernel
 
 
-def table_surface_area(spacing: Tuple[int, int, int], device: Optional[torch.device] = None) -> Tensor:
+def table_surface_area(spacing: Tuple[int, int, int], device: Optional[torch.device] = None) -> Tuple[Tensor, Tensor]:
     """Create a table that maps neighbour codes to the surface area of the corresponding surface.
 
     Adopted from:
