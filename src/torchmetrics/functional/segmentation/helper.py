@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import math
 from typing import List, Optional, Tuple
 
 import torch
@@ -49,17 +50,15 @@ def generate_binary_structure(rank: int, connectivity: int) -> Tensor:
         tensor([[True,  True,  True],
                 [True,  True,  True],
                 [True,  True,  True]])
-        >>> generate_binary_structure(2, 3)
+        >>> generate_binary_structure(3, 2)  # doctest: +NORMALIZE_WHITESPACE
         tensor([[[False,  True, False],
-                 [True,  True,  True],
+                 [ True,  True,  True],
                  [False,  True, False]],
-
-                [[True,  True,  True],
-                 [True,  True,  True],
-                 [True,  True,  True]],
-
+                [[ True,  True,  True],
+                 [ True,  True,  True],
+                 [ True,  True,  True]],
                 [[False,  True, False],
-                 [True,  True,  True],
+                 [ True,  True,  True],
                  [False,  True, False]]])
 
     """
@@ -236,11 +235,6 @@ def distance_transform(
     return ndimage.distance_transform_cdt(x.cpu().numpy(), sampling, metric=metric)
 
 
-def create_table_neighbour_code_to_contour_length(spacing: List[int], device: Optional[torch.device] = None) -> Tensor:
-    """Create a table that maps neighbour codes to the contour length of the corresponding contour."""
-    ...
-
-
 def create_table_neighbour_code_to_surface_area(spacing: List[int], device: Optional[torch.device] = None) -> Tensor:
     """Create a table that maps neighbour codes to the surface area of the corresponding surface."""
     ...
@@ -313,3 +307,50 @@ def get_surface_distance(
         elif distance_metric == "chessboard":
             dis = torch.cdist(preds, target, p=float("inf"))
     return dis[preds]
+
+
+def create_table_neighbour_code_to_contour_length(
+    spacing: Tuple[int, int], device: Optional[torch.device] = None
+) -> Tensor:
+    """Create a table that maps neighbour codes to the contour length of the corresponding contour.
+
+    Adopted from:
+    https://github.com/deepmind/surface-distance/blob/master/surface_distance/lookup_tables.py
+
+    Args:
+        spacing: The spacing between pixels along each spatial dimension.
+        device: The device on which the table should be created.
+
+    Returns:
+        A tuple containing as its first element the table that maps neighbour codes to the contour length of the
+        corresponding contour and as its second element the kernel used to compute the neighbour codes.
+
+    Example::
+        >>> from torchmetrics.functional.segmentation.helper import create_table_neighbour_code_to_contour_length
+        >>> table, kernel = create_table_neighbour_code_to_contour_length((2,2))
+        >>> table
+        tensor([0.0000, 1.4142, 1.4142, 2.0000, 1.4142, 2.0000, 2.8284, 1.4142, 1.4142,
+                2.8284, 2.0000, 1.4142, 2.0000, 1.4142, 1.4142, 0.0000])
+        >>> kernel
+        tensor([[[[8, 4],
+                  [2, 1]]]])
+
+    """
+    first, second = spacing  # spacing along the first and second spatial dimension respectively
+    diag = 0.5 * math.sqrt(first**2 + second**2)
+    table = torch.zeros(16, dtype=torch.float32, device=device)
+    table[int("0001", 2)] = diag
+    table[int("0010", 2)] = diag
+    table[int("0011", 2)] = second
+    table[int("0100", 2)] = diag
+    table[int("0101", 2)] = first
+    table[int("0110", 2)] = 2 * diag
+    table[int("0111", 2)] = diag
+    table[int("1000", 2)] = diag
+    table[int("1001", 2)] = 2 * diag
+    table[int("1010", 2)] = first
+    table[int("1011", 2)] = diag
+    table[int("1100", 2)] = second
+    table[int("1101", 2)] = diag
+    table[int("1110", 2)] = diag
+    return table, torch.as_tensor([[[[8, 4], [2, 1]]]], device=device)
