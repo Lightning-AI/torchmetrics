@@ -82,7 +82,7 @@ def test_binary_erosion(case, border_value):
     """
     scierosion = scibinary_erosion(case, border_value=border_value)
     erosion = binary_erosion(case.unsqueeze(0).unsqueeze(0), border_value=border_value)
-    assert torch.allclose(erosion, torch.from_numpy(scierosion).float())
+    assert torch.allclose(erosion, torch.from_numpy(scierosion).byte())
 
 
 @pytest.mark.parametrize(

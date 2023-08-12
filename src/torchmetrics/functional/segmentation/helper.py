@@ -97,16 +97,16 @@ def binary_erosion(
         ...                         [0, 0, 0, 0, 0]]]])
         >>> binary_erosion(image)
         tensor([[[[0, 0, 0, 0, 0],
+                  [0, 0, 0, 0, 0],
                   [0, 0, 1, 0, 0],
-                  [0, 1, 1, 1, 0],
-                  [0, 0, 1, 0, 0],
-                  [0, 0, 0, 0, 0]]]])
-        >>> binary_erosion(image, structure=torch.ones(3, 3))
+                  [0, 0, 0, 0, 0],
+                  [0, 0, 0, 0, 0]]]], dtype=torch.uint8)
+        >>> binary_erosion(image, structure=torch.ones(4, 4))
         tensor([[[[0, 0, 0, 0, 0],
-                  [0, 0, 1, 0, 0],
-                  [0, 1, 1, 1, 0],
-                  [0, 0, 1, 0, 0],
-                  [0, 0, 0, 0, 0]]]])
+                  [0, 0, 0, 0, 0],
+                  [0, 0, 0, 0, 0],
+                  [0, 0, 0, 0, 0],
+                  [0, 0, 0, 0, 0]]]], dtype=torch.uint8)
 
     """
     if not isinstance(image, Tensor):
@@ -137,7 +137,7 @@ def binary_erosion(
     result, _ = sums.min(dim=1)
 
     # Reshape the image to recover initial shape
-    return torch.reshape(result, image.shape) + 1
+    return (torch.reshape(result, image.shape) + 1).byte()
 
 
 def distance_transform(
