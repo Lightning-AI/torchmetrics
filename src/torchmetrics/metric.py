@@ -868,7 +868,7 @@ class Metric(Module, ABC):
     def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
         """Filter kwargs such that they match the update signature of the metric."""
         # filter all parameters based on update signature except those of
-        # type VAR_POSITIONAL (*args) and VAR_KEYWORD (**kwargs)
+        # types `VAR_POSITIONAL` for `* args` and `VAR_KEYWORD` for `** kwargs`
         _params = (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
         _sign_params = self._update_signature.parameters
         filtered_kwargs = {
