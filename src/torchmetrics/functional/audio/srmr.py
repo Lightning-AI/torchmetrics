@@ -218,7 +218,7 @@ def speech_reverberation_modulation_energy_ratio(
         a relatively small inconsistence.
 
     Returns:
-        Tensor: srmr value, shape ``(...)``
+        Scalar tensor with srmr value with shape ``(...)``
 
     Raises:
         ModuleNotFoundError:
