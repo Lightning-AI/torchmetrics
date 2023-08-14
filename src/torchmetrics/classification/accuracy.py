@@ -456,7 +456,7 @@ class Accuracy(_ClassificationTaskWrapper):
 
     This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :mod:`BinaryAccuracy`, :mod:`MulticlassAccuracy` and :mod:`MultilabelAccuracy` for the specific details of
+    :class:`BinaryAccuracy`, :class:`MulticlassAccuracy` and :class:`MultilabelAccuracy` for the specific details of
     each argument influence and examples.
 
     Legacy Example:
