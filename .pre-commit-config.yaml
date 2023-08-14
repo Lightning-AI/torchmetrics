@@ -71,10 +71,21 @@ repos:
               docs/paper_JOSS/paper.md
           )$
 
+  - repo: https://github.com/asottile/yesqa
+    rev: v1.5.0
+    hooks:
+      - id: yesqa
+        additional_dependencies:
+          - pep8-naming
+          - flake8-pytest-style
+          - flake8-bandit
+          - flake8-builtins
+          - flake8-bugbear
+
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
-      # Enforce that # type: ignore annotations always occur with specific codes. Sample annotations: # type: ignore[attr-defined], # type: ignore[attr-defined, name-def
+      # Enforce that noqa annotations always occur with specific codes. Sample annotations: # noqa: F401, # noqa: F401,W203
       - id: python-check-blanket-noqa
       # Enforce that # type: ignore annotations always occur with specific codes. Sample annotations: # type: ignore[attr-defined], # type: ignore[attr-defined, name-defined]
       #- id: python-check-blanket-type-ignore  # TODO
