@@ -13,11 +13,9 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.retrieval.RetrievalPrecisionRecallCurve
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.retrieval.retrieval_precision_recall_curve
-    :noindex:

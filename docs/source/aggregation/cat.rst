@@ -13,5 +13,4 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.aggregation.CatMetric
-    :noindex:
     :exclude-members: update, compute

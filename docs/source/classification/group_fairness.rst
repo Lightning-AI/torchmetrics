@@ -16,14 +16,12 @@ BinaryFairness
 ^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinaryFairness
-    :noindex:
     :exclude-members: update, compute
 
 BinaryGroupStatRates
 ^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinaryGroupStatRates
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
@@ -33,22 +31,18 @@ binary_fairness
 ^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.classification.binary_fairness
-    :noindex:
 
 demographic_parity
 ^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.classification.demographic_parity
-    :noindex:
 
 equal_opportunity
 ^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.classification.equal_opportunity
-    :noindex:
 
 binary_groups_stat_rates
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.classification.binary_groups_stat_rates
-    :noindex:

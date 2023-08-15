@@ -9,4 +9,3 @@ The base ``Metric`` class is an abstract base class that are used as the buildin
 metrics.
 
 .. autoclass:: torchmetrics.Metric
-    :noindex:

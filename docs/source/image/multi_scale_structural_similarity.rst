@@ -13,11 +13,9 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.image.MultiScaleStructuralSimilarityIndexMeasure
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.image.multiscale_structural_similarity_index_measure
-    :noindex:

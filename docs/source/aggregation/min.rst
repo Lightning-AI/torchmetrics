@@ -13,5 +13,4 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.aggregation.MinMetric
-    :noindex:
     :exclude-members: update, compute
