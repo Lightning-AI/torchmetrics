@@ -48,6 +48,7 @@ def _check_data_shape_to_weights(preds: Tensor, weights: Tensor) -> None:
 
     This test assumes that the prediction and target tensors have been confirmed to have the same shape.
     It further assumes that the `pred` is either a 1- or 2-dimensional tensor.
+
     """
     if preds.ndim == 1 and preds.shape != weights.shape:
         raise ValueError(
@@ -60,7 +61,7 @@ def _check_data_shape_to_weights(preds: Tensor, weights: Tensor) -> None:
             )
         elif weights.ndim == 2 and preds.shape != weights.shape:
             raise ValueError(
-                f"Expected `preds.shape` to equal to `weights.shape`," f" but got {preds.shape} and {weights.shape}."
+                f"Expected `preds.shape` to equal to `weights.shape`, but got {preds.shape} and {weights.shape}."
             )
         else:
             raise ValueError(f"Expected `weights.ndim` to equal 1 or 2 when `preds.ndim` is 2, but got {weights.ndim}.")
