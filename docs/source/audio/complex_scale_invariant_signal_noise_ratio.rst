@@ -13,6 +13,7 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.audio.ComplexScaleInvariantSignalNoiseRatio
+
 Functional Interface
 ____________________
 
