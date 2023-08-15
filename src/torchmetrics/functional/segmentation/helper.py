@@ -200,28 +200,25 @@ def distance_transform(
 
     if engine == "pytorch":
         x = x.float()
-        # calculate distance from every pixel to every other pixel
-        n_zero = torch.sum(x == 0)
-        y = x.view(-1, 1, 1) - x
-        y[y == -1] = 0
-        i, j, k = torch.where(y)
+        # calculate distance from every foreground pixel to every background pixel
+        i0, j0 = torch.where(x == 0)
+        i1, j1 = torch.where(x == 1)
+        dis_row = (i1.view(-1, 1) - i0.view(1, -1)).abs()
+        dis_col = (j1.view(-1, 1) - j0.view(1, -1)).abs()
 
-        # calculate distance
-        h, w = x.shape
+        # # calculate distance
+        h, _ = x.shape
         if metric == "euclidean":
-            dis = ((sampling[0] * abs(i // h - j)) ** 2 + (sampling[1] * abs(i % w - k)) ** 2).sqrt()
+            dis = ((sampling[0] * dis_row) ** 2 + (sampling[1] * dis_col) ** 2).sqrt()
         if metric == "chessboard":
-            dis = torch.max(sampling[0] * abs(i // h - j), sampling[1] * abs(i % w - k)).float()
+            dis = torch.max(sampling[0] * dis_row, sampling[1] * dis_col).float()
         if metric == "taxicab":
-            dis = sampling[0] * abs(i // h - j) + sampling[1] * abs(i % w - k).float()
+            dis = (sampling[0] * dis_row + sampling[1] * dis_col).float()
 
         # select only the closest distance
-        dis = dis.reshape(-1, n_zero)
-        dis, _ = torch.min(dis, dim=1)
-        i = i[::n_zero]
-
+        mindis, _ = torch.min(dis, dim=1)
         z = torch.zeros_like(x).view(-1)
-        z[i] = dis
+        z[i1 * h + j1] = mindis
         return z.view(x.shape)
 
     if not _SCIPY_AVAILABLE:
