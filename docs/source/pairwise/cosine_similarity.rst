@@ -13,4 +13,3 @@ Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.pairwise_cosine_similarity
-    :noindex:

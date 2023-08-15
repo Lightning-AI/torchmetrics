@@ -138,6 +138,7 @@ both ``True`` and ``False``. If the results are equal, then setting it to ``Fals
 ---------
 
 .. autoclass:: torchmetrics.Metric
+    :noindex:
     :members:
 
 Contributing your metric to TorchMetrics

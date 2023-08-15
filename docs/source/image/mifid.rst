@@ -13,5 +13,4 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.image.mifid.MemorizationInformedFrechetInceptionDistance
-    :noindex:
     :exclude-members: update, compute

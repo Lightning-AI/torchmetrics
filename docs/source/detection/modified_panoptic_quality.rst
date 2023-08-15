@@ -15,11 +15,9 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.detection.ModifiedPanopticQuality
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.detection.modified_panoptic_quality
-    :noindex:

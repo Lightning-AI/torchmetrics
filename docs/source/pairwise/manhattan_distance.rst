@@ -13,4 +13,3 @@ Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.pairwise_manhattan_distance
-    :noindex:
