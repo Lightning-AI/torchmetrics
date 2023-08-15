@@ -297,8 +297,9 @@ class CohenKappa(_ClassificationTaskWrapper):
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
-    :mod:`BinaryCohenKappa` and :mod:`MulticlassCohenKappa` for the specific details of
-    each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryCohenKappa` and
+    :class:`~torchmetrics.classification.MulticlassCohenKappa` for the specific details of each argument influence and
+    examples.
 
     Legacy Example:
         >>> from torch import tensor

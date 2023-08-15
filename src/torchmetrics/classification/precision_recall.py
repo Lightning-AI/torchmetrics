@@ -889,8 +889,9 @@ class Precision(_ClassificationTaskWrapper):
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :mod:`BinaryPrecision`, :func:`MulticlassPrecision` and :func:`MultilabelPrecision` for the specific details of
-    each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryPrecision`, :class:`~torchmetrics.classification.MulticlassPrecision` and
+    :class:`~torchmetrics.classification.MultilabelPrecision` for the specific details of each argument influence and
+    examples.
 
     Legacy Example:
         >>> from torch import tensor
@@ -951,8 +952,9 @@ class Recall(_ClassificationTaskWrapper):
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :mod:`BinaryRecall`, :mod:`MulticlassRecall` and :mod:`MultilabelRecall` for the specific details of
-    each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryRecall`,
+    :class:`~torchmetrics.classification.MulticlassRecall` and :class:`~torchmetrics.classification.MultilabelRecall`
+    for the specific details of each argument influence and examples.
 
     Legacy Example:
         >>> from torch import tensor
