@@ -13,11 +13,9 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.detection.ciou.CompleteIntersectionOverUnion
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.detection.ciou.complete_intersection_over_union
-    :noindex:

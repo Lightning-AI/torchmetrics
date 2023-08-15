@@ -13,11 +13,7 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.audio.ComplexScaleInvariantSignalNoiseRatio
-    :noindex:
-    :exclude-members: update, compute
-
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.audio.complex_scale_invariant_signal_noise_ratio
-    :noindex:

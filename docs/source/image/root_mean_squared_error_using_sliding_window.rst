@@ -13,11 +13,9 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.image.RootMeanSquaredErrorUsingSlidingWindow
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.image.root_mean_squared_error_using_sliding_window
-    :noindex:

@@ -13,7 +13,6 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.text.bert.BERTScore
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
