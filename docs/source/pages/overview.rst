@@ -305,7 +305,6 @@ dynamic search. See the *compute_groups* argument in the class docs below for mo
 information on this topic.
 
 .. autoclass:: torchmetrics.MetricCollection
-    :noindex:
     :exclude-members: update, compute, forward
 
 
