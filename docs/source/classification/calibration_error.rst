@@ -13,6 +13,7 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.CalibrationError
+    :noindex:
     :exclude-members: update, compute
     :special-members: __new__
 
@@ -26,12 +27,19 @@ MulticlassCalibrationError
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassCalibrationError
+    :exclude-members: update, compute
+
+Functional Interface
+____________________
+
 .. autofunction:: torchmetrics.functional.calibration_error
 
+binary_calibration_error
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-
+.. autofunction:: torchmetrics.functional.classification.binary_calibration_error
 
 multiclass_calibration_error
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.classification.multiclass_calibration_error
