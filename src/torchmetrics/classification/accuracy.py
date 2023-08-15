@@ -456,8 +456,9 @@ class Accuracy(_ClassificationTaskWrapper):
 
     This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :class:`BinaryAccuracy`, :class:`MulticlassAccuracy` and :class:`MultilabelAccuracy` for the specific details of
-    each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryAccuracy`, :class:`~torchmetrics.classification.MulticlassAccuracy` and
+    :class:`~torchmetrics.classification.MultilabelAccuracy` for the specific details of each argument influence and
+    examples.
 
     Legacy Example:
         >>> from torch import tensor
