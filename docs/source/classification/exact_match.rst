@@ -33,9 +33,9 @@ Functional Interface
 ____________________
 
 exact_match
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.classification.multilabel_exact_match
+.. autofunction:: torchmetrics.functional.classification.exact_match
 
 multiclass_exact_match
 ^^^^^^^^^^^^^^^^^^^^^^
