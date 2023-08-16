@@ -91,10 +91,10 @@ class MeanAveragePrecision(Metric):
           boxes.
         - ``labels`` (:class:`~torch.Tensor`): integer tensor of shape ``(num_boxes)`` containing 0-indexed detection
           classes for the boxes.
-        - ``masks`` (:class:`~torch.bool`): boolean tensor of shape ``(num_boxes, image_height, image_width)``
+        - ``masks`` (:class:`~torch.Tensor`): boolean tensor of shape ``(num_boxes, image_height, image_width)``
           containing boolean masks. Only required when `iou_type="segm"`.
 
-    - ``target`` (:class:`~List`) A list consisting of dictionaries each containing the key-values
+    - ``target`` (:class:`~List`): A list consisting of dictionaries each containing the key-values
       (each dictionary corresponds to a single image). Parameters that should be provided per dict:
 
         - ``boxes`` (:class:`~torch.Tensor`): float tensor of shape ``(num_boxes, 4)`` containing ``num_boxes`` ground
@@ -550,8 +550,8 @@ class MeanAveragePrecision(Metric):
             iou_type: Type of input, either `bbox` for bounding boxes or `segm` for segmentation masks
 
         Returns:
-            preds: List of dictionaries containing the predictions in the input format of this metric
-            target: List of dictionaries containing the targets in the input format of this metric
+            A tuple containing the predictions and targets in the input format of this metric. Each element of the
+            tuple is a list of dictionaries containing the boxes, labels and scores.
 
         Example:
             >>> # File formats are defined at https://cocodataset.org/#format-data

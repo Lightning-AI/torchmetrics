@@ -51,10 +51,12 @@ The example below shows how to use a metric in your `LightningModule <https://py
 
 Metric logging in Lightning happens through the ``self.log`` or ``self.log_dict`` method. Both methods only support the
 logging of *scalar-tensors*. While the vast majority of metrics in torchmetrics returns a scalar tensor, some metrics
-such as :class:`~torchmetrics.classification.ConfusionMatrix`, :class:`~torchmetrics.classification.ROC`,
-:class:`~torchmetrics.detection.MeanAveragePrecision`, :class:`~torchmetrics.text.ROUGEScore` return outputs that are
-non-scalar tensors (often dicts or list of tensors) and should therefore be dealt with separately. For info about the
-return type and shape please look at the documentation for the ``compute`` method for each metric you want to log.
+such as :class:`~torchmetrics.classification.confusion_matrix.ConfusionMatrix`,
+:class:`~torchmetrics.classification.roc.ROC`,
+:class:`~torchmetrics.detection.mean_ap.MeanAveragePrecision`, :class:`~torchmetrics.text.rouge.ROUGEScore` return
+outputs that are non-scalar tensors (often dicts or list of tensors) and should therefore be dealt with separately.
+For info about the return type and shape please look at the documentation for the ``compute`` method for each metric
+you want to log.
 
 ********************
 Logging TorchMetrics

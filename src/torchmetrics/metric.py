@@ -751,7 +751,7 @@ class Metric(Module, ABC):
         """Transfer all metric state to specific dtype. Special version of standard `type` method.
 
         Arguments:
-            dst_type (type or string): the desired type.
+            dst_type: the desired type as string or dtype object
 
         """
         self._dtype_convert = True
@@ -826,7 +826,7 @@ class Metric(Module, ABC):
             destination: Optional dictionary, that if provided, the state of module will be updated into the dict and
                 the same object is returned. Otherwise, an ``OrderedDict`` will be created and returned.
             prefix: optional string, a prefix added to parameter and buffer names to compose the keys in state_dict.
-            keep_vars: by default the :class:`~torch.Tensor`s returned in the state dict are detached from autograd.
+            keep_vars: by default the :class:`~torch.Tensor` returned in the state dict are detached from autograd.
                 If set to ``True``, detaching will not be performed.
 
         """
