@@ -43,7 +43,7 @@ def _get_nan_indices(*tensors: Tensor) -> Tensor:
 class MultioutputWrapper(WrapperMetric):
     """Wrap a base metric to enable it to support multiple outputs.
 
-    Several torchmetrics metrics, such as :class:`torchmetrics.regression.spearman.SpearmanCorrcoef` lack support for
+    Several torchmetrics metrics, such as :class:`~torchmetrics.regression.spearman.SpearmanCorrCoef` lack support for
     multioutput mode. This class wraps such metrics to support computing one metric per output.
     Unlike specific torchmetric metrics, it doesn't support any aggregation across outputs.
     This means if you set ``num_outputs`` to 2, ``.compute()`` will return a Tensor of dimension
