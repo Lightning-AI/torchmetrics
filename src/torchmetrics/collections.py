@@ -554,7 +554,7 @@ class MetricCollection(ModuleDict):
         """Transfer all metric state to specific dtype. Special version of standard `type` method.
 
         Arguments:
-            dst_type (type or string): the desired type.
+            dst_type: the desired type as ``torch.dtype`` or string.
 
         """
         for m in self.values(copy_state=False):

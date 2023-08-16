@@ -480,8 +480,10 @@ class AveragePrecision(_ClassificationTaskWrapper):
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :mod:`BinaryAveragePrecision`, :mod:`MulticlassAveragePrecision` and :mod:`MultilabelAveragePrecision`
-    for the specific details of each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryAveragePrecision`,
+    :class:`~torchmetrics.classification.MulticlassAveragePrecision` and
+    :class:`~torchmetrics.classification.MultilabelAveragePrecision` for the specific details of each argument
+    influence and examples.
 
     Legacy Example:
         >>> from torch import tensor

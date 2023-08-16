@@ -111,7 +111,7 @@ def theils_u(
     nan_strategy: Literal["replace", "drop"] = "replace",
     nan_replace_value: Optional[Union[int, float]] = 0.0,
 ) -> Tensor:
-    r"""Compute `Theil's U`_ statistic (Uncertainty Coef.) measuring the association between two nominal data series.
+    r"""Compute `Theils Uncertainty coefficient`_ statistic measuring the association between two nominal data series.
 
     .. math::
         U(X|Y) = \frac{H(X) - H(X|Y)}{H(X)}
@@ -135,7 +135,7 @@ def theils_u(
         nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
 
     Returns:
-        Theil's U Statistic: Tensor
+        Tensor containing Theil's U statistic
 
     Example:
         >>> from torchmetrics.functional.nominal import theils_u

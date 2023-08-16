@@ -15,6 +15,8 @@ ________________
 .. autoclass:: torchmetrics.image.perceptual_path_length.PerceptualPathLength
     :exclude-members: update, compute
 
+.. autoclass:: torchmetrics.image.perceptual_path_length.GeneratorType
+
 Functional Interface
 ____________________
 
