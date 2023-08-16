@@ -14,11 +14,11 @@
 import math
 from typing import Optional, Tuple
 
+import math
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.regression.utils import _check_data_shape_to_num_outputs, _check_data_shape_to_weights
-from torchmetrics.functional.regression.utils import _check_data_shape_to_num_outputs
+from torchmetrics.functional.regression.utils import _check_data_shape_to_weights, _check_data_shape_to_num_outputs
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 
