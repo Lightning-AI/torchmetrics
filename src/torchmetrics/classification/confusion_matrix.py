@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -120,23 +120,27 @@ class BinaryConfusionMatrix(Metric):
         ignore_index: Optional[int] = None,
         normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
         validate_args: bool = True,
+        input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if validate_args:
-            _binary_confusion_matrix_arg_validation(threshold, ignore_index, normalize)
+            _binary_confusion_matrix_arg_validation(threshold, ignore_index, normalize, input_format)
         self.threshold = threshold
         self.ignore_index = ignore_index
         self.normalize = normalize
         self.validate_args = validate_args
+        self.input_format = input_format
 
         self.add_state("confmat", torch.zeros(2, 2, dtype=torch.long), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if self.validate_args:
-            _binary_confusion_matrix_tensor_validation(preds, target, self.ignore_index)
-        preds, target = _binary_confusion_matrix_format(preds, target, self.threshold, self.ignore_index)
+            _binary_confusion_matrix_tensor_validation(preds, target, self.ignore_index, self.input_format)
+        preds, target = _binary_confusion_matrix_format(
+            preds, target, self.threshold, self.ignore_index, self.input_format
+        )
         confmat = _binary_confusion_matrix_update(preds, target)
         self.confmat += confmat
 
@@ -363,6 +367,20 @@ class MultilabelConfusionMatrix(Metric):
             - ``'all'``: normalization over the whole matrix
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str or bool specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'`` or ``True``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
+            - ``False``: will disable all input formatting. This is the fastest option but also the least safe.
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
@@ -400,25 +418,29 @@ class MultilabelConfusionMatrix(Metric):
         ignore_index: Optional[int] = None,
         normalize: Optional[Literal["none", "true", "pred", "all"]] = None,
         validate_args: bool = True,
+        input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if validate_args:
-            _multilabel_confusion_matrix_arg_validation(num_labels, threshold, ignore_index, normalize)
+            _multilabel_confusion_matrix_arg_validation(num_labels, threshold, ignore_index, normalize, input_format)
         self.num_labels = num_labels
         self.threshold = threshold
         self.ignore_index = ignore_index
         self.normalize = normalize
         self.validate_args = validate_args
+        self.input_format = input_format
 
         self.add_state("confmat", torch.zeros(num_labels, 2, 2, dtype=torch.long), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if self.validate_args:
-            _multilabel_confusion_matrix_tensor_validation(preds, target, self.num_labels, self.ignore_index)
+            _multilabel_confusion_matrix_tensor_validation(
+                preds, target, self.num_labels, self.ignore_index, self.input_format
+            )
         preds, target = _multilabel_confusion_matrix_format(
-            preds, target, self.num_labels, self.threshold, self.ignore_index
+            preds, target, self.num_labels, self.threshold, self.ignore_index, self.input_format
         )
         confmat = _multilabel_confusion_matrix_update(preds, target, self.num_labels)
         self.confmat += confmat
@@ -513,13 +535,14 @@ class ConfusionMatrix(_ClassificationTaskWrapper):
         normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
         **kwargs: Any,
     ) -> Metric:
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         kwargs.update({"normalize": normalize, "ignore_index": ignore_index, "validate_args": validate_args})
         if task == ClassificationTask.BINARY:
-            return BinaryConfusionMatrix(threshold, **kwargs)
+            return BinaryConfusionMatrix(threshold, input_format=input_format, **kwargs)
         if task == ClassificationTask.MULTICLASS:
             if not isinstance(num_classes, int):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
@@ -527,5 +550,5 @@ class ConfusionMatrix(_ClassificationTaskWrapper):
         if task == ClassificationTask.MULTILABEL:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
-            return MultilabelConfusionMatrix(num_labels, threshold, **kwargs)
+            return MultilabelConfusionMatrix(num_labels, threshold, input_format=input_format, **kwargs)
         raise ValueError(f"Task {task} not supported!")

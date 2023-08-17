@@ -123,6 +123,20 @@ class BinaryStatScores(_AbstractStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str or bool specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'`` or ``True``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
+            - ``False``: will disable all input formatting. This is the fastest option but also the least safe.
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
@@ -163,22 +177,26 @@ class BinaryStatScores(_AbstractStatScores):
         multidim_average: Literal["global", "samplewise"] = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
         **kwargs: Any,
     ) -> None:
         super(_AbstractStatScores, self).__init__(**kwargs)
         if validate_args:
-            _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
+            _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index, input_format)
         self.threshold = threshold
         self.multidim_average = multidim_average
         self.ignore_index = ignore_index
         self.validate_args = validate_args
+        self.input_format = input_format
 
         self._create_state(size=1, multidim_average=multidim_average)
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if self.validate_args:
-            _binary_stat_scores_tensor_validation(preds, target, self.multidim_average, self.ignore_index)
+            _binary_stat_scores_tensor_validation(
+                preds, target, self.multidim_average, self.ignore_index, self.input_format
+            )
         preds, target = _binary_stat_scores_format(preds, target, self.threshold, self.ignore_index)
         tp, fp, tn, fn = _binary_stat_scores_update(preds, target, self.multidim_average)
         self._update_state(tp, fp, tn, fn)
@@ -200,7 +218,6 @@ class MulticlassStatScores(_AbstractStatScores):
       If preds is a floating point we apply ``torch.argmax`` along the ``C`` dimension to automatically convert
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
-
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -381,6 +398,20 @@ class MultilabelStatScores(_AbstractStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str or bool specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'`` or ``True``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
+            - ``False``: will disable all input formatting. This is the fastest option but also the least safe.
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
@@ -441,17 +472,21 @@ class MultilabelStatScores(_AbstractStatScores):
         multidim_average: Literal["global", "samplewise"] = "global",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
         **kwargs: Any,
     ) -> None:
         super(_AbstractStatScores, self).__init__(**kwargs)
         if validate_args:
-            _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
+            _multilabel_stat_scores_arg_validation(
+                num_labels, threshold, average, multidim_average, ignore_index, input_format
+            )
         self.num_labels = num_labels
         self.threshold = threshold
         self.average = average
         self.multidim_average = multidim_average
         self.ignore_index = ignore_index
         self.validate_args = validate_args
+        self.input_format = input_format
 
         self._create_state(size=num_labels, multidim_average=multidim_average)
 
@@ -459,10 +494,10 @@ class MultilabelStatScores(_AbstractStatScores):
         """Update state with predictions and targets."""
         if self.validate_args:
             _multilabel_stat_scores_tensor_validation(
-                preds, target, self.num_labels, self.multidim_average, self.ignore_index
+                preds, target, self.num_labels, self.multidim_average, self.ignore_index, self.input_format
             )
         preds, target = _multilabel_stat_scores_format(
-            preds, target, self.num_labels, self.threshold, self.ignore_index
+            preds, target, self.num_labels, self.threshold, self.ignore_index, self.input_format
         )
         tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, self.multidim_average)
         self._update_state(tp, fp, tn, fn)
@@ -508,6 +543,7 @@ class StatScores(_ClassificationTaskWrapper):
         top_k: Optional[int] = 1,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
         **kwargs: Any,
     ) -> Metric:
         """Initialize task metric."""
@@ -517,7 +553,7 @@ class StatScores(_ClassificationTaskWrapper):
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
         )
         if task == ClassificationTask.BINARY:
-            return BinaryStatScores(threshold, **kwargs)
+            return BinaryStatScores(threshold, input_format=input_format, **kwargs)
         if task == ClassificationTask.MULTICLASS:
             if not isinstance(num_classes, int):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
@@ -527,5 +563,5 @@ class StatScores(_ClassificationTaskWrapper):
         if task == ClassificationTask.MULTILABEL:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
-            return MultilabelStatScores(num_labels, threshold, average, **kwargs)
+            return MultilabelStatScores(num_labels, threshold, average, input_format=input_format, **kwargs)
         raise ValueError(f"Task {task} not supported!")

@@ -669,9 +669,11 @@ def multilabel_confusion_matrix(
 
     """
     if validate_args:
-        _multilabel_confusion_matrix_arg_validation(num_labels, threshold, ignore_index, normalize)
-        _multilabel_confusion_matrix_tensor_validation(preds, target, num_labels, ignore_index)
-    preds, target = _multilabel_confusion_matrix_format(preds, target, num_labels, threshold, ignore_index)
+        _multilabel_confusion_matrix_arg_validation(num_labels, threshold, ignore_index, normalize, input_format)
+        _multilabel_confusion_matrix_tensor_validation(preds, target, num_labels, ignore_index, input_format)
+    preds, target = _multilabel_confusion_matrix_format(
+        preds, target, num_labels, threshold, ignore_index, input_format
+    )
     confmat = _multilabel_confusion_matrix_update(preds, target, num_labels)
     return _multilabel_confusion_matrix_compute(confmat, normalize)
 
