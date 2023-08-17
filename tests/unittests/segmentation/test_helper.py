@@ -216,6 +216,8 @@ def test_surface_distance(cases, distance_metric, spacing):
     [
         (torch.randint(0, 2, (5, 5), dtype=torch.bool), torch.randint(0, 2, (5, 5), dtype=torch.bool)),
         (torch.randint(0, 2, (5, 5, 5), dtype=torch.bool), torch.randint(0, 2, (5, 5, 5), dtype=torch.bool)),
+        (torch.randint(0, 2, (50, 50), dtype=torch.bool), torch.randint(0, 2, (50, 50), dtype=torch.bool)),
+        (torch.randint(0, 2, (50, 50, 50), dtype=torch.bool), torch.randint(0, 2, (50, 50, 50), dtype=torch.bool)),
     ],
 )
 @pytest.mark.parametrize("spacing", [None, 1, 2])
@@ -225,7 +227,7 @@ def test_mask_edges(cases, spacing, crop):
     preds, target = cases
     if spacing is not None:
         spacing = preds.ndim * [spacing]
-    res = mask_edges(preds, target, spacing=spacing)
+    res = mask_edges(preds, target, spacing=spacing, crop=crop)
     reference_res = monai_get_mask_edges(preds, target, spacing=spacing, crop=crop)
 
     for r1, r2 in zip(res, reference_res):

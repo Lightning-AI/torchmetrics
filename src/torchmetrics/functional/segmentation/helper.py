@@ -285,10 +285,13 @@ def mask_edges(
     check_if_binarized(preds)
     check_if_binarized(target)
 
-    # if crop:
-    #     or_val = preds | target
-    #     if not or_val.any():
-    #         return torch.zeros_like(x)
+    if crop:
+        or_val = preds | target
+        if not or_val.any():
+            p, t = torch.zeros_like(preds), torch.zeros_like(target)
+            return p, t, p, t
+        # this seems to be working but does not seem to be right
+        preds, target = pad(preds, preds.ndim * [1, 1]), pad(target, target.ndim * [1, 1])
 
     if spacing is None:
         # no spacing, use binary erosion
