@@ -121,9 +121,10 @@ def _binary_precision_recall_curve_arg_validation(
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
 
-    if input_format not in ("auto", "probs", "scores"):
+    if not (isinstance(input_format, bool) or input_format in ("auto", "probs", "logits")):
         raise ValueError(
-            f"Expected argument `input_format` to be one of 'auto', 'probs' or 'scores', but got {input_format}"
+            "Expected argument `input_format` to be an bool or one of 'auto', 'probs' or 'logits'"
+            f", but got {input_format}"
         )
 
 
@@ -395,6 +396,7 @@ def _multiclass_precision_recall_curve_arg_validation(
     num_classes: int,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
+    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
 ) -> None:
     """Validate non tensor input.
 
@@ -405,11 +407,15 @@ def _multiclass_precision_recall_curve_arg_validation(
     """
     if not isinstance(num_classes, int) or num_classes < 2:
         raise ValueError(f"Expected argument `num_classes` to be an integer larger than 1, but got {num_classes}")
-    _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
+    _binary_precision_recall_curve_arg_validation(thresholds, ignore_index, input_format)
 
 
 def _multiclass_precision_recall_curve_tensor_validation(
-    preds: Tensor, target: Tensor, num_classes: int, ignore_index: Optional[int] = None
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    ignore_index: Optional[int] = None,
+    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
 ) -> None:
     """Validate tensor input.
 
@@ -428,6 +434,13 @@ def _multiclass_precision_recall_curve_tensor_validation(
         )
     if not preds.is_floating_point():
         raise ValueError(f"Expected `preds` to be a float tensor, but got {preds.dtype}")
+
+    if input_format == "probs" and not torch.all((preds >= 0) * (preds <= 1)):
+        raise ValueError(
+            "Expected argument `preds` to be a tensor with values in the [0,1] range,"
+            f" but got tensor with values {preds}"
+        )
+
     if preds.shape[1] != num_classes:
         raise ValueError(
             "Expected `preds.shape[1]` to be equal to the number of classes but"
@@ -455,6 +468,7 @@ def _multiclass_precision_recall_curve_format(
     num_classes: int,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
+    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
 ) -> Tuple[Tensor, Tensor, Optional[Tensor]]:
     """Convert all input to the right format.
 
@@ -472,8 +486,11 @@ def _multiclass_precision_recall_curve_format(
         preds = preds[idx]
         target = target[idx]
 
-    if not torch.all((preds >= 0) * (preds <= 1)):
-        preds = preds.softmax(1)
+    if input_format:
+        if input_format == "logits":
+            preds = preds.softmax(1)
+        if (input_format == "auto" or input_format is True) and not torch.all((preds >= 0) * (preds <= 1)):
+            preds = preds.softmax(1)
 
     thresholds = _adjust_threshold_arg(thresholds, preds.device)
     return preds, target, thresholds
@@ -585,6 +602,7 @@ def multiclass_precision_recall_curve(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Compute the precision-recall curve for multiclass tasks.
 
@@ -626,6 +644,16 @@ def multiclass_precision_recall_curve(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str or bool specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'`` or ``True``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and do nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor before calculating the metric.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. No
+                transformation will be applied to the tensor, but values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor before calculating the metric.
+            - ``False``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         (tuple): a tuple of either 3 tensors or 3 lists containing
@@ -675,10 +703,10 @@ def multiclass_precision_recall_curve(
 
     """
     if validate_args:
-        _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
-        _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index)
+        _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index, input_format)
+        _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index, input_format)
     preds, target, thresholds = _multiclass_precision_recall_curve_format(
-        preds, target, num_classes, thresholds, ignore_index
+        preds, target, num_classes, thresholds, ignore_index, input_format
     )
     state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
     return _multiclass_precision_recall_curve_compute(state, num_classes, thresholds)
@@ -688,6 +716,7 @@ def _multilabel_precision_recall_curve_arg_validation(
     num_labels: int,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
+    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
 ) -> None:
     """Validate non tensor input.
 
@@ -696,11 +725,15 @@ def _multilabel_precision_recall_curve_arg_validation(
     - ``ignore_index`` has to be None or int
 
     """
-    _multiclass_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
+    _multiclass_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index, input_format)
 
 
 def _multilabel_precision_recall_curve_tensor_validation(
-    preds: Tensor, target: Tensor, num_labels: int, ignore_index: Optional[int] = None
+    preds: Tensor,
+    target: Tensor,
+    num_labels: int,
+    ignore_index: Optional[int] = None,
+    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
 ) -> None:
     """Validate tensor input.
 
@@ -710,7 +743,7 @@ def _multilabel_precision_recall_curve_tensor_validation(
     - that the pred tensor is floating point
 
     """
-    _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)
+    _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index, input_format)
     if preds.shape[1] != num_labels:
         raise ValueError(
             "Expected both `target.shape[1]` and `preds.shape[1]` to be equal to the number of labels"
@@ -724,6 +757,7 @@ def _multilabel_precision_recall_curve_format(
     num_labels: int,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
+    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
 ) -> Tuple[Tensor, Tensor, Optional[Tensor]]:
     """Convert all input to the right format.
 
@@ -735,8 +769,13 @@ def _multilabel_precision_recall_curve_format(
     """
     preds = preds.transpose(0, 1).reshape(num_labels, -1).T
     target = target.transpose(0, 1).reshape(num_labels, -1).T
-    if not torch.all((preds >= 0) * (preds <= 1)):
-        preds = preds.sigmoid()
+
+    if input_format:
+        if input_format == "logits":
+            preds = preds.sigmoid()
+        if (input_format == "auto" or input_format is True) and not torch.all((preds >= 0) * (preds <= 1)):
+            preds = preds.sigmoid()
+        target = target.long()
 
     thresholds = _adjust_threshold_arg(thresholds, preds.device)
     if ignore_index is not None and thresholds is not None:
@@ -819,6 +858,7 @@ def multilabel_precision_recall_curve(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Compute the precision-recall curve for multilabel tasks.
 
@@ -860,6 +900,16 @@ def multilabel_precision_recall_curve(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str or bool specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'`` or ``True``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and do nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor before calculating the metric.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. No
+                transformation will be applied to the tensor, but values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor before calculating the metric.
+            - ``False``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         (tuple): a tuple of either 3 tensors or 3 lists containing
@@ -908,10 +958,10 @@ def multilabel_precision_recall_curve(
 
     """
     if validate_args:
-        _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
-        _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index)
+        _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index, input_format)
+        _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index, input_format)
     preds, target, thresholds = _multilabel_precision_recall_curve_format(
-        preds, target, num_labels, thresholds, ignore_index
+        preds, target, num_labels, thresholds, ignore_index, input_format
     )
     state = _multilabel_precision_recall_curve_update(preds, target, num_labels, thresholds)
     return _multilabel_precision_recall_curve_compute(state, num_labels, thresholds, ignore_index)
@@ -926,6 +976,7 @@ def precision_recall_curve(
     num_labels: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Compute the precision-recall curve.
 
@@ -968,13 +1019,17 @@ def precision_recall_curve(
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
-        return binary_precision_recall_curve(preds, target, thresholds, ignore_index, validate_args)
+        return binary_precision_recall_curve(preds, target, thresholds, ignore_index, validate_args, input_format)
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
-        return multiclass_precision_recall_curve(preds, target, num_classes, thresholds, ignore_index, validate_args)
+        return multiclass_precision_recall_curve(
+            preds, target, num_classes, thresholds, ignore_index, validate_args, input_format
+        )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
-        return multilabel_precision_recall_curve(preds, target, num_labels, thresholds, ignore_index, validate_args)
+        return multilabel_precision_recall_curve(
+            preds, target, num_labels, thresholds, ignore_index, validate_args, input_format
+        )
     raise ValueError(f"Task {task} not supported.")

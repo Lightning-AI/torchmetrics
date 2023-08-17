@@ -26,6 +26,7 @@ def _binary_stat_scores_arg_validation(
     threshold: float = 0.5,
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
+    input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
 ) -> None:
     """Validate non tensor input.
 
@@ -44,12 +45,19 @@ def _binary_stat_scores_arg_validation(
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
 
+    if not (isinstance(input_format, bool) or input_format in ("auto", "probs", "scores", "labels")):
+        raise ValueError(
+            "Expected `input_format` to be an bool or one of 'auto', 'probs', 'logits' or `labels`"
+            f",but got {input_format}"
+        )
+
 
 def _binary_stat_scores_tensor_validation(
     preds: Tensor,
     target: Tensor,
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
+    input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
 ) -> None:
     """Validate tensor input.
 
@@ -75,7 +83,7 @@ def _binary_stat_scores_tensor_validation(
         )
 
     # If preds is label tensor, also check that it only contains [0,1] values
-    if not preds.is_floating_point():
+    if not preds.is_floating_point() or input_format == "labels":
         unique_values = torch.unique(preds)
         if torch.any((unique_values != 0) & (unique_values != 1)):
             raise RuntimeError(
@@ -86,12 +94,19 @@ def _binary_stat_scores_tensor_validation(
     if multidim_average != "global" and preds.ndim < 2:
         raise ValueError("Expected input to be atleast 2D when multidim_average is set to `samplewise`")
 
+    if input_format == "probs" and not torch.all((preds >= 0) * (preds <= 1)):
+        raise ValueError(
+            "Expected argument `preds` to be a tensor with values in the [0,1] range,"
+            f" but got tensor with values {preds}"
+        )
+
 
 def _binary_stat_scores_format(
     preds: Tensor,
     target: Tensor,
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
+    input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
 ) -> Tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
@@ -100,11 +115,17 @@ def _binary_stat_scores_format(
     - Mask all datapoints that should be ignored with negative values
 
     """
-    if preds.is_floating_point():
-        if not torch.all((preds >= 0) * (preds <= 1)):
-            # preds is logits, convert with sigmoid
+    if input_format:
+        if input_format == "logits":
             preds = preds.sigmoid()
-        preds = preds > threshold
+        if (
+            preds.is_floating_point()
+            and (input_format == "auto" or input_format is True)
+            and not torch.all((preds >= 0) * (preds <= 1))
+        ):
+            preds = preds.sigmoid()
+        if input_format != "labels":
+            preds = preds > threshold
 
     preds = preds.reshape(preds.shape[0], -1)
     target = target.reshape(target.shape[0], -1)
@@ -145,6 +166,7 @@ def binary_stat_scores(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
 ) -> Tensor:
     r"""Compute the true positives, false positives, true negatives, false negatives, support for binary tasks.
 
@@ -172,6 +194,19 @@ def binary_stat_scores(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str or bool specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'`` or ``True``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
+            - ``False``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         The metric returns a tensor of shape ``(..., 5)``, where the last dimension corresponds
@@ -207,9 +242,9 @@ def binary_stat_scores(
 
     """
     if validate_args:
-        _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
-        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index)
-    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
+        _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index, input_format)
+        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index, input_format)
+    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index, input_format)
     tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
     return _binary_stat_scores_compute(tp, fp, tn, fn, multidim_average)
 
@@ -568,6 +603,7 @@ def _multilabel_stat_scores_arg_validation(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
+    input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
 ) -> None:
     """Validate non tensor input.
 
@@ -592,6 +628,11 @@ def _multilabel_stat_scores_arg_validation(
         )
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
+    if not (isinstance(input_format, bool) or input_format in ("auto", "probs", "scores", "labels")):
+        raise ValueError(
+            "Expected `input_format` to be an bool or one of 'auto', 'probs', 'logits' or `labels`"
+            f",but got {input_format}"
+        )
 
 
 def _multilabel_stat_scores_tensor_validation(
@@ -600,6 +641,7 @@ def _multilabel_stat_scores_tensor_validation(
     num_labels: int,
     multidim_average: str,
     ignore_index: Optional[int] = None,
+    input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
 ) -> None:
     """Validate tensor input.
 
@@ -632,7 +674,7 @@ def _multilabel_stat_scores_tensor_validation(
         )
 
     # If preds is label tensor, also check that it only contains [0,1] values
-    if not preds.is_floating_point():
+    if not preds.is_floating_point() or input_format == "labels":
         unique_values = torch.unique(preds)
         if torch.any((unique_values != 0) & (unique_values != 1)):
             raise RuntimeError(
@@ -643,9 +685,20 @@ def _multilabel_stat_scores_tensor_validation(
     if multidim_average != "global" and preds.ndim < 3:
         raise ValueError("Expected input to be atleast 3D when multidim_average is set to `samplewise`")
 
+    if input_format == "probs" and not torch.all((preds >= 0) * (preds <= 1)):
+        raise ValueError(
+            "Expected argument `preds` to be a tensor with values in the [0,1] range,"
+            f" but got tensor with values {preds}"
+        )
+
 
 def _multilabel_stat_scores_format(
-    preds: Tensor, target: Tensor, num_labels: int, threshold: float = 0.5, ignore_index: Optional[int] = None
+    preds: Tensor,
+    target: Tensor,
+    num_labels: int,
+    threshold: float = 0.5,
+    ignore_index: Optional[int] = None,
+    input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
 ) -> Tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
@@ -654,10 +707,17 @@ def _multilabel_stat_scores_format(
     - Mask all elements that should be ignored with negative numbers for later filtration
 
     """
-    if preds.is_floating_point():
-        if not torch.all((preds >= 0) * (preds <= 1)):
+    if input_format:
+        if input_format == "logits":
             preds = preds.sigmoid()
-        preds = preds > threshold
+        if (
+            preds.is_floating_point()
+            and (input_format == "auto" or input_format is True)
+            and not torch.all((preds >= 0) * (preds <= 1))
+        ):
+            preds = preds.sigmoid()
+        if input_format != "labels":
+            preds = preds > threshold
     preds = preds.reshape(*preds.shape[:2], -1)
     target = target.reshape(*target.shape[:2], -1)
 
@@ -717,6 +777,7 @@ def multilabel_stat_scores(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
 ) -> Tensor:
     r"""Compute the true positives, false positives, true negatives, false negatives and support for multilabel tasks.
 
@@ -753,6 +814,20 @@ def multilabel_stat_scores(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str or bool specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'`` or ``True``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
+            - ``False``: will disable all input formatting. This is the fastest option but also the least safe.
+
 
     Returns:
         The metric returns a tensor of shape ``(..., 5)``, where the last dimension corresponds
@@ -810,9 +885,13 @@ def multilabel_stat_scores(
 
     """
     if validate_args:
-        _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
-        _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
-    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
+        _multilabel_stat_scores_arg_validation(
+            num_labels, threshold, average, multidim_average, ignore_index, input_format
+        )
+        _multilabel_stat_scores_tensor_validation(
+            preds, target, num_labels, multidim_average, ignore_index, input_format
+        )
+    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index, input_format)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
     return _multilabel_stat_scores_compute(tp, fp, tn, fn, average, multidim_average)
 
