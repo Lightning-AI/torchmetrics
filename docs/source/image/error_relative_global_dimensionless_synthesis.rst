@@ -13,7 +13,6 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.image.ErrorRelativeGlobalDimensionlessSynthesis
-    :noindex:
     :exclude-members: update, compute
 
 
@@ -21,4 +20,3 @@ Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.image.error_relative_global_dimensionless_synthesis
-    :noindex:

@@ -13,7 +13,6 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.CohenKappa
-    :noindex:
     :exclude-members: update, compute
     :special-members: __new__
 
@@ -21,14 +20,12 @@ BinaryCohenKappa
 ^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinaryCohenKappa
-    :noindex:
     :exclude-members: update, compute
 
 MulticlassCohenKappa
 ^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassCohenKappa
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
@@ -38,16 +35,13 @@ cohen_kappa
 ^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.cohen_kappa
-    :noindex:
 
 binary_cohen_kappa
 ^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.classification.binary_cohen_kappa
-    :noindex:
 
 multiclass_cohen_kappa
 ^^^^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.classification.multiclass_cohen_kappa
-    :noindex:

@@ -593,8 +593,10 @@ class PrecisionRecallCurve(_ClassificationTaskWrapper):
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :mod:`BinaryPrecisionRecallCurve`, :mod:`MulticlassPrecisionRecallCurve` and
-    :mod:`MultilabelPrecisionRecallCurve` for the specific details of each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryPrecisionRecallCurve`,
+    :class:`~torchmetrics.classification.MulticlassPrecisionRecallCurve` and
+    :class:`~torchmetrics.classification.MultilabelPrecisionRecallCurve` for the specific details of each argument
+    influence and examples.
 
     Legacy Example:
         >>> pred = torch.tensor([0, 0.1, 0.8, 0.4])

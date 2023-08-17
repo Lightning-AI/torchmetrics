@@ -349,7 +349,8 @@ def calibration_error(
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
-    :func:`binary_calibration_error` and :func:`multiclass_calibration_error` for the specific details of
+    :func:`~torchmetrics.functional.classification.binary_calibration_error` and
+    :func:`~torchmetrics.functional.classification.multiclass_calibration_error` for the specific details of
     each argument influence and examples.
 
     """

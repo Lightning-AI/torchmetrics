@@ -13,11 +13,9 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.image.PeakSignalNoiseRatioWithBlockedEffect
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.image.peak_signal_noise_ratio_with_blocked_effect
-    :noindex:

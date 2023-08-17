@@ -83,32 +83,33 @@ class MeanAveragePrecision(Metric):
     - ``preds`` (:class:`~List`): A list consisting of dictionaries each containing the key-values
       (each dictionary corresponds to a single image). Parameters that should be provided per dict
 
-        - boxes: (:class:`~torch.FloatTensor`) of shape ``(num_boxes, 4)`` containing ``num_boxes`` detection
-          boxes of the format specified in the constructor.
+        - ``boxes`` (:class:`~torch.Tensor`): float tensor of shape ``(num_boxes, 4)`` containing ``num_boxes``
+          detection boxes of the format specified in the constructor.
           By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates, but can be changed
           using the ``box_format`` parameter. Only required when `iou_type="bbox"`.
-        - scores: :class:`~torch.FloatTensor` of shape ``(num_boxes)`` containing detection scores for the boxes.
-        - labels: :class:`~torch.IntTensor` of shape ``(num_boxes)`` containing 0-indexed detection classes for
-          the boxes.
-        - masks: :class:`~torch.bool` of shape ``(num_boxes, image_height, image_width)`` containing boolean masks.
-          Only required when `iou_type="segm"`.
+        - ``scores`` (:class:`~torch.Tensor`): float tensor of shape ``(num_boxes)`` containing detection scores for the
+          boxes.
+        - ``labels`` (:class:`~torch.Tensor`): integer tensor of shape ``(num_boxes)`` containing 0-indexed detection
+          classes for the boxes.
+        - ``masks`` (:class:`~torch.Tensor`): boolean tensor of shape ``(num_boxes, image_height, image_width)``
+          containing boolean masks. Only required when `iou_type="segm"`.
 
-    - ``target`` (:class:`~List`) A list consisting of dictionaries each containing the key-values
+    - ``target`` (:class:`~List`): A list consisting of dictionaries each containing the key-values
       (each dictionary corresponds to a single image). Parameters that should be provided per dict:
 
-        - boxes: :class:`~torch.FloatTensor` of shape ``(num_boxes, 4)`` containing ``num_boxes`` ground truth
-          boxes of the format specified in the constructor. only required when `iou_type="bbox"`.
+        - ``boxes`` (:class:`~torch.Tensor`): float tensor of shape ``(num_boxes, 4)`` containing ``num_boxes`` ground
+          truth boxes of the format specified in the constructor. only required when `iou_type="bbox"`.
           By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates.
-        - labels: :class:`~torch.IntTensor` of shape ``(num_boxes)`` containing 0-indexed ground truth
+        - ``labels`` (:class:`~torch.Tensor`): integer tensor of shape ``(num_boxes)`` containing 0-indexed ground truth
           classes for the boxes.
-        - masks: :class:`~torch.bool` of shape ``(num_boxes, image_height, image_width)`` containing boolean masks.
-          Only required when `iou_type="segm"`.
-        - iscrowd: :class:`~torch.IntTensor` of shape ``(num_boxes)`` containing 0/1 values indicating whether
-          the bounding box/masks indicate a crowd of objects. Value is optional, and if not provided it will
+        - ``masks`` (:class:`~torch.Tensor`): boolean tensor of shape ``(num_boxes, image_height, image_width)``
+          containing boolean masks. Only required when `iou_type="segm"`.
+        - ``iscrowd`` (:class:`~torch.Tensor`): integer tensor of shape ``(num_boxes)`` containing 0/1 values indicating
+          whether the bounding box/masks indicate a crowd of objects. Value is optional, and if not provided it will
           automatically be set to 0.
-        - area: :class:`~torch.FloatTensor` of shape ``(num_boxes)`` containing the area of the object. Value if
-          optional, and if not provided will be automatically calculated based on the bounding box/masks provided.
-          Only affects which samples contribute to the `map_small`, `map_medium`, `map_large` values
+        - ``area`` (:class:`~torch.Tensor`): float tensor of shape ``(num_boxes)`` containing the area of the object.
+          Value is optional, and if not provided will be automatically calculated based on the bounding box/masks
+          provided. Only affects which samples contribute to the `map_small`, `map_medium`, `map_large` values
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
@@ -549,8 +550,8 @@ class MeanAveragePrecision(Metric):
             iou_type: Type of input, either `bbox` for bounding boxes or `segm` for segmentation masks
 
         Returns:
-            preds: List of dictionaries containing the predictions in the input format of this metric
-            target: List of dictionaries containing the targets in the input format of this metric
+            A tuple containing the predictions and targets in the input format of this metric. Each element of the
+            tuple is a list of dictionaries containing the boxes, labels and scores.
 
         Example:
             >>> # File formats are defined at https://cocodataset.org/#format-data

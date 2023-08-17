@@ -430,7 +430,9 @@ def average_precision(
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_average_precision`, :func:`multiclass_average_precision` and :func:`multilabel_average_precision`
+    :func:`~torchmetrics.functional.classification.binary_average_precision`,
+    :func:`~torchmetrics.functional.classification.multiclass_average_precision` and
+    :func:`~torchmetrics.functional.classification.multilabel_average_precision`
     for the specific details of each argument influence and examples.
 
     Legacy Example:

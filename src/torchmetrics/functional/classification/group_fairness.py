@@ -335,8 +335,10 @@ def binary_fairness(
     r"""Compute either `Demographic parity`_ and `Equal opportunity`_ ratio for binary classification problems.
 
     This is done by setting the ``task`` argument to either ``'demographic_parity'``, ``'equal_opportunity'``
-    or ``all``. See the documentation of :func:`_compute_binary_demographic_parity`
-    and :func:`_compute_binary_equal_opportunity` for the specific details of each argument influence and examples.
+    or ``all``. See the documentation of
+    :func:`~torchmetrics.functional.classification.demographic_parity`
+    and :func:`~torchmetrics.functional.classification.equal_opportunity` for the specific details of
+    each argument influence and examples.
 
     Args:
         preds: Tensor with predictions.

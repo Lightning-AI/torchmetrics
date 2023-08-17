@@ -13,7 +13,6 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.image.SpectralDistortionIndex
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
