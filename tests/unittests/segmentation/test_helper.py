@@ -79,6 +79,12 @@ def test_generate_binary_structure(rank, connectivity):
                 [0, 0, 0, 1, 0, 0, 0],
             ]
         ),
+        torch.tensor([[0, 0, 1, 1, 1], [1, 1, 1, 1, 0], [0, 0, 1, 0, 1], [0, 1, 1, 1, 0], [0, 1, 1, 1, 1]]),
+        torch.randint(2, (5, 5)),
+        torch.randint(2, (20, 20)),
+        torch.ones(5, 5, 5),
+        torch.randint(2, (5, 5, 5)),
+        torch.randint(2, (20, 20, 20)),
     ],
 )
 @pytest.mark.parametrize("border_value", [0, 1])
@@ -98,7 +104,7 @@ def test_binary_erosion(case, border_value):
     ("arguments", "error", "match"),
     [
         (([0, 1, 2, 3],), TypeError, "Expected argument `image` to be of type Tensor.*"),
-        ((torch.ones(3, 3),), ValueError, "Expected argument `image` to be of rank 4 but.*"),
+        ((torch.ones(3, 3),), ValueError, "Expected argument `image` to be of rank 4 or 5 but.*"),
         ((torch.randint(3, (1, 1, 5, 5)),), ValueError, "Input x should be binarized"),
     ],
 )
@@ -208,24 +214,19 @@ def test_surface_distance(cases, distance_metric, spacing):
 @pytest.mark.parametrize(
     "cases",
     [
-        (
-            torch.tensor(
-                [[1, 1, 1, 1, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 1, 1, 1, 1]], dtype=torch.bool
-            ),
-            torch.tensor(
-                [[1, 1, 1, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 1, 1, 1, 0]], dtype=torch.bool
-            ),
-        ),
         (torch.randint(0, 2, (5, 5), dtype=torch.bool), torch.randint(0, 2, (5, 5), dtype=torch.bool)),
-        (torch.randint(0, 2, (50, 50), dtype=torch.bool), torch.randint(0, 2, (50, 50), dtype=torch.bool)),
+        (torch.randint(0, 2, (5, 5, 5), dtype=torch.bool), torch.randint(0, 2, (5, 5, 5), dtype=torch.bool)),
     ],
 )
-@pytest.mark.parametrize("spacing", [1, 2])
-@pytest.mark.parametrize("rank", [2, 3])
-def test_mask_edges(cases, spacing, rank):
+@pytest.mark.parametrize("spacing", [None, 1, 2])
+@pytest.mark.parametrize("crop", [False, True])
+def test_mask_edges(cases, spacing, crop):
     """Test the mask edges function."""
     preds, target = cases
-    spacing = rank * [spacing]
+    if spacing is not None:
+        spacing = preds.ndim * [spacing]
     res = mask_edges(preds, target, spacing=spacing)
-    reference_res = monai_get_mask_edges(preds.numpy(), target.numpy(), spacing=spacing)
-    assert torch.allclose(res, torch.from_numpy(reference_res).float())
+    reference_res = monai_get_mask_edges(preds, target, spacing=spacing, crop=crop)
+
+    for r1, r2 in zip(res, reference_res):
+        assert torch.allclose(r1.float(), torch.from_numpy(r2).float())

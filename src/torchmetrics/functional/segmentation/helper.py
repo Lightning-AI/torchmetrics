@@ -29,6 +29,30 @@ def check_if_binarized(x: Tensor) -> bool:
         raise ValueError("Input x should be binarized")
 
 
+def _unfold(x: Tensor, kernel_size: Tuple[int, ...]) -> Tensor:
+    """Unfold the input tensor to a matrix. Function supports 3d images e.g. (B, C, D, H, W).
+
+    Inspired by:
+    https://github.com/f-dangel/unfoldNd/blob/main/unfoldNd/unfold.py
+
+    Args:
+        x: Input tensor to be unfolded.
+        kernel_size: The size of the sliding blocks in each dimension.
+
+    """
+    batch_size, channels = x.shape[:2]
+    n = x.ndim - 2
+    if n == 2:
+        return unfold(x, kernel_size)
+
+    kernel_size_numel = kernel_size[0] * kernel_size[1] * kernel_size[2]
+    repeat = [channels, 1] + [1 for _ in kernel_size]
+    weight = torch.eye(kernel_size_numel, device=x.device, dtype=x.dtype)
+    weight = weight.reshape(kernel_size_numel, 1, *kernel_size).repeat(*repeat)
+    unfold_x = conv3d(x, weight=weight, bias=None)
+    return unfold_x.reshape(batch_size, channels * kernel_size_numel, -1)
+
+
 def generate_binary_structure(rank: int, connectivity: int) -> Tensor:
     """Translated version of the function from scipy.ndimage.morphology.
 
@@ -73,7 +97,7 @@ def generate_binary_structure(rank: int, connectivity: int) -> Tensor:
 
 
 def binary_erosion(
-    image: Tensor, structure: Optional[Tensor] = None, origin: Tuple[int, int] = (1, 1), border_value: int = 0
+    image: Tensor, structure: Optional[Tensor] = None, origin: Optional[Tuple[int, ...]] = None, border_value: int = 0
 ) -> Tensor:
     """Binary erosion of a tensor image.
 
@@ -110,8 +134,8 @@ def binary_erosion(
     """
     if not isinstance(image, Tensor):
         raise TypeError(f"Expected argument `image` to be of type Tensor but found {type(image)}")
-    if image.ndim != 4:
-        raise ValueError(f"Expected argument `image` to be of rank 4 but found rank {image.ndim}")
+    if image.ndim not in [4, 5]:
+        raise ValueError(f"Expected argument `image` to be of rank 4 or 5 but found rank {image.ndim}")
     check_if_binarized(image)
 
     # construct the structuring element if not provided
@@ -119,15 +143,18 @@ def binary_erosion(
         structure = generate_binary_structure(image.ndim - 2, 1).int()
     check_if_binarized(structure)
 
+    if origin is None:
+        origin = structure.ndim * (1,)
+
     # first pad the image to have correct unfolding; here is where the origins is used
     image_pad = pad(
         image,
-        [origin[0], structure.shape[0] - origin[0] - 1, origin[1], structure.shape[1] - origin[1] - 1],
+        [x for i in range(len(origin)) for x in [origin[i], structure.shape[i] - origin[i] - 1]],
         mode="constant",
         value=border_value,
     )
     # Unfold the image to be able to perform operation on neighborhoods
-    image_unfold = unfold(image_pad.float(), kernel_size=structure.shape)
+    image_unfold = _unfold(image_pad.float(), kernel_size=structure.shape)
 
     strel_flatten = torch.flatten(structure).unsqueeze(0).unsqueeze(-1)
     sums = image_unfold - strel_flatten.int()
@@ -252,20 +279,22 @@ def mask_edges(
         spacing: The pixel spacing of the input images. If provided, the edges are calculated using the euclidean
 
     """
-    # make sure input have the same shape
     _check_same_shape(preds, target)
+    if preds.ndim not in [2, 3]:
+        raise ValueError(f"Expected argument `preds` to be of rank 2 or 3 but got rank `{preds.ndim}`.")
+    check_if_binarized(preds)
+    check_if_binarized(target)
 
-    if crop:
-        or_val = preds | target
-        if not or_val.any():
-            preds, target = torch.zeros_like(preds), torch.zeros_like(target)
-            return (preds, target) if spacing is None else (preds, target, preds, target)
+    # if crop:
+    #     or_val = preds | target
+    #     if not or_val.any():
+    #         return torch.zeros_like(x)
 
     if spacing is None:
         # no spacing, use binary erosion
-        edges_preds = binary_erosion(preds) ^ preds
-        edges_target = binary_erosion(target) ^ target
-        return edges_preds, edges_target
+        be_pred = binary_erosion(preds.unsqueeze(0).unsqueeze(0)).squeeze() ^ preds
+        be_target = binary_erosion(target.unsqueeze(0).unsqueeze(0)).squeeze() ^ target
+        return be_pred, be_target
 
     # use neighborhood to get edges
     table, kernel = get_neighbour_tables(spacing, device=preds.device)
@@ -279,7 +308,7 @@ def mask_edges(
     edges_preds = (code_preds != 0) & (code_preds != all_ones)
     edges_target = (code_target != 0) & (code_target != all_ones)
 
-    # areas of edges
+    # # areas of edges
     areas_preds = torch.index_select(table, 0, code_preds.view(-1).int()).view_as(code_preds)
     areas_target = torch.index_select(table, 0, code_target.view(-1).int()).view_as(code_target)
     return edges_preds[0], edges_target[0], areas_preds[0], areas_target[0]
