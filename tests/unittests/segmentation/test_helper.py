@@ -14,16 +14,19 @@
 import pytest
 import torch
 from monai.metrics.utils import get_code_to_measure_table
-from scipy.ndimage.morphology import binary_erosion as scibinary_erosion
-from scipy.ndimage.morphology import distance_transform_cdt as scidistance_transform_cdt
-from scipy.ndimage.morphology import distance_transform_edt as scidistance_transform_edt
-from scipy.ndimage.morphology import generate_binary_structure as scigenerate_binary_structure
-
+from monai.metrics.utils import get_mask_edges as monai_get_mask_edges
+from monai.metrics.utils import get_surface_distance as monai_get_surface_distance
+from scipy.ndimage import binary_erosion as scibinary_erosion
+from scipy.ndimage import distance_transform_cdt as scidistance_transform_cdt
+from scipy.ndimage import distance_transform_edt as scidistance_transform_edt
+from scipy.ndimage import generate_binary_structure as scigenerate_binary_structure
 from torchmetrics.functional.segmentation.helper import (
     binary_erosion,
     distance_transform,
     generate_binary_structure,
-    get_table,
+    get_neighbour_tables,
+    mask_edges,
+    surface_distance,
 )
 
 
@@ -162,11 +165,67 @@ def test_distance_transform(case, metric):
 
 @pytest.mark.parametrize("dim", [2, 3])
 @pytest.mark.parametrize("spacing", [1, 2])
-def test_table_for_surface_score(dim, spacing):
+def test_neighbour_table(dim, spacing):
     """Test the table for surface score function."""
     spacing = dim * (spacing,)
     ref_table, ref_kernel = get_code_to_measure_table(spacing)
-    table, kernel = get_table(spacing)
+    table, kernel = get_neighbour_tables(spacing)
 
     assert torch.allclose(ref_table.float(), table)
     assert torch.allclose(ref_kernel, kernel)
+
+
+@pytest.mark.parametrize(
+    "cases",
+    [
+        (
+            torch.tensor(
+                [[1, 1, 1, 1, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 1, 1, 1, 1]], dtype=torch.bool
+            ),
+            torch.tensor(
+                [[1, 1, 1, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 1, 1, 1, 0]], dtype=torch.bool
+            ),
+        ),
+        (torch.randint(0, 2, (5, 5), dtype=torch.bool), torch.randint(0, 2, (5, 5), dtype=torch.bool)),
+        (torch.randint(0, 2, (50, 50), dtype=torch.bool), torch.randint(0, 2, (50, 50), dtype=torch.bool)),
+    ],
+)
+@pytest.mark.parametrize("distance_metric", ["euclidean", "chessboard", "taxicab"])
+@pytest.mark.parametrize("spacing", [1, 2])
+def test_surface_distance(cases, distance_metric, spacing):
+    """Test the surface distance function."""
+    if spacing != 1 and distance_metric != "euclidean":
+        pytest.skip("Only euclidean distance is supported for spacing != 1 in reference")
+    preds, target = cases
+    spacing = 2 * [spacing]
+    res = surface_distance(preds, target, distance_metric=distance_metric, spacing=spacing)
+    reference_res = monai_get_surface_distance(
+        preds.numpy(), target.numpy(), distance_metric=distance_metric, spacing=spacing
+    )
+    assert torch.allclose(res, torch.from_numpy(reference_res).float())
+
+
+@pytest.mark.parametrize(
+    "cases",
+    [
+        (
+            torch.tensor(
+                [[1, 1, 1, 1, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 1, 1, 1, 1]], dtype=torch.bool
+            ),
+            torch.tensor(
+                [[1, 1, 1, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 1, 1, 1, 0]], dtype=torch.bool
+            ),
+        ),
+        (torch.randint(0, 2, (5, 5), dtype=torch.bool), torch.randint(0, 2, (5, 5), dtype=torch.bool)),
+        (torch.randint(0, 2, (50, 50), dtype=torch.bool), torch.randint(0, 2, (50, 50), dtype=torch.bool)),
+    ],
+)
+@pytest.mark.parametrize("spacing", [1, 2])
+@pytest.mark.parametrize("rank", [2, 3])
+def test_mask_edges(cases, spacing, rank):
+    """Test the mask edges function."""
+    preds, target = cases
+    spacing = rank * [spacing]
+    res = mask_edges(preds, target, spacing=spacing)
+    reference_res = monai_get_mask_edges(preds.numpy(), target.numpy(), spacing=spacing)
+    assert torch.allclose(res, torch.from_numpy(reference_res).float())

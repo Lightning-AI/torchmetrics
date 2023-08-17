@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -141,7 +141,7 @@ def binary_erosion(
 
 def distance_transform(
     x: Tensor,
-    sampling: Optional[List[float]] = None,
+    sampling: Optional[Union[Tensor, List[float]]] = None,
     metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
     engine: Literal["pytorch", "scipy"] = "pytorch",
 ) -> Tensor:
@@ -197,6 +197,9 @@ def distance_transform(
 
     if sampling is None:
         sampling = [1, 1]
+    else:
+        if len(sampling) != 2:
+            raise ValueError(f"Expected argument `sampling` to have length 2 but got length `{len(sampling)}`.")
 
     if engine == "pytorch":
         x = x.float()
@@ -232,19 +235,24 @@ def distance_transform(
     return ndimage.distance_transform_cdt(x.cpu().numpy(), sampling, metric=metric)
 
 
-def get_code_to_measure_table(spacing: List[int], device: Optional[torch.device] = None) -> Tensor:
-    """Create a table that maps neighbour codes to the measure of the contour length or surface area."""
-    len(spacing)
-
-
-def get_mask_edges(
+def mask_edges(
     preds: Tensor,
     target: Tensor,
     label_idx: int = 1,
     crop: bool = True,
     spacing: List[int] | None = None,
 ) -> Tuple[Tensor, Tensor]:
-    """Get the edges of the masks in the input tensors."""
+    """Get the edges of binary segmentation masks.
+
+    Args:
+        preds: The predicted binary segmentation mask
+        target: The ground truth binary segmentation mask
+        label_idx: The label index to use for the edges. By default, the edges of the foreground are returned.
+        crop: Whether to crop the edges to the region of interest. If ``True``, the edges are cropped to the bounding
+        spacing: The pixel spacing of the input images. If provided, the edges are calculated using the euclidean
+
+    """
+    # make sure input have the same shape
     _check_same_shape(preds, target)
 
     if crop:
@@ -252,53 +260,82 @@ def get_mask_edges(
         if not or_val.any():
             preds, target = torch.zeros_like(preds), torch.zeros_like(target)
             return (preds, target) if spacing is None else (preds, target, preds, target)
-        [preds.unsqueeze(0), target.unsqueeze(0), or_val.unsqueeze(0)]
-        if spacing is None:
-            ...
 
     if spacing is None:
+        # no spacing, use binary erosion
         edges_preds = binary_erosion(preds) ^ preds
         edges_target = binary_erosion(target) ^ target
         return edges_preds, edges_target
 
-    code_to_area_table, k = get_code_to_measure_table(spacing, device=preds.device)
+    # use neighborhood to get edges
+    table, kernel = get_neighbour_tables(spacing, device=preds.device)
     spatial_dims = len(spacing)
     conv_operator = conv2d if spatial_dims == 2 else conv3d
     volume = torch.stack([preds.unsqueeze(0), target.unsqueeze(0)], dim=0).float()
-    code_preds, code_target = conv_operator(volume, k.to(volume))
+    code_preds, code_target = conv_operator(volume, kernel.to(volume))
 
     # edges
-    all_ones = len(code_to_area_table) - 1
+    all_ones = len(table) - 1
     edges_preds = (code_preds != 0) & (code_preds != all_ones)
     edges_target = (code_target != 0) & (code_target != all_ones)
 
     # areas of edges
-    areas_preds = torch.index_select(code_to_area_table, 0, code_preds.view(-1).int()).view_as(code_preds)
-    areas_target = torch.index_select(code_to_area_table, 0, code_target.view(-1).int()).view_as(code_target)
+    areas_preds = torch.index_select(table, 0, code_preds.view(-1).int()).view_as(code_preds)
+    areas_target = torch.index_select(table, 0, code_target.view(-1).int()).view_as(code_target)
     return edges_preds[0], edges_target[0], areas_preds[0], areas_target[0]
 
 
-def get_surface_distance(
+def surface_distance(
     preds: Tensor,
     target: Tensor,
     distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
-    spacing: Optional[Tensor] = None,
+    spacing: Optional[Union[Tensor, List[float]]] = None,
 ) -> Tensor:
-    """Calculate the surface distance between two binary volumes."""
+    """Calculate the surface distance between two binary edge masks.
+
+    May return infinity if the predicted mask is empty and the target mask is not, or vice versa.
+
+    Args:
+        preds: The predicted binary edge mask.
+        target: The target binary edge mask.
+        distance_metric: The distance metric to use. One of `["euclidean", "chessboard", "taxicab"]`.
+        spacing: The spacing between pixels along each spatial dimension.
+
+    Returns:
+        A tensor with length equal to the number of edges in predictions e.g. `preds.sum()`. Each element is the
+        distance from the corresponding edge in `preds` to the closest edge in `target`.
+
+    Example::
+        >>> import torch
+        >>> from torchmetrics.functional.segmentation.helper import surface_distance
+        >>> preds = torch.tensor([[1, 1, 1, 1, 1],
+        ...                       [1, 0, 0, 0, 1],
+        ...                       [1, 0, 0, 0, 1],
+        ...                       [1, 0, 0, 0, 1],
+        ...                       [1, 1, 1, 1, 1]], dtype=torch.bool)
+        >>> target = torch.tensor([[1, 1, 1, 1, 0],
+        ...                        [1, 0, 0, 1, 0],
+        ...                        [1, 0, 0, 1, 0],
+        ...                        [1, 0, 0, 1, 0],
+        ...                        [1, 1, 1, 1, 0]], dtype=torch.bool)
+        >>> surface_distance(preds, target, distance_metric="euclidean", spacing=[1, 1])
+        tensor([0., 0., 0., 0., 1., 0., 1., 0., 1., 0., 1., 0., 0., 0., 0., 1.])
+
+    """
+    if not (preds.dtype == torch.bool and target.dtype == torch.bool):
+        raise ValueError(f"Expected both inputs to be of type `torch.bool`, but got {preds.dtype} and {target.dtype}.")
+
     if not torch.any(target):
         dis = torch.inf * torch.ones_like(target)
     else:
         if not torch.any(preds):
             dis = torch.inf * torch.ones_like(preds)
             return dis[target]
-        if distance_metric == "euclidean":
-            dis = torch.cdist(preds, target, p=2)
-        elif distance_metric == "chessboard":
-            dis = torch.cdist(preds, target, p=float("inf"))
+        dis = distance_transform(~target, sampling=spacing, metric=distance_metric)
     return dis[preds]
 
 
-def get_table(spacing: Tuple[int, ...], device: Optional[torch.device] = None) -> Tuple[Tensor, Tensor]:
+def get_neighbour_tables(spacing: Tuple[int, ...], device: Optional[torch.device] = None) -> Tuple[Tensor, Tensor]:
     """Create a table that maps neighbour codes to the contour length or surface area of the corresponding contour.
 
     Args:
@@ -308,7 +345,9 @@ def get_table(spacing: Tuple[int, ...], device: Optional[torch.device] = None) -
     """
     if len(spacing) == 2:
         return table_contour_length(spacing, device)
-    return table_surface_area(spacing, device)
+    if len(spacing) == 3:
+        return table_surface_area(spacing, device)
+    raise ValueError("The spacing must be a tuple of length 2 or 3.")
 
 
 def table_contour_length(spacing: Tuple[int, int], device: Optional[torch.device] = None) -> Tuple[Tensor, Tensor]:
