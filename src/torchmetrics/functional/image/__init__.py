@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.image.clip_iqa import clip_image_quality_assessment
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
 from torchmetrics.functional.image.gradients import image_gradients
@@ -31,7 +30,6 @@ from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.functional.image.vif import visual_information_fidelity
 
 __all__ = [
-    "clip_image_quality_assessment",
     "spectral_distortion_index",
     "error_relative_global_dimensionless_synthesis",
     "image_gradients",

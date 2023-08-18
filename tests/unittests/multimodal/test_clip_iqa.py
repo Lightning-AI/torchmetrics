@@ -21,8 +21,8 @@ import pytest
 import torch
 from PIL import Image
 from torch import Tensor
-from torchmetrics.functional.image.clip_iqa import clip_image_quality_assessment
-from torchmetrics.image.clip_iqa import CLIPImageQualityAssessment
+from torchmetrics.functional.multimodal.clip_iqa import clip_image_quality_assessment
+from torchmetrics.multimodal.clip_iqa import CLIPImageQualityAssessment
 from torchmetrics.utilities.imports import _PIQ_GREATER_EQUAL_0_8, _TRANSFORMERS_GREATER_EQUAL_4_10
 from torchvision.transforms import PILToTensor
 

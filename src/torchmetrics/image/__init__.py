@@ -26,7 +26,6 @@ from torchmetrics.image.vif import VisualInformationFidelity
 from torchmetrics.utilities.imports import (
     _TORCH_FIDELITY_AVAILABLE,
     _TORCHVISION_AVAILABLE,
-    _TRANSFORMERS_GREATER_EQUAL_4_10,
 )
 
 __all__ = [
@@ -61,8 +60,3 @@ if _TORCHVISION_AVAILABLE:
     from torchmetrics.image.perceptual_path_length import PerceptualPathLength
 
     __all__ += ["LearnedPerceptualImagePatchSimilarity", "PerceptualPathLength"]
-
-if _TRANSFORMERS_GREATER_EQUAL_4_10:
-    from torchmetrics.image.clip_iqa import CLIPImageQualityAssessment  # noqa: F401
-
-    __all__.append("CLIPImageQualityAssessment")

@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Literal, Optional, Sequence, Tuple, Union
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.image.clip_iqa import (
+from torchmetrics.functional.multimodal.clip_iqa import (
     _clip_iqa_compute,
     _clip_iqa_format_prompts,
     _clip_iqa_get_anchor_vectors,
