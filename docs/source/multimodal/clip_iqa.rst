@@ -12,7 +12,7 @@ CLIP Image Quality Assessment (CLIP-IQA)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.image.CLIPImageQualityAssessment
+.. autoclass:: torchmetrics.multimodal.CLIPImageQualityAssessment
     :noindex:
     :exclude-members: update, compute
 
@@ -20,5 +20,5 @@ ________________
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.image.clip_image_quality_assessment
+.. autofunction:: torchmetrics.functional.multimodal.clip_image_quality_assessment
     :noindex:
