@@ -16,7 +16,10 @@ from functools import partial
 
 import pytest
 import torch
+import numpy as np
+
 from scipy.stats import pearsonr
+from torch import Tensor
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.regression.pearson import PearsonCorrCoef, _final_aggregation
 
@@ -27,6 +30,7 @@ from unittests.helpers.testers import MetricTester
 seed_all(42)
 
 Input = namedtuple("Input", ["preds", "target"])
+
 
 _single_target_inputs1 = Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
@@ -51,9 +55,9 @@ _multi_target_inputs2 = Input(
 
 
 def _ref_metric(preds, target, weights=None):
-    if weights is not None:
-        return _weighted_pearson(preds, target, weights)
-    return _scipy_pearson(preds, target)
+    if weights is None:
+        return _scipy_pearson(preds, target)
+    return _weighted_pearson(preds, target, weights)
 
 
 def _scipy_pearson(preds, target):
@@ -63,19 +67,19 @@ def _scipy_pearson(preds, target):
 
 
 def _weighted_pearson(preds, target, weights):
-    if preds.ndim == 2:
-        return [pearsonr(t.numpy(), p.numpy())[0] for t, p in zip(target.T, preds.T)]
+    preds = preds.numpy() if isinstance(preds, Tensor) else preds
+    target = target.numpy() if isinstance(target, Tensor) else target
+    weights = weights.numpy() if isinstance(weights, Tensor) else weights
 
-    weights = weights.numpy()
-    preds = preds.numpy()
-    target = target.numpy()
+    if preds.ndim == 2:
+        return [_weighted_pearson(p, t, weights) for p, t in zip(preds.T, target.T)]
 
     mx = (weights * preds).sum() / weights.sum()
     my = (weights * target).sum() / weights.sum()
-    var_x = (weights * (preds - mx) ** 2).sum() / weights.sum()
-    var_y = (weights * (target - my) ** 2).sum() / weights.sum()
-    cov_xy = (weights * (preds - mx) * (target - my)).sum() / weights.sum()
-    return (cov_xy / (var_x * var_y).sqrt()).squeeze()
+    var_x = (weights * (preds - mx) ** 2).sum()
+    var_y = (weights * (target - my) ** 2).sum()
+    cov_xy = (weights * (preds - mx) * (target - my)).sum()
+    return cov_xy / np.sqrt(var_x * var_y)
 
 
 @pytest.mark.parametrize(

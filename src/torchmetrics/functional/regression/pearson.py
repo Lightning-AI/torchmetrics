@@ -58,46 +58,53 @@ def _pearson_corrcoef_update(
     if weights is not None:
         _check_data_shape_to_weights(preds, weights)
 
-    n_obs = preds.shape[0]
-    cond = n_prior.mean() > 0 or n_obs == 1
+    # Calculate means
+    if weights is None:
+        n_obs = preds.shape[0]
+    else:
+        n_obs = weights.sum() n_obs == 1
+    cond = n_prior.mean() > 0 or
+
 
     if cond:
         if weights is None:
             mx_new = (n_prior * mean_x + preds.sum(0)) / (n_prior + n_obs)
             my_new = (n_prior * mean_y + target.sum(0)) / (n_prior + n_obs)
         else:
-            mx_new = (n_prior * mean_x + torch.matmul(preds, weights) / preds.sum(0)) / (n_prior + n_obs)
-            my_new = (n_prior * mean_y + torch.matmul(target, weights) / target.sum(0)) / (n_prior + n_obs)
+            mx_new = (n_prior * mean_x + torch.matmul(weights, preds)) / (n_prior + n_obs)
+            my_new = (n_prior * mean_y + torch.matmul(weights, target)) / (n_prior + n_obs)
     else:
         if weights is None:
             mx_new = preds.mean(0)
             my_new = target.mean(0)
         else:
-            mx_new = torch.matmul(preds, weights) / preds.sum(0)
-            my_new = torch.matmul(target, weights) / target.sum(0)
+            mx_new = torch.matmul(weights, preds) / weights.sum()
+            my_new = torch.matmul(weights, target) / weights.sum()
 
     n_prior += n_obs
+
+    # Calculate variances
     if cond:
         if weights is None:
             var_x += ((preds - mx_new) * (preds - mean_x)).sum(0)
             var_y += ((target - my_new) * (target - mean_y)).sum(0)
         else:
-            var_x += (weights * (preds - mx_new) * (preds - mean_x)).sum(0)
-            var_y += (weights * (target - my_new) * (target - mean_y)).sum(0)
+            var_x += torch.matmul(weights, (preds - mx_new) * (preds - mean_x))
+            var_y += torch.matmul(weights, (preds - my_new) * (preds - mean_y))
     else:
         if weights is None:
             var_x += preds.var(0) * (n_obs - 1)
             var_y += target.var(0) * (n_obs - 1)
         else:
-            # todo
-            var_x += preds.var(0) * (n_obs - 1)
-            var_y += target.var(0) * (n_obs - 1)
+            var_x += torch.matmul(weights, (preds - mx_new) ** 2)
+            var_y += torch.matmul(weights, (target - my_new) ** 2)
 
-    corr_xy += ((preds - mx_new) * (target - mean_y)).sum(0)
-    mean_x = mx_new
-    mean_y = my_new
+    if weights is None:
+        corr_xy += ((preds - mx_new) * (target - my_new)).sum(0)
+    else:
+        corr_xy += torch.matmul(weights, (preds - mx_new) * (target - my_new))
 
-    return mean_x, mean_y, var_x, var_y, corr_xy, n_prior
+    return mx_new, my_new, var_x, var_y, corr_xy, n_prior
 
 
 def _pearson_corrcoef_compute(
