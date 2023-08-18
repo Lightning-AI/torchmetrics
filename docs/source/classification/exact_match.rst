@@ -13,7 +13,6 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.ExactMatch
-    :noindex:
     :exclude-members: update, compute
     :special-members: __new__
 
@@ -21,14 +20,12 @@ MulticlassExactMatch
 ^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassExactMatch
-    :noindex:
     :exclude-members: update, compute
 
 MultilabelExactMatch
 ^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MultilabelExactMatch
-    :noindex:
     :exclude-members: update, compute
 
 
@@ -36,19 +33,16 @@ Functional Interface
 ____________________
 
 exact_match
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^
 
-.. autofunction:: torchmetrics.functional.classification.multilabel_exact_match
-    :noindex:
+.. autofunction:: torchmetrics.functional.classification.exact_match
 
 multiclass_exact_match
 ^^^^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.classification.multiclass_exact_match
-    :noindex:
 
 multilabel_exact_match
 ^^^^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.classification.multilabel_exact_match
-    :noindex:

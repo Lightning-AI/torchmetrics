@@ -395,7 +395,9 @@ def hamming_distance(
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_hamming_distance`, :func:`multiclass_hamming_distance` and :func:`multilabel_hamming_distance` for
+    :func:`~torchmetrics.functional.classification.binary_hamming_distance`,
+    :func:`~torchmetrics.functional.classification.multiclass_hamming_distance` and
+    :func:`~torchmetrics.functional.classification.multilabel_hamming_distance` for
     the specific details of each argument influence and examples.
 
     Legacy Example:

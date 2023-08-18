@@ -13,17 +13,14 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.nominal.TschuprowsT
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.nominal.tschuprows_t
-    :noindex:
 
 tschuprows_t_matrix
 ^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.nominal.tschuprows_t_matrix
-    :noindex:

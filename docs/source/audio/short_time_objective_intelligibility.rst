@@ -13,11 +13,8 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.audio.stoi.ShortTimeObjectiveIntelligibility
-    :noindex:
-    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.audio.stoi.short_time_objective_intelligibility
-    :noindex:

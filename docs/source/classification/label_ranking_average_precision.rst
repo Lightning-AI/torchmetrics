@@ -13,7 +13,6 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.classification.MultilabelRankingAveragePrecision
-    :noindex:
     :exclude-members: update, compute
 
 
@@ -21,4 +20,3 @@ Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.classification.multilabel_ranking_average_precision
-    :noindex:

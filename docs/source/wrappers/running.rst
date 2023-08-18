@@ -13,5 +13,4 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.wrappers.Running
-    :noindex:
     :exclude-members: update, compute

@@ -105,7 +105,7 @@
 .. _Pearson's Contingency Coefficient: https://www.itl.nist.gov/div898/software/dataplot/refman2/auxillar/pearcont.htm
 .. _CLIP score: https://arxiv.org/pdf/2104.08718.pdf
 .. _Huggingface OpenAI: https://huggingface.co/openai
-.. _Theil's U: https://en.wikipedia.org/wiki/Uncertainty_coefficient
+.. _Theils Uncertainty coefficient: https://en.wikipedia.org/wiki/Uncertainty_coefficient
 .. _Perceptual Evaluation of Speech Quality: https://en.wikipedia.org/wiki/Perceptual_Evaluation_of_Speech_Quality
 .. _pesq package: https://github.com/ludlows/python-pesq
 .. _Cees Taal's website: http://www.ceestaal.nl/code/

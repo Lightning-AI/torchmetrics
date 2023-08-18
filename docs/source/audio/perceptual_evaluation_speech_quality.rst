@@ -13,11 +13,9 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.audio.pesq.PerceptualEvaluationSpeechQuality
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.audio.pesq.perceptual_evaluation_speech_quality
-    :noindex:

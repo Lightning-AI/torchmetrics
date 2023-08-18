@@ -450,7 +450,9 @@ def roc(
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_roc`, :func:`multiclass_roc` and :func:`multilabel_roc` for the specific details of each argument
+    :func:`~torchmetrics.functional.classification.binary_roc`,
+    :func:`~torchmetrics.functional.classification.multiclass_roc` and
+    :func:`~torchmetrics.functional.classification.multilabel_roc` for the specific details of each argument
     influence and examples.
 
     Legacy Example:
