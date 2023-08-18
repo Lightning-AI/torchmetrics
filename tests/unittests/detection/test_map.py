@@ -13,9 +13,11 @@
 # limitations under the License.
 import contextlib
 import io
+import json
 from collections import namedtuple
 from copy import deepcopy
 from functools import partial
+from itertools import product
 
 import numpy as np
 import pytest
@@ -54,7 +56,7 @@ _coco_bbox_input = _generate_coco_inputs("bbox")
 _coco_segm_input = _generate_coco_inputs("segm")
 
 
-def _compare_again_coco_fn(preds, target, iou_type, iou_thresholds=None, rec_thresholds=None, class_metrics=True):
+def _compare_against_coco_fn(preds, target, iou_type, iou_thresholds=None, rec_thresholds=None, class_metrics=True):
     """Taken from https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoEvalDemo.ipynb."""
     with contextlib.redirect_stdout(io.StringIO()):
         gt = COCO(_DETECTION_VAL)
@@ -129,7 +131,7 @@ class TestMAPUsingCOCOReference(MetricTester):
             target=target,
             metric_class=MeanAveragePrecision,
             reference_metric=partial(
-                _compare_again_coco_fn,
+                _compare_against_coco_fn,
                 iou_type=iou_type,
                 iou_thresholds=iou_thresholds,
                 rec_thresholds=rec_thresholds,
@@ -158,11 +160,47 @@ class TestMAPUsingCOCOReference(MetricTester):
             preds=preds,
             target=target,
             metric_class=MeanAveragePrecision,
-            reference_metric=partial(_compare_again_coco_fn, iou_type=iou_type, class_metrics=True),
+            reference_metric=partial(_compare_against_coco_fn, iou_type=iou_type, class_metrics=True),
             metric_args={"box_format": "xywh", "iou_type": iou_type, "class_metrics": True},
             check_batch=False,
             atol=1e-1,
         )
+
+
+def test_compare_both_same_time(tmpdir):
+    """Test that the class support evaluating both bbox and segm at the same time."""
+    with open(_DETECTION_BBOX) as f:
+        boxes = json.load(f)
+    with open(_DETECTION_SEGM) as f:
+        segmentations = json.load(f)
+    combined = [{**box, **seg} for box, seg in zip(boxes, segmentations)]
+    with open(f"{tmpdir}/combined.json", "w") as f:
+        json.dump(combined, f)
+    batched_preds, batched_target = MeanAveragePrecision.coco_to_tm(
+        f"{tmpdir}/combined.json", _DETECTION_VAL, iou_type=["bbox", "segm"]
+    )
+    batched_preds = [batched_preds[10 * i : 10 * (i + 1)] for i in range(10)]
+    batched_target = [batched_target[10 * i : 10 * (i + 1)] for i in range(10)]
+
+    metric = MeanAveragePrecision(iou_type=["bbox", "segm"], box_format="xywh")
+    for bp, bt in zip(batched_preds, batched_target):
+        metric.update(bp, bt)
+    res = metric.compute()
+
+    res1 = _compare_against_coco_fn([], [], iou_type="bbox", class_metrics=False)
+    res2 = _compare_against_coco_fn([], [], iou_type="segm", class_metrics=False)
+
+    for k, v in res1.items():
+        if k == "classes":
+            continue
+        assert f"bbox_{k}" in res
+        assert torch.allclose(res[f"bbox_{k}"], v, atol=1e-2)
+
+    for k, v in res2.items():
+        if k == "classes":
+            continue
+        assert f"segm_{k}" in res
+        assert torch.allclose(res[f"segm_{k}"], v, atol=1e-2)
 
 
 Input = namedtuple("Input", ["preds", "target"])
@@ -685,11 +723,11 @@ def test_for_box_format(box_format, iou_val_expected, map_val_expected):
 
     targets = [{"boxes": torch.tensor([[0, 0, 1, 1]]), "labels": torch.tensor([0])}]
 
-    metric = MeanAveragePrecision(box_format=box_format, iou_thresholds=[0.2])
+    metric = MeanAveragePrecision(box_format=box_format, iou_thresholds=[0.2], extended_summary=True)
     metric.update(predictions, targets)
     result = metric.compute()
     assert result["map"].item() == map_val_expected
-    assert round(float(metric.coco_eval.ious[(0, 0)]), 3) == iou_val_expected
+    assert round(float(result["ious"][(0, 0)]), 3) == iou_val_expected
 
 
 @pytest.mark.parametrize("iou_type", ["bbox", "segm"])
@@ -710,3 +748,49 @@ def test_warning_on_many_detections(iou_type):
     metric = MeanAveragePrecision(iou_type=iou_type)
     with pytest.warns(UserWarning, match="Encountered more than 100 detections in a single image.*"):
         metric.update(preds, targets)
+
+
+@pytest.mark.parametrize(
+    ("preds", "target", "expected_iou_len", "iou_keys", "precision_shape", "recall_shape"),
+    [
+        (
+            [[{"boxes": torch.tensor([[0.5, 0.5, 1, 1]]), "scores": torch.tensor([1.0]), "labels": torch.tensor([0])}]],
+            [[{"boxes": torch.tensor([[0, 0, 1, 1]]), "labels": torch.tensor([0])}]],
+            1,  # 1 image x 1 class = 1
+            [(0, 0)],
+            (10, 101, 1, 4, 3),
+            (10, 1, 4, 3),
+        ),
+        (
+            _inputs.preds,
+            _inputs.target,
+            24,  # 4 images x 6 classes = 24
+            product([0, 1, 2, 3], [0, 1, 2, 3, 4, 49]),
+            (10, 101, 6, 4, 3),
+            (10, 6, 4, 3),
+        ),
+    ],
+)
+def test_for_extended_stats(preds, target, expected_iou_len, iou_keys, precision_shape, recall_shape):
+    """Test that extended stats are computed correctly."""
+    metric = MeanAveragePrecision(extended_summary=True)
+    for (
+        p,
+        t,
+    ) in zip(preds, target):
+        metric.update(p, t)
+    result = metric.compute()
+
+    ious = result["ious"]
+    assert isinstance(ious, dict)
+    assert len(ious) == expected_iou_len
+    for key in ious:
+        assert key in iou_keys
+
+    precision = result["precision"]
+    assert isinstance(precision, Tensor)
+    assert precision.shape == precision_shape
+
+    recall = result["recall"]
+    assert isinstance(recall, Tensor)
+    assert recall.shape == recall_shape

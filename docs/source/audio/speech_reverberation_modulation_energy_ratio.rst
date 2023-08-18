@@ -13,11 +13,9 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.audio.srmr.SpeechReverberationModulationEnergyRatio
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.audio.srmr.speech_reverberation_modulation_energy_ratio
-    :noindex:

@@ -374,10 +374,10 @@ def _multiclass_stat_scores_update(
             preds_oh = torch.movedim(select_topk(preds, topk=top_k, dim=1), 1, -1)
         else:
             preds_oh = torch.nn.functional.one_hot(
-                preds, num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
+                preds.long(), num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
             )
         target_oh = torch.nn.functional.one_hot(
-            target, num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
+            target.long(), num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
         )
         if ignore_index is not None:
             if 0 <= ignore_index <= num_classes - 1:
@@ -1091,7 +1091,9 @@ def stat_scores(
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_stat_scores`, :func:`multiclass_stat_scores` and :func:`multilabel_stat_scores` for the specific
+    :func:`~torchmetrics.functional.classification.binary_stat_scores`,
+    :func:`~torchmetrics.functional.classification.multiclass_stat_scores` and
+    :func:`~torchmetrics.functional.classification.multilabel_stat_scores` for the specific
     details of each argument influence and examples.
 
     Legacy Example:

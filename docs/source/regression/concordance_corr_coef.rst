@@ -13,7 +13,6 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.ConcordanceCorrCoef
-    :noindex:
     :exclude-members: update, compute
 
 
@@ -21,4 +20,3 @@ Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.concordance_corrcoef
-    :noindex:

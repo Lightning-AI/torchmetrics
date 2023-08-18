@@ -902,8 +902,10 @@ def precision_recall_curve(
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_precision_recall_curve`, :func:`multiclass_precision_recall_curve` and
-    :func:`multilabel_precision_recall_curve` for the specific details of each argument influence and examples.
+    :func:`~torchmetrics.functional.classification.binary_precision_recall_curve`,
+    :func:`~torchmetrics.functional.classification.multiclass_precision_recall_curve` and
+    :func:`~torchmetrics.functional.classification.multilabel_precision_recall_curve` for the specific details of each
+    argument influence and examples.
 
     Legacy Example:
         >>> pred = torch.tensor([0, 0.1, 0.8, 0.4])

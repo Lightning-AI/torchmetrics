@@ -361,8 +361,9 @@ class CalibrationError(_ClassificationTaskWrapper):
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
-    :mod:`BinaryCalibrationError` and :mod:`MulticlassCalibrationError` for the specific details of
-    each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryCalibrationError` and
+    :class:`~torchmetrics.classification.MulticlassCalibrationError` for the specific details of each argument influence
+    and examples.
 
     """
 

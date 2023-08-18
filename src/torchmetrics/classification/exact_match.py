@@ -368,8 +368,9 @@ class ExactMatch(_ClassificationTaskWrapper):
 
     This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'multiclass'`` or ``multilabel``. See the documentation of
-    :mod:`MulticlassExactMatch` and :mod:`MultilabelExactMatch` for the specific details of
-    each argument influence and examples.
+    :class:`~torchmetrics.classification.MulticlassExactMatch` and
+    :class:`~torchmetrics.classification.MultilabelExactMatch` for the specific details of each argument influence and
+    examples.
 
     Legacy Example:
         >>> from torch import tensor
