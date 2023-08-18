@@ -57,13 +57,8 @@ def _pearson_corrcoef_update(
     if weights is not None:
         _check_data_shape_to_weights(preds, weights)
 
-    # Calculate means
-    if weights is None:
-        n_obs = preds.shape[0]
-    else:
-        n_obs = weights.sum() n_obs == 1
-    cond = n_prior.mean() > 0 or
-
+    n_obs = preds.shape[0] if weights is None else weights.sum()
+    cond = n_prior.mean() > 0 or n_obs == 1
 
     if cond:
         if weights is None:
