@@ -257,7 +257,8 @@ def hinge_loss(
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
-    :func:`binary_hinge_loss` and :func:`multiclass_hinge_loss` for the specific details of
+    :func:`~torchmetrics.functional.classification.binary_hinge_loss` and
+    :func:`~torchmetrics.functional.classification.multiclass_hinge_loss` for the specific details of
     each argument influence and examples.
 
     Legacy Example:

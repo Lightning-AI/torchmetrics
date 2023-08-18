@@ -13,11 +13,9 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.audio.ScaleInvariantSignalNoiseRatio
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.audio.scale_invariant_signal_noise_ratio
-    :noindex:

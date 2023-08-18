@@ -13,11 +13,9 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.image.lpip.LearnedPerceptualImagePatchSimilarity
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.image.learned_perceptual_image_patch_similarity
-    :noindex:

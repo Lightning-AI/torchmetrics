@@ -13,17 +13,14 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.nominal.PearsonsContingencyCoefficient
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.nominal.pearsons_contingency_coefficient
-    :noindex:
 
 pearsons_contingency_coefficient_matrix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.nominal.pearsons_contingency_coefficient_matrix
-    :noindex:

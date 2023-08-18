@@ -13,4 +13,3 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.wrappers.MinMaxMetric
-    :noindex:
