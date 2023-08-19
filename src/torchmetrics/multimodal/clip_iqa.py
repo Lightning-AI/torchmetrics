@@ -118,14 +118,14 @@ class CLIPImageQualityAssessment(Metric):
         ModuleNotFoundError:
             If transformers package is not installed or version is lower than 4.10.0
         ValueError:
-            If promts is a tuple and it is not of length 2
+            If `prompts` is a tuple and it is not of length 2
         ValueError:
-            If promts is a string and it is not one of the available promts
+            If `prompts` is a string and it is not one of the available prompts
         ValueError:
-            If promts is a list of strings and not all strings are one of the available promts
+            If `prompts` is a list of strings and not all strings are one of the available prompts
 
     Example::
-        Single promt:
+        Single prompt:
 
         >>> from torchmetrics.image import CLIPImageQualityAssessment
         >>> import torch
@@ -136,7 +136,7 @@ class CLIPImageQualityAssessment(Metric):
         tensor([0.8894, 0.8902])
 
     Example::
-        Multiple promts:
+        Multiple prompts:
 
         >>> from torchmetrics.image import CLIPImageQualityAssessment
         >>> import torch
@@ -147,7 +147,7 @@ class CLIPImageQualityAssessment(Metric):
         {'quality': tensor([0.8894, 0.8902]), 'brightness': tensor([0.5507, 0.5208])}
 
     Example::
-        Custom promts. Must always be a tuple of length 2, with a positive and negative prompt.
+        Custom prompts. Must always be a tuple of length 2, with a positive and negative prompt.
 
         >>> from torchmetrics.image import CLIPImageQualityAssessment
         >>> import torch

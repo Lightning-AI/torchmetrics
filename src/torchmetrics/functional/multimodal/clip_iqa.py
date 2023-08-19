@@ -87,7 +87,7 @@ def _get_clip_iqa_model_and_processor(
 
 
 def _clip_iqa_format_prompts(prompts: Tuple[Union[str, Tuple[str, str]]] = ("quality",)) -> Tuple[List[str], List[str]]:
-    """Converts the provided keywords into a list of prompts for the model to calculate the achor vectors.
+    """Converts the provided keywords into a list of prompts for the model to calculate the anchor vectors.
 
     Args:
         prompts: A string, list of strings or tuple of strings. If a string is provided, it must be one of the
@@ -228,7 +228,7 @@ def clip_image_quality_assessment(
     semantically similar.
 
     The metric works by calculating the cosine similarity between user provided images and pre-defined promts. The
-    promts always comes in pairs of "positive" and "negative" such as "Good photo." and "Bad photo.". By calculating
+    prompts always come in pairs of "positive" and "negative" such as "Good photo." and "Bad photo.". By calculating
     the similartity between image embeddings and both the "positive" and "negative" prompt, the metric can determine
     which prompt the image is more similar to. The metric then returns the probability that the image is more similar
     to the first prompt than the second prompt.
@@ -252,7 +252,7 @@ def clip_image_quality_assessment(
         * relaxing: "Relaxing photo." vs "Stressful photo."
 
     Args:
-        images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors
+        images: Either a single ``[N, C, H, W]`` tensor or a list of ``[C, H, W]`` tensors
         model_name_or_path: string indicating the version of the CLIP model to use. By default this argument is set to
             ``clip_iqa`` which corresponds to the model used in the original paper. Other availble models are
             `"openai/clip-vit-base-patch16"`, `"openai/clip-vit-base-patch32"`, `"openai/clip-vit-large-patch14-336"`
@@ -265,7 +265,7 @@ def clip_image_quality_assessment(
             prompt and the second string must be a negative prompt.
 
     .. note:: If using the default `clip_iqa` model, the package `piq` must be installed. Either install with
-        `pip install piq` or `pip install torchmetrics[image]`.
+        `pip install piq` or `pip install torchmetrics[multimodal]`.
 
     Returns:
         A tensor of shape ``(N,)`` if a single promts is provided. If a list of promts is provided, a dictionary of
