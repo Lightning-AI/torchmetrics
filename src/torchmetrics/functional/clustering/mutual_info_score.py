@@ -19,10 +19,14 @@ from torch import Tensor, tensor
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _mutual_info_score_check(preds, target) -> bool:
+def check_cluster_labels(preds: Tensor, target: Tensor) -> None:
     """Check shape of input tensors."""
-    # TODO: check if data are disjoint subsets
-    return _check_same_shape(preds, target)
+    _check_same_shape(preds, target)
+    if torch.is_floating_point(preds) or torch.is_floating_point(target):
+        raise ValueError(
+            f"Expected discrete values but received {preds.dtype} for"
+            f"predictions and {target.dtype} for target labels instead."
+        )
 
 
 def _calculate_contingency_matrix(
@@ -40,6 +44,7 @@ def _calculate_contingency_matrix(
 
     Returns:
         contingency: contingency matrix of shape (n_classes_target, n_classes_preds)
+
     """
     if eps is not None and sparse is True:
         raise ValueError('Cannot specify `eps` and return sparse tensor.')
@@ -64,7 +69,10 @@ def _calculate_contingency_matrix(
     return contingency
 
 
-def _mutual_info_score_update(preds, target) -> Tuple[Tensor, Tensor, Tensor]:
+def _mutual_info_score_update(
+    preds: Tensor,
+    target: Tensor
+) -> Tuple[Tensor, Tensor, Tensor]:
     """Update and return variables required to compute the mutual information score.
 
     Args:
@@ -73,8 +81,9 @@ def _mutual_info_score_update(preds, target) -> Tuple[Tensor, Tensor, Tensor]:
 
     Returns:
         contingency: contingency matrix
+
     """
-    _mutual_info_score_check(preds, target)
+    check_cluster_labels(preds, target)
     return _calculate_contingency_matrix(preds, target)
 
 
@@ -86,6 +95,7 @@ def _mutual_info_score_compute(contingency: Tensor) -> Tensor:
 
     Returns:
         mutual_info: mutual information score
+
     """
     N = contingency.sum()
     U = contingency.sum(dim=1)
@@ -113,7 +123,7 @@ def mutual_info_score(preds: Tensor, target: Tensor) -> Tensor:
         >>> preds = torch.tensor([1, 3, 2, 0, 1])
         >>> mutual_info_score(preds, target)
         tensor([1.05492])
+
     """
-    _mutual_info_score_check(preds, target)
     contingency = _mutual_info_score_update(preds, target)
     return _mutual_info_score_compute(contingency)
