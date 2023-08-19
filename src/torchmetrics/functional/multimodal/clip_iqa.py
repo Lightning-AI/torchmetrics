@@ -74,7 +74,7 @@ def _get_clip_iqa_model_and_processor(
             raise ValueError(
                 "For metric `clip_iqa` to work with argument `model_name_or_path` set to default value `'clip_iqa'`"
                 ", package `piq` version v0.8.0 or later must be installed. Either install with `pip install piq` or"
-                "`pip install torchmetrics[image]`"
+                "`pip install torchmetrics[multimodal]`"
             )
 
         import piq
