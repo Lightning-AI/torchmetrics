@@ -1021,8 +1021,10 @@ class FBetaScore(_ClassificationTaskWrapper):
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_fbeta_score`, :func:`multiclass_fbeta_score` and :func:`multilabel_fbeta_score` for the specific
-    details of each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryFBetaScore`,
+    :class:`~torchmetrics.classification.MulticlassFBetaScore` and
+    :class:`~torchmetrics.classification.MultilabelFBetaScore` for the specific details of each argument influence
+    and examples.
 
     Legcy Example:
         >>> from torch import tensor
@@ -1082,8 +1084,9 @@ class F1Score(_ClassificationTaskWrapper):
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :mod:`BinaryF1Score`, :mod:`MulticlassF1Score` and :mod:`MultilabelF1Score` for the specific
-    details of each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryF1Score`, :class:`~torchmetrics.classification.MulticlassF1Score` and
+    :class:`~torchmetrics.classification.MultilabelF1Score` for the specific details of each argument influence and
+    examples.
 
     Legacy Example:
         >>> from torch import tensor

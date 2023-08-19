@@ -325,8 +325,8 @@ class HingeLoss(_ClassificationTaskWrapper):
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
-    :mod:`BinaryHingeLoss` and :mod:`MulticlassHingeLoss` for the specific details of
-    each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryHingeLoss` and :class:`~torchmetrics.classification.MulticlassHingeLoss`
+    for the specific details of each argument influence and examples.
 
     Legacy Example:
         >>> from torch import tensor

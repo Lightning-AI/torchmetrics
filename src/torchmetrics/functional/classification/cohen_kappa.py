@@ -249,7 +249,8 @@ def cohen_kappa(
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
-    :func:`binary_cohen_kappa` and :func:`multiclass_cohen_kappa` for the specific details of
+    :func:`~torchmetrics.functional.classification.binary_cohen_kappa` and
+    :func:`~torchmetrics.functional.classification.multiclass_cohen_kappa` for the specific details of
     each argument influence and examples.
 
     Legacy Example:

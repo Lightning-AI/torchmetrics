@@ -24,16 +24,30 @@ if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["perceptual_path_length"]
 
 
-class _GeneratorType(nn.Module):
+class GeneratorType(nn.Module):
+    """Basic interface for a generator model.
+
+    Users can inherit from this class and implement their own generator model. The requirements are that the ``sample``
+    method is implemented and that the ``num_classes`` attribute is present when ``conditional=True`` metric.
+
+    """
+
     @property
     def num_classes(self) -> int:
+        """Return the number of classes for conditional generation."""
         raise NotImplementedError
 
     def sample(self, num_samples: int) -> Tensor:
+        """Sample from the generator.
+
+        Args:
+            num_samples: Number of samples to generate.
+
+        """
         raise NotImplementedError
 
 
-def _validate_generator_model(generator: _GeneratorType, conditional: bool = False) -> None:
+def _validate_generator_model(generator: GeneratorType, conditional: bool = False) -> None:
     """Validate that the user provided generator has the right methods and attributes.
 
     Args:
@@ -137,7 +151,7 @@ def _interpolate(
 
 
 def perceptual_path_length(
-    generator: _GeneratorType,
+    generator: GeneratorType,
     num_samples: int = 10_000,
     conditional: bool = False,
     batch_size: int = 64,

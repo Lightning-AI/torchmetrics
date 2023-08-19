@@ -478,8 +478,9 @@ class StatScores(_ClassificationTaskWrapper):
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :mod:`BinaryStatScores`, :mod:`MulticlassStatScores` and :mod:`MultilabelStatScores` for the specific
-    details of each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryStatScores`, :class:`~torchmetrics.classification.MulticlassStatScores`
+    and :class:`~torchmetrics.classification.MultilabelStatScores` for the specific details of each argument influence
+    and examples.
 
     Legacy Example:
         >>> from torch import tensor
