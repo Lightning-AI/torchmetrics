@@ -48,9 +48,9 @@ to_onehot
 
 .. autofunction:: torchmetrics.utilities.data.to_onehot
 
-#################################
+*********************************
 torchmetrics.utilities.exceptions
-#################################
+*********************************
 
 TorchMetricsUserError
 ~~~~~~~~~~~~~~~~~~~~~
