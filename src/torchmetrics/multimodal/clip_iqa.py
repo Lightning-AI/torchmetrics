@@ -128,7 +128,7 @@ class CLIPImageQualityAssessment(Metric):
     Example::
         Single prompt:
 
-        >>> from torchmetrics.image import CLIPImageQualityAssessment
+        >>> from torchmetrics.multimodal import CLIPImageQualityAssessment
         >>> import torch
         >>> _ = torch.manual_seed(42)
         >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
@@ -139,7 +139,7 @@ class CLIPImageQualityAssessment(Metric):
     Example::
         Multiple prompts:
 
-        >>> from torchmetrics.image import CLIPImageQualityAssessment
+        >>> from torchmetrics.multimodal import CLIPImageQualityAssessment
         >>> import torch
         >>> _ = torch.manual_seed(42)
         >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
@@ -150,7 +150,7 @@ class CLIPImageQualityAssessment(Metric):
     Example::
         Custom prompts. Must always be a tuple of length 2, with a positive and negative prompt.
 
-        >>> from torchmetrics.image import CLIPImageQualityAssessment
+        >>> from torchmetrics.multimodal import CLIPImageQualityAssessment
         >>> import torch
         >>> _ = torch.manual_seed(42)
         >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
@@ -240,7 +240,7 @@ class CLIPImageQualityAssessment(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.image.clip_iqa import CLIPImageQualityAssessment
+            >>> from torchmetrics.multimodal.clip_iqa import CLIPImageQualityAssessment
             >>> metric = CLIPImageQualityAssessment()
             >>> metric.update(torch.rand(1, 3, 224, 224))
             >>> fig_, ax_ = metric.plot()
@@ -250,7 +250,7 @@ class CLIPImageQualityAssessment(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.image.clip_iqa import CLIPImageQualityAssessment
+            >>> from torchmetrics.multimodal.clip_iqa import CLIPImageQualityAssessment
             >>> metric = CLIPImageQualityAssessment()
             >>> values = [ ]
             >>> for _ in range(10):

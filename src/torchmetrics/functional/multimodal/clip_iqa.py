@@ -290,7 +290,7 @@ def clip_image_quality_assessment(
     Example::
         Single promt:
 
-        >>> from torchmetrics.functional.image import clip_image_quality_assessment
+        >>> from torchmetrics.functional.multimodal import clip_image_quality_assessment
         >>> import torch
         >>> _ = torch.manual_seed(42)
         >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
@@ -300,7 +300,7 @@ def clip_image_quality_assessment(
     Example::
         Multiple promts:
 
-        >>> from torchmetrics.functional.image import clip_image_quality_assessment
+        >>> from torchmetrics.functional.multimodal import clip_image_quality_assessment
         >>> import torch
         >>> _ = torch.manual_seed(42)
         >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
@@ -310,7 +310,7 @@ def clip_image_quality_assessment(
     Example::
         Custom promts. Must always be a tuple of length 2, with a positive and negative prompt.
 
-        >>> from torchmetrics.functional.image import clip_image_quality_assessment
+        >>> from torchmetrics.functional.multimodal import clip_image_quality_assessment
         >>> import torch
         >>> _ = torch.manual_seed(42)
         >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
