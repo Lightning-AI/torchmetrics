@@ -48,6 +48,7 @@ def compute_area(inputs: List[Any], iou_type: str = "bbox") -> Tensor:
     """Compute area of input depending on the specified iou_type.
 
     Default output for empty input is :class:`~torch.Tensor`
+
     """
     if len(inputs) == 0:
         return Tensor([])
@@ -210,9 +211,8 @@ class MeanAveragePrecision(Metric):
         The default properties are also accessible via fields and will raise an ``AttributeError`` if not available.
 
     .. note::
-        This metric is following the mAP implementation of
-        `pycocotools <https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools>`_,
-        a standard implementation for the mAP metric for object detection.
+        This metric is following the mAP implementation of `pycocotools`_ a standard implementation for the mAP metric
+        for object detection.
 
     .. note::
         This metric requires you to have `torchvision` version 0.8.0 or newer installed
@@ -299,6 +299,7 @@ class MeanAveragePrecision(Metric):
          'mar_large': tensor(0.6000),
          'mar_medium': tensor(-1.),
          'mar_small': tensor(-1.)}
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -420,6 +421,7 @@ class MeanAveragePrecision(Metric):
                 Class Id of the supplied ground truth and detection labels
             max_det:
                 Maximum number of evaluated detection bounding boxes
+
         """
         # if self.iou_type == "bbox":
         gt = self.groundtruths[idx]
@@ -522,6 +524,7 @@ class MeanAveragePrecision(Metric):
                 Maximum number of evaluated detection bounding boxes.
             ious:
                 IoU results for image and class.
+
         """
         gt = self.groundtruths[idx]
         det = self.detections[idx]
@@ -624,6 +627,7 @@ class MeanAveragePrecision(Metric):
                 IoUs for all combinations of detection and ground truth.
             idx_det:
                 Id of current detection.
+
         """
         previously_matched = gt_matches[idx_iou]
         # Remove previously matched or ignored gts
@@ -655,6 +659,7 @@ class MeanAveragePrecision(Metric):
                 Bounding box area range key.
             max_dets:
                 Maximum detections.
+
         """
         area_inds = [i for i, k in enumerate(self.bbox_area_ranges.keys()) if k == area_range]
         mdet_inds = [i for i, k in enumerate(self.max_detection_thresholds) if k == max_dets]
@@ -684,6 +689,7 @@ class MeanAveragePrecision(Metric):
         Args:
             class_ids:
                 List of label class Ids.
+
         """
         img_ids = range(len(self.groundtruths))
         max_detections = self.max_detection_thresholds[-1]
@@ -743,6 +749,7 @@ class MeanAveragePrecision(Metric):
                 Precision values for different thresholds
             recalls:
                 Recall values for different thresholds
+
         """
         results = {"precision": precisions, "recall": recalls}
         map_metrics = MAPMetricResults()
@@ -875,6 +882,7 @@ class MeanAveragePrecision(Metric):
 
         Excludes the detections and groundtruths from the casting when the iou_type is set to `segm` as the state is
         no longer a tensor but a tuple.
+
         """
         if self.iou_type == "segm":
             this = super()._apply(fn, exclude_state=("detections", "groundtruths"))
@@ -961,5 +969,6 @@ class MeanAveragePrecision(Metric):
             >>> for _ in range(20):
             ...     vals.append(metric(preds(), target))
             >>> fig_, ax_ = metric.plot(vals)
+
         """
         return self._plot(val, ax)

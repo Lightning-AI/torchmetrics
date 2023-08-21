@@ -16,6 +16,7 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.hamming import _hamming_distance_reduce
 from torchmetrics.metric import Metric
@@ -96,6 +97,7 @@ class BinaryHammingDistance(BinaryStatScores):
         >>> metric = BinaryHammingDistance(multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0.6667, 0.8333])
+
     """
 
     is_differentiable: bool = False
@@ -147,6 +149,7 @@ class BinaryHammingDistance(BinaryStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -245,6 +248,7 @@ class MulticlassHammingDistance(MulticlassStatScores):
         >>> mchd(preds, target)
         tensor([[0.0000, 1.0000, 0.5000],
                 [1.0000, 0.6667, 0.5000]])
+
     """
 
     is_differentiable: bool = False
@@ -297,6 +301,7 @@ class MulticlassHammingDistance(MulticlassStatScores):
             >>> for _ in range(20):
             ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -393,6 +398,7 @@ class MultilabelHammingDistance(MultilabelStatScores):
         >>> mlhd(preds, target)
         tensor([[0.5000, 0.5000, 1.0000],
                 [1.0000, 1.0000, 0.5000]])
+
     """
 
     is_differentiable: bool = False
@@ -447,11 +453,12 @@ class MultilabelHammingDistance(MultilabelStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
 
-class HammingDistance:
+class HammingDistance(_ClassificationTaskWrapper):
     r"""Compute the average `Hamming distance`_ (also known as Hamming loss).
 
     .. math::
@@ -463,8 +470,10 @@ class HammingDistance:
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :mod:`BinaryHammingDistance`, :mod:`MulticlassHammingDistance` and :mod:`MultilabelHammingDistance` for the
-    specific details of each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryHammingDistance`,
+    :class:`~torchmetrics.classification.MulticlassHammingDistance` and
+    :class:`~torchmetrics.classification.MultilabelHammingDistance` for the specific details of each argument influence
+    and examples.
 
     Legacy Example:
         >>> from torch import tensor
@@ -473,9 +482,10 @@ class HammingDistance:
         >>> hamming_distance = HammingDistance(task="multilabel", num_labels=2)
         >>> hamming_distance(preds, target)
         tensor(0.2500)
+
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
@@ -506,4 +516,4 @@ class HammingDistance:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelHammingDistance(num_labels, threshold, average, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")

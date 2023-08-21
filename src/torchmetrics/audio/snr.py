@@ -66,6 +66,7 @@ class SignalNoiseRatio(Metric):
         >>> snr = SignalNoiseRatio()
         >>> snr(preds, target)
         tensor(16.1805)
+
     """
     full_state_update: bool = False
     is_differentiable: bool = True
@@ -135,6 +136,7 @@ class SignalNoiseRatio(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(4), torch.rand(4)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -145,11 +147,11 @@ class ScaleInvariantSignalNoiseRatio(Metric):
     As input to `forward` and `update` the metric accepts the following input
 
     - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
-    - ``target`` (: :class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+    - ``target`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``si_snr`` (: :class:`~torch.Tensor`): float scalar tensor with average SI-SNR value over samples
+    - ``si_snr`` (:class:`~torch.Tensor`): float scalar tensor with average SI-SNR value over samples
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -167,6 +169,7 @@ class ScaleInvariantSignalNoiseRatio(Metric):
         >>> si_snr = ScaleInvariantSignalNoiseRatio()
         >>> si_snr(preds, target)
         tensor(15.0918)
+
     """
 
     is_differentiable = True
@@ -232,6 +235,7 @@ class ScaleInvariantSignalNoiseRatio(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(4), torch.rand(4)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -241,15 +245,15 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
 
     As input to `forward` and `update` the metric accepts the following input
 
-    - ``preds`` (:class:`~torch.Tensor`): real/complex float tensor with shape ``(..., frequency, time, 2)``\
-        / ``(..., frequency, time)``
+    - ``preds`` (:class:`~torch.Tensor`): real float tensor with shape ``(...,frequency,time,2)`` or complex float
+      tensor with shape ``(..., frequency,time)``
 
-    - ``target`` (: :class:`~torch.Tensor`): real/complex float tensor with shape ``(..., frequency, time, 2)``\
-        / ``(..., frequency, time)``
+    - ``target`` (:class:`~torch.Tensor`): real float tensor with shape ``(...,frequency,time,2)`` or complex float
+      tensor with shape ``(..., frequency,time)``
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``c_si_snr`` (: :class:`~torch.Tensor`): float scalar tensor with average C-SI-SNR value over samples
+    - ``c_si_snr`` (:class:`~torch.Tensor`): float scalar tensor with average C-SI-SNR value over samples
 
     Args:
         zero_mean: if to zero mean target and preds or not
@@ -272,6 +276,7 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
         >>> c_si_snr = ComplexScaleInvariantSignalNoiseRatio()
         >>> c_si_snr(preds, target)
         tensor(-63.4849)
+
     """
 
     is_differentiable = True
@@ -341,5 +346,6 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(1,257,100,2), torch.rand(1,257,100,2)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

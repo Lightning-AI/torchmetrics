@@ -13,8 +13,7 @@
 # limitations under the License.
 from typing import Collection
 
-import torch
-from torch import Tensor, tensor
+from torch import Tensor
 
 from torchmetrics.functional.detection._panoptic_quality_common import (
     _get_category_id_to_continuous_id,
@@ -42,7 +41,6 @@ def panoptic_quality(
     where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives, the number of
     true postitives, false positives and false negatives. This metric is inspired by the PQ implementation of
     panopticapi, a standard implementation for the PQ metric for object detection.
-
 
     .. note:
         Points in the target tensor that do not map to a known category ID are automatically ignored in the metric
@@ -92,6 +90,7 @@ def panoptic_quality(
         ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
         >>> panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7})
         tensor(0.5463, dtype=torch.float64)
+
     """
     things, stuffs = _parse_categories(things, stuffs)
     _validate_inputs(preds, target)
@@ -120,8 +119,8 @@ def modified_panoptic_quality(
     .. math::
         PQ^{\dagger}_c = \frac{IOU_c}{|S_c|}
 
-    where IOU_c is the sum of the intersection over union of all matching segments for a given class, and \|S_c| is
-    the overall number of segments in the ground truth for that class.
+    where :math:`IOU_c` is the sum of the intersection over union of all matching segments for a given class, and
+    :math:`|S_c|` is the overall number of segments in the ground truth for that class.
 
     .. note:
         Points in the target tensor that do not map to a known category ID are automatically ignored in the metric
@@ -151,7 +150,7 @@ def modified_panoptic_quality(
         TypeError:
             If ``preds`` or ``target`` is not an ``torch.Tensor``.
         ValueError:
-             If ``preds`` or ``target`` has different shape.
+            If ``preds`` or ``target`` has different shape.
         ValueError:
             If ``preds`` has less than 3 dimensions.
         ValueError:
@@ -163,6 +162,7 @@ def modified_panoptic_quality(
         >>> target = tensor([[[0, 1], [0, 0], [6, 0], [7, 0], [6, 0], [255, 0]]])
         >>> modified_panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7})
         tensor(0.7667, dtype=torch.float64)
+
     """
     things, stuffs = _parse_categories(things, stuffs)
     _validate_inputs(preds, target)

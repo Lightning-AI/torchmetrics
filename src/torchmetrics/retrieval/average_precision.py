@@ -38,8 +38,8 @@ class RetrievalMAP(RetrievalMetric):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``rmap`` (:class:`~torch.Tensor`): A tensor with the mean average precision of the predictions ``preds``
-      w.r.t. the labels ``target``
+    - ``map@k`` (:class:`~torch.Tensor`): A single-value tensor with the mean average precision (MAP)
+      of the predictions ``preds`` w.r.t. the labels ``target``.
 
     All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
     so that for example, a tensor of shape ``(N, M)`` is treated as ``(N * M, )``. Predictions will be first grouped by
@@ -54,9 +54,8 @@ class RetrievalMAP(RetrievalMetric):
             - ``'skip'``: skip those queries; if all queries are skipped, ``0.0`` is returned
             - ``'error'``: raise a ``ValueError``
 
-        ignore_index:
-            Ignore predictions where the target is equal to this number.
-        top_k: consider only the top k elements for each query (default: ``None``, which considers them all)
+        ignore_index: Ignore predictions where the target is equal to this number.
+        top_k: Consider only the top k elements for each query (default: ``None``, which considers them all)
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -65,7 +64,7 @@ class RetrievalMAP(RetrievalMetric):
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
         ValueError:
-            If ``top_k`` is not ``None`` or an integer larger than 0.
+            If ``top_k`` is not ``None`` or not an integer greater than 0.
 
     Example:
         >>> from torch import tensor
@@ -76,6 +75,7 @@ class RetrievalMAP(RetrievalMetric):
         >>> rmap = RetrievalMAP()
         >>> rmap(preds, target, indexes=indexes)
         tensor(0.7917)
+
     """
 
     is_differentiable: bool = False
@@ -142,5 +142,6 @@ class RetrievalMAP(RetrievalMetric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(10,), torch.randint(2, (10,)), indexes=torch.randint(2,(10,))))
             >>> fig, ax = metric.plot(values)
+
         """
         return self._plot(val, ax)

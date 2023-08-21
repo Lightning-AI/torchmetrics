@@ -149,6 +149,7 @@ def binary_roc(
         (tensor([0.0000, 0.5000, 0.5000, 0.5000, 1.0000]),
          tensor([0., 0., 1., 1., 1.]),
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
+
     """
     if validate_args:
         _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
@@ -278,6 +279,7 @@ def multiclass_roc(
                  [0., 0., 0., 0., 1.],
                  [0., 0., 0., 0., 0.]]),
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
+
     """
     if validate_args:
         _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
@@ -419,6 +421,7 @@ def multilabel_roc(
                  [0.0000, 0.0000, 1.0000, 1.0000, 1.0000],
                  [0.0000, 0.3333, 0.3333, 0.6667, 1.0000]]),
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
+
     """
     if validate_args:
         _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
@@ -447,7 +450,9 @@ def roc(
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_roc`, :func:`multiclass_roc` and :func:`multilabel_roc` for the specific details of each argument
+    :func:`~torchmetrics.functional.classification.binary_roc`,
+    :func:`~torchmetrics.functional.classification.multiclass_roc` and
+    :func:`~torchmetrics.functional.classification.multilabel_roc` for the specific details of each argument
     influence and examples.
 
     Legacy Example:
@@ -493,6 +498,7 @@ def roc(
         [tensor([1.0000, 0.8603, 0.8191, 0.3584, 0.2286]),
          tensor([1.0000, 0.7576, 0.3680, 0.3468, 0.0745]),
          tensor([1.0000, 0.1837, 0.1338, 0.1183, 0.1138])]
+
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:

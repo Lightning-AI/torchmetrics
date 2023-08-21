@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -41,21 +41,21 @@ class IntersectionOverUnion(Metric):
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~List`): A list consisting of dictionaries each containing the key-values
-      (each dictionary corresponds to a single image). Parameters that should be provided per dict
+      (each dictionary corresponds to a single image). Parameters that should be provided per dict:
 
-        - boxes: (:class:`~torch.FloatTensor`) of shape ``(num_boxes, 4)`` containing ``num_boxes`` detection
-          boxes of the format specified in the constructor.
+        - ``boxes`` (:class:`~torch.Tensor`): float tensor of shape ``(num_boxes, 4)`` containing ``num_boxes``
+          detection boxes of the format specified in the constructor.
           By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates.
         - labels: :class:`~torch.IntTensor` of shape ``(num_boxes)`` containing 0-indexed detection classes for
           the boxes.
 
-    - ``target`` (:class:`~List`) A list consisting of dictionaries each containing the key-values
+    - ``target`` (:class:`~List`): A list consisting of dictionaries each containing the key-values
       (each dictionary corresponds to a single image). Parameters that should be provided per dict:
 
-        - boxes: :class:`~torch.FloatTensor` of shape ``(num_boxes, 4)`` containing ``num_boxes`` ground truth
-          boxes of the format specified in the constructor.
+        - ``boxes`` (:class:`~torch.Tensor`): float tensor of shape ``(num_boxes, 4)`` containing ``num_boxes`` ground
+          truth boxes of the format specified in the constructor.
           By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates.
-        - labels: :class:`~torch.IntTensor` of shape ``(num_boxes)`` containing 0-indexed ground truth
+        - ``labels`` (:class:`~torch.Tensor`): integer tensor of shape ``(num_boxes)`` containing 0-indexed ground truth
           classes for the boxes.
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
@@ -173,6 +173,7 @@ class IntersectionOverUnion(Metric):
                 If any class is not type int and of length 1
             ValueError:
                 If any score is not type float and of length 1
+
         """
         _input_validator(preds, target)
 
@@ -277,5 +278,6 @@ class IntersectionOverUnion(Metric):
             >>> for _ in range(20):
             ...     vals.append(metric(preds, target()))
             >>> fig_, ax_ = metric.plot(vals)
+
         """
         return self._plot(val, ax)

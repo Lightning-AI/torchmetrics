@@ -63,6 +63,7 @@ class RetrievalMetric(Metric, ABC):
             If ``empty_target_action`` is not one of ``error``, ``skip``, ``neg`` or ``pos``.
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
+
     """
 
     is_differentiable: bool = False
@@ -116,6 +117,7 @@ class RetrievalMetric(Metric, ABC):
         After that, compute list of groups that will help in keeping together predictions about the same query. Finally,
         for each group compute the ``_metric`` if the number of positive targets is at least 1, otherwise behave as
         specified by ``self.empty_target_action``.
+
         """
         indexes = dim_zero_cat(self.indexes)
         preds = dim_zero_cat(self.preds)
@@ -149,4 +151,5 @@ class RetrievalMetric(Metric, ABC):
         """Compute a metric over a predictions and target of a single group.
 
         This method should be overridden by subclasses.
+
         """

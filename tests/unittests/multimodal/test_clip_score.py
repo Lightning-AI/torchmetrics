@@ -20,7 +20,7 @@ import pytest
 import torch
 from torchmetrics.functional.multimodal.clip_score import clip_score
 from torchmetrics.multimodal.clip_score import CLIPScore
-from torchmetrics.utilities.imports import _TRANSFORMERS_AVAILABLE
+from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
 from transformers import CLIPModel as _CLIPModel
 from transformers import CLIPProcessor as _CLIPProcessor
 
@@ -55,7 +55,7 @@ def _compare_fn(preds, target, model_name_or_path):
 
 @pytest.mark.parametrize("model_name_or_path", ["openai/clip-vit-base-patch32"])
 @pytest.mark.parametrize("inputs", [_random_input])
-@pytest.mark.skipif(not _TRANSFORMERS_AVAILABLE, reason="test requires bert_score")
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_10, reason="test requires transformers>=4.10")
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
 class TestCLIPScore(MetricTester):
     """Test class for `CLIPScore` metric."""
@@ -127,3 +127,15 @@ class TestCLIPScore(MetricTester):
         fig, ax = metric.plot()
         assert isinstance(fig, plt.Figure)
         assert isinstance(ax, matplotlib.axes.Axes)
+
+    @skip_on_connection_issues()
+    def test_warning_on_long_caption(self, inputs, model_name_or_path):
+        """Test that warning is given on long captions but metric still works."""
+        metric = CLIPScore(model_name_or_path=model_name_or_path)
+        preds, target = inputs
+        target[0] = [target[0][0], "A 28-year-old chef who recently moved to San Francisco was found dead. " * 100]
+        with pytest.warns(
+            UserWarning,
+            match="Encountered caption longer than max_position_embeddings=77. Will truncate captions to this length.*",
+        ):
+            metric.update(preds[0], target[0])

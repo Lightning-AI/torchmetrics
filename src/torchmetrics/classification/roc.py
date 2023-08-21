@@ -16,6 +16,7 @@ from typing import Any, List, Optional, Tuple, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.precision_recall_curve import (
     BinaryPrecisionRecallCurve,
     MulticlassPrecisionRecallCurve,
@@ -105,6 +106,7 @@ class BinaryROC(BinaryPrecisionRecallCurve):
         (tensor([0.0000, 0.5000, 0.5000, 0.5000, 1.0000]),
          tensor([0., 0., 1., 1., 1.]),
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -142,19 +144,23 @@ class BinaryROC(BinaryPrecisionRecallCurve):
         .. plot::
             :scale: 75
 
-            >>> from torch import randn, randint
-            >>> import torch.nn.functional as F
+            >>> from torch import rand, randint
             >>> from torchmetrics.classification import BinaryROC
-            >>> preds = F.softmax(randn(20, 2), dim=1)
+            >>> preds = rand(20)
             >>> target = randint(2, (20,))
             >>> metric = BinaryROC()
-            >>> metric.update(preds[:, 1], target)
-            >>> fig_, ax_ = metric.plot()
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot(score=True)
+
         """
-        curve = curve or self.compute()
-        score = _auc_compute_without_check(curve[0], curve[1], 1.0) if not curve and score is True else None
+        curve_computed = curve or self.compute()
+        score = (
+            _auc_compute_without_check(curve_computed[0], curve_computed[1], 1.0)
+            if not curve and score is True
+            else None
+        )
         return plot_curve(
-            curve,
+            curve_computed,
             score=score,
             ax=ax,
             label_names=("False positive rate", "True positive rate"),
@@ -254,6 +260,7 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
                  [0., 0., 0., 0., 1.],
                  [0., 0., 0., 0., 0.]]),
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -293,18 +300,20 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
             :scale: 75
 
             >>> from torch import randn, randint
-            >>> import torch.nn.functional as F
-            >>> from torchmetrics.classification import BinaryROC
-            >>> preds = F.softmax(randn(20, 2), dim=1)
-            >>> target = randint(2, (20,))
-            >>> metric = BinaryROC()
-            >>> metric.update(preds[:, 1], target)
-            >>> fig_, ax_ = metric.plot()
+            >>> from torchmetrics.classification import MulticlassROC
+            >>> preds = randn(20, 3).softmax(dim=-1)
+            >>> target = randint(3, (20,))
+            >>> metric = MulticlassROC(num_classes=3)
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot(score=True)
+
         """
-        curve = curve or self.compute()
-        score = _reduce_auroc(curve[0], curve[1], average=None) if not curve and score is True else None
+        curve_computed = curve or self.compute()
+        score = (
+            _reduce_auroc(curve_computed[0], curve_computed[1], average=None) if not curve and score is True else None
+        )
         return plot_curve(
-            curve,
+            curve_computed,
             score=score,
             ax=ax,
             label_names=("False positive rate", "True positive rate"),
@@ -406,6 +415,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
                  [0.0000, 0.0000, 1.0000, 1.0000, 1.0000],
                  [0.0000, 0.3333, 0.3333, 0.6667, 1.0000]]),
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -444,19 +454,21 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
         .. plot::
             :scale: 75
 
-            >>> from torch import randn, randint
-            >>> import torch.nn.functional as F
-            >>> from torchmetrics.classification import BinaryROC
-            >>> preds = F.softmax(randn(20, 2), dim=1)
-            >>> target = randint(2, (20,))
-            >>> metric = BinaryROC()
-            >>> metric.update(preds[:, 1], target)
-            >>> fig_, ax_ = metric.plot()
+            >>> from torch import rand, randint
+            >>> from torchmetrics.classification import MultilabelROC
+            >>> preds = rand(20, 3)
+            >>> target = randint(2, (20,3))
+            >>> metric = MultilabelROC(num_labels=3)
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot(score=True)
+
         """
-        curve = curve or self.compute()
-        score = _reduce_auroc(curve[0], curve[1], average=None) if not curve and score is True else None
+        curve_computed = curve or self.compute()
+        score = (
+            _reduce_auroc(curve_computed[0], curve_computed[1], average=None) if not curve and score is True else None
+        )
         return plot_curve(
-            curve,
+            curve_computed,
             score=score,
             ax=ax,
             label_names=("False positive rate", "True positive rate"),
@@ -464,7 +476,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
         )
 
 
-class ROC:
+class ROC(_ClassificationTaskWrapper):
     r"""Compute the Receiver Operating Characteristic (ROC).
 
     The curve consist of multiple pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at
@@ -472,7 +484,9 @@ class ROC:
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :mod:`BinaryROC`, :mod:`MulticlassROC` and :mod:`MultilabelROC` for the specific details of each argument
+    :class:`~torchmetrics.classification.BinaryROC`,
+    :class:`~torchmetrics.classification.MulticlassROC` and
+    :class:`~torchmetrics.classification.MultilabelROC` for the specific details of each argument
     influence and examples.
 
     Legacy Example:
@@ -524,6 +538,7 @@ class ROC:
         [tensor([1.0000, 0.8603, 0.8191, 0.3584, 0.2286]),
          tensor([1.0000, 0.7576, 0.3680, 0.3468, 0.0745]),
          tensor([1.0000, 0.1837, 0.1338, 0.1183, 0.1138])]
+
     """
 
     def __new__(
@@ -549,4 +564,4 @@ class ROC:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelROC(num_labels, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")

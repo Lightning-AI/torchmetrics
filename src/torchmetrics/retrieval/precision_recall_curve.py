@@ -43,6 +43,7 @@ def _retrieval_recall_at_fixed_precision(
 
     Returns:
         Maximum recall value, corresponding it best k
+
     """
     try:
         max_recall, best_k = max((r, k) for p, r, k in zip(precision, recall, top_k) if p >= min_precision)
@@ -107,7 +108,7 @@ class RetrievalPrecisionRecallCurve(Metric):
         ValueError:
             If ``ignore_index`` is not `None` or an integer.
         ValueError:
-            If ``max_k`` parameter is not `None` or an integer larger than 0.
+            If ``max_k`` parameter is not `None` or not an integer larger than 0.
 
     Example:
         >>> from torch import tensor
@@ -123,6 +124,7 @@ class RetrievalPrecisionRecallCurve(Metric):
         tensor([0.5000, 0.5000, 1.0000, 1.0000])
         >>> top_k
         tensor([1, 2, 3, 4])
+
     """
 
     is_differentiable: bool = False
@@ -325,6 +327,7 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
         >>> r = RetrievalRecallAtFixedPrecision(min_precision=0.8)
         >>> r(preds, target, indexes=indexes)
         (tensor(0.5000), tensor(1))
+
     """
 
     higher_is_better = True
@@ -395,6 +398,7 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(10,), torch.randint(2, (10,)), indexes=torch.randint(2,(10,)))[0])
             >>> fig, ax = metric.plot(values)
+
         """
         val = val or self.compute()[0]
         return self._plot(val, ax)

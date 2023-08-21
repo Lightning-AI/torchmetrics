@@ -18,7 +18,7 @@ from typing import Any, Dict, Hashable, Iterable, Iterator, List, Optional, Sequ
 
 import torch
 from torch import Tensor
-from torch.nn import Module, ModuleDict
+from torch.nn import ModuleDict
 from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
@@ -193,6 +193,7 @@ class MetricCollection(ModuleDict):
 
         Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
+
         """
         return self._compute_and_reduce("forward", *args, **kwargs)
 
@@ -201,6 +202,7 @@ class MetricCollection(ModuleDict):
 
         Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
         will be filtered based on the signature of the individual metric.
+
         """
         # Use compute groups if already initialized and checked
         if self._groups_checked:
@@ -228,6 +230,7 @@ class MetricCollection(ModuleDict):
 
         If so, their compute groups will be merged into one. The complexity of the method is approximately
         ``O(number_of_metrics_in_collection ** 2)``, as all metrics need to be compared to all other metrics.
+
         """
         n_groups = len(self._groups)
         while True:
@@ -289,6 +292,7 @@ class MetricCollection(ModuleDict):
         Args:
             copy: If `True` the metric state will between members will be copied instead
                 of just passed by reference
+
         """
         if not self._state_is_copy:
             for cg in self._groups.values():
@@ -446,6 +450,7 @@ class MetricCollection(ModuleDict):
 
         If user provided a list, we check that all metrics in the list are also in the collection. If set to `True` we
         simply initialize each metric in the collection as its own group
+
         """
         if isinstance(self._enable_compute_groups, list):
             self._groups = dict(enumerate(self._enable_compute_groups))
@@ -487,6 +492,7 @@ class MetricCollection(ModuleDict):
 
         Args:
             keep_base: Whether to add prefix/postfix on the items collection.
+
         """
         if keep_base:
             return self._modules.keys()
@@ -499,6 +505,7 @@ class MetricCollection(ModuleDict):
             keep_base: Whether to add prefix/postfix on the collection.
             copy_state:
                 If metric states should be copied between metrics in the same compute group or just passed by reference
+
         """
         self._compute_groups_create_state_ref(copy_state)
         if keep_base:
@@ -511,6 +518,7 @@ class MetricCollection(ModuleDict):
         Args:
             copy_state:
                 If metric states should be copied between metrics in the same compute group or just passed by reference
+
         """
         self._compute_groups_create_state_ref(copy_state)
         return self._modules.values()
@@ -522,6 +530,7 @@ class MetricCollection(ModuleDict):
             key: name of metric to retrieve
             copy_state:
                 If metric states should be copied between metrics in the same compute group or just passed by reference
+
         """
         self._compute_groups_create_state_ref(copy_state)
         return self._modules[key]
@@ -545,7 +554,8 @@ class MetricCollection(ModuleDict):
         """Transfer all metric state to specific dtype. Special version of standard `type` method.
 
         Arguments:
-            dst_type (type or string): the desired type.
+            dst_type: the desired type as ``torch.dtype`` or string.
+
         """
         for m in self.values(copy_state=False):
             m.set_dtype(dst_type)
@@ -607,6 +617,7 @@ class MetricCollection(ModuleDict):
             >>> for _ in range(10):
             ...     values.append(metrics(torch.rand(10), torch.randint(2, (10,))))
             >>> fig_, ax_ = metrics.plot(values, together=True)
+
         """
         if not isinstance(together, bool):
             raise ValueError(f"Expected argument `together` to be a boolean, but got {type(together)}")

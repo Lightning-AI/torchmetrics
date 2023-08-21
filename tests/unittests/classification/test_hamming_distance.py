@@ -21,6 +21,7 @@ from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from sklearn.metrics import hamming_loss as sk_hamming_loss
 from torchmetrics.classification.hamming import (
     BinaryHammingDistance,
+    HammingDistance,
     MulticlassHammingDistance,
     MultilabelHammingDistance,
 )
@@ -29,6 +30,7 @@ from torchmetrics.functional.classification.hamming import (
     multiclass_hamming_distance,
     multilabel_hamming_distance,
 )
+from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
@@ -507,3 +509,24 @@ class TestMultilabelHammingDistance(MetricTester):
             metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
             dtype=dtype,
         )
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryHammingDistance, {"task": "binary"}),
+        (MulticlassHammingDistance, {"task": "multiclass", "num_classes": 3}),
+        (MultilabelHammingDistance, {"task": "multilabel", "num_labels": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=HammingDistance):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -53,6 +53,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.
+
     """
 
     higher_is_better: bool = False
@@ -131,5 +132,6 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(4, 3, 16, 16), torch.rand(4, 3, 16, 16)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

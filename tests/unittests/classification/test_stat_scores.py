@@ -18,12 +18,18 @@ import pytest
 import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
-from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
+from torchmetrics.classification.stat_scores import (
+    BinaryStatScores,
+    MulticlassStatScores,
+    MultilabelStatScores,
+    StatScores,
+)
 from torchmetrics.functional.classification.stat_scores import (
     binary_stat_scores,
     multiclass_stat_scores,
     multilabel_stat_scores,
 )
+from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
@@ -534,3 +540,33 @@ class TestMultilabelStatScores(MetricTester):
             metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
             dtype=dtype,
         )
+
+
+def test_support_for_int():
+    """See issue: https://github.com/Lightning-AI/torchmetrics/issues/1970."""
+    metric = MulticlassStatScores(num_classes=4, average="none", multidim_average="samplewise", ignore_index=0)
+    prediction = torch.randint(low=0, high=4, size=(1, 224, 224)).to(torch.uint8)
+    label = torch.randint(low=0, high=4, size=(1, 224, 224)).to(torch.uint8)
+    score = metric(preds=prediction, target=label)
+    assert score.shape == (1, 4, 5)
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryStatScores, {"task": "binary"}),
+        (MulticlassStatScores, {"task": "multiclass", "num_classes": 3}),
+        (MultilabelStatScores, {"task": "multilabel", "num_labels": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=StatScores):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

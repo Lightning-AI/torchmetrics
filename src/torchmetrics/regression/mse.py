@@ -13,6 +13,7 @@
 # limitations under the License.
 from typing import Any, Optional, Sequence, Union
 
+import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.mse import _mean_squared_error_compute, _mean_squared_error_update
@@ -42,9 +43,12 @@ class MeanSquaredError(Metric):
 
     Args:
         squared: If True returns MSE value, if False returns RMSE value.
+        num_outputs: Number of outputs in multioutput setting
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
+    Example::
+        Single output mse computation:
+
         >>> from torch import tensor
         >>> from torchmetrics.regression import MeanSquaredError
         >>> target = tensor([2.5, 5.0, 4.0, 8.0])
@@ -52,6 +56,18 @@ class MeanSquaredError(Metric):
         >>> mean_squared_error = MeanSquaredError()
         >>> mean_squared_error(preds, target)
         tensor(0.8750)
+
+    Example::
+        Multioutput mse computation:
+
+        >>> from torch import tensor
+        >>> from torchmetrics.regression import MeanSquaredError
+        >>> target = tensor([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
+        >>> preds = tensor([[1.0, 2.0, 3.0], [1.0, 2.0, 3.0]])
+        >>> mean_squared_error = MeanSquaredError(num_outputs=3)
+        >>> mean_squared_error(preds, target)
+        tensor([1., 4., 9.])
+
     """
     is_differentiable = True
     higher_is_better = False
@@ -64,17 +80,25 @@ class MeanSquaredError(Metric):
     def __init__(
         self,
         squared: bool = True,
+        num_outputs: int = 1,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
-        self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
+        if not isinstance(squared, bool):
+            raise ValueError(f"Expected argument `squared` to be a boolean but got {squared}")
         self.squared = squared
+
+        if not (isinstance(num_outputs, int) and num_outputs > 0):
+            raise ValueError(f"Expected num_outputs to be a positive integer but got {num_outputs}")
+        self.num_outputs = num_outputs
+
+        self.add_state("sum_squared_error", default=torch.zeros(num_outputs), dist_reduce_fx="sum")
+        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        sum_squared_error, n_obs = _mean_squared_error_update(preds, target)
+        sum_squared_error, n_obs = _mean_squared_error_update(preds, target, num_outputs=self.num_outputs)
 
         self.sum_squared_error += sum_squared_error
         self.total += n_obs
@@ -121,5 +145,6 @@ class MeanSquaredError(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,), randn(10,)))
             >>> fig, ax = metric.plot(values)
+
         """
         return self._plot(val, ax)

@@ -111,6 +111,7 @@ def _class_test(
         check_state_dict: bool indicating if metric should be tested that its state_dict by default is empty
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
+
     """
     assert len(preds) == len(target)
     num_batches = len(preds)
@@ -248,6 +249,7 @@ def _functional_test(
         fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
+
     """
     p_size = preds.shape[0] if isinstance(preds, Tensor) else len(preds)
     t_size = target.shape[0] if isinstance(target, Tensor) else len(target)
@@ -299,6 +301,7 @@ def _assert_dtype_support(
         dtype: dtype to run test with
         kwargs_update: Additional keyword arguments that will be passed with preds and
             target when running update on the metric.
+
     """
     y_hat = preds[0].to(dtype=dtype, device=device) if preds[0].is_floating_point() else preds[0].to(device)
     y = target[0].to(dtype=dtype, device=device) if target[0].is_floating_point() else target[0].to(device)
@@ -319,6 +322,7 @@ class MetricTester:
     Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup once and
     that pool of processes are used for all tests. All tests should subclass from this and implement a new method called
     `test_metric_name` where the method `self.run_metric_test` is called inside.
+
     """
 
     atol: float = 1e-8
@@ -344,6 +348,7 @@ class MetricTester:
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
+
         """
         device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
 
@@ -372,6 +377,7 @@ class MetricTester:
         check_batch: bool = True,
         fragment_kwargs: bool = False,
         check_scriptable: bool = True,
+        check_state_dict: bool = True,
         atol: Optional[float] = None,
         **kwargs_update: Any,
     ):
@@ -391,6 +397,7 @@ class MetricTester:
                 calculated across devices for each batch (and not just at the end)
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
             check_scriptable: bool indicating if metric should also be tested if it can be scripted
+            check_state_dict: bool indicating if metric should be tested that its state_dict by default is empty
             atol: absolute tolerance used for comparison of results, if None will use self.atol
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
@@ -416,6 +423,7 @@ class MetricTester:
                     atol=atol,
                     fragment_kwargs=fragment_kwargs,
                     check_scriptable=check_scriptable,
+                    check_state_dict=check_state_dict,
                     **kwargs_update,
                 ),
                 [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)],
@@ -438,6 +446,7 @@ class MetricTester:
                 device=device,
                 fragment_kwargs=fragment_kwargs,
                 check_scriptable=check_scriptable,
+                check_state_dict=check_state_dict,
                 **kwargs_update,
             )
 
@@ -462,6 +471,7 @@ class MetricTester:
             dtype: dtype to run test with
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
+
         """
         metric_args = metric_args or {}
         _assert_dtype_support(
@@ -495,6 +505,7 @@ class MetricTester:
             dtype: dtype to run test with
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
+
         """
         metric_args = metric_args or {}
         _assert_dtype_support(
@@ -523,6 +534,7 @@ class MetricTester:
             metric_module: the metric module to test
             metric_functional: functional version of the metric
             metric_args: dict with additional arguments used for class initialization
+
         """
         metric_args = metric_args or {}
         # only floating point tensors can require grad

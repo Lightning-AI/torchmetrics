@@ -16,6 +16,7 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.specificity import _specificity_reduce
 from torchmetrics.metric import Metric
@@ -88,6 +89,7 @@ class BinarySpecificity(BinaryStatScores):
         >>> metric = BinarySpecificity(multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0.0000, 0.3333])
+
     """
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
@@ -135,6 +137,7 @@ class BinarySpecificity(BinaryStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -233,6 +236,7 @@ class MulticlassSpecificity(MulticlassStatScores):
         >>> mcs(preds, target)
         tensor([[0.7500, 0.7500, 0.7500],
                 [0.8000, 0.6667, 0.5000]])
+
     """
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
@@ -281,6 +285,7 @@ class MulticlassSpecificity(MulticlassStatScores):
             >>> for _ in range(20):
             ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -375,6 +380,7 @@ class MultilabelSpecificity(MultilabelStatScores):
         >>> mls(preds, target)
         tensor([[0., 0., 0.],
                 [0., 0., 1.]])
+
     """
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
@@ -425,11 +431,12 @@ class MultilabelSpecificity(MultilabelStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
 
-class Specificity:
+class Specificity(_ClassificationTaskWrapper):
     r"""Compute `Specificity`_.
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
@@ -441,8 +448,9 @@ class Specificity:
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :mod:`BinarySpecificity`, :mod:`MulticlassSpecificity` and :mod:`MultilabelSpecificity` for the specific
-    details of each argument influence and examples.
+    :class:`~torchmetrics.classification.BinarySpecificity`, :class:`~torchmetrics.classification.MulticlassSpecificity`
+    and :class:`~torchmetrics.classification.MultilabelSpecificity` for the specific details of each argument influence
+    and examples.
 
     Legacy Example:
         >>> from torch import tensor
@@ -454,9 +462,10 @@ class Specificity:
         >>> specificity = Specificity(task="multiclass", average='micro', num_classes=3)
         >>> specificity(preds, target)
         tensor(0.6250)
+
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
@@ -487,4 +496,4 @@ class Specificity:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelSpecificity(num_labels, threshold, average, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")

@@ -23,7 +23,6 @@ from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError, Pearson
 from torchmetrics.wrappers import Running
 
 from unittests import NUM_PROCESSES
-from unittests.helpers.testers import MetricTester
 
 
 def test_errors_on_wrong_input():

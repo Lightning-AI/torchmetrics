@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Sequence, Union
+from typing import Any, Optional, Sequence, Union
 
 from torch import Tensor
 
@@ -79,6 +79,7 @@ class Running(WrapperMetric):
         current_val={'mean': tensor(3.), 'sum': tensor(3.)}, running_val={'mean': tensor(2.), 'sum': tensor(6.)}
         current_val={'mean': tensor(4.), 'sum': tensor(4.)}, running_val={'mean': tensor(3.), 'sum': tensor(9.)}
         current_val={'mean': tensor(5.), 'sum': tensor(5.)}, running_val={'mean': tensor(4.), 'sum': tensor(12.)}
+
     """
 
     def __init__(self, base_metric: Metric, window: int = 5) -> None:
@@ -177,5 +178,6 @@ class Running(WrapperMetric):
             >>> for _ in range(3):
             ...     values.append(metric(torch.randn(20, 2)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

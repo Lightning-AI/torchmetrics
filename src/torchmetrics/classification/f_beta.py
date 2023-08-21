@@ -16,6 +16,7 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.f_beta import (
     _binary_fbeta_score_arg_validation,
@@ -105,6 +106,7 @@ class BinaryFBetaScore(BinaryStatScores):
         >>> metric = BinaryFBetaScore(beta=2.0, multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0.5882, 0.0000])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -176,6 +178,7 @@ class BinaryFBetaScore(BinaryStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -278,6 +281,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
         >>> mcfbs(preds, target)
         tensor([[0.9091, 0.0000, 0.5000],
                 [0.0000, 0.3571, 0.4545]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -354,6 +358,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
             >>> for _ in range(20):
             ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -452,6 +457,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
         >>> mlfbs(preds, target)
         tensor([[0.8333, 0.8333, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -530,6 +536,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -598,6 +605,7 @@ class BinaryF1Score(BinaryFBetaScore):
         >>> metric = BinaryF1Score(multidim_average='samplewise')
         >>> metric(preds, target)
         tensor([0.5000, 0.0000])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -660,6 +668,7 @@ class BinaryF1Score(BinaryFBetaScore):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -760,6 +769,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
         >>> mcf1s(preds, target)
         tensor([[0.8000, 0.0000, 0.5000],
                 [0.0000, 0.4000, 0.4000]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -827,6 +837,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
             >>> for _ in range(20):
             ...     values.append(metric(randint(3, (20,)), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -923,6 +934,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
         >>> mlf1s(preds, target)
         tensor([[0.6667, 0.6667, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
@@ -990,11 +1002,12 @@ class MultilabelF1Score(MultilabelFBetaScore):
             >>> for _ in range(10):
             ...     values.append(metric(randint(2, (20, 3)), randint(2, (20, 3))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
 
-class FBetaScore:
+class FBetaScore(_ClassificationTaskWrapper):
     r"""Compute `F-score`_ metric.
 
     .. math::
@@ -1008,8 +1021,10 @@ class FBetaScore:
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_fbeta_score`, :func:`multiclass_fbeta_score` and :func:`multilabel_fbeta_score` for the specific
-    details of each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryFBetaScore`,
+    :class:`~torchmetrics.classification.MulticlassFBetaScore` and
+    :class:`~torchmetrics.classification.MultilabelFBetaScore` for the specific details of each argument influence
+    and examples.
 
     Legcy Example:
         >>> from torch import tensor
@@ -1018,6 +1033,7 @@ class FBetaScore:
         >>> f_beta = FBetaScore(task="multiclass", num_classes=3, beta=0.5)
         >>> f_beta(preds, target)
         tensor(0.3333)
+
     """
 
     def __new__(
@@ -1035,6 +1051,7 @@ class FBetaScore:
         **kwargs: Any,
     ) -> Metric:
         """Initialize task metric."""
+        task = ClassificationTask.from_str(task)
         assert multidim_average is not None  # noqa: S101  # needed for mypy
         kwargs.update(
             {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
@@ -1051,12 +1068,10 @@ class FBetaScore:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelFBetaScore(beta, num_labels, threshold, average, **kwargs)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )
+        raise ValueError(f"Task {task} not supported!")
 
 
-class F1Score:
+class F1Score(_ClassificationTaskWrapper):
     r"""Compute F-1 score.
 
     .. math::
@@ -1069,8 +1084,9 @@ class F1Score:
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :mod:`BinaryF1Score`, :mod:`MulticlassF1Score` and :mod:`MultilabelF1Score` for the specific
-    details of each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryF1Score`, :class:`~torchmetrics.classification.MulticlassF1Score` and
+    :class:`~torchmetrics.classification.MultilabelF1Score` for the specific details of each argument influence and
+    examples.
 
     Legacy Example:
         >>> from torch import tensor
@@ -1079,6 +1095,7 @@ class F1Score:
         >>> f1 = F1Score(task="multiclass", num_classes=3)
         >>> f1(preds, target)
         tensor(0.3333)
+
     """
 
     def __new__(
@@ -1112,4 +1129,4 @@ class F1Score:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelF1Score(num_labels, threshold, average, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")

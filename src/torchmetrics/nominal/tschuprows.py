@@ -38,12 +38,21 @@ class TschuprowsT(Metric):
     .. math::
         \chi^2 = \sum_{i,j} \ frac{\left(n_{ij} - \frac{n_{i.} n_{.j}}{n}\right)^2}{\frac{n_{i.} n_{.j}}{n}}
 
-    where :math:`n_{ij}` denotes the number of times the values :math:`(A_i, B_j)` are observed
-    with :math:`A_i, B_j` represent frequencies of values in ``preds`` and ``target``, respectively.
+    where :math:`n_{ij}` denotes the number of times the values :math:`(A_i, B_j)` are observed with :math:`A_i, B_j`
+    represent frequencies of values in ``preds`` and ``target``, respectively. Tschuprow's T is a symmetric coefficient,
+    i.e. :math:`T(preds, target) = T(target, preds)`, so order of input arguments does not matter. The output values
+    lies in [0, 1] with 1 meaning the perfect association.
 
-    Tschuprow's T is a symmetric coefficient, i.e. :math:`T(preds, target) = T(target, preds)`.
+    As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    The output values lies in [0, 1] with 1 meaning the perfect association.
+    - ``preds`` (:class:`~torch.Tensor`): Either 1D or 2D tensor of categorical (nominal) data from the first data
+      series with shape ``(batch_size,)`` or ``(batch_size, num_classes)``, respectively.
+    - ``target`` (:class:`~torch.Tensor`): Either 1D or 2D tensor of categorical (nominal) data from the second data
+      series with shape ``(batch_size,)`` or ``(batch_size, num_classes)``, respectively.
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``tschuprows_t`` (:class:`~torch.Tensor`): Scalar tensor containing the Tschuprow's T statistic.
 
     Args:
         num_classes: Integer specifing the number of classes
@@ -52,16 +61,14 @@ class TschuprowsT(Metric):
         nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Returns:
-        Tschuprow's T statistic
-
     Raises:
         ValueError:
             If `nan_strategy` is not one of `'replace'` and `'drop'`
         ValueError:
             If `nan_strategy` is equal to `'replace'` and `nan_replace_value` is not an `int` or `float`
 
-    Example:
+    Example::
+
         >>> from torchmetrics.nominal import TschuprowsT
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.randint(0, 4, (100,))
@@ -69,6 +76,7 @@ class TschuprowsT(Metric):
         >>> tschuprows_t = TschuprowsT(num_classes=5)
         >>> tschuprows_t(preds, target)
         tensor(0.4930)
+
     """
 
     full_state_update: bool = False
@@ -97,19 +105,7 @@ class TschuprowsT(Metric):
         self.add_state("confmat", torch.zeros(num_classes, num_classes), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets.
-
-        Args:
-            preds: 1D or 2D tensor of categorical (nominal) data:
-
-                - 1D shape: (batch_size,)
-                - 2D shape: (batch_size, num_classes)
-
-            target: 1D or 2D tensor of categorical (nominal) data:
-
-                - 1D shape: (batch_size,)
-                - 2D shape: (batch_size, num_classes)
-        """
+        """Update state with predictions and targets."""
         confmat = _tschuprows_t_update(preds, target, self.num_classes, self.nan_strategy, self.nan_replace_value)
         self.confmat += confmat
 
@@ -153,5 +149,6 @@ class TschuprowsT(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(torch.randint(0, 4, (100,)), torch.randint(0, 4, (100,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

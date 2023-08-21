@@ -17,7 +17,6 @@
 import builtins
 import functools
 import inspect
-import os
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
@@ -77,6 +76,7 @@ class Metric(Module, ABC):
               check of ``torch.distributed.is_available()`` and ``torch.distributed.is_initialized()``.
             - sync_on_compute: If metric state should synchronize when ``compute`` is called. Default is ``True``
             - compute_with_cache: If results from ``compute`` should be cached. Default is ``False``
+
     """
 
     __jit_ignored_attributes__: ClassVar[List[str]] = ["device"]
@@ -232,6 +232,7 @@ class Metric(Module, ABC):
             ValueError:
                 If ``dist_reduce_fx`` is not callable or one of ``"mean"``, ``"sum"``, ``"cat"``, ``"min"``,
                 ``"max"`` or ``None``.
+
         """
         if not isinstance(default, (Tensor, list)) or (isinstance(default, list) and default):
             raise ValueError("state variable must be a tensor or any empty list (where you can append tensors)")
@@ -276,6 +277,7 @@ class Metric(Module, ABC):
         Raises:
             TorchMetricsUserError:
                 If the metric is already synced and ``forward`` is called again.
+
         """
         # check if states are already synced
         if self._is_synced:
@@ -297,6 +299,7 @@ class Metric(Module, ABC):
         Doing this secures that metrics that need access to the full metric state during `update` works as expected.
         This is the most safe method to use for any metric but also the slower version of the two forward
         implementations.
+
         """
         # global accumulation
         self.update(*args, **kwargs)
@@ -340,6 +343,7 @@ class Metric(Module, ABC):
 
         This can be done when the global metric state is a sinple reduction of batch states. This can be unsafe for
         certain metric cases but is also the fastest way to both accumulate globally and compute locally.
+
         """
         # store global state and reset to default
         global_state = {attr: getattr(self, attr) for attr in self._defaults}
@@ -379,6 +383,7 @@ class Metric(Module, ABC):
 
         Args:
             incoming_state: a dict containing a metric state similar metric itself
+
         """
         for attr in self._defaults:
             local_state = getattr(self, attr)
@@ -488,6 +493,7 @@ class Metric(Module, ABC):
         Raises:
             TorchMetricsUserError:
                 If the metric is already synced and ``sync`` is called again.
+
         """
         if self._is_synced and should_sync:
             raise TorchMetricsUserError("The Metric has already been synced.")
@@ -515,6 +521,7 @@ class Metric(Module, ABC):
 
         Args:
             should_unsync: Whether to perform unsync
+
         """
         if not should_unsync:
             return
@@ -555,6 +562,7 @@ class Metric(Module, ABC):
             should_unsync: Whether to restore the cache state so that the metrics can
                 continue to be accumulated.
             distributed_available: Function to determine if we are running inside a distributed setting
+
         """
         self.sync(
             dist_sync_fn=dist_sync_fn,
@@ -608,6 +616,7 @@ class Metric(Module, ABC):
         """Override this method to compute the final metric value.
 
         This method will automatically synchronize state variables when running in distributed backend.
+
         """
 
     def plot(self, *_: Any, **__: Any) -> Any:
@@ -632,6 +641,7 @@ class Metric(Module, ABC):
         Raises:
             ModuleNotFoundError:
                 If `matplotlib` is not installed
+
         """
         val = val if val is not None else self.compute()
         fig, ax = plot_single_or_multi_val(
@@ -667,12 +677,20 @@ class Metric(Module, ABC):
         return deepcopy(self)
 
     def __getstate__(self) -> Dict[str, Any]:
-        """Get the current state, including all metric states, for the metric. Used for loading and saving a metric."""
+        """Get the current state, including all metric states, for the metric.
+
+        Used for loading and saving a metric.
+
+        """
         # ignore update and compute functions for pickling
         return {k: v for k, v in self.__dict__.items() if k not in ["update", "compute", "_update_signature"]}
 
     def __setstate__(self, state: Dict[str, Any]) -> None:
-        """Set the state of the metric, based on a input state. Used for loading and saving a metric."""
+        """Set the state of the metric, based on a input state.
+
+        Used for loading and saving a metric.
+
+        """
         # manually restore update and compute functions for pickling
         self.__dict__.update(state)
         self._update_signature = inspect.signature(self.update)
@@ -701,6 +719,7 @@ class Metric(Module, ABC):
         """Override default and prevent dtype casting.
 
         Please use :meth:`Metric.set_dtype` instead.
+
         """
         return self
 
@@ -708,6 +727,7 @@ class Metric(Module, ABC):
         """Override default and prevent dtype casting.
 
         Please use :meth:`Metric.set_dtype` instead.
+
         """
         return self
 
@@ -715,6 +735,7 @@ class Metric(Module, ABC):
         """Override default and prevent dtype casting.
 
         Please use :meth:`Metric.set_dtype` instead.
+
         """
         return self
 
@@ -722,6 +743,7 @@ class Metric(Module, ABC):
         """Override default and prevent dtype casting.
 
         Please use :meth:`Metric.set_dtype` instead.
+
         """
         return self
 
@@ -729,7 +751,8 @@ class Metric(Module, ABC):
         """Transfer all metric state to specific dtype. Special version of standard `type` method.
 
         Arguments:
-            dst_type (type or string): the desired type.
+            dst_type: the desired type as string or dtype object
+
         """
         self._dtype_convert = True
         out = super().type(dst_type)
@@ -746,6 +769,7 @@ class Metric(Module, ABC):
             fn: the function to apply
             exclude_state: list of state variables to exclude from applying the function, that then needs to be handled
                 by the metric class itself.
+
         """
         this = super()._apply(fn)
         fs = str(fn)
@@ -802,8 +826,9 @@ class Metric(Module, ABC):
             destination: Optional dictionary, that if provided, the state of module will be updated into the dict and
                 the same object is returned. Otherwise, an ``OrderedDict`` will be created and returned.
             prefix: optional string, a prefix added to parameter and buffer names to compose the keys in state_dict.
-            keep_vars: by default the :class:`~torch.Tensor`s returned in the state dict are detached from autograd.
+            keep_vars: by default the :class:`~torch.Tensor` returned in the state dict are detached from autograd.
                 If set to ``True``, detaching will not be performed.
+
         """
         destination: Dict[str, Union[torch.Tensor, List, Any]] = super().state_dict(
             destination=destination, prefix=prefix, keep_vars=keep_vars  # type: ignore[arg-type]
@@ -843,7 +868,7 @@ class Metric(Module, ABC):
     def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
         """Filter kwargs such that they match the update signature of the metric."""
         # filter all parameters based on update signature except those of
-        # type VAR_POSITIONAL (*args) and VAR_KEYWORD (**kwargs)
+        # types `VAR_POSITIONAL` for `* args` and `VAR_KEYWORD` for `** kwargs`
         _params = (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
         _sign_params = self._update_signature.parameters
         filtered_kwargs = {
@@ -866,6 +891,7 @@ class Metric(Module, ABC):
 
         The hash depends on both the class itself but also the current metric state, which therefore enforces that two
         instances of the same metrics never have the same hash even if they have been updated on the same data.
+
         """
         # we need to add the id here, since PyTorch requires a module hash to be unique.
         # Internally, PyTorch nn.Module relies on that for children discovery
@@ -1080,6 +1106,7 @@ class CompositionalMetric(Metric):
                 First metric whose compute() result is the first argument of operator
             metric_b: second metric whose compute() result is the second argument of operator.
                 For operators taking in only one input, this should be None.
+
         """
         super().__init__()
 
@@ -1096,7 +1123,11 @@ class CompositionalMetric(Metric):
             self.metric_b = metric_b
 
     def _sync_dist(self, dist_sync_fn: Optional[Callable] = None, process_group: Optional[Any] = None) -> None:
-        """No syncing required here. syncing will be done in metric_a and metric_b."""
+        """No syncing required here.
+
+        syncing will be done in metric_a and metric_b.
+
+        """
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Redirect the call to the input which the conposition was formed from."""

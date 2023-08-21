@@ -13,13 +13,9 @@
 import glob
 import inspect
 import os
+import re
 import shutil
 import sys
-
-import torch
-
-# this removes "Initializes internal Module state, shared by both nn.Module and ScriptModule." from the docs
-torch.nn.Module.__init__.__doc__ = ""
 
 import pt_lightning_sphinx_theme
 from lightning_utilities.docs import fetch_external_assets
@@ -68,18 +64,34 @@ _transform_changelog(
     os.path.join(_PATH_HERE, FOLDER_GENERATED, "CHANGELOG.md"),
 )
 
+
+def _set_root_image_path(page_path: str):
+    """Set relative path to be from the root, drop all `../` in images used gallery."""
+    with open(page_path, encoding="UTF-8") as fo:
+        body = fo.read()
+    found = re.findall(r"   :image: (.*)\.svg", body)
+    for occur in found:
+        occur_ = occur.replace("../", "")
+        body = body.replace(occur, occur_)
+    with open(page_path, "w", encoding="UTF-8") as fo:
+        fo.write(body)
+
+
 if SPHINX_FETCH_ASSETS:
     fetch_external_assets(
         docs_folder=_PATH_HERE,
         assets_folder="_static/fetched-s3-assets",
         retrieve_pattern=r"https?://[-a-zA-Z0-9_]+\.s3\.[-a-zA-Z0-9()_\\+.\\/=]+",
     )
+    all_pages = glob.glob(os.path.join(_PATH_HERE, "**", "*.rst"), recursive=True)
+    for page in all_pages:
+        _set_root_image_path(page)
 
 # -- General configuration ---------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
 
-needs_sphinx = "6.2"
+needs_sphinx = "5.3"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -93,7 +105,7 @@ extensions = [
     "sphinx.ext.linkcode",
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
-    "sphinx.ext.imgmath",
+    "sphinx.ext.mathjax",
     "myst_parser",
     "sphinx.ext.autosectionlabel",
     "nbsphinx",
@@ -106,7 +118,8 @@ extensions = [
 
 # Set that source code from plotting is always included
 plot_include_source = True
-plot_html_show_source_link = True
+plot_html_show_formats = False
+plot_html_show_source_link = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -251,9 +264,11 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "torch": ("https://pytorch.org/docs/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
+    "matplotlib": ("http://matplotlib.org/stable", None),
 }
+nitpicky = True
 
-# -- Options for todo extension ----------------------------------------------
+# -- Options for to-do extension ----------------------------------------------
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
@@ -373,7 +388,7 @@ autosummary_generate = True
 
 autodoc_member_order = "groupwise"
 
-autoclass_content = "both"
+autoclass_content = "class"
 
 autodoc_default_options = {
     "members": True,
@@ -410,8 +425,34 @@ from torchmetrics import Metric
 """
 coverage_skip_undoc_in_source = True
 
+# skip false positive linkcheck errors from anchors
+linkcheck_anchors = False
+
+# ignore all links in any CHANGELOG file
+linkcheck_exclude_documents = [r"^(.*\/)*CHANGELOG.*$"]
+
 # jstor and sciencedirect cannot be accessed from python, but links work fine in a local doc
 linkcheck_ignore = [
+    # The Treatment of Ties in Ranking Problems
     "https://www.jstor.org/stable/2332303",
+    # Quality Assessment of Deblocked Images
+    "https://ieeexplore.ieee.org/abstract/document/5535179",
+    # Image information and visual quality
+    "https://ieeexplore.ieee.org/abstract/document/1576816",
+    # Performance measurement in blind audio source separation
+    "https://ieeexplore.ieee.org/abstract/document/1643671",
+    # A Non-Intrusive Quality and Intelligibility Measure of Reverberant and Dereverberated Speech
+    "https://ieeexplore.ieee.org/abstract/document/5547575",
+    # An Algorithm for Predicting the Intelligibility of Speech Masked by Modulated Noise Maskers
+    "https://ieeexplore.ieee.org/abstract/document/7539284",
+    # A short-time objective intelligibility measure for time-frequency weighted noisy speech
+    "https://ieeexplore.ieee.org/abstract/document/5495701",
+    # An Algorithm for Intelligibility Prediction of Time–Frequency Weighted Noisy Speech
+    "https://ieeexplore.ieee.org/abstract/document/5713237",
+    # A universal image quality index
+    "https://ieeexplore.ieee.org/abstract/document/995823",
+    # On the Performance Evaluation of Pan-Sharpening Techniques
+    "https://ieeexplore.ieee.org/abstract/document/4317530",
+    # Robust parameter estimation with a small bias against heavy contamination
     "https://www.sciencedirect.com/science/article/pii/S0047259X08000456",
 ]

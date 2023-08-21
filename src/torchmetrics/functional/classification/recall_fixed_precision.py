@@ -144,6 +144,7 @@ def binary_recall_at_fixed_precision(
         (tensor(1.), tensor(0.5000))
         >>> binary_recall_at_fixed_precision(preds, target, min_precision=0.5, thresholds=5)
         (tensor(1.), tensor(0.5000))
+
     """
     if validate_args:
         _binary_recall_at_fixed_precision_arg_validation(min_precision, thresholds, ignore_index)
@@ -251,6 +252,7 @@ def multiclass_recall_at_fixed_precision(
         (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
         >>> multiclass_recall_at_fixed_precision(preds, target, num_classes=5, min_precision=0.5, thresholds=5)
         (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 1.0000e+06, 1.0000e+06, 1.0000e+06]))
+
     """
     if validate_args:
         _multiclass_recall_at_fixed_precision_arg_validation(num_classes, min_precision, thresholds, ignore_index)
@@ -366,6 +368,7 @@ def multilabel_recall_at_fixed_precision(
         (tensor([1., 1., 1.]), tensor([0.0500, 0.5500, 0.0500]))
         >>> multilabel_recall_at_fixed_precision(preds, target, num_labels=3, min_precision=0.5, thresholds=5)
         (tensor([1., 1., 1.]), tensor([0.0000, 0.5000, 0.0000]))
+
     """
     if validate_args:
         _multilabel_recall_at_fixed_precision_arg_validation(num_labels, min_precision, thresholds, ignore_index)
@@ -395,8 +398,11 @@ def recall_at_fixed_precision(
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_recall_at_fixed_precision`, :func:`multiclass_recall_at_fixed_precision` and
-    :func:`multilabel_recall_at_fixed_precision` for the specific details of each argument influence and examples.
+    :func:`~torchmetrics.functional.classification.binary_recall_at_fixed_precision`,
+    :func:`~torchmetrics.functional.classification.multiclass_recall_at_fixed_precision` and
+    :func:`~torchmetrics.functional.classification.multilabel_recall_at_fixed_precision` for the specific details of
+    each argument influence and examples.
+
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:

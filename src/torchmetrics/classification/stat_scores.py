@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Tuple, Union
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.functional.classification.stat_scores import (
     _binary_stat_scores_arg_validation,
     _binary_stat_scores_compute,
@@ -40,6 +41,11 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class _AbstractStatScores(Metric):
+    tp: Union[List[Tensor], Tensor]
+    fp: Union[List[Tensor], Tensor]
+    tn: Union[List[Tensor], Tensor]
+    fn: Union[List[Tensor], Tensor]
+
     # define common functions
     def _create_state(
         self,
@@ -145,6 +151,7 @@ class BinaryStatScores(_AbstractStatScores):
         >>> metric(preds, target)
         tensor([[2, 3, 0, 1, 3],
                 [0, 2, 1, 3, 3]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -279,6 +286,7 @@ class MulticlassStatScores(_AbstractStatScores):
                 [[0, 1, 4, 1, 1],
                  [1, 1, 2, 2, 3],
                  [1, 2, 2, 1, 2]]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -419,6 +427,7 @@ class MultilabelStatScores(_AbstractStatScores):
                 [[0, 0, 0, 2, 2],
                  [0, 2, 0, 0, 0],
                  [0, 0, 1, 1, 1]]])
+
     """
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
@@ -464,13 +473,14 @@ class MultilabelStatScores(_AbstractStatScores):
         return _multilabel_stat_scores_compute(tp, fp, tn, fn, self.average, self.multidim_average)
 
 
-class StatScores:
+class StatScores(_ClassificationTaskWrapper):
     r"""Compute the number of true positives, false positives, true negatives, false negatives and the support.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :mod:`BinaryStatScores`, :mod:`MulticlassStatScores` and :mod:`MultilabelStatScores` for the specific
-    details of each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryStatScores`, :class:`~torchmetrics.classification.MulticlassStatScores`
+    and :class:`~torchmetrics.classification.MultilabelStatScores` for the specific details of each argument influence
+    and examples.
 
     Legacy Example:
         >>> from torch import tensor
@@ -484,6 +494,7 @@ class StatScores:
         tensor([[0, 1, 2, 1, 1],
                 [1, 1, 1, 1, 2],
                 [1, 0, 3, 0, 1]])
+
     """
 
     def __new__(
@@ -517,4 +528,4 @@ class StatScores:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelStatScores(num_labels, threshold, average, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")

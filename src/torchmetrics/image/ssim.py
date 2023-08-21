@@ -28,7 +28,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class StructuralSimilarityIndexMeasure(Metric):
-    """Compute Structual Similarity Index Measure (SSIM_).
+    """Compute Structural Similarity Index Measure (SSIM_).
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -74,6 +74,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         >>> ssim = StructuralSimilarityIndexMeasure(data_range=1.0)
         >>> ssim(preds, target)
         tensor(0.9219)
+
     """
 
     higher_is_better: bool = True
@@ -211,6 +212,7 @@ class StructuralSimilarityIndexMeasure(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -228,7 +230,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``msssim`` (: :class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average MSSSIM
+    - ``msssim`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average MSSSIM
       value over sample else returns tensor of shape ``(N,)`` with SSIM values per sample
 
     Args:
@@ -268,11 +270,13 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
     Example:
         >>> from torchmetrics.image import MultiScaleStructuralSimilarityIndexMeasure
         >>> import torch
+        >>> gen = torch.manual_seed(42)
         >>> preds = torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
         >>> ms_ssim = MultiScaleStructuralSimilarityIndexMeasure(data_range=1.0)
         >>> ms_ssim(preds, target)
         tensor(0.9627)
+
     """
 
     higher_is_better: bool = True
@@ -411,5 +415,6 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

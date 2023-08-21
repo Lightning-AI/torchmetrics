@@ -48,7 +48,7 @@ def complete_intersection_over_union(
     replacement_val: float = 0,
     aggregate: bool = True,
 ) -> torch.Tensor:
-    r"""Compute `Complete Intersection over Union <https://arxiv.org/abs/2005.03572>`_ between two sets of boxes.
+    r"""Compute Complete Intersection over Union (`CIOU`_) between two sets of boxes.
 
     Both sets of boxes are expected to be in (x1, y1, x2, y2) format with 0 <= x1 < x2 and 0 <= y1 < y2.
 
@@ -71,6 +71,7 @@ def complete_intersection_over_union(
         >>> target = torch.Tensor([[110, 110, 210, 210]])
         >>> complete_intersection_over_union(preds, target)
         tensor(0.6724)
+
     """
     if not _TORCHVISION_GREATER_EQUAL_0_13:
         raise ModuleNotFoundError(

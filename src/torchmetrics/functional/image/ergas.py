@@ -27,6 +27,7 @@ def _ergas_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
+
     """
     if preds.dtype != target.dtype:
         raise TypeError(
@@ -61,11 +62,13 @@ def _ergas_compute(
             - ``'none'`` or ``None``: no reduction will be applied
 
     Example:
-        >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+        >>> gen = torch.manual_seed(42)
+        >>> preds = torch.rand([16, 1, 16, 16], generator=gen)
         >>> target = preds * 0.75
         >>> preds, target = _ergas_update(preds, target)
         >>> torch.round(_ergas_compute(preds, target))
         tensor(154.)
+
     """
     b, c, h, w = preds.shape
     preds = preds.reshape(b, c, h * w)
@@ -109,7 +112,8 @@ def error_relative_global_dimensionless_synthesis(
 
     Example:
         >>> from torchmetrics.functional.image import error_relative_global_dimensionless_synthesis
-        >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+        >>> gen = torch.manual_seed(42)
+        >>> preds = torch.rand([16, 1, 16, 16], generator=gen)
         >>> target = preds * 0.75
         >>> ergds = error_relative_global_dimensionless_synthesis(preds, target)
         >>> torch.round(ergds)
@@ -119,6 +123,7 @@ def error_relative_global_dimensionless_synthesis(
         [1] Qian Du; Nicholas H. Younan; Roger King; Vijay P. Shah, "On the Performance Evaluation of
         Pan-Sharpening Techniques" in IEEE Geoscience and Remote Sensing Letters, vol. 4, no. 4, pp. 518-522,
         15 October 2007, doi: 10.1109/LGRS.2007.896328.
+
     """
     preds, target = _ergas_update(preds, target)
     return _ergas_compute(preds, target, ratio, reduction)

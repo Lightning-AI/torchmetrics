@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Optional
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -134,6 +133,7 @@ def binary_fbeta_score(
         ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> binary_fbeta_score(preds, target, beta=2.0, multidim_average='samplewise')
         tensor([0.5882, 0.0000])
+
     """
     if validate_args:
         _binary_fbeta_score_arg_validation(beta, threshold, multidim_average, ignore_index)
@@ -251,6 +251,7 @@ def multiclass_fbeta_score(
         >>> multiclass_fbeta_score(preds, target, beta=2.0, num_classes=3, multidim_average='samplewise', average=None)
         tensor([[0.9091, 0.0000, 0.5000],
                 [0.0000, 0.3571, 0.4545]])
+
     """
     if validate_args:
         _multiclass_fbeta_score_arg_validation(beta, num_classes, top_k, average, multidim_average, ignore_index)
@@ -367,6 +368,7 @@ def multilabel_fbeta_score(
         >>> multilabel_fbeta_score(preds, target, num_labels=3, beta=2.0, multidim_average='samplewise', average=None)
         tensor([[0.8333, 0.8333, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
+
     """
     if validate_args:
         _multilabel_fbeta_score_arg_validation(beta, num_labels, threshold, average, multidim_average, ignore_index)
@@ -438,6 +440,7 @@ def binary_f1_score(
         ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> binary_f1_score(preds, target, multidim_average='samplewise')
         tensor([0.5000, 0.0000])
+
     """
     return binary_fbeta_score(
         preds=preds,
@@ -542,6 +545,7 @@ def multiclass_f1_score(
         >>> multiclass_f1_score(preds, target, num_classes=3, multidim_average='samplewise', average=None)
         tensor([[0.8000, 0.0000, 0.5000],
                 [0.0000, 0.4000, 0.4000]])
+
     """
     return multiclass_fbeta_score(
         preds=preds,
@@ -645,6 +649,7 @@ def multilabel_f1_score(
         >>> multilabel_f1_score(preds, target, num_labels=3, multidim_average='samplewise', average=None)
         tensor([[0.6667, 0.6667, 0.0000],
                 [0.0000, 0.0000, 0.0000]])
+
     """
     return multilabel_fbeta_score(
         preds=preds,
@@ -681,7 +686,9 @@ def fbeta_score(
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_fbeta_score`, :func:`multiclass_fbeta_score` and :func:`multilabel_fbeta_score` for the specific
+    :func:`~torchmetrics.functional.classification.binary_fbeta_score`,
+    :func:`~torchmetrics.functional.classification.multiclass_fbeta_score` and
+    :func:`~torchmetrics.functional.classification.multilabel_fbeta_score` for the specific
     details of each argument influence and examples.
 
     Legacy Example:
@@ -690,6 +697,7 @@ def fbeta_score(
         >>> preds = tensor([0, 2, 1, 0, 0, 1])
         >>> fbeta_score(preds, target, task="multiclass", num_classes=3, beta=0.5)
         tensor(0.3333)
+
     """
     task = ClassificationTask.from_str(task)
     assert multidim_average is not None  # noqa: S101  # needed for mypy
@@ -732,7 +740,9 @@ def f1_score(
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_f1_score`, :func:`multiclass_f1_score` and :func:`multilabel_f1_score` for the specific
+    :func:`~torchmetrics.functional.classification.binary_f1_score`,
+    :func:`~torchmetrics.functional.classification.multiclass_f1_score` and
+    :func:`~torchmetrics.functional.classification.multilabel_f1_score` for the specific
     details of each argument influence and examples.
 
     Legacy Example:
@@ -741,6 +751,7 @@ def f1_score(
         >>> preds = tensor([0, 2, 1, 0, 0, 1])
         >>> f1_score(preds, target, task="multiclass", num_classes=3)
         tensor(0.3333)
+
     """
     task = ClassificationTask.from_str(task)
     assert multidim_average is not None  # noqa: S101  # needed for mypy

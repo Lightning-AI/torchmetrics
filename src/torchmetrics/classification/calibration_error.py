@@ -11,11 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from typing import Any, List, Optional, Sequence, Union
 
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.functional.classification.calibration_error import (
     _binary_calibration_error_arg_validation,
     _binary_calibration_error_tensor_validation,
@@ -95,12 +96,16 @@ class BinaryCalibrationError(Metric):
         >>> bce = BinaryCalibrationError(n_bins=2, norm='max')
         >>> bce(preds, target)
         tensor(0.3167)
+
     """
     is_differentiable: bool = False
     higher_is_better: bool = False
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
+
+    confidences: List[Tensor]
+    accuracies: List[Tensor]
 
     def __init__(
         self,
@@ -175,6 +180,7 @@ class BinaryCalibrationError(Metric):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -241,6 +247,7 @@ class MulticlassCalibrationError(Metric):
         >>> mcce = MulticlassCalibrationError(num_classes=3, n_bins=3, norm='max')
         >>> mcce(preds, target)
         tensor(0.2333)
+
     """
     is_differentiable: bool = False
     higher_is_better: bool = False
@@ -248,6 +255,9 @@ class MulticlassCalibrationError(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Class"
+
+    confidences: List[Tensor]
+    accuracies: List[Tensor]
 
     def __init__(
         self,
@@ -324,11 +334,12 @@ class MulticlassCalibrationError(Metric):
             >>> for _ in range(20):
             ...     values.append(metric(randn(20,3).softmax(dim=-1), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
 
-class CalibrationError:
+class CalibrationError(_ClassificationTaskWrapper):
     r"""`Top-label Calibration Error`_.
 
     The expected calibration error can be used to quantify how well a given model is calibrated e.g. how well the
@@ -350,11 +361,13 @@ class CalibrationError:
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
-    :mod:`BinaryCalibrationError` and :mod:`MulticlassCalibrationError` for the specific details of
-    each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryCalibrationError` and
+    :class:`~torchmetrics.classification.MulticlassCalibrationError` for the specific details of each argument influence
+    and examples.
+
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass"],
         n_bins: int = 15,

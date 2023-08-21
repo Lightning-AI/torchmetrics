@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from copy import deepcopy
-from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -43,7 +43,7 @@ def _get_nan_indices(*tensors: Tensor) -> Tensor:
 class MultioutputWrapper(WrapperMetric):
     """Wrap a base metric to enable it to support multiple outputs.
 
-    Several torchmetrics metrics, such as :class:`torchmetrics.regression.spearman.SpearmanCorrcoef` lack support for
+    Several torchmetrics metrics, such as :class:`~torchmetrics.regression.spearman.SpearmanCorrCoef` lack support for
     multioutput mode. This class wraps such metrics to support computing one metric per output.
     Unlike specific torchmetric metrics, it doesn't support any aggregation across outputs.
     This means if you set ``num_outputs`` to 2, ``.compute()`` will return a Tensor of dimension
@@ -84,6 +84,7 @@ class MultioutputWrapper(WrapperMetric):
          >>> r2score = MultioutputWrapper(R2Score(), 2)
          >>> r2score(preds, target)
          tensor([0.9654, 0.9082])
+
     """
 
     is_differentiable = False
@@ -139,6 +140,7 @@ class MultioutputWrapper(WrapperMetric):
         """Call underlying forward methods and aggregate the results if they're non-null.
 
         We override this method to ensure that state variables get copied over on the underlying metrics.
+
         """
         reshaped_args_kwargs = self._get_args_kwargs_by_output(*args, **kwargs)
         results = [
@@ -195,5 +197,6 @@ class MultioutputWrapper(WrapperMetric):
             >>> for _ in range(3):
             ...     values.append(metric(torch.randn(20, 2), torch.randn(20, 2)))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)

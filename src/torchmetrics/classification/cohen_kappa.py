@@ -16,6 +16,7 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.confusion_matrix import BinaryConfusionMatrix, MulticlassConfusionMatrix
 from torchmetrics.functional.classification.cohen_kappa import (
     _binary_cohen_kappa_arg_validation,
@@ -86,6 +87,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
         >>> metric = BinaryCohenKappa()
         >>> metric(preds, target)
         tensor(0.5000)
+
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -111,7 +113,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
         """Compute metric."""
         return _cohen_kappa_reduce(self.confmat, self.weights)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -149,6 +151,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
             >>> for _ in range(10):
             ...     values.append(metric(rand(10), randint(2,(10,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
@@ -211,6 +214,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         >>> metric = MulticlassCohenKappa(num_classes=3)
         >>> metric(preds, target)
         tensor(0.6364)
+
     """
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -237,7 +241,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         """Compute metric."""
         return _cohen_kappa_reduce(self.confmat, self.weights)
 
-    def plot(
+    def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -275,11 +279,12 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
             >>> for _ in range(20):
             ...     values.append(metric(randn(20,3).softmax(dim=-1), randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
 
 
-class CohenKappa:
+class CohenKappa(_ClassificationTaskWrapper):
     r"""Calculate `Cohen's kappa score`_ that measures inter-annotator agreement.
 
     .. math::
@@ -292,8 +297,9 @@ class CohenKappa:
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
-    :mod:`BinaryCohenKappa` and :mod:`MulticlassCohenKappa` for the specific details of
-    each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryCohenKappa` and
+    :class:`~torchmetrics.classification.MulticlassCohenKappa` for the specific details of each argument influence and
+    examples.
 
     Legacy Example:
         >>> from torch import tensor
@@ -302,9 +308,10 @@ class CohenKappa:
         >>> cohenkappa = CohenKappa(task="multiclass", num_classes=2)
         >>> cohenkappa(preds, target)
         tensor(0.5000)
+
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls,
         task: Literal["binary", "multiclass"],
         threshold: float = 0.5,
@@ -323,4 +330,4 @@ class CohenKappa:
             if not isinstance(num_classes, int):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             return MulticlassCohenKappa(num_classes, **kwargs)
-        return None
+        raise ValueError(f"Task {task} not supported!")

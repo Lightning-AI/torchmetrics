@@ -42,6 +42,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> None:
             If ``preds`` dtype is not one of ``(torch.float16, torch.float32, torch.float64)``
         TypeError:
             If ``target`` is not of a type LongTensor (torch.int64)
+
     """
     if len(preds.shape) != 3:
         raise ValueError(
@@ -82,6 +83,7 @@ def _perplexity_update(preds: Tensor, target: Tensor, ignore_index: Optional[int
     Returns:
         Log probabilities, summed over all samples
         Number of samples
+
     """
     _check_shape_and_type_consistency(preds, target)
 
@@ -109,6 +111,7 @@ def _perplexity_compute(total: Tensor, count: Tensor) -> Tensor:
         count: Number of samples
     Returns:
         Perplexity
+
     """
     return torch.exp(total / count)
 
@@ -133,11 +136,13 @@ def perplexity(preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
 
     Examples:
         >>> import torch
-        >>> preds = torch.rand(2, 8, 5, generator=torch.manual_seed(22))
-        >>> target = torch.randint(5, (2, 8), generator=torch.manual_seed(22))
+        >>> gen = torch.manual_seed(42)
+        >>> preds = torch.rand(2, 8, 5, generator=gen)
+        >>> target = torch.randint(5, (2, 8), generator=gen)
         >>> target[0, 6:] = -100
         >>> perplexity(preds, target, ignore_index=-100)
-        tensor(5.2545)
+        tensor(5.8540)
+
     """
     total, count = _perplexity_update(preds, target, ignore_index)
     return _perplexity_compute(total, count)

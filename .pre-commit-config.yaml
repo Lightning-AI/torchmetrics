@@ -38,20 +38,21 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.8.0
+    rev: v3.9.0
     hooks:
       - id: pyupgrade
         args: [--py38-plus]
         name: Upgrade code
 
-#  - repo: https://github.com/PyCQA/docformatter
-#    rev: v1.5.1
-#    hooks:
-#      - id: docformatter
-#        args: [--in-place, --wrap-summaries=115, --wrap-descriptions=120]
+  - repo: https://github.com/PyCQA/docformatter
+    rev: v1.7.5
+    hooks:
+      - id: docformatter
+        additional_dependencies: [tomli]
+        args: ["--in-place"]
 
   - repo: https://github.com/psf/black
-    rev: 23.3.0
+    rev: 23.7.0
     hooks:
       - id: black
         name: Format code
@@ -81,8 +82,32 @@ repos:
           - flake8-builtins
           - flake8-bugbear
 
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+      # Enforce that noqa annotations always occur with specific codes. Sample annotations: # noqa: F401, # noqa: F401,W203
+      - id: python-check-blanket-noqa
+      # Enforce that # type: ignore annotations always occur with specific codes. Sample annotations: # type: ignore[attr-defined], # type: ignore[attr-defined, name-defined]
+      #- id: python-check-blanket-type-ignore  # TODO
+      # Prevent common mistakes of assert mck.not_called(), assert mck.called_once_with(...) and mck.assert_called.
+      - id: python-check-mock-methods
+      # A quick check for the eval() built-in function
+      #- id: python-no-eval broken check - https://github.com/pre-commit/pygrep-hooks/issues/135
+      # A quick check for the deprecated .warn() method of python loggers
+      - id: python-no-log-warn
+      # Enforce that python3.6+ type annotations are used instead of type comments
+      #- id: python-use-type-annotations # false positive - https://github.com/pre-commit/pygrep-hooks/issues/154
+      # Detect common mistake of using single backticks when writing rst
+      #- id: rst-backticks  # todo
+      # Detect mistake of rst directive not ending with double colon or space before the double colon
+      - id: rst-directive-colons
+      # Detect mistake of inline code touching normal text in rst
+      - id: rst-inline-touching-normal
+      # Forbid files which have a UTF-8 Unicode replacement character
+      - id: text-unicode-replacement-char
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.0.276
+    rev: v0.0.277
     hooks:
       - id: ruff
         args: ["--fix"]
