@@ -148,11 +148,12 @@ class _SpectralAngleMapper(SpectralAngleMapper):
     """Wrapper for deprecated import.
 
     >>> import torch
-    >>> preds = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42))
-    >>> target = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(123))
+    >>> gen = torch.manual_seed(42)
+    >>> preds = torch.rand([16, 3, 16, 16], generator=gen)
+    >>> target = torch.rand([16, 3, 16, 16], generator=gen)
     >>> sam = _SpectralAngleMapper()
     >>> sam(preds, target)
-    tensor(0.5943)
+    tensor(0.5914)
 
     """
 
