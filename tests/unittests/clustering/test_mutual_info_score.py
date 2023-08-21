@@ -16,7 +16,7 @@ from functools import partial
 
 import pytest
 import torch
-from sklearn.metrics import mutual_info_score as scipy_mutual_info_score
+from sklearn.metrics import mutual_info_score as sklearn_mutual_info_score
 from torchmetrics.functional.clustering.mutual_info_score import mutual_info_score
 from torchmetrics.clustering.mutual_info_score import MutualInfoScore
 
@@ -55,20 +55,20 @@ _float_inputs = Input(
 class TestMutualInfoScore(MetricTester):
     """Test class for `MutualInfoScore` metric."""
 
-    atol = 1e-3
+    atol = 1e-5
 
     @pytest.mark.parametrize("compute_on_cpu", [True, False])
     @pytest.mark.parametrize("ddp", [True, False])
     def test_mutual_info_score(self, preds, target, compute_on_cpu, ddp):
         """Test class implementation of metric."""
-        metric_args = {"num_classes": NUM_CLASSES}
+        # metric_args = {"num_classes": NUM_CLASSES}
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=MutualInfoScore,
-            reference_metric=scipy_mutual_info_score,
-            metric_args=metric_args
+            reference_metric=sklearn_mutual_info_score,
+            # metric_args=metric_args
         )
 
     def test_mutual_info_score_functional(self, preds, target):
@@ -77,12 +77,12 @@ class TestMutualInfoScore(MetricTester):
             preds=preds,
             target=target,
             metric_functional=mutual_info_score,
-            reference_metric=scipy_mutual_info_score
+            reference_metric=sklearn_mutual_info_score,
         )
 
 
 def test_mutual_info_score_functional_raises_invalid_task():
     """Check that metric rejects continuous-valued inputs."""
     preds, target = _float_inputs
-    with pytest.raises(ValueError, match=r"Expected discrete *"):
+    with pytest.raises(ValueError, match=r"Expected *"):
         mutual_info_score(preds, target)

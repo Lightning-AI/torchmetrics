@@ -19,12 +19,13 @@ from torch import Tensor, tensor
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def check_cluster_labels(preds: Tensor, target: Tensor) -> None:
+def _check_cluster_labels(preds: Tensor, target: Tensor) -> None:
     """Check shape of input tensors."""
     _check_same_shape(preds, target)
-    if torch.is_floating_point(preds) or torch.is_floating_point(target):
+    if torch.is_floating_point(preds) or torch.is_complex(preds) or \
+            torch.is_floating_point(target) or torch.is_complex(target):
         raise ValueError(
-            f"Expected discrete values but received {preds.dtype} for"
+            f"Expected real, discrete values but received {preds.dtype} for"
             f"predictions and {target.dtype} for target labels instead."
         )
 
@@ -71,7 +72,8 @@ def _calculate_contingency_matrix(
 
 def _mutual_info_score_update(
     preds: Tensor,
-    target: Tensor
+    target: Tensor,
+    # num_classes: int
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Update and return variables required to compute the mutual information score.
 
@@ -83,7 +85,7 @@ def _mutual_info_score_update(
         contingency: contingency matrix
 
     """
-    check_cluster_labels(preds, target)
+    _check_cluster_labels(preds, target)
     return _calculate_contingency_matrix(preds, target)
 
 
