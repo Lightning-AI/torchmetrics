@@ -174,8 +174,8 @@ class EvaluationDistributedSampler(torch.utils.data.DistributedSampler):
         drop_last (bool, optional): if ``True``, then the sampler will drop the tail of the data to make it evenly
             divisible across the number of replicas.
 
-    For a full example on how to use this sampler, using both bare Pytorch but also Psytorch Lightning,
-    checkout the `distributed_evaluation.py` file in the examples folder.
+    For a full example on how to use this sampler, using both bare PyTorch but also PyTorch Lightning,
+    check out the `distributed_evaluation.py` file in the examples folder.
 
     Example::
         The distributed sampler is always intended to be used in conjunction with a DataLoader:

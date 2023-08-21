@@ -30,7 +30,7 @@ gather_all_tensors
 torchmetrics.utilities.data
 ***************************
 
-The `data` utilities are used to help with data manipulation, such as converting labels in classification from format
+The `data` utilities are used to help with data manipulation, such as converting labels in classification from one format
 to another.
 
 select_topk
