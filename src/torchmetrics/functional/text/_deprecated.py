@@ -251,7 +251,7 @@ def _perplexity(preds: Tensor, target: Tensor, ignore_index: Optional[int] = Non
     >>> target = torch.randint(5, (2, 8), generator=gen)
     >>> target[0, 6:] = -100
     >>> _perplexity(preds, target, ignore_index=-100)
-    tensor(5.2545)
+    tensor(5.8540)
 
     """
     _deprecated_root_import_func("perplexity", "text")

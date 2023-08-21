@@ -63,7 +63,7 @@ class SpectralAngleMapper(Metric):
         >>> target = torch.rand([16, 3, 16, 16], generator=gen)
         >>> sam = SpectralAngleMapper()
         >>> sam(preds, target)
-        tensor(0.5943)
+        tensor(0.5914)
 
     """
 

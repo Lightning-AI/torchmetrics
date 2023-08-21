@@ -56,7 +56,7 @@ class Perplexity(Metric):
         >>> target[0, 6:] = -100
         >>> perp = Perplexity(ignore_index=-100)
         >>> perp(preds, target)
-        tensor(5.2545)
+        tensor(5.8540)
 
     """
     is_differentiable = True

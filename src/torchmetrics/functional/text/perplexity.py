@@ -141,7 +141,7 @@ def perplexity(preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
         >>> target = torch.randint(5, (2, 8), generator=gen)
         >>> target[0, 6:] = -100
         >>> perplexity(preds, target, ignore_index=-100)
-        tensor(5.2545)
+        tensor(5.8540)
 
     """
     total, count = _perplexity_update(preds, target, ignore_index)

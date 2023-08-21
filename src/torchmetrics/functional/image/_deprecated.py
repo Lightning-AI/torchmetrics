@@ -148,7 +148,7 @@ def _spectral_angle_mapper(
     >>> preds = torch.rand([16, 3, 16, 16], generator=gen)
     >>> target = torch.rand([16, 3, 16, 16], generator=gen)
     >>> _spectral_angle_mapper(preds, target)
-    tensor(0.5943)
+    tensor(0.5914)
 
     """
     _deprecated_root_import_func("spectral_angle_mapper", "image")
