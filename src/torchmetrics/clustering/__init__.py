@@ -13,7 +13,6 @@
 # limitations under the License.
 from torchmetrics.clustering.mutual_info_score import MutualInfoScore
 
-
 __all__ = [
     "MutualInfoScore",
 ]

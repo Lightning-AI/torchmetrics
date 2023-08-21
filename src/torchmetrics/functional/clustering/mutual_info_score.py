@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import torch
-
 from typing import Optional, Tuple
+
+import torch
 from torch import Tensor, tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
@@ -22,8 +22,12 @@ from torchmetrics.utilities.checks import _check_same_shape
 def _check_cluster_labels(preds: Tensor, target: Tensor) -> None:
     """Check shape of input tensors."""
     _check_same_shape(preds, target)
-    if torch.is_floating_point(preds) or torch.is_complex(preds) or \
-            torch.is_floating_point(target) or torch.is_complex(target):
+    if (
+        torch.is_floating_point(preds)
+        or torch.is_complex(preds)
+        or torch.is_floating_point(target)
+        or torch.is_complex(target)
+    ):
         raise ValueError(
             f"Expected real, discrete values but received {preds.dtype} for"
             f"predictions and {target.dtype} for target labels instead."
@@ -31,10 +35,7 @@ def _check_cluster_labels(preds: Tensor, target: Tensor) -> None:
 
 
 def _calculate_contingency_matrix(
-    preds: Tensor,
-    target: Tensor,
-    eps: Optional[float] = 1e-16,
-    sparse: bool = False
+    preds: Tensor, target: Tensor, eps: Optional[float] = 1e-16, sparse: bool = False
 ) -> Tensor:
     """Calculate contingency matrix.
 
@@ -48,7 +49,7 @@ def _calculate_contingency_matrix(
 
     """
     if eps is not None and sparse is True:
-        raise ValueError('Cannot specify `eps` and return sparse tensor.')
+        raise ValueError("Cannot specify `eps` and return sparse tensor.")
 
     preds_classes, preds_idx = torch.unique(preds, return_inverse=True)
     target_classes, target_idx = torch.unique(target, return_inverse=True)
@@ -57,9 +58,7 @@ def _calculate_contingency_matrix(
     n_classes_target = target_classes.size(0)
 
     contingency = torch.sparse_coo_tensor(
-        torch.stack((target_idx, preds_idx)),
-        torch.ones(target_idx.size(0)),
-        (n_classes_target, n_classes_preds)
+        torch.stack((target_idx, preds_idx)), torch.ones(target_idx.size(0)), (n_classes_target, n_classes_preds)
     )
 
     if not sparse:

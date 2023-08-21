@@ -11,15 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import torch
+from typing import Any, List, Optional, Sequence, Union
 
-from typing import Any, Optional, List, Sequence, Union
+import torch
 from torch import Tensor
 
-from torchmetrics.functional.clustering.mutual_info_score import (
-    _mutual_info_score_compute,
-    _mutual_info_score_update
-)
+from torchmetrics.functional.clustering.mutual_info_score import _mutual_info_score_compute, _mutual_info_score_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -60,6 +57,7 @@ class MutualInfoScore(Metric):
         >>> mi_score = MutualInfoScore()
         >>> mi_score(preds, target)
         tensor()
+
     """
 
     is_differentiable = True
@@ -85,11 +83,7 @@ class MutualInfoScore(Metric):
         """Compute mutual information over state."""
         return _mutual_info_score_compute(self.contingency)
 
-    def plot(
-        self,
-        val: Union[Tensor, Sequence[Tensor], None] = None,
-        ax: Optional[_AX_TYPE] = None
-    ) -> _PLOT_OUT_TYPE:
+    def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
         Args:

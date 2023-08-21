@@ -17,8 +17,8 @@ from functools import partial
 import pytest
 import torch
 from sklearn.metrics import mutual_info_score as sklearn_mutual_info_score
-from torchmetrics.functional.clustering.mutual_info_score import mutual_info_score
 from torchmetrics.clustering.mutual_info_score import MutualInfoScore
+from torchmetrics.functional.clustering.mutual_info_score import mutual_info_score
 
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
