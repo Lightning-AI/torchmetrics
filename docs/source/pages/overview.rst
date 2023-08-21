@@ -164,10 +164,8 @@ states are lists.
 .. testoutput::
     :options: +NORMALIZE_WHITESPACE
 
-    {'preds': [tensor([0.7127, 0.9367])],
-     'target': [tensor([0.4834, 0.7244])]}
-    {'preds': [tensor([0.7127, 0.9367]), tensor([0.9937, 0.7892])],
-     'target': [tensor([0.4834, 0.7244]), tensor([0.3675, 0.3068])]}
+    {'preds': [tensor([0.8823, 0.9150])], 'target': [tensor([0.3829, 0.9593])]}
+    {'preds': [tensor([0.8823, 0.9150]), tensor([0.3904, 0.6009])], 'target': [tensor([0.3829, 0.9593]), tensor([0.2566, 0.7936])]}
 
 In general we have a few recommendations for memory management:
 
