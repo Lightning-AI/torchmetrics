@@ -32,13 +32,13 @@ def _ciou_update(
     iou = complete_box_iou(preds, target)
     if iou_threshold is not None:
         iou[iou < iou_threshold] = replacement_val
-    return iou
+    return iou.diag()
 
 
-def _ciou_compute(iou: torch.Tensor, labels_eq: bool = True) -> torch.Tensor:
-    if labels_eq:
-        return iou.diag().mean()
-    return iou.mean() if iou.numel() > 0 else torch.tensor(0.0)
+def _ciou_compute(iou: torch.Tensor, aggregate: bool = True) -> torch.Tensor:
+    if not aggregate:
+        return iou
+    return iou.mean() if iou.numel() > 0 else torch.tensor(0.0, device=iou.device)
 
 
 def complete_intersection_over_union(
@@ -62,15 +62,51 @@ def complete_intersection_over_union(
         replacement_val:
             Value to replace values under the threshold with.
         aggregate:
-            Return the average value instead of the complete IoU matrix.
+            Return the average value instead of the per box pair IoU value.
 
-    Example:
+    Example::
+        By default iou is aggregated across all box pairs:
+
         >>> import torch
         >>> from torchmetrics.functional.detection import complete_intersection_over_union
-        >>> preds = torch.Tensor([[100, 100, 200, 200]])
-        >>> target = torch.Tensor([[110, 110, 210, 210]])
+        >>> preds = torch.tensor(
+        ...     [
+        ...         [296.55, 93.96, 314.97, 152.79],
+        ...         [328.94, 97.05, 342.49, 122.98],
+        ...         [356.62, 95.47, 372.33, 147.55],
+        ...     ]
+        ... )
+        >>> target = torch.tensor(
+        ...     [
+        ...         [300.00, 100.00, 315.00, 150.00],
+        ...         [330.00, 100.00, 350.00, 125.00],
+        ...         [350.00, 100.00, 375.00, 150.00],
+        ...     ]
+        ... )
         >>> complete_intersection_over_union(preds, target)
-        tensor(0.6724)
+        tensor(0.5790)
+
+    Example::
+        By setting `aggregate=False` the IoU score per prediction and target boxes is returned:
+
+        >>> import torch
+        >>> from torchmetrics.functional.detection import complete_intersection_over_union
+        >>> preds = torch.tensor(
+        ...     [
+        ...         [296.55, 93.96, 314.97, 152.79],
+        ...         [328.94, 97.05, 342.49, 122.98],
+        ...         [356.62, 95.47, 372.33, 147.55],
+        ...     ]
+        ... )
+        >>> target = torch.tensor(
+        ...     [
+        ...         [300.00, 100.00, 315.00, 150.00],
+        ...         [330.00, 100.00, 350.00, 125.00],
+        ...         [350.00, 100.00, 375.00, 150.00],
+        ...     ]
+        ... )
+        >>> complete_intersection_over_union(preds, target, aggregate=False)
+        tensor([0.6883, 0.4881, 0.5606])
 
     """
     if not _TORCHVISION_GREATER_EQUAL_0_13:
@@ -80,4 +116,4 @@ def complete_intersection_over_union(
             " Please install with `pip install torchvision>=0.13` or `pip install torchmetrics[detection]`."
         )
     iou = _ciou_update(preds, target, iou_threshold, replacement_val)
-    return _ciou_compute(iou) if aggregate else iou
+    return _ciou_compute(iou, aggregate)
