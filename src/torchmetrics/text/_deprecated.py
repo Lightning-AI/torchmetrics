@@ -145,12 +145,13 @@ class _Perplexity(Perplexity):
     """Wrapper for deprecated import.
 
     >>> import torch
-    >>> preds = torch.rand(2, 8, 5, generator=torch.manual_seed(22))
-    >>> target = torch.randint(5, (2, 8), generator=torch.manual_seed(22))
+    >>> gen = torch.manual_seed(42)
+    >>> preds = torch.rand(2, 8, 5, generator=gen)
+    >>> target = torch.randint(5, (2, 8), generator=gen)
     >>> target[0, 6:] = -100
     >>> perp = _Perplexity(ignore_index=-100)
     >>> perp(preds, target)
-    tensor(5.2545)
+    tensor(5.8540)
 
     """
 

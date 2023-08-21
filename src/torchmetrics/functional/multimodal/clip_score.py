@@ -151,7 +151,7 @@ def clip_score(
         >>> _ = torch.manual_seed(42)
         >>> from torchmetrics.functional.multimodal import clip_score
         >>> score = clip_score(torch.randint(255, (3, 224, 224)), "a photo of a cat", "openai/clip-vit-base-patch16")
-        >>> print(score.detach())
+        >>> score.detach()
         tensor(24.4255)
 
     """
