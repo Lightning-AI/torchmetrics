@@ -86,6 +86,7 @@ class Metric(Module, ABC):
         "plot_lower_bound",
         "plot_upper_bound",
         "plot_legend_name",
+        "metric_state",
     ]
     is_differentiable: Optional[bool] = None
     higher_is_better: Optional[bool] = None
@@ -179,6 +180,11 @@ class Metric(Module, ABC):
     def update_count(self) -> int:
         """Get the number of times `update` and/or `forward` has been called since initialization or last `reset`."""
         return self._update_count
+
+    @property
+    def metric_state(self) -> Dict[str, Union[List[Tensor], Tensor]]:
+        """Get the current state of the metric."""
+        return {attr: getattr(self, attr) for attr in self._defaults}
 
     def add_state(
         self,
