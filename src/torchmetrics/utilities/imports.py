@@ -30,10 +30,11 @@ _TORCH_GREATER_EQUAL_1_11: Optional[bool] = compare_version("torch", operator.ge
 _TORCH_GREATER_EQUAL_1_12: Optional[bool] = compare_version("torch", operator.ge, "1.12.0")
 _TORCH_GREATER_EQUAL_1_13: Optional[bool] = compare_version("torch", operator.ge, "1.13.0")
 
-if module_available("lightning"):
-    _LIGHTNING_GREATER_EQUAL_2_0: Optional[bool] = compare_version("lightning", operator.ge, "2.0.0")
-else:
-    _LIGHTNING_GREATER_EQUAL_2_0: Optional[bool] = compare_version("pytorch_lightning", operator.ge, "2.0.0")
+_LIGHTNING_GREATER_EQUAL_2_0: Optional[bool] = (
+    compare_version("lightning", operator.ge, "2.0.0")
+    if module_available("lightning")
+    else compare_version("pytorch_lightning", operator.ge, "2.0.0")
+)
 
 _JIWER_AVAILABLE: bool = package_available("jiwer")
 _NLTK_AVAILABLE: bool = package_available("nltk")
