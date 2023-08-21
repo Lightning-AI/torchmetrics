@@ -90,10 +90,11 @@ def _clip_iqa_format_prompts(prompts: Tuple[Union[str, Tuple[str, str]]] = ("qua
     """Converts the provided keywords into a list of prompts for the model to calculate the anchor vectors.
 
     Args:
-        prompts: A string, list of strings or tuple of strings. If a string is provided, it must be one of the
-            availble prompts. If a list of strings is provided, all strings must be one of the availble prompts.
-            If a tuple of strings is provided, it must be of length 2 and the first string must be a positive prompt
-            and the second string must be a negative prompt.
+        prompts: A string, tuple of strings or nested tuple of strings. If a single string is provided, it must be one
+            of the availble prompts (see above). Else the input is expected to be a tuple, where each element can be one
+            of two things: either a string or a tuple of strings. If a string is provided, it must be one of the
+            availble prompts (see above). If tuple is provided, it must be of length 2 and the first string must be a
+            positive prompt and the second string must be a negative prompt.
 
     Returns:
         Tuple containing a list of prompts and a list of the names of the prompts. The first list is double the length
@@ -183,6 +184,8 @@ def _clip_iqa_update(
     images = images / float(data_range)
     """Update function for CLIP IQA."""
     if model_name_or_path == "clip_iqa":
+        # default mean and std from clip paper, see:
+        # https://github.com/huggingface/transformers/blob/main/src/transformers/utils/constants.py
         default_mean = torch.tensor([0.48145466, 0.4578275, 0.40821073], device=device).view(1, 3, 1, 1)
         default_std = torch.tensor([0.26862954, 0.26130258, 0.27577711], device=device).view(1, 3, 1, 1)
         images = (images - default_mean) / default_std
@@ -259,10 +262,11 @@ def clip_image_quality_assessment(
             and `"openai/clip-vit-large-patch14"`
         data_range: The maximum value of the input tensor. For example, if the input images are in range [0, 255],
             data_range should be 255. The images are normalized by this value.
-        prompts: A string, tuple of strings or nested tuple of strings. If a string is provided, it must be one of the
-            availble prompts. If a tuple of strings is provided, all strings must be one of the availble prompts.
-            If a nested tuple of strings is provided, it must be of length 2 and the first string must be a positive
-            prompt and the second string must be a negative prompt.
+        prompts: A string, tuple of strings or nested tuple of strings. If a single string is provided, it must be one
+            of the availble prompts (see above). Else the input is expected to be a tuple, where each element can be one
+            of two things: either a string or a tuple of strings. If a string is provided, it must be one of the
+            availble prompts (see above). If tuple is provided, it must be of length 2 and the first string must be a
+            positive prompt and the second string must be a negative prompt.
 
     .. note:: If using the default `clip_iqa` model, the package `piq` must be installed. Either install with
         `pip install piq` or `pip install torchmetrics[multimodal]`.
