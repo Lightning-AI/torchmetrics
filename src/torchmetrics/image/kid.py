@@ -151,8 +151,7 @@ class KernelInceptionDistance(Metric):
         >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
         >>> kid.update(imgs_dist1, real=True)
         >>> kid.update(imgs_dist2, real=False)
-        >>> kid_mean, kid_std = kid.compute()
-        >>> print((kid_mean, kid_std))
+        >>> kid.compute()
         (tensor(0.0337), tensor(0.0023))
 
     """
