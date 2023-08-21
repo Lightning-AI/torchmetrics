@@ -17,6 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
 
@@ -64,6 +65,17 @@ def _clip_score_update(
 
     img_features = model.get_image_features(processed_input["pixel_values"].to(device))
     img_features = img_features / img_features.norm(p=2, dim=-1, keepdim=True)
+
+    max_position_embeddings = model.config.text_config.max_position_embeddings
+    if processed_input["attention_mask"].shape[-1] > max_position_embeddings:
+        rank_zero_warn(
+            f"Encountered caption longer than {max_position_embeddings=}. Will truncate captions to this length."
+            "If longer captions are needed, initialize argument `model_name_or_path` with a model that supports"
+            "longer sequences",
+            UserWarning,
+        )
+        processed_input["attention_mask"] = processed_input["attention_mask"][..., :max_position_embeddings]
+        processed_input["input_ids"] = processed_input["input_ids"][..., :max_position_embeddings]
 
     txt_features = model.get_text_features(
         processed_input["input_ids"].to(device), processed_input["attention_mask"].to(device)
