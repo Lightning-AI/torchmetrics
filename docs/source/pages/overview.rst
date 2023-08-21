@@ -130,8 +130,54 @@ the native `MetricCollection`_ module can also be used to wrap multiple metrics.
 
 You can always check which device the metric is located on using the `.device` property.
 
+*****************************
+Metrics and memory management
+*****************************
+
+As stated before, metrics have states and thoses states takes up a certain amount of memory depending on the metric.
+In general metrics can be divided into two categories when we talk about memory management:
+
+* Metrics with tensor states: These metrics only have states that are insteances of :class:`~torch.Tensor`. When these
+  kind of metrics are updated the values of those tensors are updated. Importantly the size of the tensors are
+  **constant** meaning that regardless of how much data is passed to the metric, its memory footprint will not change.
+
+* Metrics with list states: These metrics have at least one state that is a list, which gets appended tensors as the
+  metric is updated. Importantly the size of the list is therefore **not constant** and will grow as the metric is
+  updated. The growth dependens on the particular metric (some metrics only need to store a single value per sample,
+  some much more).
+
+You can always check the current metric state by accessing the `.metric_state` property, and checking if any of the
+states are lists.
+
+.. testcode::
+
+    import torch
+    from torchmetrics.regression import SpearmanCorrCoef
+    metric = SpearmanCorrCoef()
+    metric(torch.rand(2,), torch.rand(2,))
+    print(metric.metric_state)
+    metric(torch.rand(2,), torch.rand(2,))
+    print(metric.metric_state)
+
+In general we have a few recommendations for memory management:
+
+* When done with a metric, we always recommend calling the `reset` method. The reason for this being that the python
+  garbage collector can struggle to totally clean the metric states if this is not done. In the worst case this can
+  lead to a memory leak if multiple instances of the same metric for different purposes are created in the same script.
+
+* Better to alwasy try to reuse the same instance of a metric instead of initializing a new. Calling the `reset` method
+  returns the metric to its initial state, and can therefore be used to reuse the same instance. However, we still
+  highly recommend to use **different** instances from training, validation and testing.
+
+* If only the results on a batch level is needed e.g no aggregation or alternatively if you have a small dataset that
+  fits into iteration of evaluation, we can recommend to use the functional API instead as it does not keep a internal
+  state and memory is therefore freed after each call.
+
+See :ref:`Metric kwargs` for different advanced settings for controlling the memory footprint of metrics.
+
+***********************************************
 Metrics in Distributed Data Parallel (DDP) mode
-===============================================
+***********************************************
 
 When using metrics in `Distributed Data Parallel (DDP) <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`_
 mode, one should be aware that DDP will add additional samples to your dataset if the size of your dataset is
