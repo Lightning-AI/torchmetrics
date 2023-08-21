@@ -159,6 +159,14 @@ states are lists.
     metric(torch.rand(2,), torch.rand(2,))
     print(metric.metric_state)
 
+.. testoutput::
+    :options: +NORMALIZE_WHITESPACE
+
+    {'preds': [tensor([0.7127, 0.9367])],
+     'target': [tensor([0.4834, 0.7244])]}
+    {'preds': [tensor([0.7127, 0.9367]), tensor([0.9937, 0.7892])],
+     'target': [tensor([0.4834, 0.7244]), tensor([0.3675, 0.3068])]}
+
 In general we have a few recommendations for memory management:
 
 * When done with a metric, we always recommend calling the `reset` method. The reason for this being that the python
