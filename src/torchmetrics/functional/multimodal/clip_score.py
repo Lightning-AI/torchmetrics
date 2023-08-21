@@ -87,7 +87,7 @@ def _clip_score_update(
     return score, len(text)
 
 
-def _get_model_and_processor(
+def _get_clip_model_and_processor(
     model_name_or_path: Literal[
         "openai/clip-vit-base-patch16",
         "openai/clip-vit-base-patch32",
@@ -118,14 +118,14 @@ def clip_score(
 ) -> Tensor:
     r"""Calculate `CLIP Score`_ which is a text-to-image similarity metric.
 
-    CLIP is a reference free metric that can be used to evaluate the correlation between a generated caption for an
-    image and the actual content of the image. It has been found to be highly correlated with human judgement. The
+    CLIP Score is a reference free metric that can be used to evaluate the correlation between a generated caption for
+    an image and the actual content of the image. It has been found to be highly correlated with human judgement. The
     metric is defined as:
 
     .. math::
         \text{CLIPScore(I, C)} = max(100 * cos(E_I, E_C), 0)
 
-    which corresponds to the cosine similarity between visual CLIP embedding :math:`E_i` for an image :math:`i` and
+    which corresponds to the cosine similarity between visual `CLIP`_ embedding :math:`E_i` for an image :math:`i` and
     textual CLIP embedding :math:`E_C` for an caption :math:`C`. The score is bound between 0 and 100 and the closer
     to 100 the better.
 
@@ -155,7 +155,7 @@ def clip_score(
         tensor(24.4255)
 
     """
-    model, processor = _get_model_and_processor(model_name_or_path)
+    model, processor = _get_clip_model_and_processor(model_name_or_path)
     device = images.device if isinstance(images, Tensor) else images[0].device
     score, _ = _clip_score_update(images, text, model.to(device), processor)
     score = score.mean(0)

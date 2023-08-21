@@ -14,6 +14,7 @@
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
 
 if _TRANSFORMERS_GREATER_EQUAL_4_10:
+    from torchmetrics.multimodal.clip_iqa import CLIPImageQualityAssessment
     from torchmetrics.multimodal.clip_score import CLIPScore
 
-    __all__ = ["CLIPScore"]
+    __all__ = ["CLIPScore", "CLIPImageQualityAssessment"]

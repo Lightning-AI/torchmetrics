@@ -144,6 +144,8 @@
 .. _Seamless Scene Segmentation paper: https://arxiv.org/abs/1905.01220
 .. _Fleiss kappa: https://en.wikipedia.org/wiki/Fleiss%27_kappa
 .. _VIF: https://ieeexplore.ieee.org/abstract/document/1576816
+.. _CLIP-IQA: https://arxiv.org/abs/2207.12396
+.. _CLIP: https://arxiv.org/abs/2103.00020
 .. _PPL : https://arxiv.org/pdf/1812.04948
 .. _CIOU: https://arxiv.org/abs/2005.03572
 .. _DIOU: https://arxiv.org/abs/1911.08287v1
