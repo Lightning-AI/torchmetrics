@@ -370,7 +370,7 @@ class FrechetInceptionDistance(Metric):
         """Transfer all metric state to specific dtype. Special version of standard `type` method.
 
         Arguments:
-            dst_type (type or string): the desired type.
+            dst_type: the desired type as ``torch.dtype`` or string
 
         """
         out = super().set_dtype(dst_type)

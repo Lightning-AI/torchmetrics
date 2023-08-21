@@ -1091,7 +1091,9 @@ def stat_scores(
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_stat_scores`, :func:`multiclass_stat_scores` and :func:`multilabel_stat_scores` for the specific
+    :func:`~torchmetrics.functional.classification.binary_stat_scores`,
+    :func:`~torchmetrics.functional.classification.multiclass_stat_scores` and
+    :func:`~torchmetrics.functional.classification.multilabel_stat_scores` for the specific
     details of each argument influence and examples.
 
     Legacy Example:

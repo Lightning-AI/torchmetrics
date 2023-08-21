@@ -105,7 +105,7 @@
 .. _Pearson's Contingency Coefficient: https://www.itl.nist.gov/div898/software/dataplot/refman2/auxillar/pearcont.htm
 .. _CLIP score: https://arxiv.org/pdf/2104.08718.pdf
 .. _Huggingface OpenAI: https://huggingface.co/openai
-.. _Theil's U: https://en.wikipedia.org/wiki/Uncertainty_coefficient
+.. _Theils Uncertainty coefficient: https://en.wikipedia.org/wiki/Uncertainty_coefficient
 .. _Perceptual Evaluation of Speech Quality: https://en.wikipedia.org/wiki/Perceptual_Evaluation_of_Speech_Quality
 .. _pesq package: https://github.com/ludlows/python-pesq
 .. _Cees Taal's website: http://www.ceestaal.nl/code/
@@ -144,6 +144,8 @@
 .. _Seamless Scene Segmentation paper: https://arxiv.org/abs/1905.01220
 .. _Fleiss kappa: https://en.wikipedia.org/wiki/Fleiss%27_kappa
 .. _VIF: https://ieeexplore.ieee.org/abstract/document/1576816
+.. _CLIP-IQA: https://arxiv.org/abs/2207.12396
+.. _CLIP: https://arxiv.org/abs/2103.00020
 .. _PPL : https://arxiv.org/pdf/1812.04948
 .. _CIOU: https://arxiv.org/abs/2005.03572
 .. _DIOU: https://arxiv.org/abs/1911.08287v1

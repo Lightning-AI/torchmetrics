@@ -324,8 +324,10 @@ def precision_at_fixed_recall(
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_precision_at_fixed_recall`, :func:`multiclass_precision_at_fixed_recall` and
-    :func:`multilabel_precision_at_fixed_recall` for the specific details of each argument influence and examples.
+    :func:`~torchmetrics.functional.classification.binary_precision_at_fixed_recall`,
+    :func:`~torchmetrics.functional.classification.multiclass_precision_at_fixed_recall` and
+    :func:`~torchmetrics.functional.classification.multilabel_precision_at_fixed_recall` for the specific details of
+    each argument influence and examples.
 
     """
     task = ClassificationTask.from_str(task)
