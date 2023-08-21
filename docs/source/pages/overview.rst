@@ -153,6 +153,8 @@ states are lists.
 
     import torch
     from torchmetrics.regression import SpearmanCorrCoef
+
+    gen = torch.manual_seed(42)
     metric = SpearmanCorrCoef()
     metric(torch.rand(2,), torch.rand(2,))
     print(metric.metric_state)
