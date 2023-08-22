@@ -23,7 +23,7 @@ import psutil
 import pytest
 import torch
 from torch import Tensor, tensor
-from torch.nn import Module
+from torch.nn import Module, Parameter
 from torchmetrics.classification import BinaryAccuracy
 from torchmetrics.regression import PearsonCorrCoef
 
@@ -65,44 +65,46 @@ def test_inherit():
 
 def test_add_state():
     """Test that add state method works as expected."""
-    a = DummyMetric()
+    metric = DummyMetric()
 
-    a.add_state("a", tensor(0), "sum")
-    assert a._reductions["a"](tensor([1, 1])) == 2
+    metric.add_state("a", tensor(0), "sum")
+    assert metric._reductions["a"](tensor([1, 1])) == 2
 
-    a.add_state("b", tensor(0), "mean")
-    assert np.allclose(a._reductions["b"](tensor([1.0, 2.0])).numpy(), 1.5)
+    metric.add_state("b", tensor(0), "mean")
+    assert np.allclose(metric._reductions["b"](tensor([1.0, 2.0])).numpy(), 1.5)
 
-    a.add_state("c", tensor(0), "cat")
-    assert a._reductions["c"]([tensor([1]), tensor([1])]).shape == (2,)
-
-    with pytest.raises(ValueError, match="`dist_reduce_fx` must be callable or one of .*"):
-        a.add_state("d1", tensor(0), "xyz")
+    metric.add_state("c", tensor(0), "cat")
+    assert metric._reductions["c"]([tensor([1]), tensor([1])]).shape == (2,)
 
     with pytest.raises(ValueError, match="`dist_reduce_fx` must be callable or one of .*"):
-        a.add_state("d2", tensor(0), 42)
+        metric.add_state("d1", tensor(0), "xyz")
+
+    with pytest.raises(ValueError, match="`dist_reduce_fx` must be callable or one of .*"):
+        metric.add_state("d2", tensor(0), 42)
 
     with pytest.raises(ValueError, match="state variable must be a tensor or any empty list .*"):
-        a.add_state("d3", [tensor(0)], "sum")
+        metric.add_state("d3", [tensor(0)], "sum")
 
     with pytest.raises(ValueError, match="state variable must be a tensor or any empty list .*"):
-        a.add_state("d4", 42, "sum")
+        metric.add_state("d4", 42, "sum")
 
     def custom_fx(_):
         return -1
 
-    a.add_state("e", tensor(0), custom_fx)
-    assert a._reductions["e"](tensor([1, 1])) == -1
+    metric.add_state("e", tensor(0), custom_fx)
+    assert metric._reductions["e"](tensor([1, 1])) == -1
 
 
 def test_add_state_persistent():
     """Test that metric states are not added to the normal state dict."""
-    a = DummyMetric()
+    metric = DummyMetric()
 
-    a.add_state("a", tensor(0), "sum", persistent=True)
-    assert "a" in a.state_dict()
+    metric.add_state("a", tensor(0), "sum", persistent=True)
+    assert "a" in metric.state_dict()
 
-    a.add_state("b", tensor(0), "sum", persistent=False)
+    metric.add_state("b", tensor(0), "sum", persistent=False)
+    assert "a" in metric.metric_state
+    assert "b" in metric.metric_state
 
 
 def test_reset():
@@ -114,29 +116,31 @@ def test_reset():
     class B(DummyListMetric):
         pass
 
-    a = A()
-    assert a.x == 0
-    a.x = tensor(5)
-    a.reset()
-    assert a.x == 0
+    metric = A()
+    assert metric.x == 0
+    metric.x = tensor(5)
+    metric.reset()
+    assert metric.x == 0
 
-    b = B()
-    assert isinstance(b.x, list)
-    assert len(b.x) == 0
-    b.x = tensor(5)
-    b.reset()
-    assert isinstance(b.x, list)
-    assert len(b.x) == 0
+    metric = B()
+    assert isinstance(metric.x, list)
+    assert len(metric.x) == 0
+    metric.x = tensor(5)
+    metric.reset()
+    assert isinstance(metric.x, list)
+    assert len(metric.x) == 0
 
 
 def test_reset_compute():
     """Test that `reset`+`compute` methods works as expected."""
-    a = DummyMetricSum()
-    assert a.x == 0
-    a.update(tensor(5))
-    assert a.compute() == 5
-    a.reset()
-    assert a.compute() == 0
+    metric = DummyMetricSum()
+    assert metric.metric_state == {"x": tensor(0)}
+    metric.update(tensor(5))
+    assert metric.metric_state == {"x": tensor(5)}
+    assert metric.compute() == 5
+    metric.reset()
+    assert metric.metric_state == {"x": tensor(0)}
+    assert metric.compute() == 0
 
 
 def test_update():
@@ -147,92 +151,74 @@ def test_update():
             self.x += x
 
     a = A()
-    assert a.x == 0
+    assert a.metric_state == {"x": tensor(0)}
     assert a._computed is None
     a.update(1)
     assert a._computed is None
-    assert a.x == 1
+    assert a.metric_state == {"x": tensor(1)}
     a.update(2)
-    assert a.x == 3
+    assert a.metric_state == {"x": tensor(3)}
     assert a._computed is None
 
 
 @pytest.mark.parametrize("compute_with_cache", [True, False])
 def test_compute(compute_with_cache):
     """Test that `compute` method works as expected."""
-
-    class A(DummyMetric):
-        def update(self, x):
-            self.x += x
-
-        def compute(self):
-            return self.x
-
-    a = A(compute_with_cache=compute_with_cache)
-    assert a.compute() == 0
-    assert a.x == 0
-    a.update(1)
-    assert a._computed is None
-    assert a.compute() == 1
-    assert a._computed == 1 if compute_with_cache else a._computed is None
-    a.update(2)
-    assert a._computed is None
-    assert a.compute() == 3
-    assert a._computed == 3 if compute_with_cache else a._computed is None
+    metric = DummyMetricSum(compute_with_cache=compute_with_cache)
+    assert metric.compute() == 0
+    assert metric.metric_state == {"x": tensor(0)}
+    metric.update(1)
+    assert metric._computed is None
+    assert metric.compute() == 1
+    assert metric._computed == 1 if compute_with_cache else metric._computed is None
+    assert metric.metric_state == {"x": tensor(1)}
+    metric.update(2)
+    assert metric._computed is None
+    assert metric.compute() == 3
+    assert metric._computed == 3 if compute_with_cache else metric._computed is None
+    assert metric.metric_state == {"x": tensor(3)}
 
     # called without update, should return cached value
-    a._computed = 5
-    assert a.compute() == 5
+    metric._computed = 5
+    assert metric.compute() == 5
+    assert metric.metric_state == {"x": tensor(3)}
 
 
 def test_hash():
     """Test that hashes for different metrics are different, even if states are the same."""
+    metric_1 = DummyMetric()
+    metric_2 = DummyMetric()
+    assert hash(metric_1) != hash(metric_2)
 
-    class A(DummyMetric):
-        pass
-
-    class B(DummyListMetric):
-        pass
-
-    a1 = A()
-    a2 = A()
-    assert hash(a1) != hash(a2)
-
-    b1 = B()
-    b2 = B()
-    assert hash(b1) != hash(b2)  # different ids
-    assert isinstance(b1.x, list)
-    assert len(b1.x) == 0
-    b1.x.append(tensor(5))
-    assert isinstance(hash(b1), int)  # <- check that nothing crashes
-    assert isinstance(b1.x, list)
-    assert len(b1.x) == 1
-    b2.x.append(tensor(5))
+    metric_1 = DummyListMetric()
+    metric_2 = DummyListMetric()
+    assert hash(metric_1) != hash(metric_2)  # different ids
+    assert isinstance(metric_1.x, list)
+    assert len(metric_1.x) == 0
+    metric_1.x.append(tensor(5))
+    assert isinstance(hash(metric_1), int)  # <- check that nothing crashes
+    assert isinstance(metric_1.x, list)
+    assert len(metric_1.x) == 1
+    metric_2.x.append(tensor(5))
     # Sanity:
-    assert isinstance(b2.x, list)
-    assert len(b2.x) == 1
+    assert isinstance(metric_2.x, list)
+    assert len(metric_2.x) == 1
     # Now that they have tensor contents, they should have different hashes:
-    assert hash(b1) != hash(b2)
+    assert hash(metric_1) != hash(metric_2)
 
 
 def test_forward():
     """Test that `forward` method works as expected."""
+    metric = DummyMetricSum()
+    assert metric(5) == 5
+    assert metric._forward_cache == 5
+    assert metric.metric_state == {"x": tensor(5)}
 
-    class A(DummyMetric):
-        def update(self, x):
-            self.x += x
+    assert metric(8) == 8
+    assert metric._forward_cache == 8
+    assert metric.metric_state == {"x": tensor(13)}
 
-        def compute(self):
-            return self.x
-
-    a = A()
-    assert a(5) == 5
-    assert a._forward_cache == 5
-
-    assert a(8) == 8
-    assert a._forward_cache == 8
-
-    assert a.compute() == 13
+    assert metric.compute() == 13
 
 
 def test_pickle(tmpdir):
@@ -273,6 +259,19 @@ def test_load_state_dict(tmpdir):
     loaded_metric = DummyMetricSum()
     loaded_metric.load_state_dict(metric.state_dict())
     assert metric.compute() == 5
+
+
+def test_check_register_not_in_metric_state():
+    """Check that calling `register_buffer` or `register_parameter` does not get added to metric state."""
+
+    class TempDummyMetric(DummyMetricSum):
+        def __init__(self) -> None:
+            super().__init__()
+            self.register_buffer("buffer", tensor(0, dtype=torch.float))
+            self.register_parameter("parameter", Parameter(tensor(0, dtype=torch.float)))
+
+    metric = TempDummyMetric()
+    assert metric.metric_state == {"x": tensor(0)}
 
 
 def test_child_metric_state_dict():
@@ -356,10 +355,10 @@ def test_warning_on_compute_before_update():
     assert val == 2.0
 
 
-def test_metric_scripts():
+@pytest.mark.parametrize("metric_class", [DummyMetric, DummyMetricSum, DummyMetricMultiOutput, DummyListMetric])
+def test_metric_scripts(metric_class):
     """Test that metrics are scriptable."""
-    torch.jit.script(DummyMetric())
-    torch.jit.script(DummyMetricSum())
+    torch.jit.script(metric_class())
 
 
 def test_metric_forward_cache_reset():
