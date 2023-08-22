@@ -19,8 +19,10 @@ from functools import partial
 import pytest
 import torch
 from torch import tensor
-from torchmetrics import Metric
-from torchmetrics.utilities.distributed import gather_all_tensors
+from torch.utils.data import DistributedSampler
+from torchmetrics.aggregation import CatMetric, SumMetric
+from torchmetrics.metric import Metric
+from torchmetrics.utilities.distributed import EvaluationDistributedSampler, gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 
 from unittests import NUM_PROCESSES
@@ -272,3 +274,123 @@ def _test_sync_with_empty_lists(rank):
 def test_sync_with_empty_lists():
     """Test that syncronization of states can be enabled and disabled for compute."""
     pytest.pool.map(_test_sync_with_empty_lists, range(NUM_PROCESSES))
+
+
+def _test_evaluation_distributed_dataloader(
+    rank,
+    dataset_size,
+    batch_size,
+    distributed_sampler_class,
+    rank_0_batches,
+    rank_0_samples,
+    rank_1_batches,
+    rank_1_samples,
+    metric_class,
+):
+    """Worker function for testing the EvaluationDistributedSampler."""
+    metric = metric_class()
+
+    dataset = torch.utils.data.TensorDataset(torch.arange(1, dataset_size + 1))
+    dataloader = torch.utils.data.DataLoader(
+        dataset=dataset,
+        batch_size=batch_size,
+        sampler=distributed_sampler_class(dataset, num_replicas=NUM_PROCESSES, rank=rank, shuffle=False),
+    )
+
+    batch_count, sample_count = 0, 0
+    for batch in dataloader:
+        metric.update(batch[0])
+        batch_count += 1
+        sample_count += len(batch[0])
+
+    res = metric.compute()
+    if rank == 0:
+        assert batch_count == rank_0_batches, f"The number of batches did not match, got {batch_count}"
+        assert sample_count == rank_0_samples, f"The number of samples did not match, got {sample_count}"
+    if rank == 1:
+        assert batch_count == rank_1_batches, f"The number of batches did not match, got {batch_count}"
+        assert sample_count == rank_1_samples, f"The number of samples did not match, got {sample_count}"
+
+    if metric_class == SumMetric:
+        if distributed_sampler_class == EvaluationDistributedSampler:
+            assert (
+                res == torch.arange(1, dataset_size + 1).sum()
+            ), "The result of the metric did not match the expected result"
+        if distributed_sampler_class == torch.utils.data.DistributedSampler:
+            if dataset_size % NUM_PROCESSES == 0:
+                assert (
+                    res == torch.arange(1, dataset_size + 1).sum()
+                ), "The result of the metric did not match the expected result"
+            else:
+                assert (
+                    res == torch.arange(1, dataset_size + 1).sum() + 1
+                ), "The result of the metric did not match the expected result"
+    if metric_class == CatMetric:
+        x = set(res.tolist())
+        y = set(torch.arange(1, dataset_size + 1).tolist())
+        assert x - y == set(), "The result of the metric did not match the expected result"
+        assert y - x == set(), "The result of the metric did not match the expected result"
+
+        if distributed_sampler_class == torch.utils.data.DistributedSampler:
+            if dataset_size % NUM_PROCESSES != 0:
+                assert len(res) == dataset_size + 1, "The result of the metric did not match the expected result"
+            else:
+                assert len(res) == dataset_size, "The result of the metric did not match the expected result"
+        else:
+            assert len(res) == dataset_size, "The result of the metric did not match the expected result"
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@pytest.mark.parametrize(
+    (
+        "dataset_size",
+        "batch_size",
+        "distributed_sampler_class",
+        "rank_0_batches",
+        "rank_0_samples",
+        "rank_1_batches",
+        "rank_1_samples",
+    ),
+    [
+        (10, 1, EvaluationDistributedSampler, 5, 5, 5, 5),
+        (11, 1, EvaluationDistributedSampler, 6, 6, 5, 5),
+        (10, 3, EvaluationDistributedSampler, 2, 5, 2, 5),
+        (11, 3, EvaluationDistributedSampler, 2, 6, 2, 5),
+        # standard sampler adds samples if the dataset size is not divisible by the number of processes
+        (10, 1, DistributedSampler, 5, 5, 5, 5),
+        (11, 1, DistributedSampler, 6, 6, 6, 6),
+        (10, 3, DistributedSampler, 2, 5, 2, 5),
+        (11, 3, DistributedSampler, 2, 6, 2, 6),
+    ],
+)
+@pytest.mark.parametrize("metric_class", [SumMetric, CatMetric])
+def test_evaluation_distributed_dataloader(
+    dataset_size: int,
+    batch_size: int,
+    distributed_sampler_class: DistributedSampler,
+    rank_0_batches: int,
+    rank_0_samples: int,
+    rank_1_batches: int,
+    rank_1_samples: int,
+    metric_class: Metric,
+):
+    """Test the EvaluationDistributedSampler.
+
+    This sampler should not add additional samples to the dataset compared to the standard DistributedSampler. Thus we
+    expect different results.
+
+    """
+    pytest.pool.map(
+        partial(
+            _test_evaluation_distributed_dataloader,
+            dataset_size=dataset_size,
+            batch_size=batch_size,
+            distributed_sampler_class=distributed_sampler_class,
+            rank_0_batches=rank_0_batches,
+            rank_0_samples=rank_0_samples,
+            rank_1_batches=rank_1_batches,
+            rank_1_samples=rank_1_samples,
+            metric_class=metric_class,
+        ),
+        range(NUM_PROCESSES),
+    )

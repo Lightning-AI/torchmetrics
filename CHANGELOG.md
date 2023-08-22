@@ -32,6 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for multioutput evaluation in `MeanSquaredError` ([#1937](https://github.com/Lightning-AI/torchmetrics/pull/1937))
 
 
+- Added `EvaluationDistributedSampler` to utility for proper distributed evaluation ([#1886](https://github.com/Lightning-AI/torchmetrics/pull/1886))
+
+
 - Added argument `extended_summary` to `MeanAveragePrecision` such that precision, recall, iou can be easily returned ([#1983](https://github.com/Lightning-AI/torchmetrics/pull/1983))
 
 

@@ -13,10 +13,12 @@
 # limitations under the License.
 from unittest import mock
 
+import pytest
 import torch
 from lightning_utilities import module_available
 from torch import tensor
 from torch.nn import Linear
+from torch.utils.data import DataLoader, DistributedSampler
 
 if module_available("lightning"):
     from lightning.pytorch import LightningModule, Trainer
@@ -27,7 +29,9 @@ else:
 
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import SumMetric
-from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision
+from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision, MulticlassAccuracy
+from torchmetrics.utilities.distributed import EvaluationDistributedSampler
+from torchmetrics.utilities.imports import _LIGHTNING_GREATER_EQUAL_2_0
 
 from integrations.helpers import no_warning_call
 from integrations.lightning.boring_model import BoringModel
@@ -439,3 +443,67 @@ def test_dtype_in_pl_module_transfer(tmpdir):
 
     model = model.type(torch.half)
     assert model.metric.sum_value.dtype == torch.float32
+
+
+class _DistributedEvaluationTestModel(BoringModel):
+    def __init__(self, dataset, sampler_class, devices) -> None:
+        super().__init__()
+        self.linear = torch.nn.Linear(32, 10)
+        self.metric = MulticlassAccuracy(num_classes=10, average="micro")
+        self.dataset = dataset
+        self.sampler_class = sampler_class
+        self.devices = devices
+
+    def forward(self, x):
+        return self.linear(x)
+
+    def test_step(self, batch, batch_idx):
+        preds = self(batch[0]).argmax(dim=1)
+        target = batch[1]
+        self.metric.update(preds, target)
+
+    def on_test_epoch_end(self):
+        self.metric._should_unsync = False
+        result = self.metric.compute()
+        self.log("test_acc", result)
+        self.log("samples_seen", self.metric.tp + self.metric.fn)
+
+    def test_dataloader(self):
+        if self.devices > 1:
+            return DataLoader(self.dataset, batch_size=3, sampler=self.sampler_class(self.dataset, shuffle=False))
+        return DataLoader(self.dataset, batch_size=3, shuffle=False)
+
+
+@pytest.mark.skipif(not _LIGHTNING_GREATER_EQUAL_2_0, reason="Test requires newer Lightning 2.0 version")
+@pytest.mark.parametrize("sampler_class", [DistributedSampler, EvaluationDistributedSampler])
+@pytest.mark.parametrize("accelerator", ["cpu", "gpu"])
+@pytest.mark.parametrize("devices", [1, 2])
+def test_distributed_sampler_integration(sampler_class, accelerator, devices):
+    """Test the integration of the custom distributed sampler with Lightning."""
+    if not torch.cuda.is_available() and accelerator == "gpu":
+        pytest.skip("test requires GPU machine")
+    if torch.cuda.is_available() and accelerator == "gpu" and torch.cuda.device_count() < 2 and devices > 1:
+        pytest.skip("test requires GPU machine with at least 2 GPUs")
+
+    n_data = 199
+    dataset = torch.utils.data.TensorDataset(
+        torch.arange(n_data).unsqueeze(1).repeat(1, 32).float(),
+        torch.arange(10).repeat(20)[:n_data],
+    )
+
+    model = _DistributedEvaluationTestModel(dataset, sampler_class, devices)
+
+    trainer = Trainer(
+        devices=devices,
+        accelerator=accelerator,
+    )
+    res = trainer.test(model)
+    manual_res = (model(dataset.tensors[0]).argmax(dim=1) == dataset.tensors[1]).float().mean()
+
+    if sampler_class == DistributedSampler and devices > 1:
+        # normal sampler adds extra samples which skrews up the results
+        assert torch.allclose(torch.tensor(res[0]["samples_seen"], dtype=torch.long), torch.tensor(len(dataset) + 1))
+        assert not torch.allclose(torch.tensor(res[0]["test_acc"]), manual_res)
+    else:
+        assert torch.allclose(torch.tensor(res[0]["samples_seen"], dtype=torch.long), torch.tensor(len(dataset)))
+        assert torch.allclose(torch.tensor(res[0]["test_acc"]), manual_res)
