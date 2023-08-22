@@ -11,11 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import torch
-
-from torch import Tensor
-from torchmetrics.utilities.checks import _check_same_shape
 from typing import Optional
+
+import torch
+from torch import Tensor
+
+from torchmetrics.utilities.checks import _check_same_shape
 
 
 def calculate_contingency_matrix(
@@ -26,7 +27,9 @@ def calculate_contingency_matrix(
     Args:
         preds: predicted labels
         target: ground truth labels
-        sparse: If True, returns contingency matrix as a sparse matrix.
+        eps: value added to contingency matrix
+        sparse: If True, returns contingency matrix as a sparse matrix. Else, return as dense matrix.
+            `eps` must be `None` if `sparse` is `True`.
 
     Returns:
         contingency: contingency matrix of shape (n_classes_target, n_classes_preds)

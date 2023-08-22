@@ -15,13 +15,13 @@ from typing import Tuple
 
 import torch
 from torch import Tensor, tensor
+
 from torchmetrics.functional.clustering.utils import calculate_contingency_matrix, check_cluster_labels
 
 
 def _mutual_info_score_update(
     preds: Tensor,
     target: Tensor,
-    # num_classes: int
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Update and return variables required to compute the mutual information score.
 
@@ -47,16 +47,16 @@ def _mutual_info_score_compute(contingency: Tensor) -> Tensor:
         mutual_info: mutual information score
 
     """
-    N = contingency.sum()
-    U = contingency.sum(dim=1)
-    V = contingency.sum(dim=0)
+    n = contingency.sum()
+    u = contingency.sum(dim=1)
+    v = contingency.sum(dim=0)
 
     # Check if preds or target labels only have one cluster
-    if U.size() == 1 or V.size() == 1:
+    if u.size() == 1 or v.size() == 1:
         return tensor(0.0)
 
-    log_outer = torch.log(U).reshape(-1, 1) + torch.log(V)
-    mutual_info = contingency / N * (torch.log(N) + torch.log(contingency) - log_outer)
+    log_outer = torch.log(u).reshape(-1, 1) + torch.log(v)
+    mutual_info = contingency / n * (torch.log(n) + torch.log(contingency) - log_outer)
     return mutual_info.sum()
 
 
