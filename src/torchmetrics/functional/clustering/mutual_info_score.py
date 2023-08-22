@@ -15,6 +15,7 @@ from typing import Tuple
 
 import torch
 from torch import Tensor, tensor
+
 from torchmetrics.functional.clustering.utils import calculate_contingency_matrix, check_cluster_labels
 
 
