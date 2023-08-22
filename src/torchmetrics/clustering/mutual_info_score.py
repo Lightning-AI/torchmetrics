@@ -16,8 +16,9 @@ from typing import Any, List, Optional, Sequence, Union
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.clustering.mutual_info_score import _mutual_info_score_compute, _mutual_info_score_update
+from torchmetrics.functional.clustering.mutual_info_score import mutual_info_score
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -71,17 +72,18 @@ class MutualInfoScore(Metric):
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        # self.num_classes = num_classes
-        #
-        # self.add_state("contingency", default=torch.zeros(self.num_classes), dist_reduce_fx=None)
+
+        self.add_state("preds", default=[], dist_reduce_fx="cat")
+        self.add_state("target", default=[], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        self.contingency = _mutual_info_score_update(preds, target)
+        self.preds.append(preds)
+        self.target.append(target)
 
     def compute(self) -> Tensor:
         """Compute mutual information over state."""
-        return _mutual_info_score_compute(self.contingency)
+        return mutual_info_score(dim_zero_cat(self.preds), dim_zero_cat(self.target))
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.

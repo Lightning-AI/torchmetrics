@@ -5,9 +5,9 @@
 
 .. include:: ../links.rst
 
-###################
-Mutual Info. Score
-###################
+########################
+Mutual Information Score
+########################
 
 Module Interface
 ________________
