@@ -16,7 +16,6 @@ from typing import Tuple, Union
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.regression.utils import _check_data_shape_to_num_outputs
 from torchmetrics.utilities.checks import _check_same_shape
 
 
