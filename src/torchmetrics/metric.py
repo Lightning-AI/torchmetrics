@@ -23,13 +23,13 @@ from copy import deepcopy
 from typing import Any, Callable, ClassVar, Dict, Generator, List, Optional, Sequence, Tuple, Union
 
 import torch
+from lightning_utilities import apply_to_collection
 from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.utilities.data import (
     _flatten,
     _squeeze_if_scalar,
-    apply_to_collection,
     dim_zero_cat,
     dim_zero_max,
     dim_zero_mean,
