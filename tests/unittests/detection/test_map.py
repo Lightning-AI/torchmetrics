@@ -26,6 +26,7 @@ from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from torch import IntTensor, Tensor
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
+from torchmetrics.utilities import apply_to_collection
 from torchmetrics.utilities.imports import _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL
@@ -794,3 +795,38 @@ def test_for_extended_stats(preds, target, expected_iou_len, iou_keys, precision
     recall = result["recall"]
     assert isinstance(recall, Tensor)
     assert recall.shape == recall_shape
+
+
+@pytest.mark.parametrize("class_metrics", [False, True])
+def test_average_argument(class_metrics):
+    """Test that average argument works.
+
+    Calculating macro on inputs that only have one label should be the same as micro. Calculating class metrics should
+    be the same regardless of average argument.
+
+    """
+    if class_metrics:
+        _preds = _inputs.preds
+        _target = _inputs.target
+    else:
+        _preds = apply_to_collection(_inputs.preds, IntTensor, lambda x: torch.ones_like(x))
+        _target = apply_to_collection(_inputs.target, IntTensor, lambda x: torch.ones_like(x))
+
+    metric_macro = MeanAveragePrecision(average="macro", class_metrics=class_metrics)
+    metric_macro.update(_preds[0], _target[0])
+    metric_macro.update(_preds[1], _target[1])
+    result_macro = metric_macro.compute()
+
+    metric_micro = MeanAveragePrecision(average="micro", class_metrics=class_metrics)
+    metric_micro.update(_inputs.preds[0], _inputs.target[0])
+    metric_micro.update(_inputs.preds[1], _inputs.target[1])
+    result_micro = metric_micro.compute()
+
+    if class_metrics:
+        assert torch.allclose(result_macro["map_per_class"], result_micro["map_per_class"])
+        assert torch.allclose(result_macro["mar_100_per_class"], result_micro["mar_100_per_class"])
+    else:
+        for key in result_macro:
+            if key == "classes":
+                continue
+            assert torch.allclose(result_macro[key], result_micro[key])

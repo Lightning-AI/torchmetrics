@@ -187,6 +187,9 @@ class MeanAveragePrecision(Metric):
                   IoU thresholds, ``K`` is the number of classes, ``A`` is the number of areas and ``M`` is the number
                   of max detections per image.
 
+        average:
+            Method for averaging scores over labels. Choose between "``macro``"" and "``micro``". Default is "macro"
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -329,6 +332,7 @@ class MeanAveragePrecision(Metric):
         max_detection_thresholds: Optional[List[int]] = None,
         class_metrics: bool = False,
         extended_summary: bool = False,
+        average: Literal["macro", "micro"] = "macro",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -378,6 +382,10 @@ class MeanAveragePrecision(Metric):
         if not isinstance(extended_summary, bool):
             raise ValueError("Expected argument `extended_summary` to be a boolean")
         self.extended_summary = extended_summary
+
+        if average not in ("macro", "micro"):
+            raise ValueError(f"Expected argument `average` to be one of ('macro', 'micro') but got {average}")
+        self.average = average
 
         self.add_state("detection_box", default=[], dist_reduce_fx=None)
         self.add_state("detection_mask", default=[], dist_reduce_fx=None)
@@ -434,27 +442,10 @@ class MeanAveragePrecision(Metric):
 
     def compute(self) -> dict:
         """Computes the metric."""
-        coco_target, coco_preds = COCO(), COCO()
-
-        coco_target.dataset = self._get_coco_format(
-            labels=self.groundtruth_labels,
-            boxes=self.groundtruth_box if len(self.groundtruth_box) > 0 else None,
-            masks=self.groundtruth_mask if len(self.groundtruth_mask) > 0 else None,
-            crowds=self.groundtruth_crowds,
-            area=self.groundtruth_area,
-        )
-        coco_preds.dataset = self._get_coco_format(
-            labels=self.detection_labels,
-            boxes=self.detection_box if len(self.detection_box) > 0 else None,
-            masks=self.detection_mask if len(self.detection_mask) > 0 else None,
-            scores=self.detection_scores,
-        )
+        coco_preds, coco_target = self._get_coco_datasets(average=self.average)
 
         result_dict = {}
         with contextlib.redirect_stdout(io.StringIO()):
-            coco_target.createIndex()
-            coco_preds.createIndex()
-
             for i_type in self.iou_type:
                 prefix = "" if len(self.iou_type) == 1 else f"{i_type}_"
                 if len(self.iou_type) > 1:
@@ -487,6 +478,15 @@ class MeanAveragePrecision(Metric):
 
                 # if class mode is enabled, evaluate metrics per class
                 if self.class_metrics:
+                    if self.average == "micro":
+                        # since micro averaging have all the data in one class, we need to reinitialize the coco_eval
+                        # object in macro mode to get the per class stats
+                        coco_preds, coco_target = self._get_coco_datasets(average="macro")
+                        coco_eval = COCOeval(coco_target, coco_preds, iouType=i_type)
+                        coco_eval.params.iouThrs = np.array(self.iou_thresholds, dtype=np.float64)
+                        coco_eval.params.recThrs = np.array(self.rec_thresholds, dtype=np.float64)
+                        coco_eval.params.maxDets = self.max_detection_thresholds
+
                     map_per_class_list = []
                     mar_100_per_class_list = []
                     for class_id in self._get_classes():
@@ -516,8 +516,41 @@ class MeanAveragePrecision(Metric):
 
         return result_dict
 
+    def _get_coco_datasets(self, average: Literal["macro", "micro"]) -> Tuple[COCO, COCO]:
+        """Returns the coco datasets for the target and the predictions."""
+        if average == "micro":
+            # for micro averaging we set everything to be the same class
+            groundtruth_labels = apply_to_collection(self.groundtruth_labels, Tensor, lambda x: torch.zeros_like(x))
+            detection_labels = apply_to_collection(self.detection_labels, Tensor, lambda x: torch.zeros_like(x))
+        else:
+            groundtruth_labels = self.groundtruth_labels
+            detection_labels = self.detection_labels
+
+        coco_target, coco_preds = COCO(), COCO()
+
+        coco_target.dataset = self._get_coco_format(
+            labels=groundtruth_labels,
+            boxes=self.groundtruth_box if len(self.groundtruth_box) > 0 else None,
+            masks=self.groundtruth_mask if len(self.groundtruth_mask) > 0 else None,
+            crowds=self.groundtruth_crowds,
+            area=self.groundtruth_area,
+        )
+        coco_preds.dataset = self._get_coco_format(
+            labels=detection_labels,
+            boxes=self.detection_box if len(self.detection_box) > 0 else None,
+            masks=self.detection_mask if len(self.detection_mask) > 0 else None,
+            scores=self.detection_scores,
+        )
+
+        with contextlib.redirect_stdout(io.StringIO()):
+            coco_target.createIndex()
+            coco_preds.createIndex()
+
+        return coco_preds, coco_target
+
     @staticmethod
     def _coco_stats_to_tensor_dict(stats: List[float], prefix: str) -> Dict[str, Tensor]:
+        """Converts the output of COCOeval.stats to a dict of tensors."""
         return {
             f"{prefix}map": torch.tensor([stats[0]], dtype=torch.float32),
             f"{prefix}map_50": torch.tensor([stats[1]], dtype=torch.float32),
