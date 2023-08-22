@@ -60,14 +60,12 @@ class TestMutualInfoScore(MetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     def test_mutual_info_score(self, preds, target, compute_on_cpu, ddp):
         """Test class implementation of metric."""
-        # metric_args = {"num_classes": NUM_CLASSES}
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=MutualInfoScore,
             reference_metric=sklearn_mutual_info_score,
-            # metric_args=metric_args
         )
 
     def test_mutual_info_score_functional(self, preds, target):
@@ -85,3 +83,15 @@ def test_mutual_info_score_functional_raises_invalid_task():
     preds, target = _float_inputs
     with pytest.raises(ValueError, match=r"Expected *"):
         mutual_info_score(preds, target)
+
+
+@pytest.mark.parametrize(
+    ("preds", "target"),
+    [
+        (_single_target_inputs1.preds, _single_target_inputs1.target),
+    ],
+)
+def test_mutual_info_score_functional_is_symmetric(preds, target):
+    """Check that the metric funtional is symmetric."""
+    for p, t in zip(preds, target):
+        assert torch.allclose(mutual_info_score(p, t), mutual_info_score(t, p))
