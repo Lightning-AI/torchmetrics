@@ -52,12 +52,13 @@ class MutualInfoScore(Metric):
     - ``mi_score`` (:class:`~torch.Tensor`): A tensor with the Mutual Information Score
 
     Example:
+        >>> import torch
         >>> from torchmetrics.clustering import MutualInfoScore
-        >>> target = torch.tensor([])
-        >>> preds = torch.tensor([])
+        >>> target = torch.tensor([0, 2, 1, 1, 0])
+        >>> preds = torch.tensor([2, 1, 0, 1, 0])
         >>> mi_score = MutualInfoScore()
         >>> mi_score(preds, target)
-        tensor()
+        tensor(0.5004)
 
     """
 
@@ -106,8 +107,9 @@ class MutualInfoScore(Metric):
             >>> # Example plotting a single value
             >>> import torch
             >>> from torchmetrics.clustering import MutualInfoScore
-            >>> metric = MutualInfoScore(num_classes=5)
-            >>> metric.update(torch.randint(0, 4, (100,)), torch.randint(0, 4, (100,)))
+            >>> metric = MutualInfoScore()
+            >>> metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
+            >>> metric.compute()
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
@@ -116,11 +118,11 @@ class MutualInfoScore(Metric):
             >>> # Example plotting multiple values
             >>> import torch
             >>> from torchmetrics.clustering import MutualInfoScore
-            >>> metric = MutualInfoScore(num_classes=5)
-            >>> values = [ ]
+            >>> metric = MutualInfoScore()
             >>> for _ in range(10):
-            ...     values.append(metric(torch.randint(0, 4, (100,)), torch.randint(0, 4, (100,))))
-            >>> fig_, ax_ = metric.plot(values)
+            ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,))))
+            >>> metric.compute()
+            >>> fig_, ax_ = metric.plot()
 
         """
         return self._plot(val, ax)

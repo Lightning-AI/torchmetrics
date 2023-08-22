@@ -72,7 +72,7 @@ def mutual_info_score(preds: Tensor, target: Tensor) -> Tensor:
         >>> target = torch.tensor([0, 3, 2, 2, 1])
         >>> preds = torch.tensor([1, 3, 2, 0, 1])
         >>> mutual_info_score(preds, target)
-        tensor([1.05492])
+        tensor(1.0549)
 
     """
     contingency = _mutual_info_score_update(preds, target)
