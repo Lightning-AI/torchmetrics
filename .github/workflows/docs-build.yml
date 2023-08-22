@@ -25,6 +25,7 @@ env:
 
 jobs:
   docs-check:
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
