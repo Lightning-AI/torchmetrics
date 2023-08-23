@@ -66,7 +66,6 @@ class MutualInfoScore(Metric):
     higher_is_better = None
     full_state_update: bool = True
     plot_lower_bound: float = 0.0
-    plot_upper_bound: float = 1.0  # theoretical upper bound is +inf
     preds: List[Tensor]
     target: List[Tensor]
     contingency: Tensor
