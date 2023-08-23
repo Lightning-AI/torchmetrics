@@ -1,4 +1,4 @@
-name: CI integrations
+name: "CI integrations | CPU"
 
 # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
 on:  # Trigger the workflow on push or pull request, but only for the master branch
