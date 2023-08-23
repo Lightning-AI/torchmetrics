@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
 
+## [UnReleased] - 2023-MM-DD
+
+### Added
+
+- Added `MutualInformationScore` metric to cluster package ([#2008](https://github.com/Lightning-AI/torchmetrics/pull/2008)
+
+
+### Changed
+
+-
+
+
+### Removed
+
+-
+
+
+### Fixed
+
+- Fixed bug in `PearsonCorrCoef` is updated on single samples at a time ([#2019](https://github.com/Lightning-AI/torchmetrics/pull/2019)
+
+
+- Fixed support for pixelwise MSE ([#2017](https://github.com/Lightning-AI/torchmetrics/pull/2017)
+
+
 ## [1.1.0] - 2023-08-22
 
 ### Added

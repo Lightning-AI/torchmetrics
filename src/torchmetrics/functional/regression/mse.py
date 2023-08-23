@@ -16,7 +16,6 @@ from typing import Tuple, Union
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.regression.utils import _check_data_shape_to_num_outputs
 from torchmetrics.utilities.checks import _check_same_shape
 
 
@@ -32,7 +31,6 @@ def _mean_squared_error_update(preds: Tensor, target: Tensor, num_outputs: int) 
 
     """
     _check_same_shape(preds, target)
-    _check_data_shape_to_num_outputs(preds, target, num_outputs, allow_1d_reshape=True)
     if num_outputs == 1:
         preds = preds.view(-1)
         target = target.view(-1)
