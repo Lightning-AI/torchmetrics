@@ -65,6 +65,8 @@ def check_cluster_labels(preds: Tensor, target: Tensor) -> None:
 
     """
     _check_same_shape(preds, target)
+    if preds.ndim != 1:
+        raise ValueError(f"Expected arguments to be 1d tensors but got {preds.ndim} and {target.ndim}")
     if (
         torch.is_floating_point(preds)
         or torch.is_complex(preds)
