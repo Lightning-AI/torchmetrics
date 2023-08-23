@@ -15,11 +15,11 @@ from copy import deepcopy
 from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import torch
+from lightning_utilities import apply_to_collection
 from torch import Tensor
 from torch.nn import ModuleList
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import apply_to_collection
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 from torchmetrics.wrappers.abstract import WrapperMetric

@@ -246,8 +246,9 @@ def error_relative_global_dimensionless_synthesis() -> tuple:
     """Plot error relative global dimensionless synthesis example."""
     from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
 
-    p = lambda: torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
-    t = lambda: torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+    gen = torch.manual_seed(42)
+    p = lambda: torch.rand([16, 1, 16, 16], generator=gen)
+    t = lambda: torch.rand([16, 1, 16, 16], generator=gen)
 
     # plot single value
     metric = ErrorRelativeGlobalDimensionlessSynthesis()
@@ -286,8 +287,9 @@ def spectral_angle_mapper() -> tuple:
     """Plot spectral angle mapper example."""
     from torchmetrics.image.sam import SpectralAngleMapper
 
-    p = lambda: torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42))
-    t = lambda: torch.rand([16, 3, 16, 16], generator=torch.manual_seed(123))
+    gen = torch.manual_seed(42)
+    p = lambda: torch.rand([16, 3, 16, 16], generator=gen)
+    t = lambda: torch.rand([16, 3, 16, 16], generator=gen)
 
     # plot single value
     metric = SpectralAngleMapper()
@@ -306,7 +308,8 @@ def structural_similarity_index_measure() -> tuple:
     """Plot structural similarity index measure example."""
     from torchmetrics.image.ssim import StructuralSimilarityIndexMeasure
 
-    p = lambda: torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
+    gen = torch.manual_seed(42)
+    p = lambda: torch.rand([3, 3, 256, 256], generator=gen)
     t = lambda: p() * 0.75
 
     # plot single value
@@ -326,7 +329,8 @@ def multiscale_structural_similarity_index_measure() -> tuple:
     """Plot multiscale structural similarity index measure example."""
     from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure
 
-    p = lambda: torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
+    gen = torch.manual_seed(42)
+    p = lambda: torch.rand([3, 3, 256, 256], generator=gen)
     t = lambda: p() * 0.75
 
     # plot single value
