@@ -39,9 +39,6 @@ class MutualInfoScore(Metric):
     The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields
     the same mutual information score.
 
-    Args:
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): either single output float tensor with shape ``(N,)``
@@ -50,6 +47,9 @@ class MutualInfoScore(Metric):
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
     - ``mi_score`` (:class:`~torch.Tensor`): A tensor with the Mutual Information Score
+
+    Args:
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> import torch
