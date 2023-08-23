@@ -20,9 +20,10 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 import numpy as np
 import pytest
 import torch
+from lightning_utilities import apply_to_collection
 from torch import Tensor, tensor
 from torchmetrics import Metric
-from torchmetrics.utilities.data import _flatten, apply_to_collection
+from torchmetrics.utilities.data import _flatten
 
 from unittests import NUM_PROCESSES
 

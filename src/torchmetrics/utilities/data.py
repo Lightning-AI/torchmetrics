@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import torch
+from lightning_utilities import apply_to_collection
 from torch import Tensor
 
 from torchmetrics.utilities.exceptions import TorchMetricsUserWarning
@@ -150,57 +151,6 @@ def to_categorical(x: Tensor, argmax_dim: int = 1) -> Tensor:
 
     """
     return torch.argmax(x, dim=argmax_dim)
-
-
-def apply_to_collection(
-    data: Any,
-    dtype: Union[type, tuple],
-    function: Callable,
-    *args: Any,
-    wrong_dtype: Optional[Union[type, tuple]] = None,
-    **kwargs: Any,
-) -> Any:
-    """Recursively applies a function to all elements of a certain dtype.
-
-    Args:
-        data: the collection to apply the function to
-        dtype: the given function will be applied to all elements of this dtype
-        function: the function to apply
-        *args: positional arguments (will be forwarded to call of ``function``)
-        wrong_dtype: the given function won't be applied if this type is specified and the given collections is of
-            the :attr:`wrong_type` even if it is of type :attr`dtype`
-        **kwargs: keyword arguments (will be forwarded to call of ``function``)
-
-    Returns:
-        the resulting collection
-
-    Example:
-        >>> apply_to_collection(torch.tensor([8, 0, 2, 6, 7]), dtype=Tensor, function=lambda x: x ** 2)
-        tensor([64,  0,  4, 36, 49])
-        >>> apply_to_collection([8, 0, 2, 6, 7], dtype=int, function=lambda x: x ** 2)
-        [64, 0, 4, 36, 49]
-        >>> apply_to_collection(dict(abc=123), dtype=int, function=lambda x: x ** 2)
-        {'abc': 15129}
-
-    """
-    elem_type = type(data)
-
-    # Breaking condition
-    if isinstance(data, dtype) and (wrong_dtype is None or not isinstance(data, wrong_dtype)):
-        return function(data, *args, **kwargs)
-
-    # Recursively apply to collection items
-    if isinstance(data, Mapping):
-        return elem_type({k: apply_to_collection(v, dtype, function, *args, **kwargs) for k, v in data.items()})
-
-    if isinstance(data, tuple) and hasattr(data, "_fields"):  # named tuple
-        return elem_type(*(apply_to_collection(d, dtype, function, *args, **kwargs) for d in data))
-
-    if isinstance(data, Sequence) and not isinstance(data, str):
-        return elem_type([apply_to_collection(d, dtype, function, *args, **kwargs) for d in data])
-
-    # data is neither of dtype, nor a collection
-    return data
 
 
 def _squeeze_scalar_element_tensor(x: Tensor) -> Tensor:
