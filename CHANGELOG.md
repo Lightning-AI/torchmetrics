@@ -6,27 +6,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
-## [UnReleased] - 2023-MM-DD
-
-### Added
-
--
-
-
-### Changed
-
--
-
-
-### Removed
-
--
-
-
-### Fixed
-
-- Fixed bug in detection intersection metrics when `class_metrics=True` resulting in wrong values ([#1924](https://github.com/Lightning-AI/torchmetrics/pull/1924))
-
 
 ## [UnReleased] - 2023-MM-DD
 
@@ -48,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed support for pixelwise MSE ([#2017](https://github.com/Lightning-AI/torchmetrics/pull/2017)
+
+
+- Fixed bug in detection intersection metrics when `class_metrics=True` resulting in wrong values ([#1924](https://github.com/Lightning-AI/torchmetrics/pull/1924))
 
 
 ## [1.1.0] - 2023-08-22
