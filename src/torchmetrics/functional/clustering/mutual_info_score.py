@@ -50,7 +50,12 @@ def _mutual_info_score_compute(contingency: Tensor) -> Tensor:
     if u.size() == 1 or v.size() == 1:
         return tensor(0.0)
 
-    log_outer = torch.log(u).reshape(-1, 1) + torch.log(v)
+    # Find indices of nonzero values in U and V
+    nzu, nzv = torch.nonzero(contingency, as_tuple=True)
+    contingency = contingency[nzu, nzv]
+
+    # Calculate MI using entries corresponding to nonzero contingency matrix entries
+    log_outer = torch.log(u[nzu]) + torch.log(v[nzv])
     mutual_info = contingency / n * (torch.log(n) + torch.log(contingency) - log_outer)
     return mutual_info.sum()
 

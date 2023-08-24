@@ -78,6 +78,14 @@ class TestMutualInfoScore(MetricTester):
         )
 
 
+def test_mutual_info_score_functional_single_cluster():
+    """Check that metric rejects continuous-valued inputs."""
+    tensor_a = torch.randint(NUM_CLASSES, (BATCH_SIZE,))
+    tensor_b = torch.zeros(BATCH_SIZE, dtype=torch.int)
+    assert torch.allclose(mutual_info_score(tensor_a, tensor_b), torch.tensor(0.0))
+    assert torch.allclose(mutual_info_score(tensor_b, tensor_a), torch.tensor(0.0))
+
+
 def test_mutual_info_score_functional_raises_invalid_task():
     """Check that metric rejects continuous-valued inputs."""
     preds, target = _float_inputs
