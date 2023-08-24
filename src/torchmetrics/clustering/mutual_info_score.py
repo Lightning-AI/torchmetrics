@@ -54,8 +54,8 @@ class MutualInfoScore(Metric):
     Example:
         >>> import torch
         >>> from torchmetrics.clustering import MutualInfoScore
-        >>> target = torch.tensor([0, 2, 1, 1, 0])
         >>> preds = torch.tensor([2, 1, 0, 1, 0])
+        >>> target = torch.tensor([0, 2, 1, 1, 0])
         >>> mi_score = MutualInfoScore()
         >>> mi_score(preds, target)
         tensor(0.5004)
@@ -108,8 +108,7 @@ class MutualInfoScore(Metric):
             >>> from torchmetrics.clustering import MutualInfoScore
             >>> metric = MutualInfoScore()
             >>> metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
-            >>> metric.compute()
-            >>> fig_, ax_ = metric.plot()
+            >>> fig_, ax_ = metric.plot(metric.compute())
 
         .. plot::
             :scale: 75
@@ -120,8 +119,7 @@ class MutualInfoScore(Metric):
             >>> metric = MutualInfoScore()
             >>> for _ in range(10):
             ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,))))
-            >>> metric.compute()
-            >>> fig_, ax_ = metric.plot()
+            >>> fig_, ax_ = metric.plot(metric.compute())
 
         """
         return self._plot(val, ax)
