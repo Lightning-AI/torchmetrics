@@ -118,7 +118,7 @@ class MutualInfoScore(Metric):
             >>> from torchmetrics.clustering import MutualInfoScore
             >>> metric = MutualInfoScore()
             >>> for _ in range(10):
-            ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,))))
+            ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
 
         """
