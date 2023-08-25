@@ -26,27 +26,24 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class RandScore(Metric):
-    r"""Compute `Mutual Information Score`_.
+    r"""Compute `Rand Score`_ (alternative know as Rand Index).
 
     .. math::
-        MI(U,V) = \sum_{i=1}^{\abs{U}} \sum_{j=1}^{\abs{V}} \frac{\abs{U_i\cap V_j}}{N}
-        \log\frac{N\abs{U_i\cap V_j}}{\abs{U_i}\abs{V_j}}
+        RS(U, V) = \text{number of agreeing pairs} / \text{number of pairs}
 
-    Where :math:`U` is a tensor of target values, :math:`V` is a tensor of predictions,
-    :math:`\abs{U_i}` is the number of samples in cluster :math:`U_i`, and
-    :math:`\abs{V_i}` is the number of samples in cluster :math:`V_i`.
+    The number of agreeing pairs is every :math:`(i, j)` pair of samples where :math:`i \in U` and :math:`j \in V`
+    (the predicted and true clusterings, respectively) that are in the same cluster for both clusterings.
 
-    The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields
-    the same mutual information score.
+    The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields the same rand score.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): either single output float tensor with shape ``(N,)``
-    - ``target`` (:class:`~torch.Tensor`): either single output tensor with shape ``(N,)``
+    - ``preds`` (:class:`~torch.Tensor`): either single integer tensor with shape ``(N,)``
+    - ``target`` (:class:`~torch.Tensor`): either single integer tensor with shape ``(N,)``
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``mi_score`` (:class:`~torch.Tensor`): A tensor with the Mutual Information Score
+    - ``mi_score`` (:class:`~torch.Tensor`): A tensor with the Rand Score
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.

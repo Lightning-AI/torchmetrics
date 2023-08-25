@@ -17,7 +17,11 @@ import numpy as np
 import pytest
 import torch
 from sklearn.metrics.cluster import contingency_matrix as sklearn_contingency_matrix
-from torchmetrics.functional.clustering.utils import calculate_contingency_matrix
+from sklearn.metrics.cluster import pair_confusion_matrix as sklearn_pair_confusion_matrix
+from torchmetrics.functional.clustering.utils import (
+    calcualte_pair_cluster_confusion_matrix,
+    calculate_contingency_matrix,
+)
 
 from unittests import BATCH_SIZE
 from unittests.helpers import seed_all
@@ -76,3 +80,19 @@ def test_multidimensional_contingency_error():
     """Check that contingency matrix is not calculated for multidimensional input."""
     with pytest.raises(ValueError, match="Expected 1d*"):
         calculate_contingency_matrix(_multi_dim_inputs.preds, _multi_dim_inputs.target)
+
+
+@pytest.mark.parametrize(
+    ("preds", "target"),
+    [(_sklearn_inputs.preds, _sklearn_inputs.target), (_single_dim_inputs.preds, _single_dim_inputs.target)],
+)
+class TestPairClusterConfusionMatrix:
+    """Test that implementation matches sklearns."""
+
+    atol = 1e-8
+
+    def test_pair_cluster_confusion_matrix(self, preds, target):
+        """Check that pair cluster confusion matrix is calculated correctly."""
+        tm_res = calcualte_pair_cluster_confusion_matrix(preds, target)
+        sklearn_res = sklearn_pair_confusion_matrix(preds, target)
+        assert np.allclose(tm_res, sklearn_res, atol=self.atol)
