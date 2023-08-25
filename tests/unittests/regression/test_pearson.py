@@ -90,10 +90,6 @@ def _weighted_pearson(preds, target, weights):
         (_multi_target_inputs2.preds, _multi_target_inputs2.target),
     ],
 )
-@pytest.mark.parametrize(
-    "metric_args",
-    [({}), ({"weights": torch.rand(NUM_BATCHES, BATCH_SIZE)})],
-)
 class TestPearsonCorrCoef(MetricTester):
     """Test class for `PearsonCorrCoef` metric."""
 
@@ -138,7 +134,7 @@ class TestPearsonCorrCoef(MetricTester):
             weights=kwargs_update.get("weights", None),
         )
 
-    def test_pearson_corrcoef_differentiability(self, preds, target, metric_args):
+    def test_pearson_corrcoef_differentiability(self, preds, target):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_differentiability_test(
@@ -154,7 +150,7 @@ class TestPearsonCorrCoef(MetricTester):
         self.run_precision_test_cpu(preds, target, partial(PearsonCorrCoef, num_outputs=num_outputs), pearson_corrcoef)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_pearson_corrcoef_half_gpu(self, preds, target, metric_args):
+    def test_pearson_corrcoef_half_gpu(self, preds, target):
         """Test dtype support of the metric on GPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         self.run_precision_test_gpu(preds, target, partial(PearsonCorrCoef, num_outputs=num_outputs), pearson_corrcoef)
