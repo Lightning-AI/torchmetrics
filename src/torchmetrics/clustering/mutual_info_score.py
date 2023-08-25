@@ -41,8 +41,8 @@ class MutualInfoScore(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): either single output float tensor with shape ``(N,)``
-    - ``target`` (:class:`~torch.Tensor`): either single output tensor with shape ``(N,)``
+    - ``preds`` (:class:`~torch.Tensor`): single integer tensor with shape ``(N,)`` with predicted cluster labels
+    - ``target`` (:class:`~torch.Tensor`): single integer tensor with shape ``(N,)`` with ground truth cluster labels
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
