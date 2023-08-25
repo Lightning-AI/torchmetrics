@@ -63,7 +63,7 @@ def calculate_contingency_matrix(
                 preds_idx,
             )
         ),
-        torch.ones(target_idx.size(0)),
+        torch.ones(target_idx.shape[0], dtype=preds_idx.dtype, device=preds_idx.device),
         (
             n_classes_target,
             n_classes_preds,
