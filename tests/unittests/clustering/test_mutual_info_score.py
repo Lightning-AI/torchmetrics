@@ -56,9 +56,8 @@ class TestMutualInfoScore(MetricTester):
 
     atol = 1e-5
 
-    @pytest.mark.parametrize("compute_on_cpu", [True, False])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_mutual_info_score(self, preds, target, compute_on_cpu, ddp):
+    def test_mutual_info_score(self, preds, target, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
@@ -79,7 +78,7 @@ class TestMutualInfoScore(MetricTester):
 
 
 def test_mutual_info_score_functional_single_cluster():
-    """Check that metric rejects continuous-valued inputs."""
+    """Check that for single cluster the metric returns 0."""
     tensor_a = torch.randint(NUM_CLASSES, (BATCH_SIZE,))
     tensor_b = torch.zeros(BATCH_SIZE, dtype=torch.int)
     assert torch.allclose(mutual_info_score(tensor_a, tensor_b), torch.tensor(0.0))
