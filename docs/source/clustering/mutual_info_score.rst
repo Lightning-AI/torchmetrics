@@ -12,10 +12,10 @@ Mutual Information Score
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.MutualInfoScore
+.. autoclass:: torchmetrics.clustering.MutualInfoScore
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.mutual_info_score
+.. autofunction:: torchmetrics.functional.clustering.mutual_info_score
