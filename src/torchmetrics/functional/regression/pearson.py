@@ -49,7 +49,6 @@ def _pearson_corrcoef_update(
         n_prior: current number of observed observations
         num_outputs: Number of outputs in multioutput setting
         weights: weights associated with scores
-
     """
     # Data checking
     _check_same_shape(preds, target)
