@@ -14,7 +14,11 @@
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.clustering.utils import calculate_contingency_matrix, check_cluster_labels
+from torchmetrics.functional.clustering.utils import (
+    calcualte_pair_cluster_confusion_matrix,
+    calculate_contingency_matrix,
+    check_cluster_labels,
+)
 
 
 def _rand_score_update(preds: Tensor, target: Tensor) -> Tensor:
@@ -42,16 +46,7 @@ def _rand_score_compute(contingency: Tensor) -> Tensor:
         rand_score: rand score
 
     """
-    n_samples = contingency.sum()
-    n_c = contingency.sum(dim=1)
-    n_k = contingency.sum(dim=0)
-    sum_squared = (contingency**2).sum()
-
-    pair_matrix = torch.zeros(2, 2, dtype=contingency.dtype, device=contingency.device)
-    pair_matrix[1, 1] = sum_squared - n_samples
-    pair_matrix[0, 1] = (contingency * n_k).sum() - sum_squared
-    pair_matrix[1, 0] = (contingency.T * n_c).sum() - sum_squared
-    pair_matrix[0, 0] = n_samples**2 - pair_matrix[0, 1] - pair_matrix[1, 0] - sum_squared
+    pair_matrix = calcualte_pair_cluster_confusion_matrix(contingency=contingency)
 
     numerator = pair_matrix.diagonal().sum()
     denominator = pair_matrix.sum()
@@ -59,7 +54,7 @@ def _rand_score_compute(contingency: Tensor) -> Tensor:
         # Special limit cases: no clustering since the data is not split;
         # or trivial clustering where each document is assigned a unique
         # cluster. These are perfect matches hence return 1.0.
-        return 1.0
+        return torch.ones_like(numerator, dtype=torch.float32)
 
     return numerator / denominator
 
@@ -73,6 +68,14 @@ def rand_score(preds: Tensor, target: Tensor) -> Tensor:
 
     Returns:
         rand_score: rand score
+
+    Example:
+        >>> from torchmetrics.functional.clustering import rand_score
+        >>> import torch
+        >>> rand_score(torch.tensor([0, 0, 1, 1]), torch.tensor([1, 1, 0, 0]))
+        tensor(1.)
+        >>> rand_score(torch.tensor([0, 0, 1, 2]), torch.tensor([0, 0, 1, 1]))
+        tensor(0.8333)
 
     """
     contingency = _rand_score_update(preds, target)

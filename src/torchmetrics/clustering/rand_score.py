@@ -38,12 +38,12 @@ class RandScore(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): either single integer tensor with shape ``(N,)``
-    - ``target`` (:class:`~torch.Tensor`): either single integer tensor with shape ``(N,)``
+    - ``preds`` (:class:`~torch.Tensor`): single integer tensor with shape ``(N,)`` with predicted cluster labels
+    - ``target`` (:class:`~torch.Tensor`): single integer tensor with shape ``(N,)`` with ground truth cluster labels
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``mi_score`` (:class:`~torch.Tensor`): A tensor with the Rand Score
+    - ``rand_score`` (:class:`~torch.Tensor`): A tensor with the Rand Score
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -53,9 +53,9 @@ class RandScore(Metric):
         >>> from torchmetrics.clustering import RandScore
         >>> preds = torch.tensor([2, 1, 0, 1, 0])
         >>> target = torch.tensor([0, 2, 1, 1, 0])
-        >>> mi_score = RandScore()
-        >>> mi_score(preds, target)
-        tensor(0.5004)
+        >>> metric = RandScore()
+        >>> metric(preds, target)
+        tensor(0.6000)
 
     """
 
@@ -102,8 +102,8 @@ class RandScore(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.clustering import MutualInfoScore
-            >>> metric = MutualInfoScore()
+            >>> from torchmetrics.clustering import RandScore
+            >>> metric = RandScore()
             >>> metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
 
@@ -112,8 +112,8 @@ class RandScore(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.clustering import MutualInfoScore
-            >>> metric = MutualInfoScore()
+            >>> from torchmetrics.clustering import RandScore
+            >>> metric = RandScore()
             >>> for _ in range(10):
             ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
