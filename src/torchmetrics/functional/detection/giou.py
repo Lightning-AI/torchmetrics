@@ -32,13 +32,13 @@ def _giou_update(
     iou = generalized_box_iou(preds, target)
     if iou_threshold is not None:
         iou[iou < iou_threshold] = replacement_val
-    return iou.diag()
+    return iou
 
 
 def _giou_compute(iou: torch.Tensor, aggregate: bool = True) -> torch.Tensor:
     if not aggregate:
         return iou
-    return iou.mean() if iou.numel() > 0 else torch.tensor(0.0, device=iou.device)
+    return iou.diag().mean() if iou.numel() > 0 else torch.tensor(0.0, device=iou.device)
 
 
 def generalized_intersection_over_union(
@@ -62,10 +62,10 @@ def generalized_intersection_over_union(
         replacement_val:
             Value to replace values under the threshold with.
         aggregate:
-            Return the average value instead of the per box pair IoU value.
+            Return the average value instead of the full matrix of values
 
     Example::
-        By default iou is aggregated across all box pairs:
+        By default giou is aggregated across all box pairs e.g. mean along the diagonal of the gIoU matrix:
 
         >>> import torch
         >>> from torchmetrics.functional.detection import generalized_intersection_over_union
@@ -87,7 +87,7 @@ def generalized_intersection_over_union(
         tensor(0.5638)
 
     Example::
-        By setting `aggregate=False` the IoU score per prediction and target boxes is returned:
+        By setting `aggregate=False` the full IoU matrix is returned:
 
         >>> import torch
         >>> from torchmetrics.functional.detection import generalized_intersection_over_union
@@ -106,7 +106,9 @@ def generalized_intersection_over_union(
         ...     ]
         ... )
         >>> generalized_intersection_over_union(preds, target, aggregate=False)
-        tensor([0.6895, 0.4673, 0.5345])
+        tensor([[ 0.6895, -0.4964, -0.4944],
+                [-0.5105,  0.4673, -0.3434],
+                [-0.6024, -0.4021,  0.5345]])
 
     """
     if not _TORCHVISION_GREATER_EQUAL_0_8:

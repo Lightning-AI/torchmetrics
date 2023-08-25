@@ -15,7 +15,6 @@ from typing import Optional
 
 import torch
 
-from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 
 if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
@@ -30,17 +29,16 @@ __doctest_requires__ = {("intersection_over_union",): ["torchvision"]}
 def _iou_update(
     preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float], replacement_val: float = 0
 ) -> torch.Tensor:
-    _check_same_shape(preds, target)
     iou = box_iou(preds, target)
     if iou_threshold is not None:
         iou[iou < iou_threshold] = replacement_val
-    return iou.diag()
+    return iou
 
 
 def _iou_compute(iou: torch.Tensor, aggregate: bool = True) -> torch.Tensor:
     if not aggregate:
         return iou
-    return iou.mean() if iou.numel() > 0 else torch.tensor(0.0, device=iou.device)
+    return iou.diag().mean() if iou.numel() > 0 else torch.tensor(0.0, device=iou.device)
 
 
 def intersection_over_union(
@@ -64,10 +62,10 @@ def intersection_over_union(
         replacement_val:
             Value to replace values under the threshold with.
         aggregate:
-            Return the average value instead of the per box pair IoU value.
+            Return the average value instead of the full matrix of values
 
     Example::
-        By default iou is aggregated across all box pairs:
+        By default iou is aggregated across all box pairs e.g. mean along the diagonal of the IoU matrix:
 
         >>> import torch
         >>> from torchmetrics.functional.detection import intersection_over_union
@@ -89,7 +87,7 @@ def intersection_over_union(
         tensor(0.5879)
 
     Example::
-        By setting `aggregate=False` the IoU score per prediction and target boxes is returned:
+        By setting `aggregate=False` the full IoU matrix is returned:
 
         >>> import torch
         >>> from torchmetrics.functional.detection import intersection_over_union
@@ -108,7 +106,9 @@ def intersection_over_union(
         ...     ]
         ... )
         >>> intersection_over_union(preds, target, aggregate=False)
-        tensor([0.6898, 0.5086, 0.5654])
+        tensor([[0.6898, 0.0000, 0.0000],
+                [0.0000, 0.5086, 0.0000],
+                [0.0000, 0.0000, 0.5654]])
 
     """
     if not _TORCHVISION_GREATER_EQUAL_0_8:

@@ -32,13 +32,13 @@ def _ciou_update(
     iou = complete_box_iou(preds, target)
     if iou_threshold is not None:
         iou[iou < iou_threshold] = replacement_val
-    return iou.diag()
+    return iou
 
 
 def _ciou_compute(iou: torch.Tensor, aggregate: bool = True) -> torch.Tensor:
     if not aggregate:
         return iou
-    return iou.mean() if iou.numel() > 0 else torch.tensor(0.0, device=iou.device)
+    return iou.diag().mean() if iou.numel() > 0 else torch.tensor(0.0, device=iou.device)
 
 
 def complete_intersection_over_union(
@@ -62,10 +62,10 @@ def complete_intersection_over_union(
         replacement_val:
             Value to replace values under the threshold with.
         aggregate:
-            Return the average value instead of the per box pair IoU value.
+            Return the average value instead of the full matrix of values
 
     Example::
-        By default iou is aggregated across all box pairs:
+        By default iou is aggregated across all box pairs e.g. mean along the diagonal of the IoU matrix:
 
         >>> import torch
         >>> from torchmetrics.functional.detection import complete_intersection_over_union
@@ -106,7 +106,9 @@ def complete_intersection_over_union(
         ...     ]
         ... )
         >>> complete_intersection_over_union(preds, target, aggregate=False)
-        tensor([0.6883, 0.4881, 0.5606])
+        tensor([[ 0.6883, -0.2072, -0.3352],
+                [-0.2217,  0.4881, -0.1913],
+                [-0.3971, -0.1543,  0.5606]])
 
     """
     if not _TORCHVISION_GREATER_EQUAL_0_13:
