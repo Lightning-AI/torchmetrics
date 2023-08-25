@@ -60,6 +60,7 @@ def _pearson_corrcoef_update(
     n_obs = preds.shape[0] if weights is None else weights.sum()
     cond = n_prior.mean() > 0 or n_obs == 1
 
+    # Calculate means
     if cond:
         if weights is None:
             mx_new = (n_prior * mean_x + preds.sum(0)) / (n_prior + n_obs)

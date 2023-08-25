@@ -17,6 +17,8 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
+import numpy as np
+
 from scipy.stats import pearsonr
 from torch import Tensor
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
