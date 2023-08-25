@@ -67,7 +67,7 @@ def rand_score(preds: Tensor, target: Tensor) -> Tensor:
         target: ground truth cluster labels
 
     Returns:
-        rand_score: rand score
+        scalar tensor with the rand score
 
     Example:
         >>> from torchmetrics.functional.clustering import rand_score
