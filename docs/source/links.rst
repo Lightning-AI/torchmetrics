@@ -150,4 +150,5 @@
 .. _CIOU: https://arxiv.org/abs/2005.03572
 .. _DIOU: https://arxiv.org/abs/1911.08287v1
 .. _GIOU: https://arxiv.org/abs/1902.09630
+.. _Mutual Information Score: https://en.wikipedia.org/wiki/Mutual_information
 .. _pycocotools: https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools
