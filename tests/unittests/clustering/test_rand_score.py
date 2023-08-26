@@ -87,7 +87,7 @@ def test_rand_score_functional_raises_invalid_task():
 @pytest.mark.parametrize(
     ("preds", "target"),
     [
-        (_single_target_inputs1.preds, _single_target_inputs1.target),
+        (_single_target_inputs1.preds, _single_target_inputs1.target)
     ],
 )
 def test_rand_score_functional_is_symmetric(preds, target):
