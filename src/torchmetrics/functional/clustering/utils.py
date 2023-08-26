@@ -155,6 +155,9 @@ def calcualte_pair_cluster_confusion_matrix(
     if preds is not None and target is not None:
         contingency = calculate_contingency_matrix(preds, target)
 
+    if contingency is None:
+        raise ValueError("Must provide `contingency` if `preds` and `target` are not provided.")
+
     n_samples = contingency.sum()
     n_c = contingency.sum(dim=1)
     n_k = contingency.sum(dim=0)
