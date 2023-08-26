@@ -26,7 +26,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class RandScore(Metric):
-    r"""Compute `Rand Score`_ (alternative know as Rand Index).
+    r"""Compute `Rand Score`_ (alternatively known as Rand Index).
 
     .. math::
         RS(U, V) = \text{number of agreeing pairs} / \text{number of pairs}
