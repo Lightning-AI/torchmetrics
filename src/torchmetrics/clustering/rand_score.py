@@ -79,7 +79,7 @@ class RandScore(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """Compute mutual information over state."""
+        """Compute rand score over state."""
         return rand_score(dim_zero_cat(self.preds), dim_zero_cat(self.target))
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
