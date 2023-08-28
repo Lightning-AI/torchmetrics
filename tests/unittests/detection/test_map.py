@@ -475,37 +475,32 @@ def test_empty_preds_cxcywh():
     metric.compute()
 
 
-_gpu_test_condition = not torch.cuda.is_available()
-
-
-def _move_to_gpu(inputs):
-    for x in inputs:
-        for key in x:
-            if torch.is_tensor(x[key]):
-                x[key] = x[key].to("cuda")
-    return inputs
-
-
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-@pytest.mark.skipif(_gpu_test_condition, reason="test requires CUDA availability")
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires CUDA availability")
 @pytest.mark.parametrize("inputs", [_inputs, _inputs2, _inputs3])
 def test_map_gpu(inputs):
     """Test predictions on single gpu."""
     metric = MeanAveragePrecision()
     metric = metric.to("cuda")
-    for preds, targets in zip(inputs.preds, inputs.target):
-        metric.update(_move_to_gpu(preds), _move_to_gpu(targets))
+    for preds, targets in zip(deepcopy(inputs.preds), deepcopy(inputs.target)):
+        metric.update(
+            apply_to_collection(preds, Tensor, lambda x: x.to("cuda")),
+            apply_to_collection(targets, Tensor, lambda x: x.to("cuda")),
+        )
     metric.compute()
 
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-@pytest.mark.skipif(_gpu_test_condition, reason="test requires CUDA availability")
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires CUDA availability")
 def test_map_with_custom_thresholds():
     """Test that map works with custom iou thresholds."""
     metric = MeanAveragePrecision(iou_thresholds=[0.1, 0.2])
     metric = metric.to("cuda")
-    for preds, targets in zip(_inputs.preds, _inputs.target):
-        metric.update(_move_to_gpu(preds), _move_to_gpu(targets))
+    for preds, targets in zip(deepcopy(_inputs.preds), deepcopy(_inputs.target)):
+        metric.update(
+            apply_to_collection(preds, Tensor, lambda x: x.to("cuda")),
+            apply_to_collection(targets, Tensor, lambda x: x.to("cuda")),
+        )
     res = metric.compute()
     assert res["map_50"].item() == -1
     assert res["map_75"].item() == -1
@@ -809,8 +804,8 @@ def test_average_argument(class_metrics):
         _preds = _inputs.preds
         _target = _inputs.target
     else:
-        _preds = apply_to_collection(_inputs.preds, IntTensor, lambda x: torch.ones_like(x))
-        _target = apply_to_collection(_inputs.target, IntTensor, lambda x: torch.ones_like(x))
+        _preds = apply_to_collection(deepcopy(_inputs.preds), IntTensor, lambda x: torch.ones_like(x))
+        _target = apply_to_collection(deepcopy(_inputs.target), IntTensor, lambda x: torch.ones_like(x))
 
     metric_macro = MeanAveragePrecision(average="macro", class_metrics=class_metrics)
     metric_macro.update(_preds[0], _target[0])
