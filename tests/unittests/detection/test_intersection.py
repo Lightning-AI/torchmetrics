@@ -24,8 +24,9 @@ from torchmetrics.functional.detection.ciou import complete_intersection_over_un
 from torchmetrics.functional.detection.diou import distance_intersection_over_union
 from torchmetrics.functional.detection.giou import generalized_intersection_over_union
 from torchmetrics.functional.detection.iou import intersection_over_union
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_13
+from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_13
 
+# todo: check if some older versions have these functions too?
 if _TORCHVISION_GREATER_EQUAL_0_13:
     from torchvision.ops import box_iou as tv_iou
     from torchvision.ops import complete_box_iou as tv_ciou
