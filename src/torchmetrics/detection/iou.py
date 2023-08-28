@@ -45,7 +45,7 @@ class IntersectionOverUnion(Metric):
         - ``boxes`` (:class:`~torch.Tensor`): float tensor of shape ``(num_boxes, 4)`` containing ``num_boxes``
           detection boxes of the format specified in the constructor.
           By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates.
-        - labels: :class:`~torch.IntTensor` of shape ``(num_boxes)`` containing 0-indexed detection classes for
+        - labels: ``IntTensor`` of shape ``(num_boxes)`` containing 0-indexed detection classes for
           the boxes.
 
     - ``target`` (:class:`~List`): A list consisting of dictionaries each containing the key-values
