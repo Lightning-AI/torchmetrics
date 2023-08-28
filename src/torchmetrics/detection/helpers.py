@@ -68,15 +68,16 @@ def _input_validator(
                     f"Input '{ivn}' and labels of sample {i} in targets have a"
                     f" different length (expected {item[ivn].size(0)} labels, got {item['labels'].size(0)})"
                 )
-    if not ignore_score:
-        for i, item in enumerate(preds):
-            for ivn in item_val_name:
-                if not (item[ivn].size(0) == item["labels"].size(0) == item["scores"].size(0)):
-                    raise ValueError(
-                        f"Input '{ivn}', labels and scores of sample {i} in predictions have a"
-                        f" different length (expected {item[ivn].size(0)} labels and scores,"
-                        f" got {item['labels'].size(0)} labels and {item['scores'].size(0)})"
-                    )
+    if ignore_score:
+        return
+    for i, item in enumerate(preds):
+        for ivn in item_val_name:
+            if not (item[ivn].size(0) == item["labels"].size(0) == item["scores"].size(0)):
+                raise ValueError(
+                    f"Input '{ivn}', labels and scores of sample {i} in predictions have a"
+                    f" different length (expected {item[ivn].size(0)} labels and scores,"
+                    f" got {item['labels'].size(0)} labels and {item['scores'].size(0)})"
+                )
 
 
 def _fix_empty_tensors(boxes: Tensor) -> Tensor:
