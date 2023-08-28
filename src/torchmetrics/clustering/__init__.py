@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.clustering.mutual_info_score import MutualInfoScore
+from torchmetrics.clustering.rand_score import RandScore
 
 __all__ = [
     "MutualInfoScore",
+    "RandScore",
 ]
