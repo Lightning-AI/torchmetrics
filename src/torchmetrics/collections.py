@@ -337,7 +337,8 @@ class MetricCollection(ModuleDict):
 
             if isinstance(res, dict):
                 for key, v in res.items():
-                    stripped_k = k.replace(m.prefix, "").replace(m.postfix, "")
+                    stripped_k = k.replace(getattr(m, "prefix", ""), "")
+                    stripped_k = k.replace(getattr(m, "postfix", ""), "")
                     key = f"{stripped_k}_{key}"
                     if hasattr(m, "prefix") and m.prefix is not None:
                         key = f"{m.prefix}{key}"
