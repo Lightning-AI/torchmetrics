@@ -32,6 +32,8 @@ if _TORCHVISION_GREATER_EQUAL_0_13:
     from torchvision.ops import complete_box_iou as tv_ciou
     from torchvision.ops import distance_box_iou as tv_diou
     from torchvision.ops import generalized_box_iou as tv_giou
+else:
+    tv_iou, tv_ciou, tv_diou, tv_giou = ..., ..., ..., ...
 
 from unittests.helpers.testers import MetricTester
 
