@@ -185,7 +185,7 @@ def _add_noise(x, scale=10):
         (GeneralizedIntersectionOverUnion, generalized_intersection_over_union, tv_giou),
     ],
 )
-@pytest.mark.skipif(not _TORCHVISION_GREATER_EQUAL_0_13, reason="test requires torchvision >= 0.8")
+@pytest.mark.skipif(not _TORCHVISION_GREATER_EQUAL_0_13, reason="test requires torchvision >= 0.13")
 class TestIntersectionMetrics(MetricTester):
     """Tester class for the different intersection metrics."""
 
