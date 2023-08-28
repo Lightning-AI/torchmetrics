@@ -17,7 +17,13 @@ import numpy as np
 import pytest
 import torch
 from sklearn.metrics.cluster import contingency_matrix as sklearn_contingency_matrix
-from torchmetrics.functional.clustering.utils import calculate_contingency_matrix
+from sklearn.metrics.cluster import entropy as sklearn_entropy
+from sklearn.metrics.cluster._supervised import _generalized_average as sklearn_generalized_average
+from torchmetrics.functional.clustering.utils import (
+    calculate_contingency_matrix,
+    calculate_generalized_mean,
+    calculate_entropy,
+)
 
 from unittests import BATCH_SIZE
 from unittests.helpers import seed_all
@@ -76,3 +82,23 @@ def test_multidimensional_contingency_error():
     """Check that contingency matrix is not calculated for multidimensional input."""
     with pytest.raises(ValueError, match="Expected 1d*"):
         calculate_contingency_matrix(_multi_dim_inputs.preds, _multi_dim_inputs.target)
+
+
+@pytest.mark.parametrize(
+    ("labels"),
+    [torch.randint(BATCH_SIZE, NUM_CLASSES)],
+)
+def test_entropy(labels):
+    """Check calculation of entropy"""
+    for x in labels:
+        assert np.allclose(calculate_entropy(x).numpy(), sklearn_entropy(x))
+
+
+def test_generalized_mean():
+    """Check calculation of generalized mean."""
+    assert np.allclose(
+        calculate_generalized_mean(x),
+        sklearn_generalized_average(x),
+        method
+    )
+
