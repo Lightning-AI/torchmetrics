@@ -3,7 +3,16 @@ import os.path
 import numpy
 import torch
 
-from unittests.conftest import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES, NUM_PROCESSES, THRESHOLD, setup_ddp
+from unittests.conftest import (
+    BATCH_SIZE,
+    EXTRA_DIM,
+    NUM_BATCHES,
+    NUM_CLASSES,
+    NUM_PROCESSES,
+    THRESHOLD,
+    setup_ddp,
+    skip_on_running_out_of_memory,
+)
 
 # adding compatibility for numpy >= 1.24
 for tp_name, tp_ins in [("object", object), ("bool", bool), ("int", int), ("float", float)]:
@@ -25,4 +34,5 @@ __all__ = [
     "NUM_PROCESSES",
     "THRESHOLD",
     "setup_ddp",
+    "skip_on_running_out_of_memory",
 ]

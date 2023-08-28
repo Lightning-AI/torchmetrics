@@ -152,3 +152,4 @@
 .. _GIOU: https://arxiv.org/abs/1902.09630
 .. _Mutual Information Score: https://en.wikipedia.org/wiki/Mutual_information
 .. _pycocotools: https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools
+.. _Rand Score: https://link.springer.com/article/10.1007/BF01908075

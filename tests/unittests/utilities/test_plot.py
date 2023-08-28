@@ -91,6 +91,7 @@ from torchmetrics.classification import (
     MultilabelROC,
     MultilabelSpecificity,
 )
+from torchmetrics.clustering import MutualInfoScore, RandScore
 from torchmetrics.detection import PanopticQuality
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
@@ -614,6 +615,8 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             id="squad",
         ),
         pytest.param(TranslationEditRate, _text_input_3, _text_input_4, id="translation edit rate"),
+        pytest.param(MutualInfoScore, _nominal_input, _nominal_input, id="mutual info score"),
+        pytest.param(RandScore, _nominal_input, _nominal_input, id="rand score"),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 3])
