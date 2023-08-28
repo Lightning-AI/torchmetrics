@@ -12,5 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.functional.clustering.mutual_info_score import mutual_info_score
+from torchmetrics.functional.clustering.normalized_mutual_info_score import normalized_mutual_info_score
 
-__all__ = ["mutual_info_score"]
+__all__ = [
+    "mutual_info_score",
+    "normalized_mutual_info_score",
+]
