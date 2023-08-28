@@ -64,8 +64,8 @@ def mutual_info_score(preds: Tensor, target: Tensor) -> Tensor:
     """Compute mutual information between two clusterings.
 
     Args:
-        preds: predicted classes
-        target: ground truth classes
+        preds: predicted cluster labels
+        target: ground truth cluster labels
 
     Example:
         >>> from torchmetrics.functional.clustering import mutual_info_score
