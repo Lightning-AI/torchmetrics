@@ -3,6 +3,7 @@
 export FREEZE_REQUIREMENTS=1
 # assume you have installed need packages
 export SPHINX_MOCK_REQUIREMENTS=1
+export SPHINX_FETCH_ASSETS=0
 
 clean:
 	# clean all temp runs
