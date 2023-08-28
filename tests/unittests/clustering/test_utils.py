@@ -21,8 +21,8 @@ from sklearn.metrics.cluster import entropy as sklearn_entropy
 from sklearn.metrics.cluster._supervised import _generalized_average as sklearn_generalized_average
 from torchmetrics.functional.clustering.utils import (
     calculate_contingency_matrix,
-    calculate_generalized_mean,
     calculate_entropy,
+    calculate_generalized_mean,
 )
 
 from unittests import BATCH_SIZE
@@ -89,16 +89,11 @@ def test_multidimensional_contingency_error():
     [torch.randint(BATCH_SIZE, NUM_CLASSES)],
 )
 def test_entropy(labels):
-    """Check calculation of entropy"""
+    """Check calculation of entropy."""
     for x in labels:
         assert np.allclose(calculate_entropy(x).numpy(), sklearn_entropy(x))
 
 
 def test_generalized_mean():
     """Check calculation of generalized mean."""
-    assert np.allclose(
-        calculate_generalized_mean(x),
-        sklearn_generalized_average(x),
-        method
-    )
-
+    assert np.allclose(calculate_generalized_mean(x), sklearn_generalized_average(x), method)

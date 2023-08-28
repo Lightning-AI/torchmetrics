@@ -17,16 +17,11 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.clustering.mutual_info_score import mutual_info_score
-from torchmetrics.functional.clustering.utils import (
-    calculate_entropy,
-    calculate_generalized_mean
-)
+from torchmetrics.functional.clustering.utils import calculate_entropy, calculate_generalized_mean
 
 
 def normalized_mutual_info_score(
-    preds: Tensor,
-    target: Tensor,
-    method: Literal["min", "geometric", "arithmetic", "max"] = "arithmetic"
+    preds: Tensor, target: Tensor, method: Literal["min", "geometric", "arithmetic", "max"] = "arithmetic"
 ) -> Tensor:
     """Compute normalized mutual information between two clusterings.
 
@@ -46,9 +41,6 @@ def normalized_mutual_info_score(
         tensor(0.5)
 
     """
-    normalizer = calculate_generalized_mean(
-        torch.stack([calculate_entropy(preds), calculate_entropy(target)]),
-        method
-    )
+    normalizer = calculate_generalized_mean(torch.stack([calculate_entropy(preds), calculate_entropy(target)]), method)
 
     return mutual_info_score(preds, target) / normalizer

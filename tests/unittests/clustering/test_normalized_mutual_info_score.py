@@ -50,7 +50,8 @@ _float_inputs = Input(
         (_single_target_inputs1.preds, _single_target_inputs1.target),
         (_single_target_inputs2.preds, _single_target_inputs2.target),
     ],
-    "normalization_method", [
+    "normalization_method",
+    [
         "min",
         "arithmetic",
         "geometric",
@@ -71,7 +72,7 @@ class TestNormalizedMutualInfoScore(MetricTester):
             target=target,
             metric_class=NormalizedMutualInfoScore,
             reference_metric=sklearn_nmi,
-            metric_args=normalization_method
+            metric_args=normalization_method,
         )
 
     def test_normalized_mutual_info_score_functional(self, preds, target, normalization_method):
@@ -81,16 +82,11 @@ class TestNormalizedMutualInfoScore(MetricTester):
             target=target,
             metric_functional=normalized_mutual_info_score,
             reference_metric=sklearn_nmi,
-            metric_args=normalization_method
+            metric_args=normalization_method,
         )
 
 
-@pytest.mark.parametrize(
-    "normalization_method",
-    [
-        "min", "geometric", "arithmetic", "max"
-    ]
-)
+@pytest.mark.parametrize("normalization_method", ["min", "geometric", "arithmetic", "max"])
 def test_normalized_mutual_info_score_functional_single_cluster(normalization_method):
     """Check that for single cluster the metric returns 0."""
     tensor_a = torch.randint(NUM_CLASSES, (BATCH_SIZE,))
@@ -99,12 +95,7 @@ def test_normalized_mutual_info_score_functional_single_cluster(normalization_me
     assert torch.allclose(normalized_mutual_info_score(tensor_b, tensor_a), torch.tensor(0.0))
 
 
-@pytest.mark.parametrize(
-    "normalization_method",
-    [
-        "min", "geometric", "arithmetic", "max"
-    ]
-)
+@pytest.mark.parametrize("normalization_method", ["min", "geometric", "arithmetic", "max"])
 def test_normalized_mutual_info_score_functional_raises_invalid_task(normalization_method):
     """Check that metric rejects continuous-valued inputs."""
     preds, target = _float_inputs
@@ -118,14 +109,12 @@ def test_normalized_mutual_info_score_functional_raises_invalid_task(normalizati
         (_single_target_inputs1.preds, _single_target_inputs1.target),
     ],
     "normalization_method",
-    [
-        "min", "geometric", "arithmetic", "max"
-    ]
+    ["min", "geometric", "arithmetic", "max"],
 )
 def test_normalized_mutual_info_score_functional_is_symmetric(preds, target, normalization_method):
     """Check that the metric funtional is symmetric."""
     for p, t in zip(preds, target):
         assert torch.allclose(
             normalized_mutual_info_score(p, t, normalization_method),
-            normalized_mutual_info_score(t, p, normalization_method)
+            normalized_mutual_info_score(t, p, normalization_method),
         )

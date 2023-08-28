@@ -14,8 +14,8 @@
 from typing import Any, List, Literal
 
 from torch import Tensor
-from torchmetrics.clustering.mutual_info_score import MutualInfoScore
 
+from torchmetrics.clustering.mutual_info_score import MutualInfoScore
 from torchmetrics.functional.clustering.normalized_mutual_info_score import normalized_mutual_info_score
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
@@ -71,11 +71,7 @@ class NormalizedMutualInfoScore(MutualInfoScore):
     target: List[Tensor]
     contingency: Tensor
 
-    def __init__(
-        self,
-        normalization_method: Literal["min", "geometric", "arithmetic", "max"],
-        **kwargs: Any
-    ) -> None:
+    def __init__(self, normalization_method: Literal["min", "geometric", "arithmetic", "max"], **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
         self.normalization_method = normalization_method
@@ -83,7 +79,5 @@ class NormalizedMutualInfoScore(MutualInfoScore):
     def compute(self) -> Tensor:
         """Compute normalized mutual information over state."""
         return normalized_mutual_info_score(
-            dim_zero_cat(self.preds),
-            dim_zero_cat(self.target),
-            self.normalization_method
+            dim_zero_cat(self.preds), dim_zero_cat(self.target), self.normalization_method
         )

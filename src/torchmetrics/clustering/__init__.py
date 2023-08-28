@@ -14,7 +14,4 @@
 from torchmetrics.clustering.mutual_info_score import MutualInfoScore
 from torchmetrics.clustering.normalized_mutual_info_score import NormalizedMutualInfoScore
 
-__all__ = [
-    "MutualInfoScore",
-    "NormalizedMutualInfoScore"
-]
+__all__ = ["MutualInfoScore", "NormalizedMutualInfoScore"]

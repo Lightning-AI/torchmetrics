@@ -74,7 +74,7 @@ def calculate_generalized_mean(x: Tensor, p: Union[int, str]) -> Tensor:
 
     """
     if torch.is_complex(x) or torch.any(x <= 0.0):
-        raise ValueError('`x` must contain positive real numbers')
+        raise ValueError("`x` must contain positive real numbers")
 
     if isinstance(p, str):
         if p == "min":
