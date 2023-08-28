@@ -37,8 +37,6 @@ class CompleteIntersectionOverUnion(IntersectionOverUnion):
         - ``boxes`` (:class:`~torch.Tensor`): float tensor of shape ``(num_boxes, 4)`` containing ``num_boxes``
           detection boxes of the format specified in the constructor.
           By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates.
-        - ``scores`` (:class:`~torch.Tensor`): float tensor of shape ``(num_boxes)`` containing detection scores
-          for the boxes.
         - ``labels`` (:class:`~torch.Tensor`): integer tensor of shape ``(num_boxes)`` containing 0-indexed detection
           classes for the boxes.
 
@@ -48,14 +46,14 @@ class CompleteIntersectionOverUnion(IntersectionOverUnion):
         - ``boxes`` (:class:`~torch.Tensor`): float tensor of shape ``(num_boxes, 4)`` containing ``num_boxes`` ground
           truth boxes of the format specified in the constructor.
           By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates.
-        - ``labels`` (:class:`~torch.Tensor`): integer tensor of shape ``(num_boxes)`` containing 0-indexed ground truth
+        - ``labels`` (:class:`~torch.Tensor`): integer tensor of shape ``(num_boxes)`` containing 0-indexed detection
           classes for the boxes.
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
     - ``ciou_dict``: A dictionary containing the following key-values:
 
-        - ciou: (:class:`~torch.Tensor`)
+        - ciou: (:class:`~torch.Tensor`) with overall ciou value over all classes and samples.
         - ciou/cl_{cl}: (:class:`~torch.Tensor`), if argument ``class_metrics=True``
 
     Args:
@@ -65,6 +63,9 @@ class CompleteIntersectionOverUnion(IntersectionOverUnion):
             Optional IoU thresholds for evaluation. If set to `None` the threshold is ignored.
         class_metrics:
             Option to enable per-class metrics for IoU. Has a performance impact.
+        respect_labels:
+            Ignore values from boxes that do not have the same label as the ground truth box. Else will compute Iou
+            between all pairs of boxes.
         kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -86,13 +87,17 @@ class CompleteIntersectionOverUnion(IntersectionOverUnion):
         ... ]
         >>> metric = CompleteIntersectionOverUnion()
         >>> metric(preds, target)
-        {'ciou': tensor(-0.5694)}
+        {'ciou': tensor(0.8611)}
 
     Raises:
         ModuleNotFoundError:
             If torchvision is not installed with version 0.13.0 or newer.
 
     """
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = True
+
     _iou_type: str = "ciou"
     _invalid_val: float = -2.0  # unsure, min val could be just -1.5 as well
 
@@ -101,6 +106,7 @@ class CompleteIntersectionOverUnion(IntersectionOverUnion):
         box_format: str = "xyxy",
         iou_threshold: Optional[float] = None,
         class_metrics: bool = False,
+        respect_labels: bool = True,
         **kwargs: Any,
     ) -> None:
         if not _TORCHVISION_GREATER_EQUAL_0_13:
@@ -108,7 +114,7 @@ class CompleteIntersectionOverUnion(IntersectionOverUnion):
                 f"Metric `{self._iou_type.upper()}` requires that `torchvision` version 0.13.0 or newer is installed."
                 " Please install with `pip install torchvision>=0.13` or `pip install torchmetrics[detection]`."
             )
-        super().__init__(box_format, iou_threshold, class_metrics, **kwargs)
+        super().__init__(box_format, iou_threshold, class_metrics, respect_labels, **kwargs)
 
     @staticmethod
     def _iou_update_fn(*args: Any, **kwargs: Any) -> Tensor:
