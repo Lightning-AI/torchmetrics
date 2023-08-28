@@ -620,8 +620,8 @@ def test_nested_collections(input_collections):
         (
             DummyMetricMultiOutputDict(),
             (
-                "prefix2_prefix1_DummyMetricMultiOutputDict_output1_postfix1_postfix2",
-                "prefix2_prefix1_DummyMetricMultiOutputDict_output2_postfix1_postfix2",
+                "prefix2_prefix1_output1_postfix1_postfix2",
+                "prefix2_prefix1_output2_postfix1_postfix2",
             ),
         ),
         (
