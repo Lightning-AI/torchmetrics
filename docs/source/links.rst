@@ -151,4 +151,5 @@
 .. _DIOU: https://arxiv.org/abs/1911.08287v1
 .. _GIOU: https://arxiv.org/abs/1902.09630
 .. _Mutual Information Score: https://en.wikipedia.org/wiki/Mutual_information
+.. _Normalized Mutual Information Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.normalized_mutual_info_score.html
 .. _pycocotools: https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools
