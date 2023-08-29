@@ -27,7 +27,7 @@ from torchmetrics.functional.clustering.utils import (
     calculate_generalized_mean,
 )
 
-from unittests import BATCH_SIZE
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 
 seed_all(42)
@@ -85,17 +85,15 @@ def test_multidimensional_contingency_error():
     with pytest.raises(ValueError, match="Expected 1d*"):
         calculate_contingency_matrix(_multi_dim_inputs.preds, _multi_dim_inputs.target)
 
-
-@pytest.mark.parametrize("labels", [torch.randint(BATCH_SIZE, NUM_CLASSES)])
+@pytest.mark.parametrize("labels", [torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE))])
 def test_entropy(labels):
     """Check calculation of entropy."""
     for x in labels:
         assert np.allclose(calculate_entropy(x).numpy(), sklearn_entropy(x))
 
-
 def test_generalized_mean():
     """Check calculation of generalized mean."""
-    assert np.allclose(calculate_generalized_mean(x), sklearn_generalized_average(x), method)
+    assert np.allclose(calculate_generalized_mean(x), sklearn_generalized_average(x))
 
 
 @pytest.mark.parametrize(
