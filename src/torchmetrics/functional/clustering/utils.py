@@ -31,9 +31,9 @@ def calculate_entropy(x: Tensor) -> Tensor:
         entropy: entropy of tensor
 
     Example:
-        >>> from torchmetrics.functional.clustering.utils import entropy
+        >>> from torchmetrics.functional.clustering.utils import calculate_entropy
         >>> labels = torch.tensor([1, 3, 2, 2, 1])
-        >>> entropy(labels, "arithmetic")
+        >>> calculate_entropy(labels)
         tensor(1.0549)
 
     """
@@ -61,15 +61,15 @@ def calculate_generalized_mean(x: Tensor, p: Union[int, str]) -> Tensor:
         generalixed_mean: generalized mean
 
     Example (p="min"):
-        >>> from torchmetrics.functional.clustering.utils import generalized_mean
+        >>> from torchmetrics.functional.clustering.utils import calculate_generalized_mean
         >>> x = torch.tensor([1, 3, 2, 2, 1])
-        >>> generalized_mean(x, "min")
+        >>> calculate_generalized_mean(x, "min")
         tensor(1)
 
     Example (p="geometric"):
-        >>> from torchmetrics.functional.clustering.utils import generalized_mean
-        >>> x = torch.tensor([1, 3, 2, 0, 1])
-        >>> generalized_mean(x, "geometric")
+        >>> from torchmetrics.functional.clustering.utils import calculate_generalized_mean
+        >>> x = torch.tensor([1, 3, 2, 2, 1])
+        >>> calculate_generalized_mean(x, "geometric")
         tensor(1.6438)
 
     """

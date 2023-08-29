@@ -28,12 +28,11 @@ class NormalizedMutualInfoScore(MutualInfoScore):
     r"""Compute `Normalized Mutual Information Score`_.
 
     .. math::
-        MI(U,V) = \sum_{i=1}^{\abs{U}} \sum_{j=1}^{\abs{V}} \frac{\abs{U_i\cap V_j}}{N}
-        \log\frac{N\abs{U_i\cap V_j}}{\abs{U_i}\abs{V_j}}
+        NMI(U,V) = \frac{MI(U,V)}{M_p(U,V)}
 
     Where :math:`U` is a tensor of target values, :math:`V` is a tensor of predictions,
-    :math:`\abs{U_i}` is the number of samples in cluster :math:`U_i`, and
-    :math:`\abs{V_i}` is the number of samples in cluster :math:`V_i`.
+    :math:`M_p(U,V)` is the generalized mean of order :math:`p` of :math:`U` and :math:`V`,
+    and :math:`MI(U,V)` is the mutual information score between clusters :math:`U` and :math:`V`.
 
     The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields
     the same mutual information score.
@@ -45,10 +44,10 @@ class NormalizedMutualInfoScore(MutualInfoScore):
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``mi_score`` (:class:`~torch.Tensor`): A tensor with the Mutual Information Score
+    - ``nmi_score`` (:class:`~torch.Tensor`): A tensor with the Normalized Mutual Information Score
 
     Args:
-        normalization_method: generalized mean method used to calculate normalization
+        normalization_method: Method used to generalized mean for normalization
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -56,9 +55,9 @@ class NormalizedMutualInfoScore(MutualInfoScore):
         >>> from torchmetrics.clustering import NormalizedMutualInfoScore
         >>> preds = torch.tensor([2, 1, 0, 1, 0])
         >>> target = torch.tensor([0, 2, 1, 1, 0])
-        >>> nmi_score = NormalizedMutualInfoScore()
+        >>> nmi_score = NormalizedMutualInfoScore("arithmetic")
         >>> nmi_score(preds, target)
-        tensor(0.5004)
+        tensor(0.4744)
 
     """
 

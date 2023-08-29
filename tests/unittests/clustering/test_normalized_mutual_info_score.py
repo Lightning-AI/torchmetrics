@@ -50,13 +50,9 @@ _float_inputs = Input(
         (_single_target_inputs1.preds, _single_target_inputs1.target),
         (_single_target_inputs2.preds, _single_target_inputs2.target),
     ],
-    "normalization_method",
-    [
-        "min",
-        "arithmetic",
-        "geometric",
-        "max",
-    ],
+)
+@pytest.mark.parametrize(
+    "normalization_method", ["min", "arithmetic", "geometric", "max"],
 )
 class TestNormalizedMutualInfoScore(MetricTester):
     """Test class for `NormalizedMutualInfoScore` metric."""
@@ -72,7 +68,7 @@ class TestNormalizedMutualInfoScore(MetricTester):
             target=target,
             metric_class=NormalizedMutualInfoScore,
             reference_metric=sklearn_nmi,
-            metric_args=normalization_method,
+            normalization_method=normalization_method,
         )
 
     def test_normalized_mutual_info_score_functional(self, preds, target, normalization_method):
@@ -82,7 +78,7 @@ class TestNormalizedMutualInfoScore(MetricTester):
             target=target,
             metric_functional=normalized_mutual_info_score,
             reference_metric=sklearn_nmi,
-            metric_args=normalization_method,
+            normalization_method=normalization_method,
         )
 
 
@@ -91,8 +87,8 @@ def test_normalized_mutual_info_score_functional_single_cluster(normalization_me
     """Check that for single cluster the metric returns 0."""
     tensor_a = torch.randint(NUM_CLASSES, (BATCH_SIZE,))
     tensor_b = torch.zeros(BATCH_SIZE, dtype=torch.int)
-    assert torch.allclose(normalized_mutual_info_score(tensor_a, tensor_b), torch.tensor(0.0))
-    assert torch.allclose(normalized_mutual_info_score(tensor_b, tensor_a), torch.tensor(0.0))
+    assert torch.allclose(normalized_mutual_info_score(tensor_a, tensor_b, normalization_method), torch.tensor(0.0))
+    assert torch.allclose(normalized_mutual_info_score(tensor_b, tensor_a, normalization_method), torch.tensor(0.0))
 
 
 @pytest.mark.parametrize("normalization_method", ["min", "geometric", "arithmetic", "max"])
@@ -108,6 +104,8 @@ def test_normalized_mutual_info_score_functional_raises_invalid_task(normalizati
     [
         (_single_target_inputs1.preds, _single_target_inputs1.target),
     ],
+)
+@pytest.mark.parametrize(
     "normalization_method",
     ["min", "geometric", "arithmetic", "max"],
 )

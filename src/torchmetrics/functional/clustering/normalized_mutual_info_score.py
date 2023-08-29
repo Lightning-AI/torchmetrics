@@ -38,7 +38,7 @@ def normalized_mutual_info_score(
         >>> target = torch.tensor([0, 3, 2, 2, 1])
         >>> preds = torch.tensor([1, 3, 2, 0, 1])
         >>> normalized_mutual_info_score(preds, target, "arithmetic")
-        tensor(0.5)
+        tensor(0.7919)
 
     """
     normalizer = calculate_generalized_mean(torch.stack([calculate_entropy(preds), calculate_entropy(target)]), method)
