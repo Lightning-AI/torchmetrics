@@ -85,11 +85,13 @@ def test_multidimensional_contingency_error():
     with pytest.raises(ValueError, match="Expected 1d*"):
         calculate_contingency_matrix(_multi_dim_inputs.preds, _multi_dim_inputs.target)
 
+
 @pytest.mark.parametrize("labels", [torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE))])
 def test_entropy(labels):
     """Check calculation of entropy."""
     for x in labels:
         assert np.allclose(calculate_entropy(x).numpy(), sklearn_entropy(x))
+
 
 def test_generalized_mean():
     """Check calculation of generalized mean."""
