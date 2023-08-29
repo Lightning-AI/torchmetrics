@@ -47,6 +47,7 @@ jobs:
           pypi-dir: ${{ env.PYPI_CACHE }}
 
       - name: Install Latex
+        if: ${{ matrix.check == 'html' }}
         # install Texlive, see https://linuxconfig.org/how-to-install-latex-on-ubuntu-20-04-focal-fossa-linux
         run: |
           sudo apt-get update
