@@ -29,14 +29,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--
+- Fixed tie breaking in ndcg metric ([#2031](https://github.com/Lightning-AI/torchmetrics/pull/2031))
 
 
 ## [1.1.1] - 2023-08-29
 
 ### Added
 
-- Added `average` argument to `MeanAveragePrecision` ([#2018](https://github.com/Lightning-AI/torchmetrics/pull/2018)
+- Added `average` argument to `MeanAveragePrecision` ([#2018](https://github.com/Lightning-AI/torchmetrics/pull/2018))
 
 ### Fixed
 
