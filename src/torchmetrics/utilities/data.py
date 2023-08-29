@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 from lightning_utilities import apply_to_collection
@@ -60,16 +60,21 @@ def _flatten(x: Sequence) -> list:
     return [item for sublist in x for item in sublist]
 
 
-def _flatten_dict(x: Dict) -> Dict:
-    """Flatten dict of dicts into single dict."""
+def _flatten_dict(x: Dict) -> Tuple[Dict, bool]:
+    """Flatten dict of dicts into single dict and checking for duplicates in keys along the way."""
     new_dict = {}
+    duplicates = False
     for key, value in x.items():
         if isinstance(value, dict):
             for k, v in value.items():
+                if k in new_dict:
+                    duplicates = True
                 new_dict[k] = v
         else:
+            if key in new_dict:
+                duplicates = True
             new_dict[key] = value
-    return new_dict
+    return new_dict, duplicates
 
 
 def to_onehot(

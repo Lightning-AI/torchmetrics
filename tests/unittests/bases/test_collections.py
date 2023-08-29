@@ -614,11 +614,33 @@ def test_nested_collections(input_collections):
     assert "valmetrics/micro_MulticlassPrecision" in val
 
 
-def test_double_nested_collections():
+@pytest.mark.parametrize(
+    ("base_metrics", "expected"),
+    [
+        (
+            DummyMetricMultiOutputDict(),
+            (
+                "prefix2_prefix1_output1_postfix1_postfix2",
+                "prefix2_prefix1_output2_postfix1_postfix2",
+            ),
+        ),
+        (
+            {"metric1": DummyMetricMultiOutputDict(), "metric2": DummyMetricMultiOutputDict()},
+            (
+                "prefix2_prefix1_metric1_output1_postfix1_postfix2",
+                "prefix2_prefix1_metric1_output2_postfix1_postfix2",
+                "prefix2_prefix1_metric2_output1_postfix1_postfix2",
+                "prefix2_prefix1_metric2_output2_postfix1_postfix2",
+            ),
+        ),
+    ],
+)
+def test_double_nested_collections(base_metrics, expected):
     """Test that double nested collections gets flattened to a single collection."""
-    collection1 = MetricCollection([DummyMetricMultiOutputDict()], prefix="prefix1_", postfix="_postfix1")
+    collection1 = MetricCollection(base_metrics, prefix="prefix1_", postfix="_postfix1")
     collection2 = MetricCollection([collection1], prefix="prefix2_", postfix="_postfix2")
     x = torch.randn(10).sum()
     val = collection2(x)
-    assert "prefix2_prefix1_output1_postfix1_postfix2" in val
-    assert "prefix2_prefix1_output2_postfix1_postfix2" in val
+
+    for key in val:
+        assert key in expected

@@ -18,8 +18,10 @@ import pytest
 import torch
 from sklearn.metrics.cluster import contingency_matrix as sklearn_contingency_matrix
 from sklearn.metrics.cluster import entropy as sklearn_entropy
+from sklearn.metrics.cluster import pair_confusion_matrix as sklearn_pair_confusion_matrix
 from sklearn.metrics.cluster._supervised import _generalized_average as sklearn_generalized_average
 from torchmetrics.functional.clustering.utils import (
+    calcualte_pair_cluster_confusion_matrix,
     calculate_contingency_matrix,
     calculate_entropy,
     calculate_generalized_mean,
@@ -84,10 +86,7 @@ def test_multidimensional_contingency_error():
         calculate_contingency_matrix(_multi_dim_inputs.preds, _multi_dim_inputs.target)
 
 
-@pytest.mark.parametrize(
-    ("labels"),
-    [torch.randint(BATCH_SIZE, NUM_CLASSES)],
-)
+@pytest.mark.parametrize("labels", [torch.randint(BATCH_SIZE, NUM_CLASSES)])
 def test_entropy(labels):
     """Check calculation of entropy."""
     for x in labels:
@@ -97,3 +96,19 @@ def test_entropy(labels):
 def test_generalized_mean():
     """Check calculation of generalized mean."""
     assert np.allclose(calculate_generalized_mean(x), sklearn_generalized_average(x), method)
+
+    
+@pytest.mark.parametrize(
+    "preds, target",
+    [(_sklearn_inputs.preds, _sklearn_inputs.target), (_single_dim_inputs.preds, _single_dim_inputs.target)],
+)
+class TestPairClusterConfusionMatrix:
+    """Test that implementation matches sklearns."""
+
+    atol = 1e-8
+
+    def test_pair_cluster_confusion_matrix(self, preds, target):
+        """Check that pair cluster confusion matrix is calculated correctly."""
+        tm_res = calcualte_pair_cluster_confusion_matrix(preds, target)
+        sklearn_res = sklearn_pair_confusion_matrix(preds, target)
+        assert np.allclose(tm_res, sklearn_res, atol=self.atol)

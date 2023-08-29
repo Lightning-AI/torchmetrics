@@ -15,29 +15,26 @@ from typing import Any, List, Optional, Sequence, Union
 
 from torch import Tensor
 
-from torchmetrics.functional.clustering.mutual_info_score import mutual_info_score
+from torchmetrics.functional.clustering.rand_score import rand_score
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["MutualInfoScore.plot"]
+    __doctest_skip__ = ["RandScore.plot"]
 
 
-class MutualInfoScore(Metric):
-    r"""Compute `Mutual Information Score`_.
+class RandScore(Metric):
+    r"""Compute `Rand Score`_ (alternatively known as Rand Index).
 
     .. math::
-        MI(U,V) = \sum_{i=1}^{\abs{U}} \sum_{j=1}^{\abs{V}} \frac{\abs{U_i\cap V_j}}{N}
-        \log\frac{N\abs{U_i\cap V_j}}{\abs{U_i}\abs{V_j}}
+        RS(U, V) = \text{number of agreeing pairs} / \text{number of pairs}
 
-    Where :math:`U` is a tensor of target values, :math:`V` is a tensor of predictions,
-    :math:`\abs{U_i}` is the number of samples in cluster :math:`U_i`, and
-    :math:`\abs{V_i}` is the number of samples in cluster :math:`V_i`.
+    The number of agreeing pairs is every :math:`(i, j)` pair of samples where :math:`i \in U` and :math:`j \in V`
+    (the predicted and true clusterings, respectively) that are in the same cluster for both clusterings.
 
-    The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields
-    the same mutual information score.
+    The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields the same rand score.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -46,24 +43,24 @@ class MutualInfoScore(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``mi_score`` (:class:`~torch.Tensor`): A tensor with the Mutual Information Score
+    - ``rand_score`` (:class:`~torch.Tensor`): A tensor with the Rand Score
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> import torch
-        >>> from torchmetrics.clustering import MutualInfoScore
+        >>> from torchmetrics.clustering import RandScore
         >>> preds = torch.tensor([2, 1, 0, 1, 0])
         >>> target = torch.tensor([0, 2, 1, 1, 0])
-        >>> mi_score = MutualInfoScore()
-        >>> mi_score(preds, target)
-        tensor(0.5004)
+        >>> metric = RandScore()
+        >>> metric(preds, target)
+        tensor(0.6000)
 
     """
 
-    is_differentiable: bool = True
-    higher_is_better: bool = True
+    is_differentiable = True
+    higher_is_better = None
     full_state_update: bool = True
     plot_lower_bound: float = 0.0
     preds: List[Tensor]
@@ -82,8 +79,8 @@ class MutualInfoScore(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """Compute mutual information over state."""
-        return mutual_info_score(dim_zero_cat(self.preds), dim_zero_cat(self.target))
+        """Compute rand score over state."""
+        return rand_score(dim_zero_cat(self.preds), dim_zero_cat(self.target))
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -105,8 +102,8 @@ class MutualInfoScore(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.clustering import MutualInfoScore
-            >>> metric = MutualInfoScore()
+            >>> from torchmetrics.clustering import RandScore
+            >>> metric = RandScore()
             >>> metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
 
@@ -115,8 +112,8 @@ class MutualInfoScore(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.clustering import MutualInfoScore
-            >>> metric = MutualInfoScore()
+            >>> from torchmetrics.clustering import RandScore
+            >>> metric = RandScore()
             >>> for _ in range(10):
             ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
