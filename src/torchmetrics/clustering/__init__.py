@@ -11,10 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.clustering.adjusted_rand_score import AdjustedRandScore
 from torchmetrics.clustering.mutual_info_score import MutualInfoScore
 from torchmetrics.clustering.rand_score import RandScore
 
 __all__ = [
+    "AdjustedRandScore",
     "MutualInfoScore",
     "RandScore",
 ]
