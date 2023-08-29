@@ -52,7 +52,8 @@ _float_inputs = Input(
     ],
 )
 @pytest.mark.parametrize(
-    "normalization_method", ["min", "arithmetic", "geometric", "max"],
+    "normalization_method",
+    ["min", "arithmetic", "geometric", "max"],
 )
 class TestNormalizedMutualInfoScore(MetricTester):
     """Test class for `NormalizedMutualInfoScore` metric."""
