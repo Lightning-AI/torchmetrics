@@ -153,3 +153,4 @@
 .. _Mutual Information Score: https://en.wikipedia.org/wiki/Mutual_information
 .. _pycocotools: https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools
 .. _Rand Score: https://link.springer.com/article/10.1007/BF01908075
+.. _Adjusted Rand Score: https://en.wikipedia.org/wiki/Rand_index#Adjusted_Rand_index

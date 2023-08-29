@@ -32,9 +32,11 @@ class RandScore(Metric):
         RS(U, V) = \text{number of agreeing pairs} / \text{number of pairs}
 
     The number of agreeing pairs is every :math:`(i, j)` pair of samples where :math:`i \in U` and :math:`j \in V`
-    (the predicted and true clusterings, respectively) that are in the same cluster for both clusterings.
+    (the predicted and true clusterings, respectively) that are in the same cluster for both clusterings. The metric is
+    symmetric, therefore swapping :math:`U` and :math:`V` yields the same rand score.
 
-    The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields the same rand score.
+    This clustering metric is an extrinsic measure, because it requires ground truth clustering labels, which may not
+    be available in practice since clustering in generally is used for unsupervised learning.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 

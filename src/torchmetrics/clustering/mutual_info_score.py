@@ -34,10 +34,11 @@ class MutualInfoScore(Metric):
 
     Where :math:`U` is a tensor of target values, :math:`V` is a tensor of predictions,
     :math:`\abs{U_i}` is the number of samples in cluster :math:`U_i`, and
-    :math:`\abs{V_i}` is the number of samples in cluster :math:`V_i`.
+    :math:`\abs{V_i}` is the number of samples in cluster :math:`V_i`. The metric is symmetric, therefore swapping
+    :math:`U` and :math:`V` yields the same mutual information score.
 
-    The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields
-    the same mutual information score.
+    This clustering metric is an extrinsic measure, because it requires ground truth clustering labels, which may not
+    be available in practice since clustering in generally is used for unsupervised learning.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 

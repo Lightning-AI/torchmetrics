@@ -31,10 +31,13 @@ class AdjustedRandScore(Metric):
     .. math::
         ARS(U, V) = (\text{RS} - \text{Expected RS}) / (\text{Max RS} - \text{Expected RS})
 
-    The adjusted rand score :math:`\text{ARS}` is in essence the :math:`\text{RI}` (rand score) adjusted for chance.
+    The adjusted rand score :math:`\text{ARS}` is in essence the :math:`\text{RS}` (rand score) adjusted for chance.
     The score ensures that completly randomly cluster labels have a score close to zero and only a perfect match will
     have a score of 1 (up to a permutation of the labels). The adjusted rand score is symmetric, therefore swapping
     :math:`U` and :math:`V` yields the same adjusted rand score.
+
+    This clustering metric is an extrinsic measure, because it requires ground truth clustering labels, which may not
+    be available in practice since clustering in generally is used for unsupervised learning.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
