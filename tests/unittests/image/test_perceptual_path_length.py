@@ -24,6 +24,7 @@ from torchmetrics.functional.image.perceptual_path_length import _interpolate, p
 from torchmetrics.image.perceptual_path_length import PerceptualPathLength
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
+from unittests import skip_on_running_out_of_memory
 from unittests.helpers import seed_all
 
 seed_all(42)
@@ -42,6 +43,7 @@ def test_interpolation_methods(interpolation_method):
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch_fidelity")
+@skip_on_running_out_of_memory()
 def test_sim_net():
     """Check that the similiarity network is the same as the one used in torch_fidelity."""
     compare = SampleSimilarityLPIPS("sample_similarity", resize=64)
@@ -113,6 +115,7 @@ class DummyGenerator(torch.nn.Module):
         ({"upper_discard": 2}, "Argument `upper_discard` must be a float between 0 and 1 or `None`, but got 2"),
     ],
 )
+@skip_on_running_out_of_memory()
 def test_raises_error_on_wrong_arguments(argument, match):
     """Test that appropriate errors are raised on wrong arguments."""
     with pytest.raises(ValueError, match=match):

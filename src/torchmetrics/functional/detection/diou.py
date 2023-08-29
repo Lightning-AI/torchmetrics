@@ -35,10 +35,10 @@ def _diou_update(
     return iou
 
 
-def _diou_compute(iou: torch.Tensor, labels_eq: bool = True) -> torch.Tensor:
-    if labels_eq:
-        return iou.diag().mean()
-    return iou.mean()
+def _diou_compute(iou: torch.Tensor, aggregate: bool = True) -> torch.Tensor:
+    if not aggregate:
+        return iou
+    return iou.diag().mean() if iou.numel() > 0 else torch.tensor(0.0, device=iou.device)
 
 
 def distance_intersection_over_union(
@@ -62,15 +62,53 @@ def distance_intersection_over_union(
         replacement_val:
             Value to replace values under the threshold with.
         aggregate:
-            Return the average value instead of the complete IoU matrix.
+            Return the average value instead of the full matrix of values
 
-    Example:
+    Example::
+        By default diou is aggregated across all box pairs e.g. mean along the diagonal of the dIoU matrix:
+
         >>> import torch
         >>> from torchmetrics.functional.detection import distance_intersection_over_union
-        >>> preds = torch.Tensor([[100, 100, 200, 200]])
-        >>> target = torch.Tensor([[110, 110, 210, 210]])
+        >>> preds = torch.tensor(
+        ...     [
+        ...         [296.55, 93.96, 314.97, 152.79],
+        ...         [328.94, 97.05, 342.49, 122.98],
+        ...         [356.62, 95.47, 372.33, 147.55],
+        ...     ]
+        ... )
+        >>> target = torch.tensor(
+        ...     [
+        ...         [300.00, 100.00, 315.00, 150.00],
+        ...         [330.00, 100.00, 350.00, 125.00],
+        ...         [350.00, 100.00, 375.00, 150.00],
+        ...     ]
+        ... )
         >>> distance_intersection_over_union(preds, target)
-        tensor(0.6724)
+        tensor(0.5793)
+
+    Example::
+        By setting `aggregate=False` the IoU score per prediction and target boxes is returned:
+
+        >>> import torch
+        >>> from torchmetrics.functional.detection import distance_intersection_over_union
+        >>> preds = torch.tensor(
+        ...     [
+        ...         [296.55, 93.96, 314.97, 152.79],
+        ...         [328.94, 97.05, 342.49, 122.98],
+        ...         [356.62, 95.47, 372.33, 147.55],
+        ...     ]
+        ... )
+        >>> target = torch.tensor(
+        ...     [
+        ...         [300.00, 100.00, 315.00, 150.00],
+        ...         [330.00, 100.00, 350.00, 125.00],
+        ...         [350.00, 100.00, 375.00, 150.00],
+        ...     ]
+        ... )
+        >>> distance_intersection_over_union(preds, target, aggregate=False)
+        tensor([[ 0.6883, -0.2043, -0.3351],
+                [-0.2214,  0.4886, -0.1913],
+                [-0.3971, -0.1510,  0.5609]])
 
     """
     if not _TORCHVISION_GREATER_EQUAL_0_13:
@@ -80,4 +118,4 @@ def distance_intersection_over_union(
             " Please install with `pip install torchvision>=0.13` or `pip install torchmetrics[detection]`."
         )
     iou = _diou_update(preds, target, iou_threshold, replacement_val)
-    return _diou_compute(iou) if aggregate else iou
+    return _diou_compute(iou, aggregate)

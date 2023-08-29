@@ -67,6 +67,10 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
         tensor([0.7273, 0.9887])
 
     """
+    is_differentiable: bool = True
+    higher_is_better: bool = True
+    full_state_update: bool = True
+
     plot_lower_bound: float = -1.0
     plot_upper_bound: float = 1.0
 

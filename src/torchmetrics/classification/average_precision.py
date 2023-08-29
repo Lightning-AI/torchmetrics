@@ -106,7 +106,7 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
 
     """
     is_differentiable: bool = False
-    higher_is_better: Optional[bool] = None
+    higher_is_better: bool = True
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
@@ -239,7 +239,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
     """
 
     is_differentiable: bool = False
-    higher_is_better: Optional[bool] = None
+    higher_is_better: bool = True
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
@@ -393,7 +393,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
 
     """
     is_differentiable: bool = False
-    higher_is_better: Optional[bool] = None
+    higher_is_better: bool = True
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0

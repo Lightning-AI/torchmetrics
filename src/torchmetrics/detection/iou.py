@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import defaultdict
 from typing import Any, Dict, List, Optional, Sequence, Union
 
 import torch
@@ -46,10 +45,8 @@ class IntersectionOverUnion(Metric):
         - ``boxes`` (:class:`~torch.Tensor`): float tensor of shape ``(num_boxes, 4)`` containing ``num_boxes``
           detection boxes of the format specified in the constructor.
           By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates.
-        - ``scores`` (:class:`~torch.Tensor`): float tensor of shape ``(num_boxes)`` containing detection scores
-          for the boxes.
-        - ``labels`` (:class:`~torch.Tensor`): integer tensor of shape ``(num_boxes)`` containing 0-indexed detection
-          classes for the boxes.
+        - labels: ``IntTensor`` of shape ``(num_boxes)`` containing 0-indexed detection classes for
+          the boxes.
 
     - ``target`` (:class:`~List`): A list consisting of dictionaries each containing the key-values
       (each dictionary corresponds to a single image). Parameters that should be provided per dict:
@@ -75,17 +72,20 @@ class IntersectionOverUnion(Metric):
         class_metrics:
             Option to enable per-class metrics for IoU. Has a performance impact.
         respect_labels:
-            Replace IoU values with the `invalid_val` if the labels do not match.
+            Ignore values from boxes that do not have the same label as the ground truth box. Else will compute Iou
+                between all pairs of boxes.
         kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
+    Example::
+
         >>> import torch
         >>> from torchmetrics.detection import IntersectionOverUnion
         >>> preds = [
         ...    {
-        ...        "boxes": torch.tensor([[296.55, 93.96, 314.97, 152.79], [298.55, 98.96, 314.97, 151.79]]),
-        ...        "scores": torch.tensor([0.236, 0.56]),
+        ...        "boxes": torch.tensor([
+        ...             [296.55, 93.96, 314.97, 152.79],
+        ...             [298.55, 98.96, 314.97, 151.79]]),
         ...        "labels": torch.tensor([4, 5]),
         ...    }
         ... ]
@@ -97,7 +97,34 @@ class IntersectionOverUnion(Metric):
         ... ]
         >>> metric = IntersectionOverUnion()
         >>> metric(preds, target)
-        {'iou': tensor(0.4307)}
+        {'iou': tensor(0.8614)}
+
+    Example::
+
+        The metric can also return the score per class:
+
+        >>> import torch
+        >>> from torchmetrics.detection import IntersectionOverUnion
+        >>> preds = [
+        ...    {
+        ...        "boxes": torch.tensor([
+        ...             [296.55, 93.96, 314.97, 152.79],
+        ...             [298.55, 98.96, 314.97, 151.79]]),
+        ...        "labels": torch.tensor([4, 5]),
+        ...    }
+        ... ]
+        >>> target = [
+        ...    {
+        ...        "boxes": torch.tensor([
+        ...               [300.00, 100.00, 315.00, 150.00],
+        ...               [300.00, 100.00, 315.00, 150.00]
+        ...        ]),
+        ...        "labels": torch.tensor([4, 5]),
+        ...    }
+        ... ]
+        >>> metric = IntersectionOverUnion(class_metrics=True)
+        >>> metric(preds, target)
+        {'iou': tensor(0.7756), 'iou/cl_4': tensor(0.6898), 'iou/cl_5': tensor(0.8614)}
 
     Raises:
         ModuleNotFoundError:
@@ -108,15 +135,10 @@ class IntersectionOverUnion(Metric):
     higher_is_better: Optional[bool] = True
     full_state_update: bool = True
 
-    detections: List[Tensor]
-    detection_scores: List[Tensor]
-    detection_labels: List[Tensor]
-    groundtruths: List[Tensor]
     groundtruth_labels: List[Tensor]
-    results: List[Tensor]
-    labels_eq: List[Tensor]
+    iou_matrix: List[Tensor]
     _iou_type: str = "iou"
-    _invalid_val: float = 0.0
+    _invalid_val: float = -1.0
 
     def __init__(
         self,
@@ -149,13 +171,8 @@ class IntersectionOverUnion(Metric):
             raise ValueError("Expected argument `respect_labels` to be a boolean")
         self.respect_labels = respect_labels
 
-        self.add_state("detections", default=[], dist_reduce_fx=None)
-        self.add_state("detection_scores", default=[], dist_reduce_fx=None)
-        self.add_state("detection_labels", default=[], dist_reduce_fx=None)
-        self.add_state("groundtruths", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
-        self.add_state("results", default=[], dist_reduce_fx=None)
-        self.add_state("labels_eq", default=[], dist_reduce_fx=None)
+        self.add_state("iou_matrix", default=[], dist_reduce_fx=None)
 
     @staticmethod
     def _iou_update_fn(*args: Any, **kwargs: Any) -> Tensor:
@@ -166,50 +183,19 @@ class IntersectionOverUnion(Metric):
         return _iou_compute(*args, **kwargs)
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:
-        """Update state with predictions and targets.
-
-        Raises:
-            ValueError:
-                If ``preds`` is not of type List[Dict[str, Tensor]]
-            ValueError:
-                If ``target`` is not of type List[Dict[str, Tensor]]
-            ValueError:
-                If ``preds`` and ``target`` are not of the same length
-            ValueError:
-                If any of ``preds.boxes``, ``preds.scores``
-                and ``preds.labels`` are not of the same length
-            ValueError:
-                If any of ``target.boxes`` and ``target.labels`` are not of the same length
-            ValueError:
-                If any box is not type float and of length 4
-            ValueError:
-                If any class is not type int and of length 1
-            ValueError:
-                If any score is not type float and of length 1
-
-        """
-        _input_validator(preds, target)
+        """Update state with predictions and targets."""
+        _input_validator(preds, target, ignore_score=True)
 
         for p, t in zip(preds, target):
             det_boxes = self._get_safe_item_values(p["boxes"])
-            self.detections.append(det_boxes)
-            self.detection_labels.append(p["labels"])
-            self.detection_scores.append(p["scores"])
-
             gt_boxes = self._get_safe_item_values(t["boxes"])
-            self.groundtruths.append(gt_boxes)
             self.groundtruth_labels.append(t["labels"])
 
-            label_eq = torch.equal(p["labels"], t["labels"])
-            # Workaround to persist state, which only works with tensors
-            self.labels_eq.append(torch.tensor([label_eq], dtype=torch.int, device=self.device))
-
-            ious = self._iou_update_fn(det_boxes, gt_boxes, self.iou_threshold, self._invalid_val)
-            if self.respect_labels and not label_eq:
-                label_diff = p["labels"].unsqueeze(0).T - t["labels"].unsqueeze(0)
-                labels_not_eq = label_diff != 0.0
-                ious[labels_not_eq] = self._invalid_val
-            self.results.append(ious.to(dtype=torch.float, device=self.device))
+            iou_matrix = self._iou_update_fn(det_boxes, gt_boxes, self.iou_threshold, self._invalid_val)  # N x M
+            if self.respect_labels:
+                label_eq = p["labels"].unsqueeze(1) == t["labels"].unsqueeze(0)  # N x M
+                iou_matrix[~label_eq] = self._invalid_val
+            self.iou_matrix.append(iou_matrix)
 
     def _get_safe_item_values(self, boxes: Tensor) -> Tensor:
         boxes = _fix_empty_tensors(boxes)
@@ -225,22 +211,19 @@ class IntersectionOverUnion(Metric):
 
     def compute(self) -> dict:
         """Computes IoU based on inputs passed in to ``update`` previously."""
-        aggregated_iou = dim_zero_cat(
-            [self._iou_compute_fn(iou, bool(lbl_eq)) for iou, lbl_eq in zip(self.results, self.labels_eq)]
-        )
-        results: Dict[str, Tensor] = {f"{self._iou_type}": aggregated_iou.mean()}
+        score = torch.cat([mat[mat != self._invalid_val] for mat in self.iou_matrix], 0).mean()
+        results: Dict[str, Tensor] = {f"{self._iou_type}": score}
 
         if self.class_metrics:
-            class_results: Dict[int, List[Tensor]] = defaultdict(list)
-            for iou, label in zip(self.results, self.groundtruth_labels):
-                for cl in self._get_gt_classes():
-                    masked_iou = iou[:, label == cl]
-                    if masked_iou.numel() > 0:
-                        class_results[cl].append(self._iou_compute_fn(masked_iou, False))
-
-            results.update(
-                {f"{self._iou_type}/cl_{cl}": dim_zero_cat(class_results[cl]).mean() for cl in class_results}
-            )
+            gt_labels = dim_zero_cat(self.groundtruth_labels)
+            classes = gt_labels.unique().tolist() if len(gt_labels) > 0 else []
+            for cl in classes:
+                masked_iou, observed = torch.zeros_like(score), torch.zeros_like(score)
+                for mat, gt_lab in zip(self.iou_matrix, self.groundtruth_labels):
+                    scores = mat[:, gt_lab == cl]
+                    masked_iou += scores[scores != self._invalid_val].sum()
+                    observed += scores[scores != self._invalid_val].numel()
+                results.update({f"{self._iou_type}/cl_{cl}": masked_iou / observed})
         return results
 
     def plot(
