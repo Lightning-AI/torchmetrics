@@ -51,13 +51,16 @@ jobs:
         # install Texlive, see https://linuxconfig.org/how-to-install-latex-on-ubuntu-20-04-focal-fossa-linux
         run: |
           sudo apt-get update
-          sudo apt-get install -y texlive-latex-extra dvipng texlive-pictures texlive-fonts-recommended cm-super
+          sudo apt-get install -y \
+            texlive-latex-extra texlive-pictures texlive-fonts-recommended dvipng cm-super
 
       - name: Install package & dependencies
         run: |
-          sudo apt-get update && sudo apt-get install -y cmake
+          sudo apt-get update --fix-missing
+          sudo apt-get install -y cmake
           pip --version
-          pip install . -U -r requirements/docs.txt --find-links $PYPI_CACHE -f $TORCH_URL
+          pip install . -U -r requirements/docs.txt \
+            --find-links=${PYPI_CACHE} --find-links=${TORCH_URL}
           pip list
 
       - name: Test Examples in Documentation
