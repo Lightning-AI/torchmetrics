@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import torch
 from torch import Tensor
 
 from torchmetrics.functional.clustering.utils import (
@@ -47,7 +48,7 @@ def _adjusted_rand_score_compute(contingency: Tensor) -> Tensor:
     """
     (tn, fp), (fn, tp) = calcualte_pair_cluster_confusion_matrix(contingency=contingency)
     if fn == 0 and fp == 0:
-        return 1.0
+        return torch.ones_like(tn, dtype=torch.float32)
     return 2.0 * (tp * tn - fn * fp) / ((tp + fn) * (fn + tn) + (tp + fp) * (fp + tn))
 
 
@@ -64,10 +65,10 @@ def adjusted_rand_score(preds: Tensor, target: Tensor) -> Tensor:
     Example:
         >>> from torchmetrics.functional.clustering import adjusted_rand_score
         >>> import torch
-        >>> adjusted_rand_score(torch.tensor([0, 0, 1, 1]), torch.tensor([1, 1, 0, 0]))
+        >>> adjusted_rand_score(torch.tensor([0, 0, 1, 1]), torch.tensor([0, 0, 1, 1]))
         tensor(1.)
         >>> adjusted_rand_score(torch.tensor([0, 0, 1, 2]), torch.tensor([0, 0, 1, 1]))
-        tensor(0.8333)
+        tensor(0.5714)
 
     """
     contingency = _adjusted_rand_score_update(preds, target)

@@ -55,10 +55,10 @@ class AdjustedRandScore(Metric):
         >>> import torch
         >>> from torchmetrics.clustering import AdjustedRandScore
         >>> metric = AdjustedRandScore()
-        >>> metric(torch.tensor([0, 0, 1, 1]), torch.tensor([0, 0, 1, 2]))
-        tensor(0.57)
+        >>> metric(torch.tensor([0, 0, 1, 1]), torch.tensor([0, 0, 1, 1]))
+        tensor(1.)
         >>> metric(torch.tensor([0, 0, 1, 1]), torch.tensor([0, 1, 0, 1]))
-        tensor(-0.5)
+        tensor(-0.5000)
 
     """
 
@@ -106,8 +106,8 @@ class AdjustedRandScore(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.clustering import RandScore
-            >>> metric = RandScore()
+            >>> from torchmetrics.clustering import AdjustedRandScore
+            >>> metric = AdjustedRandScore()
             >>> metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
 
@@ -116,8 +116,8 @@ class AdjustedRandScore(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.clustering import RandScore
-            >>> metric = RandScore()
+            >>> from torchmetrics.clustering import AdjustedRandScore
+            >>> metric = AdjustedRandScore()
             >>> for _ in range(10):
             ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
