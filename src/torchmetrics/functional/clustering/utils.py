@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Optional
-from typing_extensions import Literal
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
 
