@@ -163,11 +163,12 @@ class MeanAveragePrecision(Metric):
         Caution: If the initialization parameters are changed, dictionary keys for mAR can change as well.
 
     .. note::
-        This metric supports at the moment two different backends for the evaluation. The default backend is the
-        official `pycocotools` implementation. Thus by default this means that the metric requires you to have
-        `pycocotools` installed, which can either be installed as `pip install pycocotools` or `pip install
-        torchmetrics[detection]`. The second backend is the `faster-coco-eval`_ implementation, which can be installed
-        with `pip install faster-coco-eval`. This implementation is a maintained open-source implementation that is
+        This metric supports at the moment two different backends for the evaluation. The default backend is
+        `"pycocotools"`, which either require the official `pycocotools`_ implementation or this `fork of pycocotools`_
+        to be installed. We recommend using the fork as it is better maintained and easily avialable to install via pip:
+        `pip install pycocotools`. It is also this fork that will be install if you install `torchmetrics[detection]`.
+        The second backend is the `faster-coco-eval`_ implementation, which can be installed with
+        `pip install faster-coco-eval`. This implementation is a maintained open-source implementation that is
         faster and corrects certain corner cases that the official implementation has. Our own testing have shown that
         the results are identical to the official implementation. Regardless of backend we also requires you to have
         `torchvision` version 0.8.0 or newer installed. Please install with `pip install torchvision>=0.8`
@@ -459,7 +460,7 @@ class MeanAveragePrecision(Metric):
         return cocoeval
 
     @property
-    def mask_utils(self) -> ModuleType:
+    def mask_utils(self) -> object:
         """Returns the mask utils object for the given backend, done in this way to make metric picklable."""
         _, _, mask_utils = _load_backend_tools(self.backend)
         return mask_utils
