@@ -58,7 +58,7 @@ def calculate_generalized_mean(x: Tensor, p: Union[int, str]) -> Tensor:
         p: power
 
     Returns:
-        generalixed_mean: generalized mean
+        generalized_mean: generalized mean
 
     Example (p="min"):
         >>> from torchmetrics.functional.clustering.utils import calculate_generalized_mean
@@ -85,10 +85,10 @@ def calculate_generalized_mean(x: Tensor, p: Union[int, str]) -> Tensor:
             return x.mean()
         if p == "max":
             return x.max()
-        else:
-            raise ValueError("'method' must be 'min', 'geometric', 'arirthmetic', or 'max'")
-    else:
-        return torch.mean(torch.pow(x, p)) ** (1.0 / p)
+
+        raise ValueError("'method' must be 'min', 'geometric', 'arirthmetic', or 'max'")
+
+    return torch.mean(torch.pow(x, p)) ** (1.0 / p)
 
 
 def calculate_contingency_matrix(

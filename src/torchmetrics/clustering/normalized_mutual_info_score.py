@@ -47,7 +47,7 @@ class NormalizedMutualInfoScore(MutualInfoScore):
     - ``nmi_score`` (:class:`~torch.Tensor`): A tensor with the Normalized Mutual Information Score
 
     Args:
-        normalization_method: Method used to generalized mean for normalization
+        average_method: Method used to calculate generalized mean for normalization
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -70,13 +70,11 @@ class NormalizedMutualInfoScore(MutualInfoScore):
     target: List[Tensor]
     contingency: Tensor
 
-    def __init__(self, normalization_method: Literal["min", "geometric", "arithmetic", "max"], **kwargs: Any) -> None:
+    def __init__(self, average_method: Literal["min", "geometric", "arithmetic", "max"], **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-        self.normalization_method = normalization_method
+        self.average_method = average_method
 
     def compute(self) -> Tensor:
         """Compute normalized mutual information over state."""
-        return normalized_mutual_info_score(
-            dim_zero_cat(self.preds), dim_zero_cat(self.target), self.normalization_method
-        )
+        return normalized_mutual_info_score(dim_zero_cat(self.preds), dim_zero_cat(self.target), self.average_method)

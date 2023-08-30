@@ -1,7 +1,7 @@
 # Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
+# you may not use this file except in compliancewith the License.
 # You may obtain a copy of the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
@@ -93,9 +93,13 @@ def test_entropy(labels):
         assert np.allclose(calculate_entropy(x).numpy(), sklearn_entropy(x))
 
 
-def test_generalized_mean():
-    """Check calculation of generalized mean."""
-    assert np.allclose(calculate_generalized_mean(x), sklearn_generalized_average(x))
+@pytest.mark.parametrize("labels", [torch.rand(NUM_BATCHES, 2) + 1e-8])
+@pytest.mark.parametrize("p", ["min", "geometric", "arithmetic", "max"])
+def test_generalized_mean(labels, p):
+    """Check calculation of generalized mean for vectors of length 2."""
+    for x in labels:
+        print(x)
+        assert np.allclose(calculate_generalized_mean(x, p), sklearn_generalized_average(x[0], x[1], average_method=p))
 
 
 @pytest.mark.parametrize(
