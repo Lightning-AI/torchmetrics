@@ -153,4 +153,4 @@
 .. _Mutual Information Score: https://en.wikipedia.org/wiki/Mutual_information
 .. _pycocotools: https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools
 .. _Rand Score: https://link.springer.com/article/10.1007/BF01908075
-.. _Calinski Harabasz Score: https://www.tandfonline.com/doi/abs/10.1080/03610927408827101
+.. _Calinski Harabasz Score: https://www.researchgate.net/publication/233096619_A_Dendrite_Method_for_Cluster_Analysis
