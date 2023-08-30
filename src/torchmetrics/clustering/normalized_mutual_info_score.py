@@ -39,8 +39,8 @@ class NormalizedMutualInfoScore(MutualInfoScore):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): either single output float tensor with shape ``(N,)``
-    - ``target`` (:class:`~torch.Tensor`): either single output tensor with shape ``(N,)``
+    - ``preds`` (:class:`~torch.Tensor`): single integer tensor with shape ``(N,)`` with predicted cluster labels
+    - ``target`` (:class:`~torch.Tensor`): single integer tensor with shape ``(N,)`` with ground truth cluster labels
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
@@ -70,7 +70,7 @@ class NormalizedMutualInfoScore(MutualInfoScore):
     target: List[Tensor]
     contingency: Tensor
 
-    def __init__(self, average_method: Literal["min", "geometric", "arithmetic", "max"], **kwargs: Any) -> None:
+    def __init__(self, average_method: Literal["min", "geometric", "arithmetic", "max"] = "arithmetic", **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
         self.average_method = average_method

@@ -38,19 +38,19 @@ def calculate_entropy(x: Tensor) -> Tensor:
 
     """
     if len(x) == 0:
-        return tensor(1.0)
+        return tensor(1.0, device=x.device)
 
     p = torch.bincount(torch.unique(x, return_inverse=True)[1])
     p = p[p > 0]
 
     if p.size() == 1:
-        return tensor(0.0)
+        return tensor(0.0, device=x.device)
 
     n = p.sum()
     return -torch.sum((p / n) * (torch.log(p) - torch.log(n)))
 
 
-def calculate_generalized_mean(x: Tensor, p: Union[int, str]) -> Tensor:
+def calculate_generalized_mean(x: Tensor, p: Union[int, Literal["min", "geometric", "arithmetic", "max"]) -> Tensor:
     """Return generalized (power) mean of a tensor.
 
     Args:

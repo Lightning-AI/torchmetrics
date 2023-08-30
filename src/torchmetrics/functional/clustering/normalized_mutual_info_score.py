@@ -26,12 +26,12 @@ def normalized_mutual_info_score(
     """Compute normalized mutual information between two clusterings.
 
     Args:
-        preds: predicted classes
-        target: ground truth classes
+        preds: predicted cluster labels
+        target: ground truth cluster labels
         average_method: normalizer computation method
 
     Returns:
-        normalized_mutual_info_score: score between 0.0 and 1.0
+        Scalar tensor with normalized mutual info score between 0.0 and 1.0
 
     Example:
         >>> from torchmetrics.functional.clustering import normalized_mutual_info_score
