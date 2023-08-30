@@ -60,7 +60,8 @@ def calinski_harabasz_score(data: Tensor, labels: Tensor) -> Tensor:
         )
 
     mean = data.mean(dim=0)
-    between_cluster_dispersion, within_cluster_dispersion = 0, 0
+    between_cluster_dispersion = torch.tensor(0.0, device=data.device)
+    within_cluster_dispersion = torch.tensor(0.0, device=data.device)
     for k in range(n_labels):
         cluster_k = data[labels == k, :]
         mean_k = cluster_k.mean(dim=0)
