@@ -70,7 +70,9 @@ class NormalizedMutualInfoScore(MutualInfoScore):
     target: List[Tensor]
     contingency: Tensor
 
-    def __init__(self, average_method: Literal["min", "geometric", "arithmetic", "max"] = "arithmetic", **kwargs: Any) -> None:
+    def __init__(
+        self, average_method: Literal["min", "geometric", "arithmetic", "max"] = "arithmetic", **kwargs: Any
+    ) -> None:
         super().__init__(**kwargs)
 
         self.average_method = average_method
