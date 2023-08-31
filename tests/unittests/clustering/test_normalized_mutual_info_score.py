@@ -109,7 +109,7 @@ def test_normalized_mutual_info_score_functional_raises_invalid_task(average_met
 @pytest.mark.parametrize(
     ("preds", "target"),
     [
-        (_single_target_inputs1.preds, _single_target_inputs1.target),
+        (_single_target_inputs1.preds, _single_target_inputs1.target)
     ],
 )
 @pytest.mark.parametrize(
