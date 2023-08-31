@@ -66,9 +66,9 @@ class NormalizedMutualInfoScore(MutualInfoScore):
 
     """
 
-    is_differentiable = True
-    higher_is_better = None
-    full_state_update: bool = True
+    is_differentiable: bool = True
+    higher_is_better: Optional[bool] = None
+    full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 0.0
     preds: List[Tensor]

@@ -63,8 +63,8 @@ class MutualInfoScore(Metric):
     """
 
     is_differentiable: bool = True
-    higher_is_better: bool = True
-    full_state_update: bool = True
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = False
     plot_lower_bound: float = 0.0
     preds: List[Tensor]
     target: List[Tensor]
