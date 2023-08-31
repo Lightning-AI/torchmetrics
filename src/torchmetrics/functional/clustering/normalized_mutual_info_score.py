@@ -17,7 +17,7 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.clustering.mutual_info_score import mutual_info_score
-from torchmetrics.functional.clustering.utils import calculate_entropy, calculate_generalized_mean
+from torchmetrics.functional.clustering.utils import calculate_entropy, calculate_generalized_mean, check_cluster_labels
 
 
 def _validate_average_method_arg(
@@ -25,7 +25,8 @@ def _validate_average_method_arg(
 ) -> None:
     if average_method not in ("min", "geometric", "arithmetic", "max"):
         raise ValueError(
-            f"Expected argument `average_method` to be one of  `min`, `geometric`, `arithmetic`, `max`, but got {average_method}"
+            "Expected argument `average_method` to be one of  `min`, `geometric`, `arithmetic`, `max`,"
+            f"but got {average_method}"
         )
 
 
@@ -50,6 +51,7 @@ def normalized_mutual_info_score(
         tensor(0.7919)
 
     """
+    check_cluster_labels(preds, target)
     _validate_average_method_arg(average_method)
     mutual_info = mutual_info_score(preds, target)
     if torch.allclose(mutual_info, torch.tensor(0.0), atol=torch.finfo().eps):

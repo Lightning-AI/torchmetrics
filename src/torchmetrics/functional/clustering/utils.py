@@ -15,6 +15,7 @@ from typing import Optional, Union
 
 import torch
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
 
@@ -50,7 +51,7 @@ def calculate_entropy(x: Tensor) -> Tensor:
     return -torch.sum((p / n) * (torch.log(p) - torch.log(n)))
 
 
-def calculate_generalized_mean(x: Tensor, p: Union[int, Literal["min", "geometric", "arithmetic", "max"]) -> Tensor:
+def calculate_generalized_mean(x: Tensor, p: Union[int, Literal["min", "geometric", "arithmetic", "max"]]) -> Tensor:
     """Return generalized (power) mean of a tensor.
 
     Args:
