@@ -58,7 +58,7 @@ _float_inputs = Input(
         "min",
         "arithmetic",
         "geometric",
-        "max",
+        "max"
     ],
 )
 class TestNormalizedMutualInfoScore(MetricTester):
