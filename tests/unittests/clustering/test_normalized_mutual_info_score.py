@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import namedtuple
+from functools import partial
 
 import pytest
 import torch
@@ -73,7 +74,7 @@ class TestNormalizedMutualInfoScore(MetricTester):
             preds=preds,
             target=target,
             metric_class=NormalizedMutualInfoScore,
-            reference_metric=sklearn_nmi,
+            reference_metric=partial(sklearn_nmi, average_method=average_method),
             metric_args={"average_method": average_method},
         )
 
@@ -83,7 +84,7 @@ class TestNormalizedMutualInfoScore(MetricTester):
             preds=preds,
             target=target,
             metric_functional=normalized_mutual_info_score,
-            reference_metric=sklearn_nmi,
+            reference_metric=partial(sklearn_nmi, average_method=average_method),
             average_method=average_method,
         )
 
