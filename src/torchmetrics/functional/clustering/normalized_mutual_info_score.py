@@ -43,6 +43,7 @@ def normalized_mutual_info_score(
         tensor(0.7919)
 
     """
+    _validate_average_method_arg(average_method)
     mutual_info = mutual_info_score(preds, target)
     if torch.allclose(mutual_info, torch.tensor(0.0), atol=torch.finfo().eps):
         return torch.tensor(0.0)
