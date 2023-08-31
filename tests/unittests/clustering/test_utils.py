@@ -17,13 +17,17 @@ import numpy as np
 import pytest
 import torch
 from sklearn.metrics.cluster import contingency_matrix as sklearn_contingency_matrix
+from sklearn.metrics.cluster import entropy as sklearn_entropy
 from sklearn.metrics.cluster import pair_confusion_matrix as sklearn_pair_confusion_matrix
+from sklearn.metrics.cluster._supervised import _generalized_average as sklearn_generalized_average
 from torchmetrics.functional.clustering.utils import (
     calcualte_pair_cluster_confusion_matrix,
     calculate_contingency_matrix,
+    calculate_entropy,
+    calculate_generalized_mean,
 )
 
-from unittests import BATCH_SIZE
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 
 seed_all(42)
@@ -82,8 +86,24 @@ def test_multidimensional_contingency_error():
         calculate_contingency_matrix(_multi_dim_inputs.preds, _multi_dim_inputs.target)
 
 
+@pytest.mark.parametrize("labels", [torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE))])
+def test_entropy(labels):
+    """Check calculation of entropy."""
+    for x in labels:
+        assert np.allclose(calculate_entropy(x).numpy(), sklearn_entropy(x))
+
+
+@pytest.mark.parametrize("labels", [torch.rand(NUM_BATCHES, 2) + 1e-8])
+@pytest.mark.parametrize("p", ["min", "geometric", "arithmetic", "max"])
+def test_generalized_mean(labels, p):
+    """Check calculation of generalized mean for vectors of length 2."""
+    for x in labels:
+        print(x)
+        assert np.allclose(calculate_generalized_mean(x, p), sklearn_generalized_average(x[0], x[1], average_method=p))
+
+
 @pytest.mark.parametrize(
-    ("preds", "target"),
+    "preds, target",
     [(_sklearn_inputs.preds, _sklearn_inputs.target), (_single_dim_inputs.preds, _single_dim_inputs.target)],
 )
 class TestPairClusterConfusionMatrix:
