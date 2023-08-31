@@ -34,12 +34,13 @@ class NormalizedMutualInfoScore(MutualInfoScore):
     .. math::
         NMI(U,V) = \frac{MI(U,V)}{M_p(U,V)}
 
-    Where :math:`U` is a tensor of target values, :math:`V` is a tensor of predictions,
-    :math:`M_p(U,V)` is the generalized mean of order :math:`p` of :math:`U` and :math:`V`,
-    and :math:`MI(U,V)` is the mutual information score between clusters :math:`U` and :math:`V`.
-
-    The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields
+    Where :math:`U` is a tensor of target values, :math:`V` is a tensor of predictions, :math:`M_p(U,V)` is the
+    generalized mean of order :math:`p` of :math:`U` and :math:`V`, and :math:`MI(U,V)` is the mutual information score
+    between clusters :math:`U` and :math:`V`. The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields
     the same mutual information score.
+
+    This clustering metric is an extrinsic measure, because it requires ground truth clustering labels, which may not
+    be available in practice since clustering in generally is used for unsupervised learning.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
