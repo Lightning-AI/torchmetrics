@@ -29,12 +29,12 @@ class MutualInfoScore(Metric):
     r"""Compute `Mutual Information Score`_.
 
     .. math::
-        MI(U,V) = \sum_{i=1}^{\abs{U}} \sum_{j=1}^{\abs{V}} \frac{\abs{U_i\cap V_j}}{N}
-        \log\frac{N\abs{U_i\cap V_j}}{\abs{U_i}\abs{V_j}}
+        MI(U,V) = \sum_{i=1}^{|U|} \sum_{j=1}^{|V|} \frac{|U_i\cap V_j|}{N}
+        \log\frac{N|U_i\cap V_j|}{|U_i||V_j|}
 
     Where :math:`U` is a tensor of target values, :math:`V` is a tensor of predictions,
-    :math:`\abs{U_i}` is the number of samples in cluster :math:`U_i`, and
-    :math:`\abs{V_i}` is the number of samples in cluster :math:`V_i`.
+    :math:`|U_i|` is the number of samples in cluster :math:`U_i`, and
+    :math:`|V_i|` is the number of samples in cluster :math:`V_i`.
 
     The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields
     the same mutual information score.
