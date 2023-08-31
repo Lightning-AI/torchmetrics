@@ -101,12 +101,13 @@ def test_normalized_mutual_info_score_functional_raises_invalid_task(average_met
         normalized_mutual_info_score(preds, target, average_method)
 
 
-@pytest.mark.parametrize("preds", "target", [(_single_target_inputs1.preds, _single_target_inputs1.target)])
 @pytest.mark.parametrize(
     "average_method",
     ["min", "geometric", "arithmetic", "max"],
 )
-def test_normalized_mutual_info_score_functional_is_symmetric(preds, target, average_method):
+def test_normalized_mutual_info_score_functional_is_symmetric(
+    average_method, preds=_single_target_inputs1.preds, target=_single_target_inputs1.target
+):
     """Check that the metric funtional is symmetric."""
     for p, t in zip(preds, target):
         assert torch.allclose(
