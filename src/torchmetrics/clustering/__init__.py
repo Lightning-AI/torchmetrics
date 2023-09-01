@@ -13,10 +13,12 @@
 # limitations under the License.
 from torchmetrics.clustering.calinski_harabasz_score import CalinskiHarabaszScore
 from torchmetrics.clustering.mutual_info_score import MutualInfoScore
+from torchmetrics.clustering.normalized_mutual_info_score import NormalizedMutualInfoScore
 from torchmetrics.clustering.rand_score import RandScore
 
 __all__ = [
     "CalinskiHarabaszScore",
     "MutualInfoScore",
+    "NormalizedMutualInfoScore",
     "RandScore",
 ]
