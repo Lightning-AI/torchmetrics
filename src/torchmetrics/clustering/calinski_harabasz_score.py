@@ -26,7 +26,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class CalinskiHarabaszScore(Metric):
-    r"""Compute `Calinski Harabasz Score`_ (also known as variance ratio criterion) for clustering algorithms.
+    r"""Compute Calinski Harabasz Score (also known as variance ratio criterion) for clustering algorithms.
 
     .. math::
         CHS(X, L) = \frac{B(X, L) \cdot (n_\text{samples} - n_\text{labels})}{W(X, L) \cdot (n_\text{labels} - 1)}
