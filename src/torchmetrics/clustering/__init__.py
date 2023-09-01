@@ -14,9 +14,17 @@
 from torchmetrics.clustering.mutual_info_score import MutualInfoScore
 from torchmetrics.clustering.normalized_mutual_info_score import NormalizedMutualInfoScore
 from torchmetrics.clustering.rand_score import RandScore
+from torchmetrics.clustering.homogeneity_completeness_v_measure import (
+    HomogeneityScore,
+    CompletenessScore,
+    VMeasureScore,
+)
 
 __all__ = [
+    "CompletenessScore",
+    "HomogeneityScore",
     "MutualInfoScore",
     "NormalizedMutualInfoScore",
     "RandScore",
+    "VMeasureScore",
 ]

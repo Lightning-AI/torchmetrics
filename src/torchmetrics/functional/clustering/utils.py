@@ -244,32 +244,3 @@ def calcualte_pair_cluster_confusion_matrix(
     return pair_matrix
 
 
-def homogeneity_completeness_v_measure(
-    preds: Tensor, target: Tensor, score: Literal["homogeneity", "completeness", "v_measure"], beta: float = 1.0
-) -> Tensor:
-    check_cluster_labels(preds, target)
-    if score not in ("homogeneity", "completeness", "v_measure"):
-        raise ValueError(f"Unknown score {score}. Valid scores are 'homogeneity', 'completeness' and 'v_measure'.")
-
-    if len(target) == 0:
-        return torch.tensor(0.0, dtype=torch.float32, device=preds.device)
-
-    entropy_target = entropy(target)
-    entropy_preds = entropy(preds)
-
-    contingency = calculate_contingency_matrix(preds, target)
-    mi = mutual_info_score(None, None, contingency=contingency)
-
-    homogeneity = mi / entropy_target if entropy_target else torch.ones_like(entropy_target)
-    if score == "homogeneity":
-        return homogeneity
-
-    completeness = mi / entropy_preds if entropy_preds else torch.ones_like(entropy_preds)
-    if score == "completeness":
-        return completeness
-
-    if homogeneity + completeness == 0.0:
-        v_measure = torch.ones_like(homogeneity)
-    else:
-        v_measure = (1 + beta) * homogeneity * completeness / (beta * homogeneity + completeness)
-    return v_measure
