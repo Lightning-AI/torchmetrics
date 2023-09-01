@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `AdjustedRandScore` metric to cluster package ([#2032](https://github.com/Lightning-AI/torchmetrics/pull/2032)
 
 
+- Added `NormalizedMutualInfoScore` metric to cluster package ([#2029](https://github.com/Lightning-AI/torchmetrics/pull/2029)
+
+
 ### Changed
 
 -

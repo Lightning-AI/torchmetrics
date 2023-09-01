@@ -13,10 +13,12 @@
 # limitations under the License.
 from torchmetrics.clustering.adjusted_rand_score import AdjustedRandScore
 from torchmetrics.clustering.mutual_info_score import MutualInfoScore
+from torchmetrics.clustering.normalized_mutual_info_score import NormalizedMutualInfoScore
 from torchmetrics.clustering.rand_score import RandScore
 
 __all__ = [
     "AdjustedRandScore",
     "MutualInfoScore",
+    "NormalizedMutualInfoScore",
     "RandScore",
 ]
