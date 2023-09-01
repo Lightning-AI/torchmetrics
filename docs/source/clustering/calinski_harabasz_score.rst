@@ -1,6 +1,6 @@
 .. customcarditem::
    :header: Calinski Harabasz Score
-   :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/clustering.svg
+   :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/default.svg
    :tags: Clustering
 
 .. include:: ../links.rst
