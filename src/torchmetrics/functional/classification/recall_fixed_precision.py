@@ -50,6 +50,8 @@ def _lexargmax(x: Tensor) -> Tensor:
         idx = z if idx is None else idx[z]
         if len(idx) < 2:
             break
+    if idx is None:
+        raise ValueError("Failed to extract index")
     return idx
 
 
