@@ -151,6 +151,18 @@ def calculate_contingency_matrix(
     return contingency
 
 
+def _is_real_discrete_label(x: Tensor) -> bool:
+    """Check if tensor of labels is real and discrete.
+
+    Args:
+        x: tensor
+
+    """
+    if x.ndim != 1:
+        raise ValueError(f"Expected arguments to be 1-d tensors but got {x.ndim}-d tensors.")
+    return not (torch.is_floating_point(x) or torch.is_complex(x))
+
+
 def check_cluster_labels(preds: Tensor, target: Tensor) -> None:
     """Check shape of input tensors and if they are real, discrete tensors.
 
@@ -160,18 +172,8 @@ def check_cluster_labels(preds: Tensor, target: Tensor) -> None:
 
     """
     _check_same_shape(preds, target)
-    if preds.ndim != 1:
-        raise ValueError(f"Expected arguments to be 1d tensors but got {preds.ndim} and {target.ndim}")
-    if (
-        torch.is_floating_point(preds)
-        or torch.is_complex(preds)
-        or torch.is_floating_point(target)
-        or torch.is_complex(target)
-    ):
-        raise ValueError(
-            f"Expected real, discrete values but received {preds.dtype} for"
-            f"predictions and {target.dtype} for target labels instead."
-        )
+    if not (_is_real_discrete_label(preds) and _is_real_discrete_label(target)):
+        raise ValueError(f"Expected real, discrete values for x but received {preds.dtype} and {target.dtype}.")
 
 
 def calcualte_pair_cluster_confusion_matrix(
