@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 
 import pytest
@@ -20,29 +19,12 @@ from sklearn.metrics import normalized_mutual_info_score as sklearn_nmi
 from torchmetrics.clustering import NormalizedMutualInfoScore
 from torchmetrics.functional.clustering import normalized_mutual_info_score
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_CLASSES
+from unittests.clustering.inputs import _float_inputs, _single_target_inputs1, _single_target_inputs2
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
-
-Input = namedtuple("Input", ["preds", "target"])
-NUM_CLASSES = 10
-
-_single_target_inputs1 = Input(
-    preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
-    target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
-)
-
-_single_target_inputs2 = Input(
-    preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
-    target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
-)
-
-_float_inputs = Input(
-    preds=torch.rand((NUM_BATCHES, BATCH_SIZE)),
-    target=torch.rand((NUM_BATCHES, BATCH_SIZE)),
-)
 
 
 @pytest.mark.parametrize(
