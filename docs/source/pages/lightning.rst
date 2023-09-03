@@ -206,7 +206,7 @@ The following contains a list of pitfalls to be aware of:
         self.accuracy(preds, y)  # compute metrics
         self.log('train_acc_step', self.accuracy)  # log metric object
 
-* Using `~torchmetrics.MetricTracker` wrapper with Lightning is a special case, because the wrapper in itself is not a metric
-  i.e. it does not inherit from the base `~torchmetrics.Metric` class but instead from `~torch.nn.ModuleList`. Thus,
-  to log the output of this metric one needs to manually log the returned values (not the object) using `self.log`
-  and for epoch level logging this should be done in the appropriate `on_***_epoch_end` method.
+* Using :class:`~torchmetrics.wrappers.MetricTracker` wrapper with Lightning is a special case, because the wrapper in itself is not a metric
+  i.e. it does not inherit from the base :class:`~torchmetrics.Metric` class but instead from :class:`~torch.nn.ModuleList`. Thus,
+  to log the output of this metric one needs to manually log the returned values (not the object) using ``self.log``
+  and for epoch level logging this should be done in the appropriate ``on_***_epoch_end`` method.
