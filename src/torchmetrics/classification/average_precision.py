@@ -171,6 +171,11 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
     where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`. This value is
     equivalent to the area under the precision-recall curve (AUPRC).
 
+    For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
+    classes as the negative, which is refered to as the one-vs-rest approach. One-vs-one is currently not supported by
+    this metric. By default the reported metric is then the average over all classes, but this behavior can be changed
+    by setting the `average` argument.
+
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)`` containing probabilities or logits
