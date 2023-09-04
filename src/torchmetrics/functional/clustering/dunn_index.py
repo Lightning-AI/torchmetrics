@@ -18,11 +18,11 @@ import torch
 from torch import Tensor
 
 
-def _dunn_index_update(x: Tensor, labels: Tensor, p: float) -> Tuple[Tensor, Tensor]:
+def _dunn_index_update(data: Tensor, labels: Tensor, p: float) -> Tuple[Tensor, Tensor]:
     """Update and return variables required to compute the Dunn index.
 
     Args:
-        x: feature vectors of shape (n_samples, n_features)
+        data: feature vectors of shape (n_samples, n_features)
         labels: cluster labels
         p: p-norm (distance metric)
 
@@ -32,7 +32,7 @@ def _dunn_index_update(x: Tensor, labels: Tensor, p: float) -> Tuple[Tensor, Ten
 
     """
     unique_labels, inverse_indices = labels.unique(return_inverse=True)
-    clusters = [x[inverse_indices == label_idx] for label_idx in range(len(unique_labels))]
+    clusters = [data[inverse_indices == label_idx] for label_idx in range(len(unique_labels))]
     centroids = [c.mean(dim=0) for c in clusters]
 
     intercluster_distance = torch.linalg.vector_norm(
@@ -73,7 +73,7 @@ def dunn_index(data: Tensor, labels: Tensor, p: float = 2) -> Tensor:
 
     Example:
         >>> from torchmetrics.functional.clustering import dunn_index
-        >>> x = torch.tensor([0, 3, 2, 2, 1])
+        >>> data = torch.tensor([0, 3, 2, 2, 1])
         >>> labels = torch.tensor([1, 3, 2, 0, 1])
         >>> dunn_index(preds, target)
         tensor(1.0)

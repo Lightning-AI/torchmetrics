@@ -19,7 +19,10 @@ import pytest
 from torchmetrics.clustering.dunn_index import DunnIndex
 from torchmetrics.functional.clustering.dunn_index import dunn_index
 
-from unittests.clustering.inputs import _input_blobs
+from unittests.clustering.inputs import (
+    _single_target_intrinsic1,
+    _single_target_intrinsic2,
+)
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -43,9 +46,10 @@ def _np_dunn_index(x, labels, p):
 
 
 @pytest.mark.parametrize(
-    "x, labels",
+    "data, labels",
     [
-        (_input_blobs.x, _input_blobs.labels),
+        (_single_target_intrinsic1.data, _single_target_intrinsic1.labels),
+        (_single_target_intrinsic2.data, _single_target_intrinsic2.labels),
     ],
 )
 @pytest.mark.parametrize(
@@ -58,21 +62,21 @@ class TestDunnIndex(MetricTester):
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_dunn_index(self, x, labels, p, ddp):
+    def test_dunn_index(self, data, labels, p, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
-            preds=x,
+            preds=data,
             target=labels,
             metric_class=DunnIndex,
             reference_metric=partial(_np_dunn_index, p=p),
             metric_args={"p": p},
         )
 
-    def test_dunn_index_functional(self, x, labels, p):
+    def test_dunn_index_functional(self, data, labels, p):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
-            preds=x,
+            preds=data,
             target=labels,
             metric_functional=dunn_index,
             reference_metric=partial(_np_dunn_index, p=p),

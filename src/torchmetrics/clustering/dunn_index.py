@@ -36,7 +36,8 @@ class DunnIndex(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``data`` (:class:`~torch.Tensor`): float tensor with shape ``(N,d)`` with the embedded data. ``d`` is the dimensionality of the embedding space.
+    - ``data`` (:class:`~torch.Tensor`): float tensor with shape ``(N,d)`` with the embedded data.
+        ``d`` is the dimensionality of the embedding space.
     - ``labels`` (:class:`~torch.Tensor`): single integer tensor with shape ``(N,)`` with cluster labels
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
@@ -49,10 +50,10 @@ class DunnIndex(Metric):
     Example:
         >>> import torch
         >>> from torchmetrics.clustering import DunnIndex
-        >>> preds = torch.tensor([2, 1, 0, 1, 0])
-        >>> target = torch.tensor([0, 2, 1, 1, 0])
-        >>> dun_index = DunnIndex()
-        >>> dunn_index(preds, target)
+        >>> data = torch.tensor([2, 1, 0, 1, 0])
+        >>> labels = torch.tensor([0, 2, 1, 1, 0])
+        >>> dunn_index = DunnIndex()
+        >>> dunn_index(data, labels)
         tensor(0.5004)
 
     """
@@ -61,7 +62,7 @@ class DunnIndex(Metric):
     higher_is_better: bool = True
     full_state_update: bool = True
     plot_lower_bound: float = 0.0
-    x: List[Tensor]
+    data: List[Tensor]
     labels: List[Tensor]
     contingency: Tensor
 
