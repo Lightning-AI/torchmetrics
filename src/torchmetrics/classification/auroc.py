@@ -175,7 +175,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
     For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
     classes as the negative, which is refered to as the one-vs-rest approach. One-vs-one is currently not supported by
     this metric. By default the reported metric is then the average over all classes, but this behavior can be changed
-    by setting the `average` argument.
+    by setting the ``average`` argument.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
