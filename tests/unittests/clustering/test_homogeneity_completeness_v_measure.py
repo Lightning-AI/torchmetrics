@@ -12,19 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import pytest
-import torch
-from sklearn.metrics import v_measure_score as sklearn_v_measure_score
-from sklearn.metrics import homogeneity_score as sklearn_homogeneity_score
 from sklearn.metrics import completeness_score as sklearn_completeness_score
+from sklearn.metrics import homogeneity_score as sklearn_homogeneity_score
+from sklearn.metrics import v_measure_score as sklearn_v_measure_score
 from torchmetrics.clustering.homogeneity_completeness_v_measure import (
+    CompletenessScore,
     HomogeneityScore,
     VMeasureScore,
-    CompletenessScore
 )
 from torchmetrics.functional.clustering.homogeneity_completeness_v_measure import (
-    homogeneity_score,
     completeness_score,
-    v_measure_score
+    homogeneity_score,
+    v_measure_score,
 )
 
 from unittests.clustering.inputs import _float_inputs_extrinsic, _single_target_extrinsic1, _single_target_extrinsic2
@@ -33,12 +32,14 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-@pytest.mark.parametrize("modular_metric, functional_metric, reference_metric",
+
+@pytest.mark.parametrize(
+    "modular_metric, functional_metric, reference_metric",
     [
         (HomogeneityScore, homogeneity_score, sklearn_homogeneity_score),
         (CompletenessScore, completeness_score, sklearn_completeness_score),
         (VMeasureScore, v_measure_score, sklearn_v_measure_score),
-    ]
+    ],
 )
 @pytest.mark.parametrize(
     "preds, target",
@@ -62,7 +63,7 @@ class TestHomogeneityCompletenessVmeasur(MetricTester):
             preds=preds,
             target=target,
             metric_class=modular_metric,
-            reference_metric=reference_metric,
+            reference_metric=lambda x, y: reference_metric(y, x),
         )
 
     def test_homogeneity_completeness_vmeasure_functional(
@@ -73,13 +74,11 @@ class TestHomogeneityCompletenessVmeasur(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional_metric,
-            reference_metric=reference_metric,
+            reference_metric=lambda x, y: reference_metric(y, x),
         )
 
 
-@pytest.mark.parametrize("functional_metric",
-    [homogeneity_score, completeness_score, v_measure_score]
-)
+@pytest.mark.parametrize("functional_metric", [homogeneity_score, completeness_score, v_measure_score])
 def test_homogeneity_completeness_vmeasure_functional_raises_invalid_task(functional_metric):
     """Check that metric rejects continuous-valued inputs."""
     preds, target = _float_inputs_extrinsic
