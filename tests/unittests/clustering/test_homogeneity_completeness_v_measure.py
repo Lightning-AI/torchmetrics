@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from functools import partial
+
 import pytest
 from sklearn.metrics import completeness_score as sklearn_completeness_score
 from sklearn.metrics import homogeneity_score as sklearn_homogeneity_score
@@ -39,6 +41,11 @@ seed_all(42)
         (HomogeneityScore, homogeneity_score, sklearn_homogeneity_score),
         (CompletenessScore, completeness_score, sklearn_completeness_score),
         (VMeasureScore, v_measure_score, sklearn_v_measure_score),
+        (
+            partial(VMeasureScore, beta=2.0),
+            partial(v_measure_score, beta=2.0),
+            partial(sklearn_v_measure_score, beta=2.0),
+        ),
     ],
 )
 @pytest.mark.parametrize(

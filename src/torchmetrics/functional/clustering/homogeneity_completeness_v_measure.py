@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Tuple
+
 import torch
 from torch import Tensor
 
@@ -18,12 +20,13 @@ from torchmetrics.functional.clustering.mutual_info_score import mutual_info_sco
 from torchmetrics.functional.clustering.utils import calculate_entropy, check_cluster_labels
 
 
-def _homogeneity_score_compute(preds: Tensor, target: Tensor) -> Tensor:
+def _homogeneity_score_compute(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """Computes the homogeneity score of a clustering given the predicted and target cluster labels."""
     check_cluster_labels(preds, target)
 
-    if len(target) == 0:
-        return torch.tensor(0.0, dtype=torch.float32, device=preds.device)
+    if len(target) == 0:  # special case where no clustering is defined
+        zero = torch.tensor(0.0, dtype=torch.float32, device=preds.device)
+        return zero.clone(), zero.clone(), zero.clone(), zero.clone()
 
     entropy_target = calculate_entropy(target)
     entropy_preds = calculate_entropy(preds)
@@ -33,7 +36,7 @@ def _homogeneity_score_compute(preds: Tensor, target: Tensor) -> Tensor:
     return homogeneity, mutual_info, entropy_preds, entropy_target
 
 
-def _completeness_score_compute(preds: Tensor, target: Tensor) -> Tensor:
+def _completeness_score_compute(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     """Computes the completeness score of a clustering given the predicted and target cluster labels."""
     homogeneity, mutual_info, entropy_preds, _ = _homogeneity_score_compute(preds, target)
     completeness = mutual_info / entropy_preds if entropy_preds else torch.ones_like(entropy_preds)
@@ -41,7 +44,7 @@ def _completeness_score_compute(preds: Tensor, target: Tensor) -> Tensor:
 
 
 def homogeneity_score(preds: Tensor, target: Tensor) -> Tensor:
-    """Compute the Rand score between two clusterings.
+    """Compute the Homogeneity score between two clusterings.
 
     Args:
         preds: predicted cluster labels
@@ -64,7 +67,7 @@ def homogeneity_score(preds: Tensor, target: Tensor) -> Tensor:
 
 
 def completeness_score(preds: Tensor, target: Tensor) -> Tensor:
-    """Compute the Rand score between two clusterings.
+    """Compute the Completeness score between two clusterings.
 
     Args:
         preds: predicted cluster labels
@@ -87,7 +90,7 @@ def completeness_score(preds: Tensor, target: Tensor) -> Tensor:
 
 
 def v_measure_score(preds: Tensor, target: Tensor, beta: float = 1.0) -> Tensor:
-    """Compute the Rand score between two clusterings.
+    """Compute the V-measure score between two clusterings.
 
     Args:
         preds: predicted cluster labels
@@ -106,7 +109,7 @@ def v_measure_score(preds: Tensor, target: Tensor, beta: float = 1.0) -> Tensor:
         tensor(0.8333)
 
     """
-    homogeneity, completeness = _completeness_score_compute(preds, target)
+    completeness, homogeneity = _completeness_score_compute(preds, target)
     if homogeneity + completeness == 0.0:
         v_measure = torch.ones_like(homogeneity)
     else:

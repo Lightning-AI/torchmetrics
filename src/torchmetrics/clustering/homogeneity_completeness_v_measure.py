@@ -16,8 +16,8 @@ from typing import Any, List, Optional, Sequence, Union
 from torch import Tensor
 
 from torchmetrics.functional.clustering.homogeneity_completeness_v_measure import (
-    homogeneity_score,
     completeness_score,
+    homogeneity_score,
     v_measure_score,
 )
 from torchmetrics.metric import Metric
@@ -26,23 +26,18 @@ from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = [
-        "HomogeneityScore.plot",
-        "CompletenessScore.plot",
-        "VMeasureScore.plot"
-    ]
+    __doctest_skip__ = ["HomogeneityScore.plot", "CompletenessScore.plot", "VMeasureScore.plot"]
 
 
 class HomogeneityScore(Metric):
-    r"""Compute `Rand Score`_ (alternatively known as Rand Index).
+    r"""Compute `Homogeneity Score`_.
 
-    .. math::
-        RS(U, V) = \text{number of agreeing pairs} / \text{number of pairs}
+    The homogeneity score is a metric to measure the homogeneity of a clustering. A clustering result satisfies
+    homogeneity if all of its clusters contain only data points which are members of a single class. The metric is not
+    symmetric, therefore swapping ``preds`` and ``target`` yields a different score.
 
-    The number of agreeing pairs is every :math:`(i, j)` pair of samples where :math:`i \in U` and :math:`j \in V`
-    (the predicted and true clusterings, respectively) that are in the same cluster for both clusterings.
-
-    The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields the same rand score.
+    This clustering metric is an extrinsic measure, because it requires ground truth clustering labels, which may not
+    be available in practice since clustering in generally is used for unsupervised learning.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -67,13 +62,13 @@ class HomogeneityScore(Metric):
 
     """
 
-    is_differentiable = True
-    higher_is_better = None
-    full_state_update: bool = True
+    is_differentiable: bool = True
+    higher_is_better: bool = True
+    full_state_update: bool = False
     plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
     preds: List[Tensor]
     target: List[Tensor]
-    contingency: Tensor
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -110,8 +105,8 @@ class HomogeneityScore(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.clustering import RandScore
-            >>> metric = RandScore()
+            >>> from torchmetrics.clustering import HomogeneityScore
+            >>> metric = HomogeneityScore()
             >>> metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
 
@@ -120,8 +115,8 @@ class HomogeneityScore(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.clustering import RandScore
-            >>> metric = RandScore()
+            >>> from torchmetrics.clustering import HomogeneityScore
+            >>> metric = HomogeneityScore()
             >>> for _ in range(10):
             ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
@@ -131,15 +126,13 @@ class HomogeneityScore(Metric):
 
 
 class CompletenessScore(Metric):
-    r"""Compute `Rand Score`_ (alternatively known as Rand Index).
+    r"""Compute `Completeness Score`_.
 
-    .. math::
-        RS(U, V) = \text{number of agreeing pairs} / \text{number of pairs}
+    A clustering result satisfies completeness if all the data points that are members of a given class are elements of
+    the same cluster. The metric is not symmetric, therefore swapping ``preds`` and ``target`` yields a different
 
-    The number of agreeing pairs is every :math:`(i, j)` pair of samples where :math:`i \in U` and :math:`j \in V`
-    (the predicted and true clusterings, respectively) that are in the same cluster for both clusterings.
-
-    The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields the same rand score.
+    This clustering metric is an extrinsic measure, because it requires ground truth clustering labels, which may not
+    be available in practice since clustering in generally is used for unsupervised learning.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -164,13 +157,13 @@ class CompletenessScore(Metric):
 
     """
 
-    is_differentiable = True
-    higher_is_better = None
-    full_state_update: bool = True
+    is_differentiable: bool = True
+    higher_is_better: bool = True
+    full_state_update: bool = False
     plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
     preds: List[Tensor]
     target: List[Tensor]
-    contingency: Tensor
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -207,8 +200,8 @@ class CompletenessScore(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.clustering import RandScore
-            >>> metric = RandScore()
+            >>> from torchmetrics.clustering import CompletenessScore
+            >>> metric = CompletenessScore()
             >>> metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
 
@@ -217,8 +210,8 @@ class CompletenessScore(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.clustering import RandScore
-            >>> metric = RandScore()
+            >>> from torchmetrics.clustering import CompletenessScore
+            >>> metric = CompletenessScore()
             >>> for _ in range(10):
             ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
@@ -228,15 +221,19 @@ class CompletenessScore(Metric):
 
 
 class VMeasureScore(Metric):
-    r"""Compute `Rand Score`_ (alternatively known as Rand Index).
+    r"""Compute `V-Measure Score`_.
 
-    .. math::
-        RS(U, V) = \text{number of agreeing pairs} / \text{number of pairs}
+    The V-measure is the harmonic mean between homogeneity and completeness:
 
-    The number of agreeing pairs is every :math:`(i, j)` pair of samples where :math:`i \in U` and :math:`j \in V`
-    (the predicted and true clusterings, respectively) that are in the same cluster for both clusterings.
+    ..math::
+        v = \frac{(1 + \beta) * homogeneity * completeness}{\beta * homogeneity + completeness}
 
-    The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields the same rand score.
+    where :math:`\beta` is a weight parameter that defines the weight of homogeneity in the harmonic mean, with the
+    default value :math:`\beta=1`. The V-measure is symmetric, which means that swapping ``preds`` and ``target`` does
+    not change the score.
+
+    This clustering metric is an extrinsic measure, because it requires ground truth clustering labels, which may not
+    be available in practice since clustering in generally is used for unsupervised learning.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -252,25 +249,28 @@ class VMeasureScore(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics.clustering import RandScore
+        >>> from torchmetrics.clustering import VMeasureScore
         >>> preds = torch.tensor([2, 1, 0, 1, 0])
         >>> target = torch.tensor([0, 2, 1, 1, 0])
-        >>> metric = RandScore()
+        >>> metric = VMeasureScore()
         >>> metric(preds, target)
         tensor(0.6000)
 
     """
 
-    is_differentiable = True
-    higher_is_better = None
-    full_state_update: bool = True
+    is_differentiable: bool = True
+    higher_is_better: bool = True
+    full_state_update: bool = False
     plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
     preds: List[Tensor]
     target: List[Tensor]
-    contingency: Tensor
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, beta: float = 1.0, **kwargs: Any) -> None:
         super().__init__(**kwargs)
+        if not (isinstance(beta, float) and beta > 0):
+            raise ValueError(f"Argument `beta` should be a positive float. Got {beta}.")
+        self.beta = beta
 
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
@@ -282,7 +282,7 @@ class VMeasureScore(Metric):
 
     def compute(self) -> Tensor:
         """Compute rand score over state."""
-        return v_measure_score(dim_zero_cat(self.preds), dim_zero_cat(self.target))
+        return v_measure_score(dim_zero_cat(self.preds), dim_zero_cat(self.target), beta=self.beta)
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -304,8 +304,8 @@ class VMeasureScore(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.clustering import RandScore
-            >>> metric = RandScore()
+            >>> from torchmetrics.clustering import VMeasureScore
+            >>> metric = VMeasureScore()
             >>> metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
 
@@ -314,12 +314,11 @@ class VMeasureScore(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.clustering import RandScore
-            >>> metric = RandScore()
+            >>> from torchmetrics.clustering import VMeasureScore
+            >>> metric = VMeasureScore()
             >>> for _ in range(10):
             ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
 
         """
         return self._plot(val, ax)
-
