@@ -92,10 +92,10 @@ from torchmetrics.classification import (
     MultilabelSpecificity,
 )
 from torchmetrics.clustering import (
-    AdjustedRandScore, 
-    CalinskiHarabaszScore, 
-    MutualInfoScore, 
-    NormalizedMutualInfoScore, 
+    AdjustedRandScore,
+    CalinskiHarabaszScore,
+    MutualInfoScore,
+    NormalizedMutualInfoScore,
     RandScore,
 )
 from torchmetrics.detection import PanopticQuality
