@@ -26,7 +26,7 @@ seed_all(42)
 ExtrinsicInput = namedtuple("ExtrinsicInput", ["preds", "target"])
 
 # intrinsic input for clustering metrics that requires only predicted clustering labels and the cluster embeddings
-IntrinsicInput = namedtuple("IntinsicInput", ["data", "labels"])
+IntrinsicInput = namedtuple("IntrinsicInput", ["data", "labels"])
 
 
 def _batch_blobs(num_batches, num_samples, num_features, num_classes):

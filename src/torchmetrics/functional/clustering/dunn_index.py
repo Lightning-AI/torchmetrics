@@ -73,10 +73,10 @@ def dunn_index(data: Tensor, labels: Tensor, p: float = 2) -> Tensor:
 
     Example:
         >>> from torchmetrics.functional.clustering import dunn_index
-        >>> data = torch.tensor([0, 3, 2, 2, 1])
-        >>> labels = torch.tensor([1, 3, 2, 0, 1])
-        >>> dunn_index(preds, target)
-        tensor(1.0)
+        >>> data = torch.tensor([[0, 0], [0.5, 0], [1, 0], [0.5, 1]])
+        >>> labels = torch.tensor([0, 0, 0, 1])
+        >>> dunn_index(data, labels)
+        tensor(2.)
 
     """
     pairwise_distance, max_distance = _dunn_index_update(data, labels, p)

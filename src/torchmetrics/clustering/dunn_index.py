@@ -50,11 +50,11 @@ class DunnIndex(Metric):
     Example:
         >>> import torch
         >>> from torchmetrics.clustering import DunnIndex
-        >>> data = torch.tensor([2, 1, 0, 1, 0])
-        >>> labels = torch.tensor([0, 2, 1, 1, 0])
-        >>> dunn_index = DunnIndex()
+        >>> data = torch.tensor([[0, 0], [0.5, 0], [1, 0], [0.5, 1]])
+        >>> labels = torch.tensor([0, 0, 0, 1])
+        >>> dunn_index = DunnIndex(p=2)
         >>> dunn_index(data, labels)
-        tensor(0.5004)
+        tensor(2.)
 
     """
 
@@ -64,10 +64,10 @@ class DunnIndex(Metric):
     plot_lower_bound: float = 0.0
     data: List[Tensor]
     labels: List[Tensor]
-    contingency: Tensor
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, p: float = 2, **kwargs: Any) -> None:
         super().__init__(**kwargs)
+        self.p = p
 
         self.add_state("data", default=[], dist_reduce_fx="cat")
         self.add_state("labels", default=[], dist_reduce_fx="cat")
@@ -79,7 +79,7 @@ class DunnIndex(Metric):
 
     def compute(self) -> Tensor:
         """Compute mutual information over state."""
-        return dunn_index(dim_zero_cat(self.data), dim_zero_cat(self.labels))
+        return dunn_index(dim_zero_cat(self.data), dim_zero_cat(self.labels), self.p)
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -102,19 +102,10 @@ class DunnIndex(Metric):
             >>> # Example plotting a single value
             >>> import torch
             >>> from torchmetrics.clustering import DunnIndex
-            >>> metric = DunnIndex()
-            >>> metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
-            >>> fig_, ax_ = metric.plot(metric.compute())
-
-        .. plot::
-            :scale: 75
-
-            >>> # Example plotting multiple values
-            >>> import torch
-            >>> from torchmetrics.clustering import DunnIndex
-            >>> metric = DunnIndex()
-            >>> for _ in range(10):
-            ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
+            >>> data = torch.tensor([[0, 0], [0.5, 0], [1, 0], [0.5, 1]])
+            >>> labels = torch.tensor([0, 0, 0, 1])
+            >>> metric = DunnIndex(p=2)
+            >>> metric.update(data, labels)
             >>> fig_, ax_ = metric.plot(metric.compute())
 
         """

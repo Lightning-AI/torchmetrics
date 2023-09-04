@@ -54,7 +54,7 @@ def _np_dunn_index(x, labels, p):
 )
 @pytest.mark.parametrize(
     "p",
-    [1, 2],
+    [0, 1, 2],
 )
 class TestDunnIndex(MetricTester):
     """Test class for `DunnIndex` metric."""
@@ -80,4 +80,5 @@ class TestDunnIndex(MetricTester):
             target=labels,
             metric_functional=dunn_index,
             reference_metric=partial(_np_dunn_index, p=p),
+            p=p,
         )
