@@ -11,16 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.clustering.calinski_harabasz_score import CalinskiHarabaszScore
+from torchmetrics.clustering.homogeneity_completeness_v_measure import (
+    CompletenessScore,
+    HomogeneityScore,
+    VMeasureScore,
+)
 from torchmetrics.clustering.mutual_info_score import MutualInfoScore
 from torchmetrics.clustering.normalized_mutual_info_score import NormalizedMutualInfoScore
 from torchmetrics.clustering.rand_score import RandScore
-from torchmetrics.clustering.homogeneity_completeness_v_measure import (
-    HomogeneityScore,
-    CompletenessScore,
-    VMeasureScore,
-)
 
 __all__ = [
+    "CalinskiHarabaszScore",
     "CompletenessScore",
     "HomogeneityScore",
     "MutualInfoScore",
