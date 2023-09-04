@@ -174,7 +174,7 @@ class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
             ... ]
             >>> target = lambda : [
             ...    {
-            ...        "boxes": torch.tensor([[300.00, 100.00, 315.00, 150.00]]) + torch.randint(-10, 10, (1, 4)),
+            ...        "boxes": torch.tensor([[300.00, 100.00, 335.00, 150.00]]) + torch.randint(-10, 10, (1, 4)),
             ...        "labels": torch.tensor([5]),
             ...    }
             ... ]
