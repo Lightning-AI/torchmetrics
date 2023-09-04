@@ -11,39 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
-
 import pytest
-import torch
 from sklearn.metrics import calinski_harabasz_score as sklearn_calinski_harabasz_score
 from torchmetrics.clustering.calinski_harabasz_score import CalinskiHarabaszScore
 from torchmetrics.functional.clustering.calinski_harabasz_score import calinski_harabasz_score
 
-from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
+from unittests.clustering.inputs import _single_target_intrinsic1, _single_target_intrinsic2
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
-NUM_CLASSES = 10
-
-_single_target_inputs1 = Input(
-    preds=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
-    target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
-)
-
-_single_target_inputs2 = Input(
-    preds=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
-    target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
-)
-
 
 @pytest.mark.parametrize(
     "preds, target",
     [
-        (_single_target_inputs1.preds, _single_target_inputs1.target),
-        (_single_target_inputs2.preds, _single_target_inputs2.target),
+        (_single_target_intrinsic1.preds, _single_target_intrinsic1.target),
+        (_single_target_intrinsic2.preds, _single_target_intrinsic2.target),
     ],
 )
 class TestCalinskiHarabaszScore(MetricTester):
