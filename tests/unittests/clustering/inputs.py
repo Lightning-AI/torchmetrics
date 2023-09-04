@@ -15,7 +15,7 @@ from collections import namedtuple
 
 import torch
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 from unittests.helpers import seed_all
 
 seed_all(42)
@@ -24,15 +24,28 @@ seed_all(42)
 Input = namedtuple("Input", ["preds", "target"])
 NUM_CLASSES = 10
 
-
-_single_target_inputs1 = Input(
+# extrinsic input for clustering metrics that requires predicted clustering labels and target clustering labels
+_single_target_extrinsic1 = Input(
     preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
     target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
-_single_target_inputs2 = Input(
+_single_target_extrinsic2 = Input(
     preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
     target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
-_float_inputs = Input(preds=torch.rand((NUM_BATCHES, BATCH_SIZE)), target=torch.rand((NUM_BATCHES, BATCH_SIZE)))
+_float_inputs_extrinsic = Input(
+    preds=torch.rand((NUM_BATCHES, BATCH_SIZE)), target=torch.rand((NUM_BATCHES, BATCH_SIZE))
+)
+
+# intrinsic input for clustering metrics that requires only predicted clustering labels and the cluster embeddings
+_single_target_intrinsic1 = Input(
+    preds=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
+    target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
+)
+
+_single_target_intrinsic2 = Input(
+    preds=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
+    target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
+)

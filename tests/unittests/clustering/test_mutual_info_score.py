@@ -18,7 +18,7 @@ from torchmetrics.clustering.mutual_info_score import MutualInfoScore
 from torchmetrics.functional.clustering.mutual_info_score import mutual_info_score
 
 from unittests import BATCH_SIZE, NUM_CLASSES
-from unittests.clustering.inputs import _float_inputs, _single_target_inputs1, _single_target_inputs2
+from unittests.clustering.inputs import _float_inputs_extrinsic, _single_target_extrinsic1, _single_target_extrinsic2
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -28,8 +28,8 @@ seed_all(42)
 @pytest.mark.parametrize(
     "preds, target",
     [
-        (_single_target_inputs1.preds, _single_target_inputs1.target),
-        (_single_target_inputs2.preds, _single_target_inputs2.target),
+        (_single_target_extrinsic1.preds, _single_target_extrinsic1.target),
+        (_single_target_extrinsic2.preds, _single_target_extrinsic2.target),
     ],
 )
 class TestMutualInfoScore(MetricTester):
@@ -68,18 +68,14 @@ def test_mutual_info_score_functional_single_cluster():
 
 def test_mutual_info_score_functional_raises_invalid_task():
     """Check that metric rejects continuous-valued inputs."""
-    preds, target = _float_inputs
+    preds, target = _float_inputs_extrinsic
     with pytest.raises(ValueError, match=r"Expected *"):
         mutual_info_score(preds, target)
 
 
-@pytest.mark.parametrize(
-    ("preds", "target"),
-    [
-        (_single_target_inputs1.preds, _single_target_inputs1.target),
-    ],
-)
-def test_mutual_info_score_functional_is_symmetric(preds, target):
+def test_mutual_info_score_functional_is_symmetric(
+    preds=_single_target_extrinsic1.preds, target=_single_target_extrinsic1.target
+):
     """Check that the metric funtional is symmetric."""
     for p, t in zip(preds, target):
         assert torch.allclose(mutual_info_score(p, t), mutual_info_score(t, p))
