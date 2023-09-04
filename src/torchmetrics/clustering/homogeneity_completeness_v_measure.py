@@ -26,7 +26,11 @@ from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["RandScore.plot"]
+    __doctest_skip__ = [
+        "HomogeneityScore.plot",
+        "CompletenessScore.plot",
+        "VMeasureScore.plot"
+    ]
 
 
 class HomogeneityScore(Metric):
@@ -84,7 +88,7 @@ class HomogeneityScore(Metric):
 
     def compute(self) -> Tensor:
         """Compute rand score over state."""
-        return rand_score(dim_zero_cat(self.preds), dim_zero_cat(self.target))
+        return homogeneity_score(dim_zero_cat(self.preds), dim_zero_cat(self.target))
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -181,7 +185,7 @@ class CompletenessScore(Metric):
 
     def compute(self) -> Tensor:
         """Compute rand score over state."""
-        return rand_score(dim_zero_cat(self.preds), dim_zero_cat(self.target))
+        return completeness_score(dim_zero_cat(self.preds), dim_zero_cat(self.target))
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -278,7 +282,7 @@ class VMeasureScore(Metric):
 
     def compute(self) -> Tensor:
         """Compute rand score over state."""
-        return rand_score(dim_zero_cat(self.preds), dim_zero_cat(self.target))
+        return v_measure_score(dim_zero_cat(self.preds), dim_zero_cat(self.target))
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
