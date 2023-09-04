@@ -53,5 +53,6 @@ _float_inputs_extrinsic = ExtrinsicInput(
     preds=torch.rand((NUM_BATCHES, BATCH_SIZE)), target=torch.rand((NUM_BATCHES, BATCH_SIZE))
 )
 
+# intrinsic input for clustering metrics that requires only predicted clustering labels and the cluster embeddings
 _single_target_intrinsic1 = _batch_blobs(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM, NUM_CLASSES)
 _single_target_intrinsic2 = _batch_blobs(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM, NUM_CLASSES)
