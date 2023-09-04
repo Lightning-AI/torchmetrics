@@ -242,5 +242,3 @@ def calcualte_pair_cluster_confusion_matrix(
     pair_matrix[0, 1] = (contingency.T * n_c).sum() - sum_squared
     pair_matrix[0, 0] = n_samples**2 - pair_matrix[0, 1] - pair_matrix[1, 0] - sum_squared
     return pair_matrix
-
-
