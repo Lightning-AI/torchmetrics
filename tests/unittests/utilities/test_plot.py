@@ -91,7 +91,7 @@ from torchmetrics.classification import (
     MultilabelROC,
     MultilabelSpecificity,
 )
-from torchmetrics.clustering import MutualInfoScore, NormalizedMutualInfoScore, RandScore
+from torchmetrics.clustering import CalinskiHarabaszScore, MutualInfoScore, NormalizedMutualInfoScore, RandScore
 from torchmetrics.detection import PanopticQuality
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
@@ -617,6 +617,7 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
         pytest.param(TranslationEditRate, _text_input_3, _text_input_4, id="translation edit rate"),
         pytest.param(MutualInfoScore, _nominal_input, _nominal_input, id="mutual info score"),
         pytest.param(RandScore, _nominal_input, _nominal_input, id="rand score"),
+        pytest.param(CalinskiHarabaszScore, lambda: torch.randn(100, 3), _nominal_input, id="calinski harabasz score"),
         pytest.param(NormalizedMutualInfoScore, _nominal_input, _nominal_input, id="normalized mutual info score"),
     ],
 )
