@@ -60,11 +60,11 @@ def _dunn_index_compute(intercluster_distance: Tensor, max_intracluster_distance
     return intercluster_distance.min() / max_intracluster_distance.max()
 
 
-def dunn_index(x: Tensor, labels: Tensor, p: float = 2) -> Tensor:
+def dunn_index(data: Tensor, labels: Tensor, p: float = 2) -> Tensor:
     """Compute the Dunn index.
 
     Args:
-        x: feature vectors
+        data: feature vectors
         labels: cluster labels
         p: p-norm used for distance metric
 
@@ -79,5 +79,5 @@ def dunn_index(x: Tensor, labels: Tensor, p: float = 2) -> Tensor:
         tensor(1.0)
 
     """
-    pairwise_distance, max_distance = _dunn_index_update(x, labels, p)
+    pairwise_distance, max_distance = _dunn_index_update(data, labels, p)
     return _dunn_index_compute(pairwise_distance, max_distance)

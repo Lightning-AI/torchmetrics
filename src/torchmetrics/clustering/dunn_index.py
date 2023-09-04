@@ -36,8 +36,8 @@ class DunnIndex(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): single integer tensor with shape ``(N,)`` with predicted cluster labels
-    - ``target`` (:class:`~torch.Tensor`): single integer tensor with shape ``(N,)`` with ground truth cluster labels
+    - ``data`` (:class:`~torch.Tensor`): float tensor with shape ``(N,d)`` with the embedded data. ``d`` is the dimensionality of the embedding space.
+    - ``labels`` (:class:`~torch.Tensor`): single integer tensor with shape ``(N,)`` with cluster labels
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
@@ -68,17 +68,17 @@ class DunnIndex(Metric):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-        self.add_state("x", default=[], dist_reduce_fx="cat")
+        self.add_state("data", default=[], dist_reduce_fx="cat")
         self.add_state("labels", default=[], dist_reduce_fx="cat")
 
-    def update(self, x: Tensor, labels: Tensor) -> None:
+    def update(self, data: Tensor, labels: Tensor) -> None:
         """Update state with predictions and targets."""
-        self.x.append(x)
+        self.data.append(data)
         self.labels.append(labels)
 
     def compute(self) -> Tensor:
         """Compute mutual information over state."""
-        return dunn_index(dim_zero_cat(self.x), dim_zero_cat(self.labels))
+        return dunn_index(dim_zero_cat(self.data), dim_zero_cat(self.labels))
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
