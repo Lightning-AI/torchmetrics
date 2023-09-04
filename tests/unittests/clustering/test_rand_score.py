@@ -11,44 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
-
 import pytest
 import torch
 from sklearn.metrics import rand_score as sklearn_rand_score
 from torchmetrics.clustering.rand_score import RandScore
 from torchmetrics.functional.clustering.rand_score import rand_score
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests.clustering.inputs import _float_inputs_extrinsic, _single_target_extrinsic1, _single_target_extrinsic2
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
-NUM_CLASSES = 10
-
-_single_target_inputs1 = Input(
-    preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
-    target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
-)
-
-_single_target_inputs2 = Input(
-    preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
-    target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
-)
-
-_float_inputs = Input(
-    preds=torch.rand((NUM_BATCHES, BATCH_SIZE)),
-    target=torch.rand((NUM_BATCHES, BATCH_SIZE)),
-)
-
 
 @pytest.mark.parametrize(
     "preds, target",
     [
-        (_single_target_inputs1.preds, _single_target_inputs1.target),
-        (_single_target_inputs2.preds, _single_target_inputs2.target),
+        (_single_target_extrinsic1.preds, _single_target_extrinsic1.target),
+        (_single_target_extrinsic2.preds, _single_target_extrinsic2.target),
     ],
 )
 class TestRandScore(MetricTester):
@@ -79,16 +59,14 @@ class TestRandScore(MetricTester):
 
 def test_rand_score_functional_raises_invalid_task():
     """Check that metric rejects continuous-valued inputs."""
-    preds, target = _float_inputs
+    preds, target = _float_inputs_extrinsic
     with pytest.raises(ValueError, match=r"Expected *"):
         rand_score(preds, target)
 
 
-@pytest.mark.parametrize(
-    ("preds", "target"),
-    [(_single_target_inputs1.preds, _single_target_inputs1.target)],
-)
-def test_rand_score_functional_is_symmetric(preds, target):
+def test_rand_score_functional_is_symmetric(
+    preds=_single_target_extrinsic1.preds, target=_single_target_extrinsic1.target
+):
     """Check that the metric funtional is symmetric."""
     for p, t in zip(preds, target):
         assert torch.allclose(rand_score(p, t), rand_score(t, p))
