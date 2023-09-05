@@ -30,7 +30,6 @@ from torchmetrics.functional import (
     pairwise_manhattan_distance,
     pairwise_minkowski_distance,
 )
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
 
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
@@ -112,8 +111,6 @@ class TestPairwise(MetricTester):
         """Test half precision support on cpu."""
         if "euclidean" in request.node.callspec.id:
             pytest.xfail("pairwise_euclidean_distance metric does not support cpu + half precision")
-        if "minkowski" in request.node.callspec.id and not _TORCH_GREATER_EQUAL_1_9:
-            pytest.xfail("pairwise_minkowski_distance metric does not support cpu + half precision for pytorch<1.9")
         self.run_precision_test_cpu(x, y, None, metric_functional, metric_args={"reduction": reduction})
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
