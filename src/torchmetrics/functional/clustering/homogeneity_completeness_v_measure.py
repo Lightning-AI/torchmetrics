@@ -59,7 +59,7 @@ def homogeneity_score(preds: Tensor, target: Tensor) -> Tensor:
         >>> homogeneity_score(torch.tensor([0, 0, 1, 1]), torch.tensor([1, 1, 0, 0]))
         tensor(1.)
         >>> homogeneity_score(torch.tensor([0, 0, 1, 2]), torch.tensor([0, 0, 1, 1]))
-        tensor(0.8333)
+        tensor(1.)
 
     """
     homogeneity, _, _, _ = _homogeneity_score_compute(preds, target)
@@ -82,7 +82,7 @@ def completeness_score(preds: Tensor, target: Tensor) -> Tensor:
         >>> completeness_score(torch.tensor([0, 0, 1, 1]), torch.tensor([1, 1, 0, 0]))
         tensor(1.)
         >>> completeness_score(torch.tensor([0, 0, 1, 2]), torch.tensor([0, 0, 1, 1]))
-        tensor(0.8333)
+        tensor(0.6667)
 
     """
     completeness, _ = _completeness_score_compute(preds, target)
@@ -106,7 +106,7 @@ def v_measure_score(preds: Tensor, target: Tensor, beta: float = 1.0) -> Tensor:
         >>> v_measure_score(torch.tensor([0, 0, 1, 1]), torch.tensor([1, 1, 0, 0]))
         tensor(1.)
         >>> v_measure_score(torch.tensor([0, 0, 1, 2]), torch.tensor([0, 0, 1, 1]))
-        tensor(0.8333)
+        tensor(0.8000)
 
     """
     completeness, homogeneity = _completeness_score_compute(preds, target)

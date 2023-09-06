@@ -53,12 +53,12 @@ class HomogeneityScore(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics.clustering import RandScore
+        >>> from torchmetrics.clustering import HomogeneityScore
         >>> preds = torch.tensor([2, 1, 0, 1, 0])
         >>> target = torch.tensor([0, 2, 1, 1, 0])
-        >>> metric = RandScore()
+        >>> metric = HomogeneityScore()
         >>> metric(preds, target)
-        tensor(0.6000)
+        tensor(0.4744)
 
     """
 
@@ -148,12 +148,12 @@ class CompletenessScore(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics.clustering import RandScore
+        >>> from torchmetrics.clustering import CompletenessScore
         >>> preds = torch.tensor([2, 1, 0, 1, 0])
         >>> target = torch.tensor([0, 2, 1, 1, 0])
-        >>> metric = RandScore()
+        >>> metric = CompletenessScore()
         >>> metric(preds, target)
-        tensor(0.6000)
+        tensor(0.4744)
 
     """
 
@@ -245,6 +245,7 @@ class VMeasureScore(Metric):
     - ``rand_score`` (:class:`~torch.Tensor`): A tensor with the Rand Score
 
     Args:
+        beta: Weight parameter that defines the weight of homogeneity in the harmonic mean
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -252,9 +253,9 @@ class VMeasureScore(Metric):
         >>> from torchmetrics.clustering import VMeasureScore
         >>> preds = torch.tensor([2, 1, 0, 1, 0])
         >>> target = torch.tensor([0, 2, 1, 1, 0])
-        >>> metric = VMeasureScore()
+        >>> metric = VMeasureScore(beta=2.0)
         >>> metric(preds, target)
-        tensor(0.6000)
+        tensor(0.4744)
 
     """
 
