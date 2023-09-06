@@ -224,6 +224,10 @@ class MulticlassPrecisionRecallCurve(Metric):
     The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
     tradeoff between the two values can been seen.
 
+    For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
+    classes as the negative, which is refered to as the one-vs-rest approach. One-vs-one is currently not supported by
+    this metric.
+
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor containing
