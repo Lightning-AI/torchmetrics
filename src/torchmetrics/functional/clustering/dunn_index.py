@@ -54,7 +54,7 @@ def _dunn_index_compute(intercluster_distance: Tensor, max_intracluster_distance
         max_intracluster_distance: max intracluster distances
 
     Returns:
-        dunn_index: Dunn index
+        scalar tensor with the dunn index
 
     """
     return intercluster_distance.min() / max_intracluster_distance.max()
@@ -69,7 +69,7 @@ def dunn_index(data: Tensor, labels: Tensor, p: float = 2) -> Tensor:
         p: p-norm used for distance metric
 
     Returns:
-        dunn_index: Dunn index
+        scalar tensor with the dunn index
 
     Example:
         >>> from torchmetrics.functional.clustering import dunn_index
