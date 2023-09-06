@@ -34,6 +34,10 @@ class DunnIndex(Metric):
     Where :math:`C_i` is a cluster of tensors, :math:`C_j` is a cluster of tensors,
     and :math:`\delta(C_i,C_j)` is the intercluster distance metric for :math:`m` clusters.
 
+    This clustering metric is an intrinsic measure, because it does not rely on ground truth labels for the evaluation.
+    Instead it examines how well the clusters are separated from each other. The score is higher when clusters are dense
+    and well separated, which relates to a standard concept of a cluster.
+
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``data`` (:class:`~torch.Tensor`): float tensor with shape ``(N,d)`` with the embedded data.
