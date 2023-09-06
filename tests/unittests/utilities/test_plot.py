@@ -168,6 +168,7 @@ from torchmetrics.utilities.imports import (
     _TORCH_GREATER_EQUAL_1_10,
     _TORCHAUDIO_GREATER_EQUAL_0_10,
 )
+from torchmetrics.utilities.plot import _get_col_row_split
 from torchmetrics.wrappers import (
     BootStrapper,
     ClasswiseWrapper,
@@ -792,6 +793,17 @@ def test_plot_methods_retrieval(metric_class, preds, target, indexes, num_vals):
     assert isinstance(fig, plt.Figure)
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(fig)
+
+
+@pytest.mark.parametrize(
+    ("n", "expected_row", "expected_col"),
+    [(1, 1, 1), (2, 1, 2), (3, 2, 2), (4, 2, 2), (5, 2, 3), (6, 2, 3), (7, 3, 3), (8, 3, 3), (9, 3, 3), (10, 3, 4)],
+)
+def test_row_col_splitter(n, expected_row, expected_col):
+    """Test the row col splitter function works as expected."""
+    row, col = _get_col_row_split(n)
+    assert row == expected_row
+    assert col == expected_col
 
 
 @pytest.mark.parametrize(
