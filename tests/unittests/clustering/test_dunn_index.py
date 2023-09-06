@@ -29,7 +29,7 @@ from unittests.helpers.testers import MetricTester
 seed_all(42)
 
 
-def _np_dunn_index(x, labels, p):
+def _np_dunn_index(data, labels, ord):
     unique_labels, inverse_indices = np.unique(labels, return_inverse=True)
     clusters = [x[inverse_indices == label_idx] for label_idx in range(len(unique_labels))]
     centroids = [c.mean(axis=0) for c in clusters]
