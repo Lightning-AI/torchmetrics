@@ -127,16 +127,19 @@ class BootStrapper(WrapperMetric):
         Any tensor passed in will be bootstrapped along dimension 0.
 
         """
+        args_sizes = apply_to_collection(args, Tensor, len)
+        kwargs_sizes = list(apply_to_collection(kwargs, Tensor, len))
+        if len(args_sizes) > 0:
+            size = args_sizes[0]
+        elif len(kwargs_sizes) > 0:
+            size = kwargs_sizes[0]
+        else:
+            raise ValueError("None of the input contained tensors, so could not determine the sampling size")
+
         for idx in range(self.num_bootstraps):
-            args_sizes = apply_to_collection(args, Tensor, len)
-            kwargs_sizes = list(apply_to_collection(kwargs, Tensor, len))
-            if len(args_sizes) > 0:
-                size = args_sizes[0]
-            elif len(kwargs_sizes) > 0:
-                size = kwargs_sizes[0]
-            else:
-                raise ValueError("None of the input contained tensors, so could not determine the sampling size")
             sample_idx = _bootstrap_sampler(size, sampling_strategy=self.sampling_strategy).to(self.device)
+            if sample_idx.numel() == 0:
+                continue
             new_args = apply_to_collection(args, Tensor, torch.index_select, dim=0, index=sample_idx)
             new_kwargs = apply_to_collection(kwargs, Tensor, torch.index_select, dim=0, index=sample_idx)
             self.metrics[idx].update(*new_args, **new_kwargs)
