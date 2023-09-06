@@ -15,75 +15,76 @@ from typing import Any, List, Optional, Sequence, Union
 
 from torch import Tensor
 
-from torchmetrics.functional.clustering.mutual_info_score import mutual_info_score
+from torchmetrics.functional.clustering.calinski_harabasz_score import calinski_harabasz_score
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["MutualInfoScore.plot"]
+    __doctest_skip__ = ["CalinskiHarabaszScore.plot"]
 
 
-class MutualInfoScore(Metric):
-    r"""Compute `Mutual Information Score`_.
+class CalinskiHarabaszScore(Metric):
+    r"""Compute Calinski Harabasz Score (also known as variance ratio criterion) for clustering algorithms.
 
     .. math::
-        MI(U,V) = \sum_{i=1}^{|U|} \sum_{j=1}^{|V|} \frac{|U_i\cap V_j|}{N}
-        \log\frac{N|U_i\cap V_j|}{|U_i||V_j|}
+        CHS(X, L) = \frac{B(X, L) \cdot (n_\text{samples} - n_\text{labels})}{W(X, L) \cdot (n_\text{labels} - 1)}
 
-    Where :math:`U` is a tensor of target values, :math:`V` is a tensor of predictions,
-    :math:`|U_i|` is the number of samples in cluster :math:`U_i`, and
-    :math:`|V_i|` is the number of samples in cluster :math:`V_i`.
+    where :math:`B(X, L)` is the between-cluster dispersion, which is the squared distance between the cluster centers
+    and the dataset mean, weighted by the size of the clusters, :math:`n_\text{samples}` is the number of samples,
+    :math:`n_\text{labels}` is the number of labels, and :math:`W(X, L)` is the within-cluster dispersion e.g. the
+    sum of squared distances between each samples and its closest cluster center.
 
-    The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields
-    the same mutual information score.
+    This clustering metric is an intrinsic measure, because it does not rely on ground truth labels for the evaluation.
+    Instead it examines how well the clusters are separated from each other. The score is higher when clusters are dense
+    and well separated, which relates to a standard concept of a cluster.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): single integer tensor with shape ``(N,)`` with predicted cluster labels
-    - ``target`` (:class:`~torch.Tensor`): single integer tensor with shape ``(N,)`` with ground truth cluster labels
+    - ``data`` (:class:`~torch.Tensor`): float tensor with shape ``(N,d)`` with the embedded data. ``d`` is the
+      dimensionality of the embedding space.
+    - ``labels`` (:class:`~torch.Tensor`): single integer tensor with shape ``(N,)`` with cluster labels
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``mi_score`` (:class:`~torch.Tensor`): A tensor with the Mutual Information Score
+    - ``chs`` (:class:`~torch.Tensor`): A tensor with the Calinski Harabasz Score
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> import torch
-        >>> from torchmetrics.clustering import MutualInfoScore
-        >>> preds = torch.tensor([2, 1, 0, 1, 0])
-        >>> target = torch.tensor([0, 2, 1, 1, 0])
-        >>> mi_score = MutualInfoScore()
-        >>> mi_score(preds, target)
-        tensor(0.5004)
+        >>> from torchmetrics.clustering import CalinskiHarabaszScore
+        >>> _ = torch.manual_seed(42)
+        >>> data = torch.randn(10, 3)
+        >>> labels = torch.randint(3, (10,))
+        >>> metric = CalinskiHarabaszScore()
+        >>> metric(data, labels)
+        tensor(3.0053)
 
     """
-
     is_differentiable: bool = True
-    higher_is_better: Optional[bool] = True
+    higher_is_better: bool = True
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
-    preds: List[Tensor]
-    target: List[Tensor]
-    contingency: Tensor
+    data: List[Tensor]
+    labels: List[Tensor]
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-        self.add_state("preds", default=[], dist_reduce_fx="cat")
-        self.add_state("target", default=[], dist_reduce_fx="cat")
+        self.add_state("data", default=[], dist_reduce_fx="cat")
+        self.add_state("labels", default=[], dist_reduce_fx="cat")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets."""
-        self.preds.append(preds)
-        self.target.append(target)
+    def update(self, data: Tensor, labels: Tensor) -> None:
+        """Update metric state with new data and labels."""
+        self.data.append(data)
+        self.labels.append(labels)
 
     def compute(self) -> Tensor:
-        """Compute mutual information over state."""
-        return mutual_info_score(dim_zero_cat(self.preds), dim_zero_cat(self.target))
+        """Compute the Calinski Harabasz Score over all data and labels."""
+        return calinski_harabasz_score(dim_zero_cat(self.data), dim_zero_cat(self.labels))
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -105,8 +106,8 @@ class MutualInfoScore(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.clustering import MutualInfoScore
-            >>> metric = MutualInfoScore()
+            >>> from torchmetrics.clustering import RandScore
+            >>> metric = RandScore()
             >>> metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
 
@@ -115,8 +116,8 @@ class MutualInfoScore(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.clustering import MutualInfoScore
-            >>> metric = MutualInfoScore()
+            >>> from torchmetrics.clustering import RandScore
+            >>> metric = RandScore()
             >>> for _ in range(10):
             ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())

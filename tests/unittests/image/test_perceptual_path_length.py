@@ -164,6 +164,7 @@ class _WrongGenerator4(nn.Module):
         ),
     ],
 )
+@skip_on_running_out_of_memory()
 def test_raises_error_on_wrong_generator(generator, errortype, match):
     """Test that appropriate errors are raised on wrong generator."""
     with pytest.raises(errortype, match=match):
@@ -176,6 +177,7 @@ def test_raises_error_on_wrong_generator(generator, errortype, match):
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch_fidelity")
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU machine")
+@skip_on_running_out_of_memory()
 def test_compare():
     """Test against torch_fidelity.
 
