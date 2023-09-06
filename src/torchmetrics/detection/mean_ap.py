@@ -164,15 +164,15 @@ class MeanAveragePrecision(Metric):
 
     .. note::
         This metric supports, at the moment, two different backends for the evaluation. The default backend is
-        ``"pycocotools"``, which either require the official `pycocotools`_ implementation or this `fork of pycocotools`_
-        to be installed. We recommend using the fork as it is better maintained and easily available to install via pip:
-        `pip install pycocotools`. It is also this fork that will be installed if you install ``torchmetrics[detection]``.
-        The second backend is the `faster-coco-eval`_ implementation, which can be installed with
-        ``pip install faster-coco-eval``. This implementation is a maintained open-source implementation that is
-        faster and corrects certain corner cases that the official implementation has. Our own testing has shown that
-        the results are identical to the official implementation. Regardless of the backend we also require you to have
-        `torchvision` version 0.8.0 or newer installed. Please install with ``pip install torchvision>=0.8``
-        or ``pip install torchmetrics[detection]``.
+        ``"pycocotools"``, which either require the official `pycocotools`_ implementation or this
+        `fork of pycocotools`_ to be installed. We recommend using the fork as it is better maintained and easily
+        available to install via pip: `pip install pycocotools`. It is also this fork that will be installed if you
+        install ``torchmetrics[detection]``. The second backend is the `faster-coco-eval`_ implementation, which can be
+        installed with ``pip install faster-coco-eval``. This implementation is a maintained open-source implementation
+        that is faster and corrects certain corner cases that the official implementation has. Our own testing has shown
+        that the results are identical to the official implementation. Regardless of the backend we also require you to
+        have `torchvision` version 0.8.0 or newer installed. Please install with ``pip install torchvision>=0.8`` or
+        ``pip install torchmetrics[detection]``.
 
     Args:
         box_format:
