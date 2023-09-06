@@ -23,6 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `NormalizedMutualInfoScore` metric to cluster package ([#2029](https://github.com/Lightning-AI/torchmetrics/pull/2029))
 
 
+- Added `HomogeneityScore` metric to cluster package ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
+
+
+- Added `CompletenessScore` metric to cluster package ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
+
+
+- Added `VMeasureScore` metric to cluster package ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
+
 
 ### Changed
 
