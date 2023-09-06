@@ -101,11 +101,11 @@ def v_measure_score(preds: Tensor, target: Tensor, beta: float = 1.0) -> Tensor:
         scalar tensor with the rand score
 
     Example:
-        >>> from torchmetrics.functional.clustering import v_score
+        >>> from torchmetrics.functional.clustering import v_measure_score
         >>> import torch
-        >>> v_score(torch.tensor([0, 0, 1, 1]), torch.tensor([1, 1, 0, 0]))
+        >>> v_measure_score(torch.tensor([0, 0, 1, 1]), torch.tensor([1, 1, 0, 0]))
         tensor(1.)
-        >>> v_score(torch.tensor([0, 0, 1, 2]), torch.tensor([0, 0, 1, 1]))
+        >>> v_measure_score(torch.tensor([0, 0, 1, 2]), torch.tensor([0, 0, 1, 1]))
         tensor(0.8333)
 
     """
