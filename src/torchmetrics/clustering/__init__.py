@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.clustering.calinski_harabasz_score import CalinskiHarabaszScore
+from torchmetrics.clustering.dunn_index import DunnIndex
 from torchmetrics.clustering.mutual_info_score import MutualInfoScore
 from torchmetrics.clustering.normalized_mutual_info_score import NormalizedMutualInfoScore
 from torchmetrics.clustering.rand_score import RandScore
 
 __all__ = [
     "CalinskiHarabaszScore",
+    "DunnIndex",
     "MutualInfoScore",
     "NormalizedMutualInfoScore",
     "RandScore",
