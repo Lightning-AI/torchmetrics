@@ -153,10 +153,6 @@ def calculate_contingency_matrix(
 
 def _is_real_discrete_label(x: Tensor) -> bool:
     """Check if tensor of labels is real and discrete.
-
-    Args:
-        x: tensor
-
     """
     if x.ndim != 1:
         raise ValueError(f"Expected arguments to be 1-d tensors but got {x.ndim}-d tensors.")
