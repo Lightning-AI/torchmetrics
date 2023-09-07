@@ -26,7 +26,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class AdjustedRandScore(Metric):
-    r"""Compute `Adjusted Rand Score`_ (alternative know as Adjusted Rand Index).
+    r"""Compute `Adjusted Rand Score`_ (also known as Adjusted Rand Index).
 
     .. math::
         ARS(U, V) = (\text{RS} - \text{Expected RS}) / (\text{Max RS} - \text{Expected RS})
