@@ -156,3 +156,4 @@
 .. _Rand Score: https://link.springer.com/article/10.1007/BF01908075
 .. _faster-coco-eval: https://github.com/MiXaiLL76/faster_coco_eval
 .. _fork of pycocotools: https://github.com/ppwwyyxx/cocoapi
+.. _Dunn Index: https://en.wikipedia.org/wiki/Dunn_index
