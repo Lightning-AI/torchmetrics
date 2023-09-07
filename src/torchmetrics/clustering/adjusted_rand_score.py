@@ -37,7 +37,7 @@ class AdjustedRandScore(Metric):
     :math:`U` and :math:`V` yields the same adjusted rand score.
 
     This clustering metric is an extrinsic measure, because it requires ground truth clustering labels, which may not
-    be available in practice since clustering in generally is used for unsupervised learning.
+    be available in practice since clustering is generally used for unsupervised learning.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
