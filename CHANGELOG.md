@@ -17,9 +17,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `RandScore` metric to cluster package ([#2025](https://github.com/Lightning-AI/torchmetrics/pull/2025))
 
 
-- Added `CalinskiHarabaszScore` metric to cluster package ([#2036](https://github.com/Lightning-AI/torchmetrics/pull/2036))
-
-
 - Added `NormalizedMutualInfoScore` metric to cluster package ([#2029](https://github.com/Lightning-AI/torchmetrics/pull/2029))
 
 
@@ -30,6 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Added `VMeasureScore` metric to cluster package ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
+
+
+- Added `CalinskiHarabaszScore` metric to cluster package ([#2036](https://github.com/Lightning-AI/torchmetrics/pull/2036))
+
+
+- Added `DunnIndex` metric to cluster package ([#2049](https://github.com/Lightning-AI/torchmetrics/pull/2049))
 
 
 ### Changed
@@ -45,6 +48,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed performance issues in `RecallAtFixedPrecision` for large batch sizes ([#2042](https://github.com/Lightning-AI/torchmetrics/pull/2042))
+
+
+- Fixed bug in `BootStrapper` when very few samples were evaluated that could lead to crash ([#2052](https://github.com/Lightning-AI/torchmetrics/pull/2052))
 
 
 - Fixed bug when creating multiple plots that lead to not all plots being shown ([#2060](https://github.com/Lightning-AI/torchmetrics/pull/2060))

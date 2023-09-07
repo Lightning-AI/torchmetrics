@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.functional.clustering.calinski_harabasz_score import calinski_harabasz_score
+from torchmetrics.functional.clustering.dunn_index import dunn_index
 from torchmetrics.functional.clustering.homogeneity_completeness_v_measure import (
     completeness_score,
     homogeneity_score,
@@ -24,6 +25,7 @@ from torchmetrics.functional.clustering.rand_score import rand_score
 __all__ = [
     "calinski_harabasz_score",
     "completeness_score",
+    "dunn_index",
     "homogeneity_score",
     "mutual_info_score",
     "normalized_mutual_info_score",

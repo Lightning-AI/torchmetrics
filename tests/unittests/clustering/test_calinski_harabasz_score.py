@@ -24,10 +24,10 @@ seed_all(42)
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    "data, labels",
     [
-        (_single_target_intrinsic1.preds, _single_target_intrinsic1.target),
-        (_single_target_intrinsic2.preds, _single_target_intrinsic2.target),
+        (_single_target_intrinsic1.data, _single_target_intrinsic1.labels),
+        (_single_target_intrinsic2.data, _single_target_intrinsic2.labels),
     ],
 )
 class TestCalinskiHarabaszScore(MetricTester):
@@ -36,21 +36,21 @@ class TestCalinskiHarabaszScore(MetricTester):
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_calinski_harabasz_score(self, preds, target, ddp):
+    def test_calinski_harabasz_score(self, data, labels, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
-            preds=preds,
-            target=target,
+            preds=data,
+            target=labels,
             metric_class=CalinskiHarabaszScore,
             reference_metric=sklearn_calinski_harabasz_score,
         )
 
-    def test_calinski_harabasz_score_functional(self, preds, target):
+    def test_calinski_harabasz_score_functional(self, data, labels):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
-            preds=preds,
-            target=target,
+            preds=data,
+            target=labels,
             metric_functional=calinski_harabasz_score,
             reference_metric=sklearn_calinski_harabasz_score,
         )
