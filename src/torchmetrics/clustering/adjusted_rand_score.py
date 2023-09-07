@@ -15,28 +15,29 @@ from typing import Any, List, Optional, Sequence, Union
 
 from torch import Tensor
 
-from torchmetrics.functional.clustering.rand_score import rand_score
+from torchmetrics.functional.clustering.adjusted_rand_score import adjusted_rand_score
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["RandScore.plot"]
+    __doctest_skip__ = ["AdjustedRandScore.plot"]
 
 
-class RandScore(Metric):
-    r"""Compute `Rand Score`_ (alternatively known as Rand Index).
+class AdjustedRandScore(Metric):
+    r"""Compute `Adjusted Rand Score`_ (also known as Adjusted Rand Index).
 
     .. math::
-        RS(U, V) = \text{number of agreeing pairs} / \text{number of pairs}
+        ARS(U, V) = (\text{RS} - \text{Expected RS}) / (\text{Max RS} - \text{Expected RS})
 
-    The number of agreeing pairs is every :math:`(i, j)` pair of samples where :math:`i \in U` and :math:`j \in V`
-    (the predicted and true clusterings, respectively) that are in the same cluster for both clusterings. The metric is
-    symmetric, therefore swapping :math:`U` and :math:`V` yields the same rand score.
+    The adjusted rand score :math:`\text{ARS}` is in essence the :math:`\text{RS}` (rand score) adjusted for chance.
+    The score ensures that completly randomly cluster labels have a score close to zero and only a perfect match will
+    have a score of 1 (up to a permutation of the labels). The adjusted rand score is symmetric, therefore swapping
+    :math:`U` and :math:`V` yields the same adjusted rand score.
 
     This clustering metric is an extrinsic measure, because it requires ground truth clustering labels, which may not
-    be available in practice since clustering in generally is used for unsupervised learning.
+    be available in practice since clustering is generally used for unsupervised learning.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -45,29 +46,29 @@ class RandScore(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``rand_score`` (:class:`~torch.Tensor`): A tensor with the Rand Score
+    - ``adj_rand_score`` (:class:`~torch.Tensor`): Scalar tensor with the adjusted rand score
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
         >>> import torch
-        >>> from torchmetrics.clustering import RandScore
-        >>> preds = torch.tensor([2, 1, 0, 1, 0])
-        >>> target = torch.tensor([0, 2, 1, 1, 0])
-        >>> metric = RandScore()
-        >>> metric(preds, target)
-        tensor(0.6000)
+        >>> from torchmetrics.clustering import AdjustedRandScore
+        >>> metric = AdjustedRandScore()
+        >>> metric(torch.tensor([0, 0, 1, 1]), torch.tensor([0, 0, 1, 1]))
+        tensor(1.)
+        >>> metric(torch.tensor([0, 0, 1, 1]), torch.tensor([0, 1, 0, 1]))
+        tensor(-0.5000)
 
     """
 
     is_differentiable = True
     higher_is_better = None
     full_state_update: bool = True
-    plot_lower_bound: float = 0.0
+    plot_lower_bound: float = -0.5
+    plot_upper_bound: float = 1.0
     preds: List[Tensor]
     target: List[Tensor]
-    contingency: Tensor
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -81,8 +82,8 @@ class RandScore(Metric):
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """Compute rand score over state."""
-        return rand_score(dim_zero_cat(self.preds), dim_zero_cat(self.target))
+        """Compute mutual information over state."""
+        return adjusted_rand_score(dim_zero_cat(self.preds), dim_zero_cat(self.target))
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -104,8 +105,8 @@ class RandScore(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.clustering import RandScore
-            >>> metric = RandScore()
+            >>> from torchmetrics.clustering import AdjustedRandScore
+            >>> metric = AdjustedRandScore()
             >>> metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
 
@@ -114,8 +115,8 @@ class RandScore(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.clustering import RandScore
-            >>> metric = RandScore()
+            >>> from torchmetrics.clustering import AdjustedRandScore
+            >>> metric = AdjustedRandScore()
             >>> for _ in range(10):
             ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
