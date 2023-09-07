@@ -133,6 +133,10 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
 
+    For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
+    classes as the negative, which is refered to as the one-vs-rest approach. One-vs-one is currently not supported by
+    this metric.
+
     Accepts the following input tensors:
 
     - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
