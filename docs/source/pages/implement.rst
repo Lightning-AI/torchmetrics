@@ -65,7 +65,9 @@ A few important things to note:
   batches in distributed settings. In this case we use ``"sum"`` to sum the metric states across batches. A couple of
   build in options are available: ``"sum"``, ``"mean"``, ``"cat"``, ``"min"`` or ``"max"``, but a custom reduction is
   also supported.
+
 * In ``update`` we do not return anything but instead update the metric states in-place.
+
 * In ``compute`` when running in distributed mode, the states would have been synced before the compute method is
   called. Thus ``self.correct`` and ``self.total`` will contain the sum of the metric states across all processes.
 
@@ -106,9 +108,12 @@ because we need to calculate the rank of the predictions and targets.
             return torch.clamp(corrcoef, -1.0, 1.0)
 
 A few important things to note for this example:
+
 * When working with list states, the ``dist_reduce_fx`` argument to ``add_state`` should be set to ``"cat"`` to
   concatenate the list of tensors across batches.
+
 * The ``update`` method when working with list states should append the batch states to the list.
+
 * In the the ``compute`` method the list states behave a bit differently dependeding on weather you are running in
   distributed mode or not. In non-distributed mode the list states will be a list of tensors, while in distributed mode
   the list have already been concatenated into a single tensor. For this reason, we recommend always using the
