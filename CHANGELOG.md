@@ -20,6 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `NormalizedMutualInfoScore` metric to cluster package ([#2029](https://github.com/Lightning-AI/torchmetrics/pull/2029))
 
 
+- Added `AdjustedRandScore` metric to cluster package ([#2032](https://github.com/Lightning-AI/torchmetrics/pull/2032))
+
+
+- Added `CalinskiHarabaszScore` metric to cluster package ([#2036](https://github.com/Lightning-AI/torchmetrics/pull/2036))
+
+
+- Added `DunnIndex` metric to cluster package ([#2049](https://github.com/Lightning-AI/torchmetrics/pull/2049))
+
+
 - Added `HomogeneityScore` metric to cluster package ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
 
 
@@ -27,12 +36,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Added `VMeasureScore` metric to cluster package ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
-
-
-- Added `CalinskiHarabaszScore` metric to cluster package ([#2036](https://github.com/Lightning-AI/torchmetrics/pull/2036))
-
-
-- Added `DunnIndex` metric to cluster package ([#2049](https://github.com/Lightning-AI/torchmetrics/pull/2049))
 
 
 ### Changed

@@ -154,7 +154,8 @@
 .. _Normalized Mutual Information Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.normalized_mutual_info_score.html
 .. _pycocotools: https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools
 .. _Rand Score: https://link.springer.com/article/10.1007/BF01908075
+.. _Adjusted Rand Score: https://en.wikipedia.org/wiki/Rand_index#Adjusted_Rand_index
+.. _Dunn Index: https://en.wikipedia.org/wiki/Dunn_index
 .. _V-Measure Score: https://www.aclweb.org/anthology/D07-1043.pdf
 .. _Homogeneity Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.homogeneity_score.html
 .. _Completeness Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.completeness_score.html
-.. _Dunn Index: https://en.wikipedia.org/wiki/Dunn_index
