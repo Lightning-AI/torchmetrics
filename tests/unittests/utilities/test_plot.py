@@ -94,6 +94,7 @@ from torchmetrics.classification import (
 from torchmetrics.clustering import (
     AdjustedRandScore,
     CalinskiHarabaszScore,
+    DunnIndex,
     MutualInfoScore,
     NormalizedMutualInfoScore,
     RandScore,
@@ -627,6 +628,7 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
         pytest.param(AdjustedRandScore, _nominal_input, _nominal_input, id="adjusted rand score"),
         pytest.param(CalinskiHarabaszScore, lambda: torch.randn(100, 3), _nominal_input, id="calinski harabasz score"),
         pytest.param(NormalizedMutualInfoScore, _nominal_input, _nominal_input, id="normalized mutual info score"),
+        pytest.param(DunnIndex, lambda: torch.randn(100, 3), _nominal_input, id="dunn index"),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 3])
