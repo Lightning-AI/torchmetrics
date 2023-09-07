@@ -155,4 +155,5 @@
 .. _Adjusted Mutual Information Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.adjusted_mutual_info_score.html#sklearn.metrics.adjusted_mutual_info_score
 .. _pycocotools: https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools
 .. _Rand Score: https://link.springer.com/article/10.1007/BF01908075
+.. _Adjusted Rand Score: https://en.wikipedia.org/wiki/Rand_index#Adjusted_Rand_index
 .. _Dunn Index: https://en.wikipedia.org/wiki/Dunn_index
