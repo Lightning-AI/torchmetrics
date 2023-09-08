@@ -35,6 +35,11 @@ from unittests.helpers.testers import MetricTester
 seed_all(42)
 
 
+def _sk_reference(preds, target, fn):
+    """Compute reference values using sklearn."""
+    return fn(target, preds)
+
+
 @pytest.mark.parametrize(
     "modular_metric, functional_metric, reference_metric",
     [
@@ -70,7 +75,7 @@ class TestHomogeneityCompletenessVmeasur(MetricTester):
             preds=preds,
             target=target,
             metric_class=modular_metric,
-            reference_metric=lambda x, y: reference_metric(y, x),
+            reference_metric=partial(_sk_reference, fn=reference_metric),
         )
 
     def test_homogeneity_completeness_vmeasure_functional(
@@ -81,7 +86,7 @@ class TestHomogeneityCompletenessVmeasur(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional_metric,
-            reference_metric=lambda x, y: reference_metric(y, x),
+            reference_metric=partial(_sk_reference, fn=reference_metric),
         )
 
 
