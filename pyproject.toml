@@ -19,9 +19,6 @@ addopts = [
     "--color=yes",
     "--disable-pytest-warnings",
 ]
-pythonpath = [
-  "src"
-]
 
 # ToDo
 #filterwarnings = ["error::FutureWarning"]
