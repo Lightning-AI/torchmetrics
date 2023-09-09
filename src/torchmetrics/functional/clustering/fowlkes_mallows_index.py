@@ -67,7 +67,7 @@ def fowlkes_mallows_index(preds: Tensor, target: Tensor) -> Tensor:
 
     Example:
         >>> import torch
-        >>> from torchmetrics.functional import fowlkes_mallows_index
+        >>> from torchmetrics.functional.clustering import fowlkes_mallows_index
         >>> preds = torch.tensor([2, 2, 0, 1, 0])
         >>> target = torch.tensor([2, 2, 1, 1, 0])
         >>> fowlkes_mallows_index(preds, target)
