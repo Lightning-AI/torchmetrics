@@ -19,7 +19,6 @@ addopts = [
     "--color=yes",
     "--disable-pytest-warnings",
 ]
-
 # ToDo
 #filterwarnings = ["error::FutureWarning"]
 xfail_strict = true
