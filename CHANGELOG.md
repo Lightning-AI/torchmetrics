@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `DunnIndex` metric to cluster package ([#2049](https://github.com/Lightning-AI/torchmetrics/pull/2049))
 
 
+- Added `FowlkesMallowsIndex` metric to cluster package ([#2065](https://github.com/Lightning-AI/torchmetrics/pull/2065))
+
 ### Changed
 
 -
