@@ -37,9 +37,10 @@
 # MIT License
 # Copyright (c) 2017 - Shujian Huang <huangsj@nju.edu.cn>
 
+import os
 import re
 from functools import partial
-from typing import ClassVar, Optional, Sequence
+from typing import Any, ClassVar, Dict, Optional, Sequence
 
 import torch
 from torch import Tensor, tensor
@@ -52,10 +53,11 @@ from torchmetrics.utilities.imports import (
     _MECAB_KO_AVAILABLE,
     _MECAB_KO_DIC_AVAILABLE,
     _REGEX_AVAILABLE,
+    _SENTENCEPIECE_AVAILABLE,
 )
 
-AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char", "ja-mecab", "ko-mecab")
-Tokenizers = Literal["none", "13a", "zh", "intl", "char", "ja-mecab", "ko-mecab"]
+AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char", "ja-mecab", "ko-mecab", "flores101", "flores200")
+Tokenizers = Literal["none", "13a", "zh", "intl", "char", "ja-mecab", "ko-mecab", "flores101", "flores200"]
 
 _UCODE_RANGES = (
     ("\u3400", "\u4db5"),  # CJK Unified Ideographs Extension A, release 3.0
@@ -82,6 +84,14 @@ _UCODE_RANGES = (
     ("\u3200", "\u32ff"),
     ("\u3300", "\u33ff"),
 )
+
+
+_FLORES_LOCAL_DIR = "/tmp/torchmetrics-flores"  # noqa: S108
+# Model paths copied from https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/tokenizers/tokenizer_spm.py.
+_FLORES_MODELS_URL = {
+    "flores101": "https://dl.fbaipublicfiles.com/fairseq/models/flores/sacrebleu_tokenizer_spm.model",
+    "flores200": "https://tinyurl.com/flores200sacrebleuspm",
+}
 
 
 class _SacreBLEUTokenizer:
@@ -125,7 +135,12 @@ class _SacreBLEUTokenizer:
         "char": "_tokenize_char",
         "ja-mecab": "_tokenize_ja_mecab",
         "ko-mecab": "_tokenize_ko_mecab",
+        "flores101": "_tokenize_flores_101",
+        "flores200": "_tokenize_flores_200",
     }
+
+    # Keep it as class variable to avoid initializing over and over again
+    sentencepiece_processors: ClassVar[Dict[str, Optional[Any]]] = {"flores101": None, "flores200": None}
 
     def __init__(self, tokenize: Tokenizers, lowercase: bool = False) -> None:
         self._check_tokenizers_validity(tokenize)
@@ -323,6 +338,57 @@ class _SacreBLEUTokenizer:
         line = line.strip()
         return tagger.parse(line).strip()
 
+    @classmethod
+    def _tokenize_flores(cls, line: str, tokenize: Literal["flores101", "flores200"]) -> str:
+        """Tokenizes a string line using sentencepiece tokenizer.
+
+        Args:
+            line: the input string to tokenize.
+            tokenize: Tokenization technique to be used.
+
+        Return:
+            The tokenized string.
+
+        """
+        import sentencepiece
+
+        if cls.sentencepiece_processors[tokenize] is None:
+            cls.sentencepiece_processors[tokenize] = sentencepiece.SentencePieceProcessor()
+
+            file_path = os.path.join(_FLORES_LOCAL_DIR, _FLORES_MODELS_URL[tokenize].split("/")[-1])
+            if not os.path.exists(file_path):
+                cls.download_flores_file(tokenize)
+
+            cls.sentencepiece_processors[tokenize].Load(file_path)
+
+        return " ".join(cls.sentencepiece_processors[tokenize].EncodeAsPieces(line))
+
+    @classmethod
+    def _tokenize_flores_101(cls, line: str) -> str:
+        """Tokenizes a string line using sentencepiece tokenizer according to `FLORES-101`_ dataset.
+
+        Args:
+            line: the input string to tokenize.
+
+        Return:
+            The tokenized string.
+
+        """
+        return cls._tokenize_flores(line, "flores101")
+
+    @classmethod
+    def _tokenize_flores_200(cls, line: str) -> str:
+        """Tokenizes a string line using sentencepiece tokenizer according to `FLORES-200`_ dataset.
+
+        Args:
+            line: the input string to tokenize.
+
+        Return:
+            The tokenized string.
+
+        """
+        return cls._tokenize_flores(line, "flores200")
+
     @staticmethod
     def _lower(line: str, lowercase: bool) -> str:
         if lowercase:
@@ -357,6 +423,29 @@ class _SacreBLEUTokenizer:
                 " Use `pip install mecab_ko mecab_ko_dic` or `pip install torchmetrics[text]`."
             )
 
+        if "flores" in tokenize and not _SENTENCEPIECE_AVAILABLE:
+            raise ModuleNotFoundError(
+                "`'flores101' and 'flores200'` tokenizations require that `sentencepiece` is installed."
+                " Use `pip install sentencepiece` or `pip install torchmetrics[text]`."
+            )
+
+    @staticmethod
+    def download_flores_file(model_name: Literal["flores101", "flores200"]) -> None:
+        """Download necessary files for `flores` tokenization via `sentencepiece`."""
+        import ssl
+        import urllib.request
+
+        os.makedirs(_FLORES_LOCAL_DIR, exist_ok=True)
+
+        model_url = _FLORES_MODELS_URL[model_name]
+        file_path = os.path.join(_FLORES_LOCAL_DIR, model_url.split("/")[-1])
+
+        try:
+            with open(file_path, "wb") as out_file, urllib.request.urlopen(model_url) as remote_file:
+                out_file.write(remote_file.read())
+        except ssl.SSLError as e:
+            raise OSError(f"Failed to download {model_name} model.") from e
+
 
 def sacre_bleu_score(
     preds: Sequence[str],
@@ -377,7 +466,9 @@ def sacre_bleu_score(
         n_gram: Gram value ranged from 1 to 4
         smooth: Whether to apply smoothing - see [2]
         tokenize: Tokenization technique to be used.
-            Supported tokenization: ['none', '13a', 'zh', 'intl', 'char', 'ja-mecab', 'ko-mecab]
+            Supported tokenization: [
+                'none', '13a', 'zh', 'intl', 'char', 'ja-mecab', 'ko-mecab', 'flores101', 'flores200'
+            ]
         lowercase: If ``True``, BLEU score over lowercased text is calculated.
         weights:
             Weights used for unigrams, bigrams, etc. to calculate BLEU score.

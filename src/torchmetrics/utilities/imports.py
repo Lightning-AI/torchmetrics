@@ -62,5 +62,6 @@ _MECAB_AVAILABLE: bool = package_available("MeCab")
 _MECAB_KO_AVAILABLE: bool = package_available("mecab_ko")
 _MECAB_KO_DIC_AVAILABLE: bool = package_available("mecab_ko_dic")
 _IPADIC_AVAILABLE: bool = package_available("ipadic")
+_SENTENCEPIECE_AVAILABLE: bool = package_available("sentencepiece")
 
 _LATEX_AVAILABLE: bool = shutil.which("latex") is not None

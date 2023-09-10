@@ -9,3 +9,4 @@ mecab-python3 >= 1.0.6, <1.1.0
 mecab-ko >= 1.0.0, <1.1.0
 mecab-ko-dic >= 1.0.0, <1.1.0
 ipadic >= 1.0.0, <1.1.0
+sentencepiece >=0.1.98, <=0.1.99

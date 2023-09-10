@@ -164,3 +164,5 @@
 .. _Completeness Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.completeness_score.html
 .. _Davies-Bouldin Score: https://en.wikipedia.org/wiki/Davies%E2%80%93Bouldin_index
 .. _Fowlkes-Mallows Index: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.fowlkes_mallows_score.html#sklearn.metrics.fowlkes_mallows_score
+.. _FLORES-101: https://arxiv.org/abs/2106.03193
+.. _FLORES-200: https://arxiv.org/abs/2207.04672
