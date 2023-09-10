@@ -46,10 +46,16 @@ from torch import Tensor, tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_update
-from torchmetrics.utilities.imports import _IPADIC_AVAILABLE, _MECAB_AVAILABLE, _REGEX_AVAILABLE
+from torchmetrics.utilities.imports import (
+    _IPADIC_AVAILABLE,
+    _MECAB_AVAILABLE,
+    _MECAB_KO_AVAILABLE,
+    _MECAB_KO_DIC_AVAILABLE,
+    _REGEX_AVAILABLE,
+)
 
-AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char", "ja-mecab")
-Tokenizers = Literal["none", "13a", "zh", "intl", "char", "ja-mecab"]
+AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char", "ja-mecab", "ko-mecab")
+Tokenizers = Literal["none", "13a", "zh", "intl", "char", "ja-mecab", "ko-mecab"]
 
 _UCODE_RANGES = (
     ("\u3400", "\u4db5"),  # CJK Unified Ideographs Extension A, release 3.0
@@ -118,6 +124,7 @@ class _SacreBLEUTokenizer:
         "intl": "_tokenize_international",
         "char": "_tokenize_char",
         "ja-mecab": "_tokenize_ja_mecab",
+        "ko-mecab": "_tokenize_ko_mecab",
     }
 
     def __init__(self, tokenize: Tokenizers, lowercase: bool = False) -> None:
@@ -297,6 +304,25 @@ class _SacreBLEUTokenizer:
         line = line.strip()
         return tagger.parse(line).strip()
 
+    @classmethod
+    def _tokenize_ko_mecab(cls, line: str) -> str:
+        """Tokenizes a Korean string line using MeCab-korean morphological analyzer.
+
+        Args:
+            line: the input string to tokenize.
+
+        Return:
+            The tokenized string.
+
+        """
+        import mecab_ko
+        import mecab_ko_dic
+
+        tagger = mecab_ko.Tagger(mecab_ko_dic.MECAB_ARGS + " -Owakati")
+
+        line = line.strip()
+        return tagger.parse(line).strip()
+
     @staticmethod
     def _lower(line: str, lowercase: bool) -> str:
         if lowercase:
@@ -325,6 +351,12 @@ class _SacreBLEUTokenizer:
                 " Use `pip install mecab-python3 ipadic` or `pip install torchmetrics[text]`."
             )
 
+        if tokenize == "ko-mecab" and not (_MECAB_KO_AVAILABLE and _MECAB_KO_DIC_AVAILABLE):
+            raise ModuleNotFoundError(
+                "`'ko-mecab'` tokenization requires that `mecab_ko` and `mecab_ko_dic` are installed."
+                " Use `pip install mecab_ko mecab_ko_dic` or `pip install torchmetrics[text]`."
+            )
+
 
 def sacre_bleu_score(
     preds: Sequence[str],
@@ -345,7 +377,7 @@ def sacre_bleu_score(
         n_gram: Gram value ranged from 1 to 4
         smooth: Whether to apply smoothing - see [2]
         tokenize: Tokenization technique to be used.
-            Supported tokenization: ['none', '13a', 'zh', 'intl', 'char', 'ja-mecab']
+            Supported tokenization: ['none', '13a', 'zh', 'intl', 'char', 'ja-mecab', 'ko-mecab]
         lowercase: If ``True``, BLEU score over lowercased text is calculated.
         weights:
             Weights used for unigrams, bigrams, etc. to calculate BLEU score.

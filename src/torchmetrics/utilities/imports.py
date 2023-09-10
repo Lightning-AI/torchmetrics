@@ -59,6 +59,8 @@ _XLA_AVAILABLE: bool = package_available("torch_xla")
 _PIQ_GREATER_EQUAL_0_8: Optional[bool] = compare_version("piq", operator.ge, "0.8.0")
 _FASTER_COCO_EVAL_AVAILABLE: bool = package_available("faster_coco_eval")
 _MECAB_AVAILABLE: bool = package_available("MeCab")
+_MECAB_KO_AVAILABLE: bool = package_available("mecab_ko")
+_MECAB_KO_DIC_AVAILABLE: bool = package_available("mecab_ko_dic")
 _IPADIC_AVAILABLE: bool = package_available("ipadic")
 
 _LATEX_AVAILABLE: bool = shutil.which("latex") is not None

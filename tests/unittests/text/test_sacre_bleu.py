@@ -115,3 +115,12 @@ def test_tokenize_ja_mecab():
     preds = ["これは美しい花です。"]
     targets = [["これは美しい花です。", "おいしい寿司を食べたい。"]]
     assert sacrebleu(preds, targets) == _sacrebleu_fn(preds, targets, tokenize="ja-mecab", lowercase=False)
+
+
+def test_tokenize_ko_mecab():
+    """Test that `ja-mecab` tokenizer works on a Japanese text in alignment with the SacreBleu implementation."""
+    sacrebleu = SacreBLEUScore(tokenize="ko-mecab")
+
+    preds = ["이 책은 정말 재미있어요."]
+    targets = [["이 책은 정말 재미있어요.", "고마워요, 너무 도와줘서."]]
+    assert sacrebleu(preds, targets) == _sacrebleu_fn(preds, targets, tokenize="ko-mecab", lowercase=False)
