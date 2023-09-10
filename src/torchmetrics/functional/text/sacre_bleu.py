@@ -46,9 +46,10 @@ from torch import Tensor, tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_update
-from torchmetrics.utilities.imports import _REGEX_AVAILABLE
+from torchmetrics.utilities.imports import _IPADIC_AVAILABLE, _MECAB_AVAILABLE, _REGEX_AVAILABLE
 
-AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char")
+AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char", "ja-mecab")
+Tokenizers = Literal["none", "13a", "zh", "intl", "char", "ja-mecab"]
 
 _UCODE_RANGES = (
     ("\u3400", "\u4db5"),  # CJK Unified Ideographs Extension A, release 3.0
@@ -116,9 +117,12 @@ class _SacreBLEUTokenizer:
         "zh": "_tokenize_zh",
         "intl": "_tokenize_international",
         "char": "_tokenize_char",
+        "ja-mecab": "_tokenize_ja_mecab",
     }
 
-    def __init__(self, tokenize: Literal["none", "13a", "zh", "intl", "char"], lowercase: bool = False) -> None:
+    def __init__(self, tokenize: Tokenizers, lowercase: bool = False) -> None:
+        self._check_tokenizers_validity(tokenize)
+
         self.tokenize_fn = getattr(self, self._TOKENIZE_FN[tokenize])
         self.lowercase = lowercase
 
@@ -127,9 +131,9 @@ class _SacreBLEUTokenizer:
         return self._lower(tokenized_line, self.lowercase).split()
 
     @classmethod
-    def tokenize(
-        cls, line: str, tokenize: Literal["none", "13a", "zh", "intl", "char"], lowercase: bool = False
-    ) -> Sequence[str]:
+    def tokenize(cls, line: str, tokenize: Tokenizers, lowercase: bool = False) -> Sequence[str]:
+        cls._check_tokenizers_validity(tokenize)
+
         tokenize_fn = getattr(cls, cls._TOKENIZE_FN[tokenize])
         tokenized_line = tokenize_fn(line)
         return cls._lower(tokenized_line, lowercase).split()
@@ -274,11 +278,52 @@ class _SacreBLEUTokenizer:
         """
         return " ".join(char for char in line)
 
+    @classmethod
+    def _tokenize_ja_mecab(cls, line: str) -> str:
+        """Tokenizes a Japanese string line using MeCab morphological analyzer.
+
+        Args:
+            line: the input string to tokenize.
+
+        Return:
+            The tokenized string.
+
+        """
+        import ipadic
+        import MeCab
+
+        tagger = MeCab.Tagger(ipadic.MECAB_ARGS + " -Owakati")
+
+        line = line.strip()
+        return tagger.parse(line).strip()
+
     @staticmethod
     def _lower(line: str, lowercase: bool) -> str:
         if lowercase:
             return line.lower()
         return line
+
+    @classmethod
+    def _check_tokenizers_validity(cls, tokenize: Tokenizers) -> None:
+        """Check if a supported tokenizer is chosen.
+
+        Also check all dependencies of a given tokenizers are installed.
+
+        """
+        if tokenize not in cls._TOKENIZE_FN.keys():
+            raise ValueError(f"Unsupported tokenizer selected. Please, choose one of {list(cls._TOKENIZE_FN.keys())}")
+
+        if tokenize == "intl" and not _REGEX_AVAILABLE:
+            raise ModuleNotFoundError(
+                "`'intl'` tokenization requires that `regex` is installed."
+                " Use `pip install regex` or `pip install torchmetrics[text]`."
+            )
+
+        if tokenize == "ja-mecab" and not (_MECAB_AVAILABLE and _IPADIC_AVAILABLE):
+            raise ModuleNotFoundError(
+                "`'ja-mecab'` tokenization requires that `MeCab` and `ipadic` are installed."
+                " Use `pip install mecab-python3 ipadic` or `pip install torchmetrics[text]`."
+            )
 
 
 def sacre_bleu_score(
@@ -286,7 +331,7 @@ def sacre_bleu_score(
     target: Sequence[Sequence[str]],
     n_gram: int = 4,
     smooth: bool = False,
-    tokenize: Literal["none", "13a", "zh", "intl", "char"] = "13a",
+    tokenize: Tokenizers = "13a",
     lowercase: bool = False,
     weights: Optional[Sequence[float]] = None,
 ) -> Tensor:
@@ -300,7 +345,7 @@ def sacre_bleu_score(
         n_gram: Gram value ranged from 1 to 4
         smooth: Whether to apply smoothing - see [2]
         tokenize: Tokenization technique to be used.
-            Supported tokenization: ['none', '13a', 'zh', 'intl', 'char']
+            Supported tokenization: ['none', '13a', 'zh', 'intl', 'char', 'ja-mecab']
         lowercase: If ``True``, BLEU score over lowercased text is calculated.
         weights:
             Weights used for unigrams, bigrams, etc. to calculate BLEU score.
@@ -330,20 +375,8 @@ def sacre_bleu_score(
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
 
     """
-    if tokenize not in AVAILABLE_TOKENIZERS:
-        raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
-
-    if tokenize not in _SacreBLEUTokenizer._TOKENIZE_FN.keys():
-        raise ValueError(
-            f"Unsupported tokenizer selected. Please, choose one of {list(_SacreBLEUTokenizer._TOKENIZE_FN.keys())}"
-        )
     if len(preds) != len(target):
         raise ValueError(f"Corpus has different size {len(preds)} != {len(target)}")
-    if tokenize == "intl" and not _REGEX_AVAILABLE:
-        raise ModuleNotFoundError(
-            "`'intl'` tokenization requires that `regex` is installed."
-            " Use `pip install regex` or `pip install torchmetrics[text]`."
-        )
 
     if weights is not None and len(weights) != n_gram:
         raise ValueError(f"List of weights has different weights than `n_gram`: {len(weights)} != {n_gram}")

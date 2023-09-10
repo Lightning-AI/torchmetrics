@@ -20,19 +20,15 @@
 from typing import Any, Optional, Sequence, Union
 
 from torch import Tensor
-from typing_extensions import Literal
 
 from torchmetrics.functional.text.bleu import _bleu_score_update
-from torchmetrics.functional.text.sacre_bleu import _SacreBLEUTokenizer
+from torchmetrics.functional.text.sacre_bleu import Tokenizers, _SacreBLEUTokenizer
 from torchmetrics.text.bleu import BLEUScore
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _REGEX_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["SacreBLEUScore.plot"]
-
-
-AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char")
 
 
 class SacreBLEUScore(BLEUScore):
@@ -95,20 +91,12 @@ class SacreBLEUScore(BLEUScore):
         self,
         n_gram: int = 4,
         smooth: bool = False,
-        tokenize: Literal["none", "13a", "zh", "intl", "char"] = "13a",
+        tokenize: Tokenizers = "13a",
         lowercase: bool = False,
         weights: Optional[Sequence[float]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(n_gram=n_gram, smooth=smooth, weights=weights, **kwargs)
-        if tokenize not in AVAILABLE_TOKENIZERS:
-            raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
-
-        if tokenize == "intl" and not _REGEX_AVAILABLE:
-            raise ModuleNotFoundError(
-                "`'intl'` tokenization requires that `regex` is installed."
-                " Use `pip install regex` or `pip install torchmetrics[text]`."
-            )
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
 
     def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:

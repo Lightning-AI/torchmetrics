@@ -17,7 +17,7 @@ from typing import Sequence
 
 import pytest
 from torch import Tensor, tensor
-from torchmetrics.functional.text.sacre_bleu import sacre_bleu_score
+from torchmetrics.functional.text.sacre_bleu import AVAILABLE_TOKENIZERS, sacre_bleu_score
 from torchmetrics.text.sacre_bleu import SacreBLEUScore
 from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
 
@@ -26,9 +26,6 @@ from unittests.text.inputs import _inputs_multiple_references
 
 if _SACREBLEU_AVAILABLE:
     from sacrebleu.metrics import BLEU
-
-
-TOKENIZERS = ("none", "13a", "zh", "intl", "char")
 
 
 def _sacrebleu_fn(preds: Sequence[str], targets: Sequence[Sequence[str]], tokenize: str, lowercase: bool) -> Tensor:
@@ -44,7 +41,7 @@ def _sacrebleu_fn(preds: Sequence[str], targets: Sequence[Sequence[str]], tokeni
     [(_inputs_multiple_references.preds, _inputs_multiple_references.targets)],
 )
 @pytest.mark.parametrize(["lowercase"], [(False,), (True,)])
-@pytest.mark.parametrize("tokenize", TOKENIZERS)
+@pytest.mark.parametrize("tokenize", AVAILABLE_TOKENIZERS)
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestSacreBLEUScore(TextTester):
     """Test class for `SacreBLEUScore` metric."""
@@ -109,3 +106,12 @@ def test_no_and_uniform_weights_class():
     no_weights_score = no_weights_bleu(preds, targets)
     uniform_weights_score = uniform_weights_bleu(preds, targets)
     assert no_weights_score == uniform_weights_score
+
+
+def test_tokenize_ja_mecab():
+    """Test that `ja-mecab` tokenizer works on a Japanese text in alignment with the SacreBleu implementation."""
+    sacrebleu = SacreBLEUScore(tokenize="ja-mecab")
+
+    preds = ["これは美しい花です。"]
+    targets = [["これは美しい花です。", "おいしい寿司を食べたい。"]]
+    assert sacrebleu(preds, targets) == _sacrebleu_fn(preds, targets, tokenize="ja-mecab", lowercase=False)
