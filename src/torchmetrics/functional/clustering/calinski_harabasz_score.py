@@ -14,15 +14,10 @@
 import torch
 from torch import Tensor
 
-
-def _calinski_harabasz_score_validate_input(data: Tensor, labels: Tensor) -> None:
-    """Validate that the input data and labels have correct shape and type."""
-    if data.ndim != 2:
-        raise ValueError(f"Expected 2D data, got {data.ndim}D data instead")
-    if not data.is_floating_point():
-        raise ValueError(f"Expected floating point data, got {data.dtype} data instead")
-    if labels.ndim != 1:
-        raise ValueError(f"Expected 1D labels, got {labels.ndim}D labels instead")
+from torchmetrics.functional.clustering.utils import (
+    _validate_intrinsic_cluster_data,
+    _validate_intrinsic_labels_to_samples,
+)
 
 
 def calinski_harabasz_score(data: Tensor, labels: Tensor) -> Tensor:
@@ -45,19 +40,13 @@ def calinski_harabasz_score(data: Tensor, labels: Tensor) -> Tensor:
         tensor(3.4998)
 
     """
-    _calinski_harabasz_score_validate_input(data, labels)
+    _validate_intrinsic_cluster_data(data, labels)
 
     # convert to zero indexed labels
     unique_labels, labels = torch.unique(labels, return_inverse=True)
     n_labels = len(unique_labels)
-
     n_samples = data.shape[0]
-
-    if not 1 < n_labels < n_samples:
-        raise ValueError(
-            "Number of detected clusters must be greater than one and less than the number of samples."
-            f"Got {n_labels} clusters and {n_samples} samples."
-        )
+    _validate_intrinsic_labels_to_samples(n_labels, n_samples)
 
     mean = data.mean(dim=0)
     between_cluster_dispersion = torch.tensor(0.0, device=data.device)
