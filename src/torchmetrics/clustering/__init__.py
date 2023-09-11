@@ -14,6 +14,7 @@
 from torchmetrics.clustering.adjusted_rand_score import AdjustedRandScore
 from torchmetrics.clustering.calinski_harabasz_score import CalinskiHarabaszScore
 from torchmetrics.clustering.dunn_index import DunnIndex
+from torchmetrics.clustering.fowlkes_mallows_index import FowlkesMallowsIndex
 from torchmetrics.clustering.homogeneity_completeness_v_measure import (
     CompletenessScore,
     HomogeneityScore,
@@ -28,6 +29,7 @@ __all__ = [
     "CalinskiHarabaszScore",
     "CompletenessScore",
     "DunnIndex",
+    "FowlkesMallowsIndex",
     "HomogeneityScore",
     "MutualInfoScore",
     "NormalizedMutualInfoScore",
