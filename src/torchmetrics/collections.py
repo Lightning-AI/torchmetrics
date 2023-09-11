@@ -339,7 +339,8 @@ class MetricCollection(ModuleDict):
         _, duplicates = _flatten_dict(result)
 
         flattened_results = {}
-        for k, res in result.items():
+        for k, m in self.items(keep_base=True, copy_state=False):
+            res = result[k]
             if isinstance(res, dict):
                 for key, v in res.items():
                     # if duplicates of keys we need to add unique prefix to each key
@@ -347,9 +348,9 @@ class MetricCollection(ModuleDict):
                         stripped_k = k.replace(getattr(m, "prefix", ""), "")
                         stripped_k = stripped_k.replace(getattr(m, "postfix", ""), "")
                         key = f"{stripped_k}_{key}"
-                    if hasattr(m, "prefix") and m.prefix is not None:
+                    if hasattr(m, "_from_collection") and m._from_collection and m.prefix is not None:
                         key = f"{m.prefix}{key}"
-                    if hasattr(m, "postfix") and m.postfix is not None:
+                    if hasattr(m, "_from_collection") and m._from_collection and m.postfix is not None:
                         key = f"{key}{m.postfix}"
                     flattened_results[key] = v
             else:
@@ -425,6 +426,7 @@ class MetricCollection(ModuleDict):
                     for k, v in metric.items(keep_base=False):
                         v.postfix = metric.postfix
                         v.prefix = metric.prefix
+                        v._from_collection = True
                         self[f"{name}_{k}"] = v
         elif isinstance(metrics, Sequence):
             for metric in metrics:
@@ -442,6 +444,7 @@ class MetricCollection(ModuleDict):
                     for k, v in metric.items(keep_base=False):
                         v.postfix = metric.postfix
                         v.prefix = metric.prefix
+                        v._from_collection = True
                         self[k] = v
         else:
             raise ValueError(
