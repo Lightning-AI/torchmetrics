@@ -12,13 +12,14 @@ on: # Trigger the workflow on push or pull request, but only for the master bran
       - "requirements.txt"
       - ".github/workflows/*docker*.yml"
       - "setup.py"
+  workflow_dispatch: {}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 env:
-  PUSH_RELEASE: ${{ github.ref == 'refs/heads/master' }}
+  PUSH_RELEASE: ${{ github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch' }}
 
 jobs:
   build-Devcontainer:
