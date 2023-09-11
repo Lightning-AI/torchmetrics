@@ -11,25 +11,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added `MutualInformationScore` metric to cluster package ([#2008](https://github.com/Lightning-AI/torchmetrics/pull/2008))
+- Added metric to cluster package:
 
+    - `MutualInformationScore` ([#2008](https://github.com/Lightning-AI/torchmetrics/pull/2008))
 
-- Added `RandScore` metric to cluster package ([#2025](https://github.com/Lightning-AI/torchmetrics/pull/2025))
+    - `RandScore` ([#2025](https://github.com/Lightning-AI/torchmetrics/pull/2025))
 
+    - `NormalizedMutualInfoScore` ([#2029](https://github.com/Lightning-AI/torchmetrics/pull/2029))
 
-- Added `NormalizedMutualInfoScore` metric to cluster package ([#2029](https://github.com/Lightning-AI/torchmetrics/pull/2029))
+    - `AdjustedRandScore` ([#2032](https://github.com/Lightning-AI/torchmetrics/pull/2032))
 
+    - `CalinskiHarabaszScore` ([#2036](https://github.com/Lightning-AI/torchmetrics/pull/2036))
 
-- Added `AdjustedRandScore` metric to cluster package ([#2032](https://github.com/Lightning-AI/torchmetrics/pull/2032))
+    - `DunnIndex` ([#2049](https://github.com/Lightning-AI/torchmetrics/pull/2049))
 
-
-- Added `CalinskiHarabaszScore` metric to cluster package ([#2036](https://github.com/Lightning-AI/torchmetrics/pull/2036))
-
-
-- Added `DunnIndex` metric to cluster package ([#2049](https://github.com/Lightning-AI/torchmetrics/pull/2049))
-
-
-- Added `FowlkesMallowsIndex` metric to cluster package ([#2066](https://github.com/Lightning-AI/torchmetrics/pull/2066))
+    - `FowlkesMallowsIndex` ([#2066](https://github.com/Lightning-AI/torchmetrics/pull/2066))
 
 ### Changed
 
@@ -43,19 +39,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+-
+
+
+## [1.1.2] - 2023-09-11
+
+### Fixed
+
 - Fixed tie breaking in ndcg metric ([#2031](https://github.com/Lightning-AI/torchmetrics/pull/2031))
-
-
 - Fixed bug in `BootStrapper` when very few samples were evaluated that could lead to crash ([#2052](https://github.com/Lightning-AI/torchmetrics/pull/2052))
-
-
 - Fixed bug when creating multiple plots that lead to not all plots being shown ([#2060](https://github.com/Lightning-AI/torchmetrics/pull/2060))
-
-
 - Fixed performance issues in `RecallAtFixedPrecision` for large batch sizes ([#2042](https://github.com/Lightning-AI/torchmetrics/pull/2042))
-
-
 - Fixed bug related to `MetricCollection` used with custom metrics have `prefix`/`postfix` attributes ([#2070](https://github.com/Lightning-AI/torchmetrics/pull/2070))
+
 
 ## [1.1.1] - 2023-08-29
 
