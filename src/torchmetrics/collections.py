@@ -348,9 +348,9 @@ class MetricCollection(ModuleDict):
                         stripped_k = k.replace(getattr(m, "prefix", ""), "")
                         stripped_k = stripped_k.replace(getattr(m, "postfix", ""), "")
                         key = f"{stripped_k}_{key}"
-                    if hasattr(m, "_from_collection") and m._from_collection and m.prefix is not None:
+                    if getattr(m, "_from_collection") and m.prefix is not None:
                         key = f"{m.prefix}{key}"
-                    if hasattr(m, "_from_collection") and m._from_collection and m.postfix is not None:
+                    if getattr(m, "_from_collection") and m.postfix is not None:
                         key = f"{key}{m.postfix}"
                     flattened_results[key] = v
             else:
