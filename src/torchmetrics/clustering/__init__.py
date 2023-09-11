@@ -15,6 +15,7 @@ from torchmetrics.clustering.adjusted_mutual_info_score import AdjustedMutualInf
 from torchmetrics.clustering.adjusted_rand_score import AdjustedRandScore
 from torchmetrics.clustering.calinski_harabasz_score import CalinskiHarabaszScore
 from torchmetrics.clustering.dunn_index import DunnIndex
+from torchmetrics.clustering.fowlkes_mallows_index import FowlkesMallowsIndex
 from torchmetrics.clustering.mutual_info_score import MutualInfoScore
 from torchmetrics.clustering.normalized_mutual_info_score import NormalizedMutualInfoScore
 from torchmetrics.clustering.rand_score import RandScore
@@ -24,6 +25,7 @@ __all__ = [
     "AdjustedRandScore",
     "CalinskiHarabaszScore",
     "DunnIndex",
+    "FowlkesMallowsIndex",
     "MutualInfoScore",
     "NormalizedMutualInfoScore",
     "RandScore",
