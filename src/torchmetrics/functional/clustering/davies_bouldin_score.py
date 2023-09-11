@@ -61,7 +61,7 @@ def davies_bouldin_score(data: Tensor, labels: Tensor) -> Tensor:
     if cond1 or cond2:
         return torch.tensor(0.0, device=data.device, dtype=torch.float32)
 
-    centroid_distances[centroid_distances == 0] = torch.inf
+    centroid_distances[centroid_distances == 0] = float("inf")
     combined_intra_dists = intra_dists.unsqueeze(0) + intra_dists.unsqueeze(1)
     scores = (combined_intra_dists / centroid_distances).max(dim=1).values
     return scores.mean()
