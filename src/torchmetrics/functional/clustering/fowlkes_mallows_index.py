@@ -47,7 +47,7 @@ def _fowlkes_mallows_index_compute(contingency: Tensor, n: int) -> Tensor:
     """
     tk = torch.sum(contingency**2) - n
     if torch.allclose(tk, tensor(0)):
-        return torch.tensor(0.0)
+        return torch.tensor(0.0, device=contingency.device)
 
     pk = torch.sum(contingency.sum(dim=0) ** 2) - n
     qk = torch.sum(contingency.sum(dim=1) ** 2) - n
