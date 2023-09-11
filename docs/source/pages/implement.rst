@@ -97,13 +97,17 @@ because we need to calculate the rank of the predictions and targets.
             self.target.append(target)
 
         def compute(self):
+            # parse inputs
             preds = dim_zero_cat(preds)
             target = dim_zero_cat(target)
+            # some intermediate computation...
             r_preds, r_target = _rank_data(preds), _rank_dat(target)
-            preds_diff, target_diff  = r_preds - r_preds.mean(0), r_target - r_target.mean(0)
+            preds_diff = r_preds - r_preds.mean(0)
+            target_diff = r_target - r_target.mean(0)
             cov = (preds_diff * target_diff).mean(0)
             preds_std = torch.sqrt((preds_diff * preds_diff).mean(0))
             target_std = torch.sqrt((target_diff * target_diff).mean(0))
+            # finalize the computations
             corrcoef = cov / (preds_std * target_std + eps)
             return torch.clamp(corrcoef, -1.0, 1.0)
 
@@ -112,7 +116,7 @@ A few important things to note for this example:
 * When working with list states, the ``dist_reduce_fx`` argument to ``add_state`` should be set to ``"cat"`` to
   concatenate the list of tensors across batches.
 
-* The ``update`` method when working with list states should append the batch states to the list.
+* When working with list states, The ``update(...)`` method should append the batch states to the list.
 
 * In the the ``compute`` method the list states behave a bit differently dependeding on weather you are running in
   distributed mode or not. In non-distributed mode the list states will be a list of tensors, while in distributed mode
@@ -149,7 +153,7 @@ additional functionality. The three attributes to consider are: ``is_differentia
 Plot interface
 **************
 
-From torchmetrics v1.0.0 onwards, we also support plotting of metrics through the `.plot` method. By default this method
+From torchmetrics v1.0.0 onwards, we also support plotting of metrics through the ``.plot()`` method. By default this method
 will raise `NotImplementedError` but can be implemented by the user to provide a custom plot for the metric.
 For any metrics that returns a simple scalar tensor, or a dict of scalar tensors the internal `._plot` method can be
 used, that provides the common plotting functionality for most metrics in torchmetrics.
