@@ -61,7 +61,7 @@ class AdjustedMutualInfoScore(MutualInfoScore):
         >>> from torchmetrics.clustering import AdjustedMutualInfoScore
         >>> preds = torch.tensor([2, 1, 0, 1, 0])
         >>> target = torch.tensor([0, 2, 1, 1, 0])
-        >>> ami_score = AdjustedMutualInfoScore("arithmetic")
+        >>> ami_score = AdjustedMutualInfoScore(average_method="arithmetic")
         >>> ami_score(preds, target)
         tensor(0.4744)
 
