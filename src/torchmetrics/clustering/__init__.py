@@ -13,6 +13,7 @@
 # limitations under the License.
 from torchmetrics.clustering.adjusted_rand_score import AdjustedRandScore
 from torchmetrics.clustering.calinski_harabasz_score import CalinskiHarabaszScore
+from torchmetrics.clustering.davies_bouldin_score import DaviesBouldinScore
 from torchmetrics.clustering.dunn_index import DunnIndex
 from torchmetrics.clustering.mutual_info_score import MutualInfoScore
 from torchmetrics.clustering.normalized_mutual_info_score import NormalizedMutualInfoScore
@@ -21,6 +22,7 @@ from torchmetrics.clustering.rand_score import RandScore
 __all__ = [
     "AdjustedRandScore",
     "CalinskiHarabaszScore",
+    "DaviesBouldinScore",
     "DunnIndex",
     "MutualInfoScore",
     "NormalizedMutualInfoScore",
