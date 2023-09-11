@@ -644,3 +644,36 @@ def test_double_nested_collections(base_metrics, expected):
 
     for key in val:
         assert key in expected
+
+
+def test_with_custom_prefix_postfix():
+    """Test that metric colection does not clash with custom prefix and postfix in users metrics.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2065
+
+    """
+
+    class CustomAccuracy(MulticlassAccuracy):
+        prefix = "my_prefix"
+        postfix = "my_postfix"
+
+        def compute(self):
+            value = super().compute()
+            return {f"{self.prefix}/accuracy/{self.postfix}": value}
+
+    class CustomPrecision(MulticlassAccuracy):
+        prefix = "my_prefix"
+        postfix = "my_postfix"
+
+        def compute(self):
+            value = super().compute()
+            return {f"{self.prefix}/precision/{self.postfix}": value}
+
+    metrics = MetricCollection([CustomAccuracy(num_classes=2), CustomPrecision(num_classes=2)])
+
+    # Update metrics with current batch
+    res = metrics(torch.tensor([1, 0, 0, 1]), torch.tensor([1, 0, 0, 0]))
+
+    # Print the calculated metrics
+    assert "my_prefix/accuracy/my_postfix" in res
+    assert "my_prefix/precision/my_postfix" in res
