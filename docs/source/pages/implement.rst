@@ -288,7 +288,7 @@ and tests gets formatted in the following way:
   5. (optional) If your metric raises any exception, please add tests that showcase this.
 
   .. note::
-    The `test file for mse <https://github.com/Lightning-AI/torchmetrics/blob/master/tests/unittests/regression/test_mean_error.py>`_
+    The `test file for MSE <https://github.com/Lightning-AI/torchmetrics/blob/master/tests/unittests/regression/test_mean_error.py>`_
     metric shows how to implement such tests.
 
 If you only can figure out part of the steps, do not fear to send a PR. We will much rather receive working
