@@ -92,6 +92,7 @@ from torchmetrics.classification import (
     MultilabelSpecificity,
 )
 from torchmetrics.clustering import (
+    AdjustedRandScore,
     CalinskiHarabaszScore,
     DunnIndex,
     MutualInfoScore,
@@ -624,6 +625,7 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
         pytest.param(TranslationEditRate, _text_input_3, _text_input_4, id="translation edit rate"),
         pytest.param(MutualInfoScore, _nominal_input, _nominal_input, id="mutual info score"),
         pytest.param(RandScore, _nominal_input, _nominal_input, id="rand score"),
+        pytest.param(AdjustedRandScore, _nominal_input, _nominal_input, id="adjusted rand score"),
         pytest.param(CalinskiHarabaszScore, lambda: torch.randn(100, 3), _nominal_input, id="calinski harabasz score"),
         pytest.param(NormalizedMutualInfoScore, _nominal_input, _nominal_input, id="normalized mutual info score"),
         pytest.param(DunnIndex, lambda: torch.randn(100, 3), _nominal_input, id="dunn index"),

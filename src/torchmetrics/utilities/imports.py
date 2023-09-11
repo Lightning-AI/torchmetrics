@@ -57,5 +57,6 @@ _SCIENCEPLOT_AVAILABLE: bool = package_available("scienceplots")
 _MULTIPROCESSING_AVAILABLE: bool = package_available("multiprocessing")
 _XLA_AVAILABLE: bool = package_available("torch_xla")
 _PIQ_GREATER_EQUAL_0_8: Optional[bool] = compare_version("piq", operator.ge, "0.8.0")
+_FASTER_COCO_EVAL_AVAILABLE: bool = package_available("faster_coco_eval")
 
 _LATEX_AVAILABLE: bool = shutil.which("latex") is not None
