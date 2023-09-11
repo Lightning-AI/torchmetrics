@@ -52,7 +52,8 @@ class AdjustedMutualInfoScore(MutualInfoScore):
     - ``ami_score`` (:class:`~torch.Tensor`): A tensor with the Adjusted Mutual Information Score
 
     Args:
-        average_method: Method used to calculate generalized mean for normalization
+        average_method: Method used to calculate generalized mean for normalization. Choose between
+            ``'min'``, ``'geometric'``, ``'arithmetic'``, ``'max'``.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
