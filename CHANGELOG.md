@@ -31,6 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `FowlkesMallowsIndex` metric to cluster package ([#2066](https://github.com/Lightning-AI/torchmetrics/pull/2066))
 
+
+- Added `FowlkesMallowsIndex` metric to cluster package ([#2071](https://github.com/Lightning-AI/torchmetrics/pull/2071))
+
+
 ### Changed
 
 -
