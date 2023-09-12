@@ -31,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
     - `VMeasureScore` ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
 
+    - `FowlkesMallowsIndex` ([#2066](https://github.com/Lightning-AI/torchmetrics/pull/2066))
+
 
 ### Changed
 
