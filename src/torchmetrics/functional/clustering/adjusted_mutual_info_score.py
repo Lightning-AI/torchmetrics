@@ -14,7 +14,8 @@
 from typing import Literal
 
 import torch
-from torch import Tensor
+from scipy.special import gammaln
+from torch import Tensor, tensor
 
 from torchmetrics.functional.clustering.mutual_info_score import _mutual_info_score_compute, _mutual_info_score_update
 from torchmetrics.functional.clustering.utils import (
@@ -39,10 +40,10 @@ def adjusted_mutual_info_score(
 
     Example:
         >>> from torchmetrics.functional.clustering import adjusted_mutual_info_score
-        >>> target = torch.tensor([0, 3, 2, 2, 1])
-        >>> preds = torch.tensor([1, 3, 2, 0, 1])
+        >>> preds = torch.tensor([2, 1, 0, 1, 0])
+        >>> target = torch.tensor([0, 2, 1, 1, 0])
         >>> adjuted_mutual_info_score(preds, target, "arithmetic")
-        tensor(0.7919)
+        tensor(-0.2500)
 
     """
     _validate_average_method_arg(average_method)
@@ -60,6 +61,8 @@ def adjusted_mutual_info_score(
 def expected_mutual_info_score(contingency: Tensor, n_samples: int) -> Tensor:
     """Calculated expected mutual information score between two clusterings.
 
+    Implementation taken from sklearn/metrics/cluster/_expected_mutual_info_fast.pyx.
+
     Args:
         contingency: contingency matrix
         n_samples: number of samples
@@ -68,3 +71,48 @@ def expected_mutual_info_score(contingency: Tensor, n_samples: int) -> Tensor:
         expected_mutual_info_score: expected mutual information score
 
     """
+    n_rows, n_cols = contingency.shape
+    a = torch.ravel(contingency.sum(dim=1))
+    b = torch.ravel(contingency.sum(dim=0))
+
+    # Check if preds or target labels only have one cluster
+    if a.size() == 1 or b.size() == 1:
+        return tensor(0.0)
+
+    nijs = torch.arange(0, max([a.max().item(), b.max().item()]) + 1)
+    nijs[0] = 1
+
+    term1 = nijs / n_samples
+    log_a = torch.log(a)
+    log_b = torch.log(b)
+
+    log_nnij = torch.log(torch.tensor(n_samples)) + torch.log(nijs)
+
+    gln_a = gammaln(a + 1)
+    gln_b = gammaln(b + 1)
+    gln_na = gammaln(n_samples - a + 1)
+    gln_nb = gammaln(n_samples - b + 1)
+    gln_nnij = gammaln(nijs + 1) + gammaln(n_samples + 1)
+
+    emi = tensor(0.0)
+    for i in range(n_rows):
+        for j in range(n_cols):
+            start = max(1, a[i].item() - n_samples + b[j].item())
+            end = min(a[i].item(), b[j].item()) + 1
+
+            for nij in range(start, end):
+                term2 = log_nnij[nij] - log_a[i] - log_b[j]
+                gln = (
+                    gln_a[i]
+                    + gln_b[j]
+                    + gln_na[i]
+                    + gln_nb[j]
+                    - gln_nnij[nij]
+                    - gammaln(a[i] - nij + 1)
+                    - gammaln(b[j] - nij + 1)
+                    - gammaln(n_samples - a[i] - b[j] + nij + 1)
+                )
+                term3 = torch.exp(gln)
+                emi += term1[nij] * term2 * term3
+
+    return emi

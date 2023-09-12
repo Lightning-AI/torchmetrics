@@ -63,7 +63,7 @@ class AdjustedMutualInfoScore(MutualInfoScore):
         >>> target = torch.tensor([0, 2, 1, 1, 0])
         >>> ami_score = AdjustedMutualInfoScore(average_method="arithmetic")
         >>> ami_score(preds, target)
-        tensor(0.4744)
+        tensor(-0.2500)
 
     """
 
