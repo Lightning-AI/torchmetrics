@@ -20,24 +20,24 @@ from torchmetrics.functional.clustering.utils import (
 )
 
 
-def calinski_harabasz_score(data: Tensor, labels: Tensor) -> Tensor:
-    """Compute the Calinski Harabasz Score (also known as variance ratio criterion) for clustering algorithms.
+def davies_bouldin_score(data: Tensor, labels: Tensor) -> Tensor:
+    """Compute the Davies bouldin score for clustering algorithms.
 
     Args:
         data: float tensor with shape ``(N,d)`` with the embedded data.
         labels: single integer tensor with shape ``(N,)`` with cluster labels
 
     Returns:
-        Scalar tensor with the Calinski Harabasz Score
+        Scalar tensor with the Davies bouldin score
 
     Example:
         >>> import torch
-        >>> from torchmetrics.functional.clustering import calinski_harabasz_score
+        >>> from torchmetrics.functional.clustering import davies_bouldin_score
         >>> _ = torch.manual_seed(42)
         >>> data = torch.randn(10, 3)
         >>> labels = torch.randint(0, 2, (10,))
-        >>> calinski_harabasz_score(data, labels)
-        tensor(3.4998)
+        >>> davies_bouldin_score(data, labels)
+        tensor(1.3249)
 
     """
     _validate_intrinsic_cluster_data(data, labels)
@@ -45,18 +45,23 @@ def calinski_harabasz_score(data: Tensor, labels: Tensor) -> Tensor:
     # convert to zero indexed labels
     unique_labels, labels = torch.unique(labels, return_inverse=True)
     n_labels = len(unique_labels)
-    n_samples = data.shape[0]
+    n_samples, dim = data.shape
     _validate_intrinsic_labels_to_samples(n_labels, n_samples)
 
-    mean = data.mean(dim=0)
-    between_cluster_dispersion = torch.tensor(0.0, device=data.device)
-    within_cluster_dispersion = torch.tensor(0.0, device=data.device)
+    intra_dists = torch.zeros(n_labels, device=data.device)
+    centroids = torch.zeros((n_labels, dim), device=data.device)
     for k in range(n_labels):
         cluster_k = data[labels == k, :]
-        mean_k = cluster_k.mean(dim=0)
-        between_cluster_dispersion += ((mean_k - mean) ** 2).sum() * cluster_k.shape[0]
-        within_cluster_dispersion += ((cluster_k - mean_k) ** 2).sum()
+        centroids[k] = cluster_k.mean(dim=0)
+        intra_dists[k] = (cluster_k - centroids[k]).pow(2.0).sum(dim=1).sqrt().mean()
+    centroid_distances = torch.cdist(centroids, centroids)
 
-    if within_cluster_dispersion == 0:
-        return torch.tensor(1.0, device=data.device, dtype=torch.float32)
-    return between_cluster_dispersion * (n_samples - n_labels) / (within_cluster_dispersion * (n_labels - 1.0))
+    cond1 = torch.allclose(intra_dists, torch.zeros_like(intra_dists))
+    cond2 = torch.allclose(centroid_distances, torch.zeros_like(centroid_distances))
+    if cond1 or cond2:
+        return torch.tensor(0.0, device=data.device, dtype=torch.float32)
+
+    centroid_distances[centroid_distances == 0] = float("inf")
+    combined_intra_dists = intra_dists.unsqueeze(0) + intra_dists.unsqueeze(1)
+    scores = (combined_intra_dists / centroid_distances).max(dim=1).values
+    return scores.mean()
