@@ -159,5 +159,8 @@
 .. _fork of pycocotools: https://github.com/ppwwyyxx/cocoapi
 .. _Adjusted Rand Score: https://en.wikipedia.org/wiki/Rand_index#Adjusted_Rand_index
 .. _Dunn Index: https://en.wikipedia.org/wiki/Dunn_index
+.. _V-Measure Score: https://www.aclweb.org/anthology/D07-1043.pdf
+.. _Homogeneity Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.homogeneity_score.html
+.. _Completeness Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.completeness_score.html
 .. _Davies-Bouldin Score: https://en.wikipedia.org/wiki/Davies%E2%80%93Bouldin_index
 .. _Fowlkes-Mallows Index: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.fowlkes_mallows_score.html#sklearn.metrics.fowlkes_mallows_score
