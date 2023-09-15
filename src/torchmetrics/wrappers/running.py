@@ -43,8 +43,7 @@ class Running(WrapperMetric):
         base_metric: The metric to wrap.
         window: The size of the running window.
 
-    Example:
-        # Single metric
+    Example (single metric):
         >>> from torch import tensor
         >>> from torchmetrics.wrappers import Running
         >>> from torchmetrics.aggregation import SumMetric
@@ -61,8 +60,7 @@ class Running(WrapperMetric):
         current_val=tensor(4.), running_val=tensor(9.), total_val=tensor(10)
         current_val=tensor(5.), running_val=tensor(12.), total_val=tensor(15)
 
-    Example:
-        # Metric collection
+    Example (metric collection):
         >>> from torch import tensor
         >>> from torchmetrics.wrappers import Running
         >>> from torchmetrics import MetricCollection
