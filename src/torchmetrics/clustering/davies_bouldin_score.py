@@ -15,26 +15,36 @@ from typing import Any, List, Optional, Sequence, Union
 
 from torch import Tensor
 
-from torchmetrics.functional.clustering.calinski_harabasz_score import calinski_harabasz_score
+from torchmetrics.functional.clustering.davies_bouldin_score import davies_bouldin_score
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["CalinskiHarabaszScore.plot"]
+    __doctest_skip__ = ["DaviesBouldinScore.plot"]
 
 
-class CalinskiHarabaszScore(Metric):
-    r"""Compute Calinski Harabasz Score (also known as variance ratio criterion) for clustering algorithms.
+class DaviesBouldinScore(Metric):
+    r"""Compute `Davies-Bouldin Score`_ for clustering algorithms.
 
-    .. math::
-        CHS(X, L) = \frac{B(X, L) \cdot (n_\text{samples} - n_\text{labels})}{W(X, L) \cdot (n_\text{labels} - 1)}
+    Given the following quantities:
 
-    where :math:`B(X, L)` is the between-cluster dispersion, which is the squared distance between the cluster centers
-    and the dataset mean, weighted by the size of the clusters, :math:`n_\text{samples}` is the number of samples,
-    :math:`n_\text{labels}` is the number of labels, and :math:`W(X, L)` is the within-cluster dispersion e.g. the
-    sum of squared distances between each samples and its closest cluster center.
+    ..math::
+        S_i = \left( \frac{1}{T_i} \sum_{j=1}^{T_i} ||X_j - A_i||^2_2 \right)^{1/2}
+
+    where :math:`T_i` is the number of samples in cluster :math:`i`, :math:`X_j` is the :math:`j`-th sample in cluster
+    :math:`i`, and :math:`A_i` is the centroid of cluster :math:`i`. This quantity is the average distance between all
+    the samples in cluster :math:`i` and its centroid. Let
+
+    ..math::
+        M_{i,j} = ||A_i - A_j||_2
+
+    e.g. the distance between the centroids of cluster :math:`i` and cluster :math:`j`. Then the Davies-Bouldin score
+    is defined as:
+
+    ..math::
+        DB = \frac{1}{n_{clusters}} \sum_{i=1}^{n_{clusters}} \max_{j \neq i} \left( \frac{S_i + S_j}{M_{i,j}} \right)
 
     This clustering metric is an intrinsic measure, because it does not rely on ground truth labels for the evaluation.
     Instead it examines how well the clusters are separated from each other. The score is higher when clusters are dense
@@ -55,13 +65,13 @@ class CalinskiHarabaszScore(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics.clustering import CalinskiHarabaszScore
+        >>> from torchmetrics.clustering import DaviesBouldinScore
         >>> _ = torch.manual_seed(42)
         >>> data = torch.randn(10, 3)
         >>> labels = torch.randint(3, (10,))
-        >>> metric = CalinskiHarabaszScore()
+        >>> metric = DaviesBouldinScore()
         >>> metric(data, labels)
-        tensor(3.0053)
+        tensor(1.2540)
 
     """
     is_differentiable: bool = True
@@ -83,8 +93,8 @@ class CalinskiHarabaszScore(Metric):
         self.labels.append(labels)
 
     def compute(self) -> Tensor:
-        """Compute the Calinski Harabasz Score over all data and labels."""
-        return calinski_harabasz_score(dim_zero_cat(self.data), dim_zero_cat(self.labels))
+        """Compute the Davies Bouldin Score over all data and labels."""
+        return davies_bouldin_score(dim_zero_cat(self.data), dim_zero_cat(self.labels))
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -106,8 +116,8 @@ class CalinskiHarabaszScore(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.clustering import CalinskiHarabaszScore
-            >>> metric = CalinskiHarabaszScore()
+            >>> from torchmetrics.clustering import DaviesBouldinScore
+            >>> metric = DaviesBouldinScore()
             >>> metric.update(torch.randn(10, 3), torch.randint(0, 2, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
 
@@ -116,8 +126,8 @@ class CalinskiHarabaszScore(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.clustering import CalinskiHarabaszScore
-            >>> metric = CalinskiHarabaszScore()
+            >>> from torchmetrics.clustering import DaviesBouldinScore
+            >>> metric = DaviesBouldinScore()
             >>> for _ in range(10):
             ...     metric.update(torch.randn(10, 3), torch.randint(0, 2, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())

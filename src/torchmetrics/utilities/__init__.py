@@ -12,6 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torchmetrics.utilities.checks import check_forward_full_state_property
+from torchmetrics.utilities.data import (
+    dim_zero_cat,
+    dim_zero_max,
+    dim_zero_mean,
+    dim_zero_min,
+    dim_zero_sum,
+)
 from torchmetrics.utilities.distributed import class_reduce, reduce
 from torchmetrics.utilities.prints import rank_zero_debug, rank_zero_info, rank_zero_warn
 
@@ -22,4 +29,9 @@ __all__ = [
     "rank_zero_debug",
     "rank_zero_info",
     "rank_zero_warn",
+    "dim_zero_cat",
+    "dim_zero_max",
+    "dim_zero_mean",
+    "dim_zero_min",
+    "dim_zero_sum",
 ]
