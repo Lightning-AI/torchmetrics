@@ -25,6 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
     - `DunnIndex` ([#2049](https://github.com/Lightning-AI/torchmetrics/pull/2049))
 
+    - `HomogeneityScore` ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
+
+    - `CompletenessScore` ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
+
+    - `VMeasureScore` ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
+
     - `FowlkesMallowsIndex` ([#2066](https://github.com/Lightning-AI/torchmetrics/pull/2066))
 
     - `DaviesBouldinScore` ([#2071](https://github.com/Lightning-AI/torchmetrics/pull/2071))

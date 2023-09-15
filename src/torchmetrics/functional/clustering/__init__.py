@@ -16,6 +16,11 @@ from torchmetrics.functional.clustering.calinski_harabasz_score import calinski_
 from torchmetrics.functional.clustering.davies_bouldin_score import davies_bouldin_score
 from torchmetrics.functional.clustering.dunn_index import dunn_index
 from torchmetrics.functional.clustering.fowlkes_mallows_index import fowlkes_mallows_index
+from torchmetrics.functional.clustering.homogeneity_completeness_v_measure import (
+    completeness_score,
+    homogeneity_score,
+    v_measure_score,
+)
 from torchmetrics.functional.clustering.mutual_info_score import mutual_info_score
 from torchmetrics.functional.clustering.normalized_mutual_info_score import normalized_mutual_info_score
 from torchmetrics.functional.clustering.rand_score import rand_score
@@ -23,10 +28,13 @@ from torchmetrics.functional.clustering.rand_score import rand_score
 __all__ = [
     "adjusted_rand_score",
     "calinski_harabasz_score",
+    "completeness_score",
     "davies_bouldin_score",
     "dunn_index",
     "fowlkes_mallows_index",
+    "homogeneity_score",
     "mutual_info_score",
     "normalized_mutual_info_score",
     "rand_score",
+    "v_measure_score",
 ]
