@@ -87,8 +87,8 @@
 .. _RelativeAverageSpectralError: https://www.semanticscholar.org/paper/Data-Fusion.-Definitions-and-Architectures-Fusion-Wald/51b2b81e5124b3bb7ec53517a5dd64d8e348cadf
 .. _WMAPE: https://en.wikipedia.org/wiki/WMAPE
 .. _CER: https://rechtsprechung-im-ostseeraum.archiv.uni-greifswald.de/word-error-rate-character-error-rate-how-to-evaluate-a-model
-.. _MER: https://www.isca-speech.org/archive_v0/archive_papers/interspeech_2004/i04_2765.pdf
-.. _WIL: https://www.isca-speech.org/archive_v0/archive_papers/interspeech_2004/i04_2765.pdf
+.. _MER: https://www.isca-speech.org/archive/interspeech_2004/morris04_interspeech.html
+.. _WIL: https://www.isca-speech.org/archive/interspeech_2004/morris04_interspeech.html
 .. _WIP: https://infoscience.epfl.ch/record/82766
 .. _TV: https://en.wikipedia.org/wiki/Total_variation_denoising
 .. _InfoLM: https://arxiv.org/pdf/2112.01589.pdf
