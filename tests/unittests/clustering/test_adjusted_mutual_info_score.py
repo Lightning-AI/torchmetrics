@@ -26,6 +26,8 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
+ATOL = 1e-5
+
 
 @pytest.mark.parametrize(
     "preds, target",
@@ -41,7 +43,7 @@ seed_all(42)
 class TestAdjustedMutualInfoScore(MetricTester):
     """Test class for `AdjustedMutualInfoScore` metric."""
 
-    atol = 1e-5
+    atol = ATOL
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_adjusted_mutual_info_score(self, preds, target, average_method, ddp):
@@ -71,8 +73,9 @@ def test_adjusted_mutual_info_score_functional_single_cluster(average_method):
     """Check that for single cluster the metric returns 0."""
     tensor_a = torch.randint(NUM_CLASSES, (BATCH_SIZE,))
     tensor_b = torch.zeros((BATCH_SIZE,), dtype=torch.int)
-    assert torch.allclose(adjusted_mutual_info_score(tensor_a, tensor_b, average_method), torch.tensor(0.0))
-    assert torch.allclose(adjusted_mutual_info_score(tensor_b, tensor_a, average_method), torch.tensor(0.0))
+    print(adjusted_mutual_info_score(tensor_a, tensor_b, average_method))
+    assert torch.allclose(adjusted_mutual_info_score(tensor_a, tensor_b, average_method), torch.tensor(0.0), atol=ATOL)
+    assert torch.allclose(adjusted_mutual_info_score(tensor_b, tensor_a, average_method), torch.tensor(0.0), atol=ATOL)
 
 
 @pytest.mark.parametrize("average_method", ["min", "geometric", "arithmetic", "max"])

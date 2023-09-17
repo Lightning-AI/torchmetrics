@@ -55,7 +55,14 @@ def adjusted_mutual_info_score(
         torch.stack([calculate_entropy(preds), calculate_entropy(target)]), average_method
     )
 
-    return (mutual_info - expected_mutual_info) / (normalizer - expected_mutual_info)
+    denominator = normalizer - expected_mutual_info
+
+    if denominator < 0:
+        denominator = torch.min(torch.tensor([denominator, -torch.finfo(denominator.dtype).eps]))
+    else:
+        denominator = torch.max(torch.tensor([denominator, torch.finfo(denominator.dtype).eps]))
+
+    return (mutual_info - expected_mutual_info) / denominator
 
 
 def expected_mutual_info_score(contingency: Tensor, n_samples: int) -> Tensor:
