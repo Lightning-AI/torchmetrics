@@ -181,6 +181,25 @@ def check_cluster_labels(preds: Tensor, target: Tensor) -> None:
         raise ValueError(f"Expected real, discrete values for x but received {preds.dtype} and {target.dtype}.")
 
 
+def _validate_intrinsic_cluster_data(data: Tensor, labels: Tensor) -> None:
+    """Validate that the input data and labels have correct shape and type."""
+    if data.ndim != 2:
+        raise ValueError(f"Expected 2D data, got {data.ndim}D data instead")
+    if not data.is_floating_point():
+        raise ValueError(f"Expected floating point data, got {data.dtype} data instead")
+    if labels.ndim != 1:
+        raise ValueError(f"Expected 1D labels, got {labels.ndim}D labels instead")
+
+
+def _validate_intrinsic_labels_to_samples(n_labels: int, n_samples: int) -> None:
+    """Validate that the number of labels are in the correct range."""
+    if not 1 < n_labels < n_samples:
+        raise ValueError(
+            "Number of detected clusters must be greater than one and less than the number of samples."
+            f"Got {n_labels} clusters and {n_samples} samples."
+        )
+
+
 def calcualte_pair_cluster_confusion_matrix(
     preds: Optional[Tensor] = None,
     target: Optional[Tensor] = None,
