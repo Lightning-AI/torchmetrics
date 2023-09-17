@@ -42,7 +42,7 @@ def adjusted_mutual_info_score(
         >>> from torchmetrics.functional.clustering import adjusted_mutual_info_score
         >>> preds = torch.tensor([2, 1, 0, 1, 0])
         >>> target = torch.tensor([0, 2, 1, 1, 0])
-        >>> adjuted_mutual_info_score(preds, target, "arithmetic")
+        >>> adjusted_mutual_info_score(preds, target, "arithmetic")
         tensor(-0.2500)
 
     """
