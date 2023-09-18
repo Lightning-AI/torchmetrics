@@ -20,7 +20,7 @@ from typing_extensions import Literal
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def is_nonnegative(x: Tensor, atol: float = 1e-5) -> bool:
+def is_nonnegative(x: Tensor, atol: float = 1e-5) -> Tensor:
     """Return True if all elements of tensor are nonnegative within certain tolerance.
 
     Args:
@@ -28,7 +28,7 @@ def is_nonnegative(x: Tensor, atol: float = 1e-5) -> bool:
         atol: absolute tolerance
 
     Returns:
-        Boolean indicating if all values are nonnegative
+        Boolean tensor indicating if all values are nonnegative
 
     """
     return torch.logical_or(x > 0.0, torch.abs(x) < atol).all()

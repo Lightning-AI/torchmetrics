@@ -100,8 +100,8 @@ def expected_mutual_info_score(contingency: Tensor, n_samples: int) -> Tensor:
     emi = tensor(0.0, device=a.device)
     for i in range(n_rows):
         for j in range(n_cols):
-            start = max(1, a[i].item() - n_samples + b[j].item())
-            end = min(a[i].item(), b[j].item()) + 1
+            start = int(max(1, a[i].item() - n_samples + b[j].item()))
+            end = int(min(a[i].item(), b[j].item()) + 1)
 
             for nij in range(start, end):
                 term2 = log_nnij[nij] - log_a[i] - log_b[j]
