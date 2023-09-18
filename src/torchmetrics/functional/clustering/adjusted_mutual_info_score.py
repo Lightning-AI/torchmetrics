@@ -14,7 +14,6 @@
 from typing import Literal
 
 import torch
-from scipy.special import gammaln
 from torch import Tensor, tensor
 
 from torchmetrics.functional.clustering.mutual_info_score import _mutual_info_score_compute, _mutual_info_score_update
@@ -86,7 +85,7 @@ def expected_mutual_info_score(contingency: Tensor, n_samples: int) -> Tensor:
     if a.size() == 1 or b.size() == 1:
         return tensor(0.0)
 
-    nijs = torch.arange(0, max([a.max().item(), b.max().item()]) + 1)
+    nijs = torch.arange(0, max([a.max().item(), b.max().item()]) + 1, device=a.device)
     nijs[0] = 1
 
     term1 = nijs / n_samples
@@ -95,13 +94,13 @@ def expected_mutual_info_score(contingency: Tensor, n_samples: int) -> Tensor:
 
     log_nnij = torch.log(torch.tensor(n_samples)) + torch.log(nijs)
 
-    gln_a = gammaln(a + 1)
-    gln_b = gammaln(b + 1)
-    gln_na = gammaln(n_samples - a + 1)
-    gln_nb = gammaln(n_samples - b + 1)
-    gln_nnij = gammaln(nijs + 1) + gammaln(n_samples + 1)
+    gln_a = torch.lgamma(a + 1)
+    gln_b = torch.lgamma(b + 1)
+    gln_na = torch.lgamma(n_samples - a + 1)
+    gln_nb = torch.lgamma(n_samples - b + 1)
+    gln_nnij = torch.lgamma(nijs + 1) + torch.lgamma(torch.tensor(n_samples + 1, dtype=a.dtype, device=a.device))
 
-    emi = tensor(0.0)
+    emi = tensor(0.0, device=a.device)
     for i in range(n_rows):
         for j in range(n_cols):
             start = max(1, a[i].item() - n_samples + b[j].item())
@@ -115,9 +114,9 @@ def expected_mutual_info_score(contingency: Tensor, n_samples: int) -> Tensor:
                     + gln_na[i]
                     + gln_nb[j]
                     - gln_nnij[nij]
-                    - gammaln(a[i] - nij + 1)
-                    - gammaln(b[j] - nij + 1)
-                    - gammaln(n_samples - a[i] - b[j] + nij + 1)
+                    - torch.lgamma(a[i] - nij + 1)
+                    - torch.lgamma(b[j] - nij + 1)
+                    - torch.lgamma(n_samples - a[i] - b[j] + nij + 1)
                 )
                 term3 = torch.exp(gln)
                 emi += term1[nij] * term2 * term3
