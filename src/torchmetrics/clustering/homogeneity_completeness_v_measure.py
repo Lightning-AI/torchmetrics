@@ -117,9 +117,10 @@ class HomogeneityScore(Metric):
             >>> import torch
             >>> from torchmetrics.clustering import HomogeneityScore
             >>> metric = HomogeneityScore()
+            >>> values = [ ]
             >>> for _ in range(10):
-            ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
-            >>> fig_, ax_ = metric.plot(metric.compute())
+            ...     values.append(metric(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,))))
+            >>> fig_, ax_ = metric.plot(values)
 
         """
         return self._plot(val, ax)
@@ -129,7 +130,7 @@ class CompletenessScore(Metric):
     r"""Compute `Completeness Score`_.
 
     A clustering result satisfies completeness if all the data points that are members of a given class are elements of
-    the same cluster. The metric is not symmetric, therefore swapping ``preds`` and ``target`` yields a different
+    the same cluster. The metric is not symmetric, therefore swapping ``preds`` and ``target`` yields a different score.
 
     This clustering metric is an extrinsic measure, because it requires ground truth clustering labels, which may not
     be available in practice since clustering in generally is used for unsupervised learning.
@@ -212,9 +213,10 @@ class CompletenessScore(Metric):
             >>> import torch
             >>> from torchmetrics.clustering import CompletenessScore
             >>> metric = CompletenessScore()
+            >>> values = [ ]
             >>> for _ in range(10):
-            ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
-            >>> fig_, ax_ = metric.plot(metric.compute())
+            ...     values.append(metric(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,))))
+            >>> fig_, ax_ = metric.plot(values)
 
         """
         return self._plot(val, ax)
@@ -248,7 +250,7 @@ class VMeasureScore(Metric):
         beta: Weight parameter that defines the weight of homogeneity in the harmonic mean
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
+    Example::
         >>> import torch
         >>> from torchmetrics.clustering import VMeasureScore
         >>> preds = torch.tensor([2, 1, 0, 1, 0])
@@ -317,9 +319,10 @@ class VMeasureScore(Metric):
             >>> import torch
             >>> from torchmetrics.clustering import VMeasureScore
             >>> metric = VMeasureScore()
+            >>> values = [ ]
             >>> for _ in range(10):
-            ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
-            >>> fig_, ax_ = metric.plot(metric.compute())
+            ...     values.append(metric(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,))))
+            >>> fig_, ax_ = metric.plot(values)
 
         """
         return self._plot(val, ax)
