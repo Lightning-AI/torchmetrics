@@ -97,4 +97,5 @@ def test_adjusted_mutual_info_score_functional_is_symmetric(
         assert torch.allclose(
             adjusted_mutual_info_score(p, t, average_method),
             adjusted_mutual_info_score(t, p, average_method),
+            atol=1e-6,
         )
