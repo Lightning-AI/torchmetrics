@@ -28,7 +28,7 @@ def is_nonnegative(x: Tensor, atol: float = 1e-5) -> bool:
         atol: absolute tolerance
 
     Returns:
-        is_nonnegative: True if value is nonnegative, False otherwise
+        Boolean indicating if all values are nonnegative
 
     """
     return torch.logical_or(x > 0.0, torch.abs(x) < atol).all()
