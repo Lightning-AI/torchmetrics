@@ -82,8 +82,8 @@ def expected_mutual_info_score(contingency: Tensor, n_samples: int) -> Tensor:
     b = torch.ravel(contingency.sum(dim=0))
 
     # Check if preds or target labels only have one cluster
-    if a.size() == 1 or b.size() == 1:
-        return tensor(0.0)
+    if a.numel() == 1 or b.numel() == 1:
+        return tensor(0.0, device=a.device)
 
     nijs = torch.arange(0, max([a.max().item(), b.max().item()]) + 1, device=a.device)
     nijs[0] = 1
