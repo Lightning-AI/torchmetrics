@@ -63,7 +63,7 @@ def fowlkes_mallows_index(preds: Tensor, target: Tensor) -> Tensor:
         target: ground truth cluster labels
 
     Returns:
-        fowlkes_mallows: Fowlkes-Mallows index
+        Scalar tensor with Fowlkes-Mallows index
 
     Example:
         >>> import torch

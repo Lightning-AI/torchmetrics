@@ -20,6 +20,30 @@ from typing_extensions import Literal
 from torchmetrics.utilities.checks import _check_same_shape
 
 
+def is_nonnegative(x: Tensor, atol: float = 1e-5) -> Tensor:
+    """Return True if all elements of tensor are nonnegative within certain tolerance.
+
+    Args:
+        x: tensor
+        atol: absolute tolerance
+
+    Returns:
+        Boolean tensor indicating if all values are nonnegative
+
+    """
+    return torch.logical_or(x > 0.0, torch.abs(x) < atol).all()
+
+
+def _validate_average_method_arg(
+    average_method: Literal["min", "geometric", "arithmetic", "max"] = "arithmetic"
+) -> None:
+    if average_method not in ("min", "geometric", "arithmetic", "max"):
+        raise ValueError(
+            "Expected argument `average_method` to be one of  `min`, `geometric`, `arithmetic`, `max`,"
+            f"but got {average_method}"
+        )
+
+
 def calculate_entropy(x: Tensor) -> Tensor:
     """Calculate entropy for a tensor of labels.
 
@@ -74,7 +98,7 @@ def calculate_generalized_mean(x: Tensor, p: Union[int, Literal["min", "geometri
         tensor(1.6438)
 
     """
-    if torch.is_complex(x) or torch.any(x <= 0.0):
+    if torch.is_complex(x) or not is_nonnegative(x):
         raise ValueError("`x` must contain positive real numbers")
 
     if isinstance(p, str):
