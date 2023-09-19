@@ -40,8 +40,8 @@ class DunnIndex(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``data`` (:class:`~torch.Tensor`): float tensor with shape ``(N,d)`` with the embedded data.
-        ``d`` is the dimensionality of the embedding space.
+    - ``data`` (:class:`~torch.Tensor`): float tensor with shape ``(N,d)`` with the embedded data. ``d`` is the
+      dimensionality of the embedding space.
     - ``labels`` (:class:`~torch.Tensor`): single integer tensor with shape ``(N,)`` with cluster labels
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
@@ -51,7 +51,7 @@ class DunnIndex(Metric):
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
+    Example::
         >>> import torch
         >>> from torchmetrics.clustering import DunnIndex
         >>> data = torch.tensor([[0, 0], [0.5, 0], [1, 0], [0.5, 1]])
@@ -111,6 +111,18 @@ class DunnIndex(Metric):
             >>> metric = DunnIndex(p=2)
             >>> metric.update(data, labels)
             >>> fig_, ax_ = metric.plot(metric.compute())
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.clustering import DunnIndex
+            >>> metric = DunnIndex(p=2)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.randn(10, 3), torch.randint(0, 2, (10,))))
+            >>> fig_, ax_ = metric.plot(values)
 
         """
         return self._plot(val, ax)
