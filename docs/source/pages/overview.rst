@@ -400,6 +400,7 @@ of metrics e.g. computation of confidence intervals by resampling of input data.
     wrapped_metric = BootStrapper(MulticlassAccuracy(num_classes=3))
     target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
     preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
+    print(wrapped_metric(preds, target))  # this returns a dict with label info
 
 .. testoutput::
     :options: +NORMALIZE_WHITESPACE
