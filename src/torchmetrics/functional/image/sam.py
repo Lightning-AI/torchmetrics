@@ -65,11 +65,12 @@ def _sam_compute(
             - ``'none'`` or ``None``: no reduction will be applied
 
     Example:
-        >>> preds = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42))
-        >>> target = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(123))
+        >>> gen = torch.manual_seed(42)
+        >>> preds = torch.rand([16, 3, 16, 16], generator=gen)
+        >>> target = torch.rand([16, 3, 16, 16], generator=gen)
         >>> preds, target = _sam_update(preds, target)
         >>> _sam_compute(preds, target)
-        tensor(0.5943)
+        tensor(0.5914)
 
     """
     dot_product = (preds * target).sum(dim=1)
@@ -106,10 +107,11 @@ def spectral_angle_mapper(
 
     Example:
         >>> from torchmetrics.functional.image import spectral_angle_mapper
-        >>> preds = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42))
-        >>> target = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(123))
+        >>> gen = torch.manual_seed(42)
+        >>> preds = torch.rand([16, 3, 16, 16], generator=gen)
+        >>> target = torch.rand([16, 3, 16, 16], generator=gen)
         >>> spectral_angle_mapper(preds, target)
-        tensor(0.5943)
+        tensor(0.5914)
 
     References:
         [1] Roberta H. Yuhas, Alexander F. H. Goetz and Joe W. Boardman, "Discrimination among semi-arid

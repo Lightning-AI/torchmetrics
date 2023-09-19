@@ -87,8 +87,8 @@
 .. _RelativeAverageSpectralError: https://www.semanticscholar.org/paper/Data-Fusion.-Definitions-and-Architectures-Fusion-Wald/51b2b81e5124b3bb7ec53517a5dd64d8e348cadf
 .. _WMAPE: https://en.wikipedia.org/wiki/WMAPE
 .. _CER: https://rechtsprechung-im-ostseeraum.archiv.uni-greifswald.de/word-error-rate-character-error-rate-how-to-evaluate-a-model
-.. _MER: https://www.isca-speech.org/archive_v0/archive_papers/interspeech_2004/i04_2765.pdf
-.. _WIL: https://www.isca-speech.org/archive_v0/archive_papers/interspeech_2004/i04_2765.pdf
+.. _MER: https://www.isca-speech.org/archive/interspeech_2004/morris04_interspeech.html
+.. _WIL: https://www.isca-speech.org/archive/interspeech_2004/morris04_interspeech.html
 .. _WIP: https://infoscience.epfl.ch/record/82766
 .. _TV: https://en.wikipedia.org/wiki/Total_variation_denoising
 .. _InfoLM: https://arxiv.org/pdf/2112.01589.pdf
@@ -144,8 +144,23 @@
 .. _Seamless Scene Segmentation paper: https://arxiv.org/abs/1905.01220
 .. _Fleiss kappa: https://en.wikipedia.org/wiki/Fleiss%27_kappa
 .. _VIF: https://ieeexplore.ieee.org/abstract/document/1576816
+.. _CLIP-IQA: https://arxiv.org/abs/2207.12396
+.. _CLIP: https://arxiv.org/abs/2103.00020
 .. _PPL : https://arxiv.org/pdf/1812.04948
 .. _CIOU: https://arxiv.org/abs/2005.03572
 .. _DIOU: https://arxiv.org/abs/1911.08287v1
 .. _GIOU: https://arxiv.org/abs/1902.09630
+.. _Mutual Information Score: https://en.wikipedia.org/wiki/Mutual_information
+.. _Normalized Mutual Information Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.normalized_mutual_info_score.html
+.. _Adjusted Mutual Information Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.adjusted_mutual_info_score.html#sklearn.metrics.adjusted_mutual_info_score
 .. _pycocotools: https://github.com/cocodataset/cocoapi/tree/master/PythonAPI/pycocotools
+.. _Rand Score: https://link.springer.com/article/10.1007/BF01908075
+.. _faster-coco-eval: https://github.com/MiXaiLL76/faster_coco_eval
+.. _fork of pycocotools: https://github.com/ppwwyyxx/cocoapi
+.. _Adjusted Rand Score: https://en.wikipedia.org/wiki/Rand_index#Adjusted_Rand_index
+.. _Dunn Index: https://en.wikipedia.org/wiki/Dunn_index
+.. _V-Measure Score: https://www.aclweb.org/anthology/D07-1043.pdf
+.. _Homogeneity Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.homogeneity_score.html
+.. _Completeness Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.completeness_score.html
+.. _Davies-Bouldin Score: https://en.wikipedia.org/wiki/Davies%E2%80%93Bouldin_index
+.. _Fowlkes-Mallows Index: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.fowlkes_mallows_score.html#sklearn.metrics.fowlkes_mallows_score

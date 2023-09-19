@@ -180,6 +180,10 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
     This is done by first calculating the precision-recall curve for different thresholds and the find the recall for
     a given precision level.
 
+    For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
+    classes as the negative, which is refered to as the one-vs-rest approach. One-vs-one is currently not supported by
+    this metric.
+
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor

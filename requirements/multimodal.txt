@@ -2,3 +2,4 @@
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
 transformers >=4.10.0, <4.30.3
+piq <=0.8.0

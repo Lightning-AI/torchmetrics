@@ -542,7 +542,7 @@ class MeanAveragePrecision(Metric):
             return self.__evaluate_image_gt_no_preds(gt, gt_label_mask, area_range, nb_iou_thrs)
 
         # Some predictions but no GT
-        if len(gt_label_mask) == 0 and len(det_label_mask) >= 0:
+        if len(gt_label_mask) == 0 and len(det_label_mask) > 0:
             return self.__evaluate_image_preds_no_gt(det, idx, det_label_mask, max_det, area_range, nb_iou_thrs)
 
         gt = [gt[i] for i in gt_label_mask]

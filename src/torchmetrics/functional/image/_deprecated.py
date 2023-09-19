@@ -48,7 +48,8 @@ def _error_relative_global_dimensionless_synthesis(
     """Wrapper for deprecated import.
 
     >>> import torch
-    >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+    >>> gen = torch.manual_seed(42)
+    >>> preds = torch.rand([16, 1, 16, 16], generator=gen)
     >>> target = preds * 0.75
     >>> ergds = _error_relative_global_dimensionless_synthesis(preds, target)
     >>> torch.round(ergds)
@@ -105,9 +106,9 @@ def _relative_average_spectral_error(preds: Tensor, target: Tensor, window_size:
     """Wrapper for deprecated import.
 
     >>> import torch
-    >>> g = torch.manual_seed(22)
-    >>> preds = torch.rand(4, 3, 16, 16)
-    >>> target = torch.rand(4, 3, 16, 16)
+    >>> gen = torch.manual_seed(22)
+    >>> preds = torch.rand(4, 3, 16, 16, generator=gen)
+    >>> target = torch.rand(4, 3, 16, 16, generator=gen)
     >>> _relative_average_spectral_error(preds, target)
     tensor(5114.6641)
 
@@ -122,9 +123,9 @@ def _root_mean_squared_error_using_sliding_window(
     """Wrapper for deprecated import.
 
     >>> import torch
-    >>> g = torch.manual_seed(22)
-    >>> preds = torch.rand(4, 3, 16, 16)
-    >>> target = torch.rand(4, 3, 16, 16)
+    >>> gen = torch.manual_seed(22)
+    >>> preds = torch.rand(4, 3, 16, 16, generator=gen)
+    >>> target = torch.rand(4, 3, 16, 16, generator=gen)
     >>> _root_mean_squared_error_using_sliding_window(preds, target)
     tensor(0.3999)
 
@@ -143,10 +144,11 @@ def _spectral_angle_mapper(
     """Wrapper for deprecated import.
 
     >>> import torch
-    >>> preds = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(42))
-    >>> target = torch.rand([16, 3, 16, 16], generator=torch.manual_seed(123))
+    >>> gen = torch.manual_seed(42)
+    >>> preds = torch.rand([16, 3, 16, 16], generator=gen)
+    >>> target = torch.rand([16, 3, 16, 16], generator=gen)
     >>> _spectral_angle_mapper(preds, target)
-    tensor(0.5943)
+    tensor(0.5914)
 
     """
     _deprecated_root_import_func("spectral_angle_mapper", "image")
@@ -169,7 +171,8 @@ def _multiscale_structural_similarity_index_measure(
     """Wrapper for deprecated import.
 
     >>> import torch
-    >>> preds = torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
+    >>> gen = torch.manual_seed(42)
+    >>> preds = torch.rand([3, 3, 256, 256], generator=gen)
     >>> target = preds * 0.75
     >>> _multiscale_structural_similarity_index_measure(preds, target, data_range=1.0)
     tensor(0.9627)
