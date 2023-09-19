@@ -87,7 +87,7 @@ class ExplainedVariance(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    n_obs: Tensor
+    num_obs: Tensor
     sum_error: Tensor
     sum_squared_error: Tensor
     sum_target: Tensor
@@ -109,12 +109,12 @@ class ExplainedVariance(Metric):
         self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_target", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("sum_squared_target", default=tensor(0.0), dist_reduce_fx="sum")
-        self.add_state("n_obs", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("num_obs", default=tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        n_obs, sum_error, sum_squared_error, sum_target, sum_squared_target = _explained_variance_update(preds, target)
-        self.n_obs = self.n_obs + n_obs
+        num_obs, sum_error, sum_squared_error, sum_target, sum_squared_target = _explained_variance_update(preds, target)
+        self.num_obs = self.num_obs + num_obs
         self.sum_error = self.sum_error + sum_error
         self.sum_squared_error = self.sum_squared_error + sum_squared_error
         self.sum_target = self.sum_target + sum_target
@@ -123,7 +123,7 @@ class ExplainedVariance(Metric):
     def compute(self) -> Union[Tensor, Sequence[Tensor]]:
         """Compute explained variance over state."""
         return _explained_variance_compute(
-            self.n_obs,
+            self.num_obs,
             self.sum_error,
             self.sum_squared_error,
             self.sum_target,
