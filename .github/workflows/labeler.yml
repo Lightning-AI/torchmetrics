@@ -13,6 +13,6 @@ jobs:
     - uses: actions/labeler@v4
       with:
         # The path to the label configuration file.
-        configuration-path: .github/labeler.yml
+        configuration-path: .github/labeling-config.yml
         # Whether removing labels when matching files are reverted or no longer changed by the PR
         sync-labels: true
