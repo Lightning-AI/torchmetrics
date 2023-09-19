@@ -24,7 +24,14 @@ from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
 
 
 def check_if_binarized(x: Tensor) -> bool:
-    """Check if the input is binarized."""
+    """Check if the input is binarized.
+
+    Example:
+        >>> from torchmetrics.functional.segmentation.utils import check_if_binarized
+        >>> import torch
+        >>> check_if_binarized(torch.tensor([0, 1, 1, 0]))
+
+    """
     if not torch.all(x.bool() == x):
         raise ValueError("Input x should be binarized")
 
@@ -64,7 +71,7 @@ def generate_binary_structure(rank: int, connectivity: int) -> Tensor:
         The structuring element.
 
     Examples::
-        >>> from torchmetrics.functional.segmentation.helper import generate_binary_structure
+        >>> from torchmetrics.functional.segmentation.utils import generate_binary_structure
         >>> import torch
         >>> generate_binary_structure(2, 1)
         tensor([[False,  True, False],
@@ -111,7 +118,7 @@ def binary_erosion(
         border_value: The value to be used for the border.
 
     Examples::
-        >>> from torchmetrics.functional.segmentation.helper import binary_erosion
+        >>> from torchmetrics.functional.segmentation.utils import binary_erosion
         >>> import torch
         >>> image = torch.tensor([[[[0, 0, 0, 0, 0],
         ...                         [0, 1, 1, 1, 0],
@@ -192,7 +199,7 @@ def distance_transform(
         The distance transform of the input tensor.
 
     Examples::
-        >>> from torchmetrics.functional.segmentation.helper import distance_transform
+        >>> from torchmetrics.functional.segmentation.utils import distance_transform
         >>> import torch
         >>> x = torch.tensor([[0, 0, 0, 0, 0],
         ...                   [0, 1, 1, 1, 0],
@@ -339,7 +346,7 @@ def surface_distance(
 
     Example::
         >>> import torch
-        >>> from torchmetrics.functional.segmentation.helper import surface_distance
+        >>> from torchmetrics.functional.segmentation.utils import surface_distance
         >>> preds = torch.tensor([[1, 1, 1, 1, 1],
         ...                       [1, 0, 0, 0, 1],
         ...                       [1, 0, 0, 0, 1],
@@ -374,6 +381,10 @@ def get_neighbour_tables(spacing: Tuple[int, ...], device: Optional[torch.device
         spacing: The spacing between pixels along each spatial dimension.
         device: The device on which the table should be created.
 
+    Returns:
+        A tuple containing as its first element the table that maps neighbour codes to the contour length or surface
+        area of the corresponding contour and as its second element the kernel used to compute the neighbour codes.
+
     """
     if len(spacing) == 2:
         return table_contour_length(spacing, device)
@@ -397,7 +408,7 @@ def table_contour_length(spacing: Tuple[int, int], device: Optional[torch.device
         corresponding contour and as its second element the kernel used to compute the neighbour codes.
 
     Example::
-        >>> from torchmetrics.functional.segmentation.helper import table_contour_length
+        >>> from torchmetrics.functional.segmentation.utils import table_contour_length
         >>> table, kernel = table_contour_length((2,2))
         >>> table
         tensor([0.0000, 1.4142, 1.4142, 2.0000, 1.4142, 2.0000, 2.8284, 1.4142, 1.4142,
@@ -413,20 +424,14 @@ def table_contour_length(spacing: Tuple[int, int], device: Optional[torch.device
     first, second = spacing  # spacing along the first and second spatial dimension respectively
     diag = 0.5 * math.sqrt(first**2 + second**2)
     table = torch.zeros(16, dtype=torch.float32, device=device)
-    table[int("0001", 2)] = diag
-    table[int("0010", 2)] = diag
-    table[int("0011", 2)] = second
-    table[int("0100", 2)] = diag
-    table[int("0101", 2)] = first
-    table[int("0110", 2)] = 2 * diag
-    table[int("0111", 2)] = diag
-    table[int("1000", 2)] = diag
-    table[int("1001", 2)] = 2 * diag
-    table[int("1010", 2)] = first
-    table[int("1011", 2)] = diag
-    table[int("1100", 2)] = second
-    table[int("1101", 2)] = diag
-    table[int("1110", 2)] = diag
+    for i in [1, 2, 4, 7, 8, 11, 13, 14]:
+        table[i] = diag
+    for i in [3, 12]:
+        table[i] = second
+    for i in [5, 10]:
+        table[i] = first
+    for i in [6, 9]:
+        table[i] = 2 * diag
     kernel = torch.as_tensor([[[[8, 4], [2, 1]]]], device=device)
     return table, kernel
 
@@ -446,7 +451,7 @@ def table_surface_area(spacing: Tuple[int, int, int], device: Optional[torch.dev
         corresponding surface and as its second element the kernel used to compute the neighbour codes.
 
     Example::
-        >>> from torchmetrics.functional.segmentation.helper import table_surface_area
+        >>> from torchmetrics.functional.segmentation.utils import table_surface_area
         >>> table, kernel = table_surface_area((2,2,2))
         >>> table
         tensor([0.0000, 0.8660, 0.8660, 2.8284, 0.8660, 2.8284, 1.7321, 4.5981, 0.8660,
