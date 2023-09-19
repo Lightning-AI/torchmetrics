@@ -113,7 +113,9 @@ class ExplainedVariance(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        num_obs, sum_error, sum_squared_error, sum_target, sum_squared_target = _explained_variance_update(preds, target)
+        num_obs, sum_error, sum_squared_error, sum_target, sum_squared_target = _explained_variance_update(
+            preds, target
+        )
         self.num_obs = self.num_obs + num_obs
         self.sum_error = self.sum_error + sum_error
         self.sum_squared_error = self.sum_squared_error + sum_squared_error

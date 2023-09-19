@@ -88,7 +88,8 @@ def _compute_phi_squared_corrected(
 ) -> Tensor:
     """Compute bias-corrected Phi Squared."""
     return torch.max(
-        torch.tensor(0.0, device=phi_squared.device), phi_squared - ((num_rows - 1) * (num_cols - 1)) / (confmat_sum - 1)
+        torch.tensor(0.0, device=phi_squared.device),
+        phi_squared - ((num_rows - 1) * (num_cols - 1)) / (confmat_sum - 1),
     )
 
 
