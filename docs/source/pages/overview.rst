@@ -396,7 +396,7 @@ of metrics e.g. computation of confidence intervals by resampling of input data.
 .. testcode::
 
     from torchmetrics.classification import MulticlassAccuracy
-    from torchmetrics.wrappers import ClasswiseWrapper
+    from torchmetrics.wrappers import BootStrapper
     wrapped_metric = BootStrapper(MulticlassAccuracy(num_classes=3))
     target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
     preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
