@@ -6,16 +6,16 @@
 .. include:: ../links.rst
 
 #####################
-Fowlkes Mallows Score
+Fowlkes-Mallows Index
 #####################
 
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.clustering.FowlkesMallowsScore
+.. autoclass:: torchmetrics.clustering.FowlkesMallowsIndex
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.clustering.fowlkes_mallows_score
+.. autofunction:: torchmetrics.functional.clustering.fowlkes_mallows_index
