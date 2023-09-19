@@ -375,10 +375,13 @@ metrics to also include label information.
 
     from torchmetrics.classification import MulticlassAccuracy
     from torchmetrics.wrappers import ClasswiseWrapper
+    # creating metrics
     base_metric = MulticlassAccuracy(num_classes=3, average=None)
     wrapped_metric = ClasswiseWrapper(base_metric, labels=["cat", "dog", "fish"])
+    # sample prediction and GT
     target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
     preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
+    # showing the metric results
     print(base_metric(preds, target))  # this returns a simple tensor without label info
     print(wrapped_metric(preds, target))  # this returns a dict with label info
 
@@ -397,9 +400,12 @@ of metrics e.g. computation of confidence intervals by resampling of input data.
 
     from torchmetrics.classification import MulticlassAccuracy
     from torchmetrics.wrappers import BootStrapper
+    # creating metrics
     wrapped_metric = BootStrapper(MulticlassAccuracy(num_classes=3))
+    # sample prediction and GT
     target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
     preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
+    # showing the metric results
     print(wrapped_metric(preds, target))  # this returns a dict with label info
 
 .. testoutput::
