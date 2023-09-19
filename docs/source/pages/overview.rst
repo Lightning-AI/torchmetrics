@@ -385,7 +385,7 @@ metrics to also include label information.
 .. testoutput::
     :options: +NORMALIZE_WHITESPACE
 
-    torch.tensor([0.0000, 0.0000, 0.3333])
+    tensor([0.0000, 0.0000, 0.3333])
     {'multiclassaccuracy_cat': tensor(0.),
      'multiclassaccuracy_dog': tensor(0.),
      'multiclassaccuracy_fish': tensor(0.3333)}
