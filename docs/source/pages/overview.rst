@@ -372,6 +372,7 @@ have implemented a few *Wrapper* metrics. Wrapper metrics always take another :c
 metrics to also include label information.
 
 .. testcode::
+
     from torchmetrics.classification import MulticlassAccuracy
     from torchmetrics.wrappers import ClasswiseWrapper
     base_metric = MulticlassAccuracy(num_classes=3, average=None)
@@ -393,6 +394,7 @@ Another good example of wrappers is the :class:`~torchmetrics.wrappers.BootStrap
 of metrics e.g. computation of confidence intervals by resampling of input data.
 
 .. testcode::
+
     from torchmetrics.classification import MulticlassAccuracy
     from torchmetrics.wrappers import ClasswiseWrapper
     wrapped_metric = BootStrapper(MulticlassAccuracy(num_classes=3))
