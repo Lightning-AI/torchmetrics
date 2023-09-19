@@ -127,3 +127,15 @@ class TestCLIPScore(MetricTester):
         fig, ax = metric.plot()
         assert isinstance(fig, plt.Figure)
         assert isinstance(ax, matplotlib.axes.Axes)
+
+    @skip_on_connection_issues()
+    def test_warning_on_long_caption(self, inputs, model_name_or_path):
+        """Test that warning is given on long captions but metric still works."""
+        metric = CLIPScore(model_name_or_path=model_name_or_path)
+        preds, target = inputs
+        target[0] = [target[0][0], "A 28-year-old chef who recently moved to San Francisco was found dead. " * 100]
+        with pytest.warns(
+            UserWarning,
+            match="Encountered caption longer than max_position_embeddings=77. Will truncate captions to this length.*",
+        ):
+            metric.update(preds[0], target[0])

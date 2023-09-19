@@ -224,6 +224,10 @@ class MulticlassPrecisionRecallCurve(Metric):
     The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
     tradeoff between the two values can been seen.
 
+    For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
+    classes as the negative, which is refered to as the one-vs-rest approach. One-vs-one is currently not supported by
+    this metric.
+
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor containing
@@ -593,8 +597,10 @@ class PrecisionRecallCurve(_ClassificationTaskWrapper):
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :mod:`BinaryPrecisionRecallCurve`, :mod:`MulticlassPrecisionRecallCurve` and
-    :mod:`MultilabelPrecisionRecallCurve` for the specific details of each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryPrecisionRecallCurve`,
+    :class:`~torchmetrics.classification.MulticlassPrecisionRecallCurve` and
+    :class:`~torchmetrics.classification.MultilabelPrecisionRecallCurve` for the specific details of each argument
+    influence and examples.
 
     Legacy Example:
         >>> pred = torch.tensor([0, 0.1, 0.8, 0.4])

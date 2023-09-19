@@ -358,7 +358,9 @@ def specificity(
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`binary_specificity`, :func:`multiclass_specificity` and :func:`multilabel_specificity` for the specific
+    :func:`~torchmetrics.functional.classification.binary_specificity`,
+    :func:`~torchmetrics.functional.classification.multiclass_specificity` and
+    :func:`~torchmetrics.functional.classification.multilabel_specificity` for the specific
     details of each argument influence and examples.
 
     LegacyExample:

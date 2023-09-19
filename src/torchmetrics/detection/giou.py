@@ -32,29 +32,28 @@ class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~List`): A list consisting of dictionaries each containing the key-values
-      (each dictionary corresponds to a single image). Parameters that should be provided per dict
-
-        - boxes: (:class:`~torch.FloatTensor`) of shape ``(num_boxes, 4)`` containing ``num_boxes`` detection
-          boxes of the format specified in the constructor.
-          By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates.
-        - scores: :class:`~torch.FloatTensor` of shape ``(num_boxes)`` containing detection scores for the boxes.
-        - labels: :class:`~torch.IntTensor` of shape ``(num_boxes)`` containing 0-indexed detection classes for
-          the boxes.
-
-    - ``target`` (:class:`~List`) A list consisting of dictionaries each containing the key-values
       (each dictionary corresponds to a single image). Parameters that should be provided per dict:
 
-        - boxes: :class:`~torch.FloatTensor` of shape ``(num_boxes, 4)`` containing ``num_boxes`` ground truth
-          boxes of the format specified in the constructor.
+        - ``boxes`` (:class:`~torch.Tensor`): float tensor of shape ``(num_boxes, 4)`` containing ``num_boxes``
+          detection boxes of the format specified in the constructor.
           By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates.
-        - labels: :class:`~torch.IntTensor` of shape ``(num_boxes)`` containing 0-indexed ground truth
+        - ``labels`` (:class:`~torch.Tensor`): integer tensor of shape ``(num_boxes)`` containing 0-indexed detection
+          classes for the boxes.
+
+    - ``target`` (:class:`~List`): A list consisting of dictionaries each containing the key-values
+      (each dictionary corresponds to a single image). Parameters that should be provided per dict:
+
+        - ``boxes`` (:class:`~torch.Tensor`): float tensor of shape ``(num_boxes, 4)`` containing ``num_boxes`` ground
+          truth boxes of the format specified in the constructor.
+          By default, this method expects ``(xmin, ymin, xmax, ymax)`` in absolute image coordinates.
+        - ``labels`` (:class:`~torch.Tensor`): integer tensor of shape ``(num_boxes)`` containing 0-indexed ground truth
           classes for the boxes.
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
     - ``giou_dict``: A dictionary containing the following key-values:
 
-        - giou: (:class:`~torch.Tensor`)
+        - giou: (:class:`~torch.Tensor`) with overall giou value over all classes and samples.
         - giou/cl_{cl}: (:class:`~torch.Tensor`), if argument ``class metrics=True``
 
     Args:
@@ -64,6 +63,9 @@ class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
             Optional IoU thresholds for evaluation. If set to `None` the threshold is ignored.
         class_metrics:
             Option to enable per-class metrics for IoU. Has a performance impact.
+        respect_labels:
+            Ignore values from boxes that do not have the same label as the ground truth box. Else will compute Iou
+            between all pairs of boxes.
         kwargs:
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -85,13 +87,17 @@ class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
         ... ]
         >>> metric = GeneralizedIntersectionOverUnion()
         >>> metric(preds, target)
-        {'giou': tensor(-0.0694)}
+        {'giou': tensor(0.8613)}
 
     Raises:
         ModuleNotFoundError:
             If torchvision is not installed with version 0.8.0 or newer.
 
     """
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = True
+
     _iou_type: str = "giou"
     _invalid_val: float = -1.0
 
@@ -100,9 +106,10 @@ class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
         box_format: str = "xyxy",
         iou_threshold: Optional[float] = None,
         class_metrics: bool = False,
+        respect_labels: bool = True,
         **kwargs: Any,
     ) -> None:
-        super().__init__(box_format, iou_threshold, class_metrics, **kwargs)
+        super().__init__(box_format, iou_threshold, class_metrics, respect_labels, **kwargs)
 
     @staticmethod
     def _iou_update_fn(*args: Any, **kwargs: Any) -> Tensor:
@@ -167,7 +174,7 @@ class GeneralizedIntersectionOverUnion(IntersectionOverUnion):
             ... ]
             >>> target = lambda : [
             ...    {
-            ...        "boxes": torch.tensor([[300.00, 100.00, 315.00, 150.00]]) + torch.randint(-10, 10, (1, 4)),
+            ...        "boxes": torch.tensor([[300.00, 100.00, 335.00, 150.00]]) + torch.randint(-10, 10, (1, 4)),
             ...        "labels": torch.tensor([5]),
             ...    }
             ... ]

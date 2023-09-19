@@ -17,7 +17,7 @@ from torch import Tensor, nn
 
 from torchmetrics.functional.image.lpips import _LPIPS
 from torchmetrics.functional.image.perceptual_path_length import (
-    _GeneratorType,
+    GeneratorType,
     _perceptual_path_length_validate_arguments,
     _validate_generator_model,
     perceptual_path_length,
@@ -118,6 +118,9 @@ class PerceptualPathLength(Metric):
         tensor([0.3502, 0.1362, 0.2535, 0.0902, 0.1784, 0.0769, 0.5871, 0.0691, 0.3921]))
 
     """
+    is_differentiable: bool = False
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = True
 
     def __init__(
         self,
@@ -157,7 +160,7 @@ class PerceptualPathLength(Metric):
         else:
             raise ValueError(f"sim_net must be a nn.Module or one of 'alex', 'vgg', 'squeeze', got {sim_net}")
 
-    def update(self, generator: _GeneratorType) -> None:
+    def update(self, generator: GeneratorType) -> None:
         """Update the generator model."""
         _validate_generator_model(generator, self.conditional)
         self.generator = generator

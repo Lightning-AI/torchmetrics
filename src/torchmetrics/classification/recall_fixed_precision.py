@@ -180,6 +180,10 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
     This is done by first calculating the precision-recall curve for different thresholds and the find the recall for
     a given precision level.
 
+    For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
+    classes as the negative, which is refered to as the one-vs-rest approach. One-vs-one is currently not supported by
+    this metric.
+
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor
@@ -469,8 +473,10 @@ class RecallAtFixedPrecision(_ClassificationTaskWrapper):
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :mod:`BinaryRecallAtFixedPrecision`, :func:`MulticlassRecallAtFixedPrecision` and
-    :func:`MultilabelRecallAtFixedPrecision` for the specific details of each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryRecallAtFixedPrecision`,
+    :class:`~torchmetrics.classification.MulticlassRecallAtFixedPrecision` and
+    :class:`~torchmetrics.classification.MultilabelRecallAtFixedPrecision` for the specific details of each argument
+    influence and examples.
 
     """
 

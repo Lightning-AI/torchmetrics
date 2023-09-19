@@ -15,6 +15,7 @@ from typing import Optional
 
 import numpy as np
 import pytest
+import torch
 from sklearn.metrics import ndcg_score
 from torch import Tensor
 from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg
@@ -184,4 +185,16 @@ class TestNDCG(RetrievalMetricTester):
             message=message,
             exception_type=ValueError,
             kwargs_update=metric_args,
+        )
+
+
+def test_corner_case_with_tied_scores():
+    """See issue: https://github.com/Lightning-AI/torchmetrics/issues/2022."""
+    target = torch.tensor([[10, 0, 0, 1, 5]])
+    preds = torch.tensor([[0.1, 0, 0, 0, 0.1]])
+
+    for k in [1, 3, 5]:
+        assert torch.allclose(
+            retrieval_normalized_dcg(preds, target, top_k=k),
+            torch.tensor([ndcg_score(target, preds, k=k)], dtype=torch.float32),
         )

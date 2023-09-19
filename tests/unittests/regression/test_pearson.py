@@ -149,3 +149,20 @@ def test_pearsons_warning_on_small_input(dtype, scale):
     target = scale * torch.randn(100, dtype=dtype)
     with pytest.warns(UserWarning, match="The variance of predictions or target is close to zero.*"):
         pearson_corrcoef(preds, target)
+
+
+def test_single_sample_update():
+    """See issue: https://github.com/Lightning-AI/torchmetrics/issues/2014."""
+    metric = PearsonCorrCoef()
+
+    # Works
+    metric(torch.tensor([3.0, -0.5, 2.0, 7.0]), torch.tensor([2.5, 0.0, 2.0, 8.0]))
+    res1 = metric.compute()
+    metric.reset()
+
+    metric(torch.tensor([3.0]), torch.tensor([2.5]))
+    metric(torch.tensor([-0.5]), torch.tensor([0.0]))
+    metric(torch.tensor([2.0]), torch.tensor([2.0]))
+    metric(torch.tensor([7.0]), torch.tensor([8.0]))
+    res2 = metric.compute()
+    assert torch.allclose(res1, res2)

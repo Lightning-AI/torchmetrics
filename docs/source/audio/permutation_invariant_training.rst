@@ -13,11 +13,9 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.audio.PermutationInvariantTraining
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.audio.permutation_invariant_training
-    :noindex:

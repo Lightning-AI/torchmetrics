@@ -20,9 +20,10 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 import numpy as np
 import pytest
 import torch
+from lightning_utilities import apply_to_collection
 from torch import Tensor, tensor
 from torchmetrics import Metric
-from torchmetrics.utilities.data import _flatten, apply_to_collection
+from torchmetrics.utilities.data import _flatten
 
 from unittests import NUM_PROCESSES
 
@@ -377,6 +378,7 @@ class MetricTester:
         check_batch: bool = True,
         fragment_kwargs: bool = False,
         check_scriptable: bool = True,
+        check_state_dict: bool = True,
         atol: Optional[float] = None,
         **kwargs_update: Any,
     ):
@@ -396,6 +398,7 @@ class MetricTester:
                 calculated across devices for each batch (and not just at the end)
             fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `target` among processes
             check_scriptable: bool indicating if metric should also be tested if it can be scripted
+            check_state_dict: bool indicating if metric should be tested that its state_dict by default is empty
             atol: absolute tolerance used for comparison of results, if None will use self.atol
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 target when running update on the metric.
@@ -421,6 +424,7 @@ class MetricTester:
                     atol=atol,
                     fragment_kwargs=fragment_kwargs,
                     check_scriptable=check_scriptable,
+                    check_state_dict=check_state_dict,
                     **kwargs_update,
                 ),
                 [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)],
@@ -443,6 +447,7 @@ class MetricTester:
                 device=device,
                 fragment_kwargs=fragment_kwargs,
                 check_scriptable=check_scriptable,
+                check_state_dict=check_state_dict,
                 **kwargs_update,
             )
 

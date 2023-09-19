@@ -11,28 +11,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added source aggregated signal-to-distortion ratio (SA-SDR) metric ([#1882](https://github.com/Lightning-AI/torchmetrics/pull/1882)
+- Added metric to cluster package:
 
+    - `MutualInformationScore` ([#2008](https://github.com/Lightning-AI/torchmetrics/pull/2008))
 
-- Added `VisualInformationFidelity` to image package ([#1830](https://github.com/Lightning-AI/torchmetrics/pull/1830))
+    - `RandScore` ([#2025](https://github.com/Lightning-AI/torchmetrics/pull/2025))
 
+    - `NormalizedMutualInfoScore` ([#2029](https://github.com/Lightning-AI/torchmetrics/pull/2029))
 
-- Added `EditDistance` to text package ([#1906](https://github.com/Lightning-AI/torchmetrics/pull/1906))
+    - `AdjustedRandScore` ([#2032](https://github.com/Lightning-AI/torchmetrics/pull/2032))
 
+    - `CalinskiHarabaszScore` ([#2036](https://github.com/Lightning-AI/torchmetrics/pull/2036))
 
-- Added `top_k` argument to `RetrievalMRR` in retrieval package ([#1961](https://github.com/Lightning-AI/torchmetrics/pull/1961))
+    - `DunnIndex` ([#2049](https://github.com/Lightning-AI/torchmetrics/pull/2049))
 
+    - `HomogeneityScore` ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
 
-- Added support for evaluating `"segm"` and `"bbox"` detection in `MeanAveragePrecision` at the same time ([#1928](https://github.com/Lightning-AI/torchmetrics/pull/1928))
+    - `CompletenessScore` ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
 
+    - `VMeasureScore` ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
 
-- Added `PerceptualPathLength` to image package ([#1939](https://github.com/Lightning-AI/torchmetrics/pull/1939))
+    - `FowlkesMallowsIndex` ([#2066](https://github.com/Lightning-AI/torchmetrics/pull/2066))
 
+    - `AdjustedMutualInfoScore` ([#2058](https://github.com/Lightning-AI/torchmetrics/pull/2058))
 
-- Added support for multioutput evaluation in `MeanSquaredError` ([#1937](https://github.com/Lightning-AI/torchmetrics/pull/1937))
-
-
-- Added argument `extended_summary` to `MeanAveragePrecision` such that precision, recall, iou can be easily returned ([#1983](https://github.com/Lightning-AI/torchmetrics/pull/1983))
+    - `DaviesBouldinScore` ([#2071](https://github.com/Lightning-AI/torchmetrics/pull/2071))
 
 
 ### Changed
@@ -48,6 +51,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 -
+
+
+## [1.1.2] - 2023-09-11
+
+### Fixed
+
+- Fixed tie breaking in ndcg metric ([#2031](https://github.com/Lightning-AI/torchmetrics/pull/2031))
+- Fixed bug in `BootStrapper` when very few samples were evaluated that could lead to crash ([#2052](https://github.com/Lightning-AI/torchmetrics/pull/2052))
+- Fixed bug when creating multiple plots that lead to not all plots being shown ([#2060](https://github.com/Lightning-AI/torchmetrics/pull/2060))
+- Fixed performance issues in `RecallAtFixedPrecision` for large batch sizes ([#2042](https://github.com/Lightning-AI/torchmetrics/pull/2042))
+- Fixed bug related to `MetricCollection` used with custom metrics have `prefix`/`postfix` attributes ([#2070](https://github.com/Lightning-AI/torchmetrics/pull/2070))
+
+
+## [1.1.1] - 2023-08-29
+
+### Added
+
+- Added `average` argument to `MeanAveragePrecision` ([#2018](https://github.com/Lightning-AI/torchmetrics/pull/2018))
+
+### Fixed
+
+- Fixed bug in `PearsonCorrCoef` is updated on single samples at a time ([#2019](https://github.com/Lightning-AI/torchmetrics/pull/2019))
+- Fixed support for pixel-wise MSE ([#2017](https://github.com/Lightning-AI/torchmetrics/pull/2017))
+- Fixed bug in `MetricCollection` when used with multiple metrics that return dicts with same keys ([#2027](https://github.com/Lightning-AI/torchmetrics/pull/2027))
+- Fixed bug in detection intersection metrics when `class_metrics=True` resulting in wrong values ([#1924](https://github.com/Lightning-AI/torchmetrics/pull/1924))
+- Fixed missing attributes `higher_is_better`, `is_differentiable` for some metrics ([#2028](https://github.com/Lightning-AI/torchmetrics/pull/2028))
+
+
+## [1.1.0] - 2023-08-22
+
+### Added
+
+- Added source aggregated signal-to-distortion ratio (SA-SDR) metric ([#1882](https://github.com/Lightning-AI/torchmetrics/pull/1882)
+- Added `VisualInformationFidelity` to image package ([#1830](https://github.com/Lightning-AI/torchmetrics/pull/1830))
+- Added `EditDistance` to text package ([#1906](https://github.com/Lightning-AI/torchmetrics/pull/1906))
+- Added `top_k` argument to `RetrievalMRR` in retrieval package ([#1961](https://github.com/Lightning-AI/torchmetrics/pull/1961))
+- Added support for evaluating `"segm"` and `"bbox"` detection in `MeanAveragePrecision` at the same time ([#1928](https://github.com/Lightning-AI/torchmetrics/pull/1928))
+- Added `PerceptualPathLength` to image package ([#1939](https://github.com/Lightning-AI/torchmetrics/pull/1939))
+- Added support for multioutput evaluation in `MeanSquaredError` ([#1937](https://github.com/Lightning-AI/torchmetrics/pull/1937))
+- Added argument `extended_summary` to `MeanAveragePrecision` such that precision, recall, iou can be easily returned ([#1983](https://github.com/Lightning-AI/torchmetrics/pull/1983))
+- Added warning to `ClipScore` if long captions are detected and truncate ([#2001](https://github.com/Lightning-AI/torchmetrics/pull/2001))
+- Added `CLIPImageQualityAssessment` to multimodal package ([#1931](https://github.com/Lightning-AI/torchmetrics/pull/1931))
+- Added new property `metric_state` to all metrics for users to investigate currently stored tensors in memory ([#2006](https://github.com/Lightning-AI/torchmetrics/pull/2006))
 
 
 ## [1.0.3] - 2023-08-08

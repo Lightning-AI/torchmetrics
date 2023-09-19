@@ -614,11 +614,66 @@ def test_nested_collections(input_collections):
     assert "valmetrics/micro_MulticlassPrecision" in val
 
 
-def test_double_nested_collections():
+@pytest.mark.parametrize(
+    ("base_metrics", "expected"),
+    [
+        (
+            DummyMetricMultiOutputDict(),
+            (
+                "prefix2_prefix1_output1_postfix1_postfix2",
+                "prefix2_prefix1_output2_postfix1_postfix2",
+            ),
+        ),
+        (
+            {"metric1": DummyMetricMultiOutputDict(), "metric2": DummyMetricMultiOutputDict()},
+            (
+                "prefix2_prefix1_metric1_output1_postfix1_postfix2",
+                "prefix2_prefix1_metric1_output2_postfix1_postfix2",
+                "prefix2_prefix1_metric2_output1_postfix1_postfix2",
+                "prefix2_prefix1_metric2_output2_postfix1_postfix2",
+            ),
+        ),
+    ],
+)
+def test_double_nested_collections(base_metrics, expected):
     """Test that double nested collections gets flattened to a single collection."""
-    collection1 = MetricCollection([DummyMetricMultiOutputDict()], prefix="prefix1_", postfix="_postfix1")
+    collection1 = MetricCollection(base_metrics, prefix="prefix1_", postfix="_postfix1")
     collection2 = MetricCollection([collection1], prefix="prefix2_", postfix="_postfix2")
     x = torch.randn(10).sum()
     val = collection2(x)
-    assert "prefix2_prefix1_output1_postfix1_postfix2" in val
-    assert "prefix2_prefix1_output2_postfix1_postfix2" in val
+
+    for key in val:
+        assert key in expected
+
+
+def test_with_custom_prefix_postfix():
+    """Test that metric colection does not clash with custom prefix and postfix in users metrics.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2065
+
+    """
+
+    class CustomAccuracy(MulticlassAccuracy):
+        prefix = "my_prefix"
+        postfix = "my_postfix"
+
+        def compute(self):
+            value = super().compute()
+            return {f"{self.prefix}/accuracy/{self.postfix}": value}
+
+    class CustomPrecision(MulticlassAccuracy):
+        prefix = "my_prefix"
+        postfix = "my_postfix"
+
+        def compute(self):
+            value = super().compute()
+            return {f"{self.prefix}/precision/{self.postfix}": value}
+
+    metrics = MetricCollection([CustomAccuracy(num_classes=2), CustomPrecision(num_classes=2)])
+
+    # Update metrics with current batch
+    res = metrics(torch.tensor([1, 0, 0, 1]), torch.tensor([1, 0, 0, 0]))
+
+    # Print the calculated metrics
+    assert "my_prefix/accuracy/my_postfix" in res
+    assert "my_prefix/precision/my_postfix" in res

@@ -92,8 +92,8 @@ class BinaryAccuracy(BinaryStatScores):
         tensor([0.3333, 0.1667])
 
     """
-    is_differentiable = False
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
@@ -240,8 +240,8 @@ class MulticlassAccuracy(MulticlassStatScores):
                 [0.0000, 0.3333, 0.5000]])
 
     """
-    is_differentiable = False
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
@@ -389,8 +389,8 @@ class MultilabelAccuracy(MultilabelStatScores):
                 [0.0000, 0.0000, 0.5000]])
 
     """
-    is_differentiable = False
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
@@ -456,8 +456,9 @@ class Accuracy(_ClassificationTaskWrapper):
 
     This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :mod:`BinaryAccuracy`, :mod:`MulticlassAccuracy` and :mod:`MultilabelAccuracy` for the specific details of
-    each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryAccuracy`, :class:`~torchmetrics.classification.MulticlassAccuracy` and
+    :class:`~torchmetrics.classification.MultilabelAccuracy` for the specific details of each argument influence and
+    examples.
 
     Legacy Example:
         >>> from torch import tensor

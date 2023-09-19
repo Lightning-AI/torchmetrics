@@ -374,8 +374,10 @@ class MatthewsCorrCoef(_ClassificationTaskWrapper):
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :mod:`BinaryMatthewsCorrCoef`, :mod:`MulticlassMatthewsCorrCoef` and :mod:`MultilabelMatthewsCorrCoef` for
-    the specific details of each argument influence and examples.
+    :class:`~torchmetrics.classification.BinaryMatthewsCorrCoef`,
+    :class:`~torchmetrics.classification.MulticlassMatthewsCorrCoef` and
+    :class:`~torchmetrics.classification.MultilabelMatthewsCorrCoef` for the specific details of each argument influence
+    and examples.
 
     Legacy Example:
         >>> from torch import tensor

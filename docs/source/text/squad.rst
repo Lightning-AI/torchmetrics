@@ -13,11 +13,9 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.text.SQuAD
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.text.squad
-    :noindex:

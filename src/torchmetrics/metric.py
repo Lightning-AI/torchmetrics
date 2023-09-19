@@ -23,13 +23,13 @@ from copy import deepcopy
 from typing import Any, Callable, ClassVar, Dict, Generator, List, Optional, Sequence, Tuple, Union
 
 import torch
+from lightning_utilities import apply_to_collection
 from torch import Tensor
 from torch.nn import Module
 
 from torchmetrics.utilities.data import (
     _flatten,
     _squeeze_if_scalar,
-    apply_to_collection,
     dim_zero_cat,
     dim_zero_max,
     dim_zero_mean,
@@ -86,6 +86,7 @@ class Metric(Module, ABC):
         "plot_lower_bound",
         "plot_upper_bound",
         "plot_legend_name",
+        "metric_state",
     ]
     is_differentiable: Optional[bool] = None
     higher_is_better: Optional[bool] = None
@@ -179,6 +180,11 @@ class Metric(Module, ABC):
     def update_count(self) -> int:
         """Get the number of times `update` and/or `forward` has been called since initialization or last `reset`."""
         return self._update_count
+
+    @property
+    def metric_state(self) -> Dict[str, Union[List[Tensor], Tensor]]:
+        """Get the current state of the metric."""
+        return {attr: getattr(self, attr) for attr in self._defaults}
 
     def add_state(
         self,
@@ -751,7 +757,7 @@ class Metric(Module, ABC):
         """Transfer all metric state to specific dtype. Special version of standard `type` method.
 
         Arguments:
-            dst_type (type or string): the desired type.
+            dst_type: the desired type as string or dtype object
 
         """
         self._dtype_convert = True
@@ -826,7 +832,7 @@ class Metric(Module, ABC):
             destination: Optional dictionary, that if provided, the state of module will be updated into the dict and
                 the same object is returned. Otherwise, an ``OrderedDict`` will be created and returned.
             prefix: optional string, a prefix added to parameter and buffer names to compose the keys in state_dict.
-            keep_vars: by default the :class:`~torch.Tensor`s returned in the state dict are detached from autograd.
+            keep_vars: by default the :class:`~torch.Tensor` returned in the state dict are detached from autograd.
                 If set to ``True``, detaching will not be performed.
 
         """
@@ -868,7 +874,7 @@ class Metric(Module, ABC):
     def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
         """Filter kwargs such that they match the update signature of the metric."""
         # filter all parameters based on update signature except those of
-        # type VAR_POSITIONAL (*args) and VAR_KEYWORD (**kwargs)
+        # types `VAR_POSITIONAL` for `* args` and `VAR_KEYWORD` for `** kwargs`
         _params = (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
         _sign_params = self._update_signature.parameters
         filtered_kwargs = {

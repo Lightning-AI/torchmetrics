@@ -113,8 +113,9 @@ def test_flatten_list():
 def test_flatten_dict():
     """Check that _flatten_dict utility function works as expected."""
     inp = {"a": {"b": 1, "c": 2}, "d": 3}
-    out = _flatten_dict(inp)
-    assert out == {"b": 1, "c": 2, "d": 3}
+    out_dict, out_dup = _flatten_dict(inp)
+    assert out_dict == {"b": 1, "c": 2, "d": 3}
+    assert out_dup is False
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires gpu")

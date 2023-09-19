@@ -160,6 +160,14 @@ Or directly from conda
 
 .. toctree::
    :maxdepth: 2
+   :name: clustering
+   :caption: Clustering
+   :glob:
+
+   clustering/*
+
+.. toctree::
+   :maxdepth: 2
    :name: detection
    :caption: Detection
    :glob:

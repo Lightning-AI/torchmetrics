@@ -23,7 +23,7 @@ from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.data import allclose
+from torchmetrics.utilities.data import _flatten_dict, allclose
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
@@ -334,17 +334,28 @@ class MetricCollection(ModuleDict):
                 res = m(*args, **m._filter_kwargs(**kwargs))
             else:
                 raise ValueError("method_name should be either 'compute' or 'forward', but got {method_name}")
+            result[k] = res
 
+        _, duplicates = _flatten_dict(result)
+
+        flattened_results = {}
+        for k, m in self.items(keep_base=True, copy_state=False):
+            res = result[k]
             if isinstance(res, dict):
                 for key, v in res.items():
-                    if hasattr(m, "prefix") and m.prefix is not None:
+                    # if duplicates of keys we need to add unique prefix to each key
+                    if duplicates:
+                        stripped_k = k.replace(getattr(m, "prefix", ""), "")
+                        stripped_k = stripped_k.replace(getattr(m, "postfix", ""), "")
+                        key = f"{stripped_k}_{key}"
+                    if getattr(m, "_from_collection", None) and m.prefix is not None:
                         key = f"{m.prefix}{key}"
-                    if hasattr(m, "postfix") and m.postfix is not None:
+                    if getattr(m, "_from_collection", None) and m.postfix is not None:
                         key = f"{key}{m.postfix}"
-                    result[key] = v
+                    flattened_results[key] = v
             else:
-                result[k] = res
-        return {self._set_name(k): v for k, v in result.items()}
+                flattened_results[k] = res
+        return {self._set_name(k): v for k, v in flattened_results.items()}
 
     def reset(self) -> None:
         """Call reset for each metric sequentially."""
@@ -415,6 +426,7 @@ class MetricCollection(ModuleDict):
                     for k, v in metric.items(keep_base=False):
                         v.postfix = metric.postfix
                         v.prefix = metric.prefix
+                        v._from_collection = True
                         self[f"{name}_{k}"] = v
         elif isinstance(metrics, Sequence):
             for metric in metrics:
@@ -432,6 +444,7 @@ class MetricCollection(ModuleDict):
                     for k, v in metric.items(keep_base=False):
                         v.postfix = metric.postfix
                         v.prefix = metric.prefix
+                        v._from_collection = True
                         self[k] = v
         else:
             raise ValueError(
@@ -554,7 +567,7 @@ class MetricCollection(ModuleDict):
         """Transfer all metric state to specific dtype. Special version of standard `type` method.
 
         Arguments:
-            dst_type (type or string): the desired type.
+            dst_type: the desired type as ``torch.dtype`` or string.
 
         """
         for m in self.values(copy_state=False):

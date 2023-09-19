@@ -17,6 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
 
@@ -65,6 +66,17 @@ def _clip_score_update(
     img_features = model.get_image_features(processed_input["pixel_values"].to(device))
     img_features = img_features / img_features.norm(p=2, dim=-1, keepdim=True)
 
+    max_position_embeddings = model.config.text_config.max_position_embeddings
+    if processed_input["attention_mask"].shape[-1] > max_position_embeddings:
+        rank_zero_warn(
+            f"Encountered caption longer than {max_position_embeddings=}. Will truncate captions to this length."
+            "If longer captions are needed, initialize argument `model_name_or_path` with a model that supports"
+            "longer sequences",
+            UserWarning,
+        )
+        processed_input["attention_mask"] = processed_input["attention_mask"][..., :max_position_embeddings]
+        processed_input["input_ids"] = processed_input["input_ids"][..., :max_position_embeddings]
+
     txt_features = model.get_text_features(
         processed_input["input_ids"].to(device), processed_input["attention_mask"].to(device)
     )
@@ -75,7 +87,7 @@ def _clip_score_update(
     return score, len(text)
 
 
-def _get_model_and_processor(
+def _get_clip_model_and_processor(
     model_name_or_path: Literal[
         "openai/clip-vit-base-patch16",
         "openai/clip-vit-base-patch32",
@@ -106,14 +118,14 @@ def clip_score(
 ) -> Tensor:
     r"""Calculate `CLIP Score`_ which is a text-to-image similarity metric.
 
-    CLIP is a reference free metric that can be used to evaluate the correlation between a generated caption for an
-    image and the actual content of the image. It has been found to be highly correlated with human judgement. The
+    CLIP Score is a reference free metric that can be used to evaluate the correlation between a generated caption for
+    an image and the actual content of the image. It has been found to be highly correlated with human judgement. The
     metric is defined as:
 
     .. math::
         \text{CLIPScore(I, C)} = max(100 * cos(E_I, E_C), 0)
 
-    which corresponds to the cosine similarity between visual CLIP embedding :math:`E_i` for an image :math:`i` and
+    which corresponds to the cosine similarity between visual `CLIP`_ embedding :math:`E_i` for an image :math:`i` and
     textual CLIP embedding :math:`E_C` for an caption :math:`C`. The score is bound between 0 and 100 and the closer
     to 100 the better.
 
@@ -139,11 +151,11 @@ def clip_score(
         >>> _ = torch.manual_seed(42)
         >>> from torchmetrics.functional.multimodal import clip_score
         >>> score = clip_score(torch.randint(255, (3, 224, 224)), "a photo of a cat", "openai/clip-vit-base-patch16")
-        >>> print(score.detach())
+        >>> score.detach()
         tensor(24.4255)
 
     """
-    model, processor = _get_model_and_processor(model_name_or_path)
+    model, processor = _get_clip_model_and_processor(model_name_or_path)
     device = images.device if isinstance(images, Tensor) else images[0].device
     score, _ = _clip_score_update(images, text, model.to(device), processor)
     score = score.mean(0)

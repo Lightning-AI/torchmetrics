@@ -13,11 +13,9 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.text.CharErrorRate
-    :noindex:
     :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.text.char_error_rate
-    :noindex:

@@ -91,6 +91,14 @@ from torchmetrics.classification import (
     MultilabelROC,
     MultilabelSpecificity,
 )
+from torchmetrics.clustering import (
+    AdjustedRandScore,
+    CalinskiHarabaszScore,
+    DunnIndex,
+    MutualInfoScore,
+    NormalizedMutualInfoScore,
+    RandScore,
+)
 from torchmetrics.detection import PanopticQuality
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
@@ -167,6 +175,7 @@ from torchmetrics.utilities.imports import (
     _TORCH_GREATER_EQUAL_1_10,
     _TORCHAUDIO_GREATER_EQUAL_0_10,
 )
+from torchmetrics.utilities.plot import _get_col_row_split
 from torchmetrics.wrappers import (
     BootStrapper,
     ClasswiseWrapper,
@@ -614,6 +623,12 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             id="squad",
         ),
         pytest.param(TranslationEditRate, _text_input_3, _text_input_4, id="translation edit rate"),
+        pytest.param(MutualInfoScore, _nominal_input, _nominal_input, id="mutual info score"),
+        pytest.param(RandScore, _nominal_input, _nominal_input, id="rand score"),
+        pytest.param(AdjustedRandScore, _nominal_input, _nominal_input, id="adjusted rand score"),
+        pytest.param(CalinskiHarabaszScore, lambda: torch.randn(100, 3), _nominal_input, id="calinski harabasz score"),
+        pytest.param(NormalizedMutualInfoScore, _nominal_input, _nominal_input, id="normalized mutual info score"),
+        pytest.param(DunnIndex, lambda: torch.randn(100, 3), _nominal_input, id="dunn index"),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 3])
@@ -787,6 +802,17 @@ def test_plot_methods_retrieval(metric_class, preds, target, indexes, num_vals):
     assert isinstance(fig, plt.Figure)
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(fig)
+
+
+@pytest.mark.parametrize(
+    ("n", "expected_row", "expected_col"),
+    [(1, 1, 1), (2, 1, 2), (3, 2, 2), (4, 2, 2), (5, 2, 3), (6, 2, 3), (7, 3, 3), (8, 3, 3), (9, 3, 3), (10, 3, 4)],
+)
+def test_row_col_splitter(n, expected_row, expected_col):
+    """Test the row col splitter function works as expected."""
+    row, col = _get_col_row_split(n)
+    assert row == expected_row
+    assert col == expected_col
 
 
 @pytest.mark.parametrize(

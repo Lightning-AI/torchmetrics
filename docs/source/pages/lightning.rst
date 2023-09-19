@@ -51,10 +51,12 @@ The example below shows how to use a metric in your `LightningModule <https://py
 
 Metric logging in Lightning happens through the ``self.log`` or ``self.log_dict`` method. Both methods only support the
 logging of *scalar-tensors*. While the vast majority of metrics in torchmetrics returns a scalar tensor, some metrics
-such as :class:`~torchmetrics.ConfusionMatrix`, :class:`~torchmetrics.ROC`, :class:`~torchmetrics.MeanAveragePrecision`,
-:class:`~torchmetrics.ROUGEScore` return outputs that are non-scalar tensors (often dicts or list of tensors) and should
-therefore be dealt with separately. For info about the return type and shape please look at the documentation for the
-``compute`` method for each metric you want to log.
+such as :class:`~torchmetrics.classification.confusion_matrix.ConfusionMatrix`,
+:class:`~torchmetrics.classification.roc.ROC`,
+:class:`~torchmetrics.detection.mean_ap.MeanAveragePrecision`, :class:`~torchmetrics.text.rouge.ROUGEScore` return
+outputs that are non-scalar tensors (often dicts or list of tensors) and should therefore be dealt with separately.
+For info about the return type and shape please look at the documentation for the ``compute`` method for each metric
+you want to log.
 
 ********************
 Logging TorchMetrics
@@ -204,7 +206,7 @@ The following contains a list of pitfalls to be aware of:
         self.accuracy(preds, y)  # compute metrics
         self.log('train_acc_step', self.accuracy)  # log metric object
 
-* Using `~torchmetrics.MetricTracker` wrapper with Lightning is a special case, because the wrapper in itself is not a metric
-  i.e. it does not inherit from the base `~torchmetrics.Metric` class but instead from `~torch.nn.ModuleList`. Thus,
-  to log the output of this metric one needs to manually log the returned values (not the object) using `self.log`
-  and for epoch level logging this should be done in the appropriate `on_***_epoch_end` method.
+* Using :class:`~torchmetrics.wrappers.MetricTracker` wrapper with Lightning is a special case, because the wrapper in itself is not a metric
+  i.e. it does not inherit from the base :class:`~torchmetrics.Metric` class but instead from :class:`~torch.nn.ModuleList`. Thus,
+  to log the output of this metric one needs to manually log the returned values (not the object) using ``self.log``
+  and for epoch level logging this should be done in the appropriate ``on_***_epoch_end`` method.
