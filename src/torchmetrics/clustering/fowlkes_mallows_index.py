@@ -46,7 +46,7 @@ class FowlkesMallowsIndex(Metric):
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
+    Example::
         >>> import torch
         >>> from torchmetrics.clustering import FowlkesMallowsIndex
         >>> preds = torch.tensor([2, 2, 0, 1, 0])
@@ -113,9 +113,10 @@ class FowlkesMallowsIndex(Metric):
             >>> import torch
             >>> from torchmetrics.clustering import FowlkesMallowsIndex
             >>> metric = FowlkesMallowsIndex()
+            >>> values = [ ]
             >>> for _ in range(10):
-            ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
-            >>> fig_, ax_ = metric.plot(metric.compute())
+            ...     values.append(metric(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,))))
+            >>> fig_, ax_ = metric.plot(values)
 
         """
         return self._plot(val, ax)
