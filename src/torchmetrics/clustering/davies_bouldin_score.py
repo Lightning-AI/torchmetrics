@@ -30,20 +30,20 @@ class DaviesBouldinScore(Metric):
 
     Given the following quantities:
 
-    ..math::
+    .. math::
         S_i = \left( \frac{1}{T_i} \sum_{j=1}^{T_i} ||X_j - A_i||^2_2 \right)^{1/2}
 
     where :math:`T_i` is the number of samples in cluster :math:`i`, :math:`X_j` is the :math:`j`-th sample in cluster
     :math:`i`, and :math:`A_i` is the centroid of cluster :math:`i`. This quantity is the average distance between all
     the samples in cluster :math:`i` and its centroid. Let
 
-    ..math::
+    .. math::
         M_{i,j} = ||A_i - A_j||_2
 
     e.g. the distance between the centroids of cluster :math:`i` and cluster :math:`j`. Then the Davies-Bouldin score
     is defined as:
 
-    ..math::
+    .. math::
         DB = \frac{1}{n_{clusters}} \sum_{i=1}^{n_{clusters}} \max_{j \neq i} \left( \frac{S_i + S_j}{M_{i,j}} \right)
 
     This clustering metric is an intrinsic measure, because it does not rely on ground truth labels for the evaluation.
@@ -63,7 +63,7 @@ class DaviesBouldinScore(Metric):
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
+    Example::
         >>> import torch
         >>> from torchmetrics.clustering import DaviesBouldinScore
         >>> _ = torch.manual_seed(42)
@@ -128,9 +128,10 @@ class DaviesBouldinScore(Metric):
             >>> import torch
             >>> from torchmetrics.clustering import DaviesBouldinScore
             >>> metric = DaviesBouldinScore()
+            >>> values = [ ]
             >>> for _ in range(10):
-            ...     metric.update(torch.randn(10, 3), torch.randint(0, 2, (10,)))
-            >>> fig_, ax_ = metric.plot(metric.compute())
+            ...     values.append(metric(torch.randn(10, 3), torch.randint(0, 2, (10,))))
+            >>> fig_, ax_ = metric.plot(values)
 
         """
         return self._plot(val, ax)
