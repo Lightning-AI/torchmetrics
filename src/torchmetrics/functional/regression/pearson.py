@@ -17,7 +17,7 @@ from typing import Optional, Tuple
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.regression.utils import _check_data_shape_to_weights, _check_data_shape_to_num_outputs
+from torchmetrics.functional.regression.utils import _check_data_shape_to_num_outputs, _check_data_shape_to_weights
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 
@@ -49,6 +49,7 @@ def _pearson_corrcoef_update(
         n_prior: current number of observed observations
         num_outputs: Number of outputs in multioutput setting
         weights: weights associated with scores
+
     """
     # Data checking
     _check_same_shape(preds, target)
