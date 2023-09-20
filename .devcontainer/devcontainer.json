@@ -43,9 +43,7 @@
         "python.formatting.autopep8Path": "/usr/local/py-utils/bin/autopep8",
         "python.formatting.blackPath": "/usr/local/py-utils/bin/black",
         "python.formatting.provider": "black",
-        "python.formatting.blackArgs": [
-          "--config=${workspaceFolder}/pyproject.toml"
-        ],
+        "python.formatting.blackArgs": ["--config=${workspaceFolder}/pyproject.toml"],
         "python.linting.banditPath": "/usr/local/py-utils/bin/bandit",
         "python.linting.flake8Path": "/usr/local/py-utils/bin/flake8",
         "python.linting.mypyPath": "/usr/local/py-utils/bin/mypy",
@@ -55,10 +53,7 @@
         "python.linting.enabled": true,
         "python.linting.pylintEnabled": false,
         "python.linting.flake8Enabled": true,
-        "python.linting.flake8Args": [
-          "--config=${workspaceFolder}/setup.cfg",
-          "--verbose"
-        ],
+        "python.linting.flake8Args": ["--config=${workspaceFolder}/setup.cfg", "--verbose"],
         "python.testing.pytestArgs": ["tests"],
         "python.testing.unittestEnabled": false,
         "python.testing.pytestEnabled": true,
