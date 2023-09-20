@@ -137,7 +137,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     def update(self, img1: Tensor, img2: Tensor) -> None:
         """Update internal states with lpips score."""
         loss, total = _lpips_update(img1, img2, net=self.net, normalize=self.normalize)
-        self.sum_scores += loss.sum()
+        self.sum_scores += loss.sum().detach()
         self.total += total
 
     def compute(self) -> Tensor:
