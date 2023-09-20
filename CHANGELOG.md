@@ -52,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--
+- Fixed `RuntimeError: CUDA out of memory` when using lpips ([#2093](https://github.com/Lightning-AI/torchmetrics/pull/2093)
 
 
 ## [1.1.2] - 2023-09-11
