@@ -75,6 +75,8 @@ repos:
     rev: v3.0.3
     hooks:
       - id: prettier
+        # https://prettier.io/docs/en/options.html#print-width
+        args: ["--print-width=120"]
 
   - repo: https://github.com/asottile/yesqa
     rev: v1.5.0
