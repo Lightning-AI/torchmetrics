@@ -1,7 +1,7 @@
 name: "CI testing | CPU"
 
 # see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
-on:  # Trigger the workflow on push or pull request, but only for the master branch
+on: # Trigger the workflow on push or pull request, but only for the master branch
   push:
     branches: [master, "release/*"]
   pull_request:
@@ -30,26 +30,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ['ubuntu-20.04']
-        python-version: ['3.9']
-        pytorch-version: ['1.9.1', '1.10.2', '1.11.0', '1.12.1', '1.13.1', '2.0.0']
+        os: ["ubuntu-20.04"]
+        python-version: ["3.9"]
+        pytorch-version: ["1.9.1", "1.10.2", "1.11.0", "1.12.1", "1.13.1", "2.0.0"]
         include:
-          - {os: 'ubuntu-22.04', python-version: '3.8', pytorch-version: '1.13.1'}
-          - {os: 'ubuntu-22.04', python-version: '3.10', pytorch-version: '1.13.1'}
-          - {os: 'ubuntu-22.04', python-version: '3.10', pytorch-version: '2.0.0'}
-          - {os: 'ubuntu-22.04', python-version: '3.11', pytorch-version: '2.0.0'}
-          - {os: 'macOS-11', python-version: '3.8', pytorch-version: '1.13.1'}
-          - {os: 'macOS-11', python-version: '3.9', pytorch-version: '1.13.1'}
-          - {os: 'macOS-11', python-version: '3.10', pytorch-version: '2.0.0'}
-          - {os: 'macOS-11', python-version: '3.11', pytorch-version: '2.0.0'}
-          - {os: 'windows-2022', python-version: '3.8', pytorch-version: '1.13.1'}
-          - {os: 'windows-2022', python-version: '3.9', pytorch-version: '1.13.1'}
-          - {os: 'windows-2022', python-version: '3.10', pytorch-version: '2.0.0'}
-          - {os: 'windows-2022', python-version: '3.11', pytorch-version: '2.0.0'}
+          - { os: "ubuntu-22.04", python-version: "3.8", pytorch-version: "1.13.1" }
+          - { os: "ubuntu-22.04", python-version: "3.10", pytorch-version: "1.13.1" }
+          - { os: "ubuntu-22.04", python-version: "3.10", pytorch-version: "2.0.0" }
+          - { os: "ubuntu-22.04", python-version: "3.11", pytorch-version: "2.0.0" }
+          - { os: "macOS-11", python-version: "3.8", pytorch-version: "1.13.1" }
+          - { os: "macOS-11", python-version: "3.9", pytorch-version: "1.13.1" }
+          - { os: "macOS-11", python-version: "3.10", pytorch-version: "2.0.0" }
+          - { os: "macOS-11", python-version: "3.11", pytorch-version: "2.0.0" }
+          - { os: "windows-2022", python-version: "3.8", pytorch-version: "1.13.1" }
+          - { os: "windows-2022", python-version: "3.9", pytorch-version: "1.13.1" }
+          - { os: "windows-2022", python-version: "3.10", pytorch-version: "2.0.0" }
+          - { os: "windows-2022", python-version: "3.11", pytorch-version: "2.0.0" }
           # the oldest configurations
-          - {os: 'ubuntu-20.04', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
-          - {os: 'macOS-11', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
-          - {os: 'windows-2019', python-version: '3.8', pytorch-version: '1.8.1', requires: 'oldest'}
+          - { os: "ubuntu-20.04", python-version: "3.8", pytorch-version: "1.8.1", requires: "oldest" }
+          - { os: "macOS-11", python-version: "3.8", pytorch-version: "1.8.1", requires: "oldest" }
+          - { os: "windows-2019", python-version: "3.8", pytorch-version: "1.8.1", requires: "oldest" }
     env:
       PYTORCH_URL: "https://download.pytorch.org/whl/cpu/torch_stable.html"
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
@@ -61,105 +61,104 @@ jobs:
     timeout-minutes: 120
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    # Github Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
-    - name: Setup macOS
-      if: ${{ runner.os == 'macOS' }}
-      run: |
-        echo 'UNITTEST_TIMEOUT=--timeout=120' >> $GITHUB_ENV
-        brew install gcc libomp ffmpeg # https://github.com/pytorch/pytorch/issues/20030
-    - name: Setup Linux
-      if: ${{ runner.os == 'Linux' }}
-      run: |
-        echo 'UNITTEST_TIMEOUT=--timeout=120' >> $GITHUB_ENV
-        sudo apt update --fix-missing
-        sudo apt install -y ffmpeg dvipng texlive-latex-extra texlive-fonts-recommended cm-super
-    - name: Setup Windows
-      if: ${{ runner.os == 'windows' }}
-      run: choco install ffmpeg
+      # Github Actions: Run step on specific OS: https://stackoverflow.com/a/57948488/4521646
+      - name: Setup macOS
+        if: ${{ runner.os == 'macOS' }}
+        run: |
+          echo 'UNITTEST_TIMEOUT=--timeout=120' >> $GITHUB_ENV
+          brew install gcc libomp ffmpeg # https://github.com/pytorch/pytorch/issues/20030
+      - name: Setup Linux
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          echo 'UNITTEST_TIMEOUT=--timeout=120' >> $GITHUB_ENV
+          sudo apt update --fix-missing
+          sudo apt install -y ffmpeg dvipng texlive-latex-extra texlive-fonts-recommended cm-super
+      - name: Setup Windows
+        if: ${{ runner.os == 'windows' }}
+        run: choco install ffmpeg
 
-    - name: source cashing
-      uses: ./.github/actions/pull-caches
-      with:
-        requires: ${{ matrix.requires }}
-        pytorch-version: ${{ matrix.pytorch-version }}
-        pypi-dir: ${{ env.PYPI_CACHE }}
+      - name: source cashing
+        uses: ./.github/actions/pull-caches
+        with:
+          requires: ${{ matrix.requires }}
+          pytorch-version: ${{ matrix.pytorch-version }}
+          pypi-dir: ${{ env.PYPI_CACHE }}
 
-    - name: Install pkg
-      timeout-minutes: 25
-      run: |
-        pip --version
-        pip install -e . -U --find-links $PYTORCH_URL -f $PYPI_CACHE
-        pip install -r requirements/doctest.txt -U -f $PYPI_CACHE
-        pip list
+      - name: Install pkg
+        timeout-minutes: 25
+        run: |
+          pip --version
+          pip install -e . -U --find-links $PYTORCH_URL -f $PYPI_CACHE
+          pip install -r requirements/doctest.txt -U -f $PYPI_CACHE
+          pip list
 
-    # todo: copy this to install checks
-    - name: DocTests
-      timeout-minutes: 25
-      working-directory: ./src
-      env:
-        SKIP_SLOW_DOCTEST: 1
-      # NOTE: run coverage on tests does not propagate failure status for Win, https://github.com/nedbat/coveragepy/issues/1003
-      run: python -m pytest torchmetrics --reruns 3 --reruns-delay 2
+      # todo: copy this to install checks
+      - name: DocTests
+        timeout-minutes: 25
+        working-directory: ./src
+        env:
+          SKIP_SLOW_DOCTEST: 1
+        # NOTE: run coverage on tests does not propagate failure status for Win, https://github.com/nedbat/coveragepy/issues/1003
+        run: python -m pytest torchmetrics --reruns 3 --reruns-delay 2
 
-    - name: Freeze PIL (hotfix)
-      if: ${{ matrix.python-version != '3.11' }}
-      # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
-      run: pip install "Pillow<9.0"  # It messes with torchvision
+      - name: Freeze PIL (hotfix)
+        if: ${{ matrix.python-version != '3.11' }}
+        # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
+        run: pip install "Pillow<9.0" # It messes with torchvision
 
-    - name: Install all dependencies
-      run: |
-        curl https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py -o adjust-torch-versions.py
-        pip install -q cython  # needed for installing `pycocotools` in latest config
-        python adjust-torch-versions.py requirements.txt
-        for fpath in `ls requirements/*.txt`; do
-            python adjust-torch-versions.py $fpath
-        done
-        pip install --requirement requirements/devel.txt -U \
-          --find-links $PYTORCH_URL -f $PYPI_CACHE
-        pip list
+      - name: Install all dependencies
+        run: |
+          curl https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py -o adjust-torch-versions.py
+          pip install -q cython  # needed for installing `pycocotools` in latest config
+          python adjust-torch-versions.py requirements.txt
+          for fpath in `ls requirements/*.txt`; do
+              python adjust-torch-versions.py $fpath
+          done
+          pip install --requirement requirements/devel.txt -U \
+            --find-links $PYTORCH_URL -f $PYPI_CACHE
+          pip list
 
-    - name: Sanity check
-      id: info
-      run: |
-        python -c "from torch import __version__ as ver; ver = ver.split('+')[0] ; assert ver == '${{ matrix.pytorch-version }}', ver"
-        python -c 'import torch ; print("TORCH=" + str(torch.__version__))' >> $GITHUB_OUTPUT
+      - name: Sanity check
+        id: info
+        run: |
+          python -c "from torch import __version__ as ver; ver = ver.split('+')[0] ; assert ver == '${{ matrix.pytorch-version }}', ver"
+          python -c 'import torch ; print("TORCH=" + str(torch.__version__))' >> $GITHUB_OUTPUT
 
-    - name: Unittests
-      uses: ./.github/actions/unittesting
-      if: ${{ needs.check-diff.outputs.test-dirs != '' }}
-      timeout-minutes: 90
-      with:
-        requires: ${{ matrix.requires }}
-        codecov-token: ${{ secrets.CODECOV_TOKEN }}
-        python-version: ${{ matrix.python-version }}
-        pytorch-version: ${{ steps.info.outputs.TORCH }}
-        dirs: ${{ needs.check-diff.outputs.test-dirs }}
-        test-timeout: ${{ env.UNITTEST_TIMEOUT }}
+      - name: Unittests
+        uses: ./.github/actions/unittesting
+        if: ${{ needs.check-diff.outputs.test-dirs != '' }}
+        timeout-minutes: 90
+        with:
+          requires: ${{ matrix.requires }}
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
+          python-version: ${{ matrix.python-version }}
+          pytorch-version: ${{ steps.info.outputs.TORCH }}
+          dirs: ${{ needs.check-diff.outputs.test-dirs }}
+          test-timeout: ${{ env.UNITTEST_TIMEOUT }}
 
-    - name: update cashing
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-      continue-on-error: true
-      uses: ./.github/actions/push-caches
-      with:
-        pypi-dir: ${{ env.PYPI_CACHE }}
-
+      - name: update cashing
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        continue-on-error: true
+        uses: ./.github/actions/push-caches
+        with:
+          pypi-dir: ${{ env.PYPI_CACHE }}
 
   testing-guardian:
     runs-on: ubuntu-latest
     needs: pytester
     if: always()
     steps:
-    - run: echo "${{ needs.pytester.result }}"
-    - name: failing...
-      if: needs.pytester.result == 'failure'
-      run: exit 1
-    - name: cancelled or skipped...
-      if: contains(fromJSON('["cancelled", "skipped"]'), needs.pytester.result)
-      timeout-minutes: 1
-      run: sleep 90
+      - run: echo "${{ needs.pytester.result }}"
+      - name: failing...
+        if: needs.pytester.result == 'failure'
+        run: exit 1
+      - name: cancelled or skipped...
+        if: contains(fromJSON('["cancelled", "skipped"]'), needs.pytester.result)
+        timeout-minutes: 1
+        run: sleep 90
