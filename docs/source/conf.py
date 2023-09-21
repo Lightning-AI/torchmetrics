@@ -17,7 +17,7 @@ import re
 import shutil
 import sys
 
-import pt_lightning_sphinx_theme
+import lai_sphinx_theme
 from lightning_utilities.docs import fetch_external_assets
 from lightning_utilities.docs.formatting import _transform_changelog
 
@@ -112,7 +112,7 @@ extensions = [
     "sphinx_autodoc_typehints",
     "sphinx_paramlinks",
     "sphinx.ext.githubpages",
-    "pt_lightning_sphinx_theme.extensions.lightning",
+    "lai_sphinx_theme.extensions.lightning",
     "matplotlib.sphinxext.plot_directive",
 ]
 
@@ -168,8 +168,8 @@ pygments_style = None
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 
-html_theme = "pt_lightning_sphinx_theme"
-html_theme_path = [pt_lightning_sphinx_theme.get_html_theme_path()]
+html_theme = "lai_sphinx_theme"
+html_theme_path = [lai_sphinx_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
