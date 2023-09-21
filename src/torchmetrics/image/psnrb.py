@@ -87,10 +87,10 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        sum_squared_error, bef, n_obs = _psnrb_update(preds, target, block_size=self.block_size)
+        sum_squared_error, bef, num_obs = _psnrb_update(preds, target, block_size=self.block_size)
         self.sum_squared_error += sum_squared_error
         self.bef += bef
-        self.total += n_obs
+        self.total += num_obs
         self.data_range = torch.maximum(self.data_range, torch.max(target) - torch.min(target))
 
     def compute(self) -> Tensor:

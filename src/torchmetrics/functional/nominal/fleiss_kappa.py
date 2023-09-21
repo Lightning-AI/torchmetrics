@@ -49,8 +49,7 @@ def _fleiss_kappa_compute(counts: Tensor) -> Tensor:
 
     """
     total = counts.shape[0]
-    n_rater = counts.sum(1)
-    num_raters = n_rater.max()
+    num_raters = counts.sum(1).max()
 
     p_i = counts.sum(dim=0) / (total * num_raters)
     p_j = ((counts**2).sum(dim=1) - num_raters) / (num_raters * (num_raters - 1))
