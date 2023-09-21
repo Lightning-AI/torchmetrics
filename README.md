@@ -106,7 +106,7 @@ You can use TorchMetrics with any PyTorch model or with [PyTorch Lightning](http
 
 ### Module metrics
 
-The [module-based metrics](https://pytorchlightning.github.io/metrics/references/modules.html) contain internal metric states (similar to the parameters of the PyTorch module) that automate accumulation and synchronization across devices!
+The [module-based metrics](https://torchmetrics.readthedocs.io/en/stable/references/metric.html) contain internal metric states (similar to the parameters of the PyTorch module) that automate accumulation and synchronization across devices!
 
 - Automatic accumulation over multiple batches
 - Automatic synchronization between multiple devices
