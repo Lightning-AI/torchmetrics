@@ -19,7 +19,7 @@ env:
   FREEZE_REQUIREMENTS: "1"
   TORCH_URL: "https://download.pytorch.org/whl/cpu/torch_stable.html"
   PYPI_CACHE: "_ci-cache_PyPI"
-  PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: 'python'
+  PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
   TOKENIZERS_PARALLELISM: false
 
 jobs:
@@ -100,7 +100,6 @@ jobs:
         uses: ./.github/actions/push-caches
         with:
           pypi-dir: ${{ env.PYPI_CACHE }}
-
 
   deploy-docs:
     needs: docs-make

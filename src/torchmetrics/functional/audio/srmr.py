@@ -130,8 +130,8 @@ def _erb_filterbank(wave: Tensor, coefs: Tensor) -> Tensor:
         Tensor: shape [B, N, time]
 
     """
-    n_batch, time = wave.shape
-    wave = wave.to(dtype=coefs.dtype).reshape(n_batch, 1, time)  # [B, time]
+    num_batch, time = wave.shape
+    wave = wave.to(dtype=coefs.dtype).reshape(num_batch, 1, time)  # [B, time]
     wave = wave.expand(-1, coefs.shape[0], -1)  # [B, N, time]
 
     gain = coefs[:, 9]
@@ -250,7 +250,7 @@ def speech_reverberation_modulation_energy_ratio(
     )
     shape = preds.shape
     preds = preds.reshape(1, -1) if len(shape) == 1 else preds.reshape(-1, shape[-1])
-    n_batch, time = preds.shape
+    num_batch, time = preds.shape
     # convert int type to float
     if not torch.is_floating_point(preds):
         preds = preds.to(torch.float64) / torch.finfo(preds.dtype).max
@@ -272,7 +272,7 @@ def speech_reverberation_modulation_energy_ratio(
         mfs = 400.0
         temp = []
         preds_np = preds.detach().cpu().numpy()
-        for b in range(n_batch):
+        for b in range(num_batch):
             gt_env_b = fft_gtgram(preds_np[b], fs, 0.010, 0.0025, n_cochlear_filters, low_freq)
             temp.append(torch.tensor(gt_env_b))
         gt_env = torch.stack(temp, dim=0).to(device=preds.device)
@@ -291,7 +291,7 @@ def speech_reverberation_modulation_energy_ratio(
         min_cf, max_cf, n=8, fs=mfs, q=2, device=preds.device
     )
 
-    n_frames = int(1 + (time - w_length) // w_inc)
+    num_frames = int(1 + (time - w_length) // w_inc)
     w = torch.hamming_window(w_length + 1, dtype=torch.float64, device=preds.device)[:-1]
     mod_out = lfilter(
         gt_env.unsqueeze(-2).expand(-1, -1, mf.shape[0], -1), mf[:, 1, :], mf[:, 0, :], clamp=False, batching=True
@@ -300,7 +300,7 @@ def speech_reverberation_modulation_energy_ratio(
     padding = (0, max(ceil(time / w_inc) * w_inc - time, w_length - time))
     mod_out_pad = pad(mod_out, pad=padding, mode="constant", value=0)
     mod_out_frame = mod_out_pad.unfold(-1, w_length, w_inc)
-    energy = ((mod_out_frame[..., :n_frames, :] * w) ** 2).sum(dim=-1)  # [B, N_filters, 8, n_frames]
+    energy = ((mod_out_frame[..., :num_frames, :] * w) ** 2).sum(dim=-1)  # [B, N_filters, 8, n_frames]
 
     if norm:
         energy = _normalize_energy(energy)
@@ -308,7 +308,7 @@ def speech_reverberation_modulation_energy_ratio(
     erbs = torch.flipud(_calc_erbs(low_freq, fs, n_cochlear_filters, device=preds.device))
 
     avg_energy = torch.mean(energy, dim=-1)
-    total_energy = torch.sum(avg_energy.reshape(n_batch, -1), dim=-1)
+    total_energy = torch.sum(avg_energy.reshape(num_batch, -1), dim=-1)
     ac_energy = torch.sum(avg_energy, dim=2)
     ac_perc = ac_energy * 100 / total_energy.reshape(-1, 1)
     ac_perc_cumsum = ac_perc.flip(-1).cumsum(-1)
@@ -316,7 +316,7 @@ def speech_reverberation_modulation_energy_ratio(
     bw = erbs[k90perc_idx]
 
     temp = []
-    for b in range(n_batch):
+    for b in range(num_batch):
         score = _cal_srmr_score(bw[b], avg_energy[b], cutoffs=cutoffs)
         temp.append(score)
     score = torch.stack(temp)

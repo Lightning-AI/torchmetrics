@@ -842,10 +842,10 @@ def _drop_negative_ignored_indices(
     """
     if mode == mode.MULTIDIM_MULTICLASS and preds.dtype == torch.float:
         # In case or multi-dimensional multi-class with logits
-        n_dims = len(preds.shape)
+        num_dims = len(preds.shape)
         num_classes = preds.shape[1]
         # move class dim to last so that we can flatten the additional dimensions into N: [N, C, ...] -> [N, ..., C]
-        preds = preds.transpose(1, n_dims - 1)
+        preds = preds.transpose(1, num_dims - 1)
 
         # flatten: [N, ..., C] -> [N', C]
         preds = preds.reshape(-1, num_classes)
