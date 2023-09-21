@@ -30,7 +30,7 @@ def _pearson_corrcoef_update(
     var_x: Tensor,
     var_y: Tensor,
     corr_xy: Tensor,
-    n_prior: Tensor,
+    num_prior: Tensor,
     num_outputs: int,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Update and returns variables required to compute Pearson Correlation Coefficient.
@@ -45,36 +45,36 @@ def _pearson_corrcoef_update(
         var_x: current variance estimate of x tensor
         var_y: current variance estimate of y tensor
         corr_xy: current covariance estimate between x and y tensor
-        n_prior: current number of observed observations
+        num_prior: current number of observed observations
         num_outputs: Number of outputs in multioutput setting
 
     """
     # Data checking
     _check_same_shape(preds, target)
     _check_data_shape_to_num_outputs(preds, target, num_outputs)
-    n_obs = preds.shape[0]
-    cond = n_prior.mean() > 0 or n_obs == 1
+    num_obs = preds.shape[0]
+    cond = num_prior.mean() > 0 or num_obs == 1
 
     if cond:
-        mx_new = (n_prior * mean_x + preds.sum(0)) / (n_prior + n_obs)
-        my_new = (n_prior * mean_y + target.sum(0)) / (n_prior + n_obs)
+        mx_new = (num_prior * mean_x + preds.sum(0)) / (num_prior + num_obs)
+        my_new = (num_prior * mean_y + target.sum(0)) / (num_prior + num_obs)
     else:
         mx_new = preds.mean(0)
         my_new = target.mean(0)
 
-    n_prior += n_obs
+    num_prior += num_obs
 
     if cond:
         var_x += ((preds - mx_new) * (preds - mean_x)).sum(0)
         var_y += ((target - my_new) * (target - mean_y)).sum(0)
     else:
-        var_x += preds.var(0) * (n_obs - 1)
-        var_y += target.var(0) * (n_obs - 1)
+        var_x += preds.var(0) * (num_obs - 1)
+        var_y += target.var(0) * (num_obs - 1)
     corr_xy += ((preds - mx_new) * (target - mean_y)).sum(0)
     mean_x = mx_new
     mean_y = my_new
 
-    return mean_x, mean_y, var_x, var_y, corr_xy, n_prior
+    return mean_x, mean_y, var_x, var_y, corr_xy, num_prior
 
 
 def _pearson_corrcoef_compute(
