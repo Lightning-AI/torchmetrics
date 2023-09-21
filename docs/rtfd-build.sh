@@ -2,7 +2,7 @@
 
 if ! [ $READTHEDOCS_VERSION == "latest" -o $READTHEDOCS_VERSION == "stable" ];
 then
-    cd ./docs/source ;
+    cd ./docs ;
     export SPHINX_FETCH_ASSETS=0 ;
     make html --jobs $(nproc) ;
     ls -lh build
