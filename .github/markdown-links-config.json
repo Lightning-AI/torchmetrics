@@ -4,7 +4,7 @@
       "pattern": "^https://github.com/Lightning-AI/torchmetrics/pull/.*"
     },
     {
-      "pattern":".*https://dev.azure.com/Lightning-AI/Metrics/_apis/build/status.*"
+      "pattern": ".*https://dev.azure.com/Lightning-AI/Metrics/_apis/build/status.*"
     }
   ],
   "httpHeaders": [
