@@ -30,7 +30,7 @@ sys.path.insert(0, os.path.abspath(_PATH_ROOT))
 
 FOLDER_GENERATED = "generated"
 SPHINX_MOCK_REQUIREMENTS = int(os.environ.get("SPHINX_MOCK_REQUIREMENTS", True))
-SPHINX_FETCH_ASSETS = int(os.environ.get("SPHINX_FETCH_ASSETS", True))
+SPHINX_FETCH_ASSETS = int(os.environ.get("SPHINX_FETCH_ASSETS", False))
 
 html_favicon = "_static/images/icon.svg"
 
