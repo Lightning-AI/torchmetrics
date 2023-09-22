@@ -44,6 +44,13 @@ repos:
         args: [--py38-plus]
         name: Upgrade code
 
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.16.12
+    hooks:
+      - id: typos
+        # empty to do not write fixes
+        args: []
+
   - repo: https://github.com/PyCQA/docformatter
     rev: v1.7.5
     hooks:
