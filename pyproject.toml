@@ -44,6 +44,14 @@ wrap-summaries = 120
 wrap-descriptions = 120
 blank = true
 
+[tool.codespell]
+#skip = '*.py'
+# comma separated list of words; waiting for:
+#  https://github.com/codespell-project/codespell/issues/2839#issuecomment-1731601603
+ignore-words-list = "ROUGE, MAPE, fpr"
+count = ''
+quiet-level = 3
+
 
 [tool.ruff]
 line-length = 120
