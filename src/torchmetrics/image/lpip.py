@@ -57,6 +57,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
 
     - ``img1`` (:class:`~torch.Tensor`): tensor with images of shape ``(N, 3, H, W)``
     - ``img2`` (:class:`~torch.Tensor`): tensor with images of shape ``(N, 3, H, W)``
+    - ``detach`` (:class:`~bool`): bool indicating if return tensor if detached. Set to True if you want to save memory and do not need to backward.
 
     As output of `forward` and `compute` the metric returns the following output
 
