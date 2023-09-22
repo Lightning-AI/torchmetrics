@@ -320,9 +320,9 @@ def _assert_dtype_support(
 class MetricTester:
     """Test class for all metrics.
 
-    Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup once and
+    Class used for efficiently run alot of parametrized tests in DDP mode. Makes sure that DDP is only setup once and
     that pool of processes are used for all tests. All tests should subclass from this and implement a new method called
-    `test_metric_name` where the method `self.run_metric_test` is called inside.
+    ``test_metric_name`` where the method ``self.run_metric_test`` is called inside.
 
     """
 

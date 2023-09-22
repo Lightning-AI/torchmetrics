@@ -72,8 +72,8 @@ class RetrievalFallOut(RetrievalMetric):
         >>> indexes = tensor([0, 0, 0, 1, 1, 1, 1])
         >>> preds = tensor([0.2, 0.3, 0.5, 0.1, 0.3, 0.5, 0.2])
         >>> target = tensor([False, False, True, False, True, False, True])
-        >>> fo = RetrievalFallOut(top_k=2)
-        >>> fo(preds, target, indexes=indexes)
+        >>> rfo = RetrievalFallOut(top_k=2)
+        >>> rfo(preds, target, indexes=indexes)
         tensor(0.5000)
 
     """

@@ -19,8 +19,7 @@ addopts = [
     "--color=yes",
     "--disable-pytest-warnings",
 ]
-# ToDo
-#filterwarnings = ["error::FutureWarning"]
+#filterwarnings = ["error::FutureWarning"] # ToDo
 xfail_strict = true
 junit_duration_report = "call"
 
@@ -48,8 +47,7 @@ blank = true
 #skip = '*.py'
 # comma separated list of words; waiting for:
 #  https://github.com/codespell-project/codespell/issues/2839#issuecomment-1731601603
-ignore-words-list = "ROUGE, MAPE, fpr"
-count = ''
+ignore-words-list = "rouge, mape, wil, fpr"
 quiet-level = 3
 
 
