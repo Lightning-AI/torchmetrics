@@ -19,11 +19,11 @@ from torch import Tensor, tensor
 from torchmetrics.functional.text.helper import _edit_distance
 
 
-def _wil_update(
+def _word_info_lost_update(
     preds: Union[str, List[str]],
     target: Union[str, List[str]],
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Update the wil score with the current set of references and predictions.
+    """Update the WIL score with the current set of references and predictions.
 
     Args:
         preds: Transcription(s) to score as a string or list of strings
@@ -54,7 +54,7 @@ def _wil_update(
     return errors - total, target_total, preds_total
 
 
-def _wil_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> Tensor:
+def _word_info_lost_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> Tensor:
     """Compute the Word Information Lost.
 
     Args:
@@ -90,5 +90,5 @@ def word_information_lost(preds: Union[str, List[str]], target: Union[str, List[
         tensor(0.6528)
 
     """
-    errors, target_total, preds_total = _wil_update(preds, target)
-    return _wil_compute(errors, target_total, preds_total)
+    errors, target_total, preds_total = _word_info_lost_update(preds, target)
+    return _word_info_lost_compute(errors, target_total, preds_total)
