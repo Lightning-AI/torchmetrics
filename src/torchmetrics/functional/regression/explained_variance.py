@@ -32,7 +32,7 @@ def _explained_variance_update(preds: Tensor, target: Tensor) -> Tuple[int, Tens
     """
     _check_same_shape(preds, target)
 
-    n_obs = preds.size(0)
+    num_obs = preds.size(0)
     sum_error = torch.sum(target - preds, dim=0)
     diff = target - preds
     sum_squared_error = torch.sum(diff * diff, dim=0)
@@ -40,11 +40,11 @@ def _explained_variance_update(preds: Tensor, target: Tensor) -> Tuple[int, Tens
     sum_target = torch.sum(target, dim=0)
     sum_squared_target = torch.sum(target * target, dim=0)
 
-    return n_obs, sum_error, sum_squared_error, sum_target, sum_squared_target
+    return num_obs, sum_error, sum_squared_error, sum_target, sum_squared_target
 
 
 def _explained_variance_compute(
-    n_obs: Union[int, Tensor],
+    num_obs: Union[int, Tensor],
     sum_error: Tensor,
     sum_squared_error: Tensor,
     sum_target: Tensor,
@@ -54,7 +54,7 @@ def _explained_variance_compute(
     """Compute Explained Variance.
 
     Args:
-        n_obs: Number of predictions or observations
+        num_obs: Number of predictions or observations
         sum_error: Sum of errors over all observations
         sum_squared_error: Sum of square of errors over all observations
         sum_target: Sum of target values
@@ -69,16 +69,16 @@ def _explained_variance_compute(
     Example:
         >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
         >>> preds = torch.tensor([[0, 2], [-1, 2], [8, -5]])
-        >>> n_obs, sum_error, ss_error, sum_target, ss_target = _explained_variance_update(preds, target)
-        >>> _explained_variance_compute(n_obs, sum_error, ss_error, sum_target, ss_target, multioutput='raw_values')
+        >>> num_obs, sum_error, ss_error, sum_target, ss_target = _explained_variance_update(preds, target)
+        >>> _explained_variance_compute(num_obs, sum_error, ss_error, sum_target, ss_target, multioutput='raw_values')
         tensor([0.9677, 1.0000])
 
     """
-    diff_avg = sum_error / n_obs
-    numerator = sum_squared_error / n_obs - (diff_avg * diff_avg)
+    diff_avg = sum_error / num_obs
+    numerator = sum_squared_error / num_obs - (diff_avg * diff_avg)
 
-    target_avg = sum_target / n_obs
-    denominator = sum_squared_target / n_obs - (target_avg * target_avg)
+    target_avg = sum_target / num_obs
+    denominator = sum_squared_target / num_obs - (target_avg * target_avg)
 
     # Take care of division by zero
     nonzero_numerator = numerator != 0
@@ -130,9 +130,9 @@ def explained_variance(
     """
     if multioutput not in ALLOWED_MULTIOUTPUT:
         raise ValueError(f"Invalid input to argument `multioutput`. Choose one of the following: {ALLOWED_MULTIOUTPUT}")
-    n_obs, sum_error, sum_squared_error, sum_target, sum_squared_target = _explained_variance_update(preds, target)
+    num_obs, sum_error, sum_squared_error, sum_target, sum_squared_target = _explained_variance_update(preds, target)
     return _explained_variance_compute(
-        n_obs,
+        num_obs,
         sum_error,
         sum_squared_error,
         sum_target,

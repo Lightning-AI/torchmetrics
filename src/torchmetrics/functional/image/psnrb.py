@@ -68,7 +68,7 @@ def _compute_bef(x: Tensor, block_size: int = 8) -> Tensor:
 def _psnrb_compute(
     sum_squared_error: Tensor,
     bef: Tensor,
-    n_obs: Tensor,
+    num_obs: Tensor,
     data_range: Tensor,
 ) -> Tensor:
     """Computes peak signal-to-noise ratio.
@@ -76,11 +76,11 @@ def _psnrb_compute(
     Args:
         sum_squared_error: Sum of square of errors over all observations
         bef: block effect
-        n_obs: Number of predictions or observations
+        num_obs: Number of predictions or observations
         data_range: the range of the data. If None, it is determined from the data (max - min).
 
     """
-    sum_squared_error = sum_squared_error / n_obs + bef
+    sum_squared_error = sum_squared_error / num_obs + bef
     if data_range > 2:
         return 10 * torch.log10(data_range**2 / sum_squared_error)
     return 10 * torch.log10(1.0 / sum_squared_error)
@@ -96,9 +96,9 @@ def _psnrb_update(preds: Tensor, target: Tensor, block_size: int = 8) -> Tuple[T
 
     """
     sum_squared_error = torch.sum(torch.pow(preds - target, 2))
-    n_obs = tensor(target.numel(), device=target.device)
+    num_obs = tensor(target.numel(), device=target.device)
     bef = _compute_bef(preds, block_size=block_size)
-    return sum_squared_error, bef, n_obs
+    return sum_squared_error, bef, num_obs
 
 
 def peak_signal_noise_ratio_with_blocked_effect(
@@ -132,5 +132,5 @@ def peak_signal_noise_ratio_with_blocked_effect(
 
     """
     data_range = target.max() - target.min()
-    sum_squared_error, bef, n_obs = _psnrb_update(preds, target, block_size=block_size)
-    return _psnrb_compute(sum_squared_error, bef, n_obs, data_range)
+    sum_squared_error, bef, num_obs = _psnrb_update(preds, target, block_size=block_size)
+    return _psnrb_compute(sum_squared_error, bef, num_obs, data_range)

@@ -44,14 +44,14 @@ def calinski_harabasz_score(data: Tensor, labels: Tensor) -> Tensor:
 
     # convert to zero indexed labels
     unique_labels, labels = torch.unique(labels, return_inverse=True)
-    n_labels = len(unique_labels)
-    n_samples = data.shape[0]
-    _validate_intrinsic_labels_to_samples(n_labels, n_samples)
+    num_labels = len(unique_labels)
+    num_samples = data.shape[0]
+    _validate_intrinsic_labels_to_samples(num_labels, num_samples)
 
     mean = data.mean(dim=0)
     between_cluster_dispersion = torch.tensor(0.0, device=data.device)
     within_cluster_dispersion = torch.tensor(0.0, device=data.device)
-    for k in range(n_labels):
+    for k in range(num_labels):
         cluster_k = data[labels == k, :]
         mean_k = cluster_k.mean(dim=0)
         between_cluster_dispersion += ((mean_k - mean) ** 2).sum() * cluster_k.shape[0]
@@ -59,4 +59,4 @@ def calinski_harabasz_score(data: Tensor, labels: Tensor) -> Tensor:
 
     if within_cluster_dispersion == 0:
         return torch.tensor(1.0, device=data.device, dtype=torch.float32)
-    return between_cluster_dispersion * (n_samples - n_labels) / (within_cluster_dispersion * (n_labels - 1.0))
+    return between_cluster_dispersion * (num_samples - num_labels) / (within_cluster_dispersion * (num_labels - 1.0))

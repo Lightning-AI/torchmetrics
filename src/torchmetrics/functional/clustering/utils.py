@@ -150,8 +150,8 @@ def calculate_contingency_matrix(
     preds_classes, preds_idx = torch.unique(preds, return_inverse=True)
     target_classes, target_idx = torch.unique(target, return_inverse=True)
 
-    n_classes_preds = preds_classes.size(0)
-    n_classes_target = target_classes.size(0)
+    num_classes_preds = preds_classes.size(0)
+    num_classes_target = target_classes.size(0)
 
     contingency = torch.sparse_coo_tensor(
         torch.stack(
@@ -162,8 +162,8 @@ def calculate_contingency_matrix(
         ),
         torch.ones(target_idx.shape[0], dtype=preds_idx.dtype, device=preds_idx.device),
         (
-            n_classes_target,
-            n_classes_preds,
+            num_classes_target,
+            num_classes_preds,
         ),
     )
 
@@ -205,12 +205,12 @@ def _validate_intrinsic_cluster_data(data: Tensor, labels: Tensor) -> None:
         raise ValueError(f"Expected 1D labels, got {labels.ndim}D labels instead")
 
 
-def _validate_intrinsic_labels_to_samples(n_labels: int, n_samples: int) -> None:
+def _validate_intrinsic_labels_to_samples(num_labels: int, num_samples: int) -> None:
     """Validate that the number of labels are in the correct range."""
-    if not 1 < n_labels < n_samples:
+    if not 1 < num_labels < num_samples:
         raise ValueError(
             "Number of detected clusters must be greater than one and less than the number of samples."
-            f"Got {n_labels} clusters and {n_samples} samples."
+            f"Got {num_labels} clusters and {num_samples} samples."
         )
 
 
@@ -271,14 +271,14 @@ def calcualte_pair_cluster_confusion_matrix(
     if contingency is None:
         raise ValueError("Must provide `contingency` if `preds` and `target` are not provided.")
 
-    n_samples = contingency.sum()
-    n_c = contingency.sum(dim=1)
-    n_k = contingency.sum(dim=0)
+    num_samples = contingency.sum()
+    sum_c = contingency.sum(dim=1)
+    sum_k = contingency.sum(dim=0)
     sum_squared = (contingency**2).sum()
 
     pair_matrix = torch.zeros(2, 2, dtype=contingency.dtype, device=contingency.device)
-    pair_matrix[1, 1] = sum_squared - n_samples
-    pair_matrix[1, 0] = (contingency * n_k).sum() - sum_squared
-    pair_matrix[0, 1] = (contingency.T * n_c).sum() - sum_squared
-    pair_matrix[0, 0] = n_samples**2 - pair_matrix[0, 1] - pair_matrix[1, 0] - sum_squared
+    pair_matrix[1, 1] = sum_squared - num_samples
+    pair_matrix[1, 0] = (contingency * sum_k).sum() - sum_squared
+    pair_matrix[0, 1] = (contingency.T * sum_c).sum() - sum_squared
+    pair_matrix[0, 0] = num_samples**2 - pair_matrix[0, 1] - pair_matrix[1, 0] - sum_squared
     return pair_matrix

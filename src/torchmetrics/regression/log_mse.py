@@ -75,10 +75,10 @@ class MeanSquaredLogError(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        sum_squared_log_error, n_obs = _mean_squared_log_error_update(preds, target)
+        sum_squared_log_error, num_obs = _mean_squared_log_error_update(preds, target)
 
         self.sum_squared_log_error += sum_squared_log_error
-        self.total += n_obs
+        self.total += num_obs
 
     def compute(self) -> Tensor:
         """Compute mean squared logarithmic error over state."""
