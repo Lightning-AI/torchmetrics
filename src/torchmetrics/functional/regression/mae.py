@@ -33,26 +33,25 @@ def _mean_absolute_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, 
     preds = preds if preds.is_floating_point else preds.float()  # type: ignore[truthy-function] # todo
     target = target if target.is_floating_point else target.float()  # type: ignore[truthy-function] # todo
     sum_abs_error = torch.sum(torch.abs(preds - target))
-    n_obs = target.numel()
-    return sum_abs_error, n_obs
+    return sum_abs_error, target.numel()
 
 
-def _mean_absolute_error_compute(sum_abs_error: Tensor, n_obs: Union[int, Tensor]) -> Tensor:
+def _mean_absolute_error_compute(sum_abs_error: Tensor, num_obs: Union[int, Tensor]) -> Tensor:
     """Compute Mean Absolute Error.
 
     Args:
         sum_abs_error: Sum of absolute value of errors over all observations
-        n_obs: Number of predictions or observations
+        num_obs: Number of predictions or observations
 
     Example:
         >>> preds = torch.tensor([0., 1, 2, 3])
         >>> target = torch.tensor([0., 1, 2, 2])
-        >>> sum_abs_error, n_obs = _mean_absolute_error_update(preds, target)
-        >>> _mean_absolute_error_compute(sum_abs_error, n_obs)
+        >>> sum_abs_error, num_obs = _mean_absolute_error_update(preds, target)
+        >>> _mean_absolute_error_compute(sum_abs_error, num_obs)
         tensor(0.2500)
 
     """
-    return sum_abs_error / n_obs
+    return sum_abs_error / num_obs
 
 
 def mean_absolute_error(preds: Tensor, target: Tensor) -> Tensor:
@@ -73,5 +72,5 @@ def mean_absolute_error(preds: Tensor, target: Tensor) -> Tensor:
         tensor(0.2500)
 
     """
-    sum_abs_error, n_obs = _mean_absolute_error_update(preds, target)
-    return _mean_absolute_error_compute(sum_abs_error, n_obs)
+    sum_abs_error, num_obs = _mean_absolute_error_update(preds, target)
+    return _mean_absolute_error_compute(sum_abs_error, num_obs)

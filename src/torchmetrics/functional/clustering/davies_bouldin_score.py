@@ -44,13 +44,13 @@ def davies_bouldin_score(data: Tensor, labels: Tensor) -> Tensor:
 
     # convert to zero indexed labels
     unique_labels, labels = torch.unique(labels, return_inverse=True)
-    n_labels = len(unique_labels)
-    n_samples, dim = data.shape
-    _validate_intrinsic_labels_to_samples(n_labels, n_samples)
+    num_labels = len(unique_labels)
+    num_samples, dim = data.shape
+    _validate_intrinsic_labels_to_samples(num_labels, num_samples)
 
-    intra_dists = torch.zeros(n_labels, device=data.device)
-    centroids = torch.zeros((n_labels, dim), device=data.device)
-    for k in range(n_labels):
+    intra_dists = torch.zeros(num_labels, device=data.device)
+    centroids = torch.zeros((num_labels, dim), device=data.device)
+    for k in range(num_labels):
         cluster_k = data[labels == k, :]
         centroids[k] = cluster_k.mean(dim=0)
         intra_dists[k] = (cluster_k - centroids[k]).pow(2.0).sum(dim=1).sqrt().mean()

@@ -343,11 +343,11 @@ def _panoptic_quality_update_sample(
     """
     stuffs_modified_metric = stuffs_modified_metric or set()
     device = flatten_preds.device
-    n_categories = len(cat_id_to_continuous_id)
-    iou_sum = torch.zeros(n_categories, dtype=torch.double, device=device)
-    true_positives = torch.zeros(n_categories, dtype=torch.int, device=device)
-    false_positives = torch.zeros(n_categories, dtype=torch.int, device=device)
-    false_negatives = torch.zeros(n_categories, dtype=torch.int, device=device)
+    num_categories = len(cat_id_to_continuous_id)
+    iou_sum = torch.zeros(num_categories, dtype=torch.double, device=device)
+    true_positives = torch.zeros(num_categories, dtype=torch.int, device=device)
+    false_positives = torch.zeros(num_categories, dtype=torch.int, device=device)
+    false_negatives = torch.zeros(num_categories, dtype=torch.int, device=device)
 
     # calculate the area of each prediction, ground truth and pairwise intersection.
     # NOTE: mypy needs `cast()` because the annotation for `_get_color_areas` is too generic.
@@ -421,11 +421,11 @@ def _panoptic_quality_update(
 
     """
     device = flatten_preds.device
-    n_categories = len(cat_id_to_continuous_id)
-    iou_sum = torch.zeros(n_categories, dtype=torch.double, device=device)
-    true_positives = torch.zeros(n_categories, dtype=torch.int, device=device)
-    false_positives = torch.zeros(n_categories, dtype=torch.int, device=device)
-    false_negatives = torch.zeros(n_categories, dtype=torch.int, device=device)
+    num_categories = len(cat_id_to_continuous_id)
+    iou_sum = torch.zeros(num_categories, dtype=torch.double, device=device)
+    true_positives = torch.zeros(num_categories, dtype=torch.int, device=device)
+    false_positives = torch.zeros(num_categories, dtype=torch.int, device=device)
+    false_negatives = torch.zeros(num_categories, dtype=torch.int, device=device)
 
     # Loop over each sample independently: segments must not be matched across frames.
     for flatten_preds_single, flatten_target_single in zip(flatten_preds, flatten_target):
