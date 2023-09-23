@@ -934,6 +934,7 @@ def precision_recall_curve(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
+    average: Optional[Literal["micro", "macro"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
@@ -982,7 +983,9 @@ def precision_recall_curve(
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
-        return multiclass_precision_recall_curve(preds, target, num_classes, thresholds, ignore_index, validate_args)
+        return multiclass_precision_recall_curve(
+            preds, target, num_classes, thresholds, average, ignore_index, validate_args
+        )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
