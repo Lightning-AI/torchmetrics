@@ -147,7 +147,7 @@ def binary_erosion(
 
     # construct the structuring element if not provided
     if structure is None:
-        structure = generate_binary_structure(image.ndim - 2, 1).int()
+        structure = generate_binary_structure(image.ndim - 2, 1).int().to(image.device)
     check_if_binarized(structure)
 
     if origin is None:
@@ -184,6 +184,11 @@ def distance_transform(
     This function calculates the distance transfrom of a binary tensor, replacing each foreground pixel with the
     distance to the closest background pixel. The distance is calculated using the euclidean, chessboard or taxicab
     distance.
+
+    The memory consumption of this function is in the worst cast N/2**2 where N is the number of pixel. Since we need
+    to compare all foreground pixels to all background pixels, the memory consumption is quadratic in the number of
+    pixels. The memory consumption can be reduced by using the ``scipy`` engine, which is more memory efficient but
+    should also be slower for larger images.
 
     Args:
         x: The binary tensor to calculate the distance transform of.
