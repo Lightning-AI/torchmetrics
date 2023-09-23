@@ -359,9 +359,9 @@ class _SacreBLEUTokenizer:
             if not os.path.exists(file_path):
                 cls.download_flores_file(tokenize)
 
-            cls.sentencepiece_processors[tokenize].Load(file_path)
+            cls.sentencepiece_processors[tokenize].Load(file_path)  # type: ignore[union-attr]
 
-        return " ".join(cls.sentencepiece_processors[tokenize].EncodeAsPieces(line))
+        return " ".join(cls.sentencepiece_processors[tokenize].EncodeAsPieces(line))  # type: ignore[union-attr]
 
     @classmethod
     def _tokenize_flores_101(cls, line: str) -> str:
