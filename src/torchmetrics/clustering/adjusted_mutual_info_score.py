@@ -11,28 +11,36 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any, List, Literal, Optional, Sequence, Union
 
 from torch import Tensor
 
-from torchmetrics.functional.clustering import fowlkes_mallows_index
-from torchmetrics.metric import Metric
+from torchmetrics.clustering.mutual_info_score import MutualInfoScore
+from torchmetrics.functional.clustering.adjusted_mutual_info_score import (
+    _validate_average_method_arg,
+    adjusted_mutual_info_score,
+)
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ = ["FowlkesMallowsIndex.plot"]
+    __doctest_skip__ = ["AdjustedMutualInfoScore.plot"]
 
 
-class FowlkesMallowsIndex(Metric):
-    r"""Compute `Fowlkes-Mallows Index`_.
+class AdjustedMutualInfoScore(MutualInfoScore):
+    r"""Compute `Adjusted Mutual Information Score`_.
 
     .. math::
-        FMI(U,V) = \frac{TP}{\sqrt{(TP + FP) * (TP + FN)}}
+        AMI(U,V) = \frac{MI(U,V) - E(MI(U,V))}{avg(H(U), H(V)) - E(MI(U,V))}
 
-    Where :math:`TP` is the number of true positives, :math:`FP` is the number of false positives, and :math:`FN` is
-    the number of false negatives.
+    Where :math:`U` is a tensor of target values, :math:`V` is a tensor of predictions, :math:`M_p(U,V)` is the
+    generalized mean of order :math:`p` of :math:`U` and :math:`V`, and :math:`MI(U,V)` is the mutual information score
+    between clusters :math:`U` and :math:`V`. The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields
+    the same mutual information score.
+
+    This clustering metric is an extrinsic measure, because it requires ground truth clustering labels, which may not
+    be available in practice since clustering in generally is used for unsupervised learning.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -41,24 +49,26 @@ class FowlkesMallowsIndex(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``fmi`` (:class:`~torch.Tensor`): A tensor with the Fowlkes-Mallows index.
+    - ``ami_score`` (:class:`~torch.Tensor`): A tensor with the Adjusted Mutual Information Score
 
     Args:
+        average_method: Method used to calculate generalized mean for normalization. Choose between
+            ``'min'``, ``'geometric'``, ``'arithmetic'``, ``'max'``.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example::
         >>> import torch
-        >>> from torchmetrics.clustering import FowlkesMallowsIndex
-        >>> preds = torch.tensor([2, 2, 0, 1, 0])
-        >>> target = torch.tensor([2, 2, 1, 1, 0])
-        >>> fmi = FowlkesMallowsIndex()
-        >>> fmi(preds, target)
-        tensor(0.5000)
+        >>> from torchmetrics.clustering import AdjustedMutualInfoScore
+        >>> preds = torch.tensor([2, 1, 0, 1, 0])
+        >>> target = torch.tensor([0, 2, 1, 1, 0])
+        >>> ami_score = AdjustedMutualInfoScore(average_method="arithmetic")
+        >>> ami_score(preds, target)
+        tensor(-0.2500)
 
     """
 
     is_differentiable: bool = True
-    higher_is_better: Optional[bool] = True
+    higher_is_better: Optional[bool] = None
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
@@ -66,20 +76,16 @@ class FowlkesMallowsIndex(Metric):
     target: List[Tensor]
     contingency: Tensor
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(
+        self, average_method: Literal["min", "geometric", "arithmetic", "max"] = "arithmetic", **kwargs: Any
+    ) -> None:
         super().__init__(**kwargs)
-
-        self.add_state("preds", default=[], dist_reduce_fx="cat")
-        self.add_state("target", default=[], dist_reduce_fx="cat")
-
-    def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets."""
-        self.preds.append(preds)
-        self.target.append(target)
+        _validate_average_method_arg(average_method)
+        self.average_method = average_method
 
     def compute(self) -> Tensor:
-        """Compute Fowlkes-Mallows index over state."""
-        return fowlkes_mallows_index(dim_zero_cat(self.preds), dim_zero_cat(self.target))
+        """Compute normalized mutual information over state."""
+        return adjusted_mutual_info_score(dim_zero_cat(self.preds), dim_zero_cat(self.target), self.average_method)
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -101,8 +107,8 @@ class FowlkesMallowsIndex(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.clustering import FowlkesMallowsIndex
-            >>> metric = FowlkesMallowsIndex()
+            >>> from torchmetrics.clustering import AdjustedMutualInfoScore
+            >>> metric = AdjustedMutualInfoScore()
             >>> metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
 
@@ -111,9 +117,9 @@ class FowlkesMallowsIndex(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.clustering import FowlkesMallowsIndex
-            >>> metric = FowlkesMallowsIndex()
-            >>> values = [ ]
+            >>> from torchmetrics.clustering import AdjustedMutualInfoScore
+            >>> metric = AdjustedMutualInfoScore()
+            >>> values = []
             >>> for _ in range(10):
             ...     values.append(metric(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,))))
             >>> fig_, ax_ = metric.plot(values)

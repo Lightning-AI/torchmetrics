@@ -52,7 +52,7 @@ class MutualInfoScore(Metric):
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
+    Example::
         >>> import torch
         >>> from torchmetrics.clustering import MutualInfoScore
         >>> preds = torch.tensor([2, 1, 0, 1, 0])
@@ -118,9 +118,10 @@ class MutualInfoScore(Metric):
             >>> import torch
             >>> from torchmetrics.clustering import MutualInfoScore
             >>> metric = MutualInfoScore()
+            >>> values = [ ]
             >>> for _ in range(10):
-            ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
-            >>> fig_, ax_ = metric.plot(metric.compute())
+            ...     values.append(metric(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,))))
+            >>> fig_, ax_ = metric.plot(values)
 
         """
         return self._plot(val, ax)

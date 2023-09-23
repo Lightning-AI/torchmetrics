@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.clustering.adjusted_mutual_info_score import AdjustedMutualInfoScore
 from torchmetrics.clustering.adjusted_rand_score import AdjustedRandScore
 from torchmetrics.clustering.calinski_harabasz_score import CalinskiHarabaszScore
 from torchmetrics.clustering.davies_bouldin_score import DaviesBouldinScore
@@ -26,6 +27,7 @@ from torchmetrics.clustering.normalized_mutual_info_score import NormalizedMutua
 from torchmetrics.clustering.rand_score import RandScore
 
 __all__ = [
+    "AdjustedMutualInfoScore",
     "AdjustedRandScore",
     "CalinskiHarabaszScore",
     "CompletenessScore",
