@@ -245,8 +245,8 @@ def distance_transform(
         # calculate distance from every foreground pixel to every background pixel
         i0, j0 = torch.where(x == 0)
         i1, j1 = torch.where(x == 1)
-        dis_row = (i1.view(-1, 1) - i0.view(1, -1)).abs()
-        dis_col = (j1.view(-1, 1) - j0.view(1, -1)).abs()
+        dis_row = (i1.unsqueeze(1) - i0.unsqueeze(0)).abs()
+        dis_col = (j1.unsqueeze(1) - j0.unsqueeze(0)).abs()
 
         # # calculate distance
         h, _ = x.shape
