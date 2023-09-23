@@ -232,7 +232,7 @@ class MetricCollection(ModuleDict):
         ``O(number_of_metrics_in_collection ** 2)``, as all metrics need to be compared to all other metrics.
 
         """
-        n_groups = len(self._groups)
+        num_groups = len(self._groups)
         while True:
             for cg_idx1, cg_members1 in deepcopy(self._groups).items():
                 for cg_idx2, cg_members2 in deepcopy(self._groups).items():
@@ -247,13 +247,13 @@ class MetricCollection(ModuleDict):
                         break
 
                 # Start over if we merged groups
-                if len(self._groups) != n_groups:
+                if len(self._groups) != num_groups:
                     break
 
             # Stop when we iterate over everything and do not merge any groups
-            if len(self._groups) == n_groups:
+            if len(self._groups) == num_groups:
                 break
-            n_groups = len(self._groups)
+            num_groups = len(self._groups)
 
         # Re-index groups
         temp = deepcopy(self._groups)

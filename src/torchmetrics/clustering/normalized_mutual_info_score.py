@@ -55,7 +55,7 @@ class NormalizedMutualInfoScore(MutualInfoScore):
         average_method: Method used to calculate generalized mean for normalization
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
+    Example::
         >>> import torch
         >>> from torchmetrics.clustering import NormalizedMutualInfoScore
         >>> preds = torch.tensor([2, 1, 0, 1, 0])
@@ -118,9 +118,10 @@ class NormalizedMutualInfoScore(MutualInfoScore):
             >>> import torch
             >>> from torchmetrics.clustering import NormalizedMutualInfoScore
             >>> metric = NormalizedMutualInfoScore()
+            >>> values = [ ]
             >>> for _ in range(10):
-            ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
-            >>> fig_, ax_ = metric.plot(metric.compute())
+            ...     values.append(metric(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,))))
+            >>> fig_, ax_ = metric.plot(values)
 
         """
         return self._plot(val, ax)

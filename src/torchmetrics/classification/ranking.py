@@ -106,9 +106,9 @@ class MultilabelCoverageError(Metric):
         preds, target = _multilabel_confusion_matrix_format(
             preds, target, self.num_labels, threshold=0.0, ignore_index=self.ignore_index, should_threshold=False
         )
-        measure, n_elements = _multilabel_coverage_error_update(preds, target)
+        measure, num_elements = _multilabel_coverage_error_update(preds, target)
         self.measure += measure
-        self.total += n_elements
+        self.total += num_elements
 
     def compute(self) -> Tensor:
         """Compute metric."""
@@ -226,9 +226,9 @@ class MultilabelRankingAveragePrecision(Metric):
         preds, target = _multilabel_confusion_matrix_format(
             preds, target, self.num_labels, threshold=0.0, ignore_index=self.ignore_index, should_threshold=False
         )
-        measure, n_elements = _multilabel_ranking_average_precision_update(preds, target)
+        measure, num_elements = _multilabel_ranking_average_precision_update(preds, target)
         self.measure += measure
-        self.total += n_elements
+        self.total += num_elements
 
     def compute(self) -> Tensor:
         """Compute metric."""
@@ -348,9 +348,9 @@ class MultilabelRankingLoss(Metric):
         preds, target = _multilabel_confusion_matrix_format(
             preds, target, self.num_labels, threshold=0.0, ignore_index=self.ignore_index, should_threshold=False
         )
-        measure, n_elements = _multilabel_ranking_loss_update(preds, target)
+        measure, num_elements = _multilabel_ranking_loss_update(preds, target)
         self.measure += measure
-        self.total += n_elements
+        self.total += num_elements
 
     def compute(self) -> Tensor:
         """Compute metric."""

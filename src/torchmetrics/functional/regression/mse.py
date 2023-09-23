@@ -36,27 +36,26 @@ def _mean_squared_error_update(preds: Tensor, target: Tensor, num_outputs: int) 
         target = target.view(-1)
     diff = preds - target
     sum_squared_error = torch.sum(diff * diff, dim=0)
-    n_obs = target.shape[0]
-    return sum_squared_error, n_obs
+    return sum_squared_error, target.shape[0]
 
 
-def _mean_squared_error_compute(sum_squared_error: Tensor, n_obs: Union[int, Tensor], squared: bool = True) -> Tensor:
+def _mean_squared_error_compute(sum_squared_error: Tensor, num_obs: Union[int, Tensor], squared: bool = True) -> Tensor:
     """Compute Mean Squared Error.
 
     Args:
         sum_squared_error: Sum of square of errors over all observations
-        n_obs: Number of predictions or observations
+        num_obs: Number of predictions or observations
         squared: Returns RMSE value if set to False.
 
     Example:
         >>> preds = torch.tensor([0., 1, 2, 3])
         >>> target = torch.tensor([0., 1, 2, 2])
-        >>> sum_squared_error, n_obs = _mean_squared_error_update(preds, target, num_outputs=1)
-        >>> _mean_squared_error_compute(sum_squared_error, n_obs)
+        >>> sum_squared_error, num_obs = _mean_squared_error_update(preds, target, num_outputs=1)
+        >>> _mean_squared_error_compute(sum_squared_error, num_obs)
         tensor(0.2500)
 
     """
-    return sum_squared_error / n_obs if squared else torch.sqrt(sum_squared_error / n_obs)
+    return sum_squared_error / num_obs if squared else torch.sqrt(sum_squared_error / num_obs)
 
 
 def mean_squared_error(preds: Tensor, target: Tensor, squared: bool = True, num_outputs: int = 1) -> Tensor:
@@ -79,5 +78,5 @@ def mean_squared_error(preds: Tensor, target: Tensor, squared: bool = True, num_
         tensor(0.2500)
 
     """
-    sum_squared_error, n_obs = _mean_squared_error_update(preds, target, num_outputs=num_outputs)
-    return _mean_squared_error_compute(sum_squared_error, n_obs, squared=squared)
+    sum_squared_error, num_obs = _mean_squared_error_update(preds, target, num_outputs=num_outputs)
+    return _mean_squared_error_compute(sum_squared_error, num_obs, squared=squared)
