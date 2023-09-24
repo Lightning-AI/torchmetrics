@@ -6,29 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
-### Added
-
-- Added utility functions in `segmentation.utils` for future segmentation metrics ([#2105](https://github.com/Lightning-AI/torchmetrics/pull/2105))
-
-### Changed
-
--
-
-
-### Removed
-
--
-
-
-### Fixed
-
--
 
 ## [UnReleased] - 2023-MM-DD
 
 ### Added
 
--
+- Added utility functions in `segmentation.utils` for future segmentation metrics ([#2105](https://github.com/Lightning-AI/torchmetrics/pull/2105))
 
 
 ### Changed
