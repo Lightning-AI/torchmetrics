@@ -6,32 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
+
 ## [UnReleased] - 2023-MM-DD
 
 ### Added
 
 - Added `average` argument to multiclass versions of `PrecisionRecallCurve` and `ROC` ([#2084](https://github.com/Lightning-AI/torchmetrics/pull/2084))
-
-### Changed
-
--
-
-
-### Removed
-
--
-
-
-### Fixed
-
--
-
-
-## [UnReleased] - 2023-MM-DD
-
-### Added
-
--
 
 
 ### Changed
