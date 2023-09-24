@@ -11,33 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added metric to cluster package:
-
-    - `MutualInformationScore` ([#2008](https://github.com/Lightning-AI/torchmetrics/pull/2008))
-
-    - `RandScore` ([#2025](https://github.com/Lightning-AI/torchmetrics/pull/2025))
-
-    - `NormalizedMutualInfoScore` ([#2029](https://github.com/Lightning-AI/torchmetrics/pull/2029))
-
-    - `AdjustedRandScore` ([#2032](https://github.com/Lightning-AI/torchmetrics/pull/2032))
-
-    - `CalinskiHarabaszScore` ([#2036](https://github.com/Lightning-AI/torchmetrics/pull/2036))
-
-    - `DunnIndex` ([#2049](https://github.com/Lightning-AI/torchmetrics/pull/2049))
-
-    - `HomogeneityScore` ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
-
-    - `CompletenessScore` ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
-
-    - `VMeasureScore` ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
-
-    - `FowlkesMallowsIndex` ([#2066](https://github.com/Lightning-AI/torchmetrics/pull/2066))
-
-    - `AdjustedMutualInfoScore` ([#2058](https://github.com/Lightning-AI/torchmetrics/pull/2058))
-
-    - `DaviesBouldinScore` ([#2071](https://github.com/Lightning-AI/torchmetrics/pull/2071))
-
-- Added `backend` argument to `MeanAveragePrecision` ([#2034](https://github.com/Lightning-AI/torchmetrics/pull/2034))
+-
 
 
 ### Changed
@@ -53,6 +27,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 -
+
+
+## [1.2.0] - 2023-09-22
+
+### Added
+
+- Added metric to cluster package:
+    - `MutualInformationScore` ([#2008](https://github.com/Lightning-AI/torchmetrics/pull/2008))
+    - `RandScore` ([#2025](https://github.com/Lightning-AI/torchmetrics/pull/2025))
+    - `NormalizedMutualInfoScore` ([#2029](https://github.com/Lightning-AI/torchmetrics/pull/2029))
+    - `AdjustedRandScore` ([#2032](https://github.com/Lightning-AI/torchmetrics/pull/2032))
+    - `CalinskiHarabaszScore` ([#2036](https://github.com/Lightning-AI/torchmetrics/pull/2036))
+    - `DunnIndex` ([#2049](https://github.com/Lightning-AI/torchmetrics/pull/2049))
+    - `HomogeneityScore` ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
+    - `CompletenessScore` ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
+    - `VMeasureScore` ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
+    - `FowlkesMallowsIndex` ([#2066](https://github.com/Lightning-AI/torchmetrics/pull/2066))
+    - `AdjustedMutualInfoScore` ([#2058](https://github.com/Lightning-AI/torchmetrics/pull/2058))
+    - `DaviesBouldinScore` ([#2071](https://github.com/Lightning-AI/torchmetrics/pull/2071))
+- Added `backend` argument to `MeanAveragePrecision` ([#2034](https://github.com/Lightning-AI/torchmetrics/pull/2034))
 
 
 ## [1.1.2] - 2023-09-11
