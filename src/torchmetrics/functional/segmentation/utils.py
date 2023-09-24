@@ -23,7 +23,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
 
 
-def check_if_binarized(x: Tensor) -> bool:
+def check_if_binarized(x: Tensor) -> None:
     """Check if the input is binarized.
 
     Example:
@@ -279,8 +279,8 @@ def mask_edges(
     target: Tensor,
     label_idx: int = 1,
     crop: bool = True,
-    spacing: List[int] | None = None,
-) -> Tuple[Tensor, Tensor]:
+    spacing: Optional[Union[Tuple[int, int], Tuple[int, int, int]]] = None,
+) -> Union[Tuple[Tensor, Tensor], Tuple[Tensor, Tensor, Tensor, Tensor]]:
     """Get the edges of binary segmentation masks.
 
     Args:
@@ -289,6 +289,11 @@ def mask_edges(
         label_idx: The label index to use for the edges. By default, the edges of the foreground are returned.
         crop: Whether to crop the edges to the region of interest. If ``True``, the edges are cropped to the bounding
         spacing: The pixel spacing of the input images. If provided, the edges are calculated using the euclidean
+
+    Returns:
+        If spacing is not provided, a 2-tuple containing the edges of the predicted and target mask respectively is
+        returned. If spacing is provided, a 4-tuple containing the edges and areas of the predicted and target mask
+        respectively is returned.
 
     """
     _check_same_shape(preds, target)
@@ -379,7 +384,9 @@ def surface_distance(
     return dis[preds]
 
 
-def get_neighbour_tables(spacing: Tuple[int, ...], device: Optional[torch.device] = None) -> Tuple[Tensor, Tensor]:
+def get_neighbour_tables(
+    spacing: Union[Tuple[int, int], Tuple[int, int, int]], device: Optional[torch.device] = None
+) -> Tuple[Tensor, Tensor]:
     """Create a table that maps neighbour codes to the contour length or surface area of the corresponding contour.
 
     Args:
@@ -391,10 +398,10 @@ def get_neighbour_tables(spacing: Tuple[int, ...], device: Optional[torch.device
         area of the corresponding contour and as its second element the kernel used to compute the neighbour codes.
 
     """
-    if len(spacing) == 2:
-        return table_contour_length(spacing, device)
-    if len(spacing) == 3:
-        return table_surface_area(spacing, device)
+    if isinstance(spacing, tuple) and len(spacing) == 2:
+        return table_contour_length(spacing, device)  # type: ignore[arg-type]
+    if isinstance(spacing, tuple) and len(spacing) == 3:
+        return table_surface_area(spacing, device)  # type: ignore[arg-type]
     raise ValueError("The spacing must be a tuple of length 2 or 3.")
 
 
