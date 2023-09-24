@@ -552,27 +552,35 @@ def _multiclass_precision_recall_curve_compute(
         recall = torch.cat([recall, torch.zeros(1, num_classes, dtype=recall.dtype, device=recall.device)])
         precision = precision.T
         recall = recall.T
-        threshold = thresholds
+        thres = thresholds
+        tensor_state = True
     else:
-        precision, recall, threshold = [], [], []
+        precision_list, recall_list, thres_list = [], [], []
         for i in range(num_classes):
             res = _binary_precision_recall_curve_compute((state[0][:, i], state[1]), thresholds=None, pos_label=i)
-            precision.append(res[0])
-            recall.append(res[1])
-            threshold.append(res[2])
+            precision_list.append(res[0])
+            recall_list.append(res[1])
+            thres_list.append(res[2])
+        tensor_state = False
 
     if average == "macro":
-        threshold = threshold.repeat(num_classes) if isinstance(threshold, Tensor) else torch.cat(threshold, 0)
-        threshold = threshold.sort().values
-        mean_precision = precision.flatten() if isinstance(precision, Tensor) else torch.cat(precision, 0)
+        thres = thres.repeat(num_classes) if tensor_state else torch.cat(thres_list, 0)
+        thres = thres.sort().values
+        mean_precision = precision.flatten() if tensor_state else torch.cat(precision_list, 0)
         mean_precision = mean_precision.sort().values
         mean_recall = torch.zeros_like(mean_precision)
         for i in range(num_classes):
-            mean_recall += interp(mean_precision, precision[i], recall[i])
+            mean_recall += interp(
+                mean_precision,
+                precision[i] if tensor_state else precision_list[i],
+                recall[i] if tensor_state else recall_list[i],
+            )
         mean_recall /= num_classes
-        return mean_precision, mean_recall, threshold
+        return mean_precision, mean_recall, thres
 
-    return precision, recall, threshold
+    if tensor_state:
+        return precision, recall, thres
+    return precision_list, recall_list, thres_list
 
 
 def multiclass_precision_recall_curve(
