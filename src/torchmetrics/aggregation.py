@@ -117,7 +117,7 @@ class MaxMetric(BaseAggregator):
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
-      arbitary shape ``(...,)``.
+      arbitrary shape ``(...,)``.
 
     As output of `forward` and `compute` the metric returns the following output
 
@@ -222,7 +222,7 @@ class MinMetric(BaseAggregator):
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
-      arbitary shape ``(...,)``.
+      arbitrary shape ``(...,)``.
 
     As output of `forward` and `compute` the metric returns the following output
 
@@ -327,7 +327,7 @@ class SumMetric(BaseAggregator):
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
-      arbitary shape ``(...,)``.
+      arbitrary shape ``(...,)``.
 
     As output of `forward` and `compute` the metric returns the following output
 
@@ -432,7 +432,7 @@ class CatMetric(BaseAggregator):
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
-      arbitary shape ``(...,)``.
+      arbitrary shape ``(...,)``.
 
     As output of `forward` and `compute` the metric returns the following output
 
@@ -496,9 +496,9 @@ class MeanMetric(BaseAggregator):
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
-      arbitary shape ``(...,)``.
+      arbitrary shape ``(...,)``.
     - ``weight`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float value with
-      arbitary shape ``(...,)``. Needs to be broadcastable with the shape of ``value`` tensor.
+      arbitrary shape ``(...,)``. Needs to be broadcastable with the shape of ``value`` tensor.
 
     As output of `forward` and `compute` the metric returns the following output
 
@@ -623,7 +623,7 @@ class RunningMean(Running):
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
-      arbitary shape ``(...,)``.
+      arbitrary shape ``(...,)``.
 
     As output of `forward` and `compute` the metric returns the following output
 
@@ -680,7 +680,7 @@ class RunningSum(Running):
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``value`` (:class:`~float` or :class:`~torch.Tensor`): a single float or an tensor of float values with
-      arbitary shape ``(...,)``.
+      arbitrary shape ``(...,)``.
 
     As output of `forward` and `compute` the metric returns the following output
 

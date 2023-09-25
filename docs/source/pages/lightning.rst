@@ -165,7 +165,7 @@ The following contains a list of pitfalls to be aware of:
 
 * Modular metrics contain internal states that should belong to only one DataLoader. In case you are using multiple DataLoaders,
   it is recommended to initialize a separate modular metric instances for each DataLoader and use them separately. The same holds
-  for using seperate metrics for training, validation and testing.
+  for using separate metrics for training, validation and testing.
 
 .. testcode:: python
 
@@ -194,7 +194,7 @@ The following contains a list of pitfalls to be aware of:
 
 * Calling ``self.log("val", self.metric(preds, target))`` with the intention of logging the metric object. Because
   ``self.metric(preds, target)`` corresponds to calling the forward method, this will return a tensor and not the
-  metric object. Such logging will be wrong in this case. Instead it is important to seperate into seperate lines:
+  metric object. Such logging will be wrong in this case. Instead it is important to separate into separate lines:
 
 .. testcode:: python
 

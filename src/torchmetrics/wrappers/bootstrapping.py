@@ -117,7 +117,7 @@ class BootStrapper(WrapperMetric):
         if sampling_strategy not in allowed_sampling:
             raise ValueError(
                 f"Expected argument ``sampling_strategy`` to be one of {allowed_sampling}"
-                f" but recieved {sampling_strategy}"
+                f" but received {sampling_strategy}"
             )
         self.sampling_strategy = sampling_strategy
 

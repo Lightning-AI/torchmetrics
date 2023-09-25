@@ -44,7 +44,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
-    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided.
+    r"""Compute the highest possible specificity value given the minimum sensitivity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
@@ -128,13 +128,13 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
 
 
 class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
-    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided.
+    r"""Compute the highest possible specificity value given the minimum sensitivity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
 
     For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
-    classes as the negative, which is refered to as the one-vs-rest approach. One-vs-one is currently not supported by
+    classes as the negative, which is referred to as the one-vs-rest approach. One-vs-one is currently not supported by
     this metric.
 
     Accepts the following input tensors:
@@ -154,7 +154,7 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
     size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         min_sensitivity: float value specifying minimum sensitivity threshold.
         thresholds:
             Can be one of:
@@ -230,7 +230,7 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
 
 
 class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
-    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided.
+    r"""Compute the highest possible specificity value given the minimum sensitivity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
@@ -252,7 +252,7 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
     size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         min_sensitivity: float value specifying minimum sensitivity threshold.
         thresholds:
             Can be one of:
@@ -328,7 +328,7 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
 
 
 class SpecificityAtSensitivity(_ClassificationTaskWrapper):
-    r"""Compute the higest possible specificity value given the minimum sensitivity thresholds provided.
+    r"""Compute the highest possible specificity value given the minimum sensitivity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.

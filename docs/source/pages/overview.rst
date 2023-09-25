@@ -117,7 +117,7 @@ the native `MetricCollection`_ module can also be used to wrap multiple metrics.
             self.metric1 = BinaryAccuracy()
             self.metric2 = nn.ModuleList(BinaryAccuracy())
             self.metric3 = nn.ModuleDict({'accuracy': BinaryAccuracy()})
-            self.metric4 = MetricCollection([BinaryAccuracy()]) # torchmetrics build-in collection class
+            self.metric4 = MetricCollection([BinaryAccuracy()]) # torchmetrics built-in collection class
 
         def forward(self, batch):
             data, target = batch
@@ -205,8 +205,8 @@ Most metrics in our collection can be used with 16-bit precision (``torch.half``
 the following limitations:
 
 * In general ``pytorch`` had better support for 16-bit precision much earlier on GPU than CPU. Therefore, we
-  recommend that anyone that want to use metrics with half precision on CPU, upgrade to atleast pytorch v1.6
-  where support for operations such as addition, subtraction, multiplication ect. was added.
+  recommend that anyone that want to use metrics with half precision on CPU, upgrade to at least pytorch v1.6
+  where support for operations such as addition, subtraction, multiplication etc. was added.
 * Some metrics does not work at all in half precision on CPU. We have explicitly stated this in their docstring,
   but they are also listed below:
 
@@ -217,7 +217,7 @@ the following limitations:
 You can always check the precision/dtype of the metric by checking the `.dtype` property.
 
 ******************
-Metric Arithmetics
+Metric Arithmetic
 ******************
 
 Metrics support most of python built-in operators for arithmetic, logic and bitwise operations.

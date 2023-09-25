@@ -54,7 +54,7 @@ class _EditOperations(str, Enum):
 class _LevenshteinEditDistance:
     """A convenience class for calculating the Levenshtein edit distance.
 
-    Class will cache some intermediate values to hasten the calculation. The implementation follows the implemenation
+    Class will cache some intermediate values to hasten the calculation. The implementation follows the implementation
     from https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/lib_ter.py,
     where the most of this implementation is adapted and copied from.
 

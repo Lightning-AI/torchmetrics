@@ -59,7 +59,7 @@ def test_error_on_wrong_input():
 
 
 def test_inherit():
-    """Test that metric that inherits can be instanciated."""
+    """Test that metric that inherits can be instantiated."""
     DummyMetric()
 
 
@@ -465,7 +465,7 @@ def test_constant_memory(device, requires_grad):
 def test_constant_memory_on_repeat_init():
     """Test that when initializing a metric multiple times the memory does not increase.
 
-    This only works for metrics with `compute_with_cache=False` as otherwise the cache will keep a refence that python
+    This only works for metrics with `compute_with_cache=False` as otherwise the cache will keep a reference that python
     gc will not be able to collect and clean.
 
     """

@@ -236,10 +236,10 @@ class TextDataset(Dataset):
         return self.num_sentences
 
     def _get_tokens_idf(self) -> Dict[int, float]:
-        """Calculate token inverse document frequences.
+        """Calculate token inverse document frequencies.
 
         Return:
-            A python dictionary containing inverse document frequences for token ids.
+            A python dictionary containing inverse document frequencies for token ids.
 
         """
         token_counter: Counter = Counter()

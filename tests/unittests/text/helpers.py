@@ -91,7 +91,7 @@ def _class_test(
         check_scriptable: bool indicating if metric should also be tested if it can be scripted
         key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output against
             the ref_metric.
-        ignore_order: Ignore order of prediction accross processes when DDP is used.
+        ignore_order: Ignore order of prediction across processes when DDP is used.
         kwargs_update: Additional keyword arguments that will be passed with preds and
             targets when running update on the metric.
 
@@ -99,7 +99,7 @@ def _class_test(
     if not metric_args:
         metric_args = {}
 
-    # Instanciate metric
+    # Instantiate metric
     metric = metric_class(dist_sync_on_step=dist_sync_on_step, **metric_args)
 
     # check that the metric is scriptable
@@ -340,7 +340,7 @@ class TextTester(MetricTester):
             check_scriptable: bool indicating if metric should also be tested if it can be scripted
             key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
                 against the ref_metric.
-            ignore_order: Ignore order of prediction accross processes when DDP is used.
+            ignore_order: Ignore order of prediction across processes when DDP is used.
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
 

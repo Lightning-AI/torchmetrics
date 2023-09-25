@@ -12,7 +12,7 @@ Torchmetrics is a metrics API created for easy metric development and usage in b
 Pytorch Lightning, but got split off so users could take advantage of the large collection of metrics
 implemented without having to install Pytorch Lightning (even though we would love for you to try it out).
 We currently have around 100+ metrics implemented and we continuously are adding more metrics, both within
-already covered domains (classification, regression ect.) but also new domains (object detection ect.).
+already covered domains (classification, regression etc.) but also new domains (object detection etc.).
 We make sure that all our metrics are rigorously tested such that you can trust them.
 """
 
