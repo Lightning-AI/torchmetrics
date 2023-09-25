@@ -46,19 +46,19 @@ blank = true
 
 [tool.codespell]
 #skip = '*.py'
+quiet-level = 3
 # Todo: comma separated list of words; waiting for:
 #  https://github.com/codespell-project/codespell/issues/2839#issuecomment-1731601603
 # Todo: also adding links until they ignored by its: nature
 #  https://github.com/codespell-project/codespell/issues/2243#issuecomment-1732019960
 ignore-words-list = """
-    rouge, \
-    mape, \
-    wil, \
-    fpr, \
-    raison, \
-    https://rechtsprechung-im-ostseeraum.archive.uni-greifswald.de/word-error-rate-character-error-rate-how-to-evaluate-a-model
+  rouge, \
+  mape, \
+  wil, \
+  fpr, \
+  raison, \
+  https://rechtsprechung-im-ostseeraum.archive.uni-greifswald.de/word-error-rate-character-error-rate-how-to-evaluate-a-model
 """
-quiet-level = 3
 
 
 [tool.ruff]
