@@ -194,7 +194,7 @@ The following contains a list of pitfalls to be aware of:
 
 * Calling ``self.log("val", self.metric(preds, target))`` with the intention of logging the metric object. Because
   ``self.metric(preds, target)`` corresponds to calling the forward method, this will return a tensor and not the
-  metric object. Such logging will be wrong in this case. Instead it is important to separate into separate into several lines:
+  metric object. Such logging will be wrong in this case. Instead, it is essential to separate into several lines:
 
 .. testcode:: python
 
