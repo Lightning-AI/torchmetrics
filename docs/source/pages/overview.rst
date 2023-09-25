@@ -216,7 +216,7 @@ the following limitations:
 
 You can always check the precision/dtype of the metric by checking the `.dtype` property.
 
-******************
+*****************
 Metric Arithmetic
 *****************
 
