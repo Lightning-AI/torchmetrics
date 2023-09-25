@@ -88,7 +88,7 @@ class UniversalImageQualityIndex(Metric):
             raise ValueError(
                 f"The `reduction` {reduction} is not valid. Valid options are `elementwise_mean`, `sum`, `none`, None."
             )
-        if reduction == "none" or reduction is None:
+        if reduction is None or reduction == "none":
             rank_zero_warn(
                 "Metric `UniversalImageQualityIndex` will save all targets and predictions in the buffer when using"
                 "`reduction=None` or `reduction='none'. For large datasets, this may lead to a large memory footprint."
@@ -105,7 +105,7 @@ class UniversalImageQualityIndex(Metric):
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         preds, target = _uqi_update(preds, target)
-        if self.reduction == "none" or self.reduction is None:
+        if self.reduction is None or self.reduction == "none":
             self.preds.append(preds)
             self.target.append(target)
         else:
