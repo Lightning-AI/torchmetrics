@@ -187,7 +187,7 @@ def spatial_average(in_tens: Tensor, keep_dim: bool = True) -> Tensor:
 
 
 def upsample(in_tens: Tensor, out_hw: Tuple[int, ...] = (64, 64)) -> Tensor:
-    """Up-sample input with bi-linear interpolation."""
+    """Upsample input with bilinear interpolation."""
     return nn.Upsample(size=out_hw, mode="bilinear", align_corners=False)(in_tens)
 
 
