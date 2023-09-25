@@ -216,9 +216,9 @@ the following limitations:
 
 You can always check the precision/dtype of the metric by checking the `.dtype` property.
 
-******************
+*****************
 Metric Arithmetic
-******************
+*****************
 
 Metrics support most of python built-in operators for arithmetic, logic and bitwise operations.
 
