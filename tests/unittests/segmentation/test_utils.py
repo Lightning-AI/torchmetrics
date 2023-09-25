@@ -88,16 +88,19 @@ def test_generate_binary_structure(rank, connectivity):
     ],
 )
 @pytest.mark.parametrize("border_value", [0, 1])
-def test_binary_erosion(case, border_value):
+@pytest.mark.parametrize("device", ["cpu", "cuda"])
+def test_binary_erosion(case, border_value, device):
     """Test the binary erosion function.
 
     Cases taken from:
     https://github.com/scipy/scipy/blob/v1.11.1/scipy/ndimage/tests/test_morphology.py
 
     """
+    if device == "cuda" and not torch.cuda.is_available():
+        pytest.skip("CUDA device not available.")
     scierosion = scibinary_erosion(case, border_value=border_value)
-    erosion = binary_erosion(case.unsqueeze(0).unsqueeze(0), border_value=border_value)
-    assert torch.allclose(erosion, torch.from_numpy(scierosion).byte())
+    erosion = binary_erosion(case.unsqueeze(0).unsqueeze(0).to(device), border_value=border_value)
+    assert torch.allclose(erosion.cpu(), torch.from_numpy(scierosion).byte())
 
 
 @pytest.mark.parametrize(
@@ -154,19 +157,22 @@ def test_binary_erosion_error(arguments, error, match):
     ],
 )
 @pytest.mark.parametrize("metric", ["euclidean", "chessboard", "taxicab"])
-def test_distance_transform(case, metric):
+@pytest.mark.parametrize("device", ["cpu", "cuda"])
+def test_distance_transform(case, metric, device):
     """Test the distance transform function.
 
     Cases taken from:
     https://github.com/scipy/scipy/blob/v1.11.1/scipy/ndimage/tests/test_morphology.py
 
     """
-    distance = distance_transform(case, metric=metric)
+    if device == "cuda" and not torch.cuda.is_available():
+        pytest.skip("CUDA device not available.")
+    distance = distance_transform(case.to(device), metric=metric)
     if metric == "euclidean":
         scidistance = scidistance_transform_edt(case)
     else:
         scidistance = scidistance_transform_cdt(case, metric=metric)
-    assert torch.allclose(distance, torch.from_numpy(scidistance).float())
+    assert torch.allclose(distance.cpu(), torch.from_numpy(scidistance).float())
 
 
 @pytest.mark.parametrize("dim", [2, 3])
@@ -198,17 +204,20 @@ def test_neighbour_table(dim, spacing):
 )
 @pytest.mark.parametrize("distance_metric", ["euclidean", "chessboard", "taxicab"])
 @pytest.mark.parametrize("spacing", [1, 2])
-def test_surface_distance(cases, distance_metric, spacing):
+@pytest.mark.parametrize("device", ["cpu", "cuda"])
+def test_surface_distance(cases, distance_metric, spacing, device):
     """Test the surface distance function."""
+    if device == "cuda" and not torch.cuda.is_available():
+        pytest.skip("CUDA device not available.")
     if spacing != 1 and distance_metric != "euclidean":
         pytest.skip("Only euclidean distance is supported for spacing != 1 in reference")
     preds, target = cases
     spacing = 2 * [spacing]
-    res = surface_distance(preds, target, distance_metric=distance_metric, spacing=spacing)
+    res = surface_distance(preds.to(device), target.to(device), distance_metric=distance_metric, spacing=spacing)
     reference_res = monai_get_surface_distance(
         preds.numpy(), target.numpy(), distance_metric=distance_metric, spacing=spacing
     )
-    assert torch.allclose(res, torch.from_numpy(reference_res).float())
+    assert torch.allclose(res.cpu(), torch.from_numpy(reference_res).float())
 
 
 @pytest.mark.parametrize(
@@ -222,13 +231,16 @@ def test_surface_distance(cases, distance_metric, spacing):
 )
 @pytest.mark.parametrize("spacing", [None, 1, 2])
 @pytest.mark.parametrize("crop", [False, True])
-def test_mask_edges(cases, spacing, crop):
+@pytest.mark.parametrize("device", ["cpu", "cuda"])
+def test_mask_edges(cases, spacing, crop, device):
     """Test the mask edges function."""
+    if device == "cuda" and not torch.cuda.is_available():
+        pytest.skip("CUDA device not available.")
     preds, target = cases
     if spacing is not None:
         spacing = preds.ndim * (spacing,)
-    res = mask_edges(preds, target, spacing=spacing, crop=crop)
+    res = mask_edges(preds.to(device), target.to(device), spacing=spacing, crop=crop)
     reference_res = monai_get_mask_edges(preds, target, spacing=spacing, crop=crop)
 
     for r1, r2 in zip(res, reference_res):
-        assert torch.allclose(r1.float(), torch.from_numpy(r2).float())
+        assert torch.allclose(r1.cpu().float(), torch.from_numpy(r2).float())
