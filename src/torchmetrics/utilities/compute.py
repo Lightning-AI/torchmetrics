@@ -142,8 +142,7 @@ def interp(x: Tensor, xp: Tensor, fp: Tensor) -> Tensor:
     Adjusted version of this https://github.com/pytorch/pytorch/issues/50334#issuecomment-1000917964
 
     Args:
-        x: the :math:`x`-coordinates at which to evaluate the interpolated
-           values.
+        x: the :math:`x`-coordinates at which to evaluate the interpolated values.
         xp: the :math:`x`-coordinates of the data points, must be increasing.
         fp: the :math:`y`-coordinates of the data points, same length as `xp`.
 
