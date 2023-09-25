@@ -218,7 +218,7 @@ You can always check the precision/dtype of the metric by checking the `.dtype` 
 
 ******************
 Metric Arithmetic
-******************
+*****************
 
 Metrics support most of python built-in operators for arithmetic, logic and bitwise operations.
 
