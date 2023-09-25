@@ -57,7 +57,7 @@ ignore-words-list = """
   wil, \
   fpr, \
   raison, \
-  https://rechtsprechung-im-ostseeraum.archiv.uni-greifswald.de/word-error-rate-character-error-rate-how-to-evaluate-a-model
+  archiv
 """
 
 
