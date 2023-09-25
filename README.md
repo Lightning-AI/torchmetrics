@@ -278,7 +278,7 @@ acc = torchmetrics.functional.classification.multiclass_accuracy(
 ### Covered domains and example metrics
 
 In total TorchMetrics contains [100+ metrics](https://torchmetrics.readthedocs.io/en/stable/all-metrics.html), which
-convers the following domains:
+covers the following domains:
 
 - Audio
 - Classification

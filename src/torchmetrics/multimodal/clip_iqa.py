@@ -106,8 +106,8 @@ class CLIPImageQualityAssessment(Metric):
         data_range: The maximum value of the input tensor. For example, if the input images are in range [0, 255],
             data_range should be 255. The images are normalized by this value.
         prompts: A string, tuple of strings or nested tuple of strings. If a single string is provided, it must be one
-            of the available prompts (see above). Else the input is expected to be a tuple, where each element can be one
-            of two things: either a string or a tuple of strings. If a string is provided, it must be one of the
+            of the available prompts (see above). Else the input is expected to be a tuple, where each element can
+            be one of two things: either a string or a tuple of strings. If a string is provided, it must be one of the
             available prompts (see above). If tuple is provided, it must be of length 2 and the first string must be a
             positive prompt and the second string must be a negative prompt.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.

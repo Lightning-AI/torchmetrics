@@ -50,7 +50,7 @@ def _prepare_n_grams_dicts(
 ) -> Tuple[
     Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor]
 ]:
-    """Prepare dictionaries with default zero values for total ref, hypothesis and matching chraracter and word n-grams.
+    """Prepare dictionaries with default zero values for total ref, hypothesis and matching character and word n-grams.
 
     Args:
         n_char_order: A character n-gram order.

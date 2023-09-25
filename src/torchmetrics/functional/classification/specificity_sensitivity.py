@@ -211,7 +211,7 @@ def multiclass_specificity_at_sensitivity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Compute the highest possible specificity value given the minimum sensitivity level provided for multiclass tasks.
+    r"""Compute the highest possible specificity value given minimum sensitivity level provided for multiclass tasks.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
@@ -328,7 +328,7 @@ def multilabel_specificity_at_sensitivity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Compute the highest possible specificity value given the minimum sensitivity level provided for multilabel tasks.
+    r"""Compute the highest possible specificity value given minimum sensitivity level provided for multilabel tasks.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and
     the find the specificity for a given sensitivity level.

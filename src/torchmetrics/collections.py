@@ -211,7 +211,7 @@ class MetricCollection(ModuleDict):
                 m0 = getattr(self, cg[0])
                 m0.update(*args, **m0._filter_kwargs(**kwargs))
             if self._state_is_copy:
-                # If we have deep copied state inbetween updates, reestablish link
+                # If we have deep copied state in between updates, reestablish link
                 self._compute_groups_create_state_ref()
                 self._state_is_copy = False
         else:  # the first update always do per metric to form compute groups

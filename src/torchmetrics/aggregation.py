@@ -34,10 +34,10 @@ class BaseAggregator(Metric):
         fn: string specifying the reduction function
         default_value: default tensor value to use for the metric state
         nan_strategy: options:
-            - ``'error'``: if any `nan` values are encounted will give a RuntimeError
-            - ``'warn'``: if any `nan` values are encounted will give a warning and continue
+            - ``'error'``: if any `nan` values are encountered will give a RuntimeError
+            - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
-            - a float: if a float is provided will impude any `nan` values with this value
+            - a float: if a float is provided will impute any `nan` values with this value
 
         state_name: name of the metric state
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -89,10 +89,10 @@ class BaseAggregator(Metric):
             weight = torch.ones_like(x)
         if nans.any() or nans_weight.any():
             if self.nan_strategy == "error":
-                raise RuntimeError("Encounted `nan` values in tensor")
+                raise RuntimeError("Encountered `nan` values in tensor")
             if self.nan_strategy in ("ignore", "warn"):
                 if self.nan_strategy == "warn":
-                    rank_zero_warn("Encounted `nan` values in tensor. Will be removed.", UserWarning)
+                    rank_zero_warn("Encountered `nan` values in tensor. Will be removed.", UserWarning)
                 x = x[~(nans | nans_weight)]
                 weight = weight[~(nans | nans_weight)]
             else:
@@ -125,10 +125,10 @@ class MaxMetric(BaseAggregator):
 
     Args:
         nan_strategy: options:
-            - ``'error'``: if any `nan` values are encounted will give a RuntimeError
-            - ``'warn'``: if any `nan` values are encounted will give a warning and continue
+            - ``'error'``: if any `nan` values are encountered will give a RuntimeError
+            - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
-            - a float: if a float is provided will impude any `nan` values with this value
+            - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -230,10 +230,10 @@ class MinMetric(BaseAggregator):
 
     Args:
         nan_strategy: options:
-            - ``'error'``: if any `nan` values are encounted will give a RuntimeError
-            - ``'warn'``: if any `nan` values are encounted will give a warning and continue
+            - ``'error'``: if any `nan` values are encountered will give a RuntimeError
+            - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
-            - a float: if a float is provided will impude any `nan` values with this value
+            - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -335,10 +335,10 @@ class SumMetric(BaseAggregator):
 
     Args:
         nan_strategy: options:
-            - ``'error'``: if any `nan` values are encounted will give a RuntimeError
-            - ``'warn'``: if any `nan` values are encounted will give a warning and continue
+            - ``'error'``: if any `nan` values are encountered will give a RuntimeError
+            - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
-            - a float: if a float is provided will impude any `nan` values with this value
+            - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -440,10 +440,10 @@ class CatMetric(BaseAggregator):
 
     Args:
         nan_strategy: options:
-            - ``'error'``: if any `nan` values are encounted will give a RuntimeError
-            - ``'warn'``: if any `nan` values are encounted will give a warning and continue
+            - ``'error'``: if any `nan` values are encountered will give a RuntimeError
+            - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
-            - a float: if a float is provided will impude any `nan` values with this value
+            - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -506,10 +506,10 @@ class MeanMetric(BaseAggregator):
 
     Args:
        nan_strategy: options:
-            - ``'error'``: if any `nan` values are encounted will give a RuntimeError
-            - ``'warn'``: if any `nan` values are encounted will give a warning and continue
+            - ``'error'``: if any `nan` values are encountered will give a RuntimeError
+            - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
-            - a float: if a float is provided will impude any `nan` values with this value
+            - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -632,10 +632,10 @@ class RunningMean(Running):
     Args:
         window: The size of the running window.
         nan_strategy: options:
-            - ``'error'``: if any `nan` values are encounted will give a RuntimeError
-            - ``'warn'``: if any `nan` values are encounted will give a warning and continue
+            - ``'error'``: if any `nan` values are encountered will give a RuntimeError
+            - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
-            - a float: if a float is provided will impude any `nan` values with this value
+            - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -689,10 +689,10 @@ class RunningSum(Running):
     Args:
         window: The size of the running window.
         nan_strategy: options:
-            - ``'error'``: if any `nan` values are encounted will give a RuntimeError
-            - ``'warn'``: if any `nan` values are encounted will give a warning and continue
+            - ``'error'``: if any `nan` values are encountered will give a RuntimeError
+            - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
-            - a float: if a float is provided will impude any `nan` values with this value
+            - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 

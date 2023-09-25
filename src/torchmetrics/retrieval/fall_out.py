@@ -131,7 +131,7 @@ class RetrievalFallOut(RetrievalMetric):
                 elif self.empty_target_action == "neg":
                     res.append(tensor(0.0))
             else:
-                # ensure list containt only float tensors
+                # ensure list contains only float tensors
                 res.append(self._metric(mini_preds, mini_target))
 
         return torch.stack([x.to(preds) for x in res]).mean() if res else tensor(0.0).to(preds)

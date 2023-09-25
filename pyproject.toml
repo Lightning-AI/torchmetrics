@@ -39,7 +39,8 @@ exclude = "(.eggs|.git|.hg|.mypy_cache|.venv|_build|buck-out|build|dist)"
 
 [tool.docformatter]
 recursive = true
-wrap-summaries = 120
+# some docstring start with r"""
+wrap-summaries = 119
 wrap-descriptions = 120
 blank = true
 
@@ -54,6 +55,7 @@ ignore-words-list = """
     mape, \
     wil, \
     fpr, \
+    raison, \
     https://rechtsprechung-im-ostseeraum.archive.uni-greifswald.de/word-error-rate-character-error-rate-how-to-evaluate-a-model
 """
 quiet-level = 3

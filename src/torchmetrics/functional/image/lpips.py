@@ -181,13 +181,13 @@ class Vgg16(torch.nn.Module):
         return vgg_outputs(h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3, h_relu5_3)
 
 
-def spatial_average(in_tens: Tensor, keepdim: bool = True) -> Tensor:
-    """Spatial averaging over heigh and width of images."""
-    return in_tens.mean([2, 3], keepdim=keepdim)
+def spatial_average(in_tens: Tensor, keep_dim: bool = True) -> Tensor:
+    """Spatial averaging over height and width of images."""
+    return in_tens.mean([2, 3], keepdim=keep_dim)
 
 
-def upsam(in_tens: Tensor, out_hw: Tuple[int, ...] = (64, 64)) -> Tensor:
-    """Upsample input with bilinear interpolation."""
+def upsample(in_tens: Tensor, out_hw: Tuple[int, ...] = (64, 64)) -> Tensor:
+    """Up-sample input with bi-linear interpolation."""
     return nn.Upsample(size=out_hw, mode="bilinear", align_corners=False)(in_tens)
 
 
@@ -331,9 +331,9 @@ class _LPIPS(nn.Module):
         res = []
         for kk in range(self.L):
             if self.spatial:
-                res.append(upsam(self.lins[kk](diffs[kk]), out_hw=tuple(in0.shape[2:])))
+                res.append(upsample(self.lins[kk](diffs[kk]), out_hw=tuple(in0.shape[2:])))
             else:
-                res.append(spatial_average(self.lins[kk](diffs[kk]), keepdim=True))
+                res.append(spatial_average(self.lins[kk](diffs[kk]), keep_dim=True))
 
         val: Tensor = sum(res)  # type: ignore[assignment]
         if retperlayer:
@@ -378,7 +378,7 @@ def learned_perceptual_image_patch_similarity(
     reduction: Literal["sum", "mean"] = "mean",
     normalize: bool = False,
 ) -> Tensor:
-    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates the perceptual similarity between two images.
+    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates perceptual similarity between two images.
 
     LPIPS essentially computes the similarity between the activations of two image patches for some pre-defined network.
     This measure has been shown to match human perception well. A low LPIPS score means that image patches are

@@ -257,7 +257,7 @@ def _assert_half_support(
 class TextTester(MetricTester):
     """Tester class for text.
 
-    Class used for efficiently run alot of parametrized tests in ddp mode. Makes sure that ddp is only setup once and
+    Class used for efficiently run a lot of parametrized tests in ddp mode. Makes sure that ddp is only setup once and
     that pool of processes are used for all tests. All tests for text metrics should subclass from this and implement
     a new method called `test_metric_name` where the method `self.run_metric_test` is called inside.
 

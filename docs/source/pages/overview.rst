@@ -484,7 +484,7 @@ argument can help:
   of GPU. Only applies to metric states that are lists.
 
 - ``compute_with_cache``: This argument indicates if the result after calling the ``compute`` method should be cached.
-  By default this is ``True`` meaning that repeated calls to ``compute`` (with no change to the metric state inbetween)
+  By default this is ``True`` meaning that repeated calls to ``compute`` (with no change to the metric state in between)
   does not recompute the metric but just returns the cache. By setting it to ``False`` the metric will be recomputed
   every time ``compute`` is called, but it can also help clean up a bit of memory.
 

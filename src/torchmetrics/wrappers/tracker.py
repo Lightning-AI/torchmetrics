@@ -218,9 +218,9 @@ class MetricTracker(ModuleList):
         res = self.compute_all()
         if isinstance(res, list):
             rank_zero_warn(
-                "Encounted nested structure. You are probably using a metric collection inside a metric collection, or"
-                " a metric wrapper inside a metric collection, which is not supported by `.best_metric()` method."
-                "Returning `None` instead. Please consider "
+                "Encountered nested structure. You are probably using a metric collection inside a metric collection,"
+                " or a metric wrapper inside a metric collection, which is not supported by `.best_metric()` method."
+                " Returning `None` instead."
             )
             if return_step:
                 return None, None
