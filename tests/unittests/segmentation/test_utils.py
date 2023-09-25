@@ -226,7 +226,7 @@ def test_mask_edges(cases, spacing, crop):
     """Test the mask edges function."""
     preds, target = cases
     if spacing is not None:
-        spacing = preds.ndim * [spacing]
+        spacing = preds.ndim * (spacing,)
     res = mask_edges(preds, target, spacing=spacing, crop=crop)
     reference_res = monai_get_mask_edges(preds, target, spacing=spacing, crop=crop)
 
