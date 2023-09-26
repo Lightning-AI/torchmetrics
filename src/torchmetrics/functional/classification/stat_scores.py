@@ -56,7 +56,7 @@ def _binary_stat_scores_tensor_validation(
     - tensors have to be of same shape
     - all values in target tensor that are not ignored have to be in {0, 1}
     - if pred tensor is not floating point, then all values also have to be in {0, 1}
-    - if ``multidim_average`` is set to ``samplewise`` preds tensor needs to be atleast 2 dimensional
+    - if ``multidim_average`` is set to ``samplewise`` preds tensor needs to be at least 2 dimensional
 
     """
     # Check that they have same shape
@@ -84,7 +84,7 @@ def _binary_stat_scores_tensor_validation(
             )
 
     if multidim_average != "global" and preds.ndim < 2:
-        raise ValueError("Expected input to be atleast 2D when multidim_average is set to `samplewise`")
+        raise ValueError("Expected input to be at least 2D when multidim_average is set to `samplewise`")
 
 
 def _binary_stat_scores_format(
@@ -153,7 +153,7 @@ def binary_stat_scores(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
 
@@ -262,7 +262,7 @@ def _multiclass_stat_scores_tensor_validation(
     - if preds has one more dimension than target, then all dimensions except for preds.shape[1] should match
     exactly. preds.shape[1] should have size equal to number of classes
     - if preds and target have same number of dims, then all dimensions should match
-    - if ``multidim_average`` is set to ``samplewise`` preds tensor needs to be atleast 2 dimensional in the
+    - if ``multidim_average`` is set to ``samplewise`` preds tensor needs to be at least 2 dimensional in the
     int case and 3 dimensional in the float case
     - all values in target tensor that are not ignored have to be {0, ..., num_classes - 1}
     - if pred tensor is not floating point, then all values also have to be in {0, ..., num_classes - 1}
@@ -284,7 +284,7 @@ def _multiclass_stat_scores_tensor_validation(
         if multidim_average != "global" and preds.ndim < 3:
             raise ValueError(
                 "If `preds` have one dimension more than `target`, the shape of `preds` should "
-                " atleast 3D when multidim_average is set to `samplewise`"
+                " at least 3D when multidim_average is set to `samplewise`"
             )
 
     elif preds.ndim == target.ndim:
@@ -296,7 +296,7 @@ def _multiclass_stat_scores_tensor_validation(
         if multidim_average != "global" and preds.ndim < 2:
             raise ValueError(
                 "When `preds` and `target` have the same shape, the shape of `preds` should "
-                " atleast 2D when multidim_average is set to `samplewise`"
+                " at least 2D when multidim_average is set to `samplewise`"
             )
     else:
         raise ValueError(
@@ -357,7 +357,7 @@ def _multiclass_stat_scores_update(
     - Else we calculate statistics by first calculating the confusion matrix and afterwards deriving the
     statistics from that
     - Remove all datapoints that should be ignored. Depending on if ``ignore_index`` is in the set of labels
-    or outside we have do use different augmentation stategies when one hot encoding.
+    or outside we have do use different augmentation strategies when one hot encoding.
 
     """
     if multidim_average == "samplewise" or top_k != 1:
@@ -472,7 +472,7 @@ def multiclass_stat_scores(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
@@ -607,7 +607,7 @@ def _multilabel_stat_scores_tensor_validation(
     - the second dimension of both tensors need to be equal to the number of labels
     - all values in target tensor that are not ignored have to be in {0, 1}
     - if pred tensor is not floating point, then all values also have to be in {0, 1}
-    - if ``multidim_average`` is set to ``samplewise`` preds tensor needs to be atleast 3 dimensional
+    - if ``multidim_average`` is set to ``samplewise`` preds tensor needs to be at least 3 dimensional
 
     """
     # Check that they have same shape
@@ -641,7 +641,7 @@ def _multilabel_stat_scores_tensor_validation(
             )
 
     if multidim_average != "global" and preds.ndim < 3:
-        raise ValueError("Expected input to be atleast 3D when multidim_average is set to `samplewise`")
+        raise ValueError("Expected input to be at least 3D when multidim_average is set to `samplewise`")
 
 
 def _multilabel_stat_scores_format(
@@ -725,14 +725,14 @@ def multilabel_stat_scores(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
 
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         average:
             Defines the reduction that is applied over labels. Should be one of the following:

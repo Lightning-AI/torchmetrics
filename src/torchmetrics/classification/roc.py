@@ -177,7 +177,7 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
     different thresholds, such that the tradeoff between the two values can be seen.
 
     For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
-    classes as the negative, which is refered to as the one-vs-rest approach. One-vs-one is currently not supported by
+    classes as the negative, which is referred to as the one-vs-rest approach. One-vs-one is currently not supported by
     this metric.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -219,7 +219,7 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
        and tpr which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         thresholds:
             Can be one of:
 
@@ -380,7 +380,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
        which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         thresholds:
             Can be one of:
 

@@ -215,7 +215,7 @@ def multiclass_average_precision(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over classes. Should be one of the following:
 
@@ -348,7 +348,7 @@ def multilabel_average_precision(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 

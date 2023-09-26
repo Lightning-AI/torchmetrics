@@ -40,7 +40,7 @@ def _binary_clf_curve(
         preds: 1d tensor with predictions
         target: 1d tensor with true values
         sample_weights: a 1d tensor with a weight per sample
-        pos_label: interger determining what the positive class in target tensor is
+        pos_label: integer determining what the positive class in target tensor is
 
     Returns:
         fps: 1d tensor with false positives for different thresholds
@@ -616,7 +616,7 @@ def multiclass_precision_recall_curve(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         thresholds:
             Can be one of:
 
@@ -862,7 +862,7 @@ def multilabel_precision_recall_curve(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         thresholds:
             Can be one of:
 

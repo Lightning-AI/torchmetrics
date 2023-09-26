@@ -172,7 +172,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
     equivalent to the area under the precision-recall curve (AUPRC).
 
     For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
-    classes as the negative, which is refered to as the one-vs-rest approach. One-vs-one is currently not supported by
+    classes as the negative, which is referred to as the one-vs-rest approach. One-vs-one is currently not supported by
     this metric. By default the reported metric is then the average over all classes, but this behavior can be changed
     by setting the ``average`` argument.
 
@@ -198,7 +198,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
     size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over classes. Should be one of the following:
 
@@ -351,7 +351,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
     size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 

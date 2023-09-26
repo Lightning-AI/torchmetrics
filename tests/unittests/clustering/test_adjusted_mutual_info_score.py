@@ -92,7 +92,7 @@ def test_adjusted_mutual_info_score_functional_raises_invalid_task(average_metho
 def test_adjusted_mutual_info_score_functional_is_symmetric(
     average_method, preds=_single_target_extrinsic1.preds, target=_single_target_extrinsic1.target
 ):
-    """Check that the metric funtional is symmetric."""
+    """Check that the metric functional is symmetric."""
     for p, t in zip(preds, target):
         assert torch.allclose(
             adjusted_mutual_info_score(p, t, average_method),

@@ -49,7 +49,7 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
 
     - ``preds`` (:class:`~torch.Tensor`): A int or float tensor of shape ``(N, ...)``. If preds is a floating point
       tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid per element.
-      Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
     .. note::
@@ -173,7 +173,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
     - ``mcji`` (:class:`~torch.Tensor`): A tensor containing the Multi-class Jaccard Index.
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         average:
@@ -292,7 +292,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
 
     - ``preds`` (:class:`~torch.Tensor`): A int tensor or float tensor of shape ``(N, C, ...)``. If preds is a
       floating point tensor with values outside [0,1] range we consider the input to be logits and will auto apply
-      sigmoid per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      sigmoid per element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``
 
     .. note::
@@ -303,7 +303,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
     - ``mlji`` (:class:`~torch.Tensor`): A tensor containing the Multi-label Jaccard Index loss.
 
     Args:
-        num_classes: Integer specifing the number of labels
+        num_classes: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation

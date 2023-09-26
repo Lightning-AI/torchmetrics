@@ -101,7 +101,7 @@ def binary_specificity_at_sensitivity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Compute the higest possible specificity value given the minimum sensitivity levels provided for binary tasks.
+    r"""Compute the highest possible specificity value given the minimum sensitivity levels provided for binary tasks.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and
     the find the specificity for a given sensitivity level.
@@ -211,7 +211,7 @@ def multiclass_specificity_at_sensitivity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Compute the higest possible specificity value given the minimum sensitivity level provided for multiclass tasks.
+    r"""Compute the highest possible specificity value given minimum sensitivity level provided for multiclass tasks.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
     find the specificity for a given sensitivity level.
@@ -235,7 +235,7 @@ def multiclass_specificity_at_sensitivity(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         min_sensitivity: float value specifying minimum sensitivity threshold.
         thresholds:
             Can be one of:
@@ -328,7 +328,7 @@ def multilabel_specificity_at_sensitivity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tuple[Tensor, Tensor]:
-    r"""Compute the higest possible specificity value given the minimum sensitivity level provided for multilabel tasks.
+    r"""Compute the highest possible specificity value given minimum sensitivity level provided for multilabel tasks.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and
     the find the specificity for a given sensitivity level.
@@ -352,7 +352,7 @@ def multilabel_specificity_at_sensitivity(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         min_sensitivity: float value specifying minimum sensitivity threshold.
         thresholds:
             Can be one of:
@@ -414,7 +414,7 @@ def specicity_at_sensitivity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
-    r"""Compute the higest possible specicity value given the minimum sensitivity thresholds provided.
+    r"""Compute the highest possible specicity value given the minimum sensitivity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and
     the find the specificity for a given sensitivity level.
@@ -422,8 +422,8 @@ def specicity_at_sensitivity(
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_specificity_at_sensitivity`,
-    :func:`~torchmetrics.functional.classification.multiclass_specicity_at_sensitivity` and
-    :func:`~torchmetrics.functional.classification.multilabel_specifity_at_sensitvity` for the specific details of
+    :func:`~torchmetrics.functional.classification.multiclass_specificity_at_sensitivity` and
+    :func:`~torchmetrics.functional.classification.multilabel_specificity_at_sensitivity` for the specific details of
     each argument influence and examples.
 
     """

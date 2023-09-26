@@ -41,7 +41,7 @@ def _tschuprows_t_update(
     Args:
         preds: 1D or 2D tensor of categorical (nominal) data
         target: 1D or 2D tensor of categorical (nominal) data
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         nan_strategy: Indication of whether to replace or drop ``NaN`` values
         nan_replace_value: Value to replace ``NaN`s when ``nan_strategy = 'replace```
 
