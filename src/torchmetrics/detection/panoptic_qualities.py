@@ -40,7 +40,7 @@ class PanopticQuality(Metric):
         PQ = \frac{IOU}{TP + 0.5 FP + 0.5 FN}
 
     where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives,
-    the number of true postitives, false positives and false negatives. This metric is inspired by the PQ
+    the number of true positives, false positives and false negatives. This metric is inspired by the PQ
     implementation of panopticapi, a standard implementation for the PQ metric for panoptic segmentation.
 
     .. note:

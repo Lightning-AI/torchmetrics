@@ -356,7 +356,7 @@ class Metric(Module, ABC):
         _update_count = self._update_count
         self.reset()
 
-        # local syncronization settings
+        # local synchronization settings
         self._to_sync = self.dist_sync_on_step
         self._should_unsync = False
         _temp_compute_on_cpu = self.compute_on_cpu
@@ -556,7 +556,7 @@ class Metric(Module, ABC):
         """Context manager to synchronize states.
 
         This context manager is used in distributed setting and makes sure that the local cache states are restored
-        after yielding the syncronized state.
+        after yielding the synchronized state.
 
         Args:
             dist_sync_fn: Function to be used to perform states synchronization
@@ -1211,5 +1211,5 @@ class CompositionalMetric(Metric):
         return self.__class__.__name__ + _op_metrics
 
     def _wrap_compute(self, compute: Callable) -> Callable:
-        """No wrapping nessesary for compositional metrics."""
+        """No wrapping necessary for compositional metrics."""
         return compute

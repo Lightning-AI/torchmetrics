@@ -201,7 +201,7 @@ def metric_ddp(rank, world_size):
         acc = metric.compute()
         print(f"Accuracy on all data: {acc}, accelerator rank: {rank}")
 
-        # Reseting internal state such that metric ready for new data
+        # Resetting internal state such that metric ready for new data
         metric.reset()
 
     # cleanup
@@ -278,7 +278,7 @@ acc = torchmetrics.functional.classification.multiclass_accuracy(
 ### Covered domains and example metrics
 
 In total TorchMetrics contains [100+ metrics](https://lightning.ai/docs/torchmetrics/stable/all-metrics.html), which
-convers the following domains:
+covers the following domains:
 
 - Audio
 - Classification
@@ -298,7 +298,7 @@ Each domain may require some additional dependencies which can be installed with
 #### Plotting
 
 Visualization of metrics can be important to help understand what is going on with your machine learning algorithms.
-Torchmetrics have build-in plotting support (install dependencies with `pip install torchmetrics[visual]`) for nearly
+Torchmetrics have built-in plotting support (install dependencies with `pip install torchmetrics[visual]`) for nearly
 all modular metrics through the `.plot` method. Simply call the method to get a simple visualization of any metric!
 
 ```python

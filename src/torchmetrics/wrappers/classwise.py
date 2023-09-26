@@ -38,7 +38,7 @@ class ClasswiseWrapper(WrapperMetric):
         postfix: string that is appended to the metric names.
 
     Example::
-        Basic example where the ouput of a metric is unwrapped into a dictionary with the class index as keys:
+        Basic example where the output of a metric is unwrapped into a dictionary with the class index as keys:
 
         >>> import torch
         >>> _ = torch.manual_seed(42)
