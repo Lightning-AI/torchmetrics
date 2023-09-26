@@ -172,7 +172,7 @@ def test_distance_transform(case, metric, device):
         scidistance = scidistance_transform_edt(case)
     else:
         scidistance = scidistance_transform_cdt(case, metric=metric)
-    assert torch.allclose(distance.cpu(), torch.from_numpy(scidistance).float())
+    assert torch.allclose(distance.cpu(), torch.from_numpy(scidistance).to(distance.dtype))
 
 
 @pytest.mark.parametrize("dim", [2, 3])
@@ -217,7 +217,7 @@ def test_surface_distance(cases, distance_metric, spacing, device):
     reference_res = monai_get_surface_distance(
         preds.numpy(), target.numpy(), distance_metric=distance_metric, spacing=spacing
     )
-    assert torch.allclose(res.cpu(), torch.from_numpy(reference_res).float())
+    assert torch.allclose(res.cpu(), torch.from_numpy(reference_res).to(res.dtype))
 
 
 @pytest.mark.parametrize(

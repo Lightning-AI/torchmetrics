@@ -244,25 +244,25 @@ def distance_transform(
             raise ValueError(f"Expected argument `sampling` to have length 2 but got length `{len(sampling)}`.")
 
     if engine == "pytorch":
-        x = x.float()
         # calculate distance from every foreground pixel to every background pixel
         i0, j0 = torch.where(x == 0)
         i1, j1 = torch.where(x == 1)
-        dis_row = (i1.unsqueeze(1) - i0.unsqueeze(0)).abs()
-        dis_col = (j1.unsqueeze(1) - j0.unsqueeze(0)).abs()
+        dis_row = (i1.unsqueeze(1) - i0.unsqueeze(0)).abs_().mul_(sampling[0])
+        dis_col = (j1.unsqueeze(1) - j0.unsqueeze(0)).abs_().mul_(sampling[1])
 
         # # calculate distance
         h, _ = x.shape
         if metric == "euclidean":
-            dis = ((sampling[0] * dis_row) ** 2 + (sampling[1] * dis_col) ** 2).sqrt()
+            dis_row = dis_row.float()
+            dis_row.pow_(2).add_(dis_col.pow_(2)).sqrt_()
         if metric == "chessboard":
-            dis = torch.max(sampling[0] * dis_row, sampling[1] * dis_col).float()
+            dis_row = dis_row.max(dis_col)
         if metric == "taxicab":
-            dis = (sampling[0] * dis_row + sampling[1] * dis_col).float()
+            dis_row.add_(dis_col)
 
         # select only the closest distance
-        mindis, _ = torch.min(dis, dim=1)
-        z = torch.zeros_like(x).view(-1)
+        mindis, _ = torch.min(dis_row, dim=1)
+        z = torch.zeros_like(x, dtype=mindis.dtype).view(-1)
         z[i1 * h + j1] = mindis
         return z.view(x.shape)
 
@@ -274,7 +274,7 @@ def distance_transform(
 
     if metric == "euclidean":
         return ndimage.distance_transform_edt(x.cpu().numpy(), sampling)
-    return ndimage.distance_transform_cdt(x.cpu().numpy(), sampling, metric=metric)
+    return ndimage.distance_transform_cdt(x.cpu().numpy(), metric=metric)
 
 
 def mask_edges(
