@@ -23,10 +23,10 @@ from torchmetrics.audio.snr import (
     SignalNoiseRatio,
 )
 from torchmetrics.utilities.imports import (
-    _GAMMATONE_AVAILABEL,
+    _GAMMATONE_AVAILABLE,
     _PESQ_AVAILABLE,
     _PYSTOI_AVAILABLE,
-    _TORCHAUDIO_AVAILABEL,
+    _TORCHAUDIO_AVAILABLE,
     _TORCHAUDIO_GREATER_EQUAL_0_10,
 )
 
@@ -50,7 +50,7 @@ if _PYSTOI_AVAILABLE:
 
     __all__.append("ShortTimeObjectiveIntelligibility")
 
-if _GAMMATONE_AVAILABEL and _TORCHAUDIO_AVAILABEL and _TORCHAUDIO_GREATER_EQUAL_0_10:
+if _GAMMATONE_AVAILABLE and _TORCHAUDIO_AVAILABLE and _TORCHAUDIO_GREATER_EQUAL_0_10:
     from torchmetrics.audio.srmr import SpeechReverberationModulationEnergyRatio  # noqa: F401
 
     __all__.append("SpeechReverberationModulationEnergyRatio")

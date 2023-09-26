@@ -80,7 +80,7 @@ class _TercomTokenizer:
         Args:
             normalize: An indication whether a general tokenization to be applied.
             no_punctuation: An indication whteher a punctuation to be removed from the sentences.
-            lowercase: An indication whether to enable case-insesitivity.
+            lowercase: An indication whether to enable case-insensitivity.
             asian_support: An indication whether asian characters to be processed.
 
         """
@@ -134,7 +134,7 @@ class _TercomTokenizer:
             (r"&gt;", ">"),
             # tokenize punctuation
             (r"([{-~[-` -&(-+:-@/])", r" \1 "),
-            # handle possesives
+            # handle possessive
             (r"'s ", r" 's "),
             (r"'s$", r" 's"),
             # tokenize period and comma unless preceded by a digit
@@ -551,7 +551,7 @@ def translation_edit_rate(
         target: An iterable of iterables of reference corpus.
         normalize: An indication whether a general tokenization to be applied.
         no_punctuation: An indication whteher a punctuation to be removed from the sentences.
-        lowercase: An indication whether to enable case-insesitivity.
+        lowercase: An indication whether to enable case-insensitivity.
         asian_support: An indication whether asian characters to be processed.
         return_sentence_level_score: An indication whether a sentence-level TER to be returned.
 
