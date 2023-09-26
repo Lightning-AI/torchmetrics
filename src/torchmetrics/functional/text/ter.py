@@ -134,7 +134,7 @@ class _TercomTokenizer:
             (r"&gt;", ">"),
             # tokenize punctuation
             (r"([{-~[-` -&(-+:-@/])", r" \1 "),
-            # handle possesives
+            # handle possessive
             (r"'s ", r" 's "),
             (r"'s$", r" 's"),
             # tokenize period and comma unless preceded by a digit
