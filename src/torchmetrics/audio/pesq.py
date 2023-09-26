@@ -50,9 +50,9 @@ class PerceptualEvaluationSpeechQuality(Metric):
         installed version of numpy, meaning that if you upgrade numpy at some point in the future you will
         most likely have to reinstall ``pesq``.
 
-    .. note: the ``forward`` and ``compute`` methods in this class return a single (reduced) PESQ value
+    .. note:: the ``forward`` and ``compute`` methods in this class return a single (reduced) PESQ value
         for a batch. To obtain a PESQ value for each sample, you may use the functional counterpart in
-        ``torchmetrics.functional.audio.pesq.perceptual_evaluation_speech_quality()``.
+        :func:`~torchmetrics.functional.audio.pesq.perceptual_evaluation_speech_quality`.
 
     Args:
         fs: sampling frequency, should be 16000 or 8000 (Hz)
