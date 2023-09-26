@@ -559,7 +559,7 @@ def chrf_score(
             metric is equivalent to the original chrF.
         beta:
             A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
-        lowercase: An indication whether to enable case-insesitivity.
+        lowercase: An indication whether to enable case-insensitivity.
         whitespace: An indication whether to keep whitespaces during character n-gram extraction.
         return_sentence_level_score: An indication whether a sentence-level chrF/chrF++ score to be returned.
 
