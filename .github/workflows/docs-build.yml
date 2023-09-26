@@ -6,6 +6,7 @@ on:
     tags: ["*"]
   pull_request:
     branches: ["master", "release/*"]
+    types: [opened, reopened, ready_for_review, synchronize]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
