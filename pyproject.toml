@@ -69,11 +69,14 @@ extend-ignore-identifiers-re = [
 [tool.typos.default.extend-identifiers]
 # *sigh* this just isn't worth the cost of fixing
 MAPE = "MAPE"
+WIL = "WIL"
+Raisin = "Raisin"
 
 [tool.typos.default.extend-words]
 # Don't correct the surname "Teh"
 fpr = "fpr"
 mape = "mape"
+wil = "wil"
 
 
 
