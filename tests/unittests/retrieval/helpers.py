@@ -136,7 +136,7 @@ _errors_test_functional_metric_parameters_default = {
     "argnames": "preds,target,message,metric_args",
     "argvalues": [
         # check input shapes are consistent (func)
-        (_irs_mis_sz_fn.preds, _irs_bad_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
+        (_irs_bad_sz_fn.preds, _irs_bad_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
         # check input tensors are not empty
         (_irs_empty.preds, _irs_empty.target, "`preds` and `target` must be non-empty and non-scalar tensors", {}),
         # check on input dtypes
@@ -150,7 +150,7 @@ _errors_test_functional_metric_parameters_with_nonbinary = {
     "argnames": "preds,target,message,metric_args",
     "argvalues": [
         # check input shapes are consistent (func)
-        (_irs_mis_sz_fn.preds, _irs_bad_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
+        (_irs_bad_sz_fn.preds, _irs_bad_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
         # check input tensors are not empty
         (_irs_empty.preds, _irs_empty.target, "`preds` and `target` must be non-empty and non-scalar tensors", {}),
         # check on input dtypes
