@@ -152,7 +152,7 @@ def r2_score(
         ValueError:
             If both ``preds`` and ``targets`` are not ``1D`` or ``2D`` tensors.
         ValueError:
-            If ``len(preds)`` is less than ``2`` since at least ``2`` sampels are needed to calculate r2 score.
+            If ``len(preds)`` is less than ``2`` since at least ``2`` samples are needed to calculate r2 score.
         ValueError:
             If ``multioutput`` is not one of ``raw_values``, ``uniform_average`` or ``variance_weighted``.
         ValueError:

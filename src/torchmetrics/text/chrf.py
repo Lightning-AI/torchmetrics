@@ -53,7 +53,7 @@ class CHRFScore(Metric):
     """Calculate `chrf score`_ of machine translated text with one or more references.
 
     This implementation supports both ChrF score computation introduced in `chrF score`_ and `chrF++ score`_ introduced
-    in `chrF++ score`_. This implementation follows the implmenetaions from https://github.com/m-popovic/chrF and
+    in `chrF++ score`_. This implementation follows the implementations from https://github.com/m-popovic/chrF and
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:

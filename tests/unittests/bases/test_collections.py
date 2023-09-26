@@ -323,7 +323,7 @@ _ml_target = torch.randint(2, (10, 3))
             _mc_preds,
             _mc_target,
         ),
-        # two metrics from registry froms a compute group
+        # two metrics from registry forms a compute group
         (
             [MulticlassPrecision(num_classes=3), MulticlassRecall(num_classes=3)],
             {0: ["MulticlassPrecision", "MulticlassRecall"]},
@@ -647,7 +647,7 @@ def test_double_nested_collections(base_metrics, expected):
 
 
 def test_with_custom_prefix_postfix():
-    """Test that metric colection does not clash with custom prefix and postfix in users metrics.
+    """Test that metric collection does not clash with custom prefix and postfix in users metrics.
 
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/2065
 

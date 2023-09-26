@@ -41,7 +41,7 @@ class BinarySpecificity(BinaryStatScores):
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, ...)``. If preds is a floating point
       tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid per
-      element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -175,7 +175,7 @@ class MulticlassSpecificity(MulticlassStatScores):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
@@ -304,7 +304,7 @@ class MultilabelSpecificity(MultilabelStatScores):
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, C, ...)``. If preds is a floating
       point tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid
-      per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      per element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``
 
 
@@ -324,7 +324,7 @@ class MultilabelSpecificity(MultilabelStatScores):
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         average:
             Defines the reduction that is applied over labels. Should be one of the following:

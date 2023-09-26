@@ -827,13 +827,13 @@ class MeanAveragePrecision(Metric):
         tp_sum = _cumsum(tps, dim=1, dtype=torch.float)
         fp_sum = _cumsum(fps, dim=1, dtype=torch.float)
         for idx, (tp, fp) in enumerate(zip(tp_sum, fp_sum)):
-            nd = len(tp)
+            tp_len = len(tp)
             rc = tp / npig
             pr = tp / (fp + tp + torch.finfo(torch.float64).eps)
             prec = torch.zeros((num_rec_thrs,))
             score = torch.zeros((num_rec_thrs,))
 
-            recall[idx, idx_cls, idx_bbox_area, idx_max_det_thrs] = rc[-1] if nd else 0
+            recall[idx, idx_cls, idx_bbox_area, idx_max_det_thrs] = rc[-1] if tp_len else 0
 
             # Remove zigzags for AUC
             diff_zero = torch.zeros((1,), device=pr.device)
@@ -843,7 +843,7 @@ class MeanAveragePrecision(Metric):
                 pr += diff
 
             inds = torch.searchsorted(rc, rec_thresholds.to(rc.device), right=False)
-            num_inds = inds.argmax() if inds.max() >= nd else num_rec_thrs
+            num_inds = inds.argmax() if inds.max() >= tp_len else num_rec_thrs
             inds = inds[:num_inds]
             prec[:num_inds] = pr[inds]
             score[:num_inds] = det_scores_sorted[inds]

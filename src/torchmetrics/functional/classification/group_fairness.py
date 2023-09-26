@@ -41,7 +41,7 @@ def _groups_validation(groups: torch.Tensor, num_groups: int) -> None:
             f"number of groups {num_groups}. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.",
         )
     if groups.dtype != torch.long:
-        raise ValueError(f"Excpected dtype of argument groups to be long, not {groups.dtype}.")
+        raise ValueError(f"Expected dtype of argument groups to be long, not {groups.dtype}.")
 
 
 def _groups_format(groups: torch.Tensor) -> torch.Tensor:
@@ -118,7 +118,7 @@ def binary_groups_stat_rates(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``.
     - ``groups`` (int tensor): ``(N, ...)``. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
@@ -195,7 +195,7 @@ def demographic_parity(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``groups`` (int tensor): ``(N, ...)``. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
     - ``target`` (int tensor): ``(N, ...)``.
@@ -277,7 +277,7 @@ def equal_opportunity(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``.
     - ``groups`` (int tensor): ``(N, ...)``. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
