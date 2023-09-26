@@ -138,7 +138,7 @@ def _eed_function(
     """
     number_of_visits = [-1] * (len(hyp) + 1)
 
-    # row[i] stores cost of cheapest path from (0,0) to (i,l) in CDER aligment grid.
+    # row[i] stores cost of cheapest path from (0,0) to (i,l) in CDER alignment grid.
     row = [1.0] * (len(hyp) + 1)
 
     row[0] = 0.0  # CDER initialisation 0,0 = 0.0, rest 1.0

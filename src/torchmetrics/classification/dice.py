@@ -232,7 +232,7 @@ class Dice(Metric):
 
     @no_type_check
     def _get_final_stats(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-        """Perform concatenation on the stat scores if neccesary, before passing them to a compute function."""
+        """Perform concatenation on the stat scores if necessary, before passing them to a compute function."""
         tp = torch.cat(self.tp) if isinstance(self.tp, list) else self.tp
         fp = torch.cat(self.fp) if isinstance(self.fp, list) else self.fp
         tn = torch.cat(self.tn) if isinstance(self.tn, list) else self.tn

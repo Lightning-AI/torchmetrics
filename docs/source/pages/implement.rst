@@ -12,7 +12,7 @@ Implementing a Metric
 While we strive to include as many metrics as possible in ``torchmetrics``, we cannot include them all. Therefore, we
 have made it easy to implement your own metric and possible contribute it to ``torchmetrics``. This page will guide
 you through the process. If you afterwards are interested in contributing your metric to ``torchmetrics``, please
-read the `contribution guidelines <https://torchmetrics.readthedocs.io/en/latest/generated/CONTRIBUTING.html>`_ and
+read the `contribution guidelines <https://lightning.ai/docs/torchmetrics/latest/generated/CONTRIBUTING.html>`_ and
 see this :ref:`section <contributing metric>`.
 
 **************
@@ -215,7 +215,7 @@ can behave in two ways:
    5. Calls ``compute()`` to calculate metric for current batch.
    6. Restores the global state.
 
-2. If ``full_state_update`` is ``False`` (default) the metric state of one batch is completly independent of the state
+2. If ``full_state_update`` is ``False`` (default) the metric state of one batch is completely independent of the state
    of other batches, which means that we only need to call ``update`` once.
 
    1. Caches the global state.
@@ -242,7 +242,7 @@ Wanting to contribute the metric you have implemented? Great, we are always open
 as long as they serve a general purpose. However, to keep all our metrics consistent we request that the implementation
 and tests gets formatted in the following way:
 
-1. Start by reading our `contribution guidelines <https://torchmetrics.readthedocs.io/en/latest/generated/CONTRIBUTING.html>`_.
+1. Start by reading our `contribution guidelines <https://lightning.ai/docs/torchmetrics/latest/generated/CONTRIBUTING.html>`_.
 2. First implement the functional backend. This takes cares of all the logic that goes into the metric. The code should
    be put into a single file placed under ``src/torchmetrics/functional/"domain"/"new_metric".py`` where ``domain`` is the type of
    metric (classification, regression, text etc.) and ``new_metric`` is the name of the metric. In this file, there should be the

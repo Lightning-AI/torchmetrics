@@ -107,10 +107,10 @@ def test_nan_error(value, nan_strategy, metric_class):
     """Test correct errors are raised."""
     metric = metric_class(nan_strategy=nan_strategy)
     if nan_strategy == "error":
-        with pytest.raises(RuntimeError, match="Encounted `nan` values in tensor"):
+        with pytest.raises(RuntimeError, match="Encountered `nan` values in tensor"):
             metric(value.clone())
     elif nan_strategy == "warn":
-        with pytest.warns(UserWarning, match="Encounted `nan` values in tensor"):
+        with pytest.warns(UserWarning, match="Encountered `nan` values in tensor"):
             metric(value.clone())
 
 

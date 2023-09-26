@@ -42,7 +42,7 @@ def test_error_on_wrong_input():
     with pytest.raises(ValueError, match="Expected keyword argument `dist_sync_fn` to be an callable function.*"):
         DummyMetric(dist_sync_fn=[2, 3])
 
-    with pytest.raises(ValueError, match="Expected keyword argument `compute_on_cpu` to be an `bool` bu.*"):
+    with pytest.raises(ValueError, match="Expected keyword argument `compute_on_cpu` to be an `bool` but.*"):
         DummyMetric(compute_on_cpu=None)
 
     with pytest.raises(ValueError, match="Expected keyword argument `sync_on_compute` to be a `bool` but.*"):
@@ -59,7 +59,7 @@ def test_error_on_wrong_input():
 
 
 def test_inherit():
-    """Test that metric that inherits can be instanciated."""
+    """Test that metric that inherits can be instantiated."""
     DummyMetric()
 
 
@@ -465,7 +465,7 @@ def test_constant_memory(device, requires_grad):
 def test_constant_memory_on_repeat_init():
     """Test that when initializing a metric multiple times the memory does not increase.
 
-    This only works for metrics with `compute_with_cache=False` as otherwise the cache will keep a refence that python
+    This only works for metrics with `compute_with_cache=False` as otherwise the cache will keep a reference that python
     gc will not be able to collect and clean.
 
     """

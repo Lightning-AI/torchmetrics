@@ -209,7 +209,7 @@ def multiclass_hinge_loss(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         squared:
             If True, this will compute the squared hinge loss. Otherwise, computes the regular hinge loss.
         multiclass_mode:

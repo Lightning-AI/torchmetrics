@@ -37,7 +37,7 @@ class TestBootStrapper(BootStrapper):
     """Subclass of Bootstrapper class.
 
     For testing purpose, we subclass the bootstrapper class so we can get the exact permutation the class is creating.
-    This is nessesary such that the reference we are comparing to returns the exact same result for a given permutation.
+    This is necessary such that the reference we are comparing to returns the exact same result for a given permutation.
 
     """
 
@@ -77,7 +77,7 @@ def test_bootstrap_sampler(sampling_strategy):
     assert found_one, "resampling did not work because no samples were sampled twice"
 
     found_zero = _sample_checker(old_samples, new_samples, operator.ne, 0)
-    assert found_zero, "resampling did not work because all samples were atleast sampled once"
+    assert found_zero, "resampling did not work because all samples were at least sampled once"
 
 
 @pytest.mark.parametrize("device", ["cpu", "cuda"])

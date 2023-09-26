@@ -108,7 +108,7 @@ class TestRelativeSquaredError(MetricTester):
             metric_args={"squared": squared},
         )
 
-    @pytest.mark.xfail(raises=RuntimeError, reason="clamp_min_cpu not implented for `Half`.")
+    @pytest.mark.xfail(raises=RuntimeError, reason="clamp_min_cpu not implemented for `Half`.")
     def test_rse_half_cpu(self, squared, preds, target, ref_metric, num_outputs):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
