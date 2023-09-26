@@ -59,7 +59,7 @@ class MultilabelCoverageError(Metric):
     - ``mlce`` (:class:`~torch.Tensor`): A tensor containing the multilabel coverage error.
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -179,7 +179,7 @@ class MultilabelRankingAveragePrecision(Metric):
     - ``mlrap`` (:class:`~torch.Tensor`): A tensor containing the multilabel ranking average precision.
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -301,7 +301,7 @@ class MultilabelRankingLoss(Metric):
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.

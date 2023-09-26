@@ -47,7 +47,7 @@ if not _TORCH_GREATER_EQUAL_1_9:
 
 
 class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
-    """Module that nevers leaves evaluation mode."""
+    """Module that never leaves evaluation mode."""
 
     def __init__(
         self,

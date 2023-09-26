@@ -42,7 +42,7 @@ for size, channel, window_size, dtype in [
 def _sewar_rase(preds, target, window_size):
     """Baseline implementation of metric.
 
-    This custom implementation is nessesary since sewar only supports single image and aggregation therefore needs
+    This custom implementation is necessary since sewar only supports single image and aggregation therefore needs
     adjustments.
 
     """

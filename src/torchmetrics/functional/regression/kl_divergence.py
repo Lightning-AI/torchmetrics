@@ -89,7 +89,7 @@ def kl_divergence(
 
     Where :math:`P` and :math:`Q` are probability distributions where :math:`P` usually represents a distribution
     over data and :math:`Q` is often a prior or approximation of :math:`P`. It should be noted that the KL divergence
-    is a non-symetrical metric i.e. :math:`D_{KL}(P||Q) \neq D_{KL}(Q||P)`.
+    is a non-symmetrical metric i.e. :math:`D_{KL}(P||Q) \neq D_{KL}(Q||P)`.
 
     Args:
         p: data distribution with shape ``[N, d]``
