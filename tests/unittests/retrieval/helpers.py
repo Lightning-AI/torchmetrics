@@ -29,8 +29,8 @@ from unittests.retrieval.inputs import _input_retrieval_scores_extra as _irs_ext
 from unittests.retrieval.inputs import _input_retrieval_scores_float_target as _irs_float_tgt
 from unittests.retrieval.inputs import _input_retrieval_scores_for_adaptive_k as _irs_adpt_k
 from unittests.retrieval.inputs import _input_retrieval_scores_int_target as _irs_int_tgt
-from unittests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes as _irs_mis_sz
-from unittests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_mis_sz_fn
+from unittests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes as _irs_bad_sz
+from unittests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_bad_sz_fn
 from unittests.retrieval.inputs import _input_retrieval_scores_no_target as _irs_no_tgt
 from unittests.retrieval.inputs import _input_retrieval_scores_with_ignore_index as _irs_ii
 from unittests.retrieval.inputs import _input_retrieval_scores_wrong_targets as _irs_bad_tgt
@@ -136,7 +136,7 @@ _errors_test_functional_metric_parameters_default = {
     "argnames": "preds,target,message,metric_args",
     "argvalues": [
         # check input shapes are consistent (func)
-        (_irs_mis_sz_fn.preds, _irs_mis_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
+        (_irs_mis_sz_fn.preds, _irs_bad_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
         # check input tensors are not empty
         (_irs_empty.preds, _irs_empty.target, "`preds` and `target` must be non-empty and non-scalar tensors", {}),
         # check on input dtypes
@@ -150,7 +150,7 @@ _errors_test_functional_metric_parameters_with_nonbinary = {
     "argnames": "preds,target,message,metric_args",
     "argvalues": [
         # check input shapes are consistent (func)
-        (_irs_mis_sz_fn.preds, _irs_mis_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
+        (_irs_mis_sz_fn.preds, _irs_bad_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
         # check input tensors are not empty
         (_irs_empty.preds, _irs_empty.target, "`preds` and `target` must be non-empty and non-scalar tensors", {}),
         # check on input dtypes
@@ -224,9 +224,9 @@ _errors_test_class_metric_parameters_with_nonbinary = {
         ),
         # check input shapes are consistent
         (
-            _irs_mis_sz.indexes,
-            _irs_mis_sz.preds,
-            _irs_mis_sz.target,
+            _irs_bad_sz.indexes,
+            _irs_bad_sz.preds,
+            _irs_bad_sz.target,
             "`indexes`, `preds` and `target` must be of the same shape",
             {"empty_target_action": "skip"},
         ),
@@ -278,9 +278,9 @@ _errors_test_class_metric_parameters_default = {
         ),
         # check input shapes are consistent
         (
-            _irs_mis_sz.indexes,
-            _irs_mis_sz.preds,
-            _irs_mis_sz.target,
+            _irs_bad_sz.indexes,
+            _irs_bad_sz.preds,
+            _irs_bad_sz.target,
             "`indexes`, `preds` and `target` must be of the same shape",
             {"empty_target_action": "skip"},
         ),
