@@ -268,7 +268,7 @@ def bert_score(
     system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for
     evaluating different language generation tasks.
 
-    This implemenation follows the original implementation from `BERT_score`_.
+    This implementation follows the original implementation from `BERT_score`_.
 
     Args:
         preds: Either an iterable of predicted sentences or a ``Dict[input_ids, attention_mask]``.

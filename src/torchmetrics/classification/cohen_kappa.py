@@ -47,7 +47,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
 
     - ``preds`` (:class:`~torch.Tensor`): A int or float tensor of shape ``(N, ...)``. If preds is a floating point
       tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid per element.
-      Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
     .. note::
@@ -182,7 +182,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
     - ``mcck`` (:class:`~torch.Tensor`): A tensor containing cohen kappa score
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         weights: Weighting type to calculate the score. Choose from:

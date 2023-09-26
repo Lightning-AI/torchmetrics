@@ -25,18 +25,18 @@ from torch.nn.functional import pad
 
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import (
-    _GAMMATONE_AVAILABEL,
-    _TORCHAUDIO_AVAILABEL,
+    _GAMMATONE_AVAILABLE,
+    _TORCHAUDIO_AVAILABLE,
     _TORCHAUDIO_GREATER_EQUAL_0_10,
 )
 
-if _TORCHAUDIO_AVAILABEL and _TORCHAUDIO_GREATER_EQUAL_0_10:
+if _TORCHAUDIO_AVAILABLE and _TORCHAUDIO_GREATER_EQUAL_0_10:
     from torchaudio.functional.filtering import lfilter
 else:
     lfilter = None
     __doctest_skip__ = ["speech_reverberation_modulation_energy_ratio"]
 
-if _GAMMATONE_AVAILABEL:
+if _GAMMATONE_AVAILABLE:
     from gammatone.fftweight import fft_gtgram
     from gammatone.filters import centre_freqs, make_erb_filters
 else:
@@ -233,7 +233,7 @@ def speech_reverberation_modulation_energy_ratio(
         tensor([0.3354], dtype=torch.float64)
 
     """
-    if not _TORCHAUDIO_AVAILABEL or not _TORCHAUDIO_GREATER_EQUAL_0_10 or not _GAMMATONE_AVAILABEL:
+    if not _TORCHAUDIO_AVAILABLE or not _TORCHAUDIO_GREATER_EQUAL_0_10 or not _GAMMATONE_AVAILABLE:
         raise ModuleNotFoundError(
             "speech_reverberation_modulation_energy_ratio requires you to have `gammatone` and"
             " `torchaudio>=0.10` installed. Either install as ``pip install torchmetrics[audio]`` or "

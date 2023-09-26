@@ -166,7 +166,7 @@ def test_other_models(model):
         ("new",),
         ("warm",),
         ("real",),
-        ("beutiful",),
+        ("beautiful",),
         ("lonely",),
         ("relaxing",),
         # some random combinations
@@ -203,7 +203,7 @@ def test_prompt(prompts):
 @pytest.mark.skipif(not _PIQ_GREATER_EQUAL_0_8, reason="test requires piq>=0.8")
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_10, reason="test requires transformers>=4.10")
 def test_plot_method():
-    """Test the plot method of CLIPScore seperately in this file due to the skipping conditions."""
+    """Test the plot method of CLIPScore separately in this file due to the skipping conditions."""
     metric = CLIPImageQualityAssessment()
     metric.update(torch.rand(1, 3, 256, 256))
     fig, ax = metric.plot()

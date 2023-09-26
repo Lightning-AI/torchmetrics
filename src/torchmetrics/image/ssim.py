@@ -263,7 +263,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         ValueError:
             If ``kernel_size`` is not an int or a Sequence of ints with size 2 or 3.
         ValueError:
-            If ``betas`` is not a tuple of floats with lengt 2.
+            If ``betas`` is not a tuple of floats with length 2.
         ValueError:
             If ``normalize`` is neither `None`, `ReLU` nor `simple`.
 

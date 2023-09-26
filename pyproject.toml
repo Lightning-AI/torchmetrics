@@ -19,8 +19,7 @@ addopts = [
     "--color=yes",
     "--disable-pytest-warnings",
 ]
-# ToDo
-#filterwarnings = ["error::FutureWarning"]
+#filterwarnings = ["error::FutureWarning"] # ToDo
 xfail_strict = true
 junit_duration_report = "call"
 
@@ -40,9 +39,26 @@ exclude = "(.eggs|.git|.hg|.mypy_cache|.venv|_build|buck-out|build|dist)"
 
 [tool.docformatter]
 recursive = true
-wrap-summaries = 120
+# some docstring start with r"""
+wrap-summaries = 119
 wrap-descriptions = 120
 blank = true
+
+[tool.codespell]
+#skip = '*.py'
+quiet-level = 3
+# Todo: comma separated list of words; waiting for:
+#  https://github.com/codespell-project/codespell/issues/2839#issuecomment-1731601603
+# Todo: also adding links until they ignored by its: nature
+#  https://github.com/codespell-project/codespell/issues/2243#issuecomment-1732019960
+ignore-words-list = """
+  rouge, \
+  mape, \
+  wil, \
+  fpr, \
+  raison, \
+  archiv
+"""
 
 
 [tool.ruff]

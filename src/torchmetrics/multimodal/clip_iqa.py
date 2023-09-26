@@ -60,13 +60,13 @@ class CLIPImageQualityAssessment(Metric):
     be able to generate a vector representation of the image and the text that is similar if the image and text are
     semantically similar.
 
-    The metric works by calculating the cosine similarity between user provided images and pre-defined promts. The
-    promts always comes in pairs of "positive" and "negative" such as "Good photo." and "Bad photo.". By calculating
+    The metric works by calculating the cosine similarity between user provided images and pre-defined prompts. The
+    prompts always comes in pairs of "positive" and "negative" such as "Good photo." and "Bad photo.". By calculating
     the similartity between image embeddings and both the "positive" and "negative" prompt, the metric can determine
     which prompt the image is more similar to. The metric then returns the probability that the image is more similar
     to the first prompt than the second prompt.
 
-    Build in promts are:
+    Build in prompts are:
         * quality: "Good photo." vs "Bad photo."
         * brightness: "Bright photo." vs "Dark photo."
         * noisiness: "Clean photo." vs "Noisy photo."
@@ -80,7 +80,7 @@ class CLIPImageQualityAssessment(Metric):
         * new: "New photo." vs "Old photo."
         * warm: "Warm photo." vs "Cold photo."
         * real: "Real photo." vs "Abstract photo."
-        * beutiful: "Beautiful photo." vs "Ugly photo."
+        * beautiful: "Beautiful photo." vs "Ugly photo."
         * lonely: "Lonely photo." vs "Sociable photo."
         * relaxing: "Relaxing photo." vs "Stressful photo."
 
@@ -106,9 +106,9 @@ class CLIPImageQualityAssessment(Metric):
         data_range: The maximum value of the input tensor. For example, if the input images are in range [0, 255],
             data_range should be 255. The images are normalized by this value.
         prompts: A string, tuple of strings or nested tuple of strings. If a single string is provided, it must be one
-            of the availble prompts (see above). Else the input is expected to be a tuple, where each element can be one
-            of two things: either a string or a tuple of strings. If a string is provided, it must be one of the
-            availble prompts (see above). If tuple is provided, it must be of length 2 and the first string must be a
+            of the available prompts (see above). Else the input is expected to be a tuple, where each element can
+            be one of two things: either a string or a tuple of strings. If a string is provided, it must be one of the
+            available prompts (see above). If tuple is provided, it must be of length 2 and the first string must be a
             positive prompt and the second string must be a negative prompt.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
