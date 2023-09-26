@@ -20,7 +20,7 @@ from torch.nn.functional import conv2d, conv3d, pad, unfold
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
-from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
+from torchmetrics.utilities.imports import _SCIPY_AVAILABLE, _TORCH_GREATER_EQUAL_1_10
 
 
 def check_if_binarized(x: Tensor) -> None:
@@ -97,7 +97,10 @@ def generate_binary_structure(rank: int, connectivity: int) -> Tensor:
         connectivity = 1
     if rank < 1:
         return torch.tensor([1], dtype=torch.uint8)
-    grids = torch.meshgrid([torch.arange(3) for _ in range(rank)], indexing="ij")
+    if _TORCH_GREATER_EQUAL_1_10:
+        grids = torch.meshgrid([torch.arange(3) for _ in range(rank)], indexing="ij")
+    else:
+        grids = torch.meshgrid([torch.arange(3) for _ in range(rank)])
     output = torch.abs(torch.stack(grids, dim=0) - 1)
     output = torch.sum(output, dim=0)
     return output <= connectivity
