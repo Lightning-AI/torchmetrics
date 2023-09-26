@@ -50,6 +50,7 @@ repos:
       - id: codespell
         additional_dependencies: [tomli]
         #args: ["--write-changes"]
+        exclude: pyproject.toml
 
   - repo: https://github.com/crate-ci/typos
     rev: v1.16.12
@@ -57,6 +58,7 @@ repos:
       - id: typos
         # empty to do not write fixes
         args: []
+        exclude: pyproject.toml
 
   - repo: https://github.com/PyCQA/docformatter
     rev: v1.7.5
