@@ -60,6 +60,22 @@ ignore-words-list = """
   archiv
 """
 
+[tool.typos.default]
+extend-ignore-identifiers-re = [
+    # *sigh* this just isn't worth the cost of fixing
+    "AttributeID.*Supress.*",
+]
+
+[tool.typos.default.extend-identifiers]
+# *sigh* this just isn't worth the cost of fixing
+MAPE = "MAPE"
+
+[tool.typos.default.extend-words]
+# Don't correct the surname "Teh"
+fpr = "fpr"
+mape = "mape"
+
+
 
 [tool.ruff]
 line-length = 120
