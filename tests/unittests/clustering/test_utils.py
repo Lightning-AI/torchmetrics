@@ -21,10 +21,10 @@ from sklearn.metrics.cluster import entropy as sklearn_entropy
 from sklearn.metrics.cluster import pair_confusion_matrix as sklearn_pair_confusion_matrix
 from sklearn.metrics.cluster._supervised import _generalized_average as sklearn_generalized_average
 from torchmetrics.functional.clustering.utils import (
-    calcualte_pair_cluster_confusion_matrix,
     calculate_contingency_matrix,
     calculate_entropy,
     calculate_generalized_mean,
+    calculate_pair_cluster_confusion_matrix,
 )
 
 from unittests import BATCH_SIZE, NUM_BATCHES
@@ -113,6 +113,6 @@ class TestPairClusterConfusionMatrix:
 
     def test_pair_cluster_confusion_matrix(self, preds, target):
         """Check that pair cluster confusion matrix is calculated correctly."""
-        tm_res = calcualte_pair_cluster_confusion_matrix(preds, target)
+        tm_res = calculate_pair_cluster_confusion_matrix(preds, target)
         sklearn_res = sklearn_pair_confusion_matrix(preds, target)
         assert np.allclose(tm_res, sklearn_res, atol=self.atol)

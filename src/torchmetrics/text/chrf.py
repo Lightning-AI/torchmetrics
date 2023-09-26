@@ -71,7 +71,7 @@ class CHRFScore(Metric):
         n_word_order: A word n-gram order. If ``n_word_order=2``, the metric refers to the official chrF++.
             If ``n_word_order=0``, the metric is equivalent to the original ChrF.
         beta: parameter determining an importance of recall w.r.t. precision. If ``beta=1``, their importance is equal.
-        lowercase: An indication whether to enable case-insesitivity.
+        lowercase: An indication whether to enable case-insensitivity.
         whitespace: An indication whether keep whitespaces during n-gram extraction.
         return_sentence_level_score: An indication whether a sentence-level chrF/chrF++ score to be returned.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.

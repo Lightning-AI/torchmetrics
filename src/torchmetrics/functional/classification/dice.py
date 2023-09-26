@@ -50,9 +50,9 @@ def _dice_compute(
 
     if average == AverageMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
         # a class is not present if there exists no TPs, no FPs, and no FNs
-        meaningless_indeces = torch.nonzero((tp | fn | fp) == 0).cpu()
-        numerator[meaningless_indeces, ...] = -1
-        denominator[meaningless_indeces, ...] = -1
+        meaningless_indices = torch.nonzero((tp | fn | fp) == 0).cpu()
+        numerator[meaningless_indices, ...] = -1
+        denominator[meaningless_indices, ...] = -1
 
     return _reduce_stat_scores(
         numerator=numerator,
