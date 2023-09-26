@@ -15,7 +15,7 @@ from typing import Any, List, Optional, Sequence, Union
 
 from torch import Tensor, tensor
 
-from torchmetrics.functional.text.wil import _wil_compute, _wil_update
+from torchmetrics.functional.text.wil import _word_info_lost_compute, _word_info_lost_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -82,14 +82,14 @@ class WordInfoLost(Metric):
 
     def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:
         """Update state with predictions and targets."""
-        errors, target_total, preds_total = _wil_update(preds, target)
+        errors, target_total, preds_total = _word_info_lost_update(preds, target)
         self.errors += errors
         self.target_total += target_total
         self.preds_total += preds_total
 
     def compute(self) -> Tensor:
         """Calculate the Word Information Lost."""
-        return _wil_compute(self.errors, self.target_total, self.preds_total)
+        return _word_info_lost_compute(self.errors, self.target_total, self.preds_total)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

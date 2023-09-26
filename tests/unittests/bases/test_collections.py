@@ -557,7 +557,7 @@ def test_compute_on_different_dtype():
 
 
 def test_error_on_wrong_specified_compute_groups():
-    """Test that error is raised if user mis-specify the compute groups."""
+    """Test that error is raised if user miss-specify the compute groups."""
     with pytest.raises(ValueError, match="Input MulticlassAccuracy in `compute_groups`.*"):
         MetricCollection(
             MulticlassConfusionMatrix(3),
