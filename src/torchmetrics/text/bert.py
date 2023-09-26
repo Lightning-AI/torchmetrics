@@ -57,7 +57,7 @@ class BERTScore(Metric):
     BERT leverages the pre-trained contextual embeddings from BERT and matches words in candidate and reference
     sentences by cosine similarity. It has been shown to correlate with human judgment on sentence-level and
     system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for
-    evaluating different language generation tasks. This implemenation follows the original implementation from
+    evaluating different language generation tasks. This implementation follows the original implementation from
     `BERT_score`_.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:

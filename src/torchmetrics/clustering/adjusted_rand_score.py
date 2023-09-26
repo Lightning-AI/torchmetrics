@@ -32,7 +32,7 @@ class AdjustedRandScore(Metric):
         ARS(U, V) = (\text{RS} - \text{Expected RS}) / (\text{Max RS} - \text{Expected RS})
 
     The adjusted rand score :math:`\text{ARS}` is in essence the :math:`\text{RS}` (rand score) adjusted for chance.
-    The score ensures that completly randomly cluster labels have a score close to zero and only a perfect match will
+    The score ensures that completely randomly cluster labels have a score close to zero and only a perfect match will
     have a score of 1 (up to a permutation of the labels). The adjusted rand score is symmetric, therefore swapping
     :math:`U` and :math:`V` yields the same adjusted rand score.
 

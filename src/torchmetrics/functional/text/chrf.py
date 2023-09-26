@@ -50,7 +50,7 @@ def _prepare_n_grams_dicts(
 ) -> Tuple[
     Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor]
 ]:
-    """Prepare dictionaries with default zero values for total ref, hypothesis and matching chraracter and word n-grams.
+    """Prepare dictionaries with default zero values for total ref, hypothesis and matching character and word n-grams.
 
     Args:
         n_char_order: A character n-gram order.
@@ -546,7 +546,7 @@ def chrf_score(
     """Calculate `chrF score`_  of machine translated text with one or more references.
 
     This implementation supports both chrF score computation introduced in [1] and chrF++ score introduced in
-    `chrF++ score`_. This implementation follows the implmenetaions from https://github.com/m-popovic/chrF and
+    `chrF++ score`_. This implementation follows the implementations from https://github.com/m-popovic/chrF and
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
     Args:
