@@ -70,7 +70,7 @@ extend-ignore-identifiers-re = [
 # *sigh* this just isn't worth the cost of fixing
 MAPE = "MAPE"
 WIL = "WIL"
-Raisin = "Raisin"
+Raison = "Raison"
 
 [tool.typos.default.extend-words]
 # Don't correct the surname "Teh"

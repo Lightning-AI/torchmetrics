@@ -45,7 +45,7 @@ class BinaryAccuracy(BinaryStatScores):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-        - ``bacc`` (:class:`~torch.Tensor`): If ``multidim_average`` is set to ``global``, metric returns a scalar value.
+        - ``acc`` (:class:`~torch.Tensor`): If ``multidim_average`` is set to ``global``, metric returns a scalar value.
           If ``multidim_average`` is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar
           value per sample.
 

@@ -94,7 +94,7 @@ def _get_characters(sentence: str, whitespace: bool) -> List[str]:
     return list(sentence.strip().replace(" ", ""))
 
 
-def _separate_word_and_punctiation(word: str) -> List[str]:
+def _separate_word_and_punctuation(word: str) -> List[str]:
     """Separates out punctuations from beginning and end of words for chrF.
 
     Adapted from https://github.com/m-popovic/chrF and
@@ -117,7 +117,7 @@ def _separate_word_and_punctiation(word: str) -> List[str]:
     return [word]
 
 
-def _get_words_and_punctiation(sentence: str) -> List[str]:
+def _get_words_and_punctuation(sentence: str) -> List[str]:
     """Separates out punctuations from beginning and end of words for chrF for all words in the sentence.
 
     Args:
@@ -127,7 +127,7 @@ def _get_words_and_punctiation(sentence: str) -> List[str]:
         An aggregated list of separated words and punctuations.
 
     """
-    return sum((_separate_word_and_punctiation(word) for word in sentence.strip().split()), [])
+    return sum((_separate_word_and_punctuation(word) for word in sentence.strip().split()), [])
 
 
 def _ngram_counts(char_or_word_list: List[str], n_gram_order: int) -> Dict[int, Dict[Tuple[str, ...], Tensor]]:
@@ -180,7 +180,7 @@ def _get_n_grams_counts_and_total_ngrams(
         if lowercase:
             sentence = sentence.lower()
         char_n_grams_counts = _ngram_counts(_get_characters(sentence, whitespace), n_char_order)
-        word_n_grams_counts = _ngram_counts(_get_words_and_punctiation(sentence), n_word_order)
+        word_n_grams_counts = _ngram_counts(_get_words_and_punctuation(sentence), n_word_order)
         return char_n_grams_counts, word_n_grams_counts
 
     def _get_total_ngrams(n_grams_counts: Dict[int, Dict[Tuple[str, ...], Tensor]]) -> Dict[int, Tensor]:
