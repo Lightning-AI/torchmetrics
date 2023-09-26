@@ -30,7 +30,7 @@ class PerceptualEvaluationSpeechQuality(Metric):
     """Calculate `Perceptual Evaluation of Speech Quality`_ (PESQ).
 
     It's a recognized industry standard for audio quality that takes into considerations characteristics such as:
-    audio sharpness, call volume, background noise, clipping, audio interference etc. PESQ returns a score between
+    audio sharpness, call volume, background noise, clipping, audio interference ect. PESQ returns a score between
     -0.5 and 4.5 with the higher scores indicating a better quality.
 
     This metric is a wrapper for the `pesq package`_. Note that input will be moved to ``cpu`` to perform the metric
@@ -43,18 +43,22 @@ class PerceptualEvaluationSpeechQuality(Metric):
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``pesq`` (:class:`~torch.Tensor`): float tensor with shape ``(...,)`` of PESQ value per sample
+    - ``pesq`` (:class:`~torch.Tensor`): float tensor of PESQ value reduced across the batch
 
     .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install
         torchmetrics[audio]`` or ``pip install pesq``. ``pesq`` will compile with your currently
         installed version of numpy, meaning that if you upgrade numpy at some point in the future you will
         most likely have to reinstall ``pesq``.
 
+    .. note: the ``forward`` and ``compute`` methods in this class return a single (reduced) PESQ value 
+        for a batch. To obtain a PESQ value for each sample, you may use the functional counterpart in
+        ``torchmetrics.functional.audio.pesq.perceptual_evaluation_speech_quality()``.
+
     Args:
         fs: sampling frequency, should be 16000 or 8000 (Hz)
         mode: ``'wb'`` (wide-band) or ``'nb'`` (narrow-band)
         keep_same_device: whether to move the pesq value to the device of preds
-        n_processes: integer specifying the number of processes to run in parallel for the metric calculation.
+        n_processes: integer specifiying the number of processes to run in parallel for the metric calculation.
             Only applies to batches of data and if ``multiprocessing`` package is installed.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
