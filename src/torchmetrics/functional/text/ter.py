@@ -60,7 +60,7 @@ class _TercomTokenizer:
     See src/ter/core/Normalizer.java in https://github.com/jhclark/tercom Note that Python doesn't support named Unicode
     blocks so the mapping for relevant blocks was taken from here: https://unicode-table.com/en/blocks/
 
-    This implementation follows the implemenation from
+    This implementation follows the implementation from
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/tokenizers/tokenizer_ter.py.
 
     """
@@ -542,8 +542,8 @@ def translation_edit_rate(
 ) -> Union[Tensor, Tuple[Tensor, List[Tensor]]]:
     """Calculate Translation edit rate (`TER`_)  of machine translated text with one or more references.
 
-    This implementation follows the implmenetaions from
-    https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py. The `sacrebleu` implmenetation is a
+    This implementation follows the implementations from
+    https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py. The `sacrebleu` implementation is a
     near-exact reimplementation of the Tercom algorithm, produces identical results on all "sane" outputs.
 
     Args:

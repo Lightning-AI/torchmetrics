@@ -181,23 +181,23 @@ class Vgg16(torch.nn.Module):
         return vgg_outputs(h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3, h_relu5_3)
 
 
-def spatial_average(in_tens: Tensor, keepdim: bool = True) -> Tensor:
-    """Spatial averaging over heigh and width of images."""
-    return in_tens.mean([2, 3], keepdim=keepdim)
+def _spatial_average(in_tens: Tensor, keep_dim: bool = True) -> Tensor:
+    """Spatial averaging over height and width of images."""
+    return in_tens.mean([2, 3], keepdim=keep_dim)
 
 
-def upsam(in_tens: Tensor, out_hw: Tuple[int, ...] = (64, 64)) -> Tensor:
+def _upsample(in_tens: Tensor, out_hw: Tuple[int, ...] = (64, 64)) -> Tensor:
     """Upsample input with bilinear interpolation."""
     return nn.Upsample(size=out_hw, mode="bilinear", align_corners=False)(in_tens)
 
 
-def normalize_tensor(in_feat: Tensor, eps: float = 1e-10) -> Tensor:
+def _normalize_tensor(in_feat: Tensor, eps: float = 1e-10) -> Tensor:
     """Normalize tensors."""
     norm_factor = torch.sqrt(torch.sum(in_feat**2, dim=1, keepdim=True))
     return in_feat / (norm_factor + eps)
 
 
-def resize_tensor(x: Tensor, size: int = 64) -> Tensor:
+def _resize_tensor(x: Tensor, size: int = 64) -> Tensor:
     """https://github.com/toshas/torch-fidelity/blob/master/torch_fidelity/sample_similarity_lpips.py#L127C22-L132."""
     if x.shape[-1] > size and x.shape[-2] > size:
         return torch.nn.functional.interpolate(x, (size, size), mode="area")
@@ -318,22 +318,22 @@ class _LPIPS(nn.Module):
 
         # resize input if needed
         if self.resize is not None:
-            in0_input = resize_tensor(in0_input, size=self.resize)
-            in1_input = resize_tensor(in1_input, size=self.resize)
+            in0_input = _resize_tensor(in0_input, size=self.resize)
+            in1_input = _resize_tensor(in1_input, size=self.resize)
 
         outs0, outs1 = self.net.forward(in0_input), self.net.forward(in1_input)
         feats0, feats1, diffs = {}, {}, {}
 
         for kk in range(self.L):
-            feats0[kk], feats1[kk] = normalize_tensor(outs0[kk]), normalize_tensor(outs1[kk])
+            feats0[kk], feats1[kk] = _normalize_tensor(outs0[kk]), _normalize_tensor(outs1[kk])
             diffs[kk] = (feats0[kk] - feats1[kk]) ** 2
 
         res = []
         for kk in range(self.L):
             if self.spatial:
-                res.append(upsam(self.lins[kk](diffs[kk]), out_hw=tuple(in0.shape[2:])))
+                res.append(_upsample(self.lins[kk](diffs[kk]), out_hw=tuple(in0.shape[2:])))
             else:
-                res.append(spatial_average(self.lins[kk](diffs[kk]), keepdim=True))
+                res.append(_spatial_average(self.lins[kk](diffs[kk]), keep_dim=True))
 
         val: Tensor = sum(res)  # type: ignore[assignment]
         if retperlayer:
@@ -378,7 +378,7 @@ def learned_perceptual_image_patch_similarity(
     reduction: Literal["sum", "mean"] = "mean",
     normalize: bool = False,
 ) -> Tensor:
-    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates the perceptual similarity between two images.
+    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates perceptual similarity between two images.
 
     LPIPS essentially computes the similarity between the activations of two image patches for some pre-defined network.
     This measure has been shown to match human perception well. A low LPIPS score means that image patches are

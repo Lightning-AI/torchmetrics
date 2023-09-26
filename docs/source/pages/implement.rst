@@ -215,7 +215,7 @@ can behave in two ways:
    5. Calls ``compute()`` to calculate metric for current batch.
    6. Restores the global state.
 
-2. If ``full_state_update`` is ``False`` (default) the metric state of one batch is completly independent of the state
+2. If ``full_state_update`` is ``False`` (default) the metric state of one batch is completely independent of the state
    of other batches, which means that we only need to call ``update`` once.
 
    1. Caches the global state.
