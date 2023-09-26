@@ -21,10 +21,10 @@ from sklearn.metrics.cluster import entropy as sklearn_entropy
 from sklearn.metrics.cluster import pair_confusion_matrix as sklearn_pair_confusion_matrix
 from sklearn.metrics.cluster._supervised import _generalized_average as sklearn_generalized_average
 from torchmetrics.functional.clustering.utils import (
-    calculate_pair_cluster_confusion_matrix,
     calculate_contingency_matrix,
     calculate_entropy,
     calculate_generalized_mean,
+    calculate_pair_cluster_confusion_matrix,
 )
 
 from unittests import BATCH_SIZE, NUM_BATCHES

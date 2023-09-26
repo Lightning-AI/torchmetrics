@@ -15,8 +15,8 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.clustering.utils import (
-    calculate_pair_cluster_confusion_matrix,
     calculate_contingency_matrix,
+    calculate_pair_cluster_confusion_matrix,
     check_cluster_labels,
 )
 
