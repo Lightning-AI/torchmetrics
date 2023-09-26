@@ -35,7 +35,7 @@ class KLDivergence(Metric):
 
     Where :math:`P` and :math:`Q` are probability distributions where :math:`P` usually represents a distribution
     over data and :math:`Q` is often a prior or approximation of :math:`P`. It should be noted that the KL divergence
-    is a non-symetrical metric i.e. :math:`D_{KL}(P||Q) \neq D_{KL}(Q||P)`.
+    is a non-symmetrical metric i.e. :math:`D_{KL}(P||Q) \neq D_{KL}(Q||P)`.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 

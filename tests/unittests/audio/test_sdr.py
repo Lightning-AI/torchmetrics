@@ -75,7 +75,7 @@ original_impl_compute_permutation = partial(_sdr_original_batch)
     ],
 )
 class TestSDR(MetricTester):
-    """Test class for `SingalDistortionRatio` metric."""
+    """Test class for `SignalDistortionRatio` metric."""
 
     atol = 1e-2
 

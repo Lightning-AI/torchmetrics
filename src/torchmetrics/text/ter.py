@@ -45,7 +45,7 @@ class TranslationEditRate(Metric):
     Args:
         normalize: An indication whether a general tokenization to be applied.
         no_punctuation: An indication whteher a punctuation to be removed from the sentences.
-        lowercase: An indication whether to enable case-insesitivity.
+        lowercase: An indication whether to enable case-insensitivity.
         asian_support: An indication whether asian characters to be processed.
         return_sentence_level_score: An indication whether a sentence-level TER to be returned.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
