@@ -34,9 +34,9 @@ from torchmetrics.functional.segmentation.utils import (
 @pytest.mark.parametrize("connectivity", [1, 2, 3])
 def test_generate_binary_structure(rank, connectivity):
     """Test the generate binary structure function."""
-    stucture = generate_binary_structure(rank, connectivity)
+    structure = generate_binary_structure(rank, connectivity)
     scistucture = scigenerate_binary_structure(rank, connectivity)
-    assert torch.allclose(stucture, torch.from_numpy(scistucture))
+    assert torch.allclose(structure, torch.from_numpy(scistucture))
 
 
 @pytest.mark.parametrize(

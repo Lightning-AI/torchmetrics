@@ -184,7 +184,7 @@ def distance_transform(
 ) -> Tensor:
     """Calculate distance transform of a binary tensor.
 
-    This function calculates the distance transfrom of a binary tensor, replacing each foreground pixel with the
+    This function calculates the distance transform of a binary tensor, replacing each foreground pixel with the
     distance to the closest background pixel. The distance is calculated using the euclidean, chessboard or taxicab
     distance.
 
@@ -195,7 +195,7 @@ def distance_transform(
 
     Args:
         x: The binary tensor to calculate the distance transform of.
-        sampling: Only relevant when distance is calculated using the euclidean distance. The sampling referes to the
+        sampling: Only relevant when distance is calculated using the euclidean distance. The sampling refers to the
             pixel spacing in the image, i.e. the distance between two adjacent pixels. If not provided, the pixel
             spacing is assumed to be 1.
         metric: The distance to use for the distance transform. Can be one of ``"euclidean"``, ``"chessboard"``
