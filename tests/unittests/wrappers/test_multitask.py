@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# this is just a bypass for this module name collision with build-in one
+# this is just a bypass for this module name collision with built-in one
 import re
 
 import pytest

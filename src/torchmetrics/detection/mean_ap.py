@@ -987,7 +987,7 @@ class MeanAveragePrecision(Metric):
         return self._plot(val, ax)
 
     # --------------------
-    # specialized syncronization and apply functions for this metric
+    # specialized synchronization and apply functions for this metric
     # --------------------
 
     def _apply(self, fn: Callable) -> torch.nn.Module:  # type: ignore[override]

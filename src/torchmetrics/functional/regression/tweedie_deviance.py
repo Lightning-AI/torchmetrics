@@ -88,7 +88,7 @@ def _tweedie_deviance_score_compute(sum_deviance_score: Tensor, num_observations
     """Compute Deviance Score.
 
     Args:
-        sum_deviance_score: Sum of deviance scores accumalated until now.
+        sum_deviance_score: Sum of deviance scores accumulated until now.
         num_observations: Number of observations encountered until now.
 
     Example:

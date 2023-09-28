@@ -55,7 +55,7 @@ class ROUGEScore(Metric):
             If this is ``None``, replacing any non-alpha-numeric characters with spaces is default.
             This function must take a ``str`` and return a ``str``.
         tokenizer:
-            A user's own tokenizer function. If this is ``None``, spliting by spaces is default
+            A user's own tokenizer function. If this is ``None``, splitting by spaces is default
             This function must take a ``str`` and return ``Sequence[str]``
         accumulate:
             Useful in case of multi-reference rouge score.

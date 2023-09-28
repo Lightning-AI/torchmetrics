@@ -188,7 +188,7 @@ def _normalize_and_tokenize_text(
     # If normalizer is none, replace any non-alpha-numeric characters with spaces.
     text = normalizer(text) if callable(normalizer) else re.sub(r"[^a-z0-9]+", " ", text.lower())
 
-    # If tokenizer is none, spliting by spaces
+    # If tokenizer is none, splitting by spaces
     tokens = tokenizer(text) if callable(tokenizer) else re.split(r"\s+", text)
 
     if stemmer:
@@ -299,7 +299,7 @@ def _rouge_score_update(
         preds: An iterable of predicted sentences.
         target: An iterable of iterable of target sentences.
         rouge_keys_values: List of N-grams/'L'/'Lsum' arguments.
-        accumulate: Useful incase of multi-reference rouge score.
+        accumulate: Useful in case of multi-reference rouge score.
             ``avg`` takes the avg of all references with respect to predictions
             ``best`` takes the best fmeasure score obtained between prediction and multiple corresponding references.
             Allowed values are ``avg`` and ``best``.
@@ -309,7 +309,7 @@ def _rouge_score_update(
             If this is ``None``, replacing any non-alpha-numeric characters with spaces is default.
             This function must take a `str` and return a `str`.
         tokenizer:
-            A user's own tokenizer function. If this is ``None``, spliting by spaces is default
+            A user's own tokenizer function. If this is ``None``, splitting by spaces is default
             This function must take a `str` and return `Sequence[str]`
 
     Example:
@@ -433,7 +433,7 @@ def rouge_score(
         target:
             An iterable of iterables of target sentences or an iterable of target sentences or a single target sentence.
         accumulate:
-            Useful incase of multi-reference rouge score.
+            Useful in case of multi-reference rouge score.
 
             - ``avg`` takes the avg of all references with respect to predictions
             - ``best`` takes the best fmeasure score obtained between prediction and multiple corresponding references.
@@ -442,7 +442,7 @@ def rouge_score(
         normalizer: A user's own normalizer function.
             If this is ``None``, replacing any non-alpha-numeric characters with spaces is default.
             This function must take a ``str`` and return a ``str``.
-        tokenizer: A user's own tokenizer function. If this is ``None``, spliting by spaces is default
+        tokenizer: A user's own tokenizer function. If this is ``None``, splitting by spaces is default
             This function must take a ``str`` and return ``Sequence[str]``
         rouge_keys: A list of rouge types to calculate.
             Keys that are allowed are ``rougeL``, ``rougeLsum``, and ``rouge1`` through ``rouge9``.
