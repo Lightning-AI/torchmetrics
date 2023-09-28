@@ -153,7 +153,7 @@ def interp(x: Tensor, xp: Tensor, fp: Tensor) -> Tensor:
     m = _safe_divide(fp[1:] - fp[:-1], xp[1:] - xp[:-1])
     b = fp[:-1] - (m * xp[:-1])
 
-    indicies = torch.sum(torch.ge(x[:, None], xp[None, :]), 1) - 1
-    indicies = torch.clamp(indicies, 0, len(m) - 1)
+    indices = torch.sum(torch.ge(x[:, None], xp[None, :]), 1) - 1
+    indices = torch.clamp(indices, 0, len(m) - 1)
 
-    return m[indicies] * x + b[indicies]
+    return m[indices] * x + b[indices]
