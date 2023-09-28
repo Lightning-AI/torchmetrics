@@ -43,12 +43,16 @@ class PerceptualEvaluationSpeechQuality(Metric):
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``pesq`` (:class:`~torch.Tensor`): float tensor with shape ``(...,)`` of PESQ value per sample
+    - ``pesq`` (:class:`~torch.Tensor`): float tensor of PESQ value reduced across the batch
 
     .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install
         torchmetrics[audio]`` or ``pip install pesq``. ``pesq`` will compile with your currently
         installed version of numpy, meaning that if you upgrade numpy at some point in the future you will
         most likely have to reinstall ``pesq``.
+
+    .. note:: the ``forward`` and ``compute`` methods in this class return a single (reduced) PESQ value
+        for a batch. To obtain a PESQ value for each sample, you may use the functional counterpart in
+        :func:`~torchmetrics.functional.audio.pesq.perceptual_evaluation_speech_quality`.
 
     Args:
         fs: sampling frequency, should be 16000 or 8000 (Hz)
