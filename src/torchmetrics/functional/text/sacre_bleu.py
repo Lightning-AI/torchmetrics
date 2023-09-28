@@ -465,10 +465,8 @@ def sacre_bleu_score(
         target: An iterable of iterables of reference corpus
         n_gram: Gram value ranged from 1 to 4
         smooth: Whether to apply smoothing - see [2]
-        tokenize: Tokenization technique to be used.
-            Supported tokenization: ``[
-                'none', '13a', 'zh', 'intl', 'char', 'ja-mecab', 'ko-mecab', 'flores101', 'flores200'
-            ]``
+        tokenize: Tokenization technique to be used. Choose between ``'none'``, ``'13a'``, ``'zh'``, ``'intl'``,
+            ``'char'``, ``'ja-mecab'``, ``'ko-mecab'``, ``'flores101'`` and ``'flores200'``.
         lowercase: If ``True``, BLEU score over lowercased text is calculated.
         weights:
             Weights used for unigrams, bigrams, etc. to calculate BLEU score.

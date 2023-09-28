@@ -49,10 +49,8 @@ class SacreBLEUScore(BLEUScore):
     Args:
         n_gram: Gram value ranged from 1 to 4
         smooth: Whether to apply smoothing, see `SacreBLEU`_
-        tokenize: Tokenization technique to be used.
-            Supported tokenization: ``[
-                'none', '13a', 'zh', 'intl', 'char', 'ja-mecab', 'ko-mecab', 'flores101', 'flores200'
-            ]``
+        tokenize: Tokenization technique to be used. Choose between ``'none'``, ``'13a'``, ``'zh'``, ``'intl'``,
+            ``'char'``, ``'ja-mecab'``, ``'ko-mecab'``, ``'flores101'`` and ``'flores200'``.
         lowercase:  If ``True``, BLEU score over lowercased text is calculated.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
         weights:
