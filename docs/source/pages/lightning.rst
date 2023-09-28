@@ -187,10 +187,11 @@ The following contains a list of pitfalls to be aware of:
             self.val_acc[dataloader_idx](preds, y)
             self.log('val_acc', self.val_acc[dataloader_idx])
 
-* Mixing the two logging methods by calling ``self.log("val", self.metric)`` in ``{training}/{val}/{test}_step`` method and
-  then calling ``self.log("val", self.metric.compute())`` in the corresponding ``{training}/{val}/{test}_epoch_end`` method.
-  Because the object is logged in the first case, Lightning will reset the metric before calling the second line leading to
-  errors or nonsense results.
+* Mixing the two logging methods by calling ``self.log("val", self.metric)`` in ``{training}/{validation}/{test}_step``
+  method and then calling ``self.log("val", self.metric.compute())`` in the corresponding
+  ``on_{train}/{validation}/{test}_epoch_end`` method.
+  Because the object is logged in the first case, Lightning will reset the metric before calling the second line leading
+  to errors or nonsense results.
 
 * Calling ``self.log("val", self.metric(preds, target))`` with the intention of logging the metric object. Because
   ``self.metric(preds, target)`` corresponds to calling the forward method, this will return a tensor and not the
