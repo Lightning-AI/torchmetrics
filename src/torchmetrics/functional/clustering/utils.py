@@ -214,7 +214,7 @@ def _validate_intrinsic_labels_to_samples(num_labels: int, num_samples: int) -> 
         )
 
 
-def calcualte_pair_cluster_confusion_matrix(
+def calculate_pair_cluster_confusion_matrix(
     preds: Optional[Tensor] = None,
     target: Optional[Tensor] = None,
     contingency: Optional[Tensor] = None,
@@ -247,15 +247,15 @@ def calcualte_pair_cluster_confusion_matrix(
 
     Example:
         >>> import torch
-        >>> from torchmetrics.functional.clustering.utils import calcualte_pair_cluster_confusion_matrix
+        >>> from torchmetrics.functional.clustering.utils import calculate_pair_cluster_confusion_matrix
         >>> preds = torch.tensor([0, 0, 1, 1])
         >>> target = torch.tensor([1, 1, 0, 0])
-        >>> calcualte_pair_cluster_confusion_matrix(preds, target)
+        >>> calculate_pair_cluster_confusion_matrix(preds, target)
         tensor([[8, 0],
                 [0, 4]])
         >>> preds = torch.tensor([0, 0, 1, 2])
         >>> target = torch.tensor([0, 0, 1, 1])
-        >>> calcualte_pair_cluster_confusion_matrix(preds, target)
+        >>> calculate_pair_cluster_confusion_matrix(preds, target)
         tensor([[8, 2],
                 [0, 2]])
 

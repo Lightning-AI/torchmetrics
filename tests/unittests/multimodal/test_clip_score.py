@@ -120,7 +120,7 @@ class TestCLIPScore(MetricTester):
 
     @skip_on_connection_issues()
     def test_plot_method(self, inputs, model_name_or_path):
-        """Test the plot method of CLIPScore seperately in this file due to the skipping conditions."""
+        """Test the plot method of CLIPScore separately in this file due to the skipping conditions."""
         metric = CLIPScore(model_name_or_path=model_name_or_path)
         preds, target = inputs
         metric.update(preds[0], target[0])

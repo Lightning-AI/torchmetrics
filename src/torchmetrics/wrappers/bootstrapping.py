@@ -62,7 +62,7 @@ class BootStrapper(WrapperMetric):
         base_metric: base metric class to wrap
         num_bootstraps: number of copies to make of the base metric for bootstrapping
         mean: if ``True`` return the mean of the bootstraps
-        std: if ``True`` return the standard diviation of the bootstraps
+        std: if ``True`` return the standard deviation of the bootstraps
         quantile: if given, returns the quantile of the bootstraps. Can only be used with pytorch version 1.6 or higher
         raw: if ``True``, return all bootstrapped values
         sampling_strategy:
@@ -117,7 +117,7 @@ class BootStrapper(WrapperMetric):
         if sampling_strategy not in allowed_sampling:
             raise ValueError(
                 f"Expected argument ``sampling_strategy`` to be one of {allowed_sampling}"
-                f" but recieved {sampling_strategy}"
+                f" but received {sampling_strategy}"
             )
         self.sampling_strategy = sampling_strategy
 

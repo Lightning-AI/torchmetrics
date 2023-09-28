@@ -67,14 +67,14 @@ _transform_changelog(
 
 def _set_root_image_path(page_path: str):
     """Set relative path to be from the root, drop all `../` in images used gallery."""
-    with open(page_path, encoding="UTF-8") as fo:
-        body = fo.read()
+    with open(page_path, encoding="UTF-8") as fopen:
+        body = fopen.read()
     found = re.findall(r"   :image: (.*)\.svg", body)
     for occur in found:
         occur_ = occur.replace("../", "")
         body = body.replace(occur, occur_)
-    with open(page_path, "w", encoding="UTF-8") as fo:
-        fo.write(body)
+    with open(page_path, "w", encoding="UTF-8") as fopen:
+        fopen.write(body)
 
 
 if SPHINX_FETCH_ASSETS:

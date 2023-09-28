@@ -119,7 +119,7 @@ class _SacreBLEUTokenizer:
         import regex
 
         _INT_REGEX = (
-            # Separate out punctuations preceeded by a non-digit
+            # Separate out punctuations preceded by a non-digit
             (regex.compile(r"(\P{N})(\p{P})"), r"\1 \2 "),
             # Separate out punctuations followed by a non-digit
             (regex.compile(r"(\p{P})(\P{N})"), r" \1 \2"),
