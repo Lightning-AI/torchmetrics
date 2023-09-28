@@ -137,9 +137,9 @@ class _InformationMeasure:
         self.alpha = alpha or 0
         self.beta = beta or 0
 
-    def __call__(self, preds_distribution: Tensor, target_distribtuion: Tensor) -> Tensor:
+    def __call__(self, preds_distribution: Tensor, target_distribution: Tensor) -> Tensor:
         information_measure_function = getattr(self, f"_calculate_{self.information_measure.value}")
-        return torch.nan_to_num(information_measure_function(preds_distribution, target_distribtuion))
+        return torch.nan_to_num(information_measure_function(preds_distribution, target_distribution))
 
     @staticmethod
     def _calculate_kl_divergence(preds_distribution: Tensor, target_distribution: Tensor) -> Tensor:
