@@ -39,6 +39,7 @@
 
 import os
 import re
+import tempfile
 from functools import partial
 from typing import Any, ClassVar, Dict, Optional, Sequence
 
@@ -86,7 +87,7 @@ _UCODE_RANGES = (
 )
 
 
-_FLORES_LOCAL_DIR = "/tmp/torchmetrics-flores"  # noqa: S108
+_FLORES_LOCAL_DIR = os.path.join(tempfile.gettempdir(), "torchmetrics-flores")
 # Model paths copied from https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/tokenizers/tokenizer_spm.py.
 _FLORES_MODELS_URL = {
     "flores101": "https://dl.fbaipublicfiles.com/fairseq/models/flores/sacrebleu_tokenizer_spm.model",
