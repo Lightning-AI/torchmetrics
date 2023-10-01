@@ -69,32 +69,32 @@ RUN \
     rm -rf /root/.cache && \
     rm -rf /var/lib/apt/lists/*
 
+ENV PYTHONPATH="/usr/lib/python${PYTHON_VERSION}/site-packages"
+
 COPY requirements.txt .
 COPY requirements/ requirements/
-
-ENV PYTHONPATH="/usr/lib/python${PYTHON_VERSION}/site-packages"
 
 RUN \
     # set particular PyTorch version
     pip install -q wget packaging && \
     python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py  && \
     python ./adjust-torch-versions.py requirements.txt ${PYTORCH_VERSION} && \
-    # trying to resolve pesq installation issue
-    pip install -q "numpy<1.24" && \
-    # needed for the gpu multiprocessing
-    pip install mkl-service==2.4.0 && \
     for fpath in `ls requirements/*.txt`; do \
       python ./adjust-torch-versions.py $fpath ${PYTORCH_VERSION}; \
     done && \
+    # trying to resolve pesq installation issue
+    pip install -q "numpy<1.24" && \
+    # needed for the gpu multiprocessing
+    pip install "mkl-service==2.4.0" && \
     CUDA_VERSION_MM=${CUDA_VERSION%.*} && \
+    CU_VERSION_MM=${CUDA_VERSION_MM//'.'/''}/ && \
     pip install --no-cache-dir -r requirements/devel.txt \
-      --find-links "https://download.pytorch.org/whl/cu${CUDA_VERSION_MM//'.'/''}/torch_stable.html"
+      --find-links "https://download.pytorch.org/whl/cu${CU_VERSION_MM}/torch_stable.html" && \
+    rm -rf requirements.txt requirements/
 
 RUN \
     # Show what we have
     pip --version && \
     pip list && \
     python -c "import sys; ver = sys.version_info ; assert f'{ver.major}.{ver.minor}' == '$PYTHON_VERSION', ver" && \
-    python -c "import torch; assert torch.__version__.startswith('$PYTORCH_VERSION'), torch.__version__" && \
-    python requirements/pytorch/check-avail-extras.py && \
-    rm -rf requirements/
+    python -c "import torch; assert torch.__version__.startswith('$PYTORCH_VERSION'), torch.__version__"
