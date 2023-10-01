@@ -171,12 +171,12 @@ def _prepare_extras(
     found_req_files = [n for n in found_req_files if n not in skip_files]
     found_req_names = [os.path.splitext(req)[0] for req in found_req_files]
     # define basic and extra extras
-    extras_req = {
-        name: _load_req(file_name=fname) for name, fname in zip(found_req_names, found_req_files) if "_test" not in name
-    }
+    extras_req = {"_tests": []}
     for name, fname in zip(found_req_names, found_req_files):
-        if "_test" in name:
+        if name.endswith("_test"):
             extras_req["_tests"] += _load_req(file_name=fname)
+        else:
+            extras_req[name] = _load_req(file_name=fname)
     # filter the uniques
     extras_req = {n: list(set(req)) for n, req in extras_req.items()}
     # create an 'all' keyword that install all possible dependencies
