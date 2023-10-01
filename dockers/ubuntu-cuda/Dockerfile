@@ -42,6 +42,11 @@ RUN \
         wget \
         curl \
         unzip \
+        g++ \
+        cmake \
+        ffmpeg \
+        git \
+        libsndfile1 \
         ca-certificates \
         software-properties-common \
         libopenmpi-dev \
@@ -74,6 +79,10 @@ RUN \
     pip install -q wget packaging && \
     python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py  && \
     python ./adjust-torch-versions.py requirements.txt ${PYTORCH_VERSION} && \
+    # trying to resolve pesq installation issue
+    pip install -q "numpy<1.24" && \
+    # needed for the gpu multiprocessing
+    pip install mkl-service==2.4.0 && \
     for fpath in `ls requirements/*.txt`; do \
       python ./adjust-torch-versions.py $fpath ${PYTORCH_VERSION}; \
     done && \
