@@ -96,11 +96,11 @@ def _parse_requirements(strs: Union[str, Iterable[str]]) -> Iterator[_Requiremen
 
 
 def _load_requirements(
-    path_dir: str, file_name: str = "requirements.txt", unfreeze: bool = not _FREEZE_REQUIREMENTS
+    path_dir: str, file_name: str = "base.txt", unfreeze: bool = not _FREEZE_REQUIREMENTS
 ) -> List[str]:
     """Load requirements from a file.
 
-    >>> _load_requirements(_PATH_ROOT)
+    >>> _load_requirements(_PATH_REQUIRE)
     ['numpy...', 'torch..."]
 
     """
@@ -158,10 +158,10 @@ LONG_DESCRIPTION = _load_readme_description(
     homepage=ABOUT.__homepage__,
     version=f"v{ABOUT.__version__}",
 )
-BASE_REQUIREMENTS = _load_requirements(path_dir=_PATH_ROOT, file_name="requirements.txt")
+BASE_REQUIREMENTS = _load_requirements(path_dir=_PATH_REQUIRE, file_name="base.txt")
 
 
-def _prepare_extras(skip_files: Tuple[str] = ("devel.txt", "doctest.txt", "integrate.txt", "docs.txt")) -> dict:
+def _prepare_extras(skip_files: Tuple[str] = ("base.txt", "_devel.txt", "_doctest.txt", "_integrate.txt", "_docs.txt")) -> dict:
     # find all extra requirements
     _load_req = partial(_load_requirements, path_dir=_PATH_REQUIRE)
     found_req_files = sorted(os.path.basename(p) for p in glob.glob(os.path.join(_PATH_REQUIRE, "*.txt")))

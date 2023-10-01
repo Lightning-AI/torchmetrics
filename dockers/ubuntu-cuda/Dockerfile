@@ -71,14 +71,12 @@ RUN \
 
 ENV PYTHONPATH="/usr/lib/python${PYTHON_VERSION}/site-packages"
 
-COPY requirements.txt .
 COPY requirements/ requirements/
 
 RUN \
     # set particular PyTorch version
     pip install -q wget packaging && \
     python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py  && \
-    python ./adjust-torch-versions.py requirements.txt ${PYTORCH_VERSION} && \
     for fpath in `ls requirements/*.txt`; do \
       python ./adjust-torch-versions.py $fpath ${PYTORCH_VERSION}; \
     done && \
@@ -88,9 +86,9 @@ RUN \
     pip install "mkl-service==2.4.0" && \
     CUDA_VERSION_MM=${CUDA_VERSION%.*} && \
     CU_VERSION_MM=${CUDA_VERSION_MM//'.'/''}/ && \
-    pip install --no-cache-dir -r requirements/devel.txt \
+    pip install --no-cache-dir -r requirements/_devel.txt \
       --find-links "https://download.pytorch.org/whl/cu${CU_VERSION_MM}/torch_stable.html" && \
-    rm -rf requirements.txt requirements/
+    rm -rf requirements/
 
 RUN \
     # Show what we have
