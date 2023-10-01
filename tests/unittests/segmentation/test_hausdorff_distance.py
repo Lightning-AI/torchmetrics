@@ -1,0 +1,71 @@
+# Copyright The Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+from functools import partial
+
+import pytest
+from skimage.metrics import hausdorff_distance as skimage_hausdorff_distance
+from torchmetrics.functional.segmentation.hausdorff_distance import hausdorff_distance
+from torchmetrics.segmentation.hausdorff_distance import HausdorffDistance
+
+from unittests.helpers import seed_all
+from unittests.helpers.testers import MetricTester
+from unittests.segmentation.inputs import _inputs
+
+seed_all(42)
+
+
+@pytest.mark.parametrize(
+    "preds, target",
+    [
+        (_inputs.preds, _inputs.target),
+    ],
+)
+@pytest.mark.parametrize(
+    "distance_metric",
+    ["euclidean", "chessboard", "taxicab"],
+)
+class TestHausdorffDistance(MetricTester):
+    """Test class for `HausdorffDistance` metric."""
+
+    atol = 1e-5
+
+    @pytest.mark.parametrize("ddp", [True, False])
+    def test_hausdorff_distance(self, preds, target, distance_metric, ddp):
+        """Test class implementation of metric."""
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=HausdorffDistance,
+            reference_metric=partial(skimage_hausdorff_distance, method="standard"),
+            metric_args={"distance_metric": distance_metric, "spacing": None},
+        )
+
+    def test_hausdorff_distance_functional(self, preds, target, distance_metric):
+        """Test functional implementation of metric."""
+        self.run_functional_metric_test(
+            preds=preds,
+            target=target,
+            metric_functional=hausdorff_distance,
+            reference_metric=partial(skimage_hausdorff_distance, method="standard"),
+            distance_metric=distance_metric,
+            spacing=None,
+        )
+
+
+def test_hausdorff_distance_functional_raises_invalid_task():
+    """Check that metric rejects continuous-valued inputs."""
+    preds, target = _inputs
+    with pytest.raises(ValueError, match=r"Expected *"):
+        hausdorff_distance(preds, target)

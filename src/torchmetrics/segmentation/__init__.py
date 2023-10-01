@@ -13,5 +13,6 @@
 # limitations under the License.
 from torchmetrics.segmentation.generalized_dice import GeneralizedDiceScore
 from torchmetrics.segmentation.mean_iou import MeanIoU
+from torchmetrics.segmentation.hausdorff_distance import HausdorffDistance
 
-__all__ = ["GeneralizedDiceScore", "MeanIoU"]
+__all__ = ["GeneralizedDiceScore", "MeanIoU", "HausdorffDistance"]
