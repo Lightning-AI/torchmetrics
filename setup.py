@@ -161,7 +161,9 @@ LONG_DESCRIPTION = _load_readme_description(
 BASE_REQUIREMENTS = _load_requirements(path_dir=_PATH_REQUIRE, file_name="base.txt")
 
 
-def _prepare_extras(skip_files: Tuple[str] = ("base.txt", "_devel.txt", "_doctest.txt", "_integrate.txt", "_docs.txt")) -> dict:
+def _prepare_extras(
+    skip_files: Tuple[str] = ("base.txt", "_devel.txt", "_doctest.txt", "_integrate.txt", "_docs.txt")
+) -> dict:
     # find all extra requirements
     _load_req = partial(_load_requirements, path_dir=_PATH_REQUIRE)
     found_req_files = sorted(os.path.basename(p) for p in glob.glob(os.path.join(_PATH_REQUIRE, "*.txt")))
