@@ -33,7 +33,7 @@ ENV \
     MAKEFLAGS="-j2"
 
 RUN \
-    apt-get update -qq --fix-missing && \
+    apt-get -y update --fix-missing && \
     apt-get install -y --no-install-recommends --allow-downgrades --allow-change-held-packages \
         build-essential \
         pkg-config \
@@ -47,7 +47,7 @@ RUN \
         libopenmpi-dev \
         openmpi-bin \
         ssh \
-        ninja-build \
+    && \
     # Install python
     add-apt-repository ppa:deadsnakes/ppa && \
     apt-get install -y \

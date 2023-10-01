@@ -8,10 +8,10 @@ You can build it on your own, note it takes lots of time, be prepared.
 git clone https://github.com/Lightning-AI/torchmetrics.git
 
 # build with the default arguments
-docker image build -t metrics-dev:latest -f dockers/ubuntu-cuda/Dockerfile .
+docker image build -t torchmetrics:latest -f dockers/ubuntu-cuda/Dockerfile .
 
 # build with specific arguments
-docker image build -t metrics-dev:ubuntu-cuda11.7.1-py3.9-torch1.13 \
+docker image build -t torchmetrics:ubuntu-cuda11.7.1-py3.9-torch1.13 \
   -f dockers/base-cuda/Dockerfile \
   --build-arg PYTHON_VERSION=3.9 \
   --build-arg PYTORCH_VERSION=1.13 \
@@ -23,14 +23,14 @@ To run your docker use
 
 ```bash
 docker image list
-docker run --rm -it metrics-dev:latest bash
+docker run --rm -it torchmetrics:latest bash
 ```
 
 and if you do not need it anymore, just clean it:
 
 ```bash
 docker image list
-docker image rm metrics-dev:latest
+docker image rm torchmetrics:latest
 ```
 
 ## Run docker image with GPUs
@@ -50,5 +50,5 @@ sudo systemctl restart docker
 and later run the docker image with `--gpus all`. For example,
 
 ```bash
-docker run --rm -it --gpus all metrics-dev:ubuntu-cuda11.7.1-py3.9-torch1.12
+docker run --rm -it --gpus all torchmetrics:ubuntu-cuda11.7.1-py3.9-torch1.12
 ```

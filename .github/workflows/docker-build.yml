@@ -48,7 +48,7 @@ jobs:
             VARIANT=${{ matrix.python_version }}
           file: .devcontainer/Dockerfile
           push: ${{ env.PUSH_RELEASE }}
-          tags: pytorchlightning/metrics-dev
+          tags: "pytorchlightning/torchmetrics:devcontainer"
         timeout-minutes: 50
 
   build-cuda:
@@ -80,5 +80,5 @@ jobs:
             CUDA_VERSION=${{ matrix.cuda_version }}
           file: dockers/ubuntu-cuda/Dockerfile
           push: ${{ env.PUSH_NIGHTLY }}
-          tags: "pytorchlightning/metrics-dev:ubuntu-cuda${{ matrix.cuda_version }}-py${{ matrix.python_version }}-torch${{ matrix.pytorch_version }}"
+          tags: "pytorchlightning/torchmetrics:ubuntu-cuda${{ matrix.cuda_version }}-py${{ matrix.python_version }}-torch${{ matrix.pytorch_version }}"
         timeout-minutes: 95
