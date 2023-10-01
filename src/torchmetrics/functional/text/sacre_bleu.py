@@ -402,7 +402,7 @@ class _SacreBLEUTokenizer:
         Also check all dependencies of a given tokenizers are installed.
 
         """
-        if tokenize not in cls._TOKENIZE_FN.keys():
+        if tokenize not in cls._TOKENIZE_FN:
             raise ValueError(f"Unsupported tokenizer selected. Please, choose one of {list(cls._TOKENIZE_FN.keys())}")
 
         if tokenize == "intl" and not _REGEX_AVAILABLE:
