@@ -1,5 +1,5 @@
 # use mandatory dependencies
--r ../requirements.txt
+-r base.txt
 
 # add the testing dependencies
 -r _tests.txt
