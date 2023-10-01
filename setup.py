@@ -176,12 +176,12 @@ def _prepare_extras(
     }
     for name, fname in zip(found_req_names, found_req_files):
         if "_test" in name:
-            extras_req["test"] += _load_req(file_name=fname)
+            extras_req["_tests"] += _load_req(file_name=fname)
     # filter the uniques
     extras_req = {n: list(set(req)) for n, req in extras_req.items()}
     # create an 'all' keyword that install all possible dependencies
-    extras_req["all"] = list(chain([pkgs for k, pkgs in extras_req.items() if k not in ("test", "docs")]))
-    extras_req["dev"] = extras_req["all"] + extras_req["test"]
+    extras_req["all"] = list(chain([pkgs for k, pkgs in extras_req.items() if k not in ("_test", "_tests")]))
+    extras_req["dev"] = extras_req["all"] + extras_req["_tests"]
     return extras_req
 
 
