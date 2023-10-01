@@ -13,7 +13,7 @@
 # limitations under the License.
 from typing import Any, List, Optional, Sequence, Union
 
-from torch import Tensor
+from torch import Tensor, tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.image.sam import _sam_compute, _sam_update
@@ -75,33 +75,50 @@ class SpectralAngleMapper(Metric):
 
     preds: List[Tensor]
     target: List[Tensor]
+    sum_sam: Tensor
+    numel: Tensor
 
     def __init__(
         self,
-        reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
+        reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        rank_zero_warn(
-            "Metric `SpectralAngleMapper` will save all targets and predictions in the buffer."
-            " For large datasets, this may lead to a large memory footprint."
-        )
-
-        self.add_state("preds", default=[], dist_reduce_fx="cat")
-        self.add_state("target", default=[], dist_reduce_fx="cat")
+        if reduction not in ("elementwise_mean", "sum", "none", None):
+            raise ValueError(
+                f"The `reduction` {reduction} is not valid. Valid options are `elementwise_mean`, `sum`, `none`, None."
+            )
+        if reduction == "none" or reduction is None:
+            rank_zero_warn(
+                "Metric `SpectralAngleMapper` will save all targets and predictions in the buffer when using"
+                "`reduction=None` or `reduction='none'. For large datasets, this may lead to a large memory footprint."
+            )
+            self.add_state("preds", default=[], dist_reduce_fx="cat")
+            self.add_state("target", default=[], dist_reduce_fx="cat")
+        else:
+            self.add_state("sum_sam", tensor(0.0), dist_reduce_fx="sum")
+            self.add_state("numel", tensor(0), dist_reduce_fx="sum")
         self.reduction = reduction
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         preds, target = _sam_update(preds, target)
-        self.preds.append(preds)
-        self.target.append(target)
+        if self.reduction == "none" or self.reduction is None:
+            self.preds.append(preds)
+            self.target.append(target)
+        else:
+            sam_score = _sam_compute(preds, target, reduction="sum")
+            self.sum_sam += sam_score
+            p_shape = preds.shape
+            self.numel += p_shape[0] * p_shape[2] * p_shape[3]
 
     def compute(self) -> Tensor:
         """Compute spectra over state."""
-        preds = dim_zero_cat(self.preds)
-        target = dim_zero_cat(self.target)
-        return _sam_compute(preds, target, self.reduction)
+        if self.reduction == "none" or self.reduction is None:
+            preds = dim_zero_cat(self.preds)
+            target = dim_zero_cat(self.target)
+            return _sam_compute(preds, target, self.reduction)
+        return self.sum_sam / self.numel if self.reduction == "elementwise_mean" else self.sum_sam
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
