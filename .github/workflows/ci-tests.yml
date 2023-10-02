@@ -116,7 +116,6 @@ jobs:
         run: |
           curl https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py -o adjust-torch-versions.py
           pip install -q cython  # needed for installing `pycocotools` in latest config
-          python adjust-torch-versions.py requirements.txt
           for fpath in `ls requirements/*.txt`; do
               python adjust-torch-versions.py $fpath
           done
