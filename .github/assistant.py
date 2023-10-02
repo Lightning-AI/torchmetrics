@@ -68,10 +68,10 @@ class AssistantCLI:
             fp.writelines(lines)
 
     @staticmethod
-    def set_min_torch_by_python(fpath: str = "requirements.txt") -> None:
+    def set_min_torch_by_python(fpath: str = "requirements/base.txt") -> None:
         """Set minimal torch version according to Python actual version.
 
-        >>> AssistantCLI.set_min_torch_by_python("../requirements.txt")
+        >>> AssistantCLI.set_min_torch_by_python("../requirements/base.txt")
 
         """
         py_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
