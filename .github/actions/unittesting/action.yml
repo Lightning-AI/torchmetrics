@@ -62,6 +62,8 @@ runs:
           --durations=50 \
           --reruns 3 \
           --reruns-delay 1 \
+          -n auto \
+          --dist=loadfile
           ${{ inputs.test-timeout }}
       shell: ${{ inputs.shell-type }}
 
