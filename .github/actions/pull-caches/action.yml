@@ -26,7 +26,7 @@ runs:
       if: inputs.pytorch-version != ''
       run: |
         curl https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py -o adjust-torch-versions.py
-        python adjust-torch-versions.py requirements.txt ${{ inputs.pytorch-version }}
+        python adjust-torch-versions.py requirements/base.txt ${{ inputs.pytorch-version }}
       shell: bash
 
     - name: Set min. dependencies
