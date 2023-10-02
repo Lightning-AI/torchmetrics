@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Uploads repository content to the runner
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/labeler@v4
         with:
           # The path to the label configuration file.
