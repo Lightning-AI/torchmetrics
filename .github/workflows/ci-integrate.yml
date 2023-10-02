@@ -44,7 +44,7 @@ jobs:
     timeout-minutes: 45
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -65,9 +65,9 @@ jobs:
           curl https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py -o adjust-torch-versions.py
           pip install -r requirements/test.txt -r requirements/integrate.txt \
             --find-links $PYTORCH_URL -f $PYPI_CACHE --upgrade-strategy eager
-          python adjust-torch-versions.py requirements.txt
+          python adjust-torch-versions.py requirements/base.txt
           python adjust-torch-versions.py requirements/image.txt
-          cat requirements.txt
+          cat requirements/base.txt
           pip install -e . --find-links $PYTORCH_URL -f $PYPI_CACHE
           pip list
 
