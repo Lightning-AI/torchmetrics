@@ -162,7 +162,7 @@ BASE_REQUIREMENTS = _load_requirements(path_dir=_PATH_REQUIRE, file_name="base.t
 
 
 def _prepare_extras(
-    skip_files: Tuple[str] = ("base.txt", "devel.txt", "doctest.txt", "integrate.txt", "docs.txt")
+    skip_files: Tuple[str] = ("base.txt", "_devel.txt", "_doctest.txt", "_integrate.txt", "_docs.txt")
 ) -> dict:
     # find all extra requirements
     _load_req = partial(_load_requirements, path_dir=_PATH_REQUIRE)
