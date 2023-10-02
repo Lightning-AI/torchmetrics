@@ -107,8 +107,11 @@ class BinaryStatScores(_AbstractStatScores):
       to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
       depends on the ``multidim_average`` parameter:
 
-    - If ``multidim_average`` is set to ``global``, the shape will be ``(5,)``
-    - If ``multidim_average`` is set to ``samplewise``, the shape will be ``(N, 5)``
+      - If ``multidim_average`` is set to ``global``, the shape will be ``(5,)``
+      - If ``multidim_average`` is set to ``samplewise``, the shape will be ``(N, 5)``
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
@@ -208,12 +211,18 @@ class MulticlassStatScores(_AbstractStatScores):
       to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
       depends on ``average`` and ``multidim_average`` parameters:
 
-    - If ``multidim_average`` is set to ``global``
-    - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
-    - If ``average=None/'none'``, the shape will be ``(C, 5)``
-    - If ``multidim_average`` is set to ``samplewise``
-    - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N, 5)``
-    - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
+      - If ``multidim_average`` is set to ``global``:
+
+        - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
+        - If ``average=None/'none'``, the shape will be ``(C, 5)``
+
+      - If ``multidim_average`` is set to ``samplewise``:
+
+        - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N, 5)``
+        - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         num_classes: Integer specifying the number of classes
@@ -352,12 +361,18 @@ class MultilabelStatScores(_AbstractStatScores):
       to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The shape
       depends on ``average`` and ``multidim_average`` parameters:
 
-    - If ``multidim_average`` is set to ``global``
-    - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
-    - If ``average=None/'none'``, the shape will be ``(C, 5)``
-    - If ``multidim_average`` is set to ``samplewise``
-    - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N, 5)``
-    - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
+      - If ``multidim_average`` is set to ``global``:
+
+        - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(5,)``
+        - If ``average=None/'none'``, the shape will be ``(C, 5)``
+
+      - If ``multidim_average`` is set to ``samplewise``:
+
+        - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N, 5)``
+        - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         num_labels: Integer specifying the number of labels
