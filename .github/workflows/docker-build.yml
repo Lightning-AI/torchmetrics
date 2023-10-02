@@ -41,7 +41,7 @@ jobs:
 
       - name: Build (and Push) Devcontainer
         # publish master/release
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           build-args: |
             VARIANT=${{ matrix.python_version }}
