@@ -15,8 +15,8 @@ RUN \
     pip3 install awscli && \
     aws s3 sync --no-sign-request s3://sphinx-packages/ dist/  && \
     pip3 --disable-pip-version-check --no-cache-dir install \
-      -r /tmp/pip-tmp/requirements/_devel.txt \
-      -r /tmp/pip-tmp/requirements/_docs.txt \
+      -r /tmp/pip-tmp/requirements/devel.txt \
+      -r /tmp/pip-tmp/requirements/docs.txt \
       --find-links="https://download.pytorch.org/whl/cpu/torch_stable.html" \
       --find-links="dist/" && \
     rm -rf /tmp/pip-tmp

@@ -86,7 +86,7 @@ RUN \
     pip install "mkl-service==2.4.0" && \
     CUDA_VERSION_MM=${CUDA_VERSION%.*} && \
     CU_VERSION_MM=${CUDA_VERSION_MM//'.'/''} && \
-    pip install --no-cache-dir -r requirements/_devel.txt \
+    pip install --no-cache-dir -r requirements/devel.txt \
       --find-links "https://download.pytorch.org/whl/cu${CU_VERSION_MM}/torch_stable.html" && \
     rm -rf requirements/
 

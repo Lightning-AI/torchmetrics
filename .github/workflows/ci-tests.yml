@@ -95,7 +95,7 @@ jobs:
         run: |
           pip --version
           pip install -e . -U --find-links $PYTORCH_URL -f $PYPI_CACHE
-          pip install -r requirements/_doctest.txt -U -f $PYPI_CACHE
+          pip install -r requirements/doctest.txt -U -f $PYPI_CACHE
           pip list
 
       # todo: copy this to install checks
@@ -119,7 +119,7 @@ jobs:
           for fpath in `ls requirements/*.txt`; do
               python adjust-torch-versions.py $fpath
           done
-          pip install --requirement requirements/_devel.txt -U \
+          pip install --requirement requirements/devel.txt -U \
             --find-links $PYTORCH_URL -f $PYPI_CACHE
           pip list
 
