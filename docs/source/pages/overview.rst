@@ -331,7 +331,7 @@ inside your LightningModule. In most cases we just have to replace ``self.log`` 
             # ...
             self.valid_metrics.update(logits, y)
 
-        def validation_epoch_end(self, outputs):
+        def on_validation_epoch_end(self):
             # use log_dict instead of log
             # metrics are logged with keys: val_Accuracy, val_Precision and val_Recall
             output = self.valid_metrics.compute()

@@ -68,7 +68,7 @@ class BoringModel(LightningModule):
     or:
 
     model = BaseTestModel()
-    model.training_epoch_end = None
+    model.validation_step = None
 
     """
 
