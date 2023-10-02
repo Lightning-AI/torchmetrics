@@ -57,6 +57,9 @@ class BinaryPrecision(BinaryStatScores):
       value. If ``multidim_average`` is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a
       scalar value per sample.
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
         multidim_average:
@@ -186,6 +189,9 @@ class MulticlassPrecision(MulticlassStatScores):
 
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         num_classes: Integer specifying the number of classes
@@ -340,6 +346,9 @@ class MultilabelPrecision(MultilabelStatScores):
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
         num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
@@ -479,6 +488,9 @@ class BinaryRecall(BinaryStatScores):
       value. If ``multidim_average`` is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of
       a scalar value per sample.
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
         multidim_average:
@@ -607,6 +619,9 @@ class MulticlassRecall(MulticlassStatScores):
 
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         num_classes: Integer specifying the number of classes
@@ -759,6 +774,9 @@ class MultilabelRecall(MultilabelStatScores):
 
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         num_labels: Integer specifying the number of labels

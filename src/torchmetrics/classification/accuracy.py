@@ -49,7 +49,8 @@ class BinaryAccuracy(BinaryStatScores):
           If ``multidim_average`` is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar
           value per sample.
 
-    Additional dimension ``...`` will be flattened into the batch dimension.
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
@@ -175,6 +176,9 @@ class MulticlassAccuracy(MulticlassStatScores):
 
               - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
               - If ``average=None/'none'``, the shape will be ``(N, C)``
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         num_classes: Integer specifying the number of classes
@@ -324,6 +328,9 @@ class MultilabelAccuracy(MultilabelStatScores):
 
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         num_labels: Integer specifying the number of labels
