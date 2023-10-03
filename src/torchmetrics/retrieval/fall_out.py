@@ -40,7 +40,7 @@ class RetrievalFallOut(RetrievalMetric):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``fo@k`` (:class:`~torch.Tensor`): A tensor with the computed metric
+    - ``fallout@k`` (:class:`~torch.Tensor`): A tensor with the computed metric
 
     All ``indexes``, ``preds`` and ``target`` must have the same dimension and will be flatten at the beginning,
     so that for example, a tensor of shape ``(N, M)`` is treated as ``(N * M, )``. Predictions will be first grouped by
