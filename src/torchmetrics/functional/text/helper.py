@@ -242,7 +242,7 @@ class _LevenshteinEditDistance:
             node = value[0]  # type: ignore
 
     def _find_cache(self, prediction_tokens: List[str]) -> Tuple[int, List[List[Tuple[int, _EditOperations]]]]:
-        """Find the already calculated rows of the Levenshtein edit distance matric.
+        """Find the already calculated rows of the Levenshtein edit distance metric.
 
         Args:
             prediction_tokens: A tokenized predicted sentence.

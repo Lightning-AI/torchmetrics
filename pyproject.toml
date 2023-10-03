@@ -22,10 +22,8 @@ addopts = [
 #filterwarnings = ["error::FutureWarning"] # ToDo
 xfail_strict = true
 junit_duration_report = "call"
-
 [tool.coverage.report]
 exclude_lines = ["pragma: no cover", "pass"]
-
 [tool.coverage.run]
 parallel = true
 concurrency = "thread"
@@ -81,6 +79,7 @@ wil = "wil"
 
 
 [tool.ruff]
+target-version = "py38"
 line-length = 120
 # Enable Pyflakes `E` and `F` codes by default.
 select = [
