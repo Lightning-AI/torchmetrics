@@ -252,7 +252,7 @@ def _eed_compute(sentence_level_scores: List[Tensor]) -> Tensor:
 def _preprocess_sentences(
     preds: Union[str, Sequence[str]],
     target: Sequence[Union[str, Sequence[str]]],
-    language: Union[Literal["en"], Literal["ja"]],
+    language: Literal["en", "ja"],
 ) -> Tuple[Union[str, Sequence[str]], Sequence[Union[str, Sequence[str]]]]:
     """Preprocess strings according to language requirements.
 
