@@ -18,7 +18,7 @@ import os
 import re
 import sys
 import traceback
-from distutils.version import LooseVersion
+from packaging.version import parse
 from typing import List, Optional, Tuple, Union
 
 import fire
@@ -80,8 +80,8 @@ class AssistantCLI:
         with open(fpath) as fp:
             reqs = parse_requirements(fp.readlines())
         pkg_ver = next(p for p in reqs if p.name == "torch")
-        pt_ver = min([LooseVersion(v[1]) for v in pkg_ver.specs])
-        pt_ver = max(LooseVersion(LUT_PYTHON_TORCH[py_ver]), pt_ver)
+        pt_ver = min([parse(v[1]) for v in pkg_ver.specs])
+        pt_ver = max(parse(LUT_PYTHON_TORCH[py_ver]), pt_ver)
         with open(fpath) as fp:
             requires = fp.read()
         requires = re.sub(r"torch>=[\d\.]+", f"torch>={pt_ver}", requires)

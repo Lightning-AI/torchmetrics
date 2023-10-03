@@ -15,13 +15,13 @@
 import operator
 import shutil
 import sys
-from distutils.version import LooseVersion
+from packaging.version import Version, parse
 from typing import Optional
 
 from lightning_utilities.core.imports import compare_version, package_available
 
 _PYTHON_VERSION = ".".join(map(str, [sys.version_info.major, sys.version_info.minor, sys.version_info.micro]))
-_PYTHON_LOWER_3_8 = LooseVersion(_PYTHON_VERSION) < LooseVersion("3.8")
+_PYTHON_LOWER_3_8 = parse(_PYTHON_VERSION) < Version("3.8")
 _TORCH_LOWER_1_12_DEV: Optional[bool] = compare_version("torch", operator.lt, "1.12.0.dev")
 _TORCH_GREATER_EQUAL_1_9: Optional[bool] = compare_version("torch", operator.ge, "1.9.0")
 _TORCH_GREATER_EQUAL_1_10: Optional[bool] = compare_version("torch", operator.ge, "1.10.0")
