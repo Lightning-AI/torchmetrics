@@ -145,7 +145,7 @@ def _eed_function(
     next_row = [inf] * (len(hyp) + 1)
 
     for w in range(1, len(ref) + 1):
-        for i in range(0, len(hyp) + 1):
+        for i in range(len(hyp) + 1):
             if i > 0:
                 next_row[i] = min(
                     next_row[i - 1] + deletion,
@@ -252,7 +252,7 @@ def _eed_compute(sentence_level_scores: List[Tensor]) -> Tensor:
 def _preprocess_sentences(
     preds: Union[str, Sequence[str]],
     target: Sequence[Union[str, Sequence[str]]],
-    language: Union[Literal["en"], Literal["ja"]],
+    language: Literal["en", "ja"],
 ) -> Tuple[Union[str, Sequence[str]], Sequence[Union[str, Sequence[str]]]]:
     """Preprocess strings according to language requirements.
 

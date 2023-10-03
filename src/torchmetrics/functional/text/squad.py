@@ -119,7 +119,7 @@ def _squad_input_check(
             )
 
         answers: Dict[str, Union[List[str], List[int]]] = target["answers"]  # type: ignore[assignment]
-        if "text" not in answers.keys():
+        if "text" not in answers:
             raise KeyError(
                 "Expected keys in a 'answers' are 'text'."
                 "Please make sure that 'answer' maps to a `SQuAD` format dictionary.\n"

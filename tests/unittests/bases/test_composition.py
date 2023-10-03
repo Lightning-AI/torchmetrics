@@ -67,7 +67,7 @@ def test_metrics_add(second_operand, expected_result):
 
 @pytest.mark.parametrize(
     ("second_operand", "expected_result"),
-    [(DummyMetric(3), tensor(2)), (3, tensor(2)), (3, tensor(2)), (tensor(3), tensor(2))],
+    [(DummyMetric(3), tensor(2)), (3, tensor(2)), (tensor(3), tensor(2))],
 )
 def test_metrics_and(second_operand, expected_result):
     """Test that `and` operator works and returns a compositional metric."""

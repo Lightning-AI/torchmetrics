@@ -45,8 +45,7 @@ __all__ = [
 ]
 
 if _TRANSFORMERS_GREATER_EQUAL_4_4:
-    from torchmetrics.text.bert import BERTScore  # noqa: F401
-    from torchmetrics.text.infolm import InfoLM  # noqa: F401
+    from torchmetrics.text.bert import BERTScore
+    from torchmetrics.text.infolm import InfoLM
 
-    __all__.append("BERTScore")
-    __all__.append("InfoLM")
+    __all__ += ["BERTScore", "InfoLM"]

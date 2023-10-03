@@ -42,16 +42,16 @@ __all__ = [
 ]
 
 if _PESQ_AVAILABLE:
-    from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality  # noqa: F401
+    from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
 
-    __all__.append("perceptual_evaluation_speech_quality")
+    __all__ += ["perceptual_evaluation_speech_quality"]
 
 if _PYSTOI_AVAILABLE:
-    from torchmetrics.functional.audio.stoi import short_time_objective_intelligibility  # noqa: F401
+    from torchmetrics.functional.audio.stoi import short_time_objective_intelligibility
 
-    __all__.append("short_time_objective_intelligibility")
+    __all__ += ["short_time_objective_intelligibility"]
 
 if _GAMMATONE_AVAILABLE and _TORCHAUDIO_AVAILABLE and _TORCHAUDIO_GREATER_EQUAL_0_10:
-    from torchmetrics.functional.audio.srmr import speech_reverberation_modulation_energy_ratio  # noqa: F401
+    from torchmetrics.functional.audio.srmr import speech_reverberation_modulation_energy_ratio
 
-    __all__.append("speech_reverberation_modulation_energy_ratio")
+    __all__ += ["speech_reverberation_modulation_energy_ratio"]

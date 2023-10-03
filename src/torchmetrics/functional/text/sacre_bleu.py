@@ -333,7 +333,7 @@ def sacre_bleu_score(
     if tokenize not in AVAILABLE_TOKENIZERS:
         raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
 
-    if tokenize not in _SacreBLEUTokenizer._TOKENIZE_FN.keys():
+    if tokenize not in _SacreBLEUTokenizer._TOKENIZE_FN:
         raise ValueError(
             f"Unsupported tokenizer selected. Please, choose one of {list(_SacreBLEUTokenizer._TOKENIZE_FN.keys())}"
         )

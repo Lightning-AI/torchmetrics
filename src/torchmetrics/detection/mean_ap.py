@@ -879,7 +879,7 @@ class MeanAveragePrecision(Metric):
                         f"Invalid input box of sample {image_id}, element {k} (expected 4 values, got {len(image_box)})"
                     )
 
-                if type(image_label) != int:
+                if not isinstance(image_label, int):
                     raise ValueError(
                         f"Invalid input class of sample {image_id}, element {k}"
                         f" (expected value of type integer, got type {type(image_label)})"
@@ -915,7 +915,7 @@ class MeanAveragePrecision(Metric):
 
                 if scores is not None:
                     score = scores[image_id][k].cpu().tolist()
-                    if type(score) != float:
+                    if not isinstance(score, float):
                         raise ValueError(
                             f"Invalid input score of sample {image_id}, element {k}"
                             f" (expected value of type float, got type {type(score)})"

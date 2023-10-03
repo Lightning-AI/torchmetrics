@@ -268,7 +268,7 @@ def _calculate_fscore(
         beta: A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
 
     Return:
-        A chrF/chrF++ score. This function is universal both for sentence-level and corpus-level calucation.
+        A chrF/chrF++ score. This function is universal both for sentence-level and corpus-level calculation.
 
     """
 

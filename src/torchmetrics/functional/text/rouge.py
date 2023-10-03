@@ -490,7 +490,7 @@ def rouge_score(
     if not isinstance(rouge_keys, tuple):
         rouge_keys = (rouge_keys,)
     for key in rouge_keys:
-        if key not in ALLOWED_ROUGE_KEYS.keys():
+        if key not in ALLOWED_ROUGE_KEYS:
             raise ValueError(f"Got unknown rouge key {key}. Expected to be one of {list(ALLOWED_ROUGE_KEYS.keys())}")
     rouge_keys_values = [ALLOWED_ROUGE_KEYS[key] for key in rouge_keys]
 
