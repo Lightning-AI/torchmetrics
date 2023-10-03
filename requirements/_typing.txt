@@ -1,0 +1,10 @@
+mypy==1.5.1
+
+types-PyYAML
+types-emoji
+types-protobuf
+types-requests
+types-setuptools
+types-six
+types-tabulate
+types-protobuf
