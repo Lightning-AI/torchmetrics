@@ -15,10 +15,10 @@
 import operator
 import shutil
 import sys
-from packaging.version import Version, parse
 from typing import Optional
 
 from lightning_utilities.core.imports import compare_version, package_available
+from packaging.version import Version, parse
 
 _PYTHON_VERSION = ".".join(map(str, [sys.version_info.major, sys.version_info.minor, sys.version_info.micro]))
 _PYTHON_LOWER_3_8 = parse(_PYTHON_VERSION) < Version("3.8")

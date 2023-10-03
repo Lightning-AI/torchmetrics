@@ -18,11 +18,11 @@ import os
 import re
 import sys
 import traceback
-from packaging.version import parse
 from typing import List, Optional, Tuple, Union
 
 import fire
 import requests
+from packaging.version import parse
 from pkg_resources import parse_requirements
 
 _REQUEST_TIMEOUT = 10
