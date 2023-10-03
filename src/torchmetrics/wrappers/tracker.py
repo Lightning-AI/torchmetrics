@@ -152,7 +152,7 @@ class MetricTracker(ModuleList):
         """Compute the metric value for all tracked metrics.
 
         Return:
-            By default will try stacking the results from all increaments into a single tensor if the tracked base
+            By default will try stacking the results from all increments into a single tensor if the tracked base
             object is a single metric. If a metric collection is provided a dict of stacked tensors will be returned.
             If the stacking process fails a list of the computed results will be returned.
 
