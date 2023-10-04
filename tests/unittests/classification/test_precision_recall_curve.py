@@ -280,6 +280,25 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
         with pytest.raises(ValueError, match="Expected `preds` to be a float tensor, but got.*"):
             multiclass_precision_recall_curve(preds[0].long(), target[0], num_classes=NUM_CLASSES)
 
+    @pytest.mark.parametrize("average", ["macro", "micro"])
+    @pytest.mark.parametrize("thresholds", [None, 100])
+    def test_multiclass_average(self, inputs, average, thresholds):
+        """Test that the average argument works as expected."""
+        preds, target = inputs
+        output = multiclass_precision_recall_curve(
+            preds[0], target[0], num_classes=NUM_CLASSES, thresholds=thresholds, average=average
+        )
+        assert all(isinstance(o, torch.Tensor) for o in output)
+        none_output = multiclass_precision_recall_curve(
+            preds[0], target[0], num_classes=NUM_CLASSES, thresholds=thresholds, average=None
+        )
+        if average == "macro":
+            assert len(output[0]) == len(none_output[0][0]) * NUM_CLASSES
+            assert len(output[1]) == len(none_output[1][0]) * NUM_CLASSES
+            assert (
+                len(output[2]) == (len(none_output[2][0]) if thresholds is None else len(none_output[2])) * NUM_CLASSES
+            )
+
 
 def _sklearn_precision_recall_curve_multilabel(preds, target, ignore_index=None):
     precision, recall, thresholds = [], [], []

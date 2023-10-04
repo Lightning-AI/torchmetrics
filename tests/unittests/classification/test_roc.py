@@ -251,6 +251,21 @@ class TestMulticlassROC(MetricTester):
                 assert torch.allclose(r1[i], r2[i])
                 assert torch.allclose(t1[i], t2)
 
+    @pytest.mark.parametrize("average", ["macro", "micro"])
+    @pytest.mark.parametrize("thresholds", [None, 100])
+    def test_multiclass_average(self, inputs, average, thresholds):
+        """Test that the average argument works as expected."""
+        preds, target = inputs
+        output = multiclass_roc(preds[0], target[0], num_classes=NUM_CLASSES, thresholds=thresholds, average=average)
+        assert all(isinstance(o, torch.Tensor) for o in output)
+        none_output = multiclass_roc(preds[0], target[0], num_classes=NUM_CLASSES, thresholds=thresholds, average=None)
+        if average == "macro":
+            assert len(output[0]) == len(none_output[0][0]) * NUM_CLASSES
+            assert len(output[1]) == len(none_output[1][0]) * NUM_CLASSES
+            assert (
+                len(output[2]) == (len(none_output[2][0]) if thresholds is None else len(none_output[2])) * NUM_CLASSES
+            )
+
 
 def _sklearn_roc_multilabel(preds, target, ignore_index=None):
     fpr, tpr, thresholds = [], [], []
