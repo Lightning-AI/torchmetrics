@@ -1,4 +1,4 @@
-# Manifest syntax https://docs.python.org/2/distutils/sourcedist.html
+# Manifest syntax https://packaging.python.org/en/latest/guides/using-manifest-in/
 graft wheelhouse
 
 recursive-exclude __pycache__  *.py[cod] *.orig
