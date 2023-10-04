@@ -10,11 +10,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from typing import Any, Literal, Optional, Sequence, Union
 
 from torch import Tensor
 
-from torchmetrics.functional.segmentation.hausdorff_distance import hausdorff_distance
+from torchmetrics.functional.segmentation import hausdorff_distance
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -55,7 +55,7 @@ class HausdorffDistance(Metric):
         ...                        [1, 0, 0, 1, 0],
         ...                        [1, 0, 0, 1, 0],
         ...                        [1, 1, 1, 1, 0]], dtype=torch.bool)
-        >>> hausdorff_distance = HausdorffDistance(p=2)
+        >>> hausdorff_distance = HausdorffDistance(distance_metric="euclidean")
         >>> hausdorff_distance.update(preds, target)
         >>> hausdorff_distance.compute()
         tensor(1.0)
@@ -69,9 +69,15 @@ class HausdorffDistance(Metric):
     preds: list[Tensor]
     target: list[Tensor]
 
-    def __init__(self, p: float = 2, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
+        spacing: Optional[Union[Tensor, list[float]]] = None,
+        **kwargs: Any
+    ) -> None:
         super().__init__(**kwargs)
-        self.p = p
+        self.distance_metric = distance_metric
+        self.spacing = spacing
 
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
@@ -83,7 +89,7 @@ class HausdorffDistance(Metric):
 
     def compute(self) -> Tensor:
         """Compute final Hausdorff distance over states."""
-        return hausdorff_distance(self.preds, self.target, self.p)
+        return hausdorff_distance(self.preds, self.target, self.distance_metric, self.spacing)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
