@@ -33,7 +33,7 @@ from torchmetrics.functional.classification.precision_recall_curve import (
     _multilabel_precision_recall_curve_update,
 )
 from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.compute import _safe_divide, interp
 from torchmetrics.utilities.enums import ClassificationTask
 
 
@@ -163,7 +163,11 @@ def _multiclass_roc_compute(
     state: Union[Tensor, Tuple[Tensor, Tensor]],
     num_classes: int,
     thresholds: Optional[Tensor],
+    average: Optional[Literal["micro", "macro"]] = None,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    if average == "micro":
+        return _binary_roc_compute(state, thresholds, pos_label=1)
+
     if isinstance(state, Tensor) and thresholds is not None:
         tps = state[:, :, 1, 1]
         fps = state[:, :, 0, 1]
@@ -172,14 +176,32 @@ def _multiclass_roc_compute(
         tpr = _safe_divide(tps, tps + fns).flip(0).T
         fpr = _safe_divide(fps, fps + tns).flip(0).T
         thres = thresholds.flip(0)
+        tensor_state = True
     else:
-        fpr, tpr, thres = [], [], []  # type: ignore[assignment]
+        fpr_list, tpr_list, thres_list = [], [], []
         for i in range(num_classes):
             res = _binary_roc_compute((state[0][:, i], state[1]), thresholds=None, pos_label=i)
-            fpr.append(res[0])
-            tpr.append(res[1])
-            thres.append(res[2])
-    return fpr, tpr, thres
+            fpr_list.append(res[0])
+            tpr_list.append(res[1])
+            thres_list.append(res[2])
+        tensor_state = False
+
+    if average == "macro":
+        thres = thres.repeat(num_classes) if tensor_state else torch.cat(thres_list, dim=0)
+        thres = thres.sort(descending=True).values
+        mean_fpr = fpr.flatten() if tensor_state else torch.cat(fpr_list, dim=0)
+        mean_fpr = mean_fpr.sort().values
+        mean_tpr = torch.zeros_like(mean_fpr)
+        for i in range(num_classes):
+            mean_tpr += interp(
+                mean_fpr, fpr[i] if tensor_state else fpr_list[i], tpr[i] if tensor_state else tpr_list[i]
+            )
+        mean_tpr /= num_classes
+        return mean_fpr, mean_tpr, thres
+
+    if tensor_state:
+        return fpr, tpr, thres
+    return fpr_list, tpr_list, thres_list
 
 
 def multiclass_roc(
@@ -187,6 +209,7 @@ def multiclass_roc(
     target: Tensor,
     num_classes: int,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    average: Optional[Literal["micro", "macro"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
@@ -229,6 +252,13 @@ def multiclass_roc(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        average:
+            If aggregation of curves should be applied. By default, the curves are not aggregated and a curve for
+            each class is returned. If `average` is set to ``"micro"``, the metric will aggregate the curves by one hot
+            encoding the targets and flattening the predictions, considering all classes jointly as a binary problem.
+            If `average` is set to ``"macro"``, the metric will aggregate the curves by first interpolating the curves
+            from each class at a combined set of thresholds and then average over the classwise interpolated curves.
+            See `averaging curve objects`_ for more info on the different averaging methods.
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -282,13 +312,18 @@ def multiclass_roc(
 
     """
     if validate_args:
-        _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
+        _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index, average)
         _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index)
     preds, target, thresholds = _multiclass_precision_recall_curve_format(
-        preds, target, num_classes, thresholds, ignore_index
+        preds,
+        target,
+        num_classes,
+        thresholds,
+        ignore_index,
+        average,
     )
-    state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
-    return _multiclass_roc_compute(state, num_classes, thresholds)
+    state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds, average)
+    return _multiclass_roc_compute(state, num_classes, thresholds, average)
 
 
 def _multilabel_roc_compute(
@@ -440,6 +475,7 @@ def roc(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
+    average: Optional[Literal["micro", "macro"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
@@ -506,7 +542,7 @@ def roc(
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
-        return multiclass_roc(preds, target, num_classes, thresholds, ignore_index, validate_args)
+        return multiclass_roc(preds, target, num_classes, thresholds, average, ignore_index, validate_args)
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
