@@ -3,6 +3,13 @@ name: "Build (& Push) Dockers"
 on: # Trigger the workflow on push or pull request, but only for the master branch
   push:
     branches: [master]
+    paths:
+      - "requirements/*"
+      - "requirements.txt"
+      - ".devcontainer/*"
+      - "dockers/**"
+      - ".github/workflows/docker-build.yml"
+      - "setup.py"
   pull_request:
     branches: [master]
     paths:
