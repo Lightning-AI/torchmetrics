@@ -82,8 +82,8 @@ RUN \
     done && \
     # trying to resolve pesq installation issue
     pip install -q "numpy<1.24" && \
-    # needed for the gpu multiprocessing
-    pip install "mkl-service==2.4.0" && \
+    # needed for the gpu multiprocessing, need to build from source as it is missing py3.11+
+    pip install https://github.com/IntelPython/mkl-service/archive/refs/tags/v2.4.0.post1.zip && \
     CUDA_VERSION_MM=${CUDA_VERSION%.*} && \
     CU_VERSION_MM=${CUDA_VERSION_MM//'.'/''} && \
     pip install --no-cache-dir -r requirements/devel.txt \
