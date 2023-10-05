@@ -1,6 +1,5 @@
-from collections import namedtuple
 from functools import partial
-from typing import Any
+from typing import Any, NamedTuple
 
 import pytest
 import torch
@@ -54,13 +53,17 @@ class _MultioutputMetric(Metric):
 
 num_targets = 2
 
-Input = namedtuple("Input", ["preds", "target"])
 
-_multi_target_regression_inputs = Input(
+class _Input(NamedTuple):
+    preds: Tensor
+    target: Tensor
+
+
+_multi_target_regression_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
 )
-_multi_target_classification_inputs = Input(
+_multi_target_classification_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, num_targets),
     target=torch.randint(NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, num_targets)),
 )
