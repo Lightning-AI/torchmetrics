@@ -19,9 +19,6 @@ addopts = [
     "--color=yes",
     "--disable-pytest-warnings",
 ]
-pythonpath = [
-    "src"
-]
 #filterwarnings = ["error::FutureWarning"] # ToDo
 xfail_strict = true
 junit_duration_report = "call"
