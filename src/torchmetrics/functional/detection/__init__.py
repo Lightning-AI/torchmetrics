@@ -22,15 +22,13 @@ from torchmetrics.utilities.imports import (
 __all__ = ["modified_panoptic_quality", "panoptic_quality"]
 
 if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
-    from torchmetrics.functional.detection.giou import generalized_intersection_over_union  # noqa: F401
-    from torchmetrics.functional.detection.iou import intersection_over_union  # noqa: F401
+    from torchmetrics.functional.detection.giou import generalized_intersection_over_union
+    from torchmetrics.functional.detection.iou import intersection_over_union
 
-    __all__.append("generalized_intersection_over_union")
-    __all__.append("intersection_over_union")
+    __all__ += ["generalized_intersection_over_union", "intersection_over_union"]
 
 if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_13:
-    from torchmetrics.functional.detection.ciou import complete_intersection_over_union  # noqa: F401
-    from torchmetrics.functional.detection.diou import distance_intersection_over_union  # noqa: F401
+    from torchmetrics.functional.detection.ciou import complete_intersection_over_union
+    from torchmetrics.functional.detection.diou import distance_intersection_over_union
 
-    __all__.append("complete_intersection_over_union")
-    __all__.append("distance_intersection_over_union")
+    __all__ += ["complete_intersection_over_union", "distance_intersection_over_union"]

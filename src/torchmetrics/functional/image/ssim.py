@@ -479,7 +479,7 @@ def multiscale_structural_similarity_index_measure(
             the range is calculated as the difference and input is clamped between the values.
         k1: Parameter of structural similarity index measure.
         k2: Parameter of structural similarity index measure.
-        betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image
+        betas: Exponent parameters for individual similarities and contrastive sensitivities returned by different image
             resolutions.
         normalize: When MultiScaleSSIM loss is used for training, it is desirable to use normalizes to improve the
             training stability. This `normalize` argument is out of scope of the original implementation [1], and it is
