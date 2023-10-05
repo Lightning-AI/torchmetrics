@@ -25,7 +25,7 @@ from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILAB
 from typing_extensions import Literal
 
 from unittests.text.helpers import TextTester, skip_on_connection_issues
-from unittests.text.inputs import Input, _inputs_multiple_references, _inputs_single_sentence_single_reference
+from unittests.text.inputs import _Input, _inputs_multiple_references, _inputs_single_sentence_single_reference
 
 if _ROUGE_SCORE_AVAILABLE:
     from rouge_score.rouge_scorer import RougeScorer
@@ -39,7 +39,7 @@ ROUGE_KEYS = ("rouge1", "rouge2", "rougeL", "rougeLsum")
 # Some randomly adjusted input from CNN/DailyMail dataset which brakes the test
 _preds = "A lawyer says him .\nMoschetto, 54 and prosecutors say .\nAuthority abc Moschetto  ."
 _target = "A trainer said her and Moschetto, 54s or weapons say . \nAuthorities Moschetto of ."
-_inputs_summarization = Input(preds=_preds, targets=_target)
+_inputs_summarization = _Input(preds=_preds, targets=_target)
 
 
 def _compute_rouge_score(
