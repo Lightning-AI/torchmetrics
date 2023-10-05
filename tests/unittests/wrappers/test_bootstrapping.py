@@ -21,7 +21,7 @@ import torch
 from lightning_utilities import apply_to_collection
 from sklearn.metrics import mean_squared_error, precision_score, recall_score
 from torch import Tensor
-from torchmetrics.classification import MulticlassPrecision, MulticlassRecall
+from torchmetrics.classification import MulticlassF1Score, MulticlassPrecision, MulticlassRecall
 from torchmetrics.regression import MeanSquaredError
 from torchmetrics.wrappers.bootstrapping import BootStrapper, _bootstrap_sampler
 
@@ -37,7 +37,7 @@ class TestBootStrapper(BootStrapper):
     """Subclass of Bootstrapper class.
 
     For testing purpose, we subclass the bootstrapper class so we can get the exact permutation the class is creating.
-    This is nessesary such that the reference we are comparing to returns the exact same result for a given permutation.
+    This is necessary such that the reference we are comparing to returns the exact same result for a given permutation.
 
     """
 
@@ -77,7 +77,7 @@ def test_bootstrap_sampler(sampling_strategy):
     assert found_one, "resampling did not work because no samples were sampled twice"
 
     found_zero = _sample_checker(old_samples, new_samples, operator.ne, 0)
-    assert found_zero, "resampling did not work because all samples were atleast sampled once"
+    assert found_zero, "resampling did not work because all samples were at least sampled once"
 
 
 @pytest.mark.parametrize("device", ["cpu", "cuda"])
@@ -123,3 +123,20 @@ def test_bootstrap(device, sampling_strategy, metric, ref_metric):
     assert np.allclose(output["mean"].cpu(), np.mean(sk_scores))
     assert np.allclose(output["std"].cpu(), np.std(sk_scores, ddof=1))
     assert np.allclose(output["raw"].cpu(), sk_scores)
+
+
+@pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
+def test_low_sample_amount(sampling_strategy):
+    """Test that the metric works with very little data.
+
+    In this case it is very likely that no samples from a current batch should be included in one of the bootstraps,
+    but this should still not crash the metric.
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2048
+
+    """
+    preds = torch.randn(3, 3).softmax(dim=-1)
+    target = torch.LongTensor([0, 0, 0])
+    bootstrap_f1 = BootStrapper(
+        MulticlassF1Score(num_classes=3, average=None), num_bootstraps=20, sampling_strategy=sampling_strategy
+    )
+    assert bootstrap_f1(preds, target)  # does not work

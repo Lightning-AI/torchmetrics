@@ -29,27 +29,26 @@ def _mean_squared_log_error_update(preds: Tensor, target: Tensor) -> Tuple[Tenso
     """
     _check_same_shape(preds, target)
     sum_squared_log_error = torch.sum(torch.pow(torch.log1p(preds) - torch.log1p(target), 2))
-    n_obs = target.numel()
-    return sum_squared_log_error, n_obs
+    return sum_squared_log_error, target.numel()
 
 
-def _mean_squared_log_error_compute(sum_squared_log_error: Tensor, n_obs: Union[int, Tensor]) -> Tensor:
+def _mean_squared_log_error_compute(sum_squared_log_error: Tensor, num_obs: Union[int, Tensor]) -> Tensor:
     """Compute Mean Squared Log Error.
 
     Args:
         sum_squared_log_error:
             Sum of square of log errors over all observations ``(log error = log(target) - log(prediction))``
-        n_obs: Number of predictions or observations
+        num_obs: Number of predictions or observations
 
     Example:
         >>> preds = torch.tensor([0., 1, 2, 3])
         >>> target = torch.tensor([0., 1, 2, 2])
-        >>> sum_squared_log_error, n_obs = _mean_squared_log_error_update(preds, target)
-        >>> _mean_squared_log_error_compute(sum_squared_log_error, n_obs)
+        >>> sum_squared_log_error, num_obs = _mean_squared_log_error_update(preds, target)
+        >>> _mean_squared_log_error_compute(sum_squared_log_error, num_obs)
         tensor(0.0207)
 
     """
-    return sum_squared_log_error / n_obs
+    return sum_squared_log_error / num_obs
 
 
 def mean_squared_log_error(preds: Tensor, target: Tensor) -> Tensor:
@@ -73,5 +72,5 @@ def mean_squared_log_error(preds: Tensor, target: Tensor) -> Tensor:
         Half precision is only support on GPU for this metric
 
     """
-    sum_squared_log_error, n_obs = _mean_squared_log_error_update(preds, target)
-    return _mean_squared_log_error_compute(sum_squared_log_error, n_obs)
+    sum_squared_log_error, num_obs = _mean_squared_log_error_update(preds, target)
+    return _mean_squared_log_error_compute(sum_squared_log_error, num_obs)

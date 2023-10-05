@@ -53,7 +53,7 @@ class CalinskiHarabaszScore(Metric):
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
+    Example::
         >>> import torch
         >>> from torchmetrics.clustering import CalinskiHarabaszScore
         >>> _ = torch.manual_seed(42)
@@ -106,9 +106,9 @@ class CalinskiHarabaszScore(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.clustering import RandScore
-            >>> metric = RandScore()
-            >>> metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
+            >>> from torchmetrics.clustering import CalinskiHarabaszScore
+            >>> metric = CalinskiHarabaszScore()
+            >>> metric.update(torch.randn(10, 3), torch.randint(0, 2, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
 
         .. plot::
@@ -116,11 +116,12 @@ class CalinskiHarabaszScore(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.clustering import RandScore
-            >>> metric = RandScore()
+            >>> from torchmetrics.clustering import CalinskiHarabaszScore
+            >>> metric = CalinskiHarabaszScore()
+            >>> values = [ ]
             >>> for _ in range(10):
-            ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
-            >>> fig_, ax_ = metric.plot(metric.compute())
+            ...     values.append(metric(torch.randn(10, 3), torch.randint(0, 2, (10,))))
+            >>> fig_, ax_ = metric.plot(values)
 
         """
         return self._plot(val, ax)

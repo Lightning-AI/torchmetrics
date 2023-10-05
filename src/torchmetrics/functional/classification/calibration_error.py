@@ -287,7 +287,7 @@ def multiclass_calibration_error(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         n_bins: Number of bins to use when computing the metric.
         norm: Norm used to compare empirical and expected probability bins.
         ignore_index:

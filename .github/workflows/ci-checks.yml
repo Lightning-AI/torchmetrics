@@ -5,6 +5,7 @@ on:
     branches: [master, "release/*"]
   pull_request:
     branches: [master, "release/*"]
+    types: [opened, reopened, ready_for_review, synchronize]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
@@ -36,4 +37,4 @@ jobs:
   check-md-links:
     uses: Lightning-AI/utilities/.github/workflows/check-md-links.yml@v0.9.0
     with:
-      config-file: ".github/workflows/markdown.links.config.json"
+      config-file: ".github/markdown-links-config.json"

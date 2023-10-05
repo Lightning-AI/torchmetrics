@@ -42,7 +42,7 @@ else:
 
 
 class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
-    """Module that nevers leaves evaluation mode."""
+    """Module that never leaves evaluation mode."""
 
     def __init__(
         self,
@@ -304,13 +304,13 @@ class FrechetInceptionDistance(Metric):
             raise ValueError("Argument `normalize` expected to be a bool")
         self.normalize = normalize
 
-        mx_nb_feets = (num_features, num_features)
+        mx_num_feats = (num_features, num_features)
         self.add_state("real_features_sum", torch.zeros(num_features).double(), dist_reduce_fx="sum")
-        self.add_state("real_features_cov_sum", torch.zeros(mx_nb_feets).double(), dist_reduce_fx="sum")
+        self.add_state("real_features_cov_sum", torch.zeros(mx_num_feats).double(), dist_reduce_fx="sum")
         self.add_state("real_features_num_samples", torch.tensor(0).long(), dist_reduce_fx="sum")
 
         self.add_state("fake_features_sum", torch.zeros(num_features).double(), dist_reduce_fx="sum")
-        self.add_state("fake_features_cov_sum", torch.zeros(mx_nb_feets).double(), dist_reduce_fx="sum")
+        self.add_state("fake_features_cov_sum", torch.zeros(mx_num_feats).double(), dist_reduce_fx="sum")
         self.add_state("fake_features_num_samples", torch.tensor(0).long(), dist_reduce_fx="sum")
 
     def update(self, imgs: Tensor, real: bool) -> None:

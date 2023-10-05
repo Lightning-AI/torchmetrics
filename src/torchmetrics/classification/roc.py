@@ -87,6 +87,8 @@ class BinaryROC(BinaryPrecisionRecallCurve):
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -174,6 +176,10 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
     The curve consist of multiple pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at
     different thresholds, such that the tradeoff between the two values can be seen.
 
+    For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
+    classes as the negative, which is referred to as the one-vs-rest approach. One-vs-one is currently not supported by
+    this metric.
+
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor
@@ -213,7 +219,7 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
        and tpr which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         thresholds:
             Can be one of:
 
@@ -225,6 +231,15 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        average:
+            If aggregation of curves should be applied. By default, the curves are not aggregated and a curve for
+            each class is returned. If `average` is set to ``"micro"``, the metric will aggregate the curves by one hot
+            encoding the targets and flattening the predictions, considering all classes jointly as a binary problem.
+            If `average` is set to ``"macro"``, the metric will aggregate the curves by first interpolating the curves
+            from each class at a combined set of thresholds and then average over the classwise interpolated curves.
+            See `averaging curve objects`_ for more info on the different averaging methods.
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -272,7 +287,7 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
     def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
-        return _multiclass_roc_compute(state, self.num_classes, self.thresholds)
+        return _multiclass_roc_compute(state, self.num_classes, self.thresholds, self.average)
 
     def plot(
         self,
@@ -365,7 +380,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
        which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         thresholds:
             Can be one of:
 
@@ -377,6 +392,8 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.

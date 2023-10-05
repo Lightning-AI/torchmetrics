@@ -62,7 +62,7 @@ class BootStrapper(WrapperMetric):
         base_metric: base metric class to wrap
         num_bootstraps: number of copies to make of the base metric for bootstrapping
         mean: if ``True`` return the mean of the bootstraps
-        std: if ``True`` return the standard diviation of the bootstraps
+        std: if ``True`` return the standard deviation of the bootstraps
         quantile: if given, returns the quantile of the bootstraps. Can only be used with pytorch version 1.6 or higher
         raw: if ``True``, return all bootstrapped values
         sampling_strategy:
@@ -117,7 +117,7 @@ class BootStrapper(WrapperMetric):
         if sampling_strategy not in allowed_sampling:
             raise ValueError(
                 f"Expected argument ``sampling_strategy`` to be one of {allowed_sampling}"
-                f" but recieved {sampling_strategy}"
+                f" but received {sampling_strategy}"
             )
         self.sampling_strategy = sampling_strategy
 
@@ -127,16 +127,19 @@ class BootStrapper(WrapperMetric):
         Any tensor passed in will be bootstrapped along dimension 0.
 
         """
+        args_sizes = apply_to_collection(args, Tensor, len)
+        kwargs_sizes = list(apply_to_collection(kwargs, Tensor, len))
+        if len(args_sizes) > 0:
+            size = args_sizes[0]
+        elif len(kwargs_sizes) > 0:
+            size = kwargs_sizes[0]
+        else:
+            raise ValueError("None of the input contained tensors, so could not determine the sampling size")
+
         for idx in range(self.num_bootstraps):
-            args_sizes = apply_to_collection(args, Tensor, len)
-            kwargs_sizes = list(apply_to_collection(kwargs, Tensor, len))
-            if len(args_sizes) > 0:
-                size = args_sizes[0]
-            elif len(kwargs_sizes) > 0:
-                size = kwargs_sizes[0]
-            else:
-                raise ValueError("None of the input contained tensors, so could not determine the sampling size")
             sample_idx = _bootstrap_sampler(size, sampling_strategy=self.sampling_strategy).to(self.device)
+            if sample_idx.numel() == 0:
+                continue
             new_args = apply_to_collection(args, Tensor, torch.index_select, dim=0, index=sample_idx)
             new_kwargs = apply_to_collection(kwargs, Tensor, torch.index_select, dim=0, index=sample_idx)
             self.metrics[idx].update(*new_args, **new_kwargs)

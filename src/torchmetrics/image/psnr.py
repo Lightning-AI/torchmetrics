@@ -128,7 +128,7 @@ class PeakSignalNoiseRatio(Metric):
             preds = self.clamping_fn(preds)
             target = self.clamping_fn(target)
 
-        sum_squared_error, n_obs = _psnr_update(preds, target, dim=self.dim)
+        sum_squared_error, num_obs = _psnr_update(preds, target, dim=self.dim)
         if self.dim is None:
             if self.data_range is None:
                 # keep track of min and max target values
@@ -136,10 +136,10 @@ class PeakSignalNoiseRatio(Metric):
                 self.max_target = torch.maximum(target.max(), self.max_target)
 
             self.sum_squared_error += sum_squared_error
-            self.total += n_obs
+            self.total += num_obs
         else:
             self.sum_squared_error.append(sum_squared_error)
-            self.total.append(n_obs)
+            self.total.append(num_obs)
 
     def compute(self) -> Tensor:
         """Compute peak signal-to-noise ratio over state."""

@@ -221,7 +221,7 @@ class MulticlassCalibrationError(Metric):
     - ``mcce`` (:class:`~torch.Tensor`): A scalar tensor containing the calibration error
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         n_bins: Number of bins to use when computing the metric.
         norm: Norm used to compare empirical and expected probability bins.
         ignore_index:

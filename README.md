@@ -10,7 +10,7 @@ ______________________________________________________________________
   <a href="#what-is-torchmetrics">What is Torchmetrics</a> •
   <a href="#implementing-your-own-module-metric">Implementing a metric</a> •
   <a href="#build-in-metrics">Built-in metrics</a> •
-  <a href="https://torchmetrics.readthedocs.io/en/stable/">Docs</a> •
+  <a href="https://lightning.ai/docs/torchmetrics/stable/">Docs</a> •
   <a href="#community">Community</a> •
   <a href="#license">License</a>
 </p>
@@ -106,7 +106,7 @@ You can use TorchMetrics with any PyTorch model or with [PyTorch Lightning](http
 
 ### Module metrics
 
-The [module-based metrics](https://pytorchlightning.github.io/metrics/references/modules.html) contain internal metric states (similar to the parameters of the PyTorch module) that automate accumulation and synchronization across devices!
+The [module-based metrics](https://lightning.ai/docs/torchmetrics/stable/references/metric.html) contain internal metric states (similar to the parameters of the PyTorch module) that automate accumulation and synchronization across devices!
 
 - Automatic accumulation over multiple batches
 - Automatic synchronization between multiple devices
@@ -201,7 +201,7 @@ def metric_ddp(rank, world_size):
         acc = metric.compute()
         print(f"Accuracy on all data: {acc}, accelerator rank: {rank}")
 
-        # Reseting internal state such that metric ready for new data
+        # Resetting internal state such that metric ready for new data
         metric.reset()
 
     # cleanup
@@ -257,7 +257,7 @@ print(my_metric(preds, target))
 
 ### Functional metrics
 
-Similar to [`torch.nn`](https://pytorch.org/docs/stable/nn.html), most metrics have both a [module-based](https://torchmetrics.readthedocs.io/en/latest/references/modules.html) and a [functional](https://torchmetrics.readthedocs.io/en/latest/references/functional.html) version.
+Similar to [`torch.nn`](https://pytorch.org/docs/stable/nn.html), most metrics have both a [module-based](https://lightning.ai/docs/torchmetrics/stable/references/metric.html) and functional version.
 The functional versions are simple python functions that as input take [torch.tensors](https://pytorch.org/docs/stable/tensors.html) and return the corresponding metric as a [torch.tensor](https://pytorch.org/docs/stable/tensors.html).
 
 ```python
@@ -277,8 +277,8 @@ acc = torchmetrics.functional.classification.multiclass_accuracy(
 
 ### Covered domains and example metrics
 
-In total TorchMetrics contains [100+ metrics](https://torchmetrics.readthedocs.io/en/stable/all-metrics.html), which
-convers the following domains:
+In total TorchMetrics contains [100+ metrics](https://lightning.ai/docs/torchmetrics/stable/all-metrics.html), which
+covers the following domains:
 
 - Audio
 - Classification
@@ -298,7 +298,7 @@ Each domain may require some additional dependencies which can be installed with
 #### Plotting
 
 Visualization of metrics can be important to help understand what is going on with your machine learning algorithms.
-Torchmetrics have build-in plotting support (install dependencies with `pip install torchmetrics[visual]`) for nearly
+Torchmetrics have built-in plotting support (install dependencies with `pip install torchmetrics[visual]`) for nearly
 all modular metrics through the `.plot` method. Simply call the method to get a simple visualization of any metric!
 
 ```python

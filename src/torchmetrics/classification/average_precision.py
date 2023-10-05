@@ -171,6 +171,11 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
     where :math:`P_n, R_n` is the respective precision and recall at threshold index :math:`n`. This value is
     equivalent to the area under the precision-recall curve (AUPRC).
 
+    For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
+    classes as the negative, which is referred to as the one-vs-rest approach. One-vs-one is currently not supported by
+    this metric. By default the reported metric is then the average over all classes, but this behavior can be changed
+    by setting the ``average`` argument.
+
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)`` containing probabilities or logits
@@ -193,7 +198,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
     size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over classes. Should be one of the following:
 
@@ -259,13 +264,15 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         )
         if validate_args:
             _multiclass_average_precision_arg_validation(num_classes, average, thresholds, ignore_index)
-        self.average = average
+        self.average = average  # type: ignore[assignment]
         self.validate_args = validate_args
 
     def compute(self) -> Tensor:  # type: ignore[override]
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
-        return _multiclass_average_precision_compute(state, self.num_classes, self.average, self.thresholds)
+        return _multiclass_average_precision_compute(
+            state, self.num_classes, self.average, self.thresholds  # type: ignore[arg-type]
+        )
 
     def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -344,7 +351,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
     size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 

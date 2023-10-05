@@ -150,7 +150,7 @@ def test_error_on_wrong_shapes(metric):
         (partial(pairwise_minkowski_distance, exponent=3), partial(pairwise_distances, metric="minkowski", p=3)),
     ],
 )
-def test_precison_case(metric_functional, sk_fn):
+def test_precision_case(metric_functional, sk_fn):
     """Test that metrics are robust towars cases where high precision is needed."""
     x = torch.tensor([[772.0, 112.0], [772.20001, 112.0]])
     res1 = metric_functional(x, zero_diagonal=False)

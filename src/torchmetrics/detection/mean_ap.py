@@ -14,7 +14,8 @@
 import contextlib
 import io
 import json
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from types import ModuleType
+from typing import Any, Callable, ClassVar, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
@@ -27,6 +28,7 @@ from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator,
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import (
+    _FASTER_COCO_EVAL_AVAILABLE,
     _MATPLOTLIB_AVAILABLE,
     _PYCOCOTOOLS_AVAILABLE,
     _TORCHVISION_GREATER_EQUAL_0_8,
@@ -48,20 +50,39 @@ else:
         "MeanAveragePrecision.coco_to_tm",
     ]
 
-
-if _PYCOCOTOOLS_AVAILABLE:
-    import pycocotools.mask as mask_utils
-    from pycocotools.coco import COCO
-    from pycocotools.cocoeval import COCOeval
-else:
-    COCO, COCOeval = None, None
-    mask_utils = None
+if not _PYCOCOTOOLS_AVAILABLE:
     __doctest_skip__ = [
         "MeanAveragePrecision.plot",
         "MeanAveragePrecision",
         "MeanAveragePrecision.tm_to_coco",
         "MeanAveragePrecision.coco_to_tm",
     ]
+
+
+def _load_backend_tools(backend: Literal["pycocotools", "faster_coco_eval"]) -> Tuple[object, object, ModuleType]:
+    """Load the backend tools for the given backend."""
+    if backend == "pycocotools":
+        if not _PYCOCOTOOLS_AVAILABLE:
+            raise ModuleNotFoundError(
+                "Backend `pycocotools` in metric `MeanAveragePrecision`  metric requires that `pycocotools` is"
+                " installed. Please install with `pip install pycocotools` or `pip install torchmetrics[detection]`"
+            )
+        import pycocotools.mask as mask_utils
+        from pycocotools.coco import COCO
+        from pycocotools.cocoeval import COCOeval
+
+        return COCO, COCOeval, mask_utils
+
+    if not _FASTER_COCO_EVAL_AVAILABLE:
+        raise ModuleNotFoundError(
+            "Backend `faster_coco_eval` in metric `MeanAveragePrecision`  metric requires that `faster-coco-eval` is"
+            " installed. Please install with `pip install faster-coco-eval`."
+        )
+    from faster_coco_eval import COCO
+    from faster_coco_eval import COCOeval_faster as COCOeval
+    from faster_coco_eval.core import mask as mask_utils
+
+    return COCO, COCOeval, mask_utils
 
 
 class MeanAveragePrecision(Metric):
@@ -142,9 +163,16 @@ class MeanAveragePrecision(Metric):
         Caution: If the initialization parameters are changed, dictionary keys for mAR can change as well.
 
     .. note::
-        This metric utilizes the official `pycocotools` implementation as its backend. This means that the metric
-        requires you to have `pycocotools` installed. In addition we require `torchvision` version 0.8.0 or newer.
-        Please install with ``pip install torchmetrics[detection]``.
+        This metric supports, at the moment, two different backends for the evaluation. The default backend is
+        ``"pycocotools"``, which either require the official `pycocotools`_ implementation or this
+        `fork of pycocotools`_ to be installed. We recommend using the fork as it is better maintained and easily
+        available to install via pip: `pip install pycocotools`. It is also this fork that will be installed if you
+        install ``torchmetrics[detection]``. The second backend is the `faster-coco-eval`_ implementation, which can be
+        installed with ``pip install faster-coco-eval``. This implementation is a maintained open-source implementation
+        that is faster and corrects certain corner cases that the official implementation has. Our own testing has shown
+        that the results are identical to the official implementation. Regardless of the backend we also require you to
+        have `torchvision` version 0.8.0 or newer installed. Please install with ``pip install torchvision>=0.8`` or
+        ``pip install torchmetrics[detection]``.
 
     Args:
         box_format:
@@ -188,7 +216,9 @@ class MeanAveragePrecision(Metric):
                   of max detections per image.
 
         average:
-            Method for averaging scores over labels. Choose between "``macro``"" and "``micro``". Default is "macro"
+            Method for averaging scores over labels. Choose between "``"macro"`` and ``"micro"``.
+        backend:
+            Backend to use for the evaluation. Choose between ``"pycocotools"`` and ``"faster_coco_eval"``.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -323,6 +353,19 @@ class MeanAveragePrecision(Metric):
 
     warn_on_many_detections: bool = True
 
+    __jit_unused_properties__: ClassVar[List[str]] = [
+        "is_differentiable",
+        "higher_is_better",
+        "plot_lower_bound",
+        "plot_upper_bound",
+        "plot_legend_name",
+        "metric_state",
+        # below is added for specifically for this metric
+        "coco",
+        "cocoeval",
+        "mask_utils",
+    ]
+
     def __init__(
         self,
         box_format: Literal["xyxy", "xywh", "cxcywh"] = "xyxy",
@@ -333,6 +376,7 @@ class MeanAveragePrecision(Metric):
         class_metrics: bool = False,
         extended_summary: bool = False,
         average: Literal["macro", "micro"] = "macro",
+        backend: Literal["pycocotools", "faster_coco_eval"] = "pycocotools",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -387,6 +431,12 @@ class MeanAveragePrecision(Metric):
             raise ValueError(f"Expected argument `average` to be one of ('macro', 'micro') but got {average}")
         self.average = average
 
+        if backend not in ("pycocotools", "faster_coco_eval"):
+            raise ValueError(
+                f"Expected argument `backend` to be one of ('pycocotools', 'faster_coco_eval') but got {backend}"
+            )
+        self.backend = backend
+
         self.add_state("detection_box", default=[], dist_reduce_fx=None)
         self.add_state("detection_mask", default=[], dist_reduce_fx=None)
         self.add_state("detection_scores", default=[], dist_reduce_fx=None)
@@ -396,6 +446,24 @@ class MeanAveragePrecision(Metric):
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_crowds", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_area", default=[], dist_reduce_fx=None)
+
+    @property
+    def coco(self) -> object:
+        """Returns the coco module for the given backend, done in this way to make metric picklable."""
+        coco, _, _ = _load_backend_tools(self.backend)
+        return coco
+
+    @property
+    def cocoeval(self) -> object:
+        """Returns the coco eval module for the given backend, done in this way to make metric picklable."""
+        _, cocoeval, _ = _load_backend_tools(self.backend)
+        return cocoeval
+
+    @property
+    def mask_utils(self) -> object:
+        """Returns the mask utils object for the given backend, done in this way to make metric picklable."""
+        _, _, mask_utils = _load_backend_tools(self.backend)
+        return mask_utils
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:
         """Update metric state.
@@ -454,7 +522,7 @@ class MeanAveragePrecision(Metric):
                     for anno in coco_preds.dataset["annotations"]:
                         anno["area"] = anno[f"area_{i_type}"]
 
-                coco_eval = COCOeval(coco_target, coco_preds, iouType=i_type)
+                coco_eval = self.cocoeval(coco_target, coco_preds, iouType=i_type)
                 coco_eval.params.iouThrs = np.array(self.iou_thresholds, dtype=np.float64)
                 coco_eval.params.recThrs = np.array(self.rec_thresholds, dtype=np.float64)
                 coco_eval.params.maxDets = self.max_detection_thresholds
@@ -482,7 +550,7 @@ class MeanAveragePrecision(Metric):
                         # since micro averaging have all the data in one class, we need to reinitialize the coco_eval
                         # object in macro mode to get the per class stats
                         coco_preds, coco_target = self._get_coco_datasets(average="macro")
-                        coco_eval = COCOeval(coco_target, coco_preds, iouType=i_type)
+                        coco_eval = self.cocoeval(coco_target, coco_preds, iouType=i_type)
                         coco_eval.params.iouThrs = np.array(self.iou_thresholds, dtype=np.float64)
                         coco_eval.params.recThrs = np.array(self.rec_thresholds, dtype=np.float64)
                         coco_eval.params.maxDets = self.max_detection_thresholds
@@ -516,7 +584,7 @@ class MeanAveragePrecision(Metric):
 
         return result_dict
 
-    def _get_coco_datasets(self, average: Literal["macro", "micro"]) -> Tuple[COCO, COCO]:
+    def _get_coco_datasets(self, average: Literal["macro", "micro"]) -> Tuple[object, object]:
         """Returns the coco datasets for the target and the predictions."""
         if average == "micro":
             # for micro averaging we set everything to be the same class
@@ -526,7 +594,7 @@ class MeanAveragePrecision(Metric):
             groundtruth_labels = self.groundtruth_labels
             detection_labels = self.detection_labels
 
-        coco_target, coco_preds = COCO(), COCO()
+        coco_target, coco_preds = self.coco(), self.coco()
 
         coco_target.dataset = self._get_coco_format(
             labels=groundtruth_labels,
@@ -571,6 +639,7 @@ class MeanAveragePrecision(Metric):
         coco_preds: str,
         coco_target: str,
         iou_type: Union[Literal["bbox", "segm"], List[str]] = "bbox",
+        backend: Literal["pycocotools", "faster_coco_eval"] = "pycocotools",
     ) -> Tuple[List[Dict[str, Tensor]], List[Dict[str, Tensor]]]:
         """Utility function for converting .json coco format files to the input format of this metric.
 
@@ -581,6 +650,7 @@ class MeanAveragePrecision(Metric):
             coco_preds: Path to the json file containing the predictions in coco format
             coco_target: Path to the json file containing the targets in coco format
             iou_type: Type of input, either `bbox` for bounding boxes or `segm` for segmentation masks
+            backend: Backend to use for the conversion. Either `pycocotools` or `faster_coco_eval`.
 
         Returns:
             A tuple containing the predictions and targets in the input format of this metric. Each element of the
@@ -599,9 +669,10 @@ class MeanAveragePrecision(Metric):
 
         """
         iou_type = _validate_iou_type_arg(iou_type)
+        coco, _, _ = _load_backend_tools(backend)
 
         with contextlib.redirect_stdout(io.StringIO()):
-            gt = COCO(coco_target)
+            gt = coco(coco_target)
             dt = gt.loadRes(coco_preds)
 
         gt_dataset = gt.dataset["annotations"]
@@ -748,7 +819,7 @@ class MeanAveragePrecision(Metric):
         if "segm" in self.iou_type:
             masks = []
             for i in item["masks"].cpu().numpy():
-                rle = mask_utils.encode(np.asfortranarray(i))
+                rle = self.mask_utils.encode(np.asfortranarray(i))
                 masks.append((tuple(rle["size"]), rle["counts"]))
             output[1] = tuple(masks)
         if (output[0] is not None and len(output[0]) > self.max_detection_thresholds[-1]) or (
@@ -808,7 +879,7 @@ class MeanAveragePrecision(Metric):
                         f"Invalid input box of sample {image_id}, element {k} (expected 4 values, got {len(image_box)})"
                     )
 
-                if type(image_label) != int:
+                if not isinstance(image_label, int):
                     raise ValueError(
                         f"Invalid input class of sample {image_id}, element {k}"
                         f" (expected value of type integer, got type {type(image_label)})"
@@ -819,10 +890,12 @@ class MeanAveragePrecision(Metric):
                 if area is not None and area[image_id][k].cpu().tolist() > 0:
                     area_stat = area[image_id][k].cpu().tolist()
                 else:
-                    area_stat = mask_utils.area(image_mask) if "segm" in self.iou_type else image_box[2] * image_box[3]
+                    area_stat = (
+                        self.mask_utils.area(image_mask) if "segm" in self.iou_type else image_box[2] * image_box[3]
+                    )
                     if len(self.iou_type) > 1:
                         area_stat_box = image_box[2] * image_box[3]
-                        area_stat_mask = mask_utils.area(image_mask)
+                        area_stat_mask = self.mask_utils.area(image_mask)
 
                 annotation = {
                     "id": annotation_id,
@@ -842,7 +915,7 @@ class MeanAveragePrecision(Metric):
 
                 if scores is not None:
                     score = scores[image_id][k].cpu().tolist()
-                    if type(score) != float:
+                    if not isinstance(score, float):
                         raise ValueError(
                             f"Invalid input score of sample {image_id}, element {k}"
                             f" (expected value of type float, got type {type(score)})"
@@ -914,7 +987,7 @@ class MeanAveragePrecision(Metric):
         return self._plot(val, ax)
 
     # --------------------
-    # specialized syncronization and apply functions for this metric
+    # specialized synchronization and apply functions for this metric
     # --------------------
 
     def _apply(self, fn: Callable) -> torch.nn.Module:  # type: ignore[override]

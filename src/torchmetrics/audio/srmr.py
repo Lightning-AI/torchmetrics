@@ -21,14 +21,14 @@ from torchmetrics.functional.audio.srmr import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import (
-    _GAMMATONE_AVAILABEL,
+    _GAMMATONE_AVAILABLE,
     _MATPLOTLIB_AVAILABLE,
-    _TORCHAUDIO_AVAILABEL,
+    _TORCHAUDIO_AVAILABLE,
     _TORCHAUDIO_GREATER_EQUAL_0_10,
 )
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-if not all([_GAMMATONE_AVAILABEL, _TORCHAUDIO_AVAILABEL, _TORCHAUDIO_GREATER_EQUAL_0_10]):
+if not all([_GAMMATONE_AVAILABLE, _TORCHAUDIO_AVAILABLE, _TORCHAUDIO_GREATER_EQUAL_0_10]):
     __doctest_skip__ = ["SpeechReverberationModulationEnergyRatio", "SpeechReverberationModulationEnergyRatio.plot"]
 elif not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["SpeechReverberationModulationEnergyRatio.plot"]
@@ -106,7 +106,7 @@ class SpeechReverberationModulationEnergyRatio(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        if not _TORCHAUDIO_AVAILABEL or not _TORCHAUDIO_GREATER_EQUAL_0_10 or not _GAMMATONE_AVAILABEL:
+        if not _TORCHAUDIO_AVAILABLE or not _TORCHAUDIO_GREATER_EQUAL_0_10 or not _GAMMATONE_AVAILABLE:
             raise ModuleNotFoundError(
                 "speech_reverberation_modulation_energy_ratio requires you to have `gammatone` and"
                 " `torchaudio>=0.10` installed. Either install as ``pip install torchmetrics[audio]`` or "

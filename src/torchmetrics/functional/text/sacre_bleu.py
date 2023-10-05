@@ -102,7 +102,7 @@ class _SacreBLEUTokenizer:
         import regex
 
         _INT_REGEX = (
-            # Separate out punctuations preceeded by a non-digit
+            # Separate out punctuations preceded by a non-digit
             (regex.compile(r"(\P{N})(\p{P})"), r"\1 \2 "),
             # Separate out punctuations followed by a non-digit
             (regex.compile(r"(\p{P})(\P{N})"), r" \1 \2"),
@@ -333,7 +333,7 @@ def sacre_bleu_score(
     if tokenize not in AVAILABLE_TOKENIZERS:
         raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
 
-    if tokenize not in _SacreBLEUTokenizer._TOKENIZE_FN.keys():
+    if tokenize not in _SacreBLEUTokenizer._TOKENIZE_FN:
         raise ValueError(
             f"Unsupported tokenizer selected. Please, choose one of {list(_SacreBLEUTokenizer._TOKENIZE_FN.keys())}"
         )

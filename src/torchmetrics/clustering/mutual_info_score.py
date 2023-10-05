@@ -33,11 +33,12 @@ class MutualInfoScore(Metric):
         \log\frac{N|U_i\cap V_j|}{|U_i||V_j|}
 
     Where :math:`U` is a tensor of target values, :math:`V` is a tensor of predictions,
-    :math:`|U_i|` is the number of samples in cluster :math:`U_i`, and
-    :math:`|V_i|` is the number of samples in cluster :math:`V_i`.
+    :math:`|U_i|` is the number of samples in cluster :math:`U_i`, and :math:`|V_i|` is the number of samples in
+    cluster :math:`V_i`. The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields the same mutual
+    information score.
 
-    The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields
-    the same mutual information score.
+    This clustering metric is an extrinsic measure, because it requires ground truth clustering labels, which may not
+    be available in practice since clustering in generally is used for unsupervised learning.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -51,7 +52,7 @@ class MutualInfoScore(Metric):
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
+    Example::
         >>> import torch
         >>> from torchmetrics.clustering import MutualInfoScore
         >>> preds = torch.tensor([2, 1, 0, 1, 0])
@@ -117,9 +118,10 @@ class MutualInfoScore(Metric):
             >>> import torch
             >>> from torchmetrics.clustering import MutualInfoScore
             >>> metric = MutualInfoScore()
+            >>> values = [ ]
             >>> for _ in range(10):
-            ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
-            >>> fig_, ax_ = metric.plot(metric.compute())
+            ...     values.append(metric(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,))))
+            >>> fig_, ax_ = metric.plot(values)
 
         """
         return self._plot(val, ax)

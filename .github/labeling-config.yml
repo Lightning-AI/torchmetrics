@@ -1,5 +1,6 @@
 documentation:
   - docs/**/*
+  - README.md
 
 "topic: Audio":
   - src/torchmetrics/audio/*

@@ -11,22 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added `MutualInformationScore` metric to cluster package ([#2008](https://github.com/Lightning-AI/torchmetrics/pull/2008))
-
-
-- Added `RandScore` metric to cluster package ([#2025](https://github.com/Lightning-AI/torchmetrics/pull/2025))
-
-
-- Added `CalinskiHarabaszScore` metric to cluster package ([#2036](https://github.com/Lightning-AI/torchmetrics/pull/2036))
-
-
-- Added `NormalizedMutualInfoScore` metric to cluster package ([#2029](https://github.com/Lightning-AI/torchmetrics/pull/2029))
-
-
+- Added `average` argument to multiclass versions of `PrecisionRecallCurve` and `ROC` ([#2084](https://github.com/Lightning-AI/torchmetrics/pull/2084))
 
 ### Changed
 
--
+- Change default state of `SpectralAngleMapper` and `UniversalImageQualityIndex` to be tensors ([#2089](https://github.com/Lightning-AI/torchmetrics/pull/2089))
 
 
 ### Removed
@@ -36,15 +25,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed performance issues in `RecallAtFixedPrecision` for large batch sizes ([#2042](https://github.com/Lightning-AI/torchmetrics/pull/2042))
 -
+
+
+## [1.2.0] - 2023-09-22
+
+### Added
+
+- Added metric to cluster package:
+    - `MutualInformationScore` ([#2008](https://github.com/Lightning-AI/torchmetrics/pull/2008))
+    - `RandScore` ([#2025](https://github.com/Lightning-AI/torchmetrics/pull/2025))
+    - `NormalizedMutualInfoScore` ([#2029](https://github.com/Lightning-AI/torchmetrics/pull/2029))
+    - `AdjustedRandScore` ([#2032](https://github.com/Lightning-AI/torchmetrics/pull/2032))
+    - `CalinskiHarabaszScore` ([#2036](https://github.com/Lightning-AI/torchmetrics/pull/2036))
+    - `DunnIndex` ([#2049](https://github.com/Lightning-AI/torchmetrics/pull/2049))
+    - `HomogeneityScore` ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
+    - `CompletenessScore` ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
+    - `VMeasureScore` ([#2053](https://github.com/Lightning-AI/torchmetrics/pull/2053))
+    - `FowlkesMallowsIndex` ([#2066](https://github.com/Lightning-AI/torchmetrics/pull/2066))
+    - `AdjustedMutualInfoScore` ([#2058](https://github.com/Lightning-AI/torchmetrics/pull/2058))
+    - `DaviesBouldinScore` ([#2071](https://github.com/Lightning-AI/torchmetrics/pull/2071))
+- Added `backend` argument to `MeanAveragePrecision` ([#2034](https://github.com/Lightning-AI/torchmetrics/pull/2034))
+
+
+## [1.1.2] - 2023-09-11
+
+### Fixed
+
+- Fixed tie breaking in ndcg metric ([#2031](https://github.com/Lightning-AI/torchmetrics/pull/2031))
+- Fixed bug in `BootStrapper` when very few samples were evaluated that could lead to crash ([#2052](https://github.com/Lightning-AI/torchmetrics/pull/2052))
+- Fixed bug when creating multiple plots that lead to not all plots being shown ([#2060](https://github.com/Lightning-AI/torchmetrics/pull/2060))
+- Fixed performance issues in `RecallAtFixedPrecision` for large batch sizes ([#2042](https://github.com/Lightning-AI/torchmetrics/pull/2042))
+- Fixed bug related to `MetricCollection` used with custom metrics have `prefix`/`postfix` attributes ([#2070](https://github.com/Lightning-AI/torchmetrics/pull/2070))
 
 
 ## [1.1.1] - 2023-08-29
 
 ### Added
 
-- Added `average` argument to `MeanAveragePrecision` ([#2018](https://github.com/Lightning-AI/torchmetrics/pull/2018)
+- Added `average` argument to `MeanAveragePrecision` ([#2018](https://github.com/Lightning-AI/torchmetrics/pull/2018))
 
 ### Fixed
 
@@ -218,7 +237,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed padding removal for 3d input in `MSSSIM` ([#1674](https://github.com/Lightning-AI/torchmetrics/pull/1674))
 - Fixed `max_det_threshold` in MAP detection ([#1712](https://github.com/Lightning-AI/torchmetrics/pull/1712))
 - Fixed states being saved in metrics that use `register_buffer` ([#1728](https://github.com/Lightning-AI/torchmetrics/pull/1728))
-- Fixed states not being correctly synced and device transfered in `MeanAveragePrecision` for `iou_type="segm"` ([#1763](https://github.com/Lightning-AI/torchmetrics/pull/1763))
+- Fixed states not being correctly synced and device transferred in `MeanAveragePrecision` for `iou_type="segm"` ([#1763](https://github.com/Lightning-AI/torchmetrics/pull/1763))
 - Fixed use of `prefix` and `postfix` in nested `MetricCollection` ([#1773](https://github.com/Lightning-AI/torchmetrics/pull/1773))
 - Fixed `ax` plotting logging in `MetricCollection ([#1783](https://github.com/Lightning-AI/torchmetrics/pull/1783))
 - Fixed lookup for punkt sources being downloaded in `RougeScore` ([#1789](https://github.com/Lightning-AI/torchmetrics/pull/1789))
@@ -410,7 +429,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed mAP calculation for areas with 0 predictions ([#1080](https://github.com/Lightning-AI/metrics/pull/1080))
 - Fixed bug where avg precision state and auroc state was not merge when using MetricCollections ([#1086](https://github.com/Lightning-AI/metrics/pull/1086))
 - Skip box conversion if no boxes are present in `MeanAveragePrecision` ([#1097](https://github.com/Lightning-AI/metrics/pull/1097))
-- Fixed inconsistency in docs and code when setting `average="none"` in `AvaragePrecision` metric ([#1116](https://github.com/Lightning-AI/metrics/pull/1116))
+- Fixed inconsistency in docs and code when setting `average="none"` in `AveragePrecision` metric ([#1116](https://github.com/Lightning-AI/metrics/pull/1116))
 
 
 ## [0.9.1] - 2022-06-08

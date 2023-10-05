@@ -60,7 +60,7 @@ class PearsonsContingencyCoefficient(Metric):
     - ``pearsons_cc`` (:class:`~torch.Tensor`): Scalar tensor containing the Pearsons Contingency Coefficient statistic.
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         nan_strategy: Indication of whether to replace or drop ``NaN`` values
         nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.

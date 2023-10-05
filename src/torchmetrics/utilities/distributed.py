@@ -105,8 +105,7 @@ def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tens
         group: the process group to gather results from. Defaults to all processes (world)
 
     Return:
-        gathered_result: list with size equal to the process group where
-            ``gathered_result[i]`` corresponds to result tensor from process ``i``
+        list with size equal to the process group where element i corresponds to result tensor from process i
 
     """
     if group is None:

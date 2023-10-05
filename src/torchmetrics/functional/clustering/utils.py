@@ -20,6 +20,30 @@ from typing_extensions import Literal
 from torchmetrics.utilities.checks import _check_same_shape
 
 
+def is_nonnegative(x: Tensor, atol: float = 1e-5) -> Tensor:
+    """Return True if all elements of tensor are nonnegative within certain tolerance.
+
+    Args:
+        x: tensor
+        atol: absolute tolerance
+
+    Returns:
+        Boolean tensor indicating if all values are nonnegative
+
+    """
+    return torch.logical_or(x > 0.0, torch.abs(x) < atol).all()
+
+
+def _validate_average_method_arg(
+    average_method: Literal["min", "geometric", "arithmetic", "max"] = "arithmetic"
+) -> None:
+    if average_method not in ("min", "geometric", "arithmetic", "max"):
+        raise ValueError(
+            "Expected argument `average_method` to be one of  `min`, `geometric`, `arithmetic`, `max`,"
+            f"but got {average_method}"
+        )
+
+
 def calculate_entropy(x: Tensor) -> Tensor:
     """Calculate entropy for a tensor of labels.
 
@@ -74,7 +98,7 @@ def calculate_generalized_mean(x: Tensor, p: Union[int, Literal["min", "geometri
         tensor(1.6438)
 
     """
-    if torch.is_complex(x) or torch.any(x <= 0.0):
+    if torch.is_complex(x) or not is_nonnegative(x):
         raise ValueError("`x` must contain positive real numbers")
 
     if isinstance(p, str):
@@ -126,8 +150,8 @@ def calculate_contingency_matrix(
     preds_classes, preds_idx = torch.unique(preds, return_inverse=True)
     target_classes, target_idx = torch.unique(target, return_inverse=True)
 
-    n_classes_preds = preds_classes.size(0)
-    n_classes_target = target_classes.size(0)
+    num_classes_preds = preds_classes.size(0)
+    num_classes_target = target_classes.size(0)
 
     contingency = torch.sparse_coo_tensor(
         torch.stack(
@@ -138,8 +162,8 @@ def calculate_contingency_matrix(
         ),
         torch.ones(target_idx.shape[0], dtype=preds_idx.dtype, device=preds_idx.device),
         (
-            n_classes_target,
-            n_classes_preds,
+            num_classes_target,
+            num_classes_preds,
         ),
     )
 
@@ -151,6 +175,13 @@ def calculate_contingency_matrix(
     return contingency
 
 
+def _is_real_discrete_label(x: Tensor) -> bool:
+    """Check if tensor of labels is real and discrete."""
+    if x.ndim != 1:
+        raise ValueError(f"Expected arguments to be 1-d tensors but got {x.ndim}-d tensors.")
+    return not (torch.is_floating_point(x) or torch.is_complex(x))
+
+
 def check_cluster_labels(preds: Tensor, target: Tensor) -> None:
     """Check shape of input tensors and if they are real, discrete tensors.
 
@@ -160,21 +191,30 @@ def check_cluster_labels(preds: Tensor, target: Tensor) -> None:
 
     """
     _check_same_shape(preds, target)
-    if preds.ndim != 1:
-        raise ValueError(f"Expected arguments to be 1d tensors but got {preds.ndim} and {target.ndim}")
-    if (
-        torch.is_floating_point(preds)
-        or torch.is_complex(preds)
-        or torch.is_floating_point(target)
-        or torch.is_complex(target)
-    ):
+    if not (_is_real_discrete_label(preds) and _is_real_discrete_label(target)):
+        raise ValueError(f"Expected real, discrete values for x but received {preds.dtype} and {target.dtype}.")
+
+
+def _validate_intrinsic_cluster_data(data: Tensor, labels: Tensor) -> None:
+    """Validate that the input data and labels have correct shape and type."""
+    if data.ndim != 2:
+        raise ValueError(f"Expected 2D data, got {data.ndim}D data instead")
+    if not data.is_floating_point():
+        raise ValueError(f"Expected floating point data, got {data.dtype} data instead")
+    if labels.ndim != 1:
+        raise ValueError(f"Expected 1D labels, got {labels.ndim}D labels instead")
+
+
+def _validate_intrinsic_labels_to_samples(num_labels: int, num_samples: int) -> None:
+    """Validate that the number of labels are in the correct range."""
+    if not 1 < num_labels < num_samples:
         raise ValueError(
-            f"Expected real, discrete values but received {preds.dtype} for"
-            f"predictions and {target.dtype} for target labels instead."
+            "Number of detected clusters must be greater than one and less than the number of samples."
+            f"Got {num_labels} clusters and {num_samples} samples."
         )
 
 
-def calcualte_pair_cluster_confusion_matrix(
+def calculate_pair_cluster_confusion_matrix(
     preds: Optional[Tensor] = None,
     target: Optional[Tensor] = None,
     contingency: Optional[Tensor] = None,
@@ -207,15 +247,15 @@ def calcualte_pair_cluster_confusion_matrix(
 
     Example:
         >>> import torch
-        >>> from torchmetrics.functional.clustering.utils import calcualte_pair_cluster_confusion_matrix
+        >>> from torchmetrics.functional.clustering.utils import calculate_pair_cluster_confusion_matrix
         >>> preds = torch.tensor([0, 0, 1, 1])
         >>> target = torch.tensor([1, 1, 0, 0])
-        >>> calcualte_pair_cluster_confusion_matrix(preds, target)
+        >>> calculate_pair_cluster_confusion_matrix(preds, target)
         tensor([[8, 0],
                 [0, 4]])
         >>> preds = torch.tensor([0, 0, 1, 2])
         >>> target = torch.tensor([0, 0, 1, 1])
-        >>> calcualte_pair_cluster_confusion_matrix(preds, target)
+        >>> calculate_pair_cluster_confusion_matrix(preds, target)
         tensor([[8, 2],
                 [0, 2]])
 
@@ -231,14 +271,14 @@ def calcualte_pair_cluster_confusion_matrix(
     if contingency is None:
         raise ValueError("Must provide `contingency` if `preds` and `target` are not provided.")
 
-    n_samples = contingency.sum()
-    n_c = contingency.sum(dim=1)
-    n_k = contingency.sum(dim=0)
+    num_samples = contingency.sum()
+    sum_c = contingency.sum(dim=1)
+    sum_k = contingency.sum(dim=0)
     sum_squared = (contingency**2).sum()
 
     pair_matrix = torch.zeros(2, 2, dtype=contingency.dtype, device=contingency.device)
-    pair_matrix[1, 1] = sum_squared - n_samples
-    pair_matrix[1, 0] = (contingency * n_k).sum() - sum_squared
-    pair_matrix[0, 1] = (contingency.T * n_c).sum() - sum_squared
-    pair_matrix[0, 0] = n_samples**2 - pair_matrix[0, 1] - pair_matrix[1, 0] - sum_squared
+    pair_matrix[1, 1] = sum_squared - num_samples
+    pair_matrix[1, 0] = (contingency * sum_k).sum() - sum_squared
+    pair_matrix[0, 1] = (contingency.T * sum_c).sum() - sum_squared
+    pair_matrix[0, 0] = num_samples**2 - pair_matrix[0, 1] - pair_matrix[1, 0] - sum_squared
     return pair_matrix

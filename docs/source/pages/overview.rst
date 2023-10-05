@@ -117,7 +117,7 @@ the native `MetricCollection`_ module can also be used to wrap multiple metrics.
             self.metric1 = BinaryAccuracy()
             self.metric2 = nn.ModuleList(BinaryAccuracy())
             self.metric3 = nn.ModuleDict({'accuracy': BinaryAccuracy()})
-            self.metric4 = MetricCollection([BinaryAccuracy()]) # torchmetrics build-in collection class
+            self.metric4 = MetricCollection([BinaryAccuracy()]) # torchmetrics built-in collection class
 
         def forward(self, batch):
             data, target = batch
@@ -205,8 +205,8 @@ Most metrics in our collection can be used with 16-bit precision (``torch.half``
 the following limitations:
 
 * In general ``pytorch`` had better support for 16-bit precision much earlier on GPU than CPU. Therefore, we
-  recommend that anyone that want to use metrics with half precision on CPU, upgrade to atleast pytorch v1.6
-  where support for operations such as addition, subtraction, multiplication ect. was added.
+  recommend that anyone that want to use metrics with half precision on CPU, upgrade to at least pytorch v1.6
+  where support for operations such as addition, subtraction, multiplication etc. was added.
 * Some metrics does not work at all in half precision on CPU. We have explicitly stated this in their docstring,
   but they are also listed below:
 
@@ -216,9 +216,9 @@ the following limitations:
 
 You can always check the precision/dtype of the metric by checking the `.dtype` property.
 
-******************
-Metric Arithmetics
-******************
+*****************
+Metric Arithmetic
+*****************
 
 Metrics support most of python built-in operators for arithmetic, logic and bitwise operations.
 
@@ -331,7 +331,7 @@ inside your LightningModule. In most cases we just have to replace ``self.log`` 
             # ...
             self.valid_metrics.update(logits, y)
 
-        def validation_epoch_end(self, outputs):
+        def on_validation_epoch_end(self):
             # use log_dict instead of log
             # metrics are logged with keys: val_Accuracy, val_Precision and val_Recall
             output = self.valid_metrics.compute()
@@ -361,6 +361,59 @@ information on this topic.
 .. autoclass:: torchmetrics.MetricCollection
     :exclude-members: update, compute, forward
 
+***************
+Metric wrappers
+***************
+
+In some cases it is beneficial to transform the output of one metric in some way or add additional logic. For this we
+have implemented a few *Wrapper* metrics. Wrapper metrics always take another :class:`~torchmetrics.Metric` or (
+:class:`~torchmetrics.MetricCollection`) as input and wraps it in some way. A good example of this is the
+:class:`~torchmetrics.wrappers.ClasswiseWrapper` that allows for easy altering the output of certain classification
+metrics to also include label information.
+
+.. testcode::
+
+    from torchmetrics.classification import MulticlassAccuracy
+    from torchmetrics.wrappers import ClasswiseWrapper
+    # creating metrics
+    base_metric = MulticlassAccuracy(num_classes=3, average=None)
+    wrapped_metric = ClasswiseWrapper(base_metric, labels=["cat", "dog", "fish"])
+    # sample prediction and GT
+    target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
+    preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
+    # showing the metric results
+    print(base_metric(preds, target))  # this returns a simple tensor without label info
+    print(wrapped_metric(preds, target))  # this returns a dict with label info
+
+.. testoutput::
+    :options: +NORMALIZE_WHITESPACE
+
+    tensor([0.0000, 0.0000, 0.3333])
+    {'multiclassaccuracy_cat': tensor(0.),
+     'multiclassaccuracy_dog': tensor(0.),
+     'multiclassaccuracy_fish': tensor(0.3333)}
+
+Another good example of wrappers is the :class:`~torchmetrics.wrappers.BootStrapper` that allows for easy bootstrapping
+of metrics e.g. computation of confidence intervals by resampling of input data.
+
+.. testcode::
+
+    from torchmetrics.classification import MulticlassAccuracy
+    from torchmetrics.wrappers import BootStrapper
+    # creating metrics
+    wrapped_metric = BootStrapper(MulticlassAccuracy(num_classes=3))
+    # sample prediction and GT
+    target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
+    preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
+    # showing the metric results
+    print(wrapped_metric(preds, target))  # this returns a dict with label info
+
+.. testoutput::
+    :options: +NORMALIZE_WHITESPACE
+
+    {'mean': tensor(0.1476), 'std': tensor(0.0613)}
+
+You can see all implemented wrappers under the wrapper section of the API docs.
 
 ****************************
 Module vs Functional Metrics
@@ -431,7 +484,7 @@ argument can help:
   of GPU. Only applies to metric states that are lists.
 
 - ``compute_with_cache``: This argument indicates if the result after calling the ``compute`` method should be cached.
-  By default this is ``True`` meaning that repeated calls to ``compute`` (with no change to the metric state inbetween)
+  By default this is ``True`` meaning that repeated calls to ``compute`` (with no change to the metric state in between)
   does not recompute the metric but just returns the cache. By setting it to ``False`` the metric will be recomputed
   every time ``compute`` is called, but it can also help clean up a bit of memory.
 
