@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
+from typing import NamedTuple
 
 import pytest
 import torch
@@ -28,15 +28,19 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
+
+class _Input(NamedTuple):
+    preds: Tensor
+    target: Tensor
+
 
 # for 8k sample rate, need at least 8k/4=2000 samples
-inputs_8k = Input(
+inputs_8k = _Input(
     preds=torch.rand(2, 3, 2100),
     target=torch.rand(2, 3, 2100),
 )
 # for 16k sample rate, need at least 16k/4=4000 samples
-inputs_16k = Input(
+inputs_16k = _Input(
     preds=torch.rand(2, 3, 4100),
     target=torch.rand(2, 3, 4100),
 )

@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
-from typing import Callable
+from typing import Callable, NamedTuple
 
 import numpy as np
 import pytest
@@ -31,13 +30,18 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
-inputs_1spk = Input(
+class _Input(NamedTuple):
+    preds: Tensor
+    target: Tensor
+
+
+inputs_1spk = _Input(
     preds=torch.rand(2, 1, 1, 500),
     target=torch.rand(2, 1, 1, 500),
 )
-inputs_2spk = Input(
+
+inputs_2spk = _Input(
     preds=torch.rand(2, 1, 2, 500),
     target=torch.rand(2, 1, 2, 500),
 )

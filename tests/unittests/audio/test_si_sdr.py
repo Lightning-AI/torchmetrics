@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
+from typing import NamedTuple
 
 import pytest
 import speechmetrics
@@ -29,9 +29,13 @@ seed_all(42)
 
 NUM_SAMPLES = 100
 
-Input = namedtuple("Input", ["preds", "target"])
 
-inputs = Input(
+class _Input(NamedTuple):
+    preds: Tensor
+    target: Tensor
+
+
+inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, NUM_SAMPLES),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, NUM_SAMPLES),
 )

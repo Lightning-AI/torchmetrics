@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
-from typing import Callable, Tuple
+from typing import Callable, NamedTuple, Tuple
 
 import numpy as np
 import pytest
@@ -39,15 +38,19 @@ seed_all(42)
 
 TIME = 10
 
-Input = namedtuple("Input", ["preds", "target"])
+
+class _Input(NamedTuple):
+    preds: Tensor
+    target: Tensor
+
 
 # three speaker examples to test _find_best_perm_by_linear_sum_assignment
-inputs1 = Input(
+inputs1 = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 3, TIME),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, 3, TIME),
 )
 # two speaker examples to test _find_best_perm_by_exhuastive_method
-inputs2 = Input(
+inputs2 = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, TIME),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, TIME),
 )
