@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
+from typing import NamedTuple
 
 import numpy as np
 import pytest
 import torch
 from sewar.full_ref import vifp
+from torch import Tensor
 from torchmetrics.functional.image.vif import visual_information_fidelity
 from torchmetrics.image.vif import VisualInformationFidelity
 
@@ -26,9 +27,14 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
+
+class _Input(NamedTuple):
+    preds: Tensor
+    target: Tensor
+
+
 _inputs = [
-    Input(
+    _Input(
         preds=torch.randint(0, 255, size=(NUM_BATCHES, BATCH_SIZE, channels, 41, 41), dtype=torch.float),
         target=torch.randint(0, 255, size=(NUM_BATCHES, BATCH_SIZE, channels, 41, 41), dtype=torch.float),
     )

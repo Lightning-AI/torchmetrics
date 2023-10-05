@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
+from typing import NamedTuple
 
 import pytest
 import torch
 from skimage.metrics import structural_similarity
+from torch import Tensor
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.uqi import UniversalImageQualityIndex
 
@@ -29,7 +30,12 @@ seed_all(42)
 # UQI is SSIM with both constants k1 and k2 as 0
 skimage_uqi = partial(structural_similarity, k1=0, k2=0)
 
-Input = namedtuple("Input", ["preds", "target", "multichannel"])
+
+class _Input(NamedTuple):
+    preds: Tensor
+    target: Tensor
+    multichannel: int
+
 
 _inputs = []
 for size, channel, coef, multichannel, dtype in [
@@ -40,7 +46,7 @@ for size, channel, coef, multichannel, dtype in [
 ]:
     preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
     _inputs.append(
-        Input(
+        _Input(
             preds=preds,
             target=preds * coef,
             multichannel=multichannel,

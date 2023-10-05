@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
+from typing import NamedTuple
 
 import pytest
 import torch
 from pytorch_msssim import ms_ssim
+from torch import Tensor
 from torchmetrics.functional.image.ssim import multiscale_structural_similarity_index_measure
 from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure
 
@@ -26,14 +27,19 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
+
+class _Input(NamedTuple):
+    preds: Tensor
+    target: Tensor
+
+
 BATCH_SIZE = 1
 
 _inputs = []
 for size, coef in [(182, 0.9), (182, 0.7)]:
     preds = torch.rand(NUM_BATCHES, BATCH_SIZE, 1, size, size)
     _inputs.append(
-        Input(
+        _Input(
             preds=preds,
             target=preds * coef,
         )
