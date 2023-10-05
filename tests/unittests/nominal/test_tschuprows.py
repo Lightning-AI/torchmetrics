@@ -13,28 +13,34 @@
 # limitations under the License.
 import itertools
 import operator
-from collections import namedtuple
+from typing import NamedTuple
 
 import pandas as pd
 import pytest
 import torch
 from lightning_utilities.core.imports import compare_version
 from scipy.stats.contingency import association
+from torch import Tensor
 from torchmetrics.functional.nominal.tschuprows import tschuprows_t, tschuprows_t_matrix
 from torchmetrics.nominal.tschuprows import TschuprowsT
 
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers.testers import MetricTester
 
-Input = namedtuple("Input", ["preds", "target"])
+
+class _Input(NamedTuple):
+    preds: Tensor
+    target: Tensor
+
+
 NUM_CLASSES = 4
 
-_input_default = Input(
+_input_default = _Input(
     preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
     target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
-_input_logits = Input(
+_input_logits = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES), target=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)
 )
 
