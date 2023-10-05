@@ -1,9 +1,10 @@
-from collections import namedtuple
 from functools import partial
+from typing import NamedTuple
 
 import pytest
 import torch
 from scipy.spatial.distance import minkowski as scipy_minkowski
+from torch import Tensor
 from torchmetrics.functional import minkowski_distance
 from torchmetrics.regression import MinkowskiDistance
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
@@ -17,14 +18,18 @@ seed_all(42)
 
 num_targets = 5
 
-Input = namedtuple("Input", ["preds", "target"])
 
-_single_target_inputs = Input(
+class _Input(NamedTuple):
+    preds: Tensor
+    target: Tensor
+
+
+_single_target_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE),
 )
 
-_multi_target_inputs = Input(
+_multi_target_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
 )

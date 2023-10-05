@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
+from typing import NamedTuple
 
 import numpy as np
 import pytest
@@ -27,24 +27,30 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
-_single_target_inputs1 = Input(
+class _Input(NamedTuple):
+    from torch import Tensor
+
+    preds: Tensor
+    target: Tensor
+
+
+_single_target_inputs1 = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE),
 )
 
-_single_target_inputs2 = Input(
+_single_target_inputs2 = _Input(
     preds=torch.randn(NUM_BATCHES, BATCH_SIZE),
     target=torch.randn(NUM_BATCHES, BATCH_SIZE),
 )
 
-_multi_target_inputs1 = Input(
+_multi_target_inputs1 = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
 )
 
-_multi_target_inputs2 = Input(
+_multi_target_inputs2 = _Input(
     preds=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
     target=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
 )

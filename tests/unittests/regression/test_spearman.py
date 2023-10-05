@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
+from typing import NamedTuple
 
 import pytest
 import torch
 from scipy.stats import rankdata, spearmanr
+from torch import Tensor
 from torchmetrics.functional.regression.spearman import _rank_data, spearman_corrcoef
 from torchmetrics.regression.spearman import SpearmanCorrCoef
 
@@ -26,29 +27,33 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
-_single_target_inputs1 = Input(
+class _Input(NamedTuple):
+    preds: Tensor
+    target: Tensor
+
+
+_single_target_inputs1 = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE),
 )
 
-_single_target_inputs2 = Input(
+_single_target_inputs2 = _Input(
     preds=torch.randn(NUM_BATCHES, BATCH_SIZE),
     target=torch.randn(NUM_BATCHES, BATCH_SIZE),
 )
 
-_multi_target_inputs1 = Input(
+_multi_target_inputs1 = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
 )
 
-_multi_target_inputs2 = Input(
+_multi_target_inputs2 = _Input(
     preds=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
     target=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
 )
 
-_specific_input = Input(
+_specific_input = _Input(
     preds=torch.stack([torch.tensor([1.0, 0.0, 4.0, 1.0, 0.0, 3.0, 0.0]) for _ in range(NUM_BATCHES)]),
     target=torch.stack([torch.tensor([4.0, 0.0, 3.0, 3.0, 3.0, 1.0, 1.0]) for _ in range(NUM_BATCHES)]),
 )

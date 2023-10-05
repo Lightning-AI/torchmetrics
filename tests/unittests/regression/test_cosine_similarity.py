@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
+from typing import NamedTuple
 
 import numpy as np
 import pytest
 import torch
 from sklearn.metrics.pairwise import cosine_similarity as sk_cosine
+from torch import Tensor
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.regression.cosine_similarity import CosineSimilarity
 
@@ -29,14 +30,18 @@ seed_all(42)
 
 num_targets = 5
 
-Input = namedtuple("Input", ["preds", "target"])
 
-_single_target_inputs = Input(
+class _Input(NamedTuple):
+    preds: Tensor
+    target: Tensor
+
+
+_single_target_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE),
 )
 
-_multi_target_inputs = Input(
+_multi_target_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
 )

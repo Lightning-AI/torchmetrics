@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
-from collections import namedtuple
 from functools import partial
-from typing import Optional
+from typing import NamedTuple, Optional
 
 import numpy as np
 import pytest
@@ -25,6 +24,7 @@ from sklearn.metrics import mean_squared_error as sk_mean_squared_error
 from sklearn.metrics import mean_squared_log_error as sk_mean_squared_log_error
 from sklearn.metrics._regression import _check_reg_targets
 from sklearn.utils import check_consistent_length
+from torch import Tensor
 from torchmetrics.functional import (
     mean_absolute_error,
     mean_absolute_percentage_error,
@@ -50,14 +50,18 @@ seed_all(42)
 
 num_targets = 5
 
-Input = namedtuple("Input", ["preds", "target"])
 
-_single_target_inputs = Input(
+class _Input(NamedTuple):
+    preds: Tensor
+    target: Tensor
+
+
+_single_target_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE),
 )
 
-_multi_target_inputs = Input(
+_multi_target_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
 )
