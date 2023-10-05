@@ -14,10 +14,10 @@
 import contextlib
 import io
 import json
-from collections import namedtuple
 from copy import deepcopy
 from functools import partial
 from itertools import product
+from typing import Any, NamedTuple
 
 import numpy as np
 import pytest
@@ -221,10 +221,12 @@ def test_compare_both_same_time(tmpdir, backend):
         assert torch.allclose(res[f"segm_{k}"], v, atol=1e-2)
 
 
-Input = namedtuple("Input", ["preds", "target"])
+class _Input(NamedTuple):
+    preds: list[list[dict[str, Any]]]
+    target: list[list[dict[str, Any]]]
 
 
-_inputs = Input(
+_inputs = _Input(
     preds=[
         [
             {
@@ -326,7 +328,7 @@ _inputs = Input(
 )
 
 # example from this issue https://github.com/Lightning-AI/torchmetrics/issues/943
-_inputs2 = Input(
+_inputs2 = _Input(
     preds=[
         [
             {
@@ -362,7 +364,7 @@ _inputs2 = Input(
 # Test empty preds case, to ensure bool inputs are properly casted to uint8
 # From https://github.com/Lightning-AI/torchmetrics/issues/981
 # and https://github.com/Lightning-AI/torchmetrics/issues/1147
-_inputs3 = Input(
+_inputs3 = _Input(
     preds=[
         [
             {
