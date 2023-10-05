@@ -25,7 +25,7 @@ from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE, _TORCH_GRE
 torch.manual_seed(42)
 
 
-@pytest.mark.skipif(_TORCH_FIDELITY_AVAILABLE, test="test only works if torch-fidelity is not installed")
+@pytest.mark.skipif(_TORCH_FIDELITY_AVAILABLE, reason="test only works if torch-fidelity is not installed")
 def test_no_train_network_missing_torch_fidelity():
     """Assert that NoTrainInceptionV3 raises an error if torch-fidelity is not installed."""
     with pytest.raises(
