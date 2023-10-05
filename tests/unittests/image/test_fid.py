@@ -19,10 +19,19 @@ import pytest
 import torch
 from torch.nn import Module
 from torch.utils.data import Dataset
-from torchmetrics.image.fid import FrechetInceptionDistance
+from torchmetrics.image.fid import FrechetInceptionDistance, NoTrainInceptionV3
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
 
 torch.manual_seed(42)
+
+
+@pytest.mark.skipif(_TORCH_FIDELITY_AVAILABLE, test="test only works if torch-fidelity is not installed")
+def test_no_train_network_missing_torch_fidelity():
+    """Assert that NoTrainInceptionV3 raises an error if torch-fidelity is not installed."""
+    with pytest.raises(
+        ModuleNotFoundError, match="NoTrainInceptionV3 module requires that `Torch-fidelity` is installed.*"
+    ):
+        NoTrainInceptionV3(name="inception-v3-compat", features_list=["2048"])
 
 
 @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_9, reason="test requires torch>=1.9")
