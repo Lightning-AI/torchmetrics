@@ -925,7 +925,7 @@ class Precision(_ClassificationTaskWrapper):
     """
 
     def __new__(
-        cls,
+        cls: type["Precision"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
@@ -988,7 +988,7 @@ class Recall(_ClassificationTaskWrapper):
     """
 
     def __new__(
-        cls,
+        cls: type["Recall"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,

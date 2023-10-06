@@ -367,8 +367,8 @@ class CalibrationError(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(  # type: ignore[misc]
-        cls,
+    def __new__(
+        cls: type["CalibrationError"],
         task: Literal["binary", "multiclass"],
         n_bins: int = 15,
         norm: Literal["l1", "l2", "max"] = "l1",

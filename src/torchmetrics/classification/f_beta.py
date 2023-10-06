@@ -1053,7 +1053,7 @@ class FBetaScore(_ClassificationTaskWrapper):
     """
 
     def __new__(
-        cls,
+        cls: type["FBetaScore"],
         task: Literal["binary", "multiclass", "multilabel"],
         beta: float = 1.0,
         threshold: float = 0.5,
@@ -1115,7 +1115,7 @@ class F1Score(_ClassificationTaskWrapper):
     """
 
     def __new__(
-        cls,
+        cls: type["F1Score"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,

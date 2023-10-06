@@ -559,7 +559,7 @@ class ROC(_ClassificationTaskWrapper):
     """
 
     def __new__(
-        cls,
+        cls: type["ROC"],
         task: Literal["binary", "multiclass", "multilabel"],
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         num_classes: Optional[int] = None,

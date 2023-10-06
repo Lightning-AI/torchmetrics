@@ -342,8 +342,8 @@ class SpecificityAtSensitivity(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(  # type: ignore[misc]
-        cls,
+    def __new__(
+        cls: type["SpecificityAtSensitivity"],
         task: Literal["binary", "multiclass", "multilabel"],
         min_sensitivity: float,
         thresholds: Optional[Union[int, List[float], Tensor]] = None,

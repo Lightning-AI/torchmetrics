@@ -501,8 +501,8 @@ class AUROC(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(  # type: ignore[misc]
-        cls,
+    def __new__(
+        cls: type["AUROC"],
         task: Literal["binary", "multiclass", "multilabel"],
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         num_classes: Optional[int] = None,
