@@ -178,12 +178,12 @@ class CLIPImageQualityAssessment(Metric):
             "openai/clip-vit-large-patch14-336",
             "openai/clip-vit-large-patch14",
         ] = "clip_iqa",
-        data_range: Union[int, float] = 1.0,
+        data_range: float = 1.0,
         prompts: Tuple[Union[str, Tuple[str, str]]] = ("quality",),
         **kwargs: Any
     ) -> None:
         super().__init__(**kwargs)
-        if not (isinstance(data_range, (int, float)) and data_range > 0):
+        if not (isinstance(data_range, float) and data_range > 0):
             raise ValueError("Argument `data_range` should be a positive number.")
         self.data_range = data_range
 

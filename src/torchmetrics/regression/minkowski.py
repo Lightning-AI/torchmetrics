@@ -63,7 +63,7 @@ class MinkowskiDistance(Metric):
 
     def __init__(self, p: float, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        if not (isinstance(p, (float, int)) and p >= 1):
+        if not (isinstance(p, float) and p >= 1):
             raise TorchMetricsUserError(f"Argument ``p`` must be a float or int greater than 1, but got {p}")
 
         self.p = p

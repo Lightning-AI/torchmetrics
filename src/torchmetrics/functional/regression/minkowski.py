@@ -31,7 +31,7 @@ def _minkowski_distance_update(preds: Tensor, targets: Tensor, p: float) -> Tens
     """
     _check_same_shape(preds, targets)
 
-    if not (isinstance(p, (float, int)) and p >= 1):
+    if not (isinstance(p, float) and p >= 1):
         raise TorchMetricsUserError(f"Argument ``p`` must be a float or int greater than 1, but got {p}")
 
     difference = torch.abs(preds - targets)
