@@ -86,7 +86,7 @@ class SqueezeNet(torch.nn.Module):
     def forward(self, x: Tensor) -> NamedTuple:
         """Process input."""
 
-        class SqueezeOutput(NamedTuple):
+        class _SqueezeOutput(NamedTuple):
             relu1: Tensor
             relu2: Tensor
             relu3: Tensor
