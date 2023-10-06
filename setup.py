@@ -162,6 +162,14 @@ BASE_REQUIREMENTS = _load_requirements(path_dir=_PATH_REQUIRE, file_name="base.t
 
 
 def _prepare_extras(skip_pattern: str = "^_", skip_files: Tuple[str] = ("base.txt",)) -> dict:
+    """Preparing extras for the package listing requirements.
+
+    Args:
+        skip_pattern: ignore files with this pattern, by default all files starting with _
+        skip_files: ignore some additional files, by default base requirements
+
+    Note, particular domain test requirement are aggregated in single "_tests" extra (which is not accessible).
+    """
     # find all extra requirements
     _load_req = partial(_load_requirements, path_dir=_PATH_REQUIRE)
     found_req_files = sorted(os.path.basename(p) for p in glob.glob(os.path.join(_PATH_REQUIRE, "*.txt")))
