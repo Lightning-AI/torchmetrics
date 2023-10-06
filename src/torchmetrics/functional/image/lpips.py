@@ -99,7 +99,7 @@ class SqueezeNet(torch.nn.Module):
         for slice_ in self.slices:
             x = slice_(x)
             relus.append(x)
-        return SqueezeOutput(*relus)
+        return _SqueezeOutput(*relus)
 
 
 class Alexnet(torch.nn.Module):
@@ -142,14 +142,14 @@ class Alexnet(torch.nn.Module):
         h = self.slice5(h)
         h_relu5 = h
 
-        class AlexnetOutputs(NamedTuple):
+        class _AlexnetOutputs(NamedTuple):
             relu1: Tensor
             relu2: Tensor
             relu3: Tensor
             relu4: Tensor
             relu5: Tensor
 
-        return AlexnetOutputs(h_relu1, h_relu2, h_relu3, h_relu4, h_relu5)
+        return _AlexnetOutputs(h_relu1, h_relu2, h_relu3, h_relu4, h_relu5)
 
 
 class Vgg16(torch.nn.Module):
@@ -192,14 +192,14 @@ class Vgg16(torch.nn.Module):
         h = self.slice5(h)
         h_relu5_3 = h
 
-        class VGGOutputs(NamedTuple):
+        class _VGGOutputs(NamedTuple):
             relu1_2: Tensor
             relu2_2: Tensor
             relu3_3: Tensor
             relu4_3: Tensor
             relu5_3: Tensor
 
-        return VGGOutputs(h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3, h_relu5_3)
+        return _VGGOutputs(h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3, h_relu5_3)
 
 
 def _spatial_average(in_tens: Tensor, keep_dim: bool = True) -> Tensor:
