@@ -191,10 +191,10 @@ def _upsample(in_tens: Tensor, out_hw: Tuple[int, ...] = (64, 64)) -> Tensor:
     return nn.Upsample(size=out_hw, mode="bilinear", align_corners=False)(in_tens)
 
 
-def _normalize_tensor(in_feat: Tensor, eps: float = 1e-10) -> Tensor:
-    """Normalize tensors."""
-    norm_factor = torch.sqrt(torch.sum(in_feat**2, dim=1, keepdim=True))
-    return in_feat / (norm_factor + eps)
+def _normalize_tensor(in_feat: Tensor, eps: float = 1e-8) -> Tensor:
+    """Normalize input tensor."""
+    norm_factor = torch.sqrt(eps + torch.sum(in_feat**2, dim=1, keepdim=True))
+    return in_feat / norm_factor
 
 
 def _resize_tensor(x: Tensor, size: int = 64) -> Tensor:
