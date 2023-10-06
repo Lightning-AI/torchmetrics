@@ -34,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.9", "3.10"]
+        python: ["3.9", "3.10", "3.11"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -65,12 +65,13 @@ jobs:
       matrix:
         include:
           # These are the base images for PL release docker images,
-          # so include at least all of the combinations in release-dockers.yml.
+          #  so include at least all of the combinations in release-dockers.yml.
           - { python: "3.8", pytorch: "1.8.1", cuda: "11.1.1", ubuntu: "20.04" }
           - { python: "3.9", pytorch: "1.10", cuda: "11.8.0", ubuntu: "22.04" }
           - { python: "3.9", pytorch: "1.11", cuda: "11.8.0", ubuntu: "22.04" }
           - { python: "3.9", pytorch: "1.13", cuda: "11.8.0", ubuntu: "22.04" }
           - { python: "3.10", pytorch: "2.0", cuda: "11.8.0", ubuntu: "22.04" }
+          - { python: "3.10", pytorch: "2.0", cuda: "12.1.0", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.1", cuda: "12.1.0", ubuntu: "22.04" }
     steps:
       - uses: actions/checkout@v4
@@ -82,7 +83,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build (and Push) Devcontainer
+      - name: Build (and Push) runner
         uses: docker/build-push-action@v5
         with:
           build-args: |
