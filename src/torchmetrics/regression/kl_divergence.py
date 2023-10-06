@@ -119,11 +119,7 @@ class KLDivergence(Metric):
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        measures: Tensor = (
-            dim_zero_cat(self.measures)
-            if self.reduction in ["none", None]
-            else self.measures
-        )
+        measures: Tensor = dim_zero_cat(self.measures) if self.reduction in ["none", None] else self.measures
         return _kld_compute(measures, self.total, self.reduction)
 
     def plot(
