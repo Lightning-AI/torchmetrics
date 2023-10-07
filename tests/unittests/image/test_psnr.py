@@ -139,6 +139,19 @@ class TestPSNR(MetricTester):
             {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim},
         )
 
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_2_1, reason="PyTorch<2.1 does not support a lot of cpu + half operations."
+    )
+    def test_psnr_half_cpu_supported(self, preds, target, data_range, reduction, dim, base, ref_metric):
+        """Test dtype support of the metric on CPU."""
+        self.run_precision_test_cpu(
+            preds,
+            target,
+            PeakSignalNoiseRatio,
+            peak_signal_noise_ratio,
+            {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim},
+        )
+
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_psnr_half_gpu(self, preds, target, data_range, reduction, dim, base, ref_metric):
         """Test dtype support of the metric on GPU."""

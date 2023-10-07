@@ -103,6 +103,18 @@ class TestSpectralAngleMapper(MetricTester):
             spectral_angle_mapper,
         )
 
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_2_1, reason="PyTorch<2.1 does not support a lot of cpu + half operations."
+    )
+    def test_sam_half_cpu_supported(self, reduction, preds, target):
+        """Test dtype support of the metric on CPU."""
+        self.run_precision_test_cpu(
+            preds,
+            target,
+            SpectralAngleMapper,
+            spectral_angle_mapper,
+        )
+
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_sam_half_gpu(self, reduction, preds, target):
         """Test dtype support of the metric on GPU."""
