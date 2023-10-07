@@ -62,7 +62,7 @@ runs:
           --durations=50 \
           --reruns 3 \
           --reruns-delay 1 \
-          --tx 3*popen//python=python \
+          -n auto \
           --dist=loadfile
           ${{ inputs.test-timeout }}
       shell: ${{ inputs.shell-type }}

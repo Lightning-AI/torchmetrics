@@ -95,6 +95,7 @@ jobs:
           pip install -r requirements/_doctest.txt -U -f $PYPI_CACHE
           pip list
 
+      # todo: copy this to install checks
       - name: DocTests
         timeout-minutes: 25
         working-directory: ./src
