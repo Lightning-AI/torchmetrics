@@ -92,8 +92,8 @@ class TestSpectralAngleMapper(MetricTester):
         )
 
     # SAM half + cpu does not work due to missing support in torch.log
-    @pytest.mark.xfail(reason="SAM metric does not support cpu + half precision")
-    @pytest.mark.skipif(_TORCH_GREATER_EQUAL_2_1, reason="PyTorch>=2.1 supports a lot of cpu + half operations.")
+    @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_1,
+                        reason="Pytoch bellow 2.1 does not support cpu + half precision used in SAM metric")
     def test_sam_half_cpu(self, reduction, preds, target):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(

@@ -97,9 +97,8 @@ class TestKLDivergence(MetricTester):
         )
 
     # KLDivergence half + cpu does not work due to missing support in torch.clamp
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_2_1, reason="KLDivergence metric does not support cpu + half precision"
-    )
+    @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_1,
+                        reason="Pytoch bellow 2.1 does not support cpu + half precision used in KLDivergence metric")
     def test_kldivergence_half_cpu(self, reduction, p, q, log_prob):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(p, q, KLDivergence, kl_divergence, {"log_prob": log_prob, "reduction": reduction})

@@ -110,7 +110,8 @@ class TestConcordanceCorrCoef(MetricTester):
         )
 
     # Spearman half + cpu does not work due to missing support in torch.arange
-    @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_1, reason="Concordance metric does not support cpu + half precision")
+    @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_1,
+                        reason="Pytoch bellow 2.1 does not support cpu + half precision used in Concordance metric")
     def test_concordance_corrcoef_half_cpu(self, preds, target):
         """Test dtype support of the metric on CPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
