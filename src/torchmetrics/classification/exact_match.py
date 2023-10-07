@@ -54,13 +54,15 @@ class MulticlassExactMatch(Metric):
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``mcem`` (:class:`~torch.Tensor`): A tensor whose returned shape depends on the ``multidim_average`` argument:
 
         - If ``multidim_average`` is set to ``global`` the output will be a scalar tensor
         - If ``multidim_average`` is set to ``samplewise`` the output will be a tensor of shape ``(N,)``
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         num_classes: Integer specifying the number of labels
@@ -206,13 +208,15 @@ class MultilabelExactMatch(Metric):
       sigmoid per element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``.
 
-
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``mlem`` (:class:`~torch.Tensor`): A tensor whose returned shape depends on the ``multidim_average`` argument:
 
         - If ``multidim_average`` is set to ``global`` the output will be a scalar tensor
         - If ``multidim_average`` is set to ``samplewise`` the output will be a tensor of shape ``(N,)``
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         num_labels: Integer specifying the number of labels
