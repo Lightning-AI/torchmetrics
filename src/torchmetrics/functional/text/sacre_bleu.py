@@ -39,7 +39,7 @@
 
 import re
 from functools import partial
-from typing import ClassVar, Optional, Sequence
+from typing import ClassVar, Optional, Sequence, Type
 
 import torch
 from torch import Tensor, tensor
@@ -128,7 +128,7 @@ class _SacreBLEUTokenizer:
 
     @classmethod
     def tokenize(
-        cls: type["_SacreBLEUTokenizer"],
+        cls: Type["_SacreBLEUTokenizer"],
         line: str,
         tokenize: Literal["none", "13a", "zh", "intl", "char"],
         lowercase: bool = False,
@@ -138,7 +138,7 @@ class _SacreBLEUTokenizer:
         return cls._lower(tokenized_line, lowercase).split()
 
     @classmethod
-    def _tokenize_regex(cls: type["_SacreBLEUTokenizer"], line: str) -> str:
+    def _tokenize_regex(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Post-processing tokenizer for `13a` and `zh` tokenizers.
 
         Args:
@@ -167,7 +167,7 @@ class _SacreBLEUTokenizer:
         return any(start <= uchar <= end for start, end in _UCODE_RANGES)
 
     @classmethod
-    def _tokenize_base(cls: type["_SacreBLEUTokenizer"], line: str) -> str:
+    def _tokenize_base(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Tokenizes an input line with the tokenizer.
 
         Args:
@@ -180,7 +180,7 @@ class _SacreBLEUTokenizer:
         return line
 
     @classmethod
-    def _tokenize_13a(cls: type["_SacreBLEUTokenizer"], line: str) -> str:
+    def _tokenize_13a(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Tokenizes a line using a relatively minimal tokenization that is equivalent to mteval-v13a, used by WMT.
 
         Args:
@@ -204,7 +204,7 @@ class _SacreBLEUTokenizer:
         return cls._tokenize_regex(f" {line} ")
 
     @classmethod
-    def _tokenize_zh(cls: type["_SacreBLEUTokenizer"], line: str) -> str:
+    def _tokenize_zh(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Tokenization of Chinese text.
 
         This is done in two steps: separate each Chinese characters (by utf-8 encoding) and afterwards tokenize the
@@ -232,7 +232,7 @@ class _SacreBLEUTokenizer:
         return cls._tokenize_regex(line_in_chars)
 
     @classmethod
-    def _tokenize_international(cls: type["_SacreBLEUTokenizer"], line: str) -> str:
+    def _tokenize_international(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         r"""Tokenizes a string following the official BLEU implementation.
 
         See github.com/moses-smt/mosesdecoder/blob/master/scripts/generic/mteval-v14.pl#L954-L983
@@ -265,7 +265,7 @@ class _SacreBLEUTokenizer:
         return " ".join(line.split())
 
     @classmethod
-    def _tokenize_char(cls: type["_SacreBLEUTokenizer"], line: str) -> str:
+    def _tokenize_char(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Tokenizes all the characters in the input line.
 
         Args:
