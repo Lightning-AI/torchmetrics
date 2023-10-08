@@ -17,7 +17,7 @@ import json
 from copy import deepcopy
 from functools import partial
 from itertools import product
-from typing import Any, NamedTuple
+from typing import Any, List, NamedTuple
 
 import numpy as np
 import pytest
@@ -222,8 +222,8 @@ def test_compare_both_same_time(tmpdir, backend):
 
 
 class _Input(NamedTuple):
-    preds: list[list[dict[str, Any]]]
-    target: list[list[dict[str, Any]]]
+    preds: List[List[dict[str, Any]]]
+    target: List[List[dict[str, Any]]]
 
 
 _inputs = _Input(
