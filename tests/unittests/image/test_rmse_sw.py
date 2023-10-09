@@ -25,7 +25,7 @@ from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers.testers import MetricTester
 
 
-class _Input(NamedTuple):
+class _InputWindowSized(NamedTuple):
     preds: Tensor
     target: Tensor
     window_size: int
@@ -40,7 +40,7 @@ for size, channel, window_size, dtype in [
 ]:
     preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
     target = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
-    _inputs.append(_Input(preds=preds, target=target, window_size=window_size))
+    _inputs.append(_InputWindowSized(preds=preds, target=target, window_size=window_size))
 
 
 def _sewar_rmse_sw(preds, target, window_size):
