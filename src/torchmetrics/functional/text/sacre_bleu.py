@@ -58,7 +58,7 @@ from torchmetrics.utilities.imports import (
 )
 
 AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char", "ja-mecab", "ko-mecab", "flores101", "flores200")
-_Tokenizers_list = Literal["none", "13a", "zh", "intl", "char", "ja-mecab", "ko-mecab", "flores101", "flores200"]
+_TokenizersLiteral = Literal["none", "13a", "zh", "intl", "char", "ja-mecab", "ko-mecab", "flores101", "flores200"]
 
 _UCODE_RANGES = (
     ("\u3400", "\u4db5"),  # CJK Unified Ideographs Extension A, release 3.0
@@ -143,7 +143,7 @@ class _SacreBLEUTokenizer:
     # Keep it as class variable to avoid initializing over and over again
     sentencepiece_processors: ClassVar[Dict[str, Optional[Any]]] = {"flores101": None, "flores200": None}
 
-    def __init__(self, tokenize: _Tokenizers_list, lowercase: bool = False) -> None:
+    def __init__(self, tokenize: _TokenizersLiteral, lowercase: bool = False) -> None:
         self._check_tokenizers_validity(tokenize)
 
         self.tokenize_fn = getattr(self, self._TOKENIZE_FN[tokenize])
@@ -157,7 +157,7 @@ class _SacreBLEUTokenizer:
     def tokenize(
         cls: Type["_SacreBLEUTokenizer"],
         line: str,
-        tokenize: _Tokenizers_list,
+        tokenize: _TokenizersLiteral,
         lowercase: bool = False,
     ) -> Sequence[str]:
         cls._check_tokenizers_validity(tokenize)
@@ -402,7 +402,7 @@ class _SacreBLEUTokenizer:
         return line
 
     @classmethod
-    def _check_tokenizers_validity(cls, tokenize: _Tokenizers_list) -> None:
+    def _check_tokenizers_validity(cls, tokenize: _TokenizersLiteral) -> None:
         """Check if a supported tokenizer is chosen.
 
         Also check all dependencies of a given tokenizers are installed.
@@ -458,7 +458,7 @@ def sacre_bleu_score(
     target: Sequence[Sequence[str]],
     n_gram: int = 4,
     smooth: bool = False,
-    tokenize: _Tokenizers_list = "13a",
+    tokenize: _TokenizersLiteral = "13a",
     lowercase: bool = False,
     weights: Optional[Sequence[float]] = None,
 ) -> Tensor:
