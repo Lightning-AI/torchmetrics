@@ -12,27 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import NamedTuple
 
 import numpy as np
 import pytest
 import torch
-from torch import Tensor
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.d_lambda import SpectralDistortionIndex
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
-
-
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
-    p: int
 
 
 _inputs = []

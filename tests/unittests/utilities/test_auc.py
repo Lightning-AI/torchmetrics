@@ -26,6 +26,11 @@ from unittests.helpers.testers import MetricTester
 seed_all(42)
 
 
+class _Input(NamedTuple):
+    x: Tensor
+    y: Tensor
+
+
 def sk_auc(x, y, reorder=False):
     """Comparison function for correctness of auc implementation."""
     x = x.flatten()
@@ -35,11 +40,6 @@ def sk_auc(x, y, reorder=False):
         x = x[idx]
         y = y[idx]
     return _sk_auc(x, y)
-
-
-class _Input(NamedTuple):
-    x: Tensor
-    y: Tensor
 
 
 _examples = []

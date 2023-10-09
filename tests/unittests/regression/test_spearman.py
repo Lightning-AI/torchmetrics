@@ -12,25 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import NamedTuple
 
 import pytest
 import torch
 from scipy.stats import rankdata, spearmanr
-from torch import Tensor
 from torchmetrics.functional.regression.spearman import _rank_data, spearman_corrcoef
 from torchmetrics.regression.spearman import SpearmanCorrCoef
 
-from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
-
-
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
 
 
 _single_target_inputs1 = _Input(

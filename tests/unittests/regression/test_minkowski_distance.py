@@ -1,27 +1,20 @@
 from functools import partial
-from typing import NamedTuple
 
 import pytest
 import torch
 from scipy.spatial.distance import minkowski as scipy_minkowski
-from torch import Tensor
 from torchmetrics.functional import minkowski_distance
 from torchmetrics.regression import MinkowskiDistance
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
 num_targets = 5
-
-
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
 
 
 _single_target_inputs = _Input(

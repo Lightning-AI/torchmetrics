@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import NamedTuple
 
 import pytest
 import torch
@@ -21,15 +20,10 @@ from torch import Tensor
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
 
-from unittests.helpers import seed_all
+from unittests.helpers import _Input, seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
-
-
-class _Input(NamedTuple):
-    img1: Tensor
-    img2: Tensor
 
 
 _inputs = _Input(

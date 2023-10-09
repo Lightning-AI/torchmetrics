@@ -12,25 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import NamedTuple
 
 import pytest
 import torch
 from pytorch_msssim import ms_ssim
-from torch import Tensor
 from torchmetrics.functional.image.ssim import multiscale_structural_similarity_index_measure
 from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure
 
-from unittests import NUM_BATCHES
+from unittests import NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
-
-
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
 
 
 BATCH_SIZE = 1

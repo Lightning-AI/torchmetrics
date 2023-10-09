@@ -13,28 +13,20 @@
 # limitations under the License.
 import itertools
 import operator
-from typing import NamedTuple
 
 import pandas as pd
 import pytest
 import torch
 from lightning_utilities.core.imports import compare_version
 from scipy.stats.contingency import association
-from torch import Tensor
 from torchmetrics.functional.nominal.pearson import (
     pearsons_contingency_coefficient,
     pearsons_contingency_coefficient_matrix,
 )
 from torchmetrics.nominal.pearson import PearsonsContingencyCoefficient
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers.testers import MetricTester
-
-
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
-
 
 NUM_CLASSES = 4
 

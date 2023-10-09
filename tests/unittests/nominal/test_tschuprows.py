@@ -13,25 +13,17 @@
 # limitations under the License.
 import itertools
 import operator
-from typing import NamedTuple
 
 import pandas as pd
 import pytest
 import torch
 from lightning_utilities.core.imports import compare_version
 from scipy.stats.contingency import association
-from torch import Tensor
 from torchmetrics.functional.nominal.tschuprows import tschuprows_t, tschuprows_t_matrix
 from torchmetrics.nominal.tschuprows import TschuprowsT
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers.testers import MetricTester
-
-
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
-
 
 NUM_CLASSES = 4
 

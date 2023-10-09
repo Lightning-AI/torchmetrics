@@ -14,24 +14,16 @@
 import itertools
 import operator
 from functools import partial
-from typing import NamedTuple
 
 import pytest
 import torch
 from dython.nominal import theils_u as dython_theils_u
 from lightning_utilities.core.imports import compare_version
-from torch import Tensor
 from torchmetrics.functional.nominal.theils_u import theils_u, theils_u_matrix
 from torchmetrics.nominal import TheilsU
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers.testers import MetricTester
-
-
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
-
 
 NUM_CLASSES = 4
 

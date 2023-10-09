@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import NamedTuple
 
 import numpy as np
 import pytest
@@ -21,18 +20,11 @@ from scipy.stats import pearsonr
 from torchmetrics.functional.regression.concordance import concordance_corrcoef
 from torchmetrics.regression.concordance import ConcordanceCorrCoef
 
-from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
-
-
-class _Input(NamedTuple):
-    from torch import Tensor
-
-    preds: Tensor
-    target: Tensor
 
 
 _single_target_inputs1 = _Input(

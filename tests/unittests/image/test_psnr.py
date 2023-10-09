@@ -13,26 +13,19 @@
 # limitations under the License.
 
 from functools import partial
-from typing import NamedTuple
 
 import numpy as np
 import pytest
 import torch
 from skimage.metrics import peak_signal_noise_ratio as skimage_peak_signal_noise_ratio
-from torch import Tensor
 from torchmetrics.functional import peak_signal_noise_ratio
 from torchmetrics.image import PeakSignalNoiseRatio
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
-
-
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
 
 
 _input_size = (NUM_BATCHES, BATCH_SIZE, 32, 32)

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import NamedTuple
 
 import pytest
 import torch
@@ -22,16 +21,12 @@ from torch import Tensor
 from torchmetrics.audio import ShortTimeObjectiveIntelligibility
 from torchmetrics.functional.audio import short_time_objective_intelligibility
 
+from unittests import _Input
 from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
-
-
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
 
 
 inputs_8k = _Input(

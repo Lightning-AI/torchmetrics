@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Callable, NamedTuple
+from typing import Callable
 
 import pytest
 import torch
@@ -21,15 +21,11 @@ from torch import Tensor
 from torchmetrics.audio import SignalNoiseRatio
 from torchmetrics.functional.audio import signal_noise_ratio
 
+from unittests import _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
-
-
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
 
 
 inputs = _Input(

@@ -13,7 +13,7 @@
 # limitations under the License.
 import math
 from functools import partial
-from typing import NamedTuple, Optional
+from typing import Optional
 
 import numpy as np
 import pytest
@@ -24,7 +24,6 @@ from sklearn.metrics import mean_squared_error as sk_mean_squared_error
 from sklearn.metrics import mean_squared_log_error as sk_mean_squared_log_error
 from sklearn.metrics._regression import _check_reg_targets
 from sklearn.utils import check_consistent_length
-from torch import Tensor
 from torchmetrics.functional import (
     mean_absolute_error,
     mean_absolute_percentage_error,
@@ -42,18 +41,13 @@ from torchmetrics.regression import (
 )
 from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
 num_targets = 5
-
-
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
 
 
 _single_target_inputs = _Input(

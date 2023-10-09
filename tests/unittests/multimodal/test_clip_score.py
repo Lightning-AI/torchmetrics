@@ -12,29 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import NamedTuple
 
 import matplotlib
 import matplotlib.pyplot as plt
 import pytest
 import torch
-from torch import Tensor
 from torchmetrics.functional.multimodal.clip_score import clip_score
 from torchmetrics.multimodal.clip_score import CLIPScore
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
 from transformers import CLIPModel as _CLIPModel
 from transformers import CLIPProcessor as _CLIPProcessor
 
+from unittests import _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 from unittests.text.helpers import skip_on_connection_issues
 
 seed_all(42)
-
-
-class _Input(NamedTuple):
-    images: Tensor
-    captions: Tensor
 
 
 captions = [

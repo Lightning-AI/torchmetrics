@@ -12,16 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import NamedTuple
 
 import pytest
 import torch
 from skimage.metrics import structural_similarity
-from torch import Tensor
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.uqi import UniversalImageQualityIndex
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -29,12 +27,6 @@ seed_all(42)
 
 # UQI is SSIM with both constants k1 and k2 as 0
 skimage_uqi = partial(structural_similarity, k1=0, k2=0)
-
-
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
-    multichannel: int
 
 
 _inputs = []

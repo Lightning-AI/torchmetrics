@@ -13,24 +13,15 @@
 # limitations under the License.
 
 from functools import partial
-from typing import NamedTuple
 
 import pytest
 import sewar
 import torch
-from torch import Tensor
 from torchmetrics.functional import root_mean_squared_error_using_sliding_window
 from torchmetrics.image import RootMeanSquaredErrorUsingSlidingWindow
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers.testers import MetricTester
-
-
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
-    window_size: int
-
 
 _inputs = []
 for size, channel, window_size, dtype in [

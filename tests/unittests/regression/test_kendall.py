@@ -13,28 +13,21 @@
 # limitations under the License.
 import operator
 from functools import partial
-from typing import NamedTuple
 
 import pytest
 import torch
 from lightning_utilities.core.imports import compare_version
 from scipy.stats import kendalltau
-from torch import Tensor
 from torchmetrics.functional.regression.kendall import kendall_rank_corrcoef
 from torchmetrics.regression.kendall import KendallRankCorrCoef
 
-from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 _SCIPY_GREATER_EQUAL_1_8 = compare_version("scipy", operator.ge, "1.8.0")
 
 seed_all(42)
-
-
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
 
 
 _single_inputs1 = _Input(preds=torch.rand(NUM_BATCHES, BATCH_SIZE), target=torch.rand(NUM_BATCHES, BATCH_SIZE))

@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, NamedTuple
+from typing import Any
 
 import pytest
 import torch
 from torch import Tensor
 
-from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES, _GroupInput, _Input
 from unittests.helpers import seed_all
 
 seed_all(1)
@@ -29,17 +29,6 @@ def _inv_sigmoid(x: Tensor) -> Tensor:
 
 def _logsoftmax(x: Tensor, dim: int = -1) -> Tensor:
     return torch.nn.functional.log_softmax(x, dim)
-
-
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
-
-
-class _GroupInput(NamedTuple):
-    preds: Tensor
-    target: Tensor
-    groups: Tensor
 
 
 _input_binary_prob = _Input(

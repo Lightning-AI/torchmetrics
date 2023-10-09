@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import NamedTuple
 
 import pytest
 import speechmetrics
@@ -21,18 +20,13 @@ from torch import Tensor
 from torchmetrics.audio import ScaleInvariantSignalDistortionRatio
 from torchmetrics.functional.audio import scale_invariant_signal_distortion_ratio
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
 NUM_SAMPLES = 100
-
-
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
 
 
 inputs = _Input(

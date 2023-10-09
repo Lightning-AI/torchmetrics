@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Any, NamedTuple
+from typing import Any
 
 import pytest
 import torch
 from kornia.losses import total_variation as kornia_total_variation
-from torch import Tensor
 from torchmetrics.functional.image.tv import total_variation
 from torchmetrics.image.tv import TotalVariation
 
+from unittests import _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -50,9 +50,6 @@ def _total_variation_kornia_tester(preds, target, reduction):
 
 
 # define inputs
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
 
 
 _inputs = []

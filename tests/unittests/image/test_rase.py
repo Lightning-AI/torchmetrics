@@ -12,25 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import NamedTuple
 
 import pytest
 import sewar
 import torch
-from torch import Tensor
 from torchmetrics.functional import relative_average_spectral_error
 from torchmetrics.functional.image.helper import _uniform_filter
 from torchmetrics.image import RelativeAverageSpectralError
 
-from unittests import BATCH_SIZE
+from unittests import BATCH_SIZE, _Input
 from unittests.helpers.testers import MetricTester
-
-
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
-    window_size: int
-
 
 _inputs = []
 for size, channel, window_size, dtype in [

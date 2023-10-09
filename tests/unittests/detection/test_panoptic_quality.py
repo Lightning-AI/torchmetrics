@@ -11,24 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, NamedTuple
+from typing import Any, Dict
 
 import numpy as np
 import pytest
 import torch
-from torch import Tensor
 from torchmetrics.detection.panoptic_qualities import PanopticQuality
 from torchmetrics.functional.detection.panoptic_qualities import panoptic_quality
 
+from unittests import _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
-
-
-class _Input(NamedTuple):
-    preds: Tensor
-    target: Tensor
 
 
 _INPUTS_0 = _Input(
