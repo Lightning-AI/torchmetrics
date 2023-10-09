@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 from functools import partial
 from typing import Callable
 
@@ -717,6 +718,7 @@ def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0
     plt.close(fig)
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="DDP not supported on windows")
 def test_plot_methods_special_text_metrics():
     """Test the plot method for text metrics that does not fit the default testing format."""
     metric = BERTScore()
