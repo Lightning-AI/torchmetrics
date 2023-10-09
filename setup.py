@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Iterable, Iterator, List, Optional, Tuple, Union
 
 from pkg_resources import Requirement, yield_lines
-from setuptools import find_namespace_packages, setup
+from setuptools import find_packages, setup
 
 _PATH_ROOT = os.path.realpath(os.path.dirname(__file__))
 _PATH_SOURCE = os.path.join(_PATH_ROOT, "src")
@@ -208,7 +208,7 @@ if __name__ == "__main__":
         url=ABOUT.__homepage__,
         download_url=os.path.join(ABOUT.__homepage__, "archive", "master.zip"),
         license=ABOUT.__license__,
-        packages=find_namespace_packages(where="src"),
+        packages=find_packages(where="src"),
         package_dir={"": "src"},
         long_description=LONG_DESCRIPTION,
         long_description_content_type="text/markdown",
