@@ -50,6 +50,12 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
         features_list: List[str],
         feature_extractor_weights_path: Optional[str] = None,
     ) -> None:
+        if not _TORCH_FIDELITY_AVAILABLE:
+            raise ModuleNotFoundError(
+                "NoTrainInceptionV3 module requires that `Torch-fidelity` is installed."
+                " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`."
+            )
+
         super().__init__(name, features_list, feature_extractor_weights_path)
         # put into evaluation mode
         self.eval()
