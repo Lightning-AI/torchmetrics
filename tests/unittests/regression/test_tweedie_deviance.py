@@ -94,6 +94,10 @@ class TestDevianceScore(MetricTester):
     # Tweedie Deviance Score half + cpu does not work for power=[1,2] due to missing support in torch.log
     def test_deviance_scores_half_cpu(self, preds, targets, power):
         """Test dtype support of the metric on CPU."""
+        if power in [1, 2]:
+            pytest.skip(
+                "Tweedie Deviance Score half + cpu does not work for power=[1,2] due to missing support in torch.log"
+            )
         metric_args = {"power": power}
         self.run_precision_test_cpu(
             preds,
