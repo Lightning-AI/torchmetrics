@@ -51,10 +51,10 @@
 .. _BERT_score: https://github.com/Tiiiger/bert_score/blob/master/bert_score/utils.py
 .. _Bert_score Evaluating Text Generation: https://arxiv.org/abs/1904.09675
 .. _BLEU score: https://en.wikipedia.org/wiki/BLEU
-.. _BLEU: http://www.aclweb.org/anthology/P02-1040.pdf
+.. _BLEU: http://www.aclweb.org/anthology/P02-1040
 .. _SacreBLEU: https://github.com/mjpost/sacrebleu
 .. _SacreBleu_ter: https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py
-.. _Machine Translation Evolution: https://aclanthology.org/P04-1077.pdf
+.. _Machine Translation Evolution: https://aclanthology.org/P04-1077
 .. _Rouge score_Text Normalizition: https://github.com/google-research/google-research/blob/master/rouge/tokenize.py
 .. _Calculate Rouge Score: https://en.wikipedia.org/wiki/ROUGE_(metric)
 .. _Rouge Detail: https://aclanthology.org/W04-1013/
@@ -77,11 +77,11 @@
 .. _Scikit_Learn-Ranking.py: https: //github.com/scikit-learn/scikit-learn/blob/master/sklearn/metrics/_ranking.py
 .. _Verified Uncertainty Calibration: https://arxiv.org/abs/1909.10155
 .. _SQuAD Metric: https://arxiv.org/abs/1606.05250
-.. _chrF score: https://aclanthology.org/W15-3049.pdf
-.. _chrF++ score: https://aclanthology.org/W17-4770.pdf
-.. _TER: https://aclanthology.org/2006.amta-papers.25.pdf
-.. _ExtendedEditDistance: https://aclanthology.org/W19-5359.pdf
-.. _MultiScaleSSIM: https://ece.uwaterloo.ca/~z70wang/publications/msssim.pdf
+.. _chrF score: https://aclanthology.org/W15-3049
+.. _chrF++ score: https://aclanthology.org/W17-4770
+.. _TER: https://aclanthology.org/2006.amta-papers.25
+.. _ExtendedEditDistance: https://aclanthology.org/W19-5359
+.. _MultiScaleSSIM: https://ece.uwaterloo.ca/~z70wang/publications/msssim
 .. _UniversalImageQualityIndex: https://ieeexplore.ieee.org/abstract/document/995823
 .. _SpectralDistortionIndex: https://www.semanticscholar.org/paper/Multispectral-and-panchromatic-data-fusion-without-Alparone-Aiazzi/b6db12e3785326577cb95fd743fecbf5bc66c7c9
 .. _RelativeAverageSpectralError: https://www.semanticscholar.org/paper/Data-Fusion.-Definitions-and-Architectures-Fusion-Wald/51b2b81e5124b3bb7ec53517a5dd64d8e348cadf
@@ -159,7 +159,7 @@
 .. _fork of pycocotools: https://github.com/ppwwyyxx/cocoapi
 .. _Adjusted Rand Score: https://en.wikipedia.org/wiki/Rand_index#Adjusted_Rand_index
 .. _Dunn Index: https://en.wikipedia.org/wiki/Dunn_index
-.. _V-Measure Score: https://www.aclweb.org/anthology/D07-1043.pdf
+.. _V-Measure Score: https://www.aclweb.org/anthology/D07-1043
 .. _Homogeneity Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.homogeneity_score.html
 .. _Completeness Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.completeness_score.html
 .. _Davies-Bouldin Score: https://en.wikipedia.org/wiki/Davies%E2%80%93Bouldin_index
