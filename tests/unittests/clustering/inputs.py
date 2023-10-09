@@ -17,16 +17,10 @@ import torch
 from sklearn.datasets import make_blobs
 from torch import Tensor
 
-from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES, _Input
 from unittests.helpers import seed_all
 
 seed_all(42)
-
-
-# extrinsic input for clustering metrics that requires predicted clustering labels and target clustering labels
-class _ExtrinsicInput(NamedTuple):
-    preds: Tensor
-    target: Tensor
 
 
 # intrinsic input for clustering metrics that requires only predicted clustering labels and the cluster embeddings
@@ -45,17 +39,17 @@ def _batch_blobs(num_batches, num_samples, num_features, num_classes):
     return _IntrinsicInput(data=torch.stack(data), labels=torch.stack(labels))
 
 
-_single_target_extrinsic1 = _ExtrinsicInput(
+_single_target_extrinsic1 = _Input(
     preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
     target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
-_single_target_extrinsic2 = _ExtrinsicInput(
+_single_target_extrinsic2 = _Input(
     preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
     target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
-_float_inputs_extrinsic = _ExtrinsicInput(
+_float_inputs_extrinsic = _Input(
     preds=torch.rand((NUM_BATCHES, BATCH_SIZE)), target=torch.rand((NUM_BATCHES, BATCH_SIZE))
 )
 
