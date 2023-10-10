@@ -12,16 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
+from typing import NamedTuple
 
 import pytest
 import sewar
 import torch
+from torch import Tensor
 from torchmetrics.functional import relative_average_spectral_error
 from torchmetrics.functional.image.helper import _uniform_filter
 from torchmetrics.image import RelativeAverageSpectralError
 
-from unittests import BATCH_SIZE, _Input
+from unittests import BATCH_SIZE
 from unittests.helpers.testers import MetricTester
+
+
+class _InputWindowSized(NamedTuple):
+    preds: Tensor
+    target: Tensor
+    window_size: int
+
 
 _inputs = []
 for size, channel, window_size, dtype in [
@@ -32,7 +41,7 @@ for size, channel, window_size, dtype in [
 ]:
     preds = torch.rand(2, BATCH_SIZE, channel, size, size, dtype=dtype)
     target = torch.rand(2, BATCH_SIZE, channel, size, size, dtype=dtype)
-    _inputs.append(_Input(preds=preds, target=target, window_size=window_size))
+    _inputs.append(_InputWindowSized(preds=preds, target=target, window_size=window_size))
 
 
 def _sewar_rase(preds, target, window_size):
