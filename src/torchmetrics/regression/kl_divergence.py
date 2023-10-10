@@ -112,18 +112,14 @@ class KLDivergence(Metric):
         """Update metric states with predictions and targets."""
         measures, total = _kld_update(p, q, self.log_prob)
         if self.reduction is None or self.reduction == "none":
-            self.measures.append(measures)  # type: ignore[operator,union-attr]
+            self.measures.append(measures)
         else:
             self.measures += measures.sum()
             self.total += total
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        measures: Tensor = (
-            dim_zero_cat(self.measures)  # type: ignore[arg-type]
-            if self.reduction in ["none", None]
-            else self.measures  # type: ignore[assignment]
-        )
+        measures: Tensor = dim_zero_cat(self.measures) if self.reduction in ["none", None] else self.measures
         return _kld_compute(measures, self.total, self.reduction)
 
     def plot(

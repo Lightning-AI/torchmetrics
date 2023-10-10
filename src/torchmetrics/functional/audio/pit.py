@@ -182,7 +182,7 @@ def permutation_invariant_training(
         metric_of_ps = metric_func(ppreds, ptarget)
         metric_of_ps = torch.mean(metric_of_ps.reshape(batch_size, len(perms), -1), dim=-1)
         # find the best metric and best permutation
-        best_metric, best_indexes = eval_op(metric_of_ps, dim=1)
+        best_metric, best_indexes = eval_op(metric_of_ps, dim=1)  # type: ignore[call-overload]
         best_indexes = best_indexes.detach()
         best_perm = perms[best_indexes, :]
         return best_metric, best_perm

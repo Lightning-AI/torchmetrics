@@ -19,6 +19,7 @@ import torch
 from scipy.stats import rankdata, spearmanr
 from torchmetrics.functional.regression.spearman import _rank_data, spearman_corrcoef
 from torchmetrics.regression.spearman import SpearmanCorrCoef
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 from unittests.helpers import seed_all
@@ -120,7 +121,10 @@ class TestSpearmanCorrCoef(MetricTester):
         )
 
     # Spearman half + cpu does not work due to missing support in torch.arange
-    @pytest.mark.xfail(reason="Spearman metric does not support cpu + half precision")
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_2_1,
+        reason="Pytoch below 2.1 does not support cpu + half precision used in Spearman metric",
+    )
     def test_spearman_corrcoef_half_cpu(self, preds, target):
         """Test dtype support of the metric on CPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1

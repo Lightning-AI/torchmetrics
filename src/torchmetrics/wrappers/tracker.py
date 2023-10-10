@@ -229,7 +229,7 @@ class MetricTracker(ModuleList):
         if isinstance(self._base_metric, Metric):
             fn = torch.max if self.maximize else torch.min
             try:
-                value, idx = fn(res, 0)
+                value, idx = fn(res, 0)  # type: ignore[call-overload]
                 if return_step:
                     return value.item(), idx.item()
                 return value.item()
@@ -250,7 +250,7 @@ class MetricTracker(ModuleList):
             for i, (k, v) in enumerate(res.items()):
                 try:
                     fn = torch.max if maximize[i] else torch.min
-                    out = fn(v, 0)
+                    out = fn(v, 0)  # type: ignore[call-overload]
                     value[k], idx[k] = out[0].item(), out[1].item()
                 except (ValueError, RuntimeError) as error:  # noqa: PERF203 # todo
                     rank_zero_warn(

@@ -3,6 +3,13 @@ name: "Build (& Push) Dockers"
 on: # Trigger the workflow on push or pull request, but only for the master branch
   push:
     branches: [master]
+    paths:
+      - "requirements/*"
+      - "requirements.txt"
+      - ".devcontainer/*"
+      - "dockers/**"
+      - ".github/workflows/docker-build.yml"
+      - "setup.py"
   pull_request:
     branches: [master]
     paths:
@@ -64,7 +71,8 @@ jobs:
           - { python: "3.9", pytorch: "1.11", cuda: "11.8.0", ubuntu: "22.04" }
           - { python: "3.9", pytorch: "1.13", cuda: "11.8.0", ubuntu: "22.04" }
           - { python: "3.10", pytorch: "2.0", cuda: "11.8.0", ubuntu: "22.04" }
-          - { python: "3.11", pytorch: "2.0", cuda: "12.1.0", ubuntu: "22.04" }
+          - { python: "3.10", pytorch: "2.0", cuda: "12.1.0", ubuntu: "22.04" }
+          - { python: "3.11", pytorch: "2.1", cuda: "12.1.0", ubuntu: "22.04" }
     steps:
       - uses: actions/checkout@v4
 
