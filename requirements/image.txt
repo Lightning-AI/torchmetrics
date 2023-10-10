@@ -2,6 +2,6 @@
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
 scipy >1.0.0, <1.11.0
-torchvision >=0.8, <=0.15.2
+torchvision >=0.8, <0.17.0
 torch-fidelity <=0.4.0  # bumping to allow install version from master, now used in testing
 lpips <=0.1.4
