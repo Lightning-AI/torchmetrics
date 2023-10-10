@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: [html, doctest, linkcheck]
+        target: [html, doctest, linkcheck]
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -48,7 +48,7 @@ jobs:
           pypi-dir: ${{ env.PYPI_CACHE }}
 
       - name: Install Latex
-        if: ${{ matrix.check == 'html' }}
+        if: ${{ matrix.target == 'html' }}
         # install Texlive, see https://linuxconfig.org/how-to-install-latex-on-ubuntu-20-04-focal-fossa-linux
         run: |
           sudo apt-get update --fix-missing
@@ -59,39 +59,29 @@ jobs:
         run: |
           pip install awscli
           aws s3 sync --no-sign-request s3://sphinx-packages/ dist/
+          pip install lai-sphinx-theme -U -f dist/
       - name: Install package & dependencies
         run: |
-          sudo apt-get update --fix-missing
-          sudo apt-get install -y cmake
           pip --version
           pip install . -U -r requirements/docs.txt \
-            --find-links="${PYPI_CACHE}" --find-links="${TORCH_URL}" --find-links="dist/"
+            --find-links="dist/" --find-links="${PYPI_CACHE}" --find-links="${TORCH_URL}"
           pip list
 
-      - name: Test Examples in Documentation
-        if: ${{ matrix.check == 'doctest' }}
+      - name: make ${{ matrix.target }}
+        if: ${{ matrix.target != 'html' }}
         working-directory: ./docs
-        run: |
-          make doctest --debug --jobs $(nproc)
-          make coverage
-
-      - name: Check External Links
-        if: ${{ matrix.check == 'linkcheck' }}
-        working-directory: ./docs
-        env:
-          SPHINX_MOCK_REQUIREMENTS: 1
-        run: make linkcheck --jobs $(nproc) SPHINXOPTS="--keep-going"
+        run: make ${{ matrix.target }} --jobs $(nproc) SPHINXOPTS="W --keep-going"
 
       - name: Full build for deployment
         if: github.event_name != 'pull_request'
         run: echo "SPHINX_FETCH_ASSETS=1" >> $GITHUB_ENV
-      - name: Make Documentation
-        if: ${{ matrix.check == 'html' }}
+      - name: make HTML
+        if: ${{ matrix.target == 'html' }}
         working-directory: ./docs
         run: make html --debug --jobs $(nproc) SPHINXOPTS="-W --keep-going"
 
       - name: Upload built docs
-        if: ${{ matrix.check == 'html' && github.event_name == 'push' }}
+        if: ${{ matrix.target == 'html' && github.event_name != 'pull_request' }}
         uses: actions/upload-artifact@v3
         with:
           name: docs-${{ github.sha }}
