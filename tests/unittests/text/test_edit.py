@@ -80,7 +80,7 @@ def _ref_implementation(preds, target, substitution_cost=1, reduction="mean"):
 
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [(_inputs_single_reference.preds, _inputs_single_reference.targets)],
+    [(_inputs_single_reference.preds, _inputs_single_reference.target)],
 )
 class TestEditDistance(TextTester):
     """Test class for `EditDistance` metric."""

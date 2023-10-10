@@ -111,7 +111,7 @@ def _compute_rouge_score(
 @pytest.mark.parametrize(
     ["preds", "targets"],
     [
-        (_inputs_multiple_references.preds, _inputs_multiple_references.targets),
+        (_inputs_multiple_references.preds, _inputs_multiple_references.target),
     ],
 )
 @pytest.mark.parametrize("accumulate", ["avg", "best"])
@@ -177,7 +177,7 @@ def test_rouge_metric_wrong_key_value_error():
     with pytest.raises(ValueError, match="Got unknown rouge key rouge. Expected to be one of"):
         rouge_score(
             _inputs_single_sentence_single_reference.preds,
-            _inputs_single_sentence_single_reference.targets,
+            _inputs_single_sentence_single_reference.target,
             rouge_keys=key,
             accumulate="best",
         )
@@ -209,7 +209,7 @@ def test_rouge_metric_normalizer_tokenizer(pl_rouge_metric_key):
     rouge_level, metric = pl_rouge_metric_key.split("_")
     original_score = _compute_rouge_score(
         preds=_inputs_single_sentence_single_reference.preds,
-        target=_inputs_single_sentence_single_reference.targets,
+        target=_inputs_single_sentence_single_reference.target,
         rouge_level=rouge_level,
         metric=metric,
         accumulate="best",
@@ -221,7 +221,7 @@ def test_rouge_metric_normalizer_tokenizer(pl_rouge_metric_key):
     )
     scorer.update(
         _inputs_single_sentence_single_reference.preds,
-        _inputs_single_sentence_single_reference.targets,
+        _inputs_single_sentence_single_reference.target,
     )
     metrics_score = scorer.compute()
 
@@ -246,7 +246,7 @@ def test_rouge_lsum_score(pl_rouge_metric_key, use_stemmer):
     rouge_level, metric = pl_rouge_metric_key.split("_")
     original_score = _compute_rouge_score(
         preds=_inputs_summarization.preds,
-        target=_inputs_summarization.targets,
+        target=_inputs_summarization.target,
         rouge_level=rouge_level,
         metric=metric,
         accumulate=None,
@@ -255,7 +255,7 @@ def test_rouge_lsum_score(pl_rouge_metric_key, use_stemmer):
 
     metrics_score = rouge_score(
         _inputs_summarization.preds,
-        _inputs_summarization.targets,
+        _inputs_summarization.target,
         rouge_keys=rouge_level,
         use_stemmer=use_stemmer,
     )

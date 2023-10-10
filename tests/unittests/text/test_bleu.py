@@ -46,7 +46,7 @@ def _compute_bleu_metric_nltk(preds, targets, weights, smoothing_function, **kwa
 )
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [(_inputs_multiple_references.preds, _inputs_multiple_references.targets)],
+    [(_inputs_multiple_references.preds, _inputs_multiple_references.target)],
 )
 class TestBLEUScore(TextTester):
     """Test class for `BLEUScore` metric."""
