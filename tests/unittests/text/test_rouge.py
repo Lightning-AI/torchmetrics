@@ -39,7 +39,7 @@ ROUGE_KEYS = ("rouge1", "rouge2", "rougeL", "rougeLsum")
 # Some randomly adjusted input from CNN/DailyMail dataset which brakes the test
 _preds = "A lawyer says him .\nMoschetto, 54 and prosecutors say .\nAuthority abc Moschetto  ."
 _target = "A trainer said her and Moschetto, 54s or weapons say . \nAuthorities Moschetto of ."
-_inputs_summarization = _Input(preds=_preds, targets=_target)
+_inputs_summarization = _Input(preds=_preds, target=_target)
 
 
 def _compute_rouge_score(
