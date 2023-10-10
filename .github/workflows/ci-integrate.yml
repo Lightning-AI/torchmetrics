@@ -58,14 +58,14 @@ jobs:
 
       - name: Install all dependencies
         run: |
-          set -e
-          curl https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py -o adjust-torch-versions.py
-          pip install -r requirements/test.txt -r requirements/integrate.txt \
-            --find-links $PYTORCH_URL -f $PYPI_CACHE --upgrade-strategy eager
+          cat requirements/integrate.txt
+          python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py
           python adjust-torch-versions.py requirements/base.txt
           python adjust-torch-versions.py requirements/image.txt
-          cat requirements/base.txt
-          pip install -e . --find-links $PYTORCH_URL -f $PYPI_CACHE
+          pip install -e . \
+            -r requirements/test.txt -r requirements/integrate.txt \
+            --find-links=${PYTORCH_URL} --find-links=${PYPI_CACHE} \
+            --upgrade-strategy eager
           pip list
 
       - name: Integrations
