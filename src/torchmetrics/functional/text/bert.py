@@ -364,9 +364,9 @@ def bert_score(
     model.to(device)
 
     try:
-        if num_layers and num_layers > model.config.num_hidden_layers:  # type: ignore
+        if num_layers and num_layers > model.config.num_hidden_layers:
             raise ValueError(
-                f"num_layers={num_layers} is forbidden for {model_name_or_path}."  # type: ignore
+                f"num_layers={num_layers} is forbidden for {model_name_or_path}."
                 f" Please use num_layers <= {model.config.num_hidden_layers}"
             )
     except AttributeError:
