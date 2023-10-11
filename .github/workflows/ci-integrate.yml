@@ -64,7 +64,7 @@ jobs:
         run: |
           set -e
           curl https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py -o adjust-torch-versions.py
-          pip install -r requirements/test.txt -r requirements/integrate.txt \
+          pip install -r requirements/_tests.txt -r requirements/_integrate.txt \
             --find-links $PYTORCH_URL -f $PYPI_CACHE --upgrade-strategy eager
           python adjust-torch-versions.py requirements/base.txt
           python adjust-torch-versions.py requirements/image.txt
