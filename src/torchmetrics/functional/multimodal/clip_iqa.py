@@ -29,7 +29,7 @@ if _TRANSFORMERS_GREATER_EQUAL_4_10:
         _CLIPProcessor.from_pretrained("openai/clip-vit-base-patch16")
 
     if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_clip):
-        __doctest_skip__ = ["clip_score"]
+        __doctest_skip__ = ["clip_image_quality_assessment"]
 
 else:
     __doctest_skip__ = ["clip_image_quality_assessment"]
