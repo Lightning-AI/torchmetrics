@@ -184,24 +184,6 @@ class KernelInceptionDistance(Metric):
             UserWarning,
         )
 
-        if isinstance(feature, (str, int)):
-            if not _TORCH_FIDELITY_AVAILABLE:
-                raise ModuleNotFoundError(
-                    "Kernel Inception Distance metric requires that `Torch-fidelity` is installed."
-                    " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`."
-                )
-            valid_int_input = ("logits_unbiased", 64, 192, 768, 2048)
-            if feature not in valid_int_input:
-                raise ValueError(
-                    f"Integer input to argument `feature` must be one of {valid_int_input}, but got {feature}."
-                )
-
-            self.inception: Module = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
-        elif isinstance(feature, Module):
-            self.inception = feature
-        else:
-            raise TypeError("Got unknown input to argument `feature`")
-
         if not (isinstance(subsets, int) and subsets > 0):
             raise ValueError("Argument `subsets` expected to be integer larger than 0")
         self.subsets = subsets
@@ -229,6 +211,24 @@ class KernelInceptionDistance(Metric):
         if not isinstance(normalize, bool):
             raise ValueError("Argument `normalize` expected to be a bool")
         self.normalize = normalize
+
+        if isinstance(feature, (str, int)):
+            if not _TORCH_FIDELITY_AVAILABLE:
+                raise ModuleNotFoundError(
+                    "Kernel Inception Distance metric requires that `Torch-fidelity` is installed."
+                    " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`."
+                )
+            valid_int_input = ("logits_unbiased", 64, 192, 768, 2048)
+            if feature not in valid_int_input:
+                raise ValueError(
+                    f"Integer input to argument `feature` must be one of {valid_int_input}, but got {feature}."
+                )
+
+            self.inception: Module = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
+        elif isinstance(feature, Module):
+            self.inception = feature
+        else:
+            raise TypeError("Got unknown input to argument `feature`")
 
         # states for extracted features
         self.add_state("real_features", [], dist_reduce_fx=None)
