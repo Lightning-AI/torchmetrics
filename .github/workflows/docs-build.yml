@@ -63,7 +63,7 @@ jobs:
       - name: Install package & dependencies
         run: |
           pip --version
-          pip install . -U -r requirements/docs.txt \
+          pip install . -U -r requirements/_docs.txt \
             --find-links="dist/" --find-links="${PYPI_CACHE}" --find-links="${TORCH_URL}"
           pip list
 
