@@ -64,7 +64,7 @@ jobs:
           sudo apt-get update --fix-missing
           sudo apt-get install -y cmake
           pip --version
-          pip install . -U -r requirements/docs.txt \
+          pip install . -U -r requirements/_docs.txt \
             --find-links="${PYPI_CACHE}" --find-links="${TORCH_URL}" --find-links="dist/"
           pip list
 
@@ -72,7 +72,7 @@ jobs:
         if: ${{ matrix.check == 'doctest' }}
         working-directory: ./docs
         run: |
-          make doctest
+          make doctest --debug --jobs $(nproc)
           make coverage
 
       - name: Check External Links
@@ -80,15 +80,15 @@ jobs:
         working-directory: ./docs
         env:
           SPHINX_MOCK_REQUIREMENTS: 1
-        run: make --jobs $(nproc) linkcheck SPHINXOPTS="--keep-going"
+        run: make linkcheck --jobs $(nproc) SPHINXOPTS="--keep-going"
 
       - name: Full build for deployment
-        if: github.event_name == 'push'
+        if: github.event_name != 'pull_request'
         run: echo "SPHINX_FETCH_ASSETS=1" >> $GITHUB_ENV
       - name: Make Documentation
         if: ${{ matrix.check == 'html' }}
         working-directory: ./docs
-        run: make html --debug SPHINXOPTS="-W --keep-going"
+        run: make html --debug --jobs $(nproc) SPHINXOPTS="-W --keep-going"
 
       - name: Upload built docs
         if: ${{ matrix.check == 'html' && github.event_name == 'push' }}
