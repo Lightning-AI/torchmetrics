@@ -29,7 +29,7 @@ from torchmetrics.functional.classification.calibration_error import (
     multiclass_calibration_error,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9, _TORCH_GREATER_EQUAL_1_13
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_13
 
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases
@@ -228,8 +228,6 @@ class TestMulticlassCalibrationError(MetricTester):
     def test_multiclass_calibration_error_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_9:
-            pytest.xfail(reason="torch.max in metric not supported before pytorch v1.9 for cpu + half")
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.softmax in metric does not support cpu + half precision")
         self.run_precision_test_cpu(

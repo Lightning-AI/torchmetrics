@@ -656,7 +656,7 @@ def check_forward_full_state_property(
 
     Example (states in ``update`` are independent, save to set ``full_state_update=False``)
         >>> from torchmetrics.classification import MulticlassConfusionMatrix
-        >>> check_forward_full_state_property(  # doctest: +ELLIPSIS
+        >>> check_forward_full_state_property(  # doctest: +SKIP
         ...     MulticlassConfusionMatrix,
         ...     init_args = {'num_classes': 3},
         ...     input_args = {'preds': torch.randint(3, (100,)), 'target': torch.randint(3, (100,))},

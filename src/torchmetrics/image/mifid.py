@@ -20,7 +20,7 @@ from torch.nn import Module
 from torchmetrics.image.fid import NoTrainInceptionV3, _compute_fid
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_10
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 __doctest_requires__ = {
@@ -28,12 +28,6 @@ __doctest_requires__ = {
         "torch_fidelity"
     ]
 }
-
-if not _TORCH_GREATER_EQUAL_1_10:
-    __doctest_skip__ = [
-        "MemorizationInformedFrechetInceptionDistance",
-        "MemorizationInformedFrechetInceptionDistance.plot",
-    ]
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MemorizationInformedFrechetInceptionDistance.plot"]
@@ -166,11 +160,6 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        if not _TORCH_GREATER_EQUAL_1_10:
-            raise RuntimeError(
-                "MemorizationInformedFrechetInceptionDistance metric requires PyTorch version greater or equal to 1.10"
-            )
-
         if isinstance(feature, int):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ModuleNotFoundError(

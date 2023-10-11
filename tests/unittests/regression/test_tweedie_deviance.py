@@ -20,7 +20,6 @@ from sklearn.metrics import mean_tweedie_deviance
 from torch import Tensor
 from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
 from torchmetrics.regression.tweedie_deviance import TweedieDevianceScore
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
 
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
@@ -95,8 +94,10 @@ class TestDevianceScore(MetricTester):
     # Tweedie Deviance Score half + cpu does not work for power=[1,2] due to missing support in torch.log
     def test_deviance_scores_half_cpu(self, preds, targets, power):
         """Test dtype support of the metric on CPU."""
-        if not _TORCH_GREATER_EQUAL_1_9 or power in [1, 2]:
-            pytest.xfail(reason="TweedieDevianceScore metric does not support cpu + half precision for older Pytorch")
+        if power in [1, 2]:
+            pytest.skip(
+                "Tweedie Deviance Score half + cpu does not work for power=[1,2] due to missing support in torch.log"
+            )
         metric_args = {"power": power}
         self.run_precision_test_cpu(
             preds,

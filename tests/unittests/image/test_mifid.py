@@ -19,7 +19,7 @@ import pytest
 import torch
 from scipy.linalg import sqrtm
 from torchmetrics.image.mifid import MemorizationInformedFrechetInceptionDistance, NoTrainInceptionV3
-from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_10
+from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 
 def _compare_mifid(preds, target, cosine_distance_eps: float = 0.1):
@@ -95,7 +95,6 @@ def _compare_mifid(preds, target, cosine_distance_eps: float = 0.1):
     return fid_private / (distance_private_thresholded + 1e-15)
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_10, reason="test requires torch>=1.10")
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 def test_no_train():
     """Assert that metric never leaves evaluation mode."""
@@ -114,7 +113,6 @@ def test_no_train():
     assert not model.metric.inception.training, "MiFID metric was changed to training mode which should not happen"
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_10, reason="test requires torch>=1.10")
 def test_mifid_raises_errors_and_warnings():
     """Test that expected warnings and errors are raised."""
     if _TORCH_FIDELITY_AVAILABLE:
@@ -138,7 +136,6 @@ def test_mifid_raises_errors_and_warnings():
         _ = MemorizationInformedFrechetInceptionDistance(cosine_distance_eps=1.1)
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_10, reason="test requires torch>=1.10")
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 @pytest.mark.parametrize("feature", [64, 192, 768, 2048])
 def test_fid_same_input(feature):
@@ -157,7 +154,6 @@ def test_fid_same_input(feature):
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_10, reason="test requires torch>=1.10")
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
 @pytest.mark.parametrize("equal_size", [False, True])
 def test_compare_mifid(equal_size):
@@ -184,7 +180,6 @@ def test_compare_mifid(equal_size):
     assert torch.allclose(tm_res.cpu(), torch.tensor(compare_val, dtype=tm_res.dtype), atol=1e-3)
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_10, reason="test requires torch>=1.10")
 @pytest.mark.parametrize("normalize", [True, False])
 def test_normalize_arg(normalize):
     """Test that normalize argument works as expected."""

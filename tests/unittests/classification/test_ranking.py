@@ -30,7 +30,6 @@ from torchmetrics.functional.classification.ranking import (
     multilabel_ranking_average_precision,
     multilabel_ranking_loss,
 )
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
 
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _multilabel_cases
@@ -123,11 +122,6 @@ class TestMultilabelRanking(MetricTester):
         if dtype == torch.half and functional_metric == multilabel_ranking_average_precision:
             pytest.xfail(
                 reason="multilabel_ranking_average_precision requires torch.unique which is not implemented for half"
-            )
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_9 and functional_metric == multilabel_coverage_error:
-            pytest.xfail(
-                reason="multilabel_coverage_error requires torch.min which is only implemented for half"
-                " in v1.9 or higher of torch."
             )
         self.run_precision_test_cpu(
             preds=preds,
