@@ -29,7 +29,12 @@ if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ += ["FrechetInceptionDistance.plot"]
 
 if _TORCH_FIDELITY_AVAILABLE:
-    from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3 as _FeatureExtractorInceptionV3
+    from torch_fidelity.feature_extractor_inceptionv3 import (
+        URL_INCEPTION_V3,
+    )
+    from torch_fidelity.feature_extractor_inceptionv3 import (
+        FeatureExtractorInceptionV3 as _FeatureExtractorInceptionV3,
+    )
     from torch_fidelity.helpers import vassert
     from torch_fidelity.interpolate_compat_tensorflow import interpolate_bilinear_2d_like_tensorflow1x
 else:
@@ -60,8 +65,11 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
                 "NoTrainInceptionV3 module requires that `Torch-fidelity` is installed."
                 " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`."
             )
-
+        if feature_extractor_weights_path is None:
+            torch.hub.load_state_dict_from_url(URL_INCEPTION_V3, progress=False)
+            feature_extractor_weights_path = f"{torch.hub.get_dir()}/checkpoints/{URL_INCEPTION_V3.split('/')[-1]}"
         super().__init__(name, features_list, feature_extractor_weights_path)
+
         # put into evaluation mode
         self.eval()
 
