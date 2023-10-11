@@ -67,24 +67,19 @@ jobs:
             --find-links="dist/" --find-links="${PYPI_CACHE}" --find-links="${TORCH_URL}"
           pip list
 
-      - name: make ${{ matrix.target }}
-        if: ${{ matrix.target != 'html' }}
-        working-directory: ./docs
-        run: make ${{ matrix.target }} --jobs $(nproc) SPHINXOPTS="W --keep-going"
-
       - name: Full build for deployment
         if: github.event_name != 'pull_request'
         run: echo "SPHINX_FETCH_ASSETS=1" >> $GITHUB_ENV
-      - name: make HTML
-        if: ${{ matrix.target == 'html' }}
+      - name: make ${{ matrix.target }}
+        if: ${{ matrix.target != 'html' }}
         working-directory: ./docs
-        run: make html --debug --jobs $(nproc) SPHINXOPTS="-W --keep-going"
+        run: make ${{ matrix.target }} --debug --jobs $(nproc) SPHINXOPTS="-W --keep-going"
 
       - name: Upload built docs
         if: ${{ matrix.target == 'html' && github.event_name != 'pull_request' }}
         uses: actions/upload-artifact@v3
         with:
-          name: docs-${{ github.sha }}
+          name: docs-${{ matrix.target }}-${{ github.sha }}
           path: docs/build/
           retention-days: ${{ steps.keep-artifact.outputs.DAYS }}
 
@@ -104,7 +99,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
         with:
-          name: docs-${{ github.sha }}
+          name: docs-html-${{ github.sha }}
           path: docs/build/
 
       - name: Authenticate to Google Cloud
