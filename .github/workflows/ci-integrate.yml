@@ -31,7 +31,7 @@ jobs:
         requires: ["oldest", "latest"]
         exclude:
           - { python-version: "3.10", requires: "oldest" }
-          #- { python-version: "3.10", os: "windows" } # todo: https://discuss.pytorch.org/t/numpy-is-not-available-error/146192
+          - { python-version: "3.10", os: "windows" } # todo: https://discuss.pytorch.org/t/numpy-is-not-available-error/146192
         include:
           - { python-version: "3.10", requires: "latest", os: "ubuntu-22.04" }
     env:
@@ -63,8 +63,7 @@ jobs:
           # to have install pyTorch
           pip install -e . --find-links=${PYTORCH_URL}
 
-          # adjust version to PT ecosystem
-          pip install wget
+          # adjust version to PT ecosystem based on installed TM
           python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py
           python adjust-torch-versions.py requirements/base.txt
           python adjust-torch-versions.py requirements/image.txt
