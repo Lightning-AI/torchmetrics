@@ -2,7 +2,7 @@
 -r base.txt
 
 # add the testing dependencies
--r test.txt
+-r _tests.txt
 
 # add extra requirements
 -r image.txt
