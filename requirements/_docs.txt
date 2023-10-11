@@ -16,7 +16,7 @@ lightning-utilities >=0.9.0, <0.10.0
 pydantic > 1.0.0, < 3.0.0
 
 # integrations
--r integrate.txt
+-r _integrate.txt
 -r visual.txt
 -r audio.txt
 -r detection.txt

@@ -17,8 +17,8 @@ RUN \
     # trying to resolve pesq installation issue
     pip3 install -q "numpy<1.24" && \
     pip3 --disable-pip-version-check --no-cache-dir install \
-      -r /tmp/pip-tmp/requirements/devel.txt \
-      -r /tmp/pip-tmp/requirements/docs.txt \
+      -r /tmp/pip-tmp/requirements/_devel.txt \
+      -r /tmp/pip-tmp/requirements/_docs.txt \
       --find-links="https://download.pytorch.org/whl/cpu/torch_stable.html" \
       --find-links="dist/" && \
     rm -rf /tmp/pip-tmp

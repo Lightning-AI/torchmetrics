@@ -41,7 +41,7 @@ runs:
 
     - name: Dump wheels
       run: |
-        pip wheel -r requirements/devel.txt --prefer-binary \
+        pip wheel -r requirements/_devel.txt --prefer-binary \
           --wheel-dir=.pip-wheels \
           -f ${{ inputs.torch-url }} -f ${{ inputs.pypi-dir }}
         ls -lh .pip-wheels

@@ -64,7 +64,7 @@ jobs:
           sudo apt-get update --fix-missing
           sudo apt-get install -y cmake
           pip --version
-          pip install . -U -r requirements/docs.txt \
+          pip install . -U -r requirements/_docs.txt \
             --find-links="${PYPI_CACHE}" --find-links="${TORCH_URL}" --find-links="dist/"
           pip list
 

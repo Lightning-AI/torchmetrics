@@ -134,7 +134,7 @@ When you send a PR the continuous integration will run tests and build the docs.
 To setup a local development environment, install both local and test dependencies:
 
 ```bash
-python -m pip install -r requirements/test.txt
+python -m pip install -r requirements/_tests.txt
 python -m pip install pre-commit
 ```
 
