@@ -58,7 +58,7 @@ jobs:
       - name: Install all dependencies
         run: |
           # this was updated in `source cashing` by optional oldest
-          cat requirements/integrate.txt
+          cat requirements/_integrate.txt
           # to have install pyTorch
           pip install -e . --find-links=${PYTORCH_URL}
 
@@ -69,7 +69,7 @@ jobs:
           python adjust-torch-versions.py requirements/image.txt
 
           # install package and dependencies
-          pip install -e . -r requirements/test.txt -r requirements/integrate.txt \
+          pip install -e . -r requirements/_test.txt -r requirements/_integrate.txt \
             --find-links=${PYTORCH_URL} --find-links=${PYPI_CACHE} \
             --upgrade-strategy eager
           pip list
