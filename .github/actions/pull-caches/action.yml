@@ -19,7 +19,7 @@ runs:
   using: "composite"
   steps:
     - name: install assistant's deps
-      run: pip install -q fire requests packaging
+      run: pip install -q fire requests packaging wget
       shell: bash
 
     - name: Set PyTorch version
