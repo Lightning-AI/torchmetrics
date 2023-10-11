@@ -69,7 +69,7 @@ jobs:
           python adjust-torch-versions.py requirements/image.txt
 
           # install package and dependencies
-          pip install -e . -r requirements/_test.txt -r requirements/_integrate.txt \
+          pip install -e . -r requirements/_tests.txt -r requirements/_integrate.txt \
             --find-links=${PYTORCH_URL} --find-links=${PYPI_CACHE} \
             --upgrade-strategy eager
           pip list
