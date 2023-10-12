@@ -307,7 +307,7 @@ class _SacreBLEUTokenizer:
         return " ".join(char for char in line)
 
     @classmethod
-    def _tokenize_ja_mecab(cls, line: str) -> str:
+    def _tokenize_ja_mecab(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Tokenizes a Japanese string line using MeCab morphological analyzer.
 
         Args:
@@ -326,7 +326,7 @@ class _SacreBLEUTokenizer:
         return tagger.parse(line).strip()
 
     @classmethod
-    def _tokenize_ko_mecab(cls, line: str) -> str:
+    def _tokenize_ko_mecab(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Tokenizes a Korean string line using MeCab-korean morphological analyzer.
 
         Args:
@@ -345,7 +345,9 @@ class _SacreBLEUTokenizer:
         return tagger.parse(line).strip()
 
     @classmethod
-    def _tokenize_flores(cls, line: str, tokenize: Literal["flores101", "flores200"]) -> str:
+    def _tokenize_flores(
+        cls: Type["_SacreBLEUTokenizer"], line: str, tokenize: Literal["flores101", "flores200"]
+    ) -> str:
         """Tokenizes a string line using sentencepiece tokenizer.
 
         Args:
@@ -370,7 +372,7 @@ class _SacreBLEUTokenizer:
         return " ".join(cls.sentencepiece_processors[tokenize].EncodeAsPieces(line))  # type: ignore[union-attr]
 
     @classmethod
-    def _tokenize_flores_101(cls, line: str) -> str:
+    def _tokenize_flores_101(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Tokenizes a string line using sentencepiece tokenizer according to `FLORES-101`_ dataset.
 
         Args:
@@ -383,7 +385,7 @@ class _SacreBLEUTokenizer:
         return cls._tokenize_flores(line, "flores101")
 
     @classmethod
-    def _tokenize_flores_200(cls, line: str) -> str:
+    def _tokenize_flores_200(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Tokenizes a string line using sentencepiece tokenizer according to `FLORES-200`_ dataset.
 
         Args:
@@ -402,7 +404,7 @@ class _SacreBLEUTokenizer:
         return line
 
     @classmethod
-    def _check_tokenizers_validity(cls, tokenize: _TokenizersLiteral) -> None:
+    def _check_tokenizers_validity(cls: Type["_SacreBLEUTokenizer"], tokenize: _TokenizersLiteral) -> None:
         """Check if a supported tokenizer is chosen.
 
         Also check all dependencies of a given tokenizers are installed.
