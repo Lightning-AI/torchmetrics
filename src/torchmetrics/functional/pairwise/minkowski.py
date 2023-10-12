@@ -34,7 +34,7 @@ def _pairwise_minkowski_distance_update(
 
     """
     x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
-    if not (isinstance(exponent, float) and exponent >= 1):
+    if not (isinstance(exponent, (float, int)) and exponent >= 1):
         raise TorchMetricsUserError(f"Argument ``p`` must be a float or int greater than 1, but got {exponent}")
     # upcast to float64 to prevent precision issues
     _orig_dtype = x.dtype

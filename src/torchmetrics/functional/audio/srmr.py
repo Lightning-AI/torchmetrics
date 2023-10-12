@@ -351,11 +351,11 @@ def _srmr_arg_validate(
         raise ValueError(
             f"Expected argument `n_cochlear_filters` to be an int larger than 0, but got {n_cochlear_filters}"
         )
-    if not ((isinstance(low_freq, float)) and low_freq > 0):
+    if not ((isinstance(low_freq, (float, int))) and low_freq > 0):
         raise ValueError(f"Expected argument `low_freq` to be a float larger than 0, but got {low_freq}")
-    if not ((isinstance(min_cf, float)) and min_cf > 0):
+    if not ((isinstance(min_cf, (float, int))) and min_cf > 0):
         raise ValueError(f"Expected argument `min_cf` to be a float larger than 0, but got {min_cf}")
-    if max_cf is not None and not ((isinstance(max_cf, float)) and max_cf > 0):
+    if max_cf is not None and not ((isinstance(max_cf, (float, int))) and max_cf > 0):
         raise ValueError(f"Expected argument `max_cf` to be a float larger than 0, but got {max_cf}")
     if not isinstance(norm, bool):
         raise ValueError("Expected argument `norm` to be a bool value")

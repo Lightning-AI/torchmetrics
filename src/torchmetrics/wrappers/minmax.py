@@ -110,7 +110,7 @@ class MinMaxMetric(WrapperMetric):
     @staticmethod
     def _is_suitable_val(val: Union[float, Tensor]) -> bool:
         """Check whether min/max is a scalar value."""
-        if isinstance(val, float):
+        if isinstance(val, (int, float)):
             return True
         if isinstance(val, Tensor):
             return val.numel() == 1

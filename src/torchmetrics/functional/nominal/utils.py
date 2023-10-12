@@ -25,7 +25,7 @@ def _nominal_input_validation(nan_strategy: str, nan_replace_value: Optional[flo
         raise ValueError(
             f"Argument `nan_strategy` is expected to be one of `['replace', 'drop']`, but got {nan_strategy}"
         )
-    if nan_strategy == "replace" and not isinstance(nan_replace_value, float):
+    if nan_strategy == "replace" and not isinstance(nan_replace_value, (float, int)):
         raise ValueError(
             "Argument `nan_replace` is expected to be of a type `int` or `float` when `nan_strategy = 'replace`, "
             f"but got {nan_replace_value}"

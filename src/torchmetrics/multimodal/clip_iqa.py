@@ -183,7 +183,7 @@ class CLIPImageQualityAssessment(Metric):
         **kwargs: Any
     ) -> None:
         super().__init__(**kwargs)
-        if not (isinstance(data_range, float) and data_range > 0):
+        if not (isinstance(data_range, (int, float)) and data_range > 0):
             raise ValueError("Argument `data_range` should be a positive number.")
         self.data_range = data_range
 
