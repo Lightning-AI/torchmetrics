@@ -23,11 +23,11 @@ from packaging.version import Version, parse
 _PYTHON_VERSION = ".".join(map(str, [sys.version_info.major, sys.version_info.minor, sys.version_info.micro]))
 _PYTHON_LOWER_3_8 = parse(_PYTHON_VERSION) < Version("3.8")
 _TORCH_LOWER_1_12_DEV: Optional[bool] = compare_version("torch", operator.lt, "1.12.0.dev")
-_TORCH_GREATER_EQUAL_1_9: Optional[bool] = compare_version("torch", operator.ge, "1.9.0")
-_TORCH_GREATER_EQUAL_1_10: Optional[bool] = compare_version("torch", operator.ge, "1.10.0")
 _TORCH_GREATER_EQUAL_1_11: Optional[bool] = compare_version("torch", operator.ge, "1.11.0")
 _TORCH_GREATER_EQUAL_1_12: Optional[bool] = compare_version("torch", operator.ge, "1.12.0")
 _TORCH_GREATER_EQUAL_1_13: Optional[bool] = compare_version("torch", operator.ge, "1.13.0")
+_TORCH_GREATER_EQUAL_2_0: Optional[bool] = compare_version("torch", operator.ge, "2.0.0")
+_TORCH_GREATER_EQUAL_2_1: Optional[bool] = compare_version("torch", operator.ge, "2.1.0")
 
 _JIWER_AVAILABLE: bool = package_available("jiwer")
 _NLTK_AVAILABLE: bool = package_available("nltk")

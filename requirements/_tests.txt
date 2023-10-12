@@ -6,7 +6,7 @@ pytest ==7.4.2
 pytest-cov ==4.1.0
 pytest-doctestplus ==1.0.0
 pytest-rerunfailures ==12.0
-pytest-timeout ==2.1.0
+pytest-timeout ==2.2.0
 phmdoctest ==1.4.0
 
 psutil <=5.9.5
