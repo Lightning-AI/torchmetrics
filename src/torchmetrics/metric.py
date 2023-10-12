@@ -17,6 +17,7 @@
 import builtins
 import functools
 import inspect
+import warnings
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
@@ -169,7 +170,12 @@ class Metric(Module, ABC):
     @property
     def _update_called(self) -> bool:
         # NOTE: this is needed for internal lightning; remove after v0.12 and update on lightning side
-        return self.update_called()
+        warnings.warn(
+            "This property will be removed in 2.0.0. Use `Metric.updated_called` instead.",
+            DeprecationWarning,
+            stacklevel=1,
+        )
+        return self.update_called
 
     @property
     def update_called(self) -> bool:
