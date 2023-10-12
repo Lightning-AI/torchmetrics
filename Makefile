@@ -28,12 +28,12 @@ test: clean env data
 	cd tests && python -m coverage report
 
 docs: clean
-	pip install -e . --quiet -r requirements/docs.txt
+	pip install -e . --quiet -r requirements/_docs.txt
 	# apt-get install -y texlive-latex-extra dvipng texlive-pictures texlive-fonts-recommended cm-super
 	TOKENIZERS_PARALLELISM=false python -m sphinx -b html -W --keep-going docs/source docs/build
 
 env:
-	pip install -e . -U -r requirements/devel.txt
+	pip install -e . -U -r requirements/_devel.txt
 
 data:
 	python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"

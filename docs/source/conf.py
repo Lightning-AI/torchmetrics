@@ -321,7 +321,7 @@ PACKAGE_MAPPING = {
 MOCK_PACKAGES = []
 if SPHINX_MOCK_REQUIREMENTS:
     # mock also base packages when we are on RTD since we don't install them there
-    MOCK_PACKAGES += package_list_from_file(os.path.join(_PATH_ROOT, "requirements", "docs.txt"))
+    MOCK_PACKAGES += package_list_from_file(os.path.join(_PATH_ROOT, "requirements", "_docs.txt"))
 MOCK_PACKAGES = [PACKAGE_MAPPING.get(pkg, pkg) for pkg in MOCK_PACKAGES]
 
 autodoc_mock_imports = MOCK_PACKAGES
@@ -427,6 +427,9 @@ coverage_skip_undoc_in_source = True
 
 # skip false positive linkcheck errors from anchors
 linkcheck_anchors = False
+
+# A timeout value, in seconds, for the linkcheck builder.
+linkcheck_timeout = 10
 
 # ignore all links in any CHANGELOG file
 linkcheck_exclude_documents = [r"^(.*\/)*CHANGELOG.*$"]

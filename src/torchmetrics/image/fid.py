@@ -20,13 +20,11 @@ from torch.nn import Module
 from torch.nn.functional import adaptive_avg_pool2d
 
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_FIDELITY_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-__doctest_skip__ = ["FrechetInceptionDistance.__init__"] if not _TORCH_GREATER_EQUAL_1_9 else []
-
 if not _MATPLOTLIB_AVAILABLE:
-    __doctest_skip__ += ["FrechetInceptionDistance.plot"]
+    __doctest_skip__ = ["FrechetInceptionDistance.plot"]
 
 if _TORCH_FIDELITY_AVAILABLE:
     from torch_fidelity.feature_extractor_inceptionv3 import FeatureExtractorInceptionV3 as _FeatureExtractorInceptionV3
@@ -42,9 +40,6 @@ else:
 
     __doctest_skip__ = ["FrechetInceptionDistance", "FrechetInceptionDistance.plot"]
 
-if not _TORCH_GREATER_EQUAL_1_9:
-    __doctest_skip__ = ["FrechetInceptionDistance", "FrechetInceptionDistance.plot"]
-
 
 class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
     """Module that never leaves evaluation mode."""
@@ -55,6 +50,12 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
         features_list: List[str],
         feature_extractor_weights_path: Optional[str] = None,
     ) -> None:
+        if not _TORCH_FIDELITY_AVAILABLE:
+            raise ModuleNotFoundError(
+                "NoTrainInceptionV3 module requires that `Torch-fidelity` is installed."
+                " Either install as `pip install torchmetrics[image]` or `pip install torch-fidelity`."
+            )
+
         super().__init__(name, features_list, feature_extractor_weights_path)
         # put into evaluation mode
         self.eval()
@@ -279,10 +280,6 @@ class FrechetInceptionDistance(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-
-        if not _TORCH_GREATER_EQUAL_1_9:
-            raise ValueError("FrechetInceptionDistance metric requires that PyTorch is version 1.9.0 or higher.")
-
         if isinstance(feature, int):
             num_features = feature
             if not _TORCH_FIDELITY_AVAILABLE:

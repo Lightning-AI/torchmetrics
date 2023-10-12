@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macOS-11, windows-2022]
+        os: [ubuntu-20.04, macOS-12, windows-2022]
         python-version: ["3.8", "3.10"]
         requires: ["oldest", "latest"]
         exclude:
@@ -34,7 +34,6 @@ jobs:
           - { python-version: "3.10", os: "windows" } # todo: https://discuss.pytorch.org/t/numpy-is-not-available-error/146192
         include:
           - { python-version: "3.10", requires: "latest", os: "ubuntu-22.04" }
-          - { python-version: "3.10", requires: "latest", os: "macOS-12" }
     env:
       PYTORCH_URL: "https://download.pytorch.org/whl/cpu/torch_stable.html"
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
@@ -64,7 +63,7 @@ jobs:
         run: |
           set -e
           curl https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py -o adjust-torch-versions.py
-          pip install -r requirements/test.txt -r requirements/integrate.txt \
+          pip install -r requirements/_tests.txt -r requirements/_integrate.txt \
             --find-links $PYTORCH_URL -f $PYPI_CACHE --upgrade-strategy eager
           python adjust-torch-versions.py requirements/base.txt
           python adjust-torch-versions.py requirements/image.txt
