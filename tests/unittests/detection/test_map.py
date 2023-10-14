@@ -17,6 +17,7 @@ import json
 from copy import deepcopy
 from functools import partial
 from itertools import product
+from typing import Any, List, NamedTuple
 
 import numpy as np
 import pytest
@@ -220,8 +221,13 @@ def test_compare_both_same_time(tmpdir, backend):
         assert torch.allclose(res[f"segm_{k}"], v, atol=1e-2)
 
 
-_inputs = {
-    "preds": [
+class _Input(NamedTuple):
+    preds: List[List[dict[str, Any]]]
+    target: List[List[dict[str, Any]]]
+
+
+_inputs = _Input(
+    preds=[
         [
             {
                 "boxes": Tensor([[258.15, 41.29, 606.41, 285.07]]),
@@ -269,7 +275,7 @@ _inputs = {
             },  # coco image id 987 category_id 49
         ],
     ],
-    "target": [
+    target=[
         [
             {
                 "boxes": Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
@@ -319,11 +325,11 @@ _inputs = {
             },  # coco image id 987 category_id 49
         ],
     ],
-}
+)
 
 # example from this issue https://github.com/Lightning-AI/torchmetrics/issues/943
-_inputs2 = {
-    "preds": [
+_inputs2 = _Input(
+    preds=[
         [
             {
                 "boxes": Tensor([[258.0, 41.0, 606.0, 285.0]]),
@@ -339,7 +345,7 @@ _inputs2 = {
             }
         ],
     ],
-    "target": [
+    target=[
         [
             {
                 "boxes": Tensor([[214.0, 41.0, 562.0, 285.0]]),
@@ -353,13 +359,13 @@ _inputs2 = {
             }
         ],
     ],
-}
+)
 
 # Test empty preds case, to ensure bool inputs are properly casted to uint8
 # From https://github.com/Lightning-AI/torchmetrics/issues/981
 # and https://github.com/Lightning-AI/torchmetrics/issues/1147
-_inputs3 = {
-    "preds": [
+_inputs3 = _Input(
+    preds=[
         [
             {
                 "boxes": Tensor([[258.0, 41.0, 606.0, 285.0]]),
@@ -371,7 +377,7 @@ _inputs3 = {
             {"boxes": Tensor([]), "scores": Tensor([]), "labels": Tensor([])},
         ],
     ],
-    "target": [
+    target=[
         [
             {
                 "boxes": Tensor([[214.0, 41.0, 562.0, 285.0]]),
@@ -386,7 +392,7 @@ _inputs3 = {
             },
         ],
     ],
-}
+)
 
 
 def _generate_random_segm_input(device, batch_size=2, num_preds_size=10, num_gt_size=10, random_size=True):
@@ -515,7 +521,7 @@ class TestMapProperties:
         """Test predictions on single gpu."""
         metric = MeanAveragePrecision(backend=backend)
         metric = metric.to("cuda")
-        for preds, targets in zip(deepcopy(inputs["preds"]), deepcopy(inputs["target"])):
+        for preds, targets in zip(deepcopy(inputs.preds), deepcopy(inputs.target)):
             metric.update(
                 apply_to_collection(preds, Tensor, lambda x: x.to("cuda")),
                 apply_to_collection(targets, Tensor, lambda x: x.to("cuda")),
@@ -527,7 +533,7 @@ class TestMapProperties:
         """Test that map works with custom iou thresholds."""
         metric = MeanAveragePrecision(iou_thresholds=[0.1, 0.2], backend=backend)
         metric = metric.to("cuda")
-        for preds, targets in zip(deepcopy(_inputs["preds"]), deepcopy(_inputs["target"])):
+        for preds, targets in zip(deepcopy(_inputs.preds), deepcopy(_inputs.target)):
             metric.update(
                 apply_to_collection(preds, Tensor, lambda x: x.to("cuda")),
                 apply_to_collection(targets, Tensor, lambda x: x.to("cuda")),
@@ -760,8 +766,8 @@ class TestMapProperties:
                 (10, 1, 4, 3),
             ),
             (
-                _inputs["preds"],
-                _inputs["target"],
+                _inputs.preds,
+                _inputs.target,
                 24,  # 4 images x 6 classes = 24
                 list(product([0, 1, 2, 3], [0, 1, 2, 3, 4, 49])),
                 (10, 101, 6, 4, 3),
@@ -802,11 +808,11 @@ class TestMapProperties:
 
         """
         if class_metrics:
-            _preds = _inputs["preds"]
-            _target = _inputs["target"]
+            _preds = _inputs.preds
+            _target = _inputs.target
         else:
-            _preds = apply_to_collection(deepcopy(_inputs["preds"]), IntTensor, lambda x: torch.ones_like(x))
-            _target = apply_to_collection(deepcopy(_inputs["target"]), IntTensor, lambda x: torch.ones_like(x))
+            _preds = apply_to_collection(deepcopy(_inputs.preds), IntTensor, lambda x: torch.ones_like(x))
+            _target = apply_to_collection(deepcopy(_inputs.target), IntTensor, lambda x: torch.ones_like(x))
 
         metric_macro = MeanAveragePrecision(average="macro", class_metrics=class_metrics, backend=backend)
         metric_macro.update(_preds[0], _target[0])
@@ -814,8 +820,8 @@ class TestMapProperties:
         result_macro = metric_macro.compute()
 
         metric_micro = MeanAveragePrecision(average="micro", class_metrics=class_metrics, backend=backend)
-        metric_micro.update(_inputs["preds"][0], _inputs["target"])
-        metric_micro.update(_inputs["preds"][1], _inputs["target"])
+        metric_micro.update(_inputs.preds[0], _inputs.target[0])
+        metric_micro.update(_inputs.preds[1], _inputs.target[1])
         result_micro = metric_micro.compute()
 
         if class_metrics:
