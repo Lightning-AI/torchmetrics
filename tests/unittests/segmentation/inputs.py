@@ -23,7 +23,6 @@ seed_all(42)
 # extrinsic input for clustering metrics that requires predicted clustering labels and target clustering labels
 Input = namedtuple("Input", ["preds", "target"])
 
-
 preds = torch.tensor(
     [
         [[1, 1, 1, 1, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 1, 1, 1, 1]],

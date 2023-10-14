@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from functools import partial
-
 import pytest
+import torch
 from skimage.metrics import hausdorff_distance as skimage_hausdorff_distance
 from torchmetrics.functional.segmentation.hausdorff_distance import hausdorff_distance
 from torchmetrics.segmentation.hausdorff_distance import HausdorffDistance
@@ -48,7 +47,7 @@ class TestHausdorffDistance(MetricTester):
             preds=preds,
             target=target,
             metric_class=HausdorffDistance,
-            reference_metric=partial(skimage_hausdorff_distance, method="standard"),
+            reference_metric=skimage_hausdorff_distance,
             metric_args={"distance_metric": distance_metric, "spacing": None},
         )
 
@@ -58,9 +57,8 @@ class TestHausdorffDistance(MetricTester):
             preds=preds,
             target=target,
             metric_functional=hausdorff_distance,
-            reference_metric=partial(skimage_hausdorff_distance, method="standard"),
-            distance_metric=distance_metric,
-            spacing=None,
+            reference_metric=skimage_hausdorff_distance,
+            metric_args={"distance_metric": distance_metric, "spacing": None},
         )
 
 
@@ -69,3 +67,16 @@ def test_hausdorff_distance_functional_raises_invalid_task():
     preds, target = _inputs
     with pytest.raises(ValueError, match=r"Expected *"):
         hausdorff_distance(preds, target)
+
+
+@pytest.mark.parametrize(
+    "distance_metric",
+    ["euclidean", "chessboard", "taxicab"],
+)
+def test_hausdorff_distance_is_symmetric(distance_metric):
+    """Check that the metric functional is symmetric."""
+    for p, t in zip(_inputs.preds, _inputs.target):
+        assert torch.allclose(
+            hausdorff_distance(p, t, distance_metric),
+            hausdorff_distance(t, p, distance_metric),
+        )
