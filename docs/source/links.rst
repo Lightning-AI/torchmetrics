@@ -169,3 +169,4 @@
 .. _FLORES-200: https://arxiv.org/abs/2207.04672
 .. _averaging curve objects: https://scikit-learn.org/stable/auto_examples/model_selection/plot_roc.html
 .. _Hausdorff Distance: https://en.wikipedia.org/wiki/Hausdorff_distance
+.. _averaging curve objects: https://scikit-learn.org/stable/auto_examples/model_selection/plot_roc.html
