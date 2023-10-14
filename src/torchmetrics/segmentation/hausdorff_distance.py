@@ -16,6 +16,7 @@ from torch import Tensor
 
 from torchmetrics.functional.segmentation import hausdorff_distance
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -89,7 +90,9 @@ class HausdorffDistance(Metric):
 
     def compute(self) -> Tensor:
         """Compute final Hausdorff distance over states."""
-        return hausdorff_distance(self.preds, self.target, self.distance_metric, self.spacing)
+        return hausdorff_distance(
+            dim_zero_cat(self.preds), dim_zero_cat(self.target), self.distance_metric, self.spacing
+        )
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
