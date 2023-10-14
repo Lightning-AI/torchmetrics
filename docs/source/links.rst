@@ -165,4 +165,6 @@
 .. _Davies-Bouldin Score: https://en.wikipedia.org/wiki/Davies%E2%80%93Bouldin_index
 .. _Fowlkes-Mallows Index: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.fowlkes_mallows_score.html#sklearn.metrics.fowlkes_mallows_score
 .. _Hausdorff Distance: https://en.wikipedia.org/wiki/Hausdorff_distance
+.. _FLORES-101: https://arxiv.org/abs/2106.03193
+.. _FLORES-200: https://arxiv.org/abs/2207.04672
 .. _averaging curve objects: https://scikit-learn.org/stable/auto_examples/model_selection/plot_roc.html
