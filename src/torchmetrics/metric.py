@@ -173,7 +173,7 @@ class Metric(Module, ABC):
         warnings.warn(
             "This property will be removed in 2.0.0. Use `Metric.updated_called` instead.",
             DeprecationWarning,
-            stacklevel=1,
+            stacklevel=2,
         )
         return self.update_called
 
