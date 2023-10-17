@@ -26,7 +26,7 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 env:
-  PUSH_DOCKERHUB: ${{ github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' }}
+  PUSH_DOCKERHUB: ${{ github.ref == 'refs/heads/master' || github.event_name != 'pull_request' }}
 
 jobs:
   build-Devcontainer:
@@ -65,7 +65,7 @@ jobs:
       matrix:
         include:
           # These are the base images for PL release docker images,
-          #  so include at least all of the combinations in release-dockers.yml.
+          #  so include at least all the combinations in release-dockers.yml.
           - { python: "3.9", pytorch: "1.10", cuda: "11.8.0", ubuntu: "22.04" }
           - { python: "3.9", pytorch: "1.11", cuda: "11.8.0", ubuntu: "22.04" }
           - { python: "3.9", pytorch: "1.13", cuda: "11.8.0", ubuntu: "22.04" }
