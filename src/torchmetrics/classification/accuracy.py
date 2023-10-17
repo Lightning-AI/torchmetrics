@@ -483,7 +483,7 @@ class Accuracy(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls: Type["Accuracy"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,

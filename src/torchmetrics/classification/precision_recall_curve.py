@@ -649,7 +649,7 @@ class PrecisionRecallCurve(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls: Type["PrecisionRecallCurve"],
         task: Literal["binary", "multiclass", "multilabel"],
         thresholds: Optional[Union[int, List[float], Tensor]] = None,

@@ -481,7 +481,7 @@ class PrecisionAtFixedRecall(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls: Type["PrecisionAtFixedRecall"],
         task: Literal["binary", "multiclass", "multilabel"],
         min_recall: float,

@@ -504,7 +504,7 @@ class ConfusionMatrix(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls: Type["ConfusionMatrix"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,

@@ -311,7 +311,7 @@ class CohenKappa(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls: Type["CohenKappa"],
         task: Literal["binary", "multiclass"],
         threshold: float = 0.5,

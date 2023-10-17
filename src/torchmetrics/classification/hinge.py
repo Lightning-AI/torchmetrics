@@ -350,7 +350,7 @@ class HingeLoss(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls: Type["HingeLoss"],
         task: Literal["binary", "multiclass"],
         num_classes: Optional[int] = None,
