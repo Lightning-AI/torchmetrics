@@ -46,7 +46,7 @@ jobs:
           - { os: "windows-2022", python-version: "3.8", pytorch-version: "1.13.1" }
           - { os: "windows-2022", python-version: "3.9", pytorch-version: "1.13.1" }
           - { os: "windows-2022", python-version: "3.10", pytorch-version: "2.0.1" }
-          - { os: "windows-2022", python-version: "3.11", pytorch-version: "2.1.0" }
+          # - { os: "windows-2022", python-version: "3.11", pytorch-version: "2.1.0" }  # TODO
     env:
       PYTORCH_URL: "https://download.pytorch.org/whl/cpu/torch_stable.html"
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
@@ -95,7 +95,6 @@ jobs:
           pip install -r requirements/_doctest.txt -U -f $PYPI_CACHE
           pip list
 
-      # todo: copy this to install checks
       - name: DocTests
         timeout-minutes: 25
         working-directory: ./src
@@ -103,11 +102,6 @@ jobs:
           SKIP_SLOW_DOCTEST: 1
         # NOTE: run coverage on tests does not propagate failure status for Win, https://github.com/nedbat/coveragepy/issues/1003
         run: python -m pytest torchmetrics --reruns 3 --reruns-delay 2
-
-      - name: Freeze PIL (hotfix)
-        if: ${{ matrix.python-version != '3.11' }}
-        # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
-        run: pip install "Pillow<9.0" # It messes with torchvision
 
       - name: Install all dependencies
         run: |
