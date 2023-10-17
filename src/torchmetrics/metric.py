@@ -87,6 +87,7 @@ class Metric(Module, ABC):
         "plot_upper_bound",
         "plot_legend_name",
         "metric_state",
+        "_update_called",
     ]
     is_differentiable: Optional[bool] = None
     higher_is_better: Optional[bool] = None
@@ -168,8 +169,12 @@ class Metric(Module, ABC):
 
     @property
     def _update_called(self) -> bool:
-        # TODO: this is needed for internal lightning, remove after v0.12 and update on lightning side
-        return self._update_count > 0
+        rank_zero_warn(
+            "This property will be removed in 2.0.0. Use `Metric.updated_called` instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.update_called
 
     @property
     def update_called(self) -> bool:
