@@ -30,6 +30,7 @@ from torchmetrics.aggregation import SumMetric
 from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
 from torchmetrics.wrappers import MultitaskWrapper
+from torchmetrics.utilities.prints import rank_zero_only
 
 from integrations.lightning.boring_model import BoringModel
 
@@ -239,7 +240,14 @@ def test_metric_lightning_log(tmpdir):
 
     model = TestModel()
 
-    logger = CSVLogger("tmpdir/logs")
+    class CustomCSVLogger(CSVLogger):
+        """Custom CSVLogger that does not call `experiment.save()` to prevent state being reset."""
+
+        @rank_zero_only
+        def save(self) -> None:
+            pass
+
+    logger = CustomCSVLogger("tmpdir/logs")
     trainer = Trainer(
         default_root_dir=tmpdir,
         limit_train_batches=2,
@@ -250,7 +258,7 @@ def test_metric_lightning_log(tmpdir):
     )
     trainer.fit(model)
 
-    logged_metrics = logger._experiment.metrics
+    logged_metrics = logger.experiment.metrics
 
     epoch_0_step_0 = logged_metrics[0]
     assert "metric_forward" in epoch_0_step_0
