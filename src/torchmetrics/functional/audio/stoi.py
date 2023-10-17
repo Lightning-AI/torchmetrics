@@ -18,10 +18,7 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
 
-if _PYSTOI_AVAILABLE:
-    from pystoi import stoi as stoi_backend
-else:
-    stoi_backend = None
+if not _PYSTOI_AVAILABLE:
     __doctest_skip__ = ["short_time_objective_intelligibility"]
 
 
@@ -76,6 +73,8 @@ def short_time_objective_intelligibility(
             "ShortTimeObjectiveIntelligibility metric requires that `pystoi` is installed."
             " Either install as `pip install torchmetrics[audio]` or `pip install pystoi`."
         )
+    from pystoi import stoi as stoi_backend
+
     _check_same_shape(preds, target)
 
     if len(preds.shape) == 1:
