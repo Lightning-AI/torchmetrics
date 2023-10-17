@@ -30,22 +30,14 @@ from torchmetrics.utilities.imports import (
     _TORCHAUDIO_GREATER_EQUAL_0_10,
 )
 
-if _TORCHAUDIO_AVAILABLE and _TORCHAUDIO_GREATER_EQUAL_0_10:
-    from torchaudio.functional.filtering import lfilter
-else:
-    lfilter = None
-    __doctest_skip__ = ["speech_reverberation_modulation_energy_ratio"]
-
-if _GAMMATONE_AVAILABLE:
-    from gammatone.fftweight import fft_gtgram
-    from gammatone.filters import centre_freqs, make_erb_filters
-else:
-    fft_gtgram, centre_freqs, make_erb_filters = None, None, None
+if not _TORCHAUDIO_AVAILABLE or not _TORCHAUDIO_GREATER_EQUAL_0_10 or not _GAMMATONE_AVAILABLE:
     __doctest_skip__ = ["speech_reverberation_modulation_energy_ratio"]
 
 
 @lru_cache(maxsize=100)
 def _calc_erbs(low_freq: float, fs: int, n_filters: int, device: torch.device) -> Tensor:
+    from gammatone.filters import centre_freqs
+
     ear_q = 9.26449  # Glasberg and Moore Parameters
     min_bw = 24.7
     order = 1
@@ -55,6 +47,8 @@ def _calc_erbs(low_freq: float, fs: int, n_filters: int, device: torch.device) -
 
 @lru_cache(maxsize=100)
 def _make_erb_filters(fs: int, num_freqs: int, cutoff: float, device: torch.device) -> Tensor:
+    from gammatone.filters import centre_freqs, make_erb_filters
+
     cfs = centre_freqs(fs, num_freqs, cutoff)
     fcoefs = make_erb_filters(fs, cfs)
     return torch.tensor(fcoefs, device=device)
@@ -130,6 +124,8 @@ def _erb_filterbank(wave: Tensor, coefs: Tensor) -> Tensor:
         Tensor: shape [B, N, time]
 
     """
+    from torchaudio.functional.filtering import lfilter
+
     num_batch, time = wave.shape
     wave = wave.to(dtype=coefs.dtype).reshape(num_batch, 1, time)  # [B, time]
     wave = wave.expand(-1, coefs.shape[0], -1)  # [B, N, time]
@@ -239,6 +235,9 @@ def speech_reverberation_modulation_energy_ratio(
             " `torchaudio>=0.10` installed. Either install as ``pip install torchmetrics[audio]`` or "
             "``pip install torchaudio>=0.10`` and ``pip install git+https://github.com/detly/gammatone``"
         )
+    from gammatone.fftweight import fft_gtgram
+    from torchaudio.functional.filtering import lfilter
+
     _srmr_arg_validate(
         fs=fs,
         n_cochlear_filters=n_cochlear_filters,
