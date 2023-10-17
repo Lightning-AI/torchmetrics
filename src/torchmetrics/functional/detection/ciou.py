@@ -15,20 +15,17 @@ from typing import Optional
 
 import torch
 
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_13
+from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_13
 
-if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_13:
-    from torchvision.ops import complete_box_iou
-else:
-    complete_box_iou = None
+if not _TORCHVISION_GREATER_EQUAL_0_13:
     __doctest_skip__ = ["complete_intersection_over_union"]
-
-__doctest_requires__ = {("complete_intersection_over_union",): ["torchvision"]}
 
 
 def _ciou_update(
     preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float], replacement_val: float = 0
 ) -> torch.Tensor:
+    from torchvision.ops import complete_box_iou
+
     iou = complete_box_iou(preds, target)
     if iou_threshold is not None:
         iou[iou < iou_threshold] = replacement_val
