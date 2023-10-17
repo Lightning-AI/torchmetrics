@@ -38,19 +38,7 @@ from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MeanAveragePrecision.plot"]
 
-
-if _TORCHVISION_GREATER_EQUAL_0_8:
-    from torchvision.ops import box_convert
-else:
-    box_convert = None
-    __doctest_skip__ = [
-        "MeanAveragePrecision.plot",
-        "MeanAveragePrecision",
-        "MeanAveragePrecision.tm_to_coco",
-        "MeanAveragePrecision.coco_to_tm",
-    ]
-
-if not _PYCOCOTOOLS_AVAILABLE:
+if not _TORCHVISION_GREATER_EQUAL_0_8 or not (_PYCOCOTOOLS_AVAILABLE or _FASTER_COCO_EVAL_AVAILABLE):
     __doctest_skip__ = [
         "MeanAveragePrecision.plot",
         "MeanAveragePrecision",
@@ -381,10 +369,11 @@ class MeanAveragePrecision(Metric):
     ) -> None:
         super().__init__(**kwargs)
 
-        if not _PYCOCOTOOLS_AVAILABLE:
+        if not (_PYCOCOTOOLS_AVAILABLE or _FASTER_COCO_EVAL_AVAILABLE):
             raise ModuleNotFoundError(
-                "`MAP` metric requires that `pycocotools` installed."
-                " Please install with `pip install pycocotools` or `pip install torchmetrics[detection]`"
+                "`MAP` metric requires that `pycocotools` or `faster-coco-eval` installed."
+                " Please install with `pip install pycocotools` or `pip install faster-coco-eval` or"
+                " `pip install torchmetrics[detection]`."
             )
         if not _TORCHVISION_GREATER_EQUAL_0_8:
             raise ModuleNotFoundError(
@@ -810,6 +799,8 @@ class MeanAveragePrecision(Metric):
             boxes or masks depending on the iou_type
 
         """
+        from torchvision.ops import box_convert
+
         output = [None, None]
         if "bbox" in self.iou_type:
             boxes = _fix_empty_tensors(item["boxes"])
