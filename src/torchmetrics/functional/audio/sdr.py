@@ -24,13 +24,6 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE
 
-solve = torch.linalg.solve
-
-if _FAST_BSS_EVAL_AVAILABLE:
-    from fast_bss_eval.torch.cgd import toeplitz_conjugate_gradient
-else:
-    toeplitz_conjugate_gradient = None
-
 
 def _symmetric_toeplitz(vector: Tensor) -> Tensor:
     """Construct a symmetric Toeplitz matrix using one vector.
@@ -176,6 +169,8 @@ def signal_distortion_ratio(
         r_0[..., 0] += load_diag
 
     if use_cg_iter is not None and _FAST_BSS_EVAL_AVAILABLE:
+        from fast_bss_eval.torch.cgd import toeplitz_conjugate_gradient
+
         # use preconditioned conjugate gradient
         sol = toeplitz_conjugate_gradient(r_0, b, n_iter=use_cg_iter)
     else:
@@ -189,7 +184,7 @@ def signal_distortion_ratio(
             )
         # regular matrix solver
         r = _symmetric_toeplitz(r_0)  # the auto-correlation of the L shifts of `target`
-        sol = solve(r, b)
+        sol = torch.linalg.solve(r, b)
 
     # compute the coherence
     coh = torch.einsum("...l,...l->...", b, sol)
