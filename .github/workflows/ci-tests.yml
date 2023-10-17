@@ -32,7 +32,7 @@ jobs:
       matrix:
         os: ["ubuntu-20.04"]
         python-version: ["3.9"]
-        pytorch-version: ["1.9.1", "1.10.2", "1.11.0", "1.12.1", "1.13.1", "2.0.1", "2.1.0"]
+        pytorch-version: ["1.10.2", "1.11.0", "1.12.1", "1.13.1", "2.0.1", "2.1.0"]
         include:
           - { os: "ubuntu-22.04", python-version: "3.8", pytorch-version: "1.13.1" }
           - { os: "ubuntu-22.04", python-version: "3.10", pytorch-version: "1.13.1" }
@@ -46,11 +46,7 @@ jobs:
           - { os: "windows-2022", python-version: "3.8", pytorch-version: "1.13.1" }
           - { os: "windows-2022", python-version: "3.9", pytorch-version: "1.13.1" }
           - { os: "windows-2022", python-version: "3.10", pytorch-version: "2.0.1" }
-          - { os: "windows-2022", python-version: "3.11", pytorch-version: "2.1.0" }
-          # the oldest configurations
-          - { os: "ubuntu-20.04", python-version: "3.8", pytorch-version: "1.8.1", requires: "oldest" }
-          - { os: "macOS-11", python-version: "3.8", pytorch-version: "1.8.1", requires: "oldest" }
-          - { os: "windows-2019", python-version: "3.8", pytorch-version: "1.8.1", requires: "oldest" }
+          # - { os: "windows-2022", python-version: "3.11", pytorch-version: "2.1.0" }  # TODO
     env:
       PYTORCH_URL: "https://download.pytorch.org/whl/cpu/torch_stable.html"
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}

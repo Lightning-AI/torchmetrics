@@ -172,8 +172,6 @@ from torchmetrics.text import (
     WordInfoPreserved,
 )
 from torchmetrics.utilities.imports import (
-    _TORCH_GREATER_EQUAL_1_9,
-    _TORCH_GREATER_EQUAL_1_10,
     _TORCHAUDIO_GREATER_EQUAL_0_10,
 )
 from torchmetrics.utilities.plot import _get_col_row_split
@@ -609,7 +607,7 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
         pytest.param(BLEUScore, _text_input_3, _text_input_4, id="bleu score"),
         pytest.param(CHRFScore, _text_input_3, _text_input_4, id="bleu score"),
         pytest.param(
-            partial(InfoLM, model_name_or_path="google/bert_uncased_L-2_H-128_A-2", idf=False),
+            partial(InfoLM, model_name_or_path="google/bert_uncased_L-2_H-128_A-2", idf=False, verbose=False),
             _text_input_1,
             _text_input_2,
             id="info lm",
@@ -669,7 +667,6 @@ def test_plot_methods(metric_class: object, preds: Callable, target: Callable, n
             lambda: torch.randint(0, 200, (30, 3, 299, 299), dtype=torch.uint8),
             False,
             id="frechet inception distance",
-            marks=pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_9, reason="test requires torch>=1.9"),
         ),
         pytest.param(
             partial(InceptionScore, feature=64),
@@ -684,7 +681,6 @@ def test_plot_methods(metric_class: object, preds: Callable, target: Callable, n
             lambda: torch.randint(0, 200, (30, 3, 299, 299), dtype=torch.uint8),
             False,
             id="memorization informed frechet inception distance",
-            marks=pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_10, reason="test requires torch>=1.9"),
         ),
     ],
 )
