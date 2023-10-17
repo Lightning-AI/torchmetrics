@@ -23,11 +23,6 @@ from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-if _TORCHVISION_GREATER_EQUAL_0_8:
-    from torchvision.ops import box_convert
-else:
-    box_convert = None
-
 if not _TORCHVISION_GREATER_EQUAL_0_8:
     __doctest_skip__ = ["IntersectionOverUnion", "IntersectionOverUnion.plot"]
 elif not _MATPLOTLIB_AVAILABLE:
@@ -198,6 +193,8 @@ class IntersectionOverUnion(Metric):
             self.iou_matrix.append(iou_matrix)
 
     def _get_safe_item_values(self, boxes: Tensor) -> Tensor:
+        from torchvision.ops import box_convert
+
         boxes = _fix_empty_tensors(boxes)
         if boxes.numel() > 0:
             boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
