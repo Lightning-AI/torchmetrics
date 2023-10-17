@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
-- Deprecated `metric._update_called(self)` ([#2141](https://github.com/Lightning-AI/torchmetrics/pull/2141))
+- Deprecated `metric._update_called` ([#2141](https://github.com/Lightning-AI/torchmetrics/pull/2141))
 
 
 ### Removed
