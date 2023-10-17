@@ -103,6 +103,7 @@ class AssistantCLI:
         """Set the oldest version for requirements."""
         AssistantCLI.set_min_torch_by_python()
         for fpath in req_files:
+            logging.info(f"processing req: `{fpath}`")
             AssistantCLI.replace_min_requirements(fpath)
 
     @staticmethod
