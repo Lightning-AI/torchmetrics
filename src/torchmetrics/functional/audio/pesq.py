@@ -18,12 +18,6 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _MULTIPROCESSING_AVAILABLE, _PESQ_AVAILABLE
 
-if _PESQ_AVAILABLE:
-    import pesq as pesq_backend
-else:
-    pesq_backend = None
-
-
 __doctest_requires__ = {("perceptual_evaluation_speech_quality",): ["pesq"]}
 
 
@@ -88,6 +82,8 @@ def perceptual_evaluation_speech_quality(
             "PESQ metric requires that pesq is installed."
             " Either install as `pip install torchmetrics[audio]` or `pip install pesq`."
         )
+    import pesq as pesq_backend
+
     if fs not in (8000, 16000):
         raise ValueError(f"Expected argument `fs` to either be 8000 or 16000 but got {fs}")
     if mode not in ("wb", "nb"):

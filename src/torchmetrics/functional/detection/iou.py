@@ -15,20 +15,17 @@ from typing import Optional
 
 import torch
 
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
 
-if _TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8:
-    from torchvision.ops import box_iou
-else:
-    box_iou = None
+if not _TORCHVISION_GREATER_EQUAL_0_8:
     __doctest_skip__ = ["intersection_over_union"]
-
-__doctest_requires__ = {("intersection_over_union",): ["torchvision"]}
 
 
 def _iou_update(
     preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float], replacement_val: float = 0
 ) -> torch.Tensor:
+    from torchvision.ops import box_iou
+
     iou = box_iou(preds, target)
     if iou_threshold is not None:
         iou[iou < iou_threshold] = replacement_val
