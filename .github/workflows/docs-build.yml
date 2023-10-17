@@ -71,7 +71,6 @@ jobs:
         if: github.event_name != 'pull_request'
         run: echo "SPHINX_FETCH_ASSETS=1" >> $GITHUB_ENV
       - name: make ${{ matrix.target }}
-        if: ${{ matrix.target != 'html' }}
         working-directory: ./docs
         run: make ${{ matrix.target }} --debug --jobs $(nproc) SPHINXOPTS="-W --keep-going"
 
