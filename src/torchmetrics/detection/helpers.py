@@ -49,16 +49,16 @@ def _input_validator(
             raise ValueError(f"Expected all dicts in `target` to contain the `{k}` key")
 
     for ivn in item_val_name:
-        if any(type(pred[ivn]) is not Tensor for pred in preds):
+        if not all(isinstance(pred[ivn], Tensor) for pred in preds):
             raise ValueError(f"Expected all {ivn} in `preds` to be of type Tensor")
-    if not ignore_score and any(type(pred["scores"]) is not Tensor for pred in preds):
+    if not ignore_score and not all(isinstance(pred["scores"], Tensor) for pred in preds):
         raise ValueError("Expected all scores in `preds` to be of type Tensor")
-    if any(type(pred["labels"]) is not Tensor for pred in preds):
+    if not all(isinstance(pred["labels"], Tensor) for pred in preds):
         raise ValueError("Expected all labels in `preds` to be of type Tensor")
     for ivn in item_val_name:
-        if any(type(target[ivn]) is not Tensor for target in targets):
+        if not all(isinstance(target[ivn], Tensor) for target in targets):
             raise ValueError(f"Expected all {ivn} in `target` to be of type Tensor")
-    if any(type(target["labels"]) is not Tensor for target in targets):
+    if not all(isinstance(target["labels"], Tensor) for target in targets):
         raise ValueError("Expected all labels in `target` to be of type Tensor")
 
     for i, item in enumerate(targets):
@@ -88,6 +88,7 @@ def _fix_empty_tensors(boxes: Tensor) -> Tensor:
 
 
 def _validate_iou_type_arg(iou_type: Union[Literal["bbox", "segm"], Tuple[str]] = "bbox") -> Tuple[str]:
+    """Validate that iou type argument is correct."""
     allowed_iou_types = ("segm", "bbox")
     if isinstance(iou_type, str):
         iou_type = (iou_type,)
