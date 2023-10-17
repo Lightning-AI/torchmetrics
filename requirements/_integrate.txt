@@ -1,4 +1,4 @@
 # contentiously validated integration with these expected ranges
 
 # ToDo: investigate and add validation with 2.0+ on GPU
-pytorch-lightning >=1.9.0, <2.0.0
+pytorch-lightning >=1.9.0, <3.0.0
