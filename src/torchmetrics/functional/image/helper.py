@@ -4,9 +4,6 @@ import torch
 from torch import Tensor
 from torch.nn import functional as F  # noqa: N812
 
-from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_10
-
 
 def _gaussian(kernel_size: int, sigma: float, dtype: torch.dtype, device: Union[torch.device, str]) -> Tensor:
     """Compute 1D gaussian kernel.
@@ -172,13 +169,4 @@ def _reflection_pad_3d(inputs: Tensor, pad_h: int, pad_w: int, pad_d: int) -> Te
         padded input tensor
 
     """
-    if _TORCH_GREATER_EQUAL_1_10:
-        inputs = F.pad(inputs, (pad_h, pad_h, pad_w, pad_w, pad_d, pad_d), mode="reflect")
-    else:
-        rank_zero_warn(
-            "An older version of pyTorch is used."
-            " For optimal speed, please upgrade to at least PyTorch v1.10 or higher."
-        )
-        for dim, pad in enumerate([pad_h, pad_w, pad_d]):
-            inputs = _single_dimension_pad(inputs, dim + 2, pad, outer_pad=1)
-    return inputs
+    return F.pad(inputs, (pad_h, pad_h, pad_w, pad_w, pad_d, pad_d), mode="reflect")

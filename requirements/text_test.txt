@@ -5,4 +5,4 @@ jiwer >=2.3.0, <3.1.0
 rouge-score >0.1.0, <=0.1.2
 bert_score ==0.3.13
 huggingface-hub <0.18  # hotfix, failing SDR for latest PT 1.11
-sacrebleu >=2.0.0, <=2.3.1
+sacrebleu >=2.3.0, <=2.3.1

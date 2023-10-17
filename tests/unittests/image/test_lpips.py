@@ -19,7 +19,7 @@ import torch
 from lpips import LPIPS as LPIPS_reference  # noqa: N811
 from torch import Tensor
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
-from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
+from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
 
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -73,8 +73,6 @@ class TestLPIPS(MetricTester):
     # LPIPS half + cpu does not work due to missing support in torch.min for older version of torch
     def test_lpips_half_cpu(self):
         """Test for half + cpu support."""
-        if not _TORCH_GREATER_EQUAL_1_9:
-            pytest.xfail(reason="LPIPS metric does not support cpu + half precision for v1.8.1 or lower of Pytorch")
         self.run_precision_test_cpu(_inputs.img1, _inputs.img2, LearnedPerceptualImagePatchSimilarity)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
