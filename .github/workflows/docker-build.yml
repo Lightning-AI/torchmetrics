@@ -26,7 +26,7 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 env:
-  PUSH_DOCKERHUB: ${{ github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' }}
+  PUSH_DOCKERHUB: ${{ github.ref == 'refs/heads/master' || github.event_name != 'pull_request' }}
 
 jobs:
   build-Devcontainer:
