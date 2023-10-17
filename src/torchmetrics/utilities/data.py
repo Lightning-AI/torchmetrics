@@ -174,7 +174,7 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
         - deterministic mode on GPU.
         - MPS devices
 
-    This implementation fallback to a for-loop counting occurrences in that case.
+    The implementation falls back to a meshgrid to count occurrences.
 
     Args:
         x: tensor to count
@@ -191,11 +191,13 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     """
     if minlength is None:
         minlength = len(torch.unique(x))
+
     if torch.are_deterministic_algorithms_enabled() or _XLA_AVAILABLE or _TORCH_GREATER_EQUAL_1_12 and x.is_mps:
-        output = torch.zeros(minlength, device=x.device, dtype=torch.long)
-        for i in range(minlength):
-            output[i] = (x == i).sum()
+        size = len(x)
+        mesh = torch.meshgrid(torch.arange(size), torch.arange(minlength), indexing='ij')[1].to(x.device)
+        output = torch.eq(x.reshape(-1, 1), mesh).sum(dim=0)
         return output
+
     return torch.bincount(x, minlength=minlength)
 
 
