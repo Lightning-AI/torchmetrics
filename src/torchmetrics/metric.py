@@ -87,6 +87,7 @@ class Metric(Module, ABC):
         "plot_upper_bound",
         "plot_legend_name",
         "metric_state",
+        "_update_called",
     ]
     is_differentiable: Optional[bool] = None
     higher_is_better: Optional[bool] = None
