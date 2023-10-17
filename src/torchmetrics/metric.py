@@ -17,7 +17,6 @@
 import builtins
 import functools
 import inspect
-import warnings
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
@@ -28,6 +27,7 @@ from lightning_utilities import apply_to_collection
 from torch import Tensor
 from torch.nn import Module
 
+from torchmetrics.utilities import rank_zero_warning
 from torchmetrics.utilities.data import (
     _flatten,
     _squeeze_if_scalar,
@@ -169,8 +169,7 @@ class Metric(Module, ABC):
 
     @property
     def _update_called(self) -> bool:
-        # NOTE: this is needed for internal lightning; remove after v0.12 and update on lightning side
-        warnings.warn(
+        rank_zero_warning(
             "This property will be removed in 2.0.0. Use `Metric.updated_called` instead.",
             DeprecationWarning,
             stacklevel=2,
