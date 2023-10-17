@@ -276,7 +276,7 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
     - ``mlmcc`` (:class:`~torch.Tensor`): A tensor containing the Multi-label Matthews Correlation Coefficient.
 
     Args:
-        num_classes: Integer specifying the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
