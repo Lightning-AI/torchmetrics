@@ -19,10 +19,12 @@ from torch import tensor
 from torch.nn import Linear
 
 if module_available("lightning"):
-    from lightning.pytorch import LightningModule, Trainer
+    print("Using lightning")
+    from lightning.pytorch import LightningModule, Trainer, seed_everything
     from lightning.pytorch.loggers import CSVLogger
 else:
-    from pytorch_lightning import LightningModule, Trainer
+    print("Using pytorch_lightning")
+    from pytorch_lightning import LightningModule, Trainer, seed_everything
     from pytorch_lightning.loggers import CSVLogger
 
 from torchmetrics import MetricCollection
@@ -33,6 +35,8 @@ from torchmetrics.wrappers import MultitaskWrapper
 from torchmetrics.utilities.prints import rank_zero_only
 
 from integrations.lightning.boring_model import BoringModel
+
+seed_everything(42)
 
 
 class DiffMetric(SumMetric):
@@ -255,6 +259,7 @@ def test_metric_lightning_log(tmpdir):
         max_epochs=2,
         log_every_n_steps=1,
         logger=logger,
+        accelerator="gpu",
     )
     trainer.fit(model)
 
