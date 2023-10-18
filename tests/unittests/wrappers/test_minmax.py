@@ -108,5 +108,5 @@ def test_no_scalar_compute() -> None:
     """Tests that an assertion error is thrown if the wrapped basemetric gives a non-scalar on compute."""
     min_max_nsm = MinMaxMetric(BinaryConfusionMatrix())
 
-    with pytest.raises(RuntimeError, match=r"Returned value from base metric should be a scalar .*"):
+    with pytest.raises(RuntimeError, match=r"Returned value from base metric should be a float.*"):
         min_max_nsm.compute()

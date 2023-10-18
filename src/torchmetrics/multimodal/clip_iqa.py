@@ -178,7 +178,7 @@ class CLIPImageQualityAssessment(Metric):
             "openai/clip-vit-large-patch14-336",
             "openai/clip-vit-large-patch14",
         ] = "clip_iqa",
-        data_range: Union[int, float] = 1.0,
+        data_range: float = 1.0,
         prompts: Tuple[Union[str, Tuple[str, str]]] = ("quality",),
         **kwargs: Any
     ) -> None:

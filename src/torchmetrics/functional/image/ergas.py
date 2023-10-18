@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple, Union
+from typing import Tuple
 
 import torch
 from torch import Tensor
@@ -46,7 +46,7 @@ def _ergas_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
 def _ergas_compute(
     preds: Tensor,
     target: Tensor,
-    ratio: Union[int, float] = 4,
+    ratio: float = 4,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
     """Erreur Relative Globale Adimensionnelle de Synthèse.
@@ -86,7 +86,7 @@ def _ergas_compute(
 def error_relative_global_dimensionless_synthesis(
     preds: Tensor,
     target: Tensor,
-    ratio: Union[int, float] = 4,
+    ratio: float = 4,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
     """Erreur Relative Globale Adimensionnelle de Synthèse.
