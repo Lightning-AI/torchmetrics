@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import itertools
-from typing import Optional, Union
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -34,7 +34,7 @@ def _tschuprows_t_update(
     target: Tensor,
     num_classes: int,
     nan_strategy: Literal["replace", "drop"] = "replace",
-    nan_replace_value: Optional[Union[int, float]] = 0.0,
+    nan_replace_value: Optional[float] = 0.0,
 ) -> Tensor:
     """Compute the bins to update the confusion matrix with for Tschuprow's T calculation.
 
@@ -92,7 +92,7 @@ def tschuprows_t(
     target: Tensor,
     bias_correction: bool = True,
     nan_strategy: Literal["replace", "drop"] = "replace",
-    nan_replace_value: Optional[Union[int, float]] = 0.0,
+    nan_replace_value: Optional[float] = 0.0,
 ) -> Tensor:
     r"""Compute `Tschuprow's T`_ statistic measuring the association between two categorical (nominal) data series.
 
@@ -148,7 +148,7 @@ def tschuprows_t_matrix(
     matrix: Tensor,
     bias_correction: bool = True,
     nan_strategy: Literal["replace", "drop"] = "replace",
-    nan_replace_value: Optional[Union[int, float]] = 0.0,
+    nan_replace_value: Optional[float] = 0.0,
 ) -> Tensor:
     r"""Compute `Tschuprow's T`_ statistic between a set of multiple variables.
 

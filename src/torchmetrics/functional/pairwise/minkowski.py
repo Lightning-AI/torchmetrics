@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Union
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -22,7 +22,7 @@ from torchmetrics.utilities.exceptions import TorchMetricsUserError
 
 
 def _pairwise_minkowski_distance_update(
-    x: Tensor, y: Optional[Tensor] = None, exponent: Union[int, float] = 2, zero_diagonal: Optional[bool] = None
+    x: Tensor, y: Optional[Tensor] = None, exponent: float = 2, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
     """Calculate the pairwise minkowski distance matrix.
 
@@ -49,7 +49,7 @@ def _pairwise_minkowski_distance_update(
 def pairwise_minkowski_distance(
     x: Tensor,
     y: Optional[Tensor] = None,
-    exponent: Union[int, float] = 2,
+    exponent: float = 2,
     reduction: Literal["mean", "sum", "none", None] = None,
     zero_diagonal: Optional[bool] = None,
 ) -> Tensor:

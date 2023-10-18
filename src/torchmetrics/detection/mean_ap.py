@@ -348,6 +348,7 @@ class MeanAveragePrecision(Metric):
         "plot_upper_bound",
         "plot_legend_name",
         "metric_state",
+        "_update_called",
         # below is added for specifically for this metric
         "coco",
         "cocoeval",
