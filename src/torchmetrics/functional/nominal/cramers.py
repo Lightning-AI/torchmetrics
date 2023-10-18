@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import itertools
-from typing import Optional, Union
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -34,7 +34,7 @@ def _cramers_v_update(
     target: Tensor,
     num_classes: int,
     nan_strategy: Literal["replace", "drop"] = "replace",
-    nan_replace_value: Optional[Union[int, float]] = 0.0,
+    nan_replace_value: Optional[float] = 0.0,
 ) -> Tensor:
     """Compute the bins to update the confusion matrix with for Cramer's V calculation.
 
@@ -90,7 +90,7 @@ def cramers_v(
     target: Tensor,
     bias_correction: bool = True,
     nan_strategy: Literal["replace", "drop"] = "replace",
-    nan_replace_value: Optional[Union[int, float]] = 0.0,
+    nan_replace_value: Optional[float] = 0.0,
 ) -> Tensor:
     r"""Compute `Cramer's V`_ statistic measuring the association between two categorical (nominal) data series.
 
@@ -142,7 +142,7 @@ def cramers_v_matrix(
     matrix: Tensor,
     bias_correction: bool = True,
     nan_strategy: Literal["replace", "drop"] = "replace",
-    nan_replace_value: Optional[Union[int, float]] = 0.0,
+    nan_replace_value: Optional[float] = 0.0,
 ) -> Tensor:
     r"""Compute `Cramer's V`_ statistic between a set of multiple variables.
 

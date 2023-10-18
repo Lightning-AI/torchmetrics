@@ -80,7 +80,7 @@ class TheilsU(Metric):
         self,
         num_classes: int,
         nan_strategy: Literal["replace", "drop"] = "replace",
-        nan_replace_value: Optional[Union[int, float]] = 0.0,
+        nan_replace_value: Optional[float] = 0.0,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
