@@ -13,7 +13,6 @@
 # limitations under the License.
 from collections import namedtuple
 from functools import partial
-from typing import Union
 
 import pytest
 import torch
@@ -44,7 +43,7 @@ for size, channel, coef, ratio, dtype in [
 def _baseline_ergas(
     preds: Tensor,
     target: Tensor,
-    ratio: Union[int, float] = 4,
+    ratio: float = 4,
     reduction: str = "elementwise_mean",
 ) -> Tensor:
     """Baseline implementation of Erreur Relative Globale Adimensionnelle de Synthèse."""
