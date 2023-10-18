@@ -142,7 +142,7 @@ In general metrics can be divided into two categories when we talk about memory 
   **constant** meaning that regardless of how much data is passed to the metric, its memory footprint will not change.
 
 * Metrics with list states: These metrics have at least one state that is a list, which gets tensors appended as the
-  metric is updated. Importantly the size of the list is therefore **not constant** and will grow. The growth depends 
+  metric is updated. Importantly the size of the list is therefore **not constant** and will grow. The growth depends
   on the particular metric (some metrics only need to store a single value per sample, some much more).
 
 You can always check the current metric state by accessing the `.metric_state` property, and checking if any of the
