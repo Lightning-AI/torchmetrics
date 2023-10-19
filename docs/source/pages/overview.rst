@@ -137,14 +137,13 @@ Metrics and memory management
 As stated before, metrics have states and those states take up a certain amount of memory depending on the metric.
 In general metrics can be divided into two categories when we talk about memory management:
 
-* Metrics with tensor states: These metrics only have states that are insteances of :class:`~torch.Tensor`. When these
-  kind of metrics are updated the values of those tensors are updated. Importantly the size of the tensors are
+* Metrics with tensor states: These metrics only have states that are instances of :class:`~torch.Tensor`. When these
+  kind of metrics are updated the values of those tensors are updated. Importantly the size of the tensors is
   **constant** meaning that regardless of how much data is passed to the metric, its memory footprint will not change.
 
-* Metrics with list states: These metrics have at least one state that is a list, which gets appended tensors as the
-  metric is updated. Importantly the size of the list is therefore **not constant** and will grow as the metric is
-  updated. The growth depends on the particular metric (some metrics only need to store a single value per sample,
-  some much more).
+* Metrics with list states: These metrics have at least one state that is a list, which gets tensors appended as the
+  metric is updated. Importantly the size of the list is therefore **not constant** and will grow. The growth depends
+  on the particular metric (some metrics only need to store a single value per sample, some much more).
 
 You can always check the current metric state by accessing the `.metric_state` property, and checking if any of the
 states are lists.
@@ -235,7 +234,7 @@ overhead that is not necessary. It can now be done with:
 ``new_metric.update(*args, **kwargs)`` now calls update of ``first_metric`` and ``second_metric``. It forwards
 all positional arguments but forwards only the keyword arguments that are available in respective metric's update
 declaration. Similarly ``new_metric.compute()`` now calls compute of ``first_metric`` and ``second_metric`` and
-adds the results up. It is important to note that all implemented operations always returns a new metric object. This means
+adds the results up. It is important to note that all implemented operations always return a new metric object. This means
 that the line ``first_metric == second_metric`` will not return a bool indicating if ``first_metric`` and ``second_metric``
 is the same metric, but will return a new metric that checks if the ``first_metric.compute() == second_metric.compute()``.
 
@@ -350,7 +349,7 @@ automatically try to reduce the computations needed by finding groups of metrics
 that share the same underlying metric state. If such a group of metrics is found
 only one of them is actually updated and the updated state will be broadcasted to
 the rest of the metrics within the group. In the example above, this will lead to
-a 2x-3x lower computational cost compared to disabling this feature in the case of
+a 2-3x lower computational cost compared to disabling this feature in the case of
 the validation metrics where only ``update`` is called (this feature does not work
 in combination with ``forward``). However, this speedup comes with a fixed cost upfront,
 where the state-groups have to be determined after the first update. In case the groups
@@ -439,7 +438,7 @@ if a metric is differentiable or not.
 However, note that the cached state is detached from the computational
 graph and cannot be back-propagated. Not doing this would mean storing the computational
 graph for each update call, which can lead to out-of-memory errors.
-In practise this means that:
+In practice this means that:
 
 .. code-block:: python
 
