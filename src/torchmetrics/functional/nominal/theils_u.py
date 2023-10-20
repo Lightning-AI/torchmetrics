@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import itertools
-from typing import Optional, Union
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -57,7 +57,7 @@ def _theils_u_update(
     target: Tensor,
     num_classes: int,
     nan_strategy: Literal["replace", "drop"] = "replace",
-    nan_replace_value: Optional[Union[int, float]] = 0.0,
+    nan_replace_value: Optional[float] = 0.0,
 ) -> Tensor:
     """Compute the bins to update the confusion matrix with for Theil's U calculation.
 
@@ -109,7 +109,7 @@ def theils_u(
     preds: Tensor,
     target: Tensor,
     nan_strategy: Literal["replace", "drop"] = "replace",
-    nan_replace_value: Optional[Union[int, float]] = 0.0,
+    nan_replace_value: Optional[float] = 0.0,
 ) -> Tensor:
     r"""Compute `Theils Uncertainty coefficient`_ statistic measuring the association between two nominal data series.
 
@@ -154,7 +154,7 @@ def theils_u(
 def theils_u_matrix(
     matrix: Tensor,
     nan_strategy: Literal["replace", "drop"] = "replace",
-    nan_replace_value: Optional[Union[int, float]] = 0.0,
+    nan_replace_value: Optional[float] = 0.0,
 ) -> Tensor:
     r"""Compute `Theil's U`_ statistic between a set of multiple variables.
 
