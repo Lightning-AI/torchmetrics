@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from typing import Any, Dict
 
 import numpy as np
@@ -20,14 +19,14 @@ import torch
 from torchmetrics.detection.panoptic_qualities import PanopticQuality
 from torchmetrics.functional.detection.panoptic_qualities import panoptic_quality
 
+from unittests import _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
-_INPUTS_0 = Input(
+_INPUTS_0 = _Input(
     # Shape of input tensors is (num_batches, batch_size, height, width, 2).
     preds=torch.tensor(
         [
@@ -52,7 +51,7 @@ _INPUTS_0 = Input(
     .reshape((1, 1, 5, 5, 2))
     .repeat(2, 1, 1, 1, 1),
 )
-_INPUTS_1 = Input(
+_INPUTS_1 = _Input(
     # Shape of input tensors is (num_batches, batch_size, num_points, 2).
     preds=torch.tensor(
         [[10, 0], [10, 123], [0, 1], [10, 0], [1, 2]],
@@ -192,7 +191,7 @@ def test_extreme_values():
         (_INPUTS_1, _ARGS_2, 1),
     ],
 )
-def test_ignore_mask(inputs: Input, args: Dict[str, Any], cat_dim: int):
+def test_ignore_mask(inputs: _Input, args: Dict[str, Any], cat_dim: int):
     """Test that the metric correctly ignores regions of the inputs that do not map to a know category ID."""
     preds = inputs.preds[0]
     target = inputs.target[0]

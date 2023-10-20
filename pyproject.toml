@@ -121,7 +121,6 @@ ignore = [
     "S301",   # todo: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue  # todo
     "S310",   # todo: Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.  # todo
     "B905",   # todo: `zip()` without an explicit `strict=` parameter
-    "PYI024",  # todo: Use `typing.NamedTuple` instead of `collections.namedtuple`
 ]
 # Exclude a variety of commonly ignored directories.
 exclude = [

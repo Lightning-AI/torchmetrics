@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 
 import numpy as np
 import pytest
@@ -27,25 +26,25 @@ from torchmetrics.functional.clustering.utils import (
     calculate_pair_cluster_confusion_matrix,
 )
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
+
 NUM_CLASSES = 10
 
-_sklearn_inputs = Input(
+_sklearn_inputs = _Input(
     preds=torch.tensor([1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3]),
     target=torch.tensor([1, 1, 1, 1, 2, 1, 2, 2, 2, 2, 3, 1, 3, 3, 3, 2, 2]),
 )
 
-_single_dim_inputs = Input(
+_single_dim_inputs = _Input(
     preds=torch.randint(high=NUM_CLASSES, size=(BATCH_SIZE,)),
     target=torch.randint(high=NUM_CLASSES, size=(BATCH_SIZE,)),
 )
 
-_multi_dim_inputs = Input(
+_multi_dim_inputs = _Input(
     preds=torch.randint(high=NUM_CLASSES, size=(BATCH_SIZE, 2)),
     target=torch.randint(high=NUM_CLASSES, size=(BATCH_SIZE, 2)),
 )

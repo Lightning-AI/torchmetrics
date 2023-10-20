@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
+from typing import List, NamedTuple
 
 import matplotlib
 import matplotlib.pyplot as plt
 import pytest
 import torch
+from torch import Tensor
 from torchmetrics.functional.multimodal.clip_score import clip_score
 from torchmetrics.multimodal.clip_score import CLIPScore
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
@@ -31,7 +32,9 @@ from unittests.text.helpers import skip_on_connection_issues
 seed_all(42)
 
 
-Input = namedtuple("Input", ["images", "captions"])
+class _InputImagesCaptions(NamedTuple):
+    images: Tensor
+    captions: List[List[str]]
 
 
 captions = [
@@ -41,7 +44,9 @@ captions = [
     "A lawyer says him .\nMoschetto, 54 and prosecutors say .\nAuthority abc Moschetto.",
 ]
 
-_random_input = Input(images=torch.randint(255, (2, 2, 3, 64, 64)), captions=[captions[0:2], captions[2:]])
+_random_input = _InputImagesCaptions(
+    images=torch.randint(255, (2, 2, 3, 64, 64)), captions=[captions[0:2], captions[2:]]
+)
 
 
 def _compare_fn(preds, target, model_name_or_path):

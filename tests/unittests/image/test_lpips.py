@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
+from typing import NamedTuple
 
 import pytest
 import torch
@@ -26,9 +26,13 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["img1", "img2"])
 
-_inputs = Input(
+class _Input(NamedTuple):
+    img1: Tensor
+    img2: Tensor
+
+
+_inputs = _Input(
     img1=torch.rand(4, 2, 3, 50, 50),
     img2=torch.rand(4, 2, 3, 50, 50),
 )
