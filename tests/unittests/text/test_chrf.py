@@ -57,7 +57,7 @@ def _sacrebleu_chrf_fn(
 )
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [(_inputs_multiple_references.preds, _inputs_multiple_references.targets)],
+    [(_inputs_multiple_references.preds, _inputs_multiple_references.target)],
 )
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestCHRFScore(TextTester):
@@ -141,7 +141,7 @@ def test_chrf_empty_class():
 def test_chrf_return_sentence_level_score_functional():
     """Test that chrf can return sentence level scores."""
     preds = _inputs_single_sentence_multiple_references.preds
-    targets = _inputs_single_sentence_multiple_references.targets
+    targets = _inputs_single_sentence_multiple_references.target
     _, chrf_sentence_score = chrf_score(preds, targets, return_sentence_level_score=True)
     isinstance(chrf_sentence_score, Tensor)
 
@@ -150,6 +150,6 @@ def test_chrf_return_sentence_level_class():
     """Test that chrf can return sentence level scores."""
     chrf = CHRFScore(return_sentence_level_score=True)
     preds = _inputs_single_sentence_multiple_references.preds
-    targets = _inputs_single_sentence_multiple_references.targets
+    targets = _inputs_single_sentence_multiple_references.target
     _, chrf_sentence_score = chrf(preds, targets)
     isinstance(chrf_sentence_score, Tensor)
