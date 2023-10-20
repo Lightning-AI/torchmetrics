@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 
 import numpy as np
@@ -23,13 +22,12 @@ from torch import Tensor
 from torchmetrics.functional import structural_similarity_index_measure
 from torchmetrics.image import StructuralSimilarityIndexMeasure
 
-from unittests import NUM_BATCHES
+from unittests import NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
 BATCH_SIZE = 2  # custom batch size to prevent memory issues in CI
 _inputs = []
@@ -41,14 +39,14 @@ for size, channel, coef, dtype in [
 ]:
     preds2d = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
     _inputs.append(
-        Input(
+        _Input(
             preds=preds2d,
             target=preds2d * coef,
         )
     )
     preds3d = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, size, dtype=dtype)
     _inputs.append(
-        Input(
+        _Input(
             preds=preds3d,
             target=preds3d * coef,
         )

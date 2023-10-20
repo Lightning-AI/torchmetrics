@@ -13,7 +13,6 @@
 # limitations under the License.
 import itertools
 import operator
-from collections import namedtuple
 from functools import partial
 
 import pytest
@@ -23,13 +22,12 @@ from lightning_utilities.core.imports import compare_version
 from torchmetrics.functional.nominal.theils_u import theils_u, theils_u_matrix
 from torchmetrics.nominal import TheilsU
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers.testers import MetricTester
 
-Input = namedtuple("Input", ["preds", "target"])
 NUM_CLASSES = 4
 
-_input_default = Input(
+_input_default = _Input(
     preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
     target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
 )
@@ -41,9 +39,9 @@ _preds[-1, -1] = float("nan")
 _target = torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE), dtype=torch.float)
 _target[1, 0] = float("nan")
 _target[-1, 0] = float("nan")
-_input_with_nans = Input(preds=_preds, target=_target)
+_input_with_nans = _Input(preds=_preds, target=_target)
 
-_input_logits = Input(
+_input_logits = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES), target=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES)
 )
 
