@@ -751,7 +751,13 @@ def multiclass_precision_recall_curve(
         _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index, average, input_format)
         _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index, input_format)
     preds, target, thresholds = _multiclass_precision_recall_curve_format(
-        preds, target, num_classes, thresholds, ignore_index, average, input_format,
+        preds,
+        target,
+        num_classes,
+        thresholds,
+        ignore_index,
+        average,
+        input_format,
     )
     state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds, average)
     return _multiclass_precision_recall_curve_compute(state, num_classes, thresholds, average)
