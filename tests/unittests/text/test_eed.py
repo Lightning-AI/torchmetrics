@@ -46,7 +46,7 @@ def _rwth_manual_metric(preds, targets) -> Tensor:
 
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [(_inputs_single_reference.preds, _inputs_single_reference.targets)],
+    [(_inputs_single_reference.preds, _inputs_single_reference.target)],
 )
 class TestExtendedEditDistance(TextTester):
     """Test class for `ExtendedEditDistance` metric."""
@@ -117,7 +117,7 @@ def test_eed_empty_with_non_empty_hyp_class():
 def test_eed_return_sentence_level_score_functional():
     """Test that eed can return sentence level scores."""
     hyp = _inputs_single_sentence_multiple_references.preds
-    ref = _inputs_single_sentence_multiple_references.targets
+    ref = _inputs_single_sentence_multiple_references.target
     _, sentence_eed = extended_edit_distance(hyp, ref, return_sentence_level_score=True)
     isinstance(sentence_eed, Tensor)
 
@@ -126,6 +126,6 @@ def test_eed_return_sentence_level_class():
     """Test that eed can return sentence level scores."""
     metric = ExtendedEditDistance(return_sentence_level_score=True)
     hyp = _inputs_single_sentence_multiple_references.preds
-    ref = _inputs_single_sentence_multiple_references.targets
+    ref = _inputs_single_sentence_multiple_references.target
     _, sentence_eed = metric(hyp, ref)
     isinstance(sentence_eed, Tensor)

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# this is just a bypass for this module name collision with build-in one
+# this is just a bypass for this module name collision with built-in one
 from collections import OrderedDict
 from copy import deepcopy
 from typing import Any, Dict, Hashable, Iterable, Iterator, List, Optional, Sequence, Tuple, Union
@@ -60,7 +60,7 @@ class MetricCollection(ModuleDict):
             this behaviour. Can also be set to a list of lists of metrics for setting the compute groups yourself.
 
     .. note::
-        The compute groups feature can significatly speedup the calculation of metrics under the right conditions.
+        The compute groups feature can significantly speedup the calculation of metrics under the right conditions.
         First, the feature is only available when calling the ``update`` method and not when calling ``forward`` method
         due to the internal logic of ``forward`` preventing this. Secondly, since we compute groups share metric
         states by reference, calling ``.items()``, ``.values()`` etc. on the metric collection will break this
@@ -68,7 +68,7 @@ class MetricCollection(ModuleDict):
         call to ``update``).
 
     .. note::
-        Metric collections can be nested at initilization (see last example) but the output of the collection will
+        Metric collections can be nested at initialization (see last example) but the output of the collection will
         still be a single flatten dictionary combining the prefix and postfix arguments from the nested collection.
 
     Raises:
@@ -211,7 +211,7 @@ class MetricCollection(ModuleDict):
                 m0 = getattr(self, cg[0])
                 m0.update(*args, **m0._filter_kwargs(**kwargs))
             if self._state_is_copy:
-                # If we have deep copied state inbetween updates, reestablish link
+                # If we have deep copied state in between updates, reestablish link
                 self._compute_groups_create_state_ref()
                 self._state_is_copy = False
         else:  # the first update always do per metric to form compute groups
@@ -232,7 +232,7 @@ class MetricCollection(ModuleDict):
         ``O(number_of_metrics_in_collection ** 2)``, as all metrics need to be compared to all other metrics.
 
         """
-        n_groups = len(self._groups)
+        num_groups = len(self._groups)
         while True:
             for cg_idx1, cg_members1 in deepcopy(self._groups).items():
                 for cg_idx2, cg_members2 in deepcopy(self._groups).items():
@@ -247,13 +247,13 @@ class MetricCollection(ModuleDict):
                         break
 
                 # Start over if we merged groups
-                if len(self._groups) != n_groups:
+                if len(self._groups) != num_groups:
                     break
 
             # Stop when we iterate over everything and do not merge any groups
-            if len(self._groups) == n_groups:
+            if len(self._groups) == num_groups:
                 break
-            n_groups = len(self._groups)
+            num_groups = len(self._groups)
 
         # Re-index groups
         temp = deepcopy(self._groups)
@@ -592,11 +592,11 @@ class MetricCollection(ModuleDict):
             ax: Either a single instance of matplotlib axis object or an sequence of matplotlib axis objects. If
                 provided, will add the plots to the provided axis objects. If not provided, will create a new. If
                 argument `together` is set to `True`, a single object is expected. If `together` is set to `False`,
-                the number of axis objects needs to be the same lenght as the number of metrics in the collection.
+                the number of axis objects needs to be the same length as the number of metrics in the collection.
             together: If `True`, will plot all metrics in the same axis. If `False`, will plot each metric in a separate
 
         Returns:
-            Either instal tupel of Figure and Axes object or an sequence of tuples with Figure and Axes object for each
+            Either install tuple of Figure and Axes object or an sequence of tuples with Figure and Axes object for each
             metric in the collection.
 
         Raises:

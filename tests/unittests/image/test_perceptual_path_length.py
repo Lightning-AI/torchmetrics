@@ -45,7 +45,7 @@ def test_interpolation_methods(interpolation_method):
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch_fidelity")
 @skip_on_running_out_of_memory()
 def test_sim_net():
-    """Check that the similiarity network is the same as the one used in torch_fidelity."""
+    """Check that the similarity network is the same as the one used in torch_fidelity."""
     compare = SampleSimilarityLPIPS("sample_similarity", resize=64)
     simnet = _LPIPS(net="vgg", resize=64)
 

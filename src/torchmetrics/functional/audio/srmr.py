@@ -25,27 +25,19 @@ from torch.nn.functional import pad
 
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import (
-    _GAMMATONE_AVAILABEL,
-    _TORCHAUDIO_AVAILABEL,
+    _GAMMATONE_AVAILABLE,
+    _TORCHAUDIO_AVAILABLE,
     _TORCHAUDIO_GREATER_EQUAL_0_10,
 )
 
-if _TORCHAUDIO_AVAILABEL and _TORCHAUDIO_GREATER_EQUAL_0_10:
-    from torchaudio.functional.filtering import lfilter
-else:
-    lfilter = None
-    __doctest_skip__ = ["speech_reverberation_modulation_energy_ratio"]
-
-if _GAMMATONE_AVAILABEL:
-    from gammatone.fftweight import fft_gtgram
-    from gammatone.filters import centre_freqs, make_erb_filters
-else:
-    fft_gtgram, centre_freqs, make_erb_filters = None, None, None
+if not _TORCHAUDIO_AVAILABLE or not _TORCHAUDIO_GREATER_EQUAL_0_10 or not _GAMMATONE_AVAILABLE:
     __doctest_skip__ = ["speech_reverberation_modulation_energy_ratio"]
 
 
 @lru_cache(maxsize=100)
 def _calc_erbs(low_freq: float, fs: int, n_filters: int, device: torch.device) -> Tensor:
+    from gammatone.filters import centre_freqs
+
     ear_q = 9.26449  # Glasberg and Moore Parameters
     min_bw = 24.7
     order = 1
@@ -55,6 +47,8 @@ def _calc_erbs(low_freq: float, fs: int, n_filters: int, device: torch.device) -
 
 @lru_cache(maxsize=100)
 def _make_erb_filters(fs: int, num_freqs: int, cutoff: float, device: torch.device) -> Tensor:
+    from gammatone.filters import centre_freqs, make_erb_filters
+
     cfs = centre_freqs(fs, num_freqs, cutoff)
     fcoefs = make_erb_filters(fs, cfs)
     return torch.tensor(fcoefs, device=device)
@@ -130,8 +124,10 @@ def _erb_filterbank(wave: Tensor, coefs: Tensor) -> Tensor:
         Tensor: shape [B, N, time]
 
     """
-    n_batch, time = wave.shape
-    wave = wave.to(dtype=coefs.dtype).reshape(n_batch, 1, time)  # [B, time]
+    from torchaudio.functional.filtering import lfilter
+
+    num_batch, time = wave.shape
+    wave = wave.to(dtype=coefs.dtype).reshape(num_batch, 1, time)  # [B, time]
     wave = wave.expand(-1, coefs.shape[0], -1)  # [B, N, time]
 
     gain = coefs[:, 9]
@@ -233,12 +229,15 @@ def speech_reverberation_modulation_energy_ratio(
         tensor([0.3354], dtype=torch.float64)
 
     """
-    if not _TORCHAUDIO_AVAILABEL or not _TORCHAUDIO_GREATER_EQUAL_0_10 or not _GAMMATONE_AVAILABEL:
+    if not _TORCHAUDIO_AVAILABLE or not _TORCHAUDIO_GREATER_EQUAL_0_10 or not _GAMMATONE_AVAILABLE:
         raise ModuleNotFoundError(
             "speech_reverberation_modulation_energy_ratio requires you to have `gammatone` and"
             " `torchaudio>=0.10` installed. Either install as ``pip install torchmetrics[audio]`` or "
             "``pip install torchaudio>=0.10`` and ``pip install git+https://github.com/detly/gammatone``"
         )
+    from gammatone.fftweight import fft_gtgram
+    from torchaudio.functional.filtering import lfilter
+
     _srmr_arg_validate(
         fs=fs,
         n_cochlear_filters=n_cochlear_filters,
@@ -250,7 +249,7 @@ def speech_reverberation_modulation_energy_ratio(
     )
     shape = preds.shape
     preds = preds.reshape(1, -1) if len(shape) == 1 else preds.reshape(-1, shape[-1])
-    n_batch, time = preds.shape
+    num_batch, time = preds.shape
     # convert int type to float
     if not torch.is_floating_point(preds):
         preds = preds.to(torch.float64) / torch.finfo(preds.dtype).max
@@ -272,7 +271,7 @@ def speech_reverberation_modulation_energy_ratio(
         mfs = 400.0
         temp = []
         preds_np = preds.detach().cpu().numpy()
-        for b in range(n_batch):
+        for b in range(num_batch):
             gt_env_b = fft_gtgram(preds_np[b], fs, 0.010, 0.0025, n_cochlear_filters, low_freq)
             temp.append(torch.tensor(gt_env_b))
         gt_env = torch.stack(temp, dim=0).to(device=preds.device)
@@ -291,7 +290,7 @@ def speech_reverberation_modulation_energy_ratio(
         min_cf, max_cf, n=8, fs=mfs, q=2, device=preds.device
     )
 
-    n_frames = int(1 + (time - w_length) // w_inc)
+    num_frames = int(1 + (time - w_length) // w_inc)
     w = torch.hamming_window(w_length + 1, dtype=torch.float64, device=preds.device)[:-1]
     mod_out = lfilter(
         gt_env.unsqueeze(-2).expand(-1, -1, mf.shape[0], -1), mf[:, 1, :], mf[:, 0, :], clamp=False, batching=True
@@ -300,7 +299,7 @@ def speech_reverberation_modulation_energy_ratio(
     padding = (0, max(ceil(time / w_inc) * w_inc - time, w_length - time))
     mod_out_pad = pad(mod_out, pad=padding, mode="constant", value=0)
     mod_out_frame = mod_out_pad.unfold(-1, w_length, w_inc)
-    energy = ((mod_out_frame[..., :n_frames, :] * w) ** 2).sum(dim=-1)  # [B, N_filters, 8, n_frames]
+    energy = ((mod_out_frame[..., :num_frames, :] * w) ** 2).sum(dim=-1)  # [B, N_filters, 8, n_frames]
 
     if norm:
         energy = _normalize_energy(energy)
@@ -308,7 +307,7 @@ def speech_reverberation_modulation_energy_ratio(
     erbs = torch.flipud(_calc_erbs(low_freq, fs, n_cochlear_filters, device=preds.device))
 
     avg_energy = torch.mean(energy, dim=-1)
-    total_energy = torch.sum(avg_energy.reshape(n_batch, -1), dim=-1)
+    total_energy = torch.sum(avg_energy.reshape(num_batch, -1), dim=-1)
     ac_energy = torch.sum(avg_energy, dim=2)
     ac_perc = ac_energy * 100 / total_energy.reshape(-1, 1)
     ac_perc_cumsum = ac_perc.flip(-1).cumsum(-1)
@@ -316,7 +315,7 @@ def speech_reverberation_modulation_energy_ratio(
     bw = erbs[k90perc_idx]
 
     temp = []
-    for b in range(n_batch):
+    for b in range(num_batch):
         score = _cal_srmr_score(bw[b], avg_energy[b], cutoffs=cutoffs)
         temp.append(score)
     score = torch.stack(temp)

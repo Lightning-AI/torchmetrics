@@ -76,6 +76,6 @@ def test_mutual_info_score_functional_raises_invalid_task():
 def test_mutual_info_score_functional_is_symmetric(
     preds=_single_target_extrinsic1.preds, target=_single_target_extrinsic1.target
 ):
-    """Check that the metric funtional is symmetric."""
+    """Check that the metric functional is symmetric."""
     for p, t in zip(preds, target):
         assert torch.allclose(mutual_info_score(p, t), mutual_info_score(t, p))

@@ -19,7 +19,7 @@ from torch.nn import functional as F  # noqa: N812
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
-from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.utilities.compute import _safe_divide, interp
 from torchmetrics.utilities.data import _bincount, _cumsum
 from torchmetrics.utilities.enums import ClassificationTask
 
@@ -39,7 +39,7 @@ def _binary_clf_curve(
         preds: 1d tensor with predictions
         target: 1d tensor with true values
         sample_weights: a 1d tensor with a weight per sample
-        pos_label: interger determining what the positive class in target tensor is
+        pos_label: integer determining what the positive class in target tensor is
 
     Returns:
         fps: 1d tensor with false positives for different thresholds
@@ -396,6 +396,7 @@ def _multiclass_precision_recall_curve_arg_validation(
     num_classes: int,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
+    average: Optional[Literal["micro", "macro"]] = None,
     input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
 ) -> None:
     """Validate non tensor input.
@@ -407,6 +408,8 @@ def _multiclass_precision_recall_curve_arg_validation(
     """
     if not isinstance(num_classes, int) or num_classes < 2:
         raise ValueError(f"Expected argument `num_classes` to be an integer larger than 1, but got {num_classes}")
+    if average not in (None, "micro", "macro"):
+        raise ValueError(f"Expected argument `average` to be one of None, 'micro' or 'macro', but got {average}")
     _binary_precision_recall_curve_arg_validation(thresholds, ignore_index, input_format)
 
 
@@ -468,6 +471,7 @@ def _multiclass_precision_recall_curve_format(
     num_classes: int,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
+    average: Optional[Literal["micro", "macro"]] = None,
     input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
 ) -> Tuple[Tensor, Tensor, Optional[Tensor]]:
     """Convert all input to the right format.
@@ -492,6 +496,10 @@ def _multiclass_precision_recall_curve_format(
         if (input_format == "auto" or input_format is True) and not torch.all((preds >= 0) * (preds <= 1)):
             preds = preds.softmax(1)
 
+    if average == "micro":
+        preds = preds.flatten()
+        target = torch.nn.functional.one_hot(target, num_classes=num_classes).flatten()
+
     thresholds = _adjust_threshold_arg(thresholds, preds.device)
     return preds, target, thresholds
 
@@ -501,6 +509,7 @@ def _multiclass_precision_recall_curve_update(
     target: Tensor,
     num_classes: int,
     thresholds: Optional[Tensor],
+    average: Optional[Literal["micro", "macro"]] = None,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
     """Return the state to calculate the pr-curve with.
 
@@ -510,6 +519,8 @@ def _multiclass_precision_recall_curve_update(
     """
     if thresholds is None:
         return preds, target
+    if average == "micro":
+        return _binary_precision_recall_curve_update(preds, target, thresholds)
     if preds.numel() * num_classes <= 1_000_000:
         update_fn = _multiclass_precision_recall_curve_update_vectorized
     else:
@@ -569,6 +580,7 @@ def _multiclass_precision_recall_curve_compute(
     state: Union[Tensor, Tuple[Tensor, Tensor]],
     num_classes: int,
     thresholds: Optional[Tensor],
+    average: Optional[Literal["micro", "macro"]] = None,
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     """Compute the final pr-curve.
 
@@ -576,6 +588,9 @@ def _multiclass_precision_recall_curve_compute(
     original input, then we dynamically compute the binary classification curve in an iterative way.
 
     """
+    if average == "micro":
+        return _binary_precision_recall_curve_compute(state, thresholds)
+
     if isinstance(state, Tensor) and thresholds is not None:
         tps = state[:, :, 1, 1]
         fps = state[:, :, 0, 1]
@@ -584,15 +599,37 @@ def _multiclass_precision_recall_curve_compute(
         recall = _safe_divide(tps, tps + fns)
         precision = torch.cat([precision, torch.ones(1, num_classes, dtype=precision.dtype, device=precision.device)])
         recall = torch.cat([recall, torch.zeros(1, num_classes, dtype=recall.dtype, device=recall.device)])
-        return precision.T, recall.T, thresholds
+        precision = precision.T
+        recall = recall.T
+        thres = thresholds
+        tensor_state = True
+    else:
+        precision_list, recall_list, thres_list = [], [], []
+        for i in range(num_classes):
+            res = _binary_precision_recall_curve_compute((state[0][:, i], state[1]), thresholds=None, pos_label=i)
+            precision_list.append(res[0])
+            recall_list.append(res[1])
+            thres_list.append(res[2])
+        tensor_state = False
 
-    precision_list, recall_list, threshold_list = [], [], []
-    for i in range(num_classes):
-        res = _binary_precision_recall_curve_compute((state[0][:, i], state[1]), thresholds=None, pos_label=i)
-        precision_list.append(res[0])
-        recall_list.append(res[1])
-        threshold_list.append(res[2])
-    return precision_list, recall_list, threshold_list
+    if average == "macro":
+        thres = thres.repeat(num_classes) if tensor_state else torch.cat(thres_list, 0)
+        thres = thres.sort().values
+        mean_precision = precision.flatten() if tensor_state else torch.cat(precision_list, 0)
+        mean_precision = mean_precision.sort().values
+        mean_recall = torch.zeros_like(mean_precision)
+        for i in range(num_classes):
+            mean_recall += interp(
+                mean_precision,
+                precision[i] if tensor_state else precision_list[i],
+                recall[i] if tensor_state else recall_list[i],
+            )
+        mean_recall /= num_classes
+        return mean_precision, mean_recall, thres
+
+    if tensor_state:
+        return precision, recall, thres
+    return precision_list, recall_list, thres_list
 
 
 def multiclass_precision_recall_curve(
@@ -600,6 +637,7 @@ def multiclass_precision_recall_curve(
     target: Tensor,
     num_classes: int,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    average: Optional[Literal["micro", "macro"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
     input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
@@ -628,7 +666,7 @@ def multiclass_precision_recall_curve(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         thresholds:
             Can be one of:
 
@@ -640,6 +678,13 @@ def multiclass_precision_recall_curve(
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        average:
+            If aggregation of curves should be applied. By default, the curves are not aggregated and a curve for
+            each class is returned. If `average` is set to ``"micro"``, the metric will aggregate the curves by one hot
+            encoding the targets and flattening the predictions, considering all classes jointly as a binary problem.
+            If `average` is set to ``"macro"``, the metric will aggregate the curves by first interpolating the curves
+            from each class at a combined set of thresholds and then average over the classwise interpolated curves.
+            See `averaging curve objects`_ for more info on the different averaging methods.
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -703,13 +748,13 @@ def multiclass_precision_recall_curve(
 
     """
     if validate_args:
-        _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index, input_format)
+        _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index, average, input_format)
         _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index, input_format)
     preds, target, thresholds = _multiclass_precision_recall_curve_format(
-        preds, target, num_classes, thresholds, ignore_index, input_format
+        preds, target, num_classes, thresholds, ignore_index, average, input_format,
     )
-    state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
-    return _multiclass_precision_recall_curve_compute(state, num_classes, thresholds)
+    state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds, average)
+    return _multiclass_precision_recall_curve_compute(state, num_classes, thresholds, average)
 
 
 def _multilabel_precision_recall_curve_arg_validation(
@@ -884,7 +929,7 @@ def multilabel_precision_recall_curve(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         thresholds:
             Can be one of:
 
@@ -974,6 +1019,7 @@ def precision_recall_curve(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
+    average: Optional[Literal["micro", "macro"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
     input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
@@ -1024,7 +1070,7 @@ def precision_recall_curve(
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         return multiclass_precision_recall_curve(
-            preds, target, num_classes, thresholds, ignore_index, validate_args, input_format
+            preds, target, num_classes, thresholds, average, ignore_index, validate_args, input_format
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):

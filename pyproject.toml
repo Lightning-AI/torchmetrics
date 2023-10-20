@@ -19,14 +19,11 @@ addopts = [
     "--color=yes",
     "--disable-pytest-warnings",
 ]
-# ToDo
-#filterwarnings = ["error::FutureWarning"]
+#filterwarnings = ["error::FutureWarning"] # ToDo
 xfail_strict = true
 junit_duration_report = "call"
-
 [tool.coverage.report]
 exclude_lines = ["pragma: no cover", "pass"]
-
 [tool.coverage.run]
 parallel = true
 concurrency = "thread"
@@ -40,12 +37,49 @@ exclude = "(.eggs|.git|.hg|.mypy_cache|.venv|_build|buck-out|build|dist)"
 
 [tool.docformatter]
 recursive = true
-wrap-summaries = 120
+# some docstring start with r"""
+wrap-summaries = 119
 wrap-descriptions = 120
 blank = true
 
+[tool.codespell]
+#skip = '*.py'
+quiet-level = 3
+# Todo: comma separated list of words; waiting for:
+#  https://github.com/codespell-project/codespell/issues/2839#issuecomment-1731601603
+# Todo: also adding links until they ignored by its: nature
+#  https://github.com/codespell-project/codespell/issues/2243#issuecomment-1732019960
+ignore-words-list = """
+  rouge, \
+  mape, \
+  wil, \
+  fpr, \
+  raison, \
+  archiv
+"""
+
+[tool.typos.default]
+extend-ignore-identifiers-re = [
+    # *sigh* this just isn't worth the cost of fixing
+    "AttributeID.*Supress.*",
+]
+
+[tool.typos.default.extend-identifiers]
+# *sigh* this just isn't worth the cost of fixing
+MAPE = "MAPE"
+WIL = "WIL"
+Raison = "Raison"
+
+[tool.typos.default.extend-words]
+# Don't correct the surname "Teh"
+fpr = "fpr"
+mape = "mape"
+wil = "wil"
+
+
 
 [tool.ruff]
+target-version = "py38"
 line-length = 120
 # Enable Pyflakes `E` and `F` codes by default.
 select = [

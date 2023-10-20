@@ -103,6 +103,8 @@ class BinaryPrecisionRecallCurve(Metric):
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         input_format: str or bool specifying the format of the input preds tensor. Can be one of:
@@ -240,7 +242,7 @@ class MulticlassPrecisionRecallCurve(Metric):
     tradeoff between the two values can been seen.
 
     For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
-    classes as the negative, which is refered to as the one-vs-rest approach. One-vs-one is currently not supported by
+    classes as the negative, which is referred to as the one-vs-rest approach. One-vs-one is currently not supported by
     this metric.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -269,7 +271,7 @@ class MulticlassPrecisionRecallCurve(Metric):
        size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         thresholds:
             Can be one of:
 
@@ -281,6 +283,15 @@ class MulticlassPrecisionRecallCurve(Metric):
             - If set to a 1D `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        average:
+            If aggregation of curves should be applied. By default, the curves are not aggregated and a curve for
+            each class is returned. If `average` is set to ``"micro"``, the metric will aggregate the curves by one hot
+            encoding the targets and flattening the predictions, considering all classes jointly as a binary problem.
+            If `average` is set to ``"macro"``, the metric will aggregate the curves by first interpolating the curves
+            from each class at a combined set of thresholds and then average over the classwise interpolated curves.
+            See `averaging curve objects`_ for more info on the different averaging methods.
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         input_format: str or bool specifying the format of the input preds tensor. Can be one of:
@@ -340,6 +351,7 @@ class MulticlassPrecisionRecallCurve(Metric):
         self,
         num_classes: int,
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        average: Optional[Literal["micro", "macro"]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
@@ -347,9 +359,10 @@ class MulticlassPrecisionRecallCurve(Metric):
     ) -> None:
         super().__init__(**kwargs)
         if validate_args:
-            _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index, input_format)
+            _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index, average, input_format
 
         self.num_classes = num_classes
+        self.average = average
         self.ignore_index = ignore_index
         self.validate_args = validate_args
         self.input_format = input_format
@@ -374,9 +387,8 @@ class MulticlassPrecisionRecallCurve(Metric):
                 preds, target, self.num_classes, self.ignore_index, self.input_format
             )
         preds, target, _ = _multiclass_precision_recall_curve_format(
-            preds, target, self.num_classes, self.thresholds, self.ignore_index, self.input_format
+            preds, target, self.num_classes, self.thresholds, self.ignore_index, self.average, self.input_format
         )
-        state = _multiclass_precision_recall_curve_update(preds, target, self.num_classes, self.thresholds)
         if isinstance(state, Tensor):
             self.confmat += state
         else:
@@ -386,7 +398,7 @@ class MulticlassPrecisionRecallCurve(Metric):
     def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
-        return _multiclass_precision_recall_curve_compute(state, self.num_classes, self.thresholds)
+        return _multiclass_precision_recall_curve_compute(state, self.num_classes, self.thresholds, self.average)
 
     def plot(
         self,
@@ -474,7 +486,7 @@ class MultilabelPrecisionRecallCurve(Metric):
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         thresholds:
             Can be one of:
 
@@ -486,6 +498,8 @@ class MultilabelPrecisionRecallCurve(Metric):
             - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         input_format: str or bool specifying the format of the input preds tensor. Can be one of:

@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import namedtuple
 from functools import partial
 
 import numpy as np
@@ -21,18 +20,18 @@ import torch
 from skimage.metrics import peak_signal_noise_ratio as skimage_peak_signal_noise_ratio
 from torchmetrics.functional import peak_signal_noise_ratio
 from torchmetrics.image import PeakSignalNoiseRatio
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
 _input_size = (NUM_BATCHES, BATCH_SIZE, 32, 32)
 _inputs = [
-    Input(
+    _Input(
         preds=torch.randint(n_cls_pred, _input_size, dtype=torch.float),
         target=torch.randint(n_cls_target, _input_size, dtype=torch.float),
     )
@@ -126,7 +125,10 @@ class TestPSNR(MetricTester):
         )
 
     # PSNR half + cpu does not work due to missing support in torch.log
-    @pytest.mark.xfail(reason="PSNR metric does not support cpu + half precision")
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_2_1,
+        reason="Pytoch below 2.1 does not support cpu + half precision used in PSNR metric",
+    )
     def test_psnr_half_cpu(self, preds, target, data_range, reduction, dim, base, ref_metric):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(

@@ -43,7 +43,7 @@
 .. _Mean-Average-Precision (mAP) and Mean-Average-Recall (mAR): https://jonathan-hui.medium.com/map-mean-average-precision-for-object-detection-45c121a31173
 .. _Tweedie Deviance Score: https://en.wikipedia.org/wiki/Tweedie_distribution#The_Tweedie_deviance
 .. _Permutation Invariant Training of Deep Models: https://ieeexplore.ieee.org/abstract/document/7952154
-.. _Top-label Calibration Error: https://arxiv.org/pdf/1909.10155.pdf
+.. _Top-label Calibration Error: https://arxiv.org/abs/1909.10155
 .. _Gradient Computation of Image: https://en.wikipedia.org/wiki/Image_gradient
 .. _R2 Score_Coefficient Determination: https://en.wikipedia.org/wiki/Coefficient_of_determination
 .. _Rank of element tensor: https://github.com/scipy/scipy/blob/v1.6.2/scipy/stats/stats.py#L4140-L4303
@@ -51,10 +51,10 @@
 .. _BERT_score: https://github.com/Tiiiger/bert_score/blob/master/bert_score/utils.py
 .. _Bert_score Evaluating Text Generation: https://arxiv.org/abs/1904.09675
 .. _BLEU score: https://en.wikipedia.org/wiki/BLEU
-.. _BLEU: http://www.aclweb.org/anthology/P02-1040.pdf
+.. _BLEU: http://www.aclweb.org/anthology/P02-1040
 .. _SacreBLEU: https://github.com/mjpost/sacrebleu
 .. _SacreBleu_ter: https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py
-.. _Machine Translation Evolution: https://aclanthology.org/P04-1077.pdf
+.. _Machine Translation Evolution: https://aclanthology.org/P04-1077
 .. _Rouge score_Text Normalizition: https://github.com/google-research/google-research/blob/master/rouge/tokenize.py
 .. _Calculate Rouge Score: https://en.wikipedia.org/wiki/ROUGE_(metric)
 .. _Rouge Detail: https://aclanthology.org/W04-1013/
@@ -76,12 +76,12 @@
 .. _Python ROUGE Implementation: https://pypi.org/project/rouge-score/
 .. _Scikit_Learn-Ranking.py: https: //github.com/scikit-learn/scikit-learn/blob/master/sklearn/metrics/_ranking.py
 .. _Verified Uncertainty Calibration: https://arxiv.org/abs/1909.10155
-.. _SQuAD Metric: https://arxiv.org/pdf/1606.05250.pdf
-.. _chrF score: https://aclanthology.org/W15-3049.pdf
-.. _chrF++ score: https://aclanthology.org/W17-4770.pdf
-.. _TER: https://aclanthology.org/2006.amta-papers.25.pdf
-.. _ExtendedEditDistance: https://aclanthology.org/W19-5359.pdf
-.. _MultiScaleSSIM: https://ece.uwaterloo.ca/~z70wang/publications/msssim.pdf
+.. _SQuAD Metric: https://arxiv.org/abs/1606.05250
+.. _chrF score: https://aclanthology.org/W15-3049
+.. _chrF++ score: https://aclanthology.org/W17-4770
+.. _TER: https://aclanthology.org/2006.amta-papers.25
+.. _ExtendedEditDistance: https://aclanthology.org/W19-5359
+.. _MultiScaleSSIM: https://ece.uwaterloo.ca/~z70wang/publications/msssim
 .. _UniversalImageQualityIndex: https://ieeexplore.ieee.org/abstract/document/995823
 .. _SpectralDistortionIndex: https://www.semanticscholar.org/paper/Multispectral-and-panchromatic-data-fusion-without-Alparone-Aiazzi/b6db12e3785326577cb95fd743fecbf5bc66c7c9
 .. _RelativeAverageSpectralError: https://www.semanticscholar.org/paper/Data-Fusion.-Definitions-and-Architectures-Fusion-Wald/51b2b81e5124b3bb7ec53517a5dd64d8e348cadf
@@ -91,19 +91,19 @@
 .. _WIL: https://www.isca-speech.org/archive/interspeech_2004/morris04_interspeech.html
 .. _WIP: https://infoscience.epfl.ch/record/82766
 .. _TV: https://en.wikipedia.org/wiki/Total_variation_denoising
-.. _InfoLM: https://arxiv.org/pdf/2112.01589.pdf
+.. _InfoLM: https://arxiv.org/abs/2112.01589
 .. _alpha divergence: https://static.renyi.hu/renyi_cikkek/1961_on_measures_of_entropy_and_information.pdf
 .. _beta divergence: https://www.sciencedirect.com/science/article/pii/S0047259X08000456
 .. _AB divergence: https://pdfs.semanticscholar.org/744b/1166de34cb099100f151f3b1459f141ae25b.pdf
 .. _Rényi divergence: https://static.renyi.hu/renyi_cikkek/1961_on_measures_of_entropy_and_information.pdf
-.. _Fisher-Rao distance: https://arxiv.org/pdf/1711.01530.pdf
+.. _Fisher-Rao distance: https://arxiv.org/abs/1711.01530
 .. _Cramer's V: https://en.wikipedia.org/wiki/Cram%C3%A9r%27s_V
 .. _Kendall Rank Correlation Coefficient: https://en.wikipedia.org/wiki/Kendall_rank_correlation_coefficient
 .. _The Treatment of Ties in Ranking Problems: https://www.jstor.org/stable/2332303
-.. _LogCosh Error: https://arxiv.org/pdf/2101.10427.pdf
+.. _LogCosh Error: https://arxiv.org/abs/2101.10427
 .. _Tschuprow's T: https://en.wikipedia.org/wiki/Tschuprow%27s_T
 .. _Pearson's Contingency Coefficient: https://www.itl.nist.gov/div898/software/dataplot/refman2/auxillar/pearcont.htm
-.. _CLIP score: https://arxiv.org/pdf/2104.08718.pdf
+.. _CLIP score: https://arxiv.org/abs/2104.08718
 .. _Huggingface OpenAI: https://huggingface.co/openai
 .. _Theils Uncertainty coefficient: https://en.wikipedia.org/wiki/Uncertainty_coefficient
 .. _Perceptual Evaluation of Speech Quality: https://en.wikipedia.org/wiki/Perceptual_Evaluation_of_Speech_Quality
@@ -125,7 +125,7 @@
 .. _SRMRpy: https://github.com/jfsantos/SRMRpy
 .. _Permutation invariant training: https://arxiv.org/abs/1607.00325
 .. _ranking ref1: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
-.. _Spectral Distortion Index: https://www.ingentaconnect.com/content/asprs/pers/2008/00000074/00000002/art00003;jsessionid=nzjnb3v9xxr1.x-ic-live-03
+.. _Spectral Distortion Index: https://www.semanticscholar.org/paper/Multispectral-and-panchromatic-data-fusion-without-Alparone-Aiazzi/b6db12e3785326577cb95fd743fecbf5bc66c7c9
 .. _Relative dimensionless global error synthesis: https://ieeexplore.ieee.org/abstract/document/4317530
 .. _fid ref1: https://arxiv.org/abs/1512.00567
 .. _fid ref2: https://arxiv.org/abs/1706.08500
@@ -146,7 +146,7 @@
 .. _VIF: https://ieeexplore.ieee.org/abstract/document/1576816
 .. _CLIP-IQA: https://arxiv.org/abs/2207.12396
 .. _CLIP: https://arxiv.org/abs/2103.00020
-.. _PPL : https://arxiv.org/pdf/1812.04948
+.. _PPL : https://arxiv.org/abs/1812.04948
 .. _CIOU: https://arxiv.org/abs/2005.03572
 .. _DIOU: https://arxiv.org/abs/1911.08287v1
 .. _GIOU: https://arxiv.org/abs/1902.09630
@@ -159,8 +159,11 @@
 .. _fork of pycocotools: https://github.com/ppwwyyxx/cocoapi
 .. _Adjusted Rand Score: https://en.wikipedia.org/wiki/Rand_index#Adjusted_Rand_index
 .. _Dunn Index: https://en.wikipedia.org/wiki/Dunn_index
-.. _V-Measure Score: https://www.aclweb.org/anthology/D07-1043.pdf
+.. _V-Measure Score: https://www.aclweb.org/anthology/D07-1043
 .. _Homogeneity Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.homogeneity_score.html
 .. _Completeness Score: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.completeness_score.html
 .. _Davies-Bouldin Score: https://en.wikipedia.org/wiki/Davies%E2%80%93Bouldin_index
 .. _Fowlkes-Mallows Index: https://scikit-learn.org/stable/modules/generated/sklearn.metrics.fowlkes_mallows_score.html#sklearn.metrics.fowlkes_mallows_score
+.. _FLORES-101: https://arxiv.org/abs/2106.03193
+.. _FLORES-200: https://arxiv.org/abs/2207.04672
+.. _averaging curve objects: https://scikit-learn.org/stable/auto_examples/model_selection/plot_roc.html

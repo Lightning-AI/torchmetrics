@@ -77,7 +77,7 @@ def multiclass_exact_match(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of labels
+        num_classes: Integer specifying the number of labels
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
 
@@ -151,14 +151,14 @@ def multilabel_exact_match(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
 
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:

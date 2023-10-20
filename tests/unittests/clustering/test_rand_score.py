@@ -67,6 +67,6 @@ def test_rand_score_functional_raises_invalid_task():
 def test_rand_score_functional_is_symmetric(
     preds=_single_target_extrinsic1.preds, target=_single_target_extrinsic1.target
 ):
-    """Check that the metric funtional is symmetric."""
+    """Check that the metric functional is symmetric."""
     for p, t in zip(preds, target):
         assert torch.allclose(rand_score(p, t), rand_score(t, p))

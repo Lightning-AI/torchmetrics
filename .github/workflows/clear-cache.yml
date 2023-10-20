@@ -4,18 +4,17 @@ on:
   workflow_dispatch:
     inputs:
       pattern:
-        description: 'patter for cleaning cache'
+        description: "pattern for cleaning cache"
         default: "pip|conda"
         required: false
         type: string
 
 jobs:
-
   cron-clear:
     if: github.event_name == 'schedule'
     uses: Lightning-AI/utilities/.github/workflows/clear-cache.yml@v0.9.0
     with:
-      pattern: 'pip-latest'
+      pattern: "pip-latest"
 
   direct-clear:
     if: github.event_name == 'workflow_dispatch'

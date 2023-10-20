@@ -18,12 +18,6 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _MULTIPROCESSING_AVAILABLE, _PESQ_AVAILABLE
 
-if _PESQ_AVAILABLE:
-    import pesq as pesq_backend
-else:
-    pesq_backend = None
-
-
 __doctest_requires__ = {("perceptual_evaluation_speech_quality",): ["pesq"]}
 
 
@@ -38,7 +32,7 @@ def perceptual_evaluation_speech_quality(
     r"""Calculate `Perceptual Evaluation of Speech Quality`_ (PESQ).
 
     It's a recognized industry standard for audio quality that takes into considerations characteristics such as: audio
-    sharpness, call volume, background noise, clipping, audio interference ect. PESQ returns a score between -0.5 and
+    sharpness, call volume, background noise, clipping, audio interference etc. PESQ returns a score between -0.5 and
     4.5 with the higher scores indicating a better quality.
 
     This metric is a wrapper for the `pesq package`_. Note that input will be moved to `cpu` to perform the metric
@@ -55,7 +49,7 @@ def perceptual_evaluation_speech_quality(
         fs: sampling frequency, should be 16000 or 8000 (Hz)
         mode: ``'wb'`` (wide-band) or ``'nb'`` (narrow-band)
         keep_same_device: whether to move the pesq value to the device of preds
-        n_processes: integer specifiying the number of processes to run in parallel for the metric calculation.
+        n_processes: integer specifying the number of processes to run in parallel for the metric calculation.
             Only applies to batches of data and if ``multiprocessing`` package is installed.
 
     Returns:
@@ -88,6 +82,8 @@ def perceptual_evaluation_speech_quality(
             "PESQ metric requires that pesq is installed."
             " Either install as `pip install torchmetrics[audio]` or `pip install pesq`."
         )
+    import pesq as pesq_backend
+
     if fs not in (8000, 16000):
         raise ValueError(f"Expected argument `fs` to either be 8000 or 16000 but got {fs}")
     if mode not in ("wb", "nb"):

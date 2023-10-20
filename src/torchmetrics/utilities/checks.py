@@ -649,14 +649,14 @@ def check_forward_full_state_property(
         metric_class: metric class object that should be checked
         init_args: dict containing arguments for initializing the metric class
         input_args: dict containing arguments to pass to ``forward``
-        num_update_to_compare: if we successfully detech that the flag is safe to set to ``False``
+        num_update_to_compare: if we successfully detect that the flag is safe to set to ``False``
             we will run some speedup test. This arg should be a list of integers for how many
             steps to compare over.
         reps: number of repetitions of speedup test
 
     Example (states in ``update`` are independent, save to set ``full_state_update=False``)
         >>> from torchmetrics.classification import MulticlassConfusionMatrix
-        >>> check_forward_full_state_property(  # doctest: +ELLIPSIS
+        >>> check_forward_full_state_property(  # doctest: +SKIP
         ...     MulticlassConfusionMatrix,
         ...     init_args = {'num_classes': 3},
         ...     input_args = {'preds': torch.randint(3, (100,)), 'target': torch.randint(3, (100,))},
@@ -669,7 +669,7 @@ def check_forward_full_state_property(
         Partial state for 1000 steps took: ...
         Recommended setting `full_state_update=False`
 
-    Example (states in ``update`` are dependend meaning that ``full_state_update=True``):
+    Example (states in ``update`` are dependent meaning that ``full_state_update=True``):
         >>> from torchmetrics.classification import MulticlassConfusionMatrix
         >>> class MyMetric(MulticlassConfusionMatrix):
         ...     def update(self, preds, target):

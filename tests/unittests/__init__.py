@@ -1,7 +1,9 @@
 import os.path
+from typing import NamedTuple
 
 import numpy
 import torch
+from torch import Tensor
 
 from unittests.conftest import (
     BATCH_SIZE,
@@ -26,9 +28,23 @@ if torch.cuda.is_available():
     torch.backends.cuda.matmul.allow_tf32 = False
     torch.backends.cudnn.allow_tf32 = False
 
+
+class _Input(NamedTuple):
+    preds: Tensor
+    target: Tensor
+
+
+class _GroupInput(NamedTuple):
+    preds: Tensor
+    target: Tensor
+    groups: Tensor
+
+
 __all__ = [
     "BATCH_SIZE",
     "EXTRA_DIM",
+    "_Input",
+    "_GroupInput",
     "NUM_BATCHES",
     "NUM_CLASSES",
     "NUM_PROCESSES",

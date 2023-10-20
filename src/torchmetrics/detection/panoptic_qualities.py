@@ -40,7 +40,7 @@ class PanopticQuality(Metric):
         PQ = \frac{IOU}{TP + 0.5 FP + 0.5 FN}
 
     where IOU, TP, FP and FN are respectively the sum of the intersection over union for true positives,
-    the number of true postitives, false positives and false negatives. This metric is inspired by the PQ
+    the number of true positives, false positives and false negatives. This metric is inspired by the PQ
     implementation of panopticapi, a standard implementation for the PQ metric for panoptic segmentation.
 
     .. note:
@@ -109,11 +109,11 @@ class PanopticQuality(Metric):
         self.allow_unknown_preds_category = allow_unknown_preds_category
 
         # per category intermediate metrics
-        n_categories = len(things) + len(stuffs)
-        self.add_state("iou_sum", default=torch.zeros(n_categories, dtype=torch.double), dist_reduce_fx="sum")
-        self.add_state("true_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
-        self.add_state("false_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
-        self.add_state("false_negatives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
+        num_categories = len(things) + len(stuffs)
+        self.add_state("iou_sum", default=torch.zeros(num_categories, dtype=torch.double), dist_reduce_fx="sum")
+        self.add_state("true_positives", default=torch.zeros(num_categories, dtype=torch.int), dist_reduce_fx="sum")
+        self.add_state("false_positives", default=torch.zeros(num_categories, dtype=torch.int), dist_reduce_fx="sum")
+        self.add_state("false_negatives", default=torch.zeros(num_categories, dtype=torch.int), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         r"""Update state with predictions and targets.
@@ -287,11 +287,11 @@ class ModifiedPanopticQuality(Metric):
         self.allow_unknown_preds_category = allow_unknown_preds_category
 
         # per category intermediate metrics
-        n_categories = len(things) + len(stuffs)
-        self.add_state("iou_sum", default=torch.zeros(n_categories, dtype=torch.double), dist_reduce_fx="sum")
-        self.add_state("true_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
-        self.add_state("false_positives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
-        self.add_state("false_negatives", default=torch.zeros(n_categories, dtype=torch.int), dist_reduce_fx="sum")
+        num_categories = len(things) + len(stuffs)
+        self.add_state("iou_sum", default=torch.zeros(num_categories, dtype=torch.double), dist_reduce_fx="sum")
+        self.add_state("true_positives", default=torch.zeros(num_categories, dtype=torch.int), dist_reduce_fx="sum")
+        self.add_state("false_positives", default=torch.zeros(num_categories, dtype=torch.int), dist_reduce_fx="sum")
+        self.add_state("false_negatives", default=torch.zeros(num_categories, dtype=torch.int), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         r"""Update state with predictions and targets.

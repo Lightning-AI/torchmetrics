@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -20,12 +20,12 @@ from typing_extensions import Literal
 from torchmetrics.utilities.prints import rank_zero_warn
 
 
-def _nominal_input_validation(nan_strategy: str, nan_replace_value: Optional[Union[int, float]]) -> None:
+def _nominal_input_validation(nan_strategy: str, nan_replace_value: Optional[float]) -> None:
     if nan_strategy not in ["replace", "drop"]:
         raise ValueError(
             f"Argument `nan_strategy` is expected to be one of `['replace', 'drop']`, but got {nan_strategy}"
         )
-    if nan_strategy == "replace" and not isinstance(nan_replace_value, (int, float)):
+    if nan_strategy == "replace" and not isinstance(nan_replace_value, (float, int)):
         raise ValueError(
             "Argument `nan_replace` is expected to be of a type `int` or `float` when `nan_strategy = 'replace`, "
             f"but got {nan_replace_value}"
@@ -82,29 +82,30 @@ def _drop_empty_rows_and_cols(confmat: Tensor) -> Tensor:
 
 def _compute_phi_squared_corrected(
     phi_squared: Tensor,
-    n_rows: int,
-    n_cols: int,
+    num_rows: int,
+    num_cols: int,
     confmat_sum: Tensor,
 ) -> Tensor:
     """Compute bias-corrected Phi Squared."""
     return torch.max(
-        torch.tensor(0.0, device=phi_squared.device), phi_squared - ((n_rows - 1) * (n_cols - 1)) / (confmat_sum - 1)
+        torch.tensor(0.0, device=phi_squared.device),
+        phi_squared - ((num_rows - 1) * (num_cols - 1)) / (confmat_sum - 1),
     )
 
 
-def _compute_rows_and_cols_corrected(n_rows: int, n_cols: int, confmat_sum: Tensor) -> Tuple[Tensor, Tensor]:
+def _compute_rows_and_cols_corrected(num_rows: int, num_cols: int, confmat_sum: Tensor) -> Tuple[Tensor, Tensor]:
     """Compute bias-corrected number of rows and columns."""
-    rows_corrected = n_rows - (n_rows - 1) ** 2 / (confmat_sum - 1)
-    cols_corrected = n_cols - (n_cols - 1) ** 2 / (confmat_sum - 1)
+    rows_corrected = num_rows - (num_rows - 1) ** 2 / (confmat_sum - 1)
+    cols_corrected = num_cols - (num_cols - 1) ** 2 / (confmat_sum - 1)
     return rows_corrected, cols_corrected
 
 
 def _compute_bias_corrected_values(
-    phi_squared: Tensor, n_rows: int, n_cols: int, confmat_sum: Tensor
+    phi_squared: Tensor, num_rows: int, num_cols: int, confmat_sum: Tensor
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Compute bias-corrected Phi Squared and number of rows and columns."""
-    phi_squared_corrected = _compute_phi_squared_corrected(phi_squared, n_rows, n_cols, confmat_sum)
-    rows_corrected, cols_corrected = _compute_rows_and_cols_corrected(n_rows, n_cols, confmat_sum)
+    phi_squared_corrected = _compute_phi_squared_corrected(phi_squared, num_rows, num_cols, confmat_sum)
+    rows_corrected, cols_corrected = _compute_rows_and_cols_corrected(num_rows, num_cols, confmat_sum)
     return phi_squared_corrected, rows_corrected, cols_corrected
 
 

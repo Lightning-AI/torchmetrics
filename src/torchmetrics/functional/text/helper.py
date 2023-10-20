@@ -54,7 +54,7 @@ class _EditOperations(str, Enum):
 class _LevenshteinEditDistance:
     """A convenience class for calculating the Levenshtein edit distance.
 
-    Class will cache some intermediate values to hasten the calculation. The implementation follows the implemenation
+    Class will cache some intermediate values to hasten the calculation. The implementation follows the implementation
     from https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/lib_ter.py,
     where the most of this implementation is adapted and copied from.
 
@@ -242,7 +242,7 @@ class _LevenshteinEditDistance:
             node = value[0]  # type: ignore
 
     def _find_cache(self, prediction_tokens: List[str]) -> Tuple[int, List[List[Tuple[int, _EditOperations]]]]:
-        """Find the already calculated rows of the Levenshtein edit distance matric.
+        """Find the already calculated rows of the Levenshtein edit distance metric.
 
         Args:
             prediction_tokens: A tokenized predicted sentence.
@@ -282,7 +282,7 @@ class _LevenshteinEditDistance:
         return [(int(self.op_undefined), _EditOperations.OP_UNDEFINED)] * (length + 1)
 
     def _get_initial_row(self, length: int) -> List[Tuple[int, _EditOperations]]:
-        """First row corresponds to insertion operations of the reference, so we do 1 edit operation per reference word.
+        """First row corresponds to insertion operations of the reference, so 1 edit operation per reference word.
 
         Args:
             length: A length of a tokenized sentence.

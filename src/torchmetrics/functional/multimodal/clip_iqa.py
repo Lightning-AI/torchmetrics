@@ -53,7 +53,7 @@ _PROMPTS: Dict[str, Tuple[str, str]] = {
     "new": ("New photo.", "Old photo."),
     "warm": ("Warm photo.", "Cold photo."),
     "real": ("Real photo.", "Abstract photo."),
-    "beutiful": ("Beautiful photo.", "Ugly photo."),
+    "beautiful": ("Beautiful photo.", "Ugly photo."),
     "lonely": ("Lonely photo.", "Sociable photo."),
     "relaxing": ("Relaxing photo.", "Stressful photo."),
 }
@@ -91,9 +91,9 @@ def _clip_iqa_format_prompts(prompts: Tuple[Union[str, Tuple[str, str]]] = ("qua
 
     Args:
         prompts: A string, tuple of strings or nested tuple of strings. If a single string is provided, it must be one
-            of the availble prompts (see above). Else the input is expected to be a tuple, where each element can be one
-            of two things: either a string or a tuple of strings. If a string is provided, it must be one of the
-            availble prompts (see above). If tuple is provided, it must be of length 2 and the first string must be a
+            of the available prompts (see above). Else the input is expected to be a tuple, where each element can
+            be one of two things: either a string or a tuple of strings. If a string is provided, it must be one of the
+            available prompts (see above). If tuple is provided, it must be of length 2 and the first string must be a
             positive prompt and the second string must be a negative prompt.
 
     Returns:
@@ -125,7 +125,7 @@ def _clip_iqa_format_prompts(prompts: Tuple[Union[str, Tuple[str, str]]] = ("qua
         if isinstance(p, str):
             if p not in _PROMPTS:
                 raise ValueError(
-                    f"All elements of `prompts` must be one of {_PROMPTS.keys()} if not custom tuple promts, got {p}."
+                    f"All elements of `prompts` must be one of {_PROMPTS.keys()} if not custom tuple prompts, got {p}."
                 )
             prompts_names.append(p)
             prompts_list.extend(_PROMPTS[p])
@@ -178,7 +178,7 @@ def _clip_iqa_update(
     images: Tensor,
     model: _CLIPModel,
     processor: _CLIPProcessor,
-    data_range: Union[int, float],
+    data_range: float,
     device: Union[str, torch.device],
 ) -> Tensor:
     images = images / float(data_range)
@@ -221,7 +221,7 @@ def clip_image_quality_assessment(
         "openai/clip-vit-large-patch14-336",
         "openai/clip-vit-large-patch14",
     ] = "clip_iqa",
-    data_range: Union[int, float] = 1.0,
+    data_range: float = 1.0,
     prompts: Tuple[Union[str, Tuple[str, str]]] = ("quality",),
 ) -> Union[Tensor, Dict[str, Tensor]]:
     """Calculates `CLIP-IQA`_, that can be used to measure the visual content of images.
@@ -230,13 +230,13 @@ def clip_image_quality_assessment(
     be able to generate a vector representation of the image and the text that is similar if the image and text are
     semantically similar.
 
-    The metric works by calculating the cosine similarity between user provided images and pre-defined promts. The
+    The metric works by calculating the cosine similarity between user provided images and pre-defined prompts. The
     prompts always come in pairs of "positive" and "negative" such as "Good photo." and "Bad photo.". By calculating
     the similartity between image embeddings and both the "positive" and "negative" prompt, the metric can determine
     which prompt the image is more similar to. The metric then returns the probability that the image is more similar
     to the first prompt than the second prompt.
 
-    Build in promts are:
+    Build in prompts are:
         * quality: "Good photo." vs "Bad photo."
         * brightness: "Bright photo." vs "Dark photo."
         * noisiness: "Clean photo." vs "Noisy photo."
@@ -250,30 +250,30 @@ def clip_image_quality_assessment(
         * new: "New photo." vs "Old photo."
         * warm: "Warm photo." vs "Cold photo."
         * real: "Real photo." vs "Abstract photo."
-        * beutiful: "Beautiful photo." vs "Ugly photo."
+        * beautiful: "Beautiful photo." vs "Ugly photo."
         * lonely: "Lonely photo." vs "Sociable photo."
         * relaxing: "Relaxing photo." vs "Stressful photo."
 
     Args:
         images: Either a single ``[N, C, H, W]`` tensor or a list of ``[C, H, W]`` tensors
         model_name_or_path: string indicating the version of the CLIP model to use. By default this argument is set to
-            ``clip_iqa`` which corresponds to the model used in the original paper. Other availble models are
+            ``clip_iqa`` which corresponds to the model used in the original paper. Other available models are
             `"openai/clip-vit-base-patch16"`, `"openai/clip-vit-base-patch32"`, `"openai/clip-vit-large-patch14-336"`
             and `"openai/clip-vit-large-patch14"`
         data_range: The maximum value of the input tensor. For example, if the input images are in range [0, 255],
             data_range should be 255. The images are normalized by this value.
         prompts: A string, tuple of strings or nested tuple of strings. If a single string is provided, it must be one
-            of the availble prompts (see above). Else the input is expected to be a tuple, where each element can be one
-            of two things: either a string or a tuple of strings. If a string is provided, it must be one of the
-            availble prompts (see above). If tuple is provided, it must be of length 2 and the first string must be a
+            of the available prompts (see above). Else the input is expected to be a tuple, where each element can
+            be one of two things: either a string or a tuple of strings. If a string is provided, it must be one of the
+            available prompts (see above). If tuple is provided, it must be of length 2 and the first string must be a
             positive prompt and the second string must be a negative prompt.
 
     .. note:: If using the default `clip_iqa` model, the package `piq` must be installed. Either install with
         `pip install piq` or `pip install torchmetrics[multimodal]`.
 
     Returns:
-        A tensor of shape ``(N,)`` if a single promts is provided. If a list of promts is provided, a dictionary of
-        with the promts as keys and tensors of shape ``(N,)`` as values.
+        A tensor of shape ``(N,)`` if a single prompts is provided. If a list of prompts is provided, a dictionary of
+        with the prompts as keys and tensors of shape ``(N,)`` as values.
 
     Raises:
         ModuleNotFoundError:
@@ -281,14 +281,14 @@ def clip_image_quality_assessment(
         ValueError:
             If not all images have format [C, H, W]
         ValueError:
-            If promts is a tuple and it is not of length 2
+            If prompts is a tuple and it is not of length 2
         ValueError:
-            If promts is a string and it is not one of the available promts
+            If prompts is a string and it is not one of the available prompts
         ValueError:
-            If promts is a list of strings and not all strings are one of the available promts
+            If prompts is a list of strings and not all strings are one of the available prompts
 
     Example::
-        Single promt:
+        Single prompt:
 
         >>> from torchmetrics.functional.multimodal import clip_image_quality_assessment
         >>> import torch
@@ -298,7 +298,7 @@ def clip_image_quality_assessment(
         tensor([0.8894, 0.8902])
 
     Example::
-        Multiple promts:
+        Multiple prompts:
 
         >>> from torchmetrics.functional.multimodal import clip_image_quality_assessment
         >>> import torch
@@ -308,7 +308,7 @@ def clip_image_quality_assessment(
         {'quality': tensor([0.8894, 0.8902]), 'brightness': tensor([0.5507, 0.5208])}
 
     Example::
-        Custom promts. Must always be a tuple of length 2, with a positive and negative prompt.
+        Custom prompts. Must always be a tuple of length 2, with a positive and negative prompt.
 
         >>> from torchmetrics.functional.multimodal import clip_image_quality_assessment
         >>> import torch

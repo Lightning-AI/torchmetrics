@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 
 import pytest
@@ -20,14 +19,14 @@ from torch import Tensor
 from torch.nn import functional as F  # noqa: N812
 from torchmetrics.functional.image.sam import spectral_angle_mapper
 from torchmetrics.image.sam import SpectralAngleMapper
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
 _inputs = []
 for size, channel, dtype in [
@@ -38,7 +37,7 @@ for size, channel, dtype in [
 ]:
     preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
     target = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
-    _inputs.append(Input(preds=preds, target=target))
+    _inputs.append(_Input(preds=preds, target=target))
 
 
 def _baseline_sam(
@@ -91,7 +90,9 @@ class TestSpectralAngleMapper(MetricTester):
         )
 
     # SAM half + cpu does not work due to missing support in torch.log
-    @pytest.mark.xfail(reason="SAM metric does not support cpu + half precision")
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_2_1, reason="Pytoch below 2.1 does not support cpu + half precision used in SAM metric"
+    )
     def test_sam_half_cpu(self, reduction, preds, target):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
