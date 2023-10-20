@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 
 import pytest
@@ -22,19 +21,19 @@ from torch import Tensor
 from torchmetrics.audio import ShortTimeObjectiveIntelligibility
 from torchmetrics.functional.audio import short_time_objective_intelligibility
 
+from unittests import _Input
 from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
-inputs_8k = Input(
+inputs_8k = _Input(
     preds=torch.rand(2, 3, 8000),
     target=torch.rand(2, 3, 8000),
 )
-inputs_16k = Input(
+inputs_16k = _Input(
     preds=torch.rand(2, 3, 16000),
     target=torch.rand(2, 3, 16000),
 )

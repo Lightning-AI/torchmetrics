@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
-from typing import Optional
+from typing import NamedTuple, Optional
 
 import numpy as np
 import pytest
@@ -30,14 +29,18 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["p", "q"])
 
-_probs_inputs = Input(
+class _Input(NamedTuple):
+    p: Tensor
+    q: Tensor
+
+
+_probs_inputs = _Input(
     p=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
     q=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
 )
 
-_log_probs_inputs = Input(
+_log_probs_inputs = _Input(
     p=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM).softmax(dim=-1).log(),
     q=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM).softmax(dim=-1).log(),
 )

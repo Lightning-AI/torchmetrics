@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import namedtuple
 from functools import partial
 
 import numpy as np
@@ -23,17 +22,16 @@ from torchmetrics.functional import peak_signal_noise_ratio
 from torchmetrics.image import PeakSignalNoiseRatio
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
 _input_size = (NUM_BATCHES, BATCH_SIZE, 32, 32)
 _inputs = [
-    Input(
+    _Input(
         preds=torch.randint(n_cls_pred, _input_size, dtype=torch.float),
         target=torch.randint(n_cls_target, _input_size, dtype=torch.float),
     )

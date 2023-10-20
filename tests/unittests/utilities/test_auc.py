@@ -11,19 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
+from typing import NamedTuple
 
 import numpy as np
 import pytest
 from sklearn.metrics import auc as _sk_auc
-from torch import tensor
+from torch import Tensor, tensor
 from torchmetrics.utilities.compute import auc
 from unittests import NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
+
+
+class _Input(NamedTuple):
+    x: Tensor
+    y: Tensor
 
 
 def sk_auc(x, y, reorder=False):
@@ -37,8 +42,6 @@ def sk_auc(x, y, reorder=False):
     return _sk_auc(x, y)
 
 
-Input = namedtuple("Input", ["x", "y"])
-
 _examples = []
 # generate already ordered samples, sorted in both directions
 for batch_size in (8, 4049):
@@ -50,7 +53,7 @@ for batch_size in (8, 4049):
         y = y[idx] if i % 2 == 0 else x[idx[::-1]]
         x = x.reshape(NUM_BATCHES, batch_size)
         y = y.reshape(NUM_BATCHES, batch_size)
-        _examples.append(Input(x=tensor(x), y=tensor(y)))
+        _examples.append(_Input(x=tensor(x), y=tensor(y)))
 
 
 @pytest.mark.parametrize("x, y", _examples)
