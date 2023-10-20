@@ -28,7 +28,7 @@ class _ErrorRelativeGlobalDimensionlessSynthesis(ErrorRelativeGlobalDimensionles
 
     def __init__(
         self,
-        ratio: Union[int, float] = 4,
+        ratio: float = 4,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
         **kwargs: Any,
     ) -> None:

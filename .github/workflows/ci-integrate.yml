@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macOS-12, windows-2022]
+        os: ["ubuntu-22.04", "macOS-12", "windows-2022"]
         python-version: ["3.8", "3.10"]
         requires: ["oldest", "latest"]
         exclude:
@@ -52,23 +52,26 @@ jobs:
 
       - name: source cashing
         uses: ./.github/actions/pull-caches
-        with:
-          requires: ${{ matrix.requires }}
-
-      - name: Freeze PIL (hotfix)
-        # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
-        run: pip install "Pillow<9.0" # It messes with torchvision
+      - name: set oldest if/only for integrations
+        if: matrix.requires == 'oldest'
+        run: python .github/assistant.py set-oldest-versions --req_files='["requirements/_integrate.txt"]'
 
       - name: Install all dependencies
         run: |
-          set -e
-          curl https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py -o adjust-torch-versions.py
-          pip install -r requirements/_tests.txt -r requirements/_integrate.txt \
-            --find-links $PYTORCH_URL -f $PYPI_CACHE --upgrade-strategy eager
+          # this was updated in `source cashing` by optional oldest
+          cat requirements/_integrate.txt
+          # to have install pyTorch
+          pip install -e . --find-links=${PYTORCH_URL}
+
+          # adjust version to PT ecosystem based on installed TM
+          python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py
           python adjust-torch-versions.py requirements/base.txt
           python adjust-torch-versions.py requirements/image.txt
-          cat requirements/base.txt
-          pip install -e . --find-links $PYTORCH_URL -f $PYPI_CACHE
+
+          # install package and dependencies
+          pip install -e . -r requirements/_tests.txt -r requirements/_integrate.txt \
+            --find-links=${PYTORCH_URL} --find-links=${PYPI_CACHE} \
+            --upgrade-strategy eager
           pip list
 
       - name: Integrations
