@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
+from typing import NamedTuple
 
 import pytest
 import torch
@@ -23,6 +23,7 @@ from sklearn.metrics.pairwise import (
     manhattan_distances,
     pairwise_distances,
 )
+from torch import Tensor
 from torchmetrics.functional import (
     pairwise_cosine_similarity,
     pairwise_euclidean_distance,
@@ -39,16 +40,19 @@ seed_all(42)
 
 extra_dim = 5
 
-Input = namedtuple("Input", ["x", "y"])
+
+class _Input(NamedTuple):
+    x: Tensor
+    y: Tensor
 
 
-_inputs1 = Input(
+_inputs1 = _Input(
     x=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
     y=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
 )
 
 
-_inputs2 = Input(
+_inputs2 = _Input(
     x=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
     y=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
 )

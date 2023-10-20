@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 from typing import Callable
 
@@ -25,19 +24,20 @@ from torchmetrics.audio import SignalDistortionRatio
 from torchmetrics.functional import signal_distortion_ratio
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_11
 
+from unittests import _Input
 from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB, _SAMPLE_NUMPY_ISSUE_895
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
-inputs_1spk = Input(
+inputs_1spk = _Input(
     preds=torch.rand(2, 1, 1, 500),
     target=torch.rand(2, 1, 1, 500),
 )
-inputs_2spk = Input(
+
+inputs_2spk = _Input(
     preds=torch.rand(2, 1, 2, 500),
     target=torch.rand(2, 1, 2, 500),
 )

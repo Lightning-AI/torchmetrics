@@ -38,7 +38,7 @@ def _sacrebleu_fn(preds: Sequence[str], targets: Sequence[Sequence[str]], tokeni
 
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [(_inputs_multiple_references.preds, _inputs_multiple_references.targets)],
+    [(_inputs_multiple_references.preds, _inputs_multiple_references.target)],
 )
 @pytest.mark.parametrize(["lowercase"], [(False,), (True,)])
 @pytest.mark.parametrize("tokenize", AVAILABLE_TOKENIZERS)
