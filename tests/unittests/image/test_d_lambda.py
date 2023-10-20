@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
+from typing import NamedTuple
 
 import numpy as np
 import pytest
 import torch
+from torch import Tensor
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.d_lambda import SpectralDistortionIndex
@@ -28,7 +29,11 @@ from unittests.helpers.testers import MetricTester
 seed_all(42)
 
 
-Input = namedtuple("Input", ["preds", "target", "p"])
+class _Input(NamedTuple):
+    preds: Tensor
+    target: Tensor
+    p: int
+
 
 _inputs = []
 for size, channel, p, dtype in [
@@ -40,7 +45,7 @@ for size, channel, p, dtype in [
     preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
     target = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
     _inputs.append(
-        Input(
+        _Input(
             preds=preds,
             target=target,
             p=p,

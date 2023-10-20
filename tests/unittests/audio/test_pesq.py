@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 
 import pytest
@@ -22,21 +21,21 @@ from torch import Tensor
 from torchmetrics.audio import PerceptualEvaluationSpeechQuality
 from torchmetrics.functional.audio import perceptual_evaluation_speech_quality
 
+from unittests import _Input
 from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
 # for 8k sample rate, need at least 8k/4=2000 samples
-inputs_8k = Input(
+inputs_8k = _Input(
     preds=torch.rand(2, 3, 2100),
     target=torch.rand(2, 3, 2100),
 )
 # for 16k sample rate, need at least 16k/4=4000 samples
-inputs_16k = Input(
+inputs_16k = _Input(
     preds=torch.rand(2, 3, 4100),
     target=torch.rand(2, 3, 4100),
 )
