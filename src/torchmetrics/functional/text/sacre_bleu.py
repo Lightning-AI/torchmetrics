@@ -41,7 +41,7 @@ import os
 import re
 import tempfile
 from functools import partial
-from typing import Any, ClassVar, Dict, Optional, Sequence
+from typing import Any, ClassVar, Dict, Optional, Sequence, Type
 
 import torch
 from torch import Tensor, tensor
@@ -58,7 +58,7 @@ from torchmetrics.utilities.imports import (
 )
 
 AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char", "ja-mecab", "ko-mecab", "flores101", "flores200")
-_Tokenizers_list = Literal["none", "13a", "zh", "intl", "char", "ja-mecab", "ko-mecab", "flores101", "flores200"]
+_TokenizersLiteral = Literal["none", "13a", "zh", "intl", "char", "ja-mecab", "ko-mecab", "flores101", "flores200"]
 
 _UCODE_RANGES = (
     ("\u3400", "\u4db5"),  # CJK Unified Ideographs Extension A, release 3.0
@@ -143,7 +143,7 @@ class _SacreBLEUTokenizer:
     # Keep it as class variable to avoid initializing over and over again
     sentencepiece_processors: ClassVar[Dict[str, Optional[Any]]] = {"flores101": None, "flores200": None}
 
-    def __init__(self, tokenize: _Tokenizers_list, lowercase: bool = False) -> None:
+    def __init__(self, tokenize: _TokenizersLiteral, lowercase: bool = False) -> None:
         self._check_tokenizers_validity(tokenize)
 
         self.tokenize_fn = getattr(self, self._TOKENIZE_FN[tokenize])
@@ -154,7 +154,12 @@ class _SacreBLEUTokenizer:
         return self._lower(tokenized_line, self.lowercase).split()
 
     @classmethod
-    def tokenize(cls, line: str, tokenize: _Tokenizers_list, lowercase: bool = False) -> Sequence[str]:
+    def tokenize(
+        cls: Type["_SacreBLEUTokenizer"],
+        line: str,
+        tokenize: _TokenizersLiteral,
+        lowercase: bool = False,
+    ) -> Sequence[str]:
         cls._check_tokenizers_validity(tokenize)
 
         tokenize_fn = getattr(cls, cls._TOKENIZE_FN[tokenize])
@@ -162,7 +167,7 @@ class _SacreBLEUTokenizer:
         return cls._lower(tokenized_line, lowercase).split()
 
     @classmethod
-    def _tokenize_regex(cls, line: str) -> str:
+    def _tokenize_regex(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Post-processing tokenizer for `13a` and `zh` tokenizers.
 
         Args:
@@ -191,7 +196,7 @@ class _SacreBLEUTokenizer:
         return any(start <= uchar <= end for start, end in _UCODE_RANGES)
 
     @classmethod
-    def _tokenize_base(cls, line: str) -> str:
+    def _tokenize_base(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Tokenizes an input line with the tokenizer.
 
         Args:
@@ -204,7 +209,7 @@ class _SacreBLEUTokenizer:
         return line
 
     @classmethod
-    def _tokenize_13a(cls, line: str) -> str:
+    def _tokenize_13a(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Tokenizes a line using a relatively minimal tokenization that is equivalent to mteval-v13a, used by WMT.
 
         Args:
@@ -228,7 +233,7 @@ class _SacreBLEUTokenizer:
         return cls._tokenize_regex(f" {line} ")
 
     @classmethod
-    def _tokenize_zh(cls, line: str) -> str:
+    def _tokenize_zh(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Tokenization of Chinese text.
 
         This is done in two steps: separate each Chinese characters (by utf-8 encoding) and afterwards tokenize the
@@ -256,7 +261,7 @@ class _SacreBLEUTokenizer:
         return cls._tokenize_regex(line_in_chars)
 
     @classmethod
-    def _tokenize_international(cls, line: str) -> str:
+    def _tokenize_international(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         r"""Tokenizes a string following the official BLEU implementation.
 
         See github.com/moses-smt/mosesdecoder/blob/master/scripts/generic/mteval-v14.pl#L954-L983
@@ -289,7 +294,7 @@ class _SacreBLEUTokenizer:
         return " ".join(line.split())
 
     @classmethod
-    def _tokenize_char(cls, line: str) -> str:
+    def _tokenize_char(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Tokenizes all the characters in the input line.
 
         Args:
@@ -302,7 +307,7 @@ class _SacreBLEUTokenizer:
         return " ".join(char for char in line)
 
     @classmethod
-    def _tokenize_ja_mecab(cls, line: str) -> str:
+    def _tokenize_ja_mecab(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Tokenizes a Japanese string line using MeCab morphological analyzer.
 
         Args:
@@ -321,7 +326,7 @@ class _SacreBLEUTokenizer:
         return tagger.parse(line).strip()
 
     @classmethod
-    def _tokenize_ko_mecab(cls, line: str) -> str:
+    def _tokenize_ko_mecab(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Tokenizes a Korean string line using MeCab-korean morphological analyzer.
 
         Args:
@@ -340,7 +345,9 @@ class _SacreBLEUTokenizer:
         return tagger.parse(line).strip()
 
     @classmethod
-    def _tokenize_flores(cls, line: str, tokenize: Literal["flores101", "flores200"]) -> str:
+    def _tokenize_flores(
+        cls: Type["_SacreBLEUTokenizer"], line: str, tokenize: Literal["flores101", "flores200"]
+    ) -> str:
         """Tokenizes a string line using sentencepiece tokenizer.
 
         Args:
@@ -365,7 +372,7 @@ class _SacreBLEUTokenizer:
         return " ".join(cls.sentencepiece_processors[tokenize].EncodeAsPieces(line))  # type: ignore[union-attr]
 
     @classmethod
-    def _tokenize_flores_101(cls, line: str) -> str:
+    def _tokenize_flores_101(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Tokenizes a string line using sentencepiece tokenizer according to `FLORES-101`_ dataset.
 
         Args:
@@ -378,7 +385,7 @@ class _SacreBLEUTokenizer:
         return cls._tokenize_flores(line, "flores101")
 
     @classmethod
-    def _tokenize_flores_200(cls, line: str) -> str:
+    def _tokenize_flores_200(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Tokenizes a string line using sentencepiece tokenizer according to `FLORES-200`_ dataset.
 
         Args:
@@ -397,7 +404,7 @@ class _SacreBLEUTokenizer:
         return line
 
     @classmethod
-    def _check_tokenizers_validity(cls, tokenize: _Tokenizers_list) -> None:
+    def _check_tokenizers_validity(cls: Type["_SacreBLEUTokenizer"], tokenize: _TokenizersLiteral) -> None:
         """Check if a supported tokenizer is chosen.
 
         Also check all dependencies of a given tokenizers are installed.
@@ -453,7 +460,7 @@ def sacre_bleu_score(
     target: Sequence[Sequence[str]],
     n_gram: int = 4,
     smooth: bool = False,
-    tokenize: _Tokenizers_list = "13a",
+    tokenize: _TokenizersLiteral = "13a",
     lowercase: bool = False,
     weights: Optional[Sequence[float]] = None,
 ) -> Tensor:

@@ -35,7 +35,7 @@
 
 import re
 from functools import lru_cache
-from typing import Dict, Iterator, List, Optional, Sequence, Tuple, Union
+from typing import Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union
 
 from torch import Tensor, tensor
 
@@ -150,7 +150,7 @@ class _TercomTokenizer:
         return sentence
 
     @classmethod
-    def _normalize_asian(cls, sentence: str) -> str:
+    def _normalize_asian(cls: Type["_TercomTokenizer"], sentence: str) -> str:
         """Split Chinese chars and Japanese kanji down to character level."""
         # 4E00—9FFF CJK Unified Ideographs
         # 3400—4DBF CJK Unified Ideographs Extension A
@@ -182,7 +182,7 @@ class _TercomTokenizer:
         return re.sub(r"[\.,\?:;!\"\(\)]", "", sentence)
 
     @classmethod
-    def _remove_asian_punct(cls, sentence: str) -> str:
+    def _remove_asian_punct(cls: Type["_TercomTokenizer"], sentence: str) -> str:
         """Remove asian punctuation from an input sentence string."""
         sentence = re.sub(cls._ASIAN_PUNCTUATION, r"", sentence)
         return re.sub(cls._FULL_WIDTH_PUNCTUATION, r"", sentence)
