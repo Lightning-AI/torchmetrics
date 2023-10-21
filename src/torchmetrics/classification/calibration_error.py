@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any, List, Optional, Sequence, Type, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -368,7 +368,7 @@ class CalibrationError(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls,
+        cls: Type["CalibrationError"],
         task: Literal["binary", "multiclass"],
         n_bins: int = 15,
         norm: Literal["l1", "l2", "max"] = "l1",
