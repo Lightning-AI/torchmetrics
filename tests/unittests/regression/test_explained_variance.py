@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 
 import pytest
@@ -20,7 +19,7 @@ from sklearn.metrics import explained_variance_score
 from torchmetrics.functional import explained_variance
 from torchmetrics.regression import ExplainedVariance
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -28,14 +27,13 @@ seed_all(42)
 
 num_targets = 5
 
-Input = namedtuple("Input", ["preds", "target"])
 
-_single_target_inputs = Input(
+_single_target_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE),
 )
 
-_multi_target_inputs = Input(
+_multi_target_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
 )

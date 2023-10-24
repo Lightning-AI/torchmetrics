@@ -11,9 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
-from typing import Union
+from typing import NamedTuple
 
 import pytest
 import torch
@@ -28,7 +27,12 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target", "ratio"])
+
+class _Input(NamedTuple):
+    preds: Tensor
+    target: Tensor
+    ratio: int
+
 
 _inputs = []
 for size, channel, coef, ratio, dtype in [
@@ -38,13 +42,13 @@ for size, channel, coef, ratio, dtype in [
     (15, 3, 0.5, 4, torch.float64),
 ]:
     preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
-    _inputs.append(Input(preds=preds, target=preds * coef, ratio=ratio))
+    _inputs.append(_Input(preds=preds, target=preds * coef, ratio=ratio))
 
 
 def _baseline_ergas(
     preds: Tensor,
     target: Tensor,
-    ratio: Union[int, float] = 4,
+    ratio: float = 4,
     reduction: str = "elementwise_mean",
 ) -> Tensor:
     """Baseline implementation of Erreur Relative Globale Adimensionnelle de Synthèse."""

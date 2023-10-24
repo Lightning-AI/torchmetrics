@@ -117,12 +117,9 @@ ignore = [
     "D104",   # todo: Missing docstring in public package
     "D107",   # Missing docstring in `__init__`
     "ANN101", # Missing type annotation for `self` in method
-    "ANN102", # Missing type annotation for `cls` in classmethod
     "S301",   # todo: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue  # todo
     "S310",   # todo: Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.  # todo
     "B905",   # todo: `zip()` without an explicit `strict=` parameter
-    "PYI024",  # todo: Use `typing.NamedTuple` instead of `collections.namedtuple`
-    "PYI041",  # todo: Use `float` instead of `int | float``
 ]
 # Exclude a variety of commonly ignored directories.
 exclude = [
