@@ -11,7 +11,7 @@ sphinx-paramlinks ==0.6.0
 sphinx-togglebutton ==0.3.2
 sphinx-copybutton ==0.5.2
 
-lightning >=1.8.0, <2.1.0
+lightning >=1.8.0, <2.2.0
 lightning-utilities >=0.9.0, <0.10.0
 pydantic > 1.0.0, < 3.0.0
 

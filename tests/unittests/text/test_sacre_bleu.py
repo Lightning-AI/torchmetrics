@@ -17,7 +17,7 @@ from typing import Sequence
 
 import pytest
 from torch import Tensor, tensor
-from torchmetrics.functional.text.sacre_bleu import AVAILABLE_TOKENIZERS, _Tokenizers_list, sacre_bleu_score
+from torchmetrics.functional.text.sacre_bleu import AVAILABLE_TOKENIZERS, _TokenizersLiteral, sacre_bleu_score
 from torchmetrics.text.sacre_bleu import SacreBLEUScore
 from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
 
@@ -128,4 +128,4 @@ def test_tokenize_ko_mecab():
 
 def test_equivalence_of_available_tokenizers_and_annotation():
     """Test equivalence of SacreBLEU available tokenizers and corresponding type annotation."""
-    assert set(AVAILABLE_TOKENIZERS) == set(_Tokenizers_list.__args__)
+    assert set(AVAILABLE_TOKENIZERS) == set(_TokenizersLiteral.__args__)
