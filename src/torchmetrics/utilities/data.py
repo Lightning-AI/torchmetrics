@@ -193,8 +193,7 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
         minlength = len(torch.unique(x))
 
     if torch.are_deterministic_algorithms_enabled() or _XLA_AVAILABLE or _TORCH_GREATER_EQUAL_1_12 and x.is_mps:
-        size = len(x)
-        mesh = torch.arange(minlength, device=x.device).repeat(size, 1)
+        mesh = torch.arange(minlength, device=x.device).repeat(len(x), 1)
         return torch.eq(x.reshape(-1, 1), mesh).sum(dim=0)
 
     return torch.bincount(x, minlength=minlength)
