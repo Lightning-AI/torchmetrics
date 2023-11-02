@@ -52,7 +52,8 @@ def _safe_divide(num: Tensor, denom: Tensor, zero_division: float = 0) -> Tensor
     """
     num = num if num.is_floating_point() else num.float()
     denom = denom if denom.is_floating_point() else denom.float()
-    return torch.where(denom != float(0), num / denom, float(zero_division))
+    zero_division = torch.tensor(zero_division).float()
+    return torch.where(denom != 0, num / denom, zero_division)
 
 
 def _adjust_weights_safe_divide(
