@@ -165,8 +165,6 @@ __all__ = [
     "multilabel_fbeta_score",
     "binary_fairness",
     "binary_groups_stat_rates",
-    "demographic_parity",
-    "equal_opportunity",
     "binary_hamming_distance",
     "hamming_distance",
     "multiclass_hamming_distance",
@@ -219,4 +217,6 @@ __all__ = [
     "binary_precision_at_fixed_recall",
     "multilabel_precision_at_fixed_recall",
     "multiclass_precision_at_fixed_recall",
+    "demographic_parity",
+    "equal_opportunity",
 ]
