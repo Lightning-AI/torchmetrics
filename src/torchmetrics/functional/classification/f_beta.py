@@ -47,7 +47,7 @@ def _fbeta_reduce(
 ) -> Tensor:
     beta2 = beta**2
     if average == "binary":
-        return _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
+        return _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp, zero_division)
     if average == "micro":
         tp = tp.sum(dim=0 if multidim_average == "global" else 1)
         fn = fn.sum(dim=0 if multidim_average == "global" else 1)
