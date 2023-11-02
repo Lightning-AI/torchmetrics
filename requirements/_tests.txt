@@ -2,7 +2,7 @@
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
 coverage ==7.3.2
-pytest ==7.4.2
+pytest ==7.4.3
 pytest-cov ==4.1.0
 pytest-doctestplus ==1.0.0
 pytest-rerunfailures ==12.0
