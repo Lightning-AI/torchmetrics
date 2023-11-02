@@ -30,7 +30,7 @@ jobs:
           git push --force-with-lease
 
       - name: Update comment
-        uses: peter-evans/create-or-update-comment@v3.0.2
+        uses: peter-evans/create-or-update-comment@v3.1.0
         with:
           token: ${{ secrets.PAT_GHOST }}
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Update comment
-        uses: peter-evans/create-or-update-comment@v3.0.2
+        uses: peter-evans/create-or-update-comment@v3.1.0
         with:
           token: ${{ secrets.PAT_GHOST }}
           repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
