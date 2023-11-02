@@ -39,8 +39,8 @@ from torchmetrics.functional.classification.roc import (
 from torchmetrics.utilities.enums import ClassificationTask
 
 
-def _convert_fpr_to_sensitivity(fpr: Tensor) -> Tensor:
-    """Convert  fprs to sensitivity."""
+def _convert_fpr_to_specificity(fpr: Tensor) -> Tensor:
+    """Convert  fprs to specificity."""
     return 1 - fpr
 
 
@@ -153,9 +153,9 @@ def binary_sensitivity_at_specificity(
         >>> preds = torch.tensor([0, 0.5, 0.4, 0.1])
         >>> target = torch.tensor([0, 1, 1, 1])
         >>> binary_sensitivity_at_specificity(preds, target, min_specificity=0.5, thresholds=None)
-        (tensor(1.), tensor(0.4000))
+        (tensor(1.), tensor(0.1000))
         >>> binary_sensitivity_at_specificity(preds, target, min_specificity=0.5, thresholds=5)
-        (tensor(1.), tensor(0.2500))
+        (tensor(0.6667), tensor(0.2500))
 
     """
     if validate_args:
@@ -267,9 +267,9 @@ def multiclass_sensitivity_at_specificity(
         ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = torch.tensor([0, 1, 3, 2])
         >>> multiclass_sensitivity_at_specificity(preds, target, num_classes=5, min_specificity=0.5, thresholds=None)
-        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 5.0000e-02, 5.0000e-02, 1.0000e+06]))
+        (tensor([1., 1., 0., 0., 0.]), tensor([0.7500, 0.7500, 1.0000, 1.0000, 1.0000]))
         >>> multiclass_sensitivity_at_specificity(preds, target, num_classes=5, min_specificity=0.5, thresholds=5)
-        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 0.0000e+00, 0.0000e+00, 1.0000e+06]))
+        (tensor([1., 1., 0., 0., 0.]), tensor([0.7500, 0.7500, 1.0000, 1.0000, 1.0000]))
 
     """
     if validate_args:
@@ -388,9 +388,9 @@ def multilabel_sensitivity_at_specificity(
         ...                        [0, 1, 1],
         ...                        [1, 1, 1]])
         >>> multilabel_sensitivity_at_specificity(preds, target, num_labels=3, min_specificity=0.5, thresholds=None)
-        (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.6500, 0.3500]))
+        (tensor([0.5000, 1.0000, 0.6667]), tensor([0.7500, 0.5500, 0.3500]))
         >>> multilabel_sensitivity_at_specificity(preds, target, num_labels=3, min_specificity=0.5, thresholds=5)
-        (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.5000, 0.2500]))
+        (tensor([0.5000, 1.0000, 0.6667]), tensor([0.7500, 0.5000, 0.2500]))
 
     """
     if validate_args:

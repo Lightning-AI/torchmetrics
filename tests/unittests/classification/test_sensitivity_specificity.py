@@ -27,7 +27,7 @@ from torchmetrics.classification.sensitivity_specificity import (
     SensitivityAtSpecificity,
 )
 from torchmetrics.functional.classification.sensitivity_specificity import (
-    _convert_fpr_to_sensitivity,
+    _convert_fpr_to_specificity,
     binary_sensitivity_at_specificity,
     multiclass_sensitivity_at_specificity,
     multilabel_sensitivity_at_specificity,

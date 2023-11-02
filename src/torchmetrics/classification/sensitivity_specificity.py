@@ -95,10 +95,10 @@ class BinarySensitivityAtSpecificity(BinaryPrecisionRecallCurve):
         >>> target = tensor([0, 1, 1, 1])
         >>> metric = BinarySensitivityAtSpecificity(min_specificity=0.5, thresholds=None)
         >>> metric(preds, target)
-        (tensor(1.), tensor(0.4000))
+        (tensor(1.), tensor(0.1000))
         >>> metric = BinarySensitivityAtSpecificity(min_specificity=0.5, thresholds=5)
         >>> metric(preds, target)
-        (tensor(1.), tensor(0.2500))
+        (tensor(0.6667), tensor(0.2500))
 
     """
     is_differentiable: bool = False
@@ -189,10 +189,10 @@ class MulticlassSensitivityAtSpecificity(MulticlassPrecisionRecallCurve):
         >>> target = tensor([0, 1, 3, 2])
         >>> metric = MulticlassSensitivityAtSpecificity(num_classes=5, min_specificity=0.5, thresholds=None)
         >>> metric(preds, target)
-        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 5.0000e-02, 5.0000e-02, 1.0000e+06]))
+        (tensor([1., 1., 0., 0., 0.]), tensor([0.7500, 0.7500, 1.0000, 1.0000, 1.0000]))
         >>> metric = MulticlassSensitivityAtSpecificity(num_classes=5, min_specificity=0.5, thresholds=5)
         >>> metric(preds, target)
-        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 0.0000e+00, 0.0000e+00, 1.0000e+06]))
+        (tensor([1., 1., 0., 0., 0.]), tensor([0.7500, 0.7500, 1.0000, 1.0000, 1.0000]))
 
     """
     is_differentiable: bool = False
@@ -289,10 +289,10 @@ class MultilabelSensitivityAtSpecificity(MultilabelPrecisionRecallCurve):
         ...                  [1, 1, 1]])
         >>> metric = MultilabelSensitivityAtSpecificity(num_labels=3, min_specificity=0.5, thresholds=None)
         >>> metric(preds, target)
-        (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.6500, 0.3500]))
+        (tensor([0.5000, 1.0000, 0.6667]), tensor([0.7500, 0.5500, 0.3500]))
         >>> metric = MultilabelSensitivityAtSpecificity(num_labels=3, min_specificity=0.5, thresholds=5)
         >>> metric(preds, target)
-        (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.5000, 0.2500]))
+        (tensor([0.5000, 1.0000, 0.6667]), tensor([0.7500, 0.5000, 0.2500]))
 
     """
     is_differentiable: bool = False

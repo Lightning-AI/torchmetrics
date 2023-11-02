@@ -109,6 +109,12 @@ from torchmetrics.classification.specificity_sensitivity import (
     MultilabelSpecificityAtSensitivity,
     SpecificityAtSensitivity,
 )
+from torchmetrics.classification.sensitivity_specificity import (
+    BinarySensitivityAtSpecificity,
+    MulticlassSensitivityAtSpecificity,
+    MultilabelSensitivityAtSpecificity,
+    SensitivityAtSpecificity,
+)
 from torchmetrics.classification.stat_scores import (
     BinaryStatScores,
     MulticlassStatScores,
