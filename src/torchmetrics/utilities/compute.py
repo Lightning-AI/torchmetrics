@@ -43,16 +43,16 @@ def _safe_xlogy(x: Tensor, y: Tensor) -> Tensor:
     return res
 
 
-def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
+def _safe_divide(num: Tensor, denom: Tensor, zero_division: float = 0) -> Tensor:
     """Safe division, by preventing division by zero.
 
-    Additionally casts to float if input is not already to secure backwards compatibility.
+    Additionally casts to float if input is not already to secure backwards compatibility. Replace the elements divided
+    by zero (denom == 0) with the zero_division.
 
     """
-    denom[denom == 0.0] = 1
     num = num if num.is_floating_point() else num.float()
     denom = denom if denom.is_floating_point() else denom.float()
-    return num / denom
+    return torch.where(denom != 0, num / denom, zero_division)
 
 
 def _adjust_weights_safe_divide(
