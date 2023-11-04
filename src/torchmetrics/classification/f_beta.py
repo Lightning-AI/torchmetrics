@@ -85,7 +85,7 @@ class BinaryFBetaScore(BinaryStatScores):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Should be `0` or `1`. The value returned when
-            :math:`\text{TP} + \text{FP} \eq 0 \wedge \text{TP} + \text{FN} \eq 0`.
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -263,7 +263,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Should be `0` or `1`. The value returned when
-            :math:`\text{TP} + \text{FP} \eq 0 \wedge \text{TP} + \text{FN} \eq 0`.
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -458,7 +458,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Should be `0` or `1`. The value returned when
-            :math:`\text{TP} + \text{FP} \eq 0 \wedge \text{TP} + \text{FN} \eq 0`.
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -634,7 +634,7 @@ class BinaryF1Score(BinaryFBetaScore):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Should be `0` or `1`. The value returned when
-            :math:`\text{TP} + \text{FP} \eq 0 \wedge \text{TP} + \text{FN} \eq 0`.
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -792,7 +792,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Should be `0` or `1`. The value returned when
-            :math:`\text{TP} + \text{FP} \eq 0 \wedge \text{TP} + \text{FN} \eq 0`.
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -966,7 +966,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Should be `0` or `1`. The value returned when
-            :math:`\text{TP} + \text{FP} \eq 0 \wedge \text{TP} + \text{FN} \eq 0`.
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor

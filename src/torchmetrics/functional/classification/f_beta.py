@@ -112,7 +112,7 @@ def binary_fbeta_score(
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Should be `0` or `1`. The value returned when
-            :math:`\text{TP} + \text{FP} \eq 0 \wedge \text{TP} + \text{FN} \eq 0`.
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Returns:
         If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
@@ -220,7 +220,7 @@ def multiclass_fbeta_score(
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Should be `0` or `1`. The value returned when
-            :math:`\text{TP} + \text{FP} \eq 0 \wedge \text{TP} + \text{FN} \eq 0`.
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
@@ -349,7 +349,7 @@ def multilabel_fbeta_score(
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Should be `0` or `1`. The value returned when
-            :math:`\text{TP} + \text{FP} \eq 0 \wedge \text{TP} + \text{FN} \eq 0`.
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
@@ -452,7 +452,7 @@ def binary_f1_score(
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Should be `0` or `1`. The value returned when
-            :math:`\text{TP} + \text{FP} \eq 0 \wedge \text{TP} + \text{FN} \eq 0`.
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Returns:
         If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
@@ -543,7 +543,7 @@ def multiclass_f1_score(
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Should be `0` or `1`. The value returned when
-            :math:`\text{TP} + \text{FP} \eq 0 \wedge \text{TP} + \text{FN} \eq 0`.
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
@@ -653,7 +653,7 @@ def multilabel_f1_score(
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Should be `0` or `1`. The value returned when
-            :math:`\text{TP} + \text{FP} \eq 0 \wedge \text{TP} + \text{FN} \eq 0`.
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
