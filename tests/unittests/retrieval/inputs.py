@@ -11,46 +11,52 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
+from typing import NamedTuple
 
 import torch
+from torch import Tensor
 
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
 
-Input = namedtuple("InputMultiple", ["indexes", "preds", "target"])
+
+class _Input(NamedTuple):
+    indexes: Tensor
+    preds: Tensor
+    target: Tensor
+
 
 # correct
-_input_retrieval_scores = Input(
+_input_retrieval_scores = _Input(
     indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE)),
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
-_input_retrieval_scores_for_adaptive_k = Input(
+_input_retrieval_scores_for_adaptive_k = _Input(
     indexes=torch.randint(high=NUM_BATCHES * BATCH_SIZE // 2, size=(NUM_BATCHES, BATCH_SIZE)),
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
-_input_retrieval_scores_extra = Input(
+_input_retrieval_scores_extra = _Input(
     indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
     target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
 )
 
-_input_retrieval_scores_int_target = Input(
+_input_retrieval_scores_int_target = _Input(
     indexes=torch.randint(high=10, size=(NUM_BATCHES, 2 * BATCH_SIZE)),
     preds=torch.rand(NUM_BATCHES, 2 * BATCH_SIZE),
     target=torch.randint(low=-1, high=4, size=(NUM_BATCHES, 2 * BATCH_SIZE)),
 )
 
-_input_retrieval_scores_float_target = Input(
+_input_retrieval_scores_float_target = _Input(
     indexes=torch.randint(high=10, size=(NUM_BATCHES, 2 * BATCH_SIZE)),
     preds=torch.rand(NUM_BATCHES, 2 * BATCH_SIZE),
     target=torch.rand(NUM_BATCHES, 2 * BATCH_SIZE),
 )
 
-_input_retrieval_scores_with_ignore_index = Input(
+_input_retrieval_scores_with_ignore_index = _Input(
     indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE)),
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)).masked_fill(
@@ -59,37 +65,37 @@ _input_retrieval_scores_with_ignore_index = Input(
 )
 
 # with errors
-_input_retrieval_scores_no_target = Input(
+_input_retrieval_scores_no_target = _Input(
     indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE)),
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.randint(high=1, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
-_input_retrieval_scores_all_target = Input(
+_input_retrieval_scores_all_target = _Input(
     indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE)),
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.randint(low=1, high=2, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
-_input_retrieval_scores_empty = Input(
+_input_retrieval_scores_empty = _Input(
     indexes=torch.randint(high=10, size=[0]),
     preds=torch.rand(0),
     target=torch.randint(high=2, size=[0]),
 )
 
-_input_retrieval_scores_mismatching_sizes = Input(
+_input_retrieval_scores_mismatching_sizes = _Input(
     indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE - 2)),
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
-_input_retrieval_scores_mismatching_sizes_func = Input(
+_input_retrieval_scores_mismatching_sizes_func = _Input(
     indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE)),
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE - 2),
     target=torch.randint(high=2, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
-_input_retrieval_scores_wrong_targets = Input(
+_input_retrieval_scores_wrong_targets = _Input(
     indexes=torch.randint(high=10, size=(NUM_BATCHES, BATCH_SIZE)),
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.randint(low=-(2**31), high=2**31, size=(NUM_BATCHES, BATCH_SIZE)),

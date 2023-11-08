@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 
 import numpy as np
@@ -22,30 +21,29 @@ from torchmetrics.functional.regression.concordance import concordance_corrcoef
 from torchmetrics.regression.concordance import ConcordanceCorrCoef
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
-from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
-_single_target_inputs1 = Input(
+_single_target_inputs1 = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE),
 )
 
-_single_target_inputs2 = Input(
+_single_target_inputs2 = _Input(
     preds=torch.randn(NUM_BATCHES, BATCH_SIZE),
     target=torch.randn(NUM_BATCHES, BATCH_SIZE),
 )
 
-_multi_target_inputs1 = Input(
+_multi_target_inputs1 = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
 )
 
-_multi_target_inputs2 = Input(
+_multi_target_inputs2 = _Input(
     preds=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
     target=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
 )
