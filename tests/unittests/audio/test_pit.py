@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 from typing import Callable, Tuple
 
@@ -31,7 +30,7 @@ from torchmetrics.functional.audio.pit import (
     _find_best_perm_by_linear_sum_assignment,
 )
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -39,15 +38,14 @@ seed_all(42)
 
 TIME = 10
 
-Input = namedtuple("Input", ["preds", "target"])
 
 # three speaker examples to test _find_best_perm_by_linear_sum_assignment
-inputs1 = Input(
+inputs1 = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 3, TIME),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, 3, TIME),
 )
 # two speaker examples to test _find_best_perm_by_exhuastive_method
-inputs2 = Input(
+inputs2 = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, TIME),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, TIME),
 )

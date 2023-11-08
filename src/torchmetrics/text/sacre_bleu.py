@@ -22,7 +22,7 @@ from typing import Any, Optional, Sequence, Union
 from torch import Tensor
 
 from torchmetrics.functional.text.bleu import _bleu_score_update
-from torchmetrics.functional.text.sacre_bleu import _SacreBLEUTokenizer, _Tokenizers_list
+from torchmetrics.functional.text.sacre_bleu import _SacreBLEUTokenizer, _TokenizersLiteral
 from torchmetrics.text.bleu import BLEUScore
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -91,7 +91,7 @@ class SacreBLEUScore(BLEUScore):
         self,
         n_gram: int = 4,
         smooth: bool = False,
-        tokenize: _Tokenizers_list = "13a",
+        tokenize: _TokenizersLiteral = "13a",
         lowercase: bool = False,
         weights: Optional[Sequence[float]] = None,
         **kwargs: Any,

@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 from typing import Callable
 
@@ -22,14 +21,14 @@ from torch import Tensor
 from torchmetrics.audio import SignalNoiseRatio
 from torchmetrics.functional.audio import signal_noise_ratio
 
+from unittests import _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
-inputs = Input(
+inputs = _Input(
     preds=torch.rand(2, 1, 1, 25),
     target=torch.rand(2, 1, 1, 25),
 )
