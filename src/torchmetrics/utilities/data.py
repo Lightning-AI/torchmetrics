@@ -174,7 +174,7 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
         - deterministic mode on GPU.
         - MPS devices
 
-    The implementation falls back to a large grid to count occurrences.
+    The implementation uses torch.arange for deterministic counting only.
 
     Args:
         x: tensor to count
