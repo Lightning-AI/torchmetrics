@@ -18,10 +18,7 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _PYSTOI_AVAILABLE
 
-if _PYSTOI_AVAILABLE:
-    from pystoi import stoi as stoi_backend
-else:
-    stoi_backend = None
+if not _PYSTOI_AVAILABLE:
     __doctest_skip__ = ["short_time_objective_intelligibility"]
 
 
@@ -35,7 +32,7 @@ def short_time_objective_intelligibility(
     STOI-measure is intrusive, i.e., a function of the clean and degraded speech signals. STOI may be a good alternative
     to the speech intelligibility index (SII) or the speech transmission index (STI), when you are interested in
     the effect of nonlinear processing to noisy speech, e.g., noise reduction, binary masking algorithms, on speech
-    intelligibility. Description taken from  `Cees Taal's website`_ and for further defails see `STOI ref1`_ and
+    intelligibility. Description taken from  `Cees Taal's website`_ and for further details see `STOI ref1`_ and
     `STOI ref2`_.
 
     This metric is a wrapper for the `pystoi package`_. As the implementation backend implementation only supports
@@ -76,6 +73,8 @@ def short_time_objective_intelligibility(
             "ShortTimeObjectiveIntelligibility metric requires that `pystoi` is installed."
             " Either install as `pip install torchmetrics[audio]` or `pip install pystoi`."
         )
+    from pystoi import stoi as stoi_backend
+
     _check_same_shape(preds, target)
 
     if len(preds.shape) == 1:

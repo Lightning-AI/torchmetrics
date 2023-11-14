@@ -268,7 +268,7 @@ def bert_score(
     system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for
     evaluating different language generation tasks.
 
-    This implemenation follows the original implementation from `BERT_score`_.
+    This implementation follows the original implementation from `BERT_score`_.
 
     Args:
         preds: Either an iterable of predicted sentences or a ``Dict[input_ids, attention_mask]``.
@@ -364,9 +364,9 @@ def bert_score(
     model.to(device)
 
     try:
-        if num_layers and num_layers > model.config.num_hidden_layers:  # type: ignore
+        if num_layers and num_layers > model.config.num_hidden_layers:
             raise ValueError(
-                f"num_layers={num_layers} is forbidden for {model_name_or_path}."  # type: ignore
+                f"num_layers={num_layers} is forbidden for {model_name_or_path}."
                 f" Please use num_layers <= {model.config.num_hidden_layers}"
             )
     except AttributeError:

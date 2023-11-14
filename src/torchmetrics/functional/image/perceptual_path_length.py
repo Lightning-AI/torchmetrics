@@ -18,7 +18,7 @@ import torch
 from torch import Tensor, nn
 
 from torchmetrics.functional.image.lpips import _LPIPS
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_10, _TORCHVISION_AVAILABLE
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
 if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["perceptual_path_length"]
@@ -246,8 +246,7 @@ def perceptual_path_length(
     else:
         raise ValueError(f"sim_net must be a nn.Module or one of 'alex', 'vgg', 'squeeze', got {sim_net}")
 
-    decorator = torch.inference_mode if _TORCH_GREATER_EQUAL_1_10 else torch.no_grad
-    with decorator():
+    with torch.inference_mode():
         distances = []
         num_batches = math.ceil(num_samples / batch_size)
         for batch_idx in range(num_batches):

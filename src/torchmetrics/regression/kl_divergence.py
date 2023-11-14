@@ -35,7 +35,7 @@ class KLDivergence(Metric):
 
     Where :math:`P` and :math:`Q` are probability distributions where :math:`P` usually represents a distribution
     over data and :math:`Q` is often a prior or approximation of :math:`P`. It should be noted that the KL divergence
-    is a non-symetrical metric i.e. :math:`D_{KL}(P||Q) \neq D_{KL}(Q||P)`.
+    is a non-symmetrical metric i.e. :math:`D_{KL}(P||Q) \neq D_{KL}(Q||P)`.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -112,18 +112,14 @@ class KLDivergence(Metric):
         """Update metric states with predictions and targets."""
         measures, total = _kld_update(p, q, self.log_prob)
         if self.reduction is None or self.reduction == "none":
-            self.measures.append(measures)  # type: ignore[operator,union-attr]
+            self.measures.append(measures)
         else:
             self.measures += measures.sum()
             self.total += total
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        measures: Tensor = (
-            dim_zero_cat(self.measures)  # type: ignore[arg-type]
-            if self.reduction in ["none", None]
-            else self.measures  # type: ignore[assignment]
-        )
+        measures: Tensor = dim_zero_cat(self.measures) if self.reduction in ["none", None] else self.measures
         return _kld_compute(measures, self.total, self.reduction)
 
     def plot(

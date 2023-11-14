@@ -47,8 +47,7 @@ __all__ = [
 
 
 if _TRANSFORMERS_GREATER_EQUAL_4_4:
-    from torchmetrics.functional.text.bert import bert_score  # noqa: F401
-    from torchmetrics.functional.text.infolm import infolm  # noqa: F401
+    from torchmetrics.functional.text.bert import bert_score
+    from torchmetrics.functional.text.infolm import infolm
 
-    __all__.append("bert_score")
-    __all__.append("infolm")
+    __all__ += ["bert_score", "infolm"]

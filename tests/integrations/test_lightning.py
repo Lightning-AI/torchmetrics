@@ -34,7 +34,7 @@ from integrations.lightning.boring_model import BoringModel
 
 
 class DiffMetric(SumMetric):
-    """DiffMetric inheritted from `SumMetric` by overidding its `update` method."""
+    """DiffMetric inherited from `SumMetric` by overidding its `update` method."""
 
     def update(self, value):
         """Update state."""
@@ -184,7 +184,7 @@ def test_metric_lightning_log(tmpdir):
         def __init__(self) -> None:
             super().__init__()
 
-            # initiliaze one metric for every combination of `on_step` and `on_epoch` and `forward` and `update`
+            # initialize one metric for every combination of `on_step` and `on_epoch` and `forward` and `update`
             self.metric_update = SumMetric()
             self.metric_update_step = SumMetric()
             self.metric_update_epoch = SumMetric()

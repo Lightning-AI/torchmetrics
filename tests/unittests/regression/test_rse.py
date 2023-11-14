@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 
 import numpy as np
@@ -19,8 +18,9 @@ import pytest
 import torch
 from torchmetrics.functional import relative_squared_error
 from torchmetrics.regression import RelativeSquaredError
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -28,14 +28,13 @@ seed_all(42)
 
 num_targets = 5
 
-Input = namedtuple("Input", ["preds", "target"])
 
-_single_target_inputs = Input(
+_single_target_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE),
 )
 
-_multi_target_inputs = Input(
+_multi_target_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
 )
@@ -108,7 +107,10 @@ class TestRelativeSquaredError(MetricTester):
             metric_args={"squared": squared},
         )
 
-    @pytest.mark.xfail(raises=RuntimeError, reason="clamp_min_cpu not implented for `Half`.")
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_2_1,
+        reason="Pytoch below 2.1 does not support cpu + half precision used in `clamp_min_cpu`",
+    )
     def test_rse_half_cpu(self, squared, preds, target, ref_metric, num_outputs):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(

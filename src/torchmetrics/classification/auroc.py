@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any, List, Optional, Sequence, Type, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -173,7 +173,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
     corresponds to random guessing.
 
     For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
-    classes as the negative, which is refered to as the one-vs-rest approach. One-vs-one is currently not supported by
+    classes as the negative, which is referred to as the one-vs-rest approach. One-vs-one is currently not supported by
     this metric. By default the reported metric is then the average over all classes, but this behavior can be changed
     by setting the ``average`` argument.
 
@@ -199,7 +199,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
     size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over classes. Should be one of the following:
 
@@ -266,13 +266,15 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         )
         if validate_args:
             _multiclass_auroc_arg_validation(num_classes, average, thresholds, ignore_index)
-        self.average = average
+        self.average = average  # type: ignore[assignment]
         self.validate_args = validate_args
 
     def compute(self) -> Tensor:  # type: ignore[override]
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
-        return _multiclass_auroc_compute(state, self.num_classes, self.average, self.thresholds)
+        return _multiclass_auroc_compute(
+            state, self.num_classes, self.average, self.thresholds  # type: ignore[arg-type]
+        )
 
     def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -346,7 +348,7 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
     size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
@@ -500,7 +502,7 @@ class AUROC(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls,
+        cls: Type["AUROC"],
         task: Literal["binary", "multiclass", "multilabel"],
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         num_classes: Optional[int] = None,

@@ -1,6 +1,8 @@
-r"""Root package info."""
+"""Root package info."""
 import logging as __logging
 import os
+
+from lightning_utilities.core.imports import package_available
 
 from torchmetrics.__about__ import *  # noqa: F403
 
@@ -10,6 +12,12 @@ _logger.setLevel(__logging.INFO)
 
 _PACKAGE_ROOT = os.path.dirname(__file__)
 _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
+
+if package_available("PIL"):
+    import PIL
+
+    if not hasattr(PIL, "PILLOW_VERSION"):
+        PIL.PILLOW_VERSION = PIL.__version__
 
 from torchmetrics import functional  # noqa: E402
 from torchmetrics.aggregation import (  # noqa: E402

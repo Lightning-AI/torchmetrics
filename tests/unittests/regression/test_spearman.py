@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 
 import pytest
@@ -19,36 +18,36 @@ import torch
 from scipy.stats import rankdata, spearmanr
 from torchmetrics.functional.regression.spearman import _rank_data, spearman_corrcoef
 from torchmetrics.regression.spearman import SpearmanCorrCoef
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
-from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
-_single_target_inputs1 = Input(
+_single_target_inputs1 = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE),
 )
 
-_single_target_inputs2 = Input(
+_single_target_inputs2 = _Input(
     preds=torch.randn(NUM_BATCHES, BATCH_SIZE),
     target=torch.randn(NUM_BATCHES, BATCH_SIZE),
 )
 
-_multi_target_inputs1 = Input(
+_multi_target_inputs1 = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
 )
 
-_multi_target_inputs2 = Input(
+_multi_target_inputs2 = _Input(
     preds=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
     target=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM),
 )
 
-_specific_input = Input(
+_specific_input = _Input(
     preds=torch.stack([torch.tensor([1.0, 0.0, 4.0, 1.0, 0.0, 3.0, 0.0]) for _ in range(NUM_BATCHES)]),
     target=torch.stack([torch.tensor([4.0, 0.0, 3.0, 3.0, 3.0, 1.0, 1.0]) for _ in range(NUM_BATCHES)]),
 )
@@ -120,7 +119,10 @@ class TestSpearmanCorrCoef(MetricTester):
         )
 
     # Spearman half + cpu does not work due to missing support in torch.arange
-    @pytest.mark.xfail(reason="Spearman metric does not support cpu + half precision")
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_2_1,
+        reason="Pytoch below 2.1 does not support cpu + half precision used in Spearman metric",
+    )
     def test_spearman_corrcoef_half_cpu(self, preds, target):
         """Test dtype support of the metric on CPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1

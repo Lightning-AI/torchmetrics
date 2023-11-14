@@ -15,19 +15,19 @@
 import operator
 import shutil
 import sys
-from distutils.version import LooseVersion
 from typing import Optional
 
 from lightning_utilities.core.imports import compare_version, package_available
+from packaging.version import Version, parse
 
 _PYTHON_VERSION = ".".join(map(str, [sys.version_info.major, sys.version_info.minor, sys.version_info.micro]))
-_PYTHON_LOWER_3_8 = LooseVersion(_PYTHON_VERSION) < LooseVersion("3.8")
+_PYTHON_LOWER_3_8 = parse(_PYTHON_VERSION) < Version("3.8")
 _TORCH_LOWER_1_12_DEV: Optional[bool] = compare_version("torch", operator.lt, "1.12.0.dev")
-_TORCH_GREATER_EQUAL_1_9: Optional[bool] = compare_version("torch", operator.ge, "1.9.0")
-_TORCH_GREATER_EQUAL_1_10: Optional[bool] = compare_version("torch", operator.ge, "1.10.0")
 _TORCH_GREATER_EQUAL_1_11: Optional[bool] = compare_version("torch", operator.ge, "1.11.0")
 _TORCH_GREATER_EQUAL_1_12: Optional[bool] = compare_version("torch", operator.ge, "1.12.0")
 _TORCH_GREATER_EQUAL_1_13: Optional[bool] = compare_version("torch", operator.ge, "1.13.0")
+_TORCH_GREATER_EQUAL_2_0: Optional[bool] = compare_version("torch", operator.ge, "2.0.0")
+_TORCH_GREATER_EQUAL_2_1: Optional[bool] = compare_version("torch", operator.ge, "2.1.0")
 
 _JIWER_AVAILABLE: bool = package_available("jiwer")
 _NLTK_AVAILABLE: bool = package_available("nltk")
@@ -45,8 +45,8 @@ _TRANSFORMERS_AVAILABLE: bool = package_available("transformers")
 _TRANSFORMERS_GREATER_EQUAL_4_4: Optional[bool] = compare_version("transformers", operator.ge, "4.4.0")
 _TRANSFORMERS_GREATER_EQUAL_4_10: Optional[bool] = compare_version("transformers", operator.ge, "4.10.0")
 _PESQ_AVAILABLE: bool = package_available("pesq")
-_GAMMATONE_AVAILABEL: bool = package_available("gammatone")
-_TORCHAUDIO_AVAILABEL: bool = package_available("torchaudio")
+_GAMMATONE_AVAILABLE: bool = package_available("gammatone")
+_TORCHAUDIO_AVAILABLE: bool = package_available("torchaudio")
 _TORCHAUDIO_GREATER_EQUAL_0_10: Optional[bool] = compare_version("torchaudio", operator.ge, "0.10.0")
 _SACREBLEU_AVAILABLE: bool = package_available("sacrebleu")
 _REGEX_AVAILABLE: bool = package_available("regex")
@@ -58,5 +58,10 @@ _MULTIPROCESSING_AVAILABLE: bool = package_available("multiprocessing")
 _XLA_AVAILABLE: bool = package_available("torch_xla")
 _PIQ_GREATER_EQUAL_0_8: Optional[bool] = compare_version("piq", operator.ge, "0.8.0")
 _FASTER_COCO_EVAL_AVAILABLE: bool = package_available("faster_coco_eval")
+_MECAB_AVAILABLE: bool = package_available("MeCab")
+_MECAB_KO_AVAILABLE: bool = package_available("mecab_ko")
+_MECAB_KO_DIC_AVAILABLE: bool = package_available("mecab_ko_dic")
+_IPADIC_AVAILABLE: bool = package_available("ipadic")
+_SENTENCEPIECE_AVAILABLE: bool = package_available("sentencepiece")
 
 _LATEX_AVAILABLE: bool = shutil.which("latex") is not None

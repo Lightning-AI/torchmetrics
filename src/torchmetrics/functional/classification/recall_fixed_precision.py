@@ -235,7 +235,7 @@ def multiclass_recall_at_fixed_precision(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         min_precision: float value specifying minimum precision threshold.
         thresholds:
             Can be one of:
@@ -348,7 +348,7 @@ def multilabel_recall_at_fixed_precision(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         min_precision: float value specifying minimum precision threshold.
         thresholds:
             Can be one of:

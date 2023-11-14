@@ -28,18 +28,8 @@ from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MeanAveragePrecision.plot"]
 
-if _TORCHVISION_GREATER_EQUAL_0_8:
-    from torchvision.ops import box_area, box_convert, box_iou
-else:
-    box_convert = box_iou = box_area = None
+if not _TORCHVISION_GREATER_EQUAL_0_8 or not _PYCOCOTOOLS_AVAILABLE:
     __doctest_skip__ = ["MeanAveragePrecision.plot", "MeanAveragePrecision"]
-
-if _PYCOCOTOOLS_AVAILABLE:
-    import pycocotools.mask as mask_utils
-else:
-    mask_utils = None
-    __doctest_skip__ = ["MeanAveragePrecision.plot", "MeanAveragePrecision"]
-
 
 log = logging.getLogger(__name__)
 
@@ -50,6 +40,9 @@ def compute_area(inputs: List[Any], iou_type: str = "bbox") -> Tensor:
     Default output for empty input is :class:`~torch.Tensor`
 
     """
+    import pycocotools.mask as mask_utils
+    from torchvision.ops import box_area
+
     if len(inputs) == 0:
         return Tensor([])
 
@@ -68,6 +61,8 @@ def compute_iou(
     iou_type: str = "bbox",
 ) -> Tensor:
     """Compute IOU between detections and ground-truth using the specified iou_type."""
+    from torchvision.ops import box_iou
+
     if iou_type == "bbox":
         return box_iou(torch.stack(det), torch.stack(gt))
     if iou_type == "segm":
@@ -142,6 +137,8 @@ def _segm_iou(det: List[Tuple[np.ndarray, np.ndarray]], gt: List[Tuple[np.ndarra
            of the input and RLE_COUNTS is its RLE representation;
 
     """
+    import pycocotools.mask as mask_utils
+
     det_coco_format = [{"size": i[0], "counts": i[1]} for i in det]
     gt_coco_format = [{"size": i[0], "counts": i[1]} for i in gt]
 
@@ -324,7 +321,11 @@ class MeanAveragePrecision(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-
+        if not _PYCOCOTOOLS_AVAILABLE:
+            raise ModuleNotFoundError(
+                "`MAP` metric requires that `pycocotools` installed."
+                " Please install with `pip install pycocotools` or `pip install torchmetrics[detection]`"
+            )
         if not _TORCHVISION_GREATER_EQUAL_0_8:
             raise ModuleNotFoundError(
                 "`MeanAveragePrecision` metric requires that `torchvision` version 0.8.0 or newer is installed."
@@ -392,6 +393,9 @@ class MeanAveragePrecision(Metric):
             setattr(self, key, current_to_cpu)
 
     def _get_safe_item_values(self, item: Dict[str, Any]) -> Union[Tensor, Tuple]:
+        import pycocotools.mask as mask_utils
+        from torchvision.ops import box_convert
+
         if self.iou_type == "bbox":
             boxes = _fix_empty_tensors(item["boxes"])
             if boxes.numel() > 0:
@@ -827,13 +831,13 @@ class MeanAveragePrecision(Metric):
         tp_sum = _cumsum(tps, dim=1, dtype=torch.float)
         fp_sum = _cumsum(fps, dim=1, dtype=torch.float)
         for idx, (tp, fp) in enumerate(zip(tp_sum, fp_sum)):
-            nd = len(tp)
+            tp_len = len(tp)
             rc = tp / npig
             pr = tp / (fp + tp + torch.finfo(torch.float64).eps)
             prec = torch.zeros((num_rec_thrs,))
             score = torch.zeros((num_rec_thrs,))
 
-            recall[idx, idx_cls, idx_bbox_area, idx_max_det_thrs] = rc[-1] if nd else 0
+            recall[idx, idx_cls, idx_bbox_area, idx_max_det_thrs] = rc[-1] if tp_len else 0
 
             # Remove zigzags for AUC
             diff_zero = torch.zeros((1,), device=pr.device)
@@ -843,7 +847,7 @@ class MeanAveragePrecision(Metric):
                 pr += diff
 
             inds = torch.searchsorted(rc, rec_thresholds.to(rc.device), right=False)
-            num_inds = inds.argmax() if inds.max() >= nd else num_rec_thrs
+            num_inds = inds.argmax() if inds.max() >= tp_len else num_rec_thrs
             inds = inds[:num_inds]
             prec[:num_inds] = pr[inds]
             score[:num_inds] = det_scores_sorted[inds]

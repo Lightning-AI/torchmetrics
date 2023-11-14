@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from typing import Any, List, Optional, Sequence, Tuple, Type, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -210,7 +210,7 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
        size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         min_recall: float value specifying minimum recall threshold.
         thresholds:
             Can be one of:
@@ -354,7 +354,7 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
        size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         min_recall: float value specifying minimum recall threshold.
         thresholds:
             Can be one of:
@@ -482,7 +482,7 @@ class PrecisionAtFixedRecall(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls,
+        cls: Type["PrecisionAtFixedRecall"],
         task: Literal["binary", "multiclass", "multilabel"],
         min_recall: float,
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
