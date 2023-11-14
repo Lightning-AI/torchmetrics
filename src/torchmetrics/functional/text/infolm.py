@@ -13,7 +13,7 @@
 # limitations under the License.
 import os
 from enum import unique
-from typing import Dict, List, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -30,11 +30,8 @@ from torchmetrics.functional.text.helper_embedding_metric import (
 from torchmetrics.utilities.enums import EnumStr
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
-if _TRANSFORMERS_GREATER_EQUAL_4_4:
+if TYPE_CHECKING and _TRANSFORMERS_GREATER_EQUAL_4_4:
     from transformers import PreTrainedModel, PreTrainedTokenizerBase
-else:
-    PreTrainedModel = PreTrainedTokenizerBase = None
-    __doctest_skip__ = ["infolm"]
 
 
 _ALLOWED_INFORMATION_MEASURE_LITERAL = Literal[

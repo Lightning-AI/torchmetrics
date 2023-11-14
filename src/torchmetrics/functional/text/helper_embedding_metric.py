@@ -14,7 +14,7 @@
 import math
 import os
 from collections import Counter, defaultdict
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -23,13 +23,11 @@ from torch.utils.data import DataLoader, Dataset
 from torchmetrics.utilities.data import _cumsum
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
 
-if _TRANSFORMERS_GREATER_EQUAL_4_4:
-    from transformers import AutoModelForMaskedLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizerBase
-else:
-    PreTrainedModel = PreTrainedTokenizerBase = None
-
-if _TQDM_AVAILABLE:
-    import tqdm
+if TYPE_CHECKING:
+    if _TRANSFORMERS_GREATER_EQUAL_4_4:
+        from transformers import PreTrainedModel, PreTrainedTokenizerBase
+    if _TQDM_AVAILABLE:
+        import tqdm
 
 
 def _process_attention_mask_for_special_tokens(attention_mask: Tensor) -> Tensor:
@@ -148,6 +146,8 @@ def _get_progress_bar(dataloader: DataLoader, verbose: bool = False) -> Union[Da
     `tqdm.auto.tqdm`, when `verbose = True` to display a progress bar during the embbeddings calculation.
 
     """
+    import tqdm
+
     return tqdm.auto.tqdm(dataloader) if verbose else dataloader
 
 
@@ -177,6 +177,8 @@ def _load_tokenizer_and_model(
         Initialized `transformers`' tokenizer and model.
 
     """
+    from transformers import AutoModelForMaskedLM, AutoTokenizer
+
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
     model = AutoModelForMaskedLM.from_pretrained(model_name_or_path)
     model.eval()
