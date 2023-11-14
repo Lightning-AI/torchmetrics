@@ -12,14 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
 from torchmetrics import Metric
 from torchmetrics.utilities.checks import _check_retrieval_inputs
 from torchmetrics.utilities.data import _flexible_bincount, dim_zero_cat
+
+
+def _retrieval_aggregate(
+    values: Tensor, aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean"
+) -> Tensor:
+    """Aggregate the final retrieval values into a single value."""
+    if aggregation == "mean":
+        return values.mean()
+    if aggregation == "median":
+        return values.median()
+    if aggregation == "min":
+        return values.min()
+    if aggregation:
+        return values.max()
+    return aggregation(values)
 
 
 class RetrievalMetric(Metric, ABC):
@@ -78,6 +94,7 @@ class RetrievalMetric(Metric, ABC):
         self,
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
+        aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -86,13 +103,17 @@ class RetrievalMetric(Metric, ABC):
         empty_target_action_options = ("error", "skip", "neg", "pos")
         if empty_target_action not in empty_target_action_options:
             raise ValueError(f"Argument `empty_target_action` received a wrong value `{empty_target_action}`.")
-
         self.empty_target_action = empty_target_action
 
         if ignore_index is not None and not isinstance(ignore_index, int):
             raise ValueError("Argument `ignore_index` must be an integer or None.")
-
         self.ignore_index = ignore_index
+
+        if not (aggregation in ("mean", "median", "min", "max") or callable(aggregation)):
+            raise ValueError(
+                "Argument `aggregation` must be one of `mean`, `median`, `min`, `max` or a custom callable function"
+                f"which takes tensor of values, but got {aggregation}."
+            )
 
         self.add_state("indexes", default=[], dist_reduce_fx=None)
         self.add_state("preds", default=[], dist_reduce_fx=None)
@@ -144,7 +165,7 @@ class RetrievalMetric(Metric, ABC):
                 # ensure list contains only float tensors
                 res.append(self._metric(mini_preds, mini_target))
 
-        return torch.stack([x.to(preds) for x in res]).mean() if res else tensor(0.0).to(preds)
+        return _retrieval_aggregate(torch.stack([x.to(preds) for x in res])) if res else tensor(0.0).to(preds)
 
     @abstractmethod
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:

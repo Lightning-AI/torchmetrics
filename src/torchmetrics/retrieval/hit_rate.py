@@ -11,9 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from typing import Any, Callable, Optional, Sequence, Union
 
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.retrieval.hit_rate import retrieval_hit_rate
 from torchmetrics.retrieval.base import RetrievalMetric
@@ -90,6 +91,7 @@ class RetrievalHitRate(RetrievalMetric):
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
+        aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
         **kwargs: Any,
     ) -> None:
         super().__init__(
