@@ -24,18 +24,20 @@ from torchmetrics.utilities.data import _flexible_bincount, dim_zero_cat
 
 
 def _retrieval_aggregate(
-    values: Tensor, aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean"
+    values: Tensor,
+    aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
+    dim: Optional[int] = None,
 ) -> Tensor:
     """Aggregate the final retrieval values into a single value."""
     if aggregation == "mean":
-        return values.mean()
+        return values.mean(dim=dim)
     if aggregation == "median":
-        return values.median()
+        return values.median() if dim is None else values.median(dim=dim).values
     if aggregation == "min":
-        return values.min()
+        return values.min() if dim is None else values.min(dim=dim).values
     if aggregation:
-        return values.max()
-    return aggregation(values)
+        return values.max() if dim is None else values.max(dim=dim).values
+    return aggregation(values, dim=dim)
 
 
 class RetrievalMetric(Metric, ABC):
@@ -72,6 +74,15 @@ class RetrievalMetric(Metric, ABC):
 
         ignore_index:
             Ignore predictions where the target is equal to this number.
+        aggregation:
+            Specify how to aggregate over indexes. Can either a custom callable function that takes in a single tensor
+            and returns a scalar value or one of the following strings:
+
+            - ``'mean'``: average value is returned
+            - ``'median'``: median value is returned
+            - ``'max'``: max value is returned
+            - ``'min'``: min value is returned
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -114,6 +125,7 @@ class RetrievalMetric(Metric, ABC):
                 "Argument `aggregation` must be one of `mean`, `median`, `min`, `max` or a custom callable function"
                 f"which takes tensor of values, but got {aggregation}."
             )
+        self.aggregation = aggregation
 
         self.add_state("indexes", default=[], dist_reduce_fx=None)
         self.add_state("preds", default=[], dist_reduce_fx=None)
@@ -165,7 +177,9 @@ class RetrievalMetric(Metric, ABC):
                 # ensure list contains only float tensors
                 res.append(self._metric(mini_preds, mini_target))
 
-        return _retrieval_aggregate(torch.stack([x.to(preds) for x in res])) if res else tensor(0.0).to(preds)
+        if res:
+            return _retrieval_aggregate(torch.stack([x.to(preds) for x in res]), self.aggregation)
+        return tensor(0.0).to(preds)
 
     @abstractmethod
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:

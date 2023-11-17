@@ -58,6 +58,15 @@ class RetrievalHitRate(RetrievalMetric):
 
         ignore_index: Ignore predictions where the target is equal to this number.
         top_k: Consider only the top k elements for each query (default: ``None``, which considers them all)
+        aggregation:
+            Specify how to aggregate over indexes. Can either a custom callable function that takes in a single tensor
+            and returns a scalar value or one of the following strings:
+
+            - ``'mean'``: average value is returned
+            - ``'median'``: median value is returned
+            - ``'max'``: max value is returned
+            - ``'min'``: min value is returned
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -97,6 +106,7 @@ class RetrievalHitRate(RetrievalMetric):
         super().__init__(
             empty_target_action=empty_target_action,
             ignore_index=ignore_index,
+            aggregation=aggregation,
             **kwargs,
         )
 

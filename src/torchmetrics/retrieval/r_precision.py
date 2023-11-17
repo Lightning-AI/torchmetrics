@@ -55,6 +55,15 @@ class RetrievalRPrecision(RetrievalMetric):
             - ``'error'``: raise a ``ValueError``
 
         ignore_index: Ignore predictions where the target is equal to this number.
+        aggregation:
+            Specify how to aggregate over indexes. Can either a custom callable function that takes in a single tensor
+            and returns a scalar value or one of the following strings:
+
+            - ``'mean'``: average value is returned
+            - ``'median'``: median value is returned
+            - ``'max'``: max value is returned
+            - ``'min'``: min value is returned
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
