@@ -73,6 +73,10 @@ def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, 
     return [structure(x, dtype=dtype) for x in res.values()]
 
 
+def _custom_aggregate_fn(val: Tensor, dim=None) -> Tensor:
+    return (val**2).mean(dim=dim)
+
+
 def _compute_sklearn_metric(
     preds: Union[Tensor, array],
     target: Union[Tensor, array],
@@ -125,7 +129,9 @@ def _compute_sklearn_metric(
     sk_results = np.array(sk_results)
     sk_results[np.isnan(sk_results)] = 0.0  # this is needed with old versions of sklearn
 
-    return _retrieval_aggregate(torch.from_numpy(sk_results)).numpy() if len(sk_results) > 0 else np.array(0.0)
+    if len(sk_results) > 0:
+        return _retrieval_aggregate(torch.from_numpy(sk_results), aggregation=aggregation).numpy()
+    return np.array(0.0)
 
 
 def _concat_tests(*tests: Tuple[Dict]) -> Dict:
@@ -449,12 +455,9 @@ class RetrievalMetricTester(MetricTester):
         reference_metric: Callable,
         metric_args: dict,
         reverse: bool = False,
-        aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
     ):
         """Test class implementation of metric."""
-        _ref_metric_adapted = partial(
-            _compute_sklearn_metric, metric=reference_metric, reverse=reverse, aggregation=aggregation, **metric_args
-        )
+        _ref_metric_adapted = partial(_compute_sklearn_metric, metric=reference_metric, reverse=reverse, **metric_args)
 
         super().run_class_metric_test(
             ddp=ddp,
