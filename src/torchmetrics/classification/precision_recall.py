@@ -19,9 +19,6 @@ from typing_extensions import Literal
 from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
 from torchmetrics.functional.classification.precision_recall import (
-    _binary_precision_recall_score_arg_validation,
-    _multiclass_precision_recall_score_arg_validation,
-    _multilabel_precision_recall_score_arg_validation,
     _precision_recall_reduce,
 )
 from torchmetrics.metric import Metric
@@ -112,27 +109,6 @@ class BinaryPrecision(BinaryStatScores):
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
-
-    def __init__(
-        self,
-        threshold: float = 0.5,
-        multidim_average: Literal["global", "samplewise"] = "global",
-        ignore_index: Optional[int] = None,
-        validate_args: bool = True,
-        zero_division: float = 0,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(
-            threshold=threshold,
-            multidim_average=multidim_average,
-            ignore_index=ignore_index,
-            validate_args=False,
-            **kwargs,
-        )
-        if validate_args:
-            _binary_precision_recall_score_arg_validation(threshold, multidim_average, ignore_index, zero_division)
-        self.validate_args = validate_args
-        self.zero_division = zero_division
 
     def compute(self) -> Tensor:
         """Compute metric."""
@@ -298,33 +274,6 @@ class MulticlassPrecision(MulticlassStatScores):
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Class"
 
-    def __init__(
-        self,
-        num_classes: int,
-        top_k: int = 1,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
-        multidim_average: Literal["global", "samplewise"] = "global",
-        ignore_index: Optional[int] = None,
-        validate_args: bool = True,
-        zero_division: float = 0,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(
-            num_classes=num_classes,
-            top_k=top_k,
-            average=average,
-            multidim_average=multidim_average,
-            ignore_index=ignore_index,
-            validate_args=False,
-            **kwargs,
-        )
-        if validate_args:
-            _multiclass_precision_recall_score_arg_validation(
-                num_classes, top_k, average, multidim_average, ignore_index, zero_division
-            )
-        self.validate_args = validate_args
-        self.zero_division = zero_division
-
     def compute(self) -> Tensor:
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
@@ -486,33 +435,6 @@ class MultilabelPrecision(MultilabelStatScores):
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Label"
 
-    def __init__(
-        self,
-        num_labels: int,
-        threshold: float = 0.5,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
-        multidim_average: Literal["global", "samplewise"] = "global",
-        ignore_index: Optional[int] = None,
-        validate_args: bool = True,
-        zero_division: float = 0,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(
-            num_labels=num_labels,
-            threshold=threshold,
-            average=average,
-            multidim_average=multidim_average,
-            ignore_index=ignore_index,
-            validate_args=validate_args,
-            **kwargs,
-        )
-        if validate_args:
-            _multilabel_precision_recall_score_arg_validation(
-                num_labels, threshold, average, multidim_average, ignore_index, zero_division
-            )
-        self.validate_args = validate_args
-        self.zero_division = zero_division
-
     def compute(self) -> Tensor:
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
@@ -643,27 +565,6 @@ class BinaryRecall(BinaryStatScores):
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
-
-    def __init__(
-        self,
-        threshold: float = 0.5,
-        multidim_average: Literal["global", "samplewise"] = "global",
-        ignore_index: Optional[int] = None,
-        validate_args: bool = True,
-        zero_division: float = 0,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(
-            threshold=threshold,
-            multidim_average=multidim_average,
-            ignore_index=ignore_index,
-            validate_args=False,
-            **kwargs,
-        )
-        if validate_args:
-            _binary_precision_recall_score_arg_validation(threshold, multidim_average, ignore_index, zero_division)
-        self.validate_args = validate_args
-        self.zero_division = zero_division
 
     def compute(self) -> Tensor:
         """Compute metric."""
@@ -828,33 +729,6 @@ class MulticlassRecall(MulticlassStatScores):
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Class"
 
-    def __init__(
-        self,
-        num_classes: int,
-        top_k: int = 1,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
-        multidim_average: Literal["global", "samplewise"] = "global",
-        ignore_index: Optional[int] = None,
-        validate_args: bool = True,
-        zero_division: float = 0,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(
-            num_classes=num_classes,
-            top_k=top_k,
-            average=average,
-            multidim_average=multidim_average,
-            ignore_index=ignore_index,
-            validate_args=False,
-            **kwargs,
-        )
-        if validate_args:
-            _multiclass_precision_recall_score_arg_validation(
-                num_classes, top_k, average, multidim_average, ignore_index, zero_division
-            )
-        self.validate_args = validate_args
-        self.zero_division = zero_division
-
     def compute(self) -> Tensor:
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
@@ -1014,33 +888,6 @@ class MultilabelRecall(MultilabelStatScores):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Label"
-
-    def __init__(
-        self,
-        num_labels: int,
-        threshold: float = 0.5,
-        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
-        multidim_average: Literal["global", "samplewise"] = "global",
-        ignore_index: Optional[int] = None,
-        validate_args: bool = True,
-        zero_division: float = 0,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(
-            num_labels=num_labels,
-            threshold=threshold,
-            average=average,
-            multidim_average=multidim_average,
-            ignore_index=ignore_index,
-            validate_args=validate_args,
-            **kwargs,
-        )
-        if validate_args:
-            _multilabel_precision_recall_score_arg_validation(
-                num_labels, threshold, average, multidim_average, ignore_index, zero_division
-            )
-        self.validate_args = validate_args
-        self.zero_division = zero_division
 
     def compute(self) -> Tensor:
         """Compute metric."""

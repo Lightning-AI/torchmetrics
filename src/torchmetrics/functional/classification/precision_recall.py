@@ -58,17 +58,6 @@ def _precision_recall_reduce(
     return _adjust_weights_safe_divide(score, average, multilabel, tp, fp, fn)
 
 
-def _binary_precision_recall_score_arg_validation(
-    threshold: float = 0.5,
-    multidim_average: Literal["global", "samplewise"] = "global",
-    ignore_index: Optional[int] = None,
-    zero_division: float = 0,
-) -> None:
-    if zero_division not in [0, 1]:
-        raise ValueError(f"Expected argument `zero_division` to be 0 or 1, but got {zero_division}.")
-    return _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
-
-
 def binary_precision(
     preds: Tensor,
     target: Tensor,
@@ -145,19 +134,6 @@ def binary_precision(
     return _precision_recall_reduce(
         "precision", tp, fp, tn, fn, average="binary", multidim_average=multidim_average, zero_division=zero_division
     )
-
-
-def _multiclass_precision_recall_score_arg_validation(
-    num_classes: int,
-    top_k: int = 1,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
-    multidim_average: Literal["global", "samplewise"] = "global",
-    ignore_index: Optional[int] = None,
-    zero_division: float = 0,
-) -> None:
-    if zero_division not in [0, 1]:
-        raise ValueError(f"Expected argument `zero_division` to be 0 or 1, but got {zero_division}.")
-    return _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
 
 
 def multiclass_precision(
@@ -269,19 +245,6 @@ def multiclass_precision(
     return _precision_recall_reduce(
         "precision", tp, fp, tn, fn, average=average, multidim_average=multidim_average, zero_division=zero_division
     )
-
-
-def _multilabel_precision_recall_score_arg_validation(
-    num_labels: int,
-    threshold: float = 0.5,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
-    multidim_average: Literal["global", "samplewise"] = "global",
-    ignore_index: Optional[int] = None,
-    zero_division: float = 0,
-) -> None:
-    if zero_division not in [0, 1]:
-        raise ValueError(f"Expected argument `zero_division` to be 0 or 1, but got {zero_division}.")
-    return _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
 
 
 def multilabel_precision(

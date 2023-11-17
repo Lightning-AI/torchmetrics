@@ -67,9 +67,7 @@ def _binary_fbeta_score_arg_validation(
 ) -> None:
     if not (isinstance(beta, float) and beta > 0):
         raise ValueError(f"Expected argument `beta` to be a float larger than 0, but got {beta}.")
-    if zero_division not in [0, 1]:
-        raise ValueError(f"Expected argument `zero_division` to be 0 or 1, but got {zero_division}.")
-    _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
+    _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index, zero_division)
 
 
 def binary_fbeta_score(
@@ -163,9 +161,7 @@ def _multiclass_fbeta_score_arg_validation(
 ) -> None:
     if not (isinstance(beta, float) and beta > 0):
         raise ValueError(f"Expected argument `beta` to be a float larger than 0, but got {beta}.")
-    if zero_division not in [0, 1]:
-        raise ValueError(f"Expected argument `zero_division` to be 0 or 1, but got {zero_division}.")
-    _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
+    _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index, zero_division)
 
 
 def multiclass_fbeta_score(
@@ -293,9 +289,9 @@ def _multilabel_fbeta_score_arg_validation(
 ) -> None:
     if not (isinstance(beta, float) and beta > 0):
         raise ValueError(f"Expected argument `beta` to be a float larger than 0, but got {beta}.")
-    if zero_division not in [0, 1]:
-        raise ValueError(f"Expected argument `zero_division` to be 0 or 1, but got {zero_division}.")
-    _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
+    _multilabel_stat_scores_arg_validation(
+        num_labels, threshold, average, multidim_average, ignore_index, zero_division
+    )
 
 
 def multilabel_fbeta_score(
