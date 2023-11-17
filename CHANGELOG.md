@@ -40,6 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed numerical stability bug in `LearnedPerceptualImagePatchSimilarity` metric  ([#2144](https://github.com/Lightning-AI/torchmetrics/pull/2144))
 
 
+- Fixed incompatibility for `MeanAveragePrecision` with `pycocotools` backend when too little `max_detection_thresholds` are provided ([#2219](https://github.com/Lightning-AI/torchmetrics/pull/2219))
+
 ## [1.2.0] - 2023-09-22
 
 ### Added
