@@ -47,9 +47,6 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     Both input image patches are expected to have shape ``(N, 3, H, W)``. The minimum size of `H, W` depends on the
     chosen backbone (see `net_type` arg).
 
-    .. note:: using this metrics requires you to have ``lpips`` package installed. Either install
-        as ``pip install torchmetrics[image]`` or ``pip install lpips``
-
     .. note:: this metric is not scriptable when using ``torch<1.8``. Please update your pytorch installation
         if this is a issue.
 
