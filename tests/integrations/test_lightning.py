@@ -28,6 +28,8 @@ else:
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import SumMetric
 from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision
+from torchmetrics.regression import MeanSquaredError
+from torchmetrics.wrappers import MultitaskWrapper
 
 from integrations.helpers import no_warning_call
 from integrations.lightning.boring_model import BoringModel
@@ -356,6 +358,52 @@ def test_metric_collection_lightning_log(tmpdir):
     logged = trainer.logged_metrics
     assert torch.allclose(tensor(logged["SumMetric_epoch"]), model.sum, atol=2e-4)
     assert torch.allclose(tensor(logged["DiffMetric_epoch"]), model.diff, atol=2e-4)
+
+
+def test_task_wrapper_lightning_logging(tmpdir):
+    """Test that MultiTaskWrapper works with Lightning modules."""
+
+    class TestModel(BoringModel):
+        def __init__(self) -> None:
+            super().__init__()
+            self.metric = MultitaskWrapper({"classification": BinaryAccuracy(), "regression": MeanSquaredError()})
+            self.accuracy = BinaryAccuracy()
+            self.mse = MeanSquaredError()
+
+        def training_step(self, batch, batch_idx):
+            preds = torch.rand(10)
+            target = torch.rand(10)
+            self.metric(
+                {"classification": preds.round(), "regression": preds},
+                {"classification": target.round(), "regression": target},
+            )
+            self.accuracy(preds.round(), target.round())
+            self.mse(preds, target)
+            self.log("accuracy", self.accuracy, on_epoch=True)
+            self.log("mse", self.mse, on_epoch=True)
+            self.log_dict(self.metric, on_epoch=True)
+            return self.step(batch)
+
+    model = TestModel()
+
+    trainer = Trainer(
+        default_root_dir=tmpdir,
+        limit_train_batches=2,
+        limit_val_batches=0,
+        max_epochs=1,
+        log_every_n_steps=1,
+    )
+    with no_warning_call(
+        UserWarning,
+        match="Torchmetrics v0.9 introduced a new argument class property called.*",
+    ):
+        trainer.fit(model)
+
+    logged = trainer.logged_metrics
+    assert torch.allclose(logged["accuracy_step"], logged["classification_step"])
+    assert torch.allclose(logged["accuracy_epoch"], logged["classification_epoch"])
+    assert torch.allclose(logged["mse_step"], logged["regression_step"])
+    assert torch.allclose(logged["mse_epoch"], logged["regression_epoch"])
 
 
 def test_scriptable(tmpdir):
