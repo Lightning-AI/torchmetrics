@@ -30,8 +30,8 @@ else:
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import SumMetric
 from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision
-from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
 from torchmetrics.wrappers import MultitaskWrapper
+from torchmetrics.regression import MeanSquaredError
 from torchmetrics.utilities.prints import rank_zero_only
 
 from integrations.lightning.boring_model import BoringModel
