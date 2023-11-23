@@ -23,7 +23,6 @@ RUN \
     apt list --upgradable && \
     apt-get upgrade -y && \
     # Cleaning
-    apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /root/.cache && \
     rm -rf /var/lib/apt/lists/*
