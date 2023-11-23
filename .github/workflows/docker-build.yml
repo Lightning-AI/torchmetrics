@@ -26,7 +26,7 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 env:
-  PUSH_DOCKERHUB: ${{ github.ref == 'refs/heads/master' || github.event_name != 'pull_request' }}
+  PUSH_DOCKERHUB: true # fixme: ${{ github.ref == 'refs/heads/master' || github.event_name != 'pull_request' }}
 
 jobs:
   build-Devcontainer:
@@ -120,6 +120,6 @@ jobs:
           build-args: |
             DOCKER_TAG=${{ matrix.tag }}
           file: dockers/pytorch-cuda/Dockerfile
-          push: true  # fixme: ${{ env.PUSH_DOCKERHUB }}
+          push: ${{ env.PUSH_DOCKERHUB }}
           tags: "pytorchlightning/pytorch:${{ matrix.tag }}"
         timeout-minutes: 35

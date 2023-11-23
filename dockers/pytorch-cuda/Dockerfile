@@ -18,5 +18,5 @@ FROM pytorch/pytorch:${DOCKER_TAG}
 
 SHELL ["/bin/bash", "-c"]
 
-RUN sudo apt-get remove nodejs && \
+RUN apt-get remove nodejs && \
     nvm install 16.15.1
