@@ -34,6 +34,10 @@ from torchmetrics.wrappers import MultitaskWrapper
 from integrations.helpers import no_warning_call
 from integrations.lightning.boring_model import BoringModel
 
+class CustomCSVLogger(CSVLogger):
+    """Custom CSVLogger that does not call `experiment.save()` to prevent state being reset."""
+    def save(self) -> None:
+        pass
 
 class DiffMetric(SumMetric):
     """DiffMetric inherited from `SumMetric` by overidding its `update` method."""
@@ -487,3 +491,47 @@ def test_dtype_in_pl_module_transfer(tmpdir):
 
     model = model.type(torch.half)
     assert model.metric.sum_value.dtype == torch.float32
+
+
+def test_something(tmpdir):
+    "Testing something"
+    class TestModel(BoringModel):
+        def __init__(self) -> None:
+            super().__init__()
+            self.metric = SumMetric()
+            self.metric2 = SumMetric()
+            self.sum = []
+
+        def training_step(self, batch, batch_idx):
+            x = batch
+            s = x.sum()
+            self.sum.append(s)
+            self.metric(s)
+            self.metric2(s)
+            self.log("train_step_metric", self.metric)
+            return self.step(x)
+        
+        def on_train_epoch_end(self):
+            # log epoch metric
+            self.log("train_epoch_metric", self.metric)
+            val = self.metric2.compute()
+            self.log("train_epoch_manual_metric", val)
+
+            
+    logger = CustomCSVLogger("tmpdir/logs")
+    trainer = Trainer(
+        default_root_dir=tmpdir,
+        limit_train_batches=5,
+        limit_val_batches=0,
+        max_epochs=1,
+        log_every_n_steps=1,
+        logger=logger,
+    )
+    model = TestModel()
+    with no_warning_call(
+        UserWarning,
+        match="Torchmetrics v0.9 introduced a new argument class property called.*",
+    ):
+        trainer.fit(model)
+    logged_metrics = logger._experiment.metrics
+    assert logged_metrics[-1]['train_epoch_metric'] == logged_metrics[-1]["train_epoch_manual_metric"]
