@@ -34,10 +34,13 @@ from torchmetrics.wrappers import MultitaskWrapper
 from integrations.helpers import no_warning_call
 from integrations.lightning.boring_model import BoringModel
 
+
 class CustomCSVLogger(CSVLogger):
     """Custom CSVLogger that does not call `experiment.save()` to prevent state being reset."""
+
     def save(self) -> None:
         pass
+
 
 class DiffMetric(SumMetric):
     """DiffMetric inherited from `SumMetric` by overidding its `update` method."""
@@ -494,7 +497,8 @@ def test_dtype_in_pl_module_transfer(tmpdir):
 
 
 def test_something(tmpdir):
-    "Testing something"
+    "Testing something."
+
     class TestModel(BoringModel):
         def __init__(self) -> None:
             super().__init__()
@@ -510,14 +514,13 @@ def test_something(tmpdir):
             self.metric2(s)
             self.log("train_step_metric", self.metric)
             return self.step(x)
-        
+
         def on_train_epoch_end(self):
             # log epoch metric
             self.log("train_epoch_metric", self.metric)
             val = self.metric2.compute()
             self.log("train_epoch_manual_metric", val)
 
-            
     logger = CustomCSVLogger("tmpdir/logs")
     trainer = Trainer(
         default_root_dir=tmpdir,
@@ -534,4 +537,4 @@ def test_something(tmpdir):
     ):
         trainer.fit(model)
     logged_metrics = logger._experiment.metrics
-    assert logged_metrics[-1]['train_epoch_metric'] == logged_metrics[-1]["train_epoch_manual_metric"]
+    assert logged_metrics[-1]["train_epoch_metric"] == logged_metrics[-1]["train_epoch_manual_metric"]
