@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ARG DOCKER_TAG=1.13.1-cuda$11.6-cudnn8-runtime
+ARG DOCKER_TAG=1.13.1-cuda11.6-cudnn8-runtime
 
 FROM pytorch/pytorch:${DOCKER_TAG}
 
 SHELL ["/bin/bash", "-c"]
 
-RUN apt-get remove nodejs && \
-    nvm install 16.15.1
+RUN \
+    apt-get update -q --fix-missing && \
+    apt list --upgradable && \
+    apt-get upgrade -y
