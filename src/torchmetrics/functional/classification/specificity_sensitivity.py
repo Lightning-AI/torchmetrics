@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import warnings
 from typing import List, Optional, Tuple, Union
 
 import torch
@@ -401,6 +402,56 @@ def multilabel_specificity_at_sensitivity(
     )
     state = _multilabel_precision_recall_curve_update(preds, target, num_labels, thresholds)
     return _multilabel_specificity_at_sensitivity_compute(state, num_labels, thresholds, ignore_index, min_sensitivity)
+
+
+# create specicity_at_sensitivity that calls specificity_at_sensitivity
+def specicity_at_sensitivity(
+    preds: Tensor,
+    target: Tensor,
+    task: Literal["binary", "multiclass", "multilabel"],
+    min_sensitivity: float,
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    num_classes: Optional[int] = None,
+    num_labels: Optional[int] = None,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    r"""Compute the highest possible specificity value given the minimum sensitivity thresholds provided.
+
+    This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and
+    the find the specificity for a given sensitivity level.
+
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`~torchmetrics.functional.classification.binary_specificity_at_sensitivity`,
+    :func:`~torchmetrics.functional.classification.multiclass_specificity_at_sensitivity` and
+    :func:`~torchmetrics.functional.classification.multilabel_specificity_at_sensitivity` for the specific details of
+    each argument influence and examples.
+
+    """
+    warnings.warn(
+        "This method has will be removed in 2.0.0. Use `specificity_at_sensitivity` instead.",
+        DeprecationWarning,
+        stacklevel=1,
+    )
+    task = ClassificationTask.from_str(task)
+    if task == ClassificationTask.BINARY:
+        return binary_specificity_at_sensitivity(  # type: ignore
+            preds, target, min_sensitivity, thresholds, ignore_index, validate_args
+        )
+    if task == ClassificationTask.MULTICLASS:
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
+        return multiclass_specificity_at_sensitivity(  # type: ignore
+            preds, target, num_classes, min_sensitivity, thresholds, ignore_index, validate_args
+        )
+    if task == ClassificationTask.MULTILABEL:
+        if not isinstance(num_labels, int):
+            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
+        return multilabel_specificity_at_sensitivity(  # type: ignore
+            preds, target, num_labels, min_sensitivity, thresholds, ignore_index, validate_args
+        )
+    raise ValueError(f"Not handled value: {task}")
 
 
 def specificity_at_sensitivity(
