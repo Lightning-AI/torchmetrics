@@ -120,6 +120,6 @@ jobs:
           build-args: |
             DOCKER_TAG=${{ matrix.tag }}
           file: dockers/pytorch-cuda/Dockerfile
-          push: true  # fixme: ${{ env.PUSH_DOCKERHUB }}
+          push: true # fixme: ${{ env.PUSH_DOCKERHUB }}
           tags: "pytorchlightning/pytorch:${{ matrix.tag }}"
         timeout-minutes: 35
