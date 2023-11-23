@@ -102,7 +102,8 @@ jobs:
       fail-fast: false
       matrix:
         tag:
-          - "1.13.1-cuda$11.6-cudnn8-runtime"
+          - "1.13.1-cuda11.6-cudnn8-runtime"
+          - "2.1.1-cuda12.1-cudnn8-runtime"
     steps:
       - uses: actions/checkout@v4
 
