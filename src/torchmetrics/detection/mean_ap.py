@@ -202,6 +202,9 @@ class MeanAveragePrecision(Metric):
                 - ``recall``: a tensor of shape ``(TxKxAxM)`` containing the recall values. Here ``T`` is the number of
                   IoU thresholds, ``K`` is the number of classes, ``A`` is the number of areas and ``M`` is the number
                   of max detections per image.
+                - ``scores``: a tensor of shape ``(TxRxKxAxM)`` containing the confidence scores.  Here ``T`` is the
+                  number of IoU thresholds, ``R`` is the number of recall thresholds, ``K`` is the number of classes,
+                  ``A`` is the number of areas and ``M`` is the number of max detections per image.
 
         average:
             Method for averaging scores over labels. Choose between "``"macro"`` and ``"micro"``.
@@ -531,6 +534,7 @@ class MeanAveragePrecision(Metric):
                         ),
                         f"{prefix}precision": torch.tensor(coco_eval.eval["precision"]),
                         f"{prefix}recall": torch.tensor(coco_eval.eval["recall"]),
+                        f"{prefix}scores": torch.tensor(coco_eval.eval["scores"]),
                     }
                 result_dict.update(summary)
 
