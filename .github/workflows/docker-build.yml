@@ -94,32 +94,3 @@ jobs:
           push: ${{ env.PUSH_DOCKERHUB }}
           tags: "pytorchlightning/torchmetrics:ubuntu${{ matrix.ubuntu }}-cuda${{ matrix.cuda }}-py${{ matrix.python }}-torch${{ matrix.pytorch }}"
         timeout-minutes: 55
-
-  pytorch-cuda:
-    if: github.event.pull_request.draft == false
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        tag:
-          - "1.13.1-cuda11.6-cudnn8-runtime"
-          - "2.1.1-cuda12.1-cudnn8-runtime"
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        if: env.PUSH_DOCKERHUB == 'true' && github.repository_owner == 'Lightning-AI'
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build (and Push) runner
-        uses: docker/build-push-action@v5
-        with:
-          build-args: |
-            DOCKER_TAG=${{ matrix.tag }}
-          file: dockers/pytorch-cuda/Dockerfile
-          push: ${{ env.PUSH_DOCKERHUB }}
-          tags: "pytorchlightning/pytorch:${{ matrix.tag }}"
-        timeout-minutes: 35
