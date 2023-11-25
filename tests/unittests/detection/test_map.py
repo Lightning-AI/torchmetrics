@@ -741,7 +741,7 @@ class TestMapProperties:
             metric.update(preds, targets)
 
     @pytest.mark.parametrize(
-        ("preds", "target", "expected_iou_len", "iou_keys", "precision_shape", "recall_shape"),
+        ("preds", "target", "expected_iou_len", "iou_keys", "precision_shape", "recall_shape", "scores_shape"),
         [
             (
                 [
@@ -758,6 +758,7 @@ class TestMapProperties:
                 [(0, 0)],
                 (10, 101, 1, 4, 3),
                 (10, 1, 4, 3),
+                (10, 101, 1, 4, 3),
             ),
             (
                 _inputs["preds"],
@@ -766,11 +767,12 @@ class TestMapProperties:
                 list(product([0, 1, 2, 3], [0, 1, 2, 3, 4, 49])),
                 (10, 101, 6, 4, 3),
                 (10, 6, 4, 3),
+                (10, 101, 6, 4, 3),
             ),
         ],
     )
     def test_for_extended_stats(
-        self, preds, target, expected_iou_len, iou_keys, precision_shape, recall_shape, backend
+        self, preds, target, expected_iou_len, iou_keys, precision_shape, recall_shape, scores_shape, backend
     ):
         """Test that extended stats are computed correctly."""
         metric = MeanAveragePrecision(extended_summary=True, backend=backend)
@@ -792,6 +794,10 @@ class TestMapProperties:
         recall = result["recall"]
         assert isinstance(recall, Tensor)
         assert recall.shape == recall_shape
+
+        scores = result["scores"]
+        assert isinstance(scores, Tensor)
+        assert scores.shape == scores_shape
 
     @pytest.mark.parametrize("class_metrics", [False, True])
     def test_average_argument(self, class_metrics, backend):

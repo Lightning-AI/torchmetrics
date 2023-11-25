@@ -22,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for Pytorch v2.1 ([#2142](https://github.com/Lightning-AI/torchmetrics/pull/2142))
 
 
+- Added confidence scores when `extended_summary=True` in `MeanAveragePrecision` ([#2212](https://github.com/Lightning-AI/torchmetrics/pull/2212))
+
+
 - Added support for logging `MultiTaskWrapper` directly with lightnings `log_dict` method ([#2213](https://github.com/Lightning-AI/torchmetrics/pull/2213))
 
 
@@ -55,6 +58,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fixed incompatibility for `MeanAveragePrecision` with `pycocotools` backend when too little `max_detection_thresholds` are provided ([#2219](https://github.com/Lightning-AI/torchmetrics/pull/2219))
+
+
+- Fixed support for half precision in Perplexity metric ([#2235](https://github.com/Lightning-AI/torchmetrics/pull/2235))
+
+
+- Fixed device and dtype for `LearnedPerceptualImagePatchSimilarity` functional metric ([#2234](https://github.com/Lightning-AI/torchmetrics/pull/2234))
+
+
+- Fixed bug in `Metric._reduce_states(...)` when using `dist_sync_fn="cat"` ([#2226](https://github.com/Lightning-AI/torchmetrics/pull/2226))
+
 
 ## [1.2.0] - 2023-09-22
 
