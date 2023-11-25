@@ -33,6 +33,9 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 if TYPE_CHECKING and _TRANSFORMERS_GREATER_EQUAL_4_4:
     from transformers import PreTrainedModel, PreTrainedTokenizerBase
 
+if not _TRANSFORMERS_GREATER_EQUAL_4_4:
+    __doctest_skip__ = ["infolm"]
+
 
 _ALLOWED_INFORMATION_MEASURE_LITERAL = Literal[
     "kl_divergence",
