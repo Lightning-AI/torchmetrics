@@ -68,7 +68,7 @@ def _get_clip_iqa_model_and_processor(
         "openai/clip-vit-large-patch14-336",
         "openai/clip-vit-large-patch14",
     ]
-) -> Tuple[_CLIPModel, _CLIPProcessor]:
+) -> Tuple["_CLIPModel", "_CLIPProcessor"]:
     """Extract the CLIP model and processor from the model name or path."""
     from transformers import CLIPProcessor as _CLIPProcessor
 
@@ -144,8 +144,8 @@ def _clip_iqa_format_prompts(prompts: Tuple[Union[str, Tuple[str, str]]] = ("qua
 
 def _clip_iqa_get_anchor_vectors(
     model_name_or_path: str,
-    model: _CLIPModel,
-    processor: _CLIPProcessor,
+    model: "_CLIPModel",
+    processor: "_CLIPProcessor",
     prompts_list: List[str],
     device: Union[str, torch.device],
 ) -> Tensor:
@@ -179,8 +179,8 @@ def _clip_iqa_get_anchor_vectors(
 def _clip_iqa_update(
     model_name_or_path: str,
     images: Tensor,
-    model: _CLIPModel,
-    processor: _CLIPProcessor,
+    model: "_CLIPModel",
+    processor: "_CLIPProcessor",
     data_range: float,
     device: Union[str, torch.device],
 ) -> Tensor:
