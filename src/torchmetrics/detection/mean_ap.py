@@ -410,10 +410,10 @@ class MeanAveragePrecision(Metric):
                 f"Expected argument `max_detection_thresholds` to either be `None` or a list of ints"
                 f" but got {max_detection_thresholds}"
             )
-        if max_detection_thresholds is not None and backend == "pycocotools" and len(max_detection_thresholds) == 3:
+        if max_detection_thresholds is not None and backend == "pycocotools" and len(max_detection_thresholds) != 3:
             raise ValueError(
                 "When using `pycocotools` backend the number of max detection thresholds should be 3 else"
-                f"it will not work correctly with the backend. Got value {len(max_detection_thresholds)}."
+                f" it will not work correctly with the backend. Got value {len(max_detection_thresholds)}."
             )
         max_det_thr, _ = torch.sort(torch.tensor(max_detection_thresholds or [1, 10, 100], dtype=torch.int))
         self.max_detection_thresholds = max_det_thr.tolist()
