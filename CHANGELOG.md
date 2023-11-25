@@ -46,7 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
--
+- Removed `lpips` third-party package as dependency of `LearnedPerceptualImagePatchSimilarity` metric ([#2230](https://github.com/Lightning-AI/torchmetrics/pull/2230))
 
 
 ### Fixed
