@@ -71,7 +71,7 @@ class TestPerplexity(MetricTester):
             metric_args={"ignore_index": ignore_index},
         )
 
-    def test_accuracy_differentiability(self, preds, target, ignore_index):
+    def test_perplexity_differentiability(self, preds, target, ignore_index):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
@@ -79,4 +79,25 @@ class TestPerplexity(MetricTester):
             metric_module=Perplexity,
             metric_functional=perplexity,
             metric_args={"ignore_index": ignore_index},
+        )
+
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_perplexity_dtypes_cpu(self, preds, target, ignore_index, dtype):
+        """Test dtype support of the metric on CPU."""
+        if dtype == torch.half:
+            with pytest.raises(RuntimeError, match="\"softmax_lastdim_kernel_impl\" not implemented for 'Half'"):
+                self.run_precision_test_cpu(
+                    preds, target, Perplexity, perplexity, metric_args={"ignore_index": ignore_index}, dtype=dtype
+                )
+        else:
+            self.run_precision_test_cpu(
+                preds, target, Perplexity, perplexity, metric_args={"ignore_index": ignore_index}, dtype=dtype
+            )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_perplexity_dtypes_gpu(self, preds, target, ignore_index, dtype):
+        """Test dtype support of the metric on GPU."""
+        self.run_precision_test_gpu(
+            preds, target, Perplexity, perplexity, metric_args={"ignore_index": ignore_index}, dtype=dtype
         )
