@@ -30,7 +30,7 @@ def _retrieval_aggregate(
 ) -> Tensor:
     """Aggregate the final retrieval values into a single value."""
     if aggregation == "mean":
-        return values.mean(dim=dim)
+        return values.mean() if dim is None else values.mean(dim=dim)
     if aggregation == "median":
         return values.median() if dim is None else values.median(dim=dim).values
     if aggregation == "min":
