@@ -85,10 +85,14 @@ class TestPerplexity(MetricTester):
     def test_perplexity_dtypes_cpu(self, preds, target, ignore_index, dtype):
         """Test dtype support of the metric on CPU."""
         if dtype == torch.half:
-            pytest.skip("`softmax_lastdim_kernel_impl` is not support for half precision on CPU.")
-        self.run_precision_test_cpu(
-            preds, target, Perplexity, perplexity, metric_args={"ignore_index": ignore_index}, dtype=dtype
-        )
+            with pytest.raises(RuntimeError, match="\"softmax_lastdim_kernel_impl\" not implemented for 'Half'"):
+                self.run_precision_test_cpu(
+                    preds, target, Perplexity, perplexity, metric_args={"ignore_index": ignore_index}, dtype=dtype
+                )
+        else:
+            self.run_precision_test_cpu(
+                preds, target, Perplexity, perplexity, metric_args={"ignore_index": ignore_index}, dtype=dtype
+            )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
