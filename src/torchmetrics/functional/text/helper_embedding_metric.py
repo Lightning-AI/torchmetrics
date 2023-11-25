@@ -21,13 +21,10 @@ from torch import Tensor
 from torch.utils.data import DataLoader, Dataset
 
 from torchmetrics.utilities.data import _cumsum
-from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
 
 if TYPE_CHECKING:
-    if _TRANSFORMERS_GREATER_EQUAL_4_4:
-        from transformers import PreTrainedModel, PreTrainedTokenizerBase
-    if _TQDM_AVAILABLE:
-        import tqdm
+    import tqdm
+    from transformers import PreTrainedModel, PreTrainedTokenizerBase
 
 
 def _process_attention_mask_for_special_tokens(attention_mask: Tensor) -> Tensor:
