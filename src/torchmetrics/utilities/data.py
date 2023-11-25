@@ -169,12 +169,10 @@ def _squeeze_if_scalar(data: Any) -> Any:
 def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     """Implement custom bincount.
 
-    PyTorch currently does not support ``torch.bincount`` for:
-
-        - deterministic mode on GPU.
-        - MPS devices
-
-    The implementation uses torch.arange for deterministic counting only.
+    PyTorch currently does not support ``torch.bincount`` when running in deterministic mode on GPU or when running
+    MPS devices or when running on XLA device. This implementation therefore falls back to using a combination of
+    `torch.arange` and `torch.eq` in these scenarios. A small performance hit can expected and higher memory consumption
+    as `[batch_size, mincount]` tensor needs to be initialized compared to native ``torch.bincount``.
 
     Args:
         x: tensor to count
