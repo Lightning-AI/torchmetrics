@@ -317,7 +317,7 @@ def _get_dataloader(
     return DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
 
 
-def _get_special_tokens_map(tokenizer: PreTrainedTokenizerBase) -> Dict[str, int]:
+def _get_special_tokens_map(tokenizer: "PreTrainedTokenizerBase") -> Dict[str, int]:
     """Build a dictionary of model/tokenizer special tokens.
 
     Args:
@@ -362,7 +362,11 @@ def _get_token_mask(input_ids: Tensor, pad_token_id: int, sep_token_id: int, cls
 
 
 def _get_batch_distribution(
-    model: PreTrainedModel, batch: Dict[str, Tensor], temperature: float, idf: bool, special_tokens_map: Dict[str, int]
+    model: "PreTrainedModel",
+    batch: Dict[str, Tensor],
+    temperature: float,
+    idf: bool,
+    special_tokens_map: Dict[str, int],
 ) -> Tensor:
     """Calculate a discrete probability distribution for a batch of examples. See `InfoLM`_ for details.
 
@@ -416,7 +420,7 @@ def _get_batch_distribution(
 
 @torch.no_grad()
 def _get_data_distribution(
-    model: PreTrainedModel,
+    model: "PreTrainedModel",
     dataloader: DataLoader,
     temperature: float,
     idf: bool,
@@ -458,7 +462,7 @@ def _get_data_distribution(
 def _infolm_update(
     preds: Union[str, Sequence[str]],
     target: Union[str, Sequence[str]],
-    tokenizer: PreTrainedTokenizerBase,
+    tokenizer: "PreTrainedTokenizerBase",
     max_length: int,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """Update the metric state by a tokenization of ``preds`` and ``target`` sentencens.
@@ -490,7 +494,7 @@ def _infolm_update(
 
 
 def _infolm_compute(
-    model: PreTrainedModel,
+    model: "PreTrainedModel",
     preds_dataloader: DataLoader,
     target_dataloader: DataLoader,
     temperature: float,
