@@ -18,6 +18,7 @@ import pytest
 import torch
 from lpips import LPIPS as LPIPS_reference  # noqa: N811
 from torch import Tensor
+from torchmetrics.functional.image.lpips import learned_perceptual_image_patch_similarity
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
 
@@ -66,6 +67,16 @@ class TestLPIPS(MetricTester):
             check_scriptable=False,
             check_state_dict=False,
             metric_args={"net_type": net_type},
+        )
+
+    def test_lpips_functional(self):
+        """Test functional implementation of metric."""
+        self.run_functional_metric_test(
+            preds=_inputs.img1,
+            target=_inputs.img2,
+            metric_functional=learned_perceptual_image_patch_similarity,
+            reference_metric=partial(_compare_fn, net_type="alex"),
+            metric_args={"net_type": "alex"},
         )
 
     def test_lpips_differentiability(self):

@@ -409,7 +409,10 @@ class Metric(Module, ABC):
             elif reduce_fn == dim_zero_min:
                 reduced = torch.min(global_state, local_state)
             elif reduce_fn == dim_zero_cat:
-                reduced = global_state + local_state
+                if isinstance(global_state, Tensor):
+                    reduced = torch.cat([global_state, local_state])
+                else:
+                    reduced = global_state + local_state
             elif reduce_fn is None and isinstance(global_state, Tensor):
                 reduced = torch.stack([global_state, local_state])
             elif reduce_fn is None and isinstance(global_state, list):

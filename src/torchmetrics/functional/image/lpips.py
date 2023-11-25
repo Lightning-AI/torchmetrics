@@ -426,6 +426,6 @@ def learned_perceptual_image_patch_similarity(
         tensor(0.1008, grad_fn=<DivBackward0>)
 
     """
-    net = _NoTrainLpips(net=net_type)
+    net = _NoTrainLpips(net=net_type).to(device=img1.device, dtype=img1.dtype)
     loss, total = _lpips_update(img1, img2, net, normalize)
     return _lpips_compute(loss.sum(), total, reduction)
