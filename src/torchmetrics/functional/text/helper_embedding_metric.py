@@ -14,7 +14,7 @@
 import math
 import os
 from collections import Counter, defaultdict
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -23,10 +23,8 @@ from torch.utils.data import DataLoader, Dataset
 from torchmetrics.utilities.data import _cumsum
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
 
-if _TRANSFORMERS_GREATER_EQUAL_4_4:
-    from transformers import AutoModelForMaskedLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizerBase
-else:
-    PreTrainedModel = PreTrainedTokenizerBase = None
+if _TRANSFORMERS_GREATER_EQUAL_4_4 and TYPE_CHECKING:
+    from transformers import PreTrainedModel, PreTrainedTokenizerBase
 
 if _TQDM_AVAILABLE:
     import tqdm
@@ -177,6 +175,8 @@ def _load_tokenizer_and_model(
         Initialized `transformers`' tokenizer and model.
 
     """
+    from transformers import AutoModelForMaskedLM, AutoTokenizer
+
     tokenizer = AutoTokenizer.from_pretrained(model_name_or_path)
     model = AutoModelForMaskedLM.from_pretrained(model_name_or_path)
     model.eval()
