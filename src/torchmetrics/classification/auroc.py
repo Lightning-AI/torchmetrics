@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any, List, Optional, Sequence, Type, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -266,13 +266,15 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         )
         if validate_args:
             _multiclass_auroc_arg_validation(num_classes, average, thresholds, ignore_index)
-        self.average = average
+        self.average = average  # type: ignore[assignment]
         self.validate_args = validate_args
 
     def compute(self) -> Tensor:  # type: ignore[override]
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
-        return _multiclass_auroc_compute(state, self.num_classes, self.average, self.thresholds)
+        return _multiclass_auroc_compute(
+            state, self.num_classes, self.average, self.thresholds  # type: ignore[arg-type]
+        )
 
     def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -500,7 +502,7 @@ class AUROC(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls,
+        cls: Type["AUROC"],
         task: Literal["binary", "multiclass", "multilabel"],
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         num_classes: Optional[int] = None,

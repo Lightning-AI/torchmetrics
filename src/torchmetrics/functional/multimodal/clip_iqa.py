@@ -178,7 +178,7 @@ def _clip_iqa_update(
     images: Tensor,
     model: _CLIPModel,
     processor: _CLIPProcessor,
-    data_range: Union[int, float],
+    data_range: float,
     device: Union[str, torch.device],
 ) -> Tensor:
     images = images / float(data_range)
@@ -221,7 +221,7 @@ def clip_image_quality_assessment(
         "openai/clip-vit-large-patch14-336",
         "openai/clip-vit-large-patch14",
     ] = "clip_iqa",
-    data_range: Union[int, float] = 1.0,
+    data_range: float = 1.0,
     prompts: Tuple[Union[str, Tuple[str, str]]] = ("quality",),
 ) -> Union[Tensor, Dict[str, Tensor]]:
     """Calculates `CLIP-IQA`_, that can be used to measure the visual content of images.

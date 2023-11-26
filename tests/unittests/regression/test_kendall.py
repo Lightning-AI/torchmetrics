@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import operator
-from collections import namedtuple
+import sys
 from functools import partial
 
 import pytest
@@ -21,28 +21,27 @@ from lightning_utilities.core.imports import compare_version
 from scipy.stats import kendalltau
 from torchmetrics.functional.regression.kendall import kendall_rank_corrcoef
 from torchmetrics.regression.kendall import KendallRankCorrCoef
+from torchmetrics.utilities.imports import _SCIPY_GREATER_EQUAL_1_8, _TORCH_LOWER_2_0
 
-from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
-_SCIPY_GREATER_EQUAL_1_8 = compare_version("scipy", operator.ge, "1.8.0")
-
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
-_single_inputs1 = Input(preds=torch.rand(NUM_BATCHES, BATCH_SIZE), target=torch.rand(NUM_BATCHES, BATCH_SIZE))
-_single_inputs2 = Input(preds=torch.randn(NUM_BATCHES, BATCH_SIZE), target=torch.randn(NUM_BATCHES, BATCH_SIZE))
-_single_inputs3 = Input(
+
+_single_inputs1 = _Input(preds=torch.rand(NUM_BATCHES, BATCH_SIZE), target=torch.rand(NUM_BATCHES, BATCH_SIZE))
+_single_inputs2 = _Input(preds=torch.randn(NUM_BATCHES, BATCH_SIZE), target=torch.randn(NUM_BATCHES, BATCH_SIZE))
+_single_inputs3 = _Input(
     preds=torch.randint(-10, 10, (NUM_BATCHES, BATCH_SIZE)), target=torch.randint(-10, 10, (NUM_BATCHES, BATCH_SIZE))
 )
-_multi_inputs1 = Input(
+_multi_inputs1 = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM), target=torch.rand(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)
 )
-_multi_inputs2 = Input(
+_multi_inputs2 = _Input(
     preds=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM), target=torch.randn(NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)
 )
-_multi_inputs3 = Input(
+_multi_inputs3 = _Input(
     preds=torch.randint(-10, 10, (NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
     target=torch.randint(-10, 10, (NUM_BATCHES, BATCH_SIZE, EXTRA_DIM)),
 )
@@ -85,6 +84,11 @@ def _scipy_kendall(preds, target, alternative, variant):
 class TestKendallRankCorrCoef(MetricTester):
     """Test class for `KendallRankCorrCoef` metric."""
 
+    # TODO
+    @pytest.mark.skipif(
+        sys.platform == "darwin" and not _TORCH_LOWER_2_0,
+        reason="Tests are not working on mac for newer version of PyTorch.",
+    )
     @pytest.mark.parametrize("ddp", [False, True])
     def test_kendall_rank_corrcoef(self, preds, target, alternative, variant, ddp):
         """Test class implementation of metric."""

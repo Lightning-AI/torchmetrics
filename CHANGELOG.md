@@ -6,27 +6,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
-
 ## [UnReleased] - 2023-MM-DD
 
 ### Added
 
--
+- Added more tokenizers for `SacreBLEU` metric ([#2068](https://github.com/Lightning-AI/torchmetrics/pull/2068))
+
+
+- Added `average` argument to multiclass versions of `PrecisionRecallCurve` and `ROC` ([#2084](https://github.com/Lightning-AI/torchmetrics/pull/2084))
+
+
+- Added error if `NoTrainInceptionV3` is being initialized without `torch-fidelity` not being installed ([#2143](https://github.com/Lightning-AI/torchmetrics/pull/2143))
+
+
+- Added support for Pytorch v2.1 ([#2142](https://github.com/Lightning-AI/torchmetrics/pull/2142))
+
+
+- Added confidence scores when `extended_summary=True` in `MeanAveragePrecision` ([#2212](https://github.com/Lightning-AI/torchmetrics/pull/2212))
+
+
+- Added support for logging `MultiTaskWrapper` directly with lightnings `log_dict` method ([#2213](https://github.com/Lightning-AI/torchmetrics/pull/2213))
 
 
 ### Changed
 
--
+- Change default state of `SpectralAngleMapper` and `UniversalImageQualityIndex` to be tensors ([#2089](https://github.com/Lightning-AI/torchmetrics/pull/2089))
+
+
+- Changed minimum supported Pytorch version from 1.8 to 1.10 ([#2145](https://github.com/Lightning-AI/torchmetrics/pull/2145))
+
+
+- Use arange and repeat for deterministic bincount ([#2184](https://github.com/Lightning-AI/torchmetrics/pull/2184))
+
+
+### Deprecated
+
+- Deprecated `metric._update_called` ([#2141](https://github.com/Lightning-AI/torchmetrics/pull/2141))
+
+
+- Changed x-/y-axis order for `PrecisionRecallCurve` to be consistent with scikit-learn ([#2183](https://github.com/Lightning-AI/torchmetrics/pull/2183))
 
 
 ### Removed
 
--
+- Removed `lpips` third-party package as dependency of `LearnedPerceptualImagePatchSimilarity` metric ([#2230](https://github.com/Lightning-AI/torchmetrics/pull/2230))
 
 
 ### Fixed
 
--
+- Fixed numerical stability bug in `LearnedPerceptualImagePatchSimilarity` metric ([#2144](https://github.com/Lightning-AI/torchmetrics/pull/2144))
+
+
+- Fixed numerical stability issue in `UniversalImageQualityIndex` metric ([#2222](https://github.com/Lightning-AI/torchmetrics/pull/2222))
+
+
+- Fixed support for half precision in Perplexity metric ([#2235](https://github.com/Lightning-AI/torchmetrics/pull/2235))
+
+
+- Fixed device and dtype for `LearnedPerceptualImagePatchSimilarity` functional metric ([#2234](https://github.com/Lightning-AI/torchmetrics/pull/2234))
+
+
+- Fixed bug in `Metric._reduce_states(...)` when using `dist_sync_fn="cat"` ([#2226](https://github.com/Lightning-AI/torchmetrics/pull/2226))
 
 
 ## [1.2.0] - 2023-09-22

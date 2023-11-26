@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from typing import Any, Optional, Sequence, Type, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -56,6 +56,9 @@ class BinaryPrecision(BinaryStatScores):
     - ``bp`` (:class:`~torch.Tensor`): If ``multidim_average`` is set to ``global``, the metric returns a scalar
       value. If ``multidim_average`` is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a
       scalar value per sample.
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
@@ -186,6 +189,9 @@ class MulticlassPrecision(MulticlassStatScores):
 
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         num_classes: Integer specifying the number of classes
@@ -340,6 +346,9 @@ class MultilabelPrecision(MultilabelStatScores):
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
         num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
@@ -479,6 +488,9 @@ class BinaryRecall(BinaryStatScores):
       value. If ``multidim_average`` is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of
       a scalar value per sample.
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
         multidim_average:
@@ -607,6 +619,9 @@ class MulticlassRecall(MulticlassStatScores):
 
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         num_classes: Integer specifying the number of classes
@@ -760,6 +775,9 @@ class MultilabelRecall(MultilabelStatScores):
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
         num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
@@ -907,7 +925,7 @@ class Precision(_ClassificationTaskWrapper):
     """
 
     def __new__(
-        cls,
+        cls: Type["Precision"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
@@ -970,7 +988,7 @@ class Recall(_ClassificationTaskWrapper):
     """
 
     def __new__(
-        cls,
+        cls: Type["Recall"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,

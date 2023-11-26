@@ -1,3 +1,16 @@
+# Copyright The Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from functools import partial
 from typing import Sequence
 
@@ -44,7 +57,7 @@ def _sacrebleu_ter_fn(
 )
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [(_inputs_multiple_references.preds, _inputs_multiple_references.targets)],
+    [(_inputs_multiple_references.preds, _inputs_multiple_references.target)],
 )
 @pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestTER(TextTester):
@@ -151,7 +164,7 @@ def test_ter_empty_with_non_empty_hyp_class():
 def test_ter_return_sentence_level_score_functional():
     """Test that functional metric can return sentence level scores."""
     preds = _inputs_single_sentence_multiple_references.preds
-    targets = _inputs_single_sentence_multiple_references.targets
+    targets = _inputs_single_sentence_multiple_references.target
     _, sentence_ter = translation_edit_rate(preds, targets, return_sentence_level_score=True)
     isinstance(sentence_ter, Tensor)
 
@@ -160,6 +173,6 @@ def test_ter_return_sentence_level_class():
     """Test that modular metric can return sentence level scores."""
     ter_metric = TranslationEditRate(return_sentence_level_score=True)
     preds = _inputs_single_sentence_multiple_references.preds
-    targets = _inputs_single_sentence_multiple_references.targets
+    targets = _inputs_single_sentence_multiple_references.target
     _, sentence_ter = ter_metric(preds, targets)
     isinstance(sentence_ter, Tensor)

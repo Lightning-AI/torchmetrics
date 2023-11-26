@@ -18,11 +18,11 @@ import os
 import re
 import sys
 import traceback
-from distutils.version import LooseVersion
 from typing import List, Optional, Tuple, Union
 
 import fire
 import requests
+from packaging.version import parse
 from pkg_resources import parse_requirements
 
 _REQUEST_TIMEOUT = 10
@@ -68,10 +68,10 @@ class AssistantCLI:
             fp.writelines(lines)
 
     @staticmethod
-    def set_min_torch_by_python(fpath: str = "requirements.txt") -> None:
+    def set_min_torch_by_python(fpath: str = "requirements/base.txt") -> None:
         """Set minimal torch version according to Python actual version.
 
-        >>> AssistantCLI.set_min_torch_by_python("../requirements.txt")
+        >>> AssistantCLI.set_min_torch_by_python("../requirements/base.txt")
 
         """
         py_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
@@ -79,9 +79,9 @@ class AssistantCLI:
             return
         with open(fpath) as fp:
             reqs = parse_requirements(fp.readlines())
-        pkg_ver = [p for p in reqs if p.name == "torch"][0]
-        pt_ver = min([LooseVersion(v[1]) for v in pkg_ver.specs])
-        pt_ver = max(LooseVersion(LUT_PYTHON_TORCH[py_ver]), pt_ver)
+        pkg_ver = next(p for p in reqs if p.name == "torch")
+        pt_ver = min([parse(v[1]) for v in pkg_ver.specs])
+        pt_ver = max(parse(LUT_PYTHON_TORCH[py_ver]), pt_ver)
         with open(fpath) as fp:
             requires = fp.read()
         requires = re.sub(r"torch>=[\d\.]+", f"torch>={pt_ver}", requires)
@@ -103,6 +103,7 @@ class AssistantCLI:
         """Set the oldest version for requirements."""
         AssistantCLI.set_min_torch_by_python()
         for fpath in req_files:
+            logging.info(f"processing req: `{fpath}`")
             AssistantCLI.replace_min_requirements(fpath)
 
     @staticmethod

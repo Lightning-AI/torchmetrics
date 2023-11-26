@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from typing import Any, Optional, Sequence, Type, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -276,7 +276,7 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
     - ``mlmcc`` (:class:`~torch.Tensor`): A tensor containing the Multi-label Matthews Correlation Coefficient.
 
     Args:
-        num_classes: Integer specifying the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
@@ -390,7 +390,7 @@ class MatthewsCorrCoef(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls,
+        cls: Type["MatthewsCorrCoef"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,

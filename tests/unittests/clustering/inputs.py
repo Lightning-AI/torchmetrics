@@ -11,22 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
+from typing import NamedTuple
 
 import torch
 from sklearn.datasets import make_blobs
+from torch import Tensor
 
-from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES, _Input
 from unittests.helpers import seed_all
 
 seed_all(42)
 
 
-# extrinsic input for clustering metrics that requires predicted clustering labels and target clustering labels
-ExtrinsicInput = namedtuple("ExtrinsicInput", ["preds", "target"])
-
 # intrinsic input for clustering metrics that requires only predicted clustering labels and the cluster embeddings
-IntrinsicInput = namedtuple("IntrinsicInput", ["data", "labels"])
+class _IntrinsicInput(NamedTuple):
+    data: Tensor
+    labels: Tensor
 
 
 def _batch_blobs(num_batches, num_samples, num_features, num_classes):
@@ -36,20 +36,20 @@ def _batch_blobs(num_batches, num_samples, num_features, num_classes):
         data.append(torch.tensor(_data))
         labels.append(torch.tensor(_labels))
 
-    return IntrinsicInput(data=torch.stack(data), labels=torch.stack(labels))
+    return _IntrinsicInput(data=torch.stack(data), labels=torch.stack(labels))
 
 
-_single_target_extrinsic1 = ExtrinsicInput(
+_single_target_extrinsic1 = _Input(
     preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
     target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
-_single_target_extrinsic2 = ExtrinsicInput(
+_single_target_extrinsic2 = _Input(
     preds=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
     target=torch.randint(high=NUM_CLASSES, size=(NUM_BATCHES, BATCH_SIZE)),
 )
 
-_float_inputs_extrinsic = ExtrinsicInput(
+_float_inputs_extrinsic = _Input(
     preds=torch.rand((NUM_BATCHES, BATCH_SIZE)), target=torch.rand((NUM_BATCHES, BATCH_SIZE))
 )
 

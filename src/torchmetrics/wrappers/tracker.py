@@ -152,7 +152,7 @@ class MetricTracker(ModuleList):
         """Compute the metric value for all tracked metrics.
 
         Return:
-            By default will try stacking the results from all increaments into a single tensor if the tracked base
+            By default will try stacking the results from all increments into a single tensor if the tracked base
             object is a single metric. If a metric collection is provided a dict of stacked tensors will be returned.
             If the stacking process fails a list of the computed results will be returned.
 
@@ -229,7 +229,7 @@ class MetricTracker(ModuleList):
         if isinstance(self._base_metric, Metric):
             fn = torch.max if self.maximize else torch.min
             try:
-                value, idx = fn(res, 0)
+                value, idx = fn(res, 0)  # type: ignore[call-overload]
                 if return_step:
                     return value.item(), idx.item()
                 return value.item()
@@ -250,7 +250,7 @@ class MetricTracker(ModuleList):
             for i, (k, v) in enumerate(res.items()):
                 try:
                     fn = torch.max if maximize[i] else torch.min
-                    out = fn(v, 0)
+                    out = fn(v, 0)  # type: ignore[call-overload]
                     value[k], idx[k] = out[0].item(), out[1].item()
                 except (ValueError, RuntimeError) as error:  # noqa: PERF203 # todo
                     rank_zero_warn(

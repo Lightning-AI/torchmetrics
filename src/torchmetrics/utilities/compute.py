@@ -16,8 +16,6 @@ from typing import Optional, Tuple
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
-
 
 def _safe_matmul(x: Tensor, y: Tensor) -> Tensor:
     """Safe calculation of matrix multiplication.
@@ -101,7 +99,7 @@ def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float, axis: int
 def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
     with torch.no_grad():
         if reorder:
-            x, x_idx = torch.sort(x, stable=True) if _TORCH_GREATER_EQUAL_1_9 else torch.sort(x)
+            x, x_idx = torch.sort(x, stable=True)
             y = y[x_idx]
 
         dx = x[1:] - x[:-1]
@@ -131,3 +129,29 @@ def auc(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
     """
     x, y = _auc_format_inputs(x, y)
     return _auc_compute(x, y, reorder=reorder)
+
+
+def interp(x: Tensor, xp: Tensor, fp: Tensor) -> Tensor:
+    """One-dimensional linear interpolation for monotonically increasing sample points.
+
+    Returns the one-dimensional piecewise linear interpolant to a function with
+    given discrete data points :math:`(xp, fp)`, evaluated at :math:`x`.
+
+    Adjusted version of this https://github.com/pytorch/pytorch/issues/50334#issuecomment-1000917964
+
+    Args:
+        x: the :math:`x`-coordinates at which to evaluate the interpolated values.
+        xp: the :math:`x`-coordinates of the data points, must be increasing.
+        fp: the :math:`y`-coordinates of the data points, same length as `xp`.
+
+    Returns:
+        the interpolated values, same size as `x`.
+
+    """
+    m = _safe_divide(fp[1:] - fp[:-1], xp[1:] - xp[:-1])
+    b = fp[:-1] - (m * xp[:-1])
+
+    indices = torch.sum(torch.ge(x[:, None], xp[None, :]), 1) - 1
+    indices = torch.clamp(indices, 0, len(m) - 1)
+
+    return m[indices] * x + b[indices]

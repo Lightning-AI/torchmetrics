@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
+from typing import NamedTuple
 
 import pytest
 import torch
@@ -23,6 +23,7 @@ from sklearn.metrics.pairwise import (
     manhattan_distances,
     pairwise_distances,
 )
+from torch import Tensor
 from torchmetrics.functional import (
     pairwise_cosine_similarity,
     pairwise_euclidean_distance,
@@ -30,7 +31,6 @@ from torchmetrics.functional import (
     pairwise_manhattan_distance,
     pairwise_minkowski_distance,
 )
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
 
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
@@ -40,16 +40,19 @@ seed_all(42)
 
 extra_dim = 5
 
-Input = namedtuple("Input", ["x", "y"])
+
+class _Input(NamedTuple):
+    x: Tensor
+    y: Tensor
 
 
-_inputs1 = Input(
+_inputs1 = _Input(
     x=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
     y=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
 )
 
 
-_inputs2 = Input(
+_inputs2 = _Input(
     x=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
     y=torch.rand(NUM_BATCHES, BATCH_SIZE, extra_dim),
 )
@@ -112,8 +115,6 @@ class TestPairwise(MetricTester):
         """Test half precision support on cpu."""
         if "euclidean" in request.node.callspec.id:
             pytest.xfail("pairwise_euclidean_distance metric does not support cpu + half precision")
-        if "minkowski" in request.node.callspec.id and not _TORCH_GREATER_EQUAL_1_9:
-            pytest.xfail("pairwise_minkowski_distance metric does not support cpu + half precision for pytorch<1.9")
         self.run_precision_test_cpu(x, y, None, metric_functional, metric_args={"reduction": reduction})
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")

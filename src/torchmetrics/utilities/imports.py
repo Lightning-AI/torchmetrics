@@ -15,25 +15,26 @@
 import operator
 import shutil
 import sys
-from distutils.version import LooseVersion
 from typing import Optional
 
 from lightning_utilities.core.imports import compare_version, package_available
+from packaging.version import Version, parse
 
 _PYTHON_VERSION = ".".join(map(str, [sys.version_info.major, sys.version_info.minor, sys.version_info.micro]))
-_PYTHON_LOWER_3_8 = LooseVersion(_PYTHON_VERSION) < LooseVersion("3.8")
-_TORCH_LOWER_1_12_DEV: Optional[bool] = compare_version("torch", operator.lt, "1.12.0.dev")
-_TORCH_GREATER_EQUAL_1_9: Optional[bool] = compare_version("torch", operator.ge, "1.9.0")
-_TORCH_GREATER_EQUAL_1_10: Optional[bool] = compare_version("torch", operator.ge, "1.10.0")
+_PYTHON_LOWER_3_8 = parse(_PYTHON_VERSION) < Version("3.8")
+_TORCH_LOWER_2_0: Optional[bool] = compare_version("torch", operator.lt, "2.0.0")
 _TORCH_GREATER_EQUAL_1_11: Optional[bool] = compare_version("torch", operator.ge, "1.11.0")
 _TORCH_GREATER_EQUAL_1_12: Optional[bool] = compare_version("torch", operator.ge, "1.12.0")
 _TORCH_GREATER_EQUAL_1_13: Optional[bool] = compare_version("torch", operator.ge, "1.13.0")
+_TORCH_GREATER_EQUAL_2_0: Optional[bool] = compare_version("torch", operator.ge, "2.0.0")
+_TORCH_GREATER_EQUAL_2_1: Optional[bool] = compare_version("torch", operator.ge, "2.1.0")
 
 _JIWER_AVAILABLE: bool = package_available("jiwer")
 _NLTK_AVAILABLE: bool = package_available("nltk")
 _ROUGE_SCORE_AVAILABLE: bool = package_available("rouge_score")
 _BERTSCORE_AVAILABLE: bool = package_available("bert_score")
 _SCIPY_AVAILABLE: bool = package_available("scipy")
+_SCIPY_GREATER_EQUAL_1_8 = compare_version("scipy", operator.ge, "1.8.0")
 _TORCH_FIDELITY_AVAILABLE: bool = package_available("torch_fidelity")
 _LPIPS_AVAILABLE: bool = package_available("lpips")
 _PYCOCOTOOLS_AVAILABLE: bool = package_available("pycocotools")
@@ -58,5 +59,10 @@ _MULTIPROCESSING_AVAILABLE: bool = package_available("multiprocessing")
 _XLA_AVAILABLE: bool = package_available("torch_xla")
 _PIQ_GREATER_EQUAL_0_8: Optional[bool] = compare_version("piq", operator.ge, "0.8.0")
 _FASTER_COCO_EVAL_AVAILABLE: bool = package_available("faster_coco_eval")
+_MECAB_AVAILABLE: bool = package_available("MeCab")
+_MECAB_KO_AVAILABLE: bool = package_available("mecab_ko")
+_MECAB_KO_DIC_AVAILABLE: bool = package_available("mecab_ko_dic")
+_IPADIC_AVAILABLE: bool = package_available("ipadic")
+_SENTENCEPIECE_AVAILABLE: bool = package_available("sentencepiece")
 
 _LATEX_AVAILABLE: bool = shutil.which("latex") is not None
