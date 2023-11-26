@@ -16,9 +16,6 @@ from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
-from torch.nn import functional as F  # noqa: N812
-
-_TORCH_FLOAT_OR_DOUBLE = (torch.float32, torch.float64)
 
 
 def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> None:
@@ -59,10 +56,8 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> None:
             "Input tensors `preds` and `target` are expected to have equaling first two dimensions,"
             f" [batch_size, seq_len], but got {preds.shape[:2]} and {target.shape}."
         )
-    if preds.dtype not in _TORCH_FLOAT_OR_DOUBLE:
-        raise TypeError(
-            f"Input tensor `preds` is expected to be of a type one of {_TORCH_FLOAT_OR_DOUBLE} but got {preds.dtype}."
-        )
+    if not preds.is_floating_point():
+        raise TypeError(f"Input tensor `preds` is expected to be of floating point type but got {preds.dtype}.")
     if target.dtype != torch.int64:
         raise TypeError(f"Input tensor `target` is expected to be of a type {torch.int64} but got {target.dtype}.")
 
@@ -87,7 +82,7 @@ def _perplexity_update(preds: Tensor, target: Tensor, ignore_index: Optional[int
     """
     _check_shape_and_type_consistency(preds, target)
 
-    probs = F.softmax(preds.reshape(-1, preds.shape[-1]), dim=1)
+    probs = torch.nn.functional.softmax(preds.reshape(-1, preds.shape[-1]), dim=1)
     target = target.reshape(-1)
 
     if ignore_index is not None:
