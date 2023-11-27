@@ -13,7 +13,7 @@
 # limitations under the License.
 import os
 from enum import unique
-from typing import Dict, List, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -30,10 +30,10 @@ from torchmetrics.functional.text.helper_embedding_metric import (
 from torchmetrics.utilities.enums import EnumStr
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
-if _TRANSFORMERS_GREATER_EQUAL_4_4:
+if TYPE_CHECKING and _TRANSFORMERS_GREATER_EQUAL_4_4:
     from transformers import PreTrainedModel, PreTrainedTokenizerBase
-else:
-    PreTrainedModel = PreTrainedTokenizerBase = None
+
+if not _TRANSFORMERS_GREATER_EQUAL_4_4:
     __doctest_skip__ = ["infolm"]
 
 
@@ -320,7 +320,7 @@ def _get_dataloader(
     return DataLoader(dataset, batch_size=batch_size, num_workers=num_workers)
 
 
-def _get_special_tokens_map(tokenizer: PreTrainedTokenizerBase) -> Dict[str, int]:
+def _get_special_tokens_map(tokenizer: "PreTrainedTokenizerBase") -> Dict[str, int]:
     """Build a dictionary of model/tokenizer special tokens.
 
     Args:
@@ -365,7 +365,11 @@ def _get_token_mask(input_ids: Tensor, pad_token_id: int, sep_token_id: int, cls
 
 
 def _get_batch_distribution(
-    model: PreTrainedModel, batch: Dict[str, Tensor], temperature: float, idf: bool, special_tokens_map: Dict[str, int]
+    model: "PreTrainedModel",
+    batch: Dict[str, Tensor],
+    temperature: float,
+    idf: bool,
+    special_tokens_map: Dict[str, int],
 ) -> Tensor:
     """Calculate a discrete probability distribution for a batch of examples. See `InfoLM`_ for details.
 
@@ -419,7 +423,7 @@ def _get_batch_distribution(
 
 @torch.no_grad()
 def _get_data_distribution(
-    model: PreTrainedModel,
+    model: "PreTrainedModel",
     dataloader: DataLoader,
     temperature: float,
     idf: bool,
@@ -461,7 +465,7 @@ def _get_data_distribution(
 def _infolm_update(
     preds: Union[str, Sequence[str]],
     target: Union[str, Sequence[str]],
-    tokenizer: PreTrainedTokenizerBase,
+    tokenizer: "PreTrainedTokenizerBase",
     max_length: int,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """Update the metric state by a tokenization of ``preds`` and ``target`` sentencens.
@@ -493,7 +497,7 @@ def _infolm_update(
 
 
 def _infolm_compute(
-    model: PreTrainedModel,
+    model: "PreTrainedModel",
     preds_dataloader: DataLoader,
     target_dataloader: DataLoader,
     temperature: float,
