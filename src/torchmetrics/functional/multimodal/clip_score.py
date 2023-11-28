@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Tuple, Union
+from typing import TYPE_CHECKING, List, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -21,7 +21,11 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
 
-if _TRANSFORMERS_GREATER_EQUAL_4_10:
+if TYPE_CHECKING and _TRANSFORMERS_GREATER_EQUAL_4_10:
+    from transformers import CLIPModel as _CLIPModel
+    from transformers import CLIPProcessor as _CLIPProcessor
+
+if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_GREATER_EQUAL_4_10:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
 
@@ -29,9 +33,8 @@ if _TRANSFORMERS_GREATER_EQUAL_4_10:
         _CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
         _CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
 
-    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_clip):
+    if not _try_proceed_with_timeout(_download_clip):
         __doctest_skip__ = ["clip_score"]
-
 else:
     __doctest_skip__ = ["clip_score"]
     _CLIPModel = None
@@ -96,6 +99,9 @@ def _get_clip_model_and_processor(
     ] = "openai/clip-vit-large-patch14",
 ) -> Tuple[_CLIPModel, _CLIPProcessor]:
     if _TRANSFORMERS_GREATER_EQUAL_4_10:
+        from transformers import CLIPModel as _CLIPModel
+        from transformers import CLIPProcessor as _CLIPProcessor
+
         model = _CLIPModel.from_pretrained(model_name_or_path)
         processor = _CLIPProcessor.from_pretrained(model_name_or_path)
         return model, processor
