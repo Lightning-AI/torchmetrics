@@ -168,6 +168,7 @@ class CLIPImageQualityAssessment(Metric):
 
     anchors: Tensor
     probs_list: List[Tensor]
+    feature_network: str = "model"
 
     def __init__(
         self,

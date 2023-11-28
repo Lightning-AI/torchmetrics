@@ -99,6 +99,7 @@ class CLIPScore(Metric):
 
     score: Tensor
     n_samples: Tensor
+    feature_network: str = "model"
 
     def __init__(
         self,
