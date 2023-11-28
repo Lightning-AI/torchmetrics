@@ -60,6 +60,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed numerical stability issue in `UniversalImageQualityIndex` metric ([#2222](https://github.com/Lightning-AI/torchmetrics/pull/2222))
 
 
+- Fixed incompatibility for `MeanAveragePrecision` with `pycocotools` backend when too little `max_detection_thresholds` are provided ([#2219](https://github.com/Lightning-AI/torchmetrics/pull/2219))
+
+
 - Fixed support for half precision in Perplexity metric ([#2235](https://github.com/Lightning-AI/torchmetrics/pull/2235))
 
 
@@ -67,6 +70,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fixed bug in `Metric._reduce_states(...)` when using `dist_sync_fn="cat"` ([#2226](https://github.com/Lightning-AI/torchmetrics/pull/2226))
+
+
+- Fixed bug in `CosineSimilarity` where 2d is expected but 1d input was given ([#2241](https://github.com/Lightning-AI/torchmetrics/pull/2241))
+
+
+- Fixed bug in `MetricCollection` when using compute groups and `compute` is called more than once ([#2211](https://github.com/Lightning-AI/torchmetrics/pull/2211))
 
 
 ## [1.2.0] - 2023-09-22

@@ -411,7 +411,8 @@ class TestComputeGroups:
             ("prefix_", "_postfix"),
         ],
     )
-    def test_check_compute_groups_correctness(self, metrics, expected, preds, target, prefix, postfix):
+    @pytest.mark.parametrize("with_reset", [True, False])
+    def test_check_compute_groups_correctness(self, metrics, expected, preds, target, prefix, postfix, with_reset):
         """Check that compute groups are formed after initialization and that metrics are correctly computed."""
         if isinstance(metrics, MetricCollection):
             prefix, postfix = None, None  # disable for nested collections
@@ -445,8 +446,9 @@ class TestComputeGroups:
             for key in res_cg:
                 assert torch.allclose(res_cg[key], res_without_cg[key])
 
-            m.reset()
-            m2.reset()
+            if with_reset:
+                m.reset()
+                m2.reset()
 
     @pytest.mark.parametrize("method", ["items", "values", "keys"])
     def test_check_compute_groups_items_and_values(self, metrics, expected, preds, target, method):
