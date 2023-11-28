@@ -860,3 +860,34 @@ class TestMapProperties:
             assert round(res["map"].item(), 5) != 0.6
         else:
             assert round(res["map"].item(), 5) == 0.6
+
+    @pytest.mark.parametrize("max_detection_thresholds", [[1, 10], [1, 10, 50, 100]])
+    def test_with_more_and_less_detection_thresholds(self, max_detection_thresholds, backend):
+        """Test how metric is working when list of max detection thresholds is not 3.
+
+        This is a known limitation of the pycocotools where values are hardcoded to expect at least 3 elements
+        https://github.com/ppwwyyxx/cocoapi/blob/master/PythonAPI/pycocotools/cocoeval.py#L461
+
+        """
+        preds = [
+            {
+                "boxes": torch.tensor([[258.0, 41.0, 606.0, 285.0]]),
+                "scores": torch.tensor([0.536]),
+                "labels": torch.tensor([0]),
+            }
+        ]
+        target = [
+            {
+                "boxes": torch.tensor([[214.0, 41.0, 562.0, 285.0]]),
+                "labels": torch.tensor([0]),
+            }
+        ]
+
+        if backend == "pycocotools":
+            with pytest.raises(
+                ValueError, match="When using `pycocotools` backend the number of max detection thresholds should.*"
+            ):
+                metric = MeanAveragePrecision(max_detection_thresholds=max_detection_thresholds, backend=backend)
+        else:
+            metric = MeanAveragePrecision(max_detection_thresholds=max_detection_thresholds, backend=backend)
+            metric(preds, target)
