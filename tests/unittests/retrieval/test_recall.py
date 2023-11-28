@@ -11,18 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional
+from typing import Callable, Optional, Union
 
 import numpy as np
 import pytest
 from torch import Tensor
 from torchmetrics.functional.retrieval.recall import retrieval_recall
 from torchmetrics.retrieval.recall import RetrievalRecall
+from typing_extensions import Literal
 
 from unittests.helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,
     _concat_tests,
+    _custom_aggregate_fn,
     _default_metric_class_input_arguments,
     _default_metric_class_input_arguments_ignore_index,
     _default_metric_functional_input_arguments,
@@ -61,6 +63,7 @@ class TestRecall(RetrievalMetricTester):
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
+    @pytest.mark.parametrize("aggregation", ["mean", "median", "max", "min", _custom_aggregate_fn])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments)
     def test_class_metric(
         self,
@@ -71,9 +74,15 @@ class TestRecall(RetrievalMetricTester):
         empty_target_action: str,
         ignore_index: int,
         k: int,
+        aggregation: Union[Literal["mean", "median", "min", "max"], Callable],
     ):
         """Test class implementation of metric."""
-        metric_args = {"empty_target_action": empty_target_action, "top_k": k, "ignore_index": ignore_index}
+        metric_args = {
+            "empty_target_action": empty_target_action,
+            "top_k": k,
+            "ignore_index": ignore_index,
+            "aggregation": aggregation,
+        }
 
         self.run_class_metric_test(
             ddp=ddp,
