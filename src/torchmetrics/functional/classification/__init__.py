@@ -81,6 +81,7 @@ from torchmetrics.functional.classification.precision_fixed_recall import (
     binary_precision_at_fixed_recall,
     multiclass_precision_at_fixed_recall,
     multilabel_precision_at_fixed_recall,
+    precision_at_fixed_recall,
 )
 from torchmetrics.functional.classification.precision_recall import (
     binary_precision,
@@ -107,6 +108,7 @@ from torchmetrics.functional.classification.recall_fixed_precision import (
     binary_recall_at_fixed_precision,
     multiclass_recall_at_fixed_precision,
     multilabel_recall_at_fixed_precision,
+    recall_at_fixed_precision,
 )
 from torchmetrics.functional.classification.roc import binary_roc, multiclass_roc, multilabel_roc, roc
 from torchmetrics.functional.classification.sensitivity_specificity import (
@@ -201,6 +203,7 @@ __all__ = [
     "multilabel_coverage_error",
     "multilabel_ranking_average_precision",
     "multilabel_ranking_loss",
+    "recall_at_fixed_precision",
     "binary_recall_at_fixed_precision",
     "multiclass_recall_at_fixed_precision",
     "multilabel_recall_at_fixed_precision",
@@ -208,6 +211,10 @@ __all__ = [
     "multiclass_roc",
     "multilabel_roc",
     "roc",
+    "binary_sensitivity_at_specificity",
+    "multiclass_sensitivity_at_specificity",
+    "multilabel_sensitivity_at_specificity",
+    "sensitivity_at_specificity",
     "binary_specificity",
     "multiclass_specificity",
     "multilabel_specificity",
@@ -225,4 +232,5 @@ __all__ = [
     "multiclass_precision_at_fixed_recall",
     "demographic_parity",
     "equal_opportunity",
+    "precision_at_fixed_recall",
 ]

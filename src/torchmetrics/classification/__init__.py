@@ -213,4 +213,8 @@ __all__ = [
     "BinaryPrecisionAtFixedRecall",
     "MulticlassPrecisionAtFixedRecall",
     "MultilabelPrecisionAtFixedRecall",
+    "BinarySensitivityAtSpecificity",
+    "MulticlassSensitivityAtSpecificity",
+    "MultilabelSensitivityAtSpecificity",
+    "SensitivityAtSpecificity",
 ]
