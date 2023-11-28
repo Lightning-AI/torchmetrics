@@ -418,7 +418,7 @@ def specicity_at_sensitivity(
     r"""Compute the highest possible specificity value given the minimum sensitivity thresholds provided.
 
     .. warning::
-        This function was deprecated in v1.3.0 of Torchmetrics and will be removed in v2.0.0. 
+        This function was deprecated in v1.3.0 of Torchmetrics and will be removed in v2.0.0.
         Use `specificity_at_sensitivity` instead.
 
     """
