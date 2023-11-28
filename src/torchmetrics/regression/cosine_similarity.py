@@ -118,7 +118,7 @@ class CosineSimilarity(Metric):
             >>> # Example plotting a single value
             >>> from torchmetrics.regression import CosineSimilarity
             >>> metric = CosineSimilarity()
-            >>> metric.update(randn(10,), randn(10,))
+            >>> metric.update(randn(10,2), randn(10,2))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
@@ -130,7 +130,7 @@ class CosineSimilarity(Metric):
             >>> metric = CosineSimilarity()
             >>> values = []
             >>> for _ in range(10):
-            ...     values.append(metric(randn(10,), randn(10,)))
+            ...     values.append(metric(randn(10,2), randn(10,2)))
             >>> fig, ax = metric.plot(values)
 
         """
