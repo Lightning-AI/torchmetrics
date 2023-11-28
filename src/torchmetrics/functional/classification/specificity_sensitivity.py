@@ -435,15 +435,15 @@ def specicity_at_sensitivity(
         stacklevel=1,
     )
     return specificity_at_sensitivity(
-    preds=preds,
-    target=target,
-    task=task,
-    min_sensitivity=min_sensitivity,
-    thresholds=thresholds,
-    num_classes=num_classes,
-    num_labels=num_labels,
-    ignore_index=ignore_index,
-    validate_args=validate_args
+        preds=preds,
+        target=target,
+        task=task,
+        min_sensitivity=min_sensitivity,
+        thresholds=thresholds,
+        num_classes=num_classes,
+        num_labels=num_labels,
+        ignore_index=ignore_index,
+        validate_args=validate_args,
     )
 
 
