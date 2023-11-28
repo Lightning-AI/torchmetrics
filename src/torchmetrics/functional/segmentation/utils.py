@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import functools
 import math
 from typing import List, Optional, Tuple, Union
 
@@ -384,7 +385,7 @@ def surface_distance(
     return dis[preds]
 
 
-@functools.lru_cache()
+@functools.lru_cache
 def get_neighbour_tables(
     spacing: Union[Tuple[int, int], Tuple[int, int, int]], device: Optional[torch.device] = None
 ) -> Tuple[Tensor, Tensor]:
@@ -400,9 +401,9 @@ def get_neighbour_tables(
 
     """
     if isinstance(spacing, tuple) and len(spacing) == 2:
-        return table_contour_length(spacing, device)  # type: ignore[arg-type]
+        return table_contour_length(spacing, device)
     if isinstance(spacing, tuple) and len(spacing) == 3:
-        return table_surface_area(spacing, device)  # type: ignore[arg-type]
+        return table_surface_area(spacing, device)
     raise ValueError("The spacing must be a tuple of length 2 or 3.")
 
 
@@ -449,7 +450,7 @@ def table_contour_length(spacing: Tuple[int, int], device: Optional[torch.device
     return table, kernel
 
 
-@functools.lru_cache()
+@functools.lru_cache
 def table_surface_area(spacing: Tuple[int, int, int], device: Optional[torch.device] = None) -> Tuple[Tensor, Tensor]:
     """Create a table that maps neighbour codes to the surface area of the corresponding surface.
 
