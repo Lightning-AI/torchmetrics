@@ -434,24 +434,17 @@ def specicity_at_sensitivity(
         DeprecationWarning,
         stacklevel=1,
     )
-    task = ClassificationTask.from_str(task)
-    if task == ClassificationTask.BINARY:
-        return binary_specificity_at_sensitivity(  # type: ignore
-            preds, target, min_sensitivity, thresholds, ignore_index, validate_args
-        )
-    if task == ClassificationTask.MULTICLASS:
-        if not isinstance(num_classes, int):
-            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
-        return multiclass_specificity_at_sensitivity(  # type: ignore
-            preds, target, num_classes, min_sensitivity, thresholds, ignore_index, validate_args
-        )
-    if task == ClassificationTask.MULTILABEL:
-        if not isinstance(num_labels, int):
-            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
-        return multilabel_specificity_at_sensitivity(  # type: ignore
-            preds, target, num_labels, min_sensitivity, thresholds, ignore_index, validate_args
-        )
-    raise ValueError(f"Not handled value: {task}")
+    return specificity_at_sensitivity(
+    preds=preds,
+    target=target,
+    task=task,
+    min_sensitivity=min_sensitivity,
+    thresholds=thresholds,
+    num_classes=num_classes,
+    num_labels=num_labels,
+    ignore_index=ignore_index,
+    validate_args=validate_args
+    )
 
 
 def specificity_at_sensitivity(
