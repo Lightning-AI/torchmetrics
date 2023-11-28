@@ -14,8 +14,7 @@
 from typing import Optional, Sequence, Tuple
 
 import torch
-from torch import Tensor
-from torch.nn import functional as F  # noqa: N812
+from torch import Tensor, nn
 from typing_extensions import Literal
 
 from torchmetrics.functional.image.helper import _gaussian_kernel_2d
@@ -92,11 +91,11 @@ def _uqi_compute(
     pad_h = (kernel_size[0] - 1) // 2
     pad_w = (kernel_size[1] - 1) // 2
 
-    preds = F.pad(preds, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
-    target = F.pad(target, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
+    preds = nn.functional.pad(preds, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
+    target = nn.functional.pad(target, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
 
     input_list = torch.cat((preds, target, preds * preds, target * target, preds * target))  # (5 * B, C, H, W)
-    outputs = F.conv2d(input_list, kernel, groups=channel)
+    outputs = nn.functional.conv2d(input_list, kernel, groups=channel)
     output_list = outputs.split(preds.shape[0])
 
     mu_pred_sq = output_list[0].pow(2)
