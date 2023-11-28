@@ -72,7 +72,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed bug in `Metric._reduce_states(...)` when using `dist_sync_fn="cat"` ([#2226](https://github.com/Lightning-AI/torchmetrics/pull/2226))
 
 
+- Fixed bug in `CosineSimilarity` where 2d is expected but 1d input was given ([#2241](https://github.com/Lightning-AI/torchmetrics/pull/2241))
+
+
 - Fixed bug in `MetricCollection` when using compute groups and `compute` is called more than once ([#2211](https://github.com/Lightning-AI/torchmetrics/pull/2211))
+
 
 ## [1.2.0] - 2023-09-22
 
