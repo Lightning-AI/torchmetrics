@@ -32,7 +32,7 @@ if not _MATPLOTLIB_AVAILABLE:
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL: str = "roberta-large"
 
-if _TRANSFORMERS_GREATER_EQUAL_4_4:
+if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_GREATER_EQUAL_4_4:
     from transformers import AutoModel, AutoTokenizer
 
     def _download_model() -> None:
@@ -40,7 +40,7 @@ if _TRANSFORMERS_GREATER_EQUAL_4_4:
         AutoTokenizer.from_pretrained(_DEFAULT_MODEL)
         AutoModel.from_pretrained(_DEFAULT_MODEL)
 
-    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_model):
+    if not _try_proceed_with_timeout(_download_model):
         __doctest_skip__ = ["BERTScore", "BERTScore.plot"]
 else:
     __doctest_skip__ = ["BERTScore", "BERTScore.plot"]
@@ -179,6 +179,8 @@ class BERTScore(Metric):
                     "`BERTScore` metric with default tokenizers requires `transformers` package be installed."
                     " Either install with `pip install transformers>=4.4` or `pip install torchmetrics[text]`."
                 )
+            from transformers import AutoTokenizer
+
             if model_name_or_path is None:
                 rank_zero_warn(
                     "The argument `model_name_or_path` was not specified while it is required when the default"
