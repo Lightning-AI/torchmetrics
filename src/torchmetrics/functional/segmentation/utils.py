@@ -384,6 +384,7 @@ def surface_distance(
     return dis[preds]
 
 
+@functools.lru_cache()
 def get_neighbour_tables(
     spacing: Union[Tuple[int, int], Tuple[int, int, int]], device: Optional[torch.device] = None
 ) -> Tuple[Tensor, Tensor]:
@@ -448,6 +449,7 @@ def table_contour_length(spacing: Tuple[int, int], device: Optional[torch.device
     return table, kernel
 
 
+@functools.lru_cache()
 def table_surface_area(spacing: Tuple[int, int, int], device: Optional[torch.device] = None) -> Tuple[Tensor, Tensor]:
     """Create a table that maps neighbour codes to the surface area of the corresponding surface.
 
