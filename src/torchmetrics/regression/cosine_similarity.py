@@ -130,7 +130,7 @@ class CosineSimilarity(Metric):
             >>> metric = CosineSimilarity()
             >>> values = []
             >>> for _ in range(10):
-            ...     values.append(metric(randn(10,), randn(10,)))
+            ...     values.append(metric(randn(10,2), randn(10,2)))
             >>> fig, ax = metric.plot(values)
 
         """
