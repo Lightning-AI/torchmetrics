@@ -404,7 +404,6 @@ def multilabel_specificity_at_sensitivity(
     return _multilabel_specificity_at_sensitivity_compute(state, num_labels, thresholds, ignore_index, min_sensitivity)
 
 
-# create specicity_at_sensitivity that calls specificity_at_sensitivity
 def specicity_at_sensitivity(
     preds: Tensor,
     target: Tensor,
