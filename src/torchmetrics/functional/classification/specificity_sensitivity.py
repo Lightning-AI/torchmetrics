@@ -417,15 +417,9 @@ def specicity_at_sensitivity(
 ) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Compute the highest possible specificity value given the minimum sensitivity thresholds provided.
 
-    This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and
-    the find the specificity for a given sensitivity level.
-
-    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :func:`~torchmetrics.functional.classification.binary_specificity_at_sensitivity`,
-    :func:`~torchmetrics.functional.classification.multiclass_specificity_at_sensitivity` and
-    :func:`~torchmetrics.functional.classification.multilabel_specificity_at_sensitivity` for the specific details of
-    each argument influence and examples.
+    .. warning::
+        This function was deprecated in v1.3.0 of Torchmetrics and will be removed in v2.0.0. 
+        Use `specificity_at_sensitivity` instead.
 
     """
     warnings.warn(
