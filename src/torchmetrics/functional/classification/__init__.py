@@ -120,6 +120,7 @@ from torchmetrics.functional.classification.specificity_sensitivity import (
     multiclass_specificity_at_sensitivity,
     multilabel_specificity_at_sensitivity,
     specicity_at_sensitivity,
+    specificity_at_sensitivity,
 )
 from torchmetrics.functional.classification.stat_scores import (
     binary_stat_scores,
@@ -165,8 +166,6 @@ __all__ = [
     "multilabel_fbeta_score",
     "binary_fairness",
     "binary_groups_stat_rates",
-    "demographic_parity",
-    "equal_opportunity",
     "binary_hamming_distance",
     "hamming_distance",
     "multiclass_hamming_distance",
@@ -212,6 +211,7 @@ __all__ = [
     "multiclass_specificity_at_sensitivity",
     "multilabel_specificity_at_sensitivity",
     "specicity_at_sensitivity",
+    "specificity_at_sensitivity",
     "binary_stat_scores",
     "multiclass_stat_scores",
     "multilabel_stat_scores",
@@ -219,4 +219,6 @@ __all__ = [
     "binary_precision_at_fixed_recall",
     "multilabel_precision_at_fixed_recall",
     "multiclass_precision_at_fixed_recall",
+    "demographic_parity",
+    "equal_opportunity",
 ]

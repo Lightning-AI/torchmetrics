@@ -182,6 +182,49 @@ In general we have a few recommendations for memory management:
 
 See :ref:`Metric kwargs` for different advanced settings for controlling the memory footprint of metrics.
 
+**************************
+Saving and loading metrics
+**************************
+
+Because metrics are essentially just a subclass of :class:`torch.nn.Module`, saving and loading metrics works in the
+same as any other `nn.Module`, with a key difference. Similar to `nn.Module` it is also recommended to save the state
+dict instead of the actual metric e.g.:
+
+.. code-block:: python
+
+    # Instead of this
+    torch.save(metric, "metric.pt")
+    # do this
+    torch.save(metric.state_dict(), "metric.pt")
+
+The key difference is that metric states are not automatically a part of the state dict. This is to make sure that
+torchmetrics is backward compatible with models that did not use the specific metrics when they were created. This
+behavior can be overwritten by using the `metric.persistent` method, which will mark all metric states to also be saved
+when `.state_dict` is called. Alternatively, for custom metrics, you can set the `persistent` argument when initializing
+the state in the `self.add_state` method.
+
+Therefore a correct example for saving and loading a metric would be:
+
+.. code-block:: python
+
+    import torch
+    from torchmetrics.classification import MulticlassAccuracy
+
+    metric = MulticlassAccuracy(num_classes=5).to("cuda")
+    metric.persistent(True)
+    metric.update(torch.randint(5, (100,)).cuda(), torch.randint(5, (100,)).cuda())
+    torch.save(metric.state_dict(), "metric.pth")
+
+    metric2 = MulticlassAccuracy(num_classes=5).to("cpu")
+    metric2.load_state_dict(torch.load("metric.pth", map_location="cpu"))
+
+    # These will match, but be on different devices
+    print(metric.metric_state)
+    print(metric2.metric_state)
+
+In the example, we also account for the initial metric state that is being saved on a different device than the
+metric it is being loaded into by using the `map_location` argument.
+
 ***********************************************
 Metrics in Distributed Data Parallel (DDP) mode
 ***********************************************
