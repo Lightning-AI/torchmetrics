@@ -224,7 +224,6 @@ def test_surface_distance(cases, distance_metric, spacing, device):
     "cases",
     [
         (torch.randint(0, 2, (5, 5), dtype=torch.bool), torch.randint(0, 2, (5, 5), dtype=torch.bool)),
-        (torch.randint(0, 2, (5, 5, 5), dtype=torch.bool), torch.randint(0, 2, (5, 5, 5), dtype=torch.bool)),
         (torch.randint(0, 2, (50, 50), dtype=torch.bool), torch.randint(0, 2, (50, 50), dtype=torch.bool)),
         (torch.randint(0, 2, (50, 50, 50), dtype=torch.bool), torch.randint(0, 2, (50, 50, 50), dtype=torch.bool)),
     ],

@@ -278,7 +278,6 @@ def distance_transform(
 def mask_edges(
     preds: Tensor,
     target: Tensor,
-    label_idx: int = 1,
     crop: bool = True,
     spacing: Optional[Union[Tuple[int, int], Tuple[int, int, int]]] = None,
 ) -> Union[Tuple[Tensor, Tensor], Tuple[Tensor, Tensor, Tensor, Tensor]]:
@@ -287,7 +286,6 @@ def mask_edges(
     Args:
         preds: The predicted binary segmentation mask
         target: The ground truth binary segmentation mask
-        label_idx: The label index to use for the edges. By default, the edges of the foreground are returned.
         crop: Whether to crop the edges to the region of interest. If ``True``, the edges are cropped to the bounding
         spacing: The pixel spacing of the input images. If provided, the edges are calculated using the euclidean
 
