@@ -46,5 +46,5 @@ __all__ = [
     "visual_information_fidelity",
     "learned_perceptual_image_patch_similarity",
     "perceptual_path_length",
-    "spatial_correlation_coefficient"
+    "spatial_correlation_coefficient",
 ]
