@@ -167,3 +167,4 @@
 .. _FLORES-101: https://arxiv.org/abs/2106.03193
 .. _FLORES-200: https://arxiv.org/abs/2207.04672
 .. _averaging curve objects: https://scikit-learn.org/stable/auto_examples/model_selection/plot_roc.html
+.. _SCC: https://www.tandfonline.com/doi/abs/10.1080/014311698215973

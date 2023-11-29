@@ -1,6 +1,5 @@
 
-from typing import Union, Tuple, Optional
-from typing_extensions import Literal
+from typing import Union, Tuple
 
 import torch
 from torch import Tensor, tensor
@@ -17,6 +16,17 @@ def _scc_update(preds: Tensor, target: Tensor, hp_filter: Tensor, window_size: i
         target: Ground truth tensor
         hp_filter: High-pass filter tensor
         window_size: Local window size integer
+
+    Return:
+        Tuple of (preds, target, hp_filter) tensors
+
+    Raises:
+        ValueError:
+            If ``preds`` and ``target`` have different number of channels
+            If ``preds`` and ``target`` have different shapes
+            If ``preds`` and ``target`` have invalid shapes
+            If ``window_size`` is not a positive integer
+            If ``window_size`` is greater than the size of the image
     """
     if preds.dtype != target.dtype:
         target = target.to(preds.dtype)
@@ -89,8 +99,21 @@ def _local_variance_covariance(preds: Tensor, target: Tensor, window: Tensor):
     return preds_var, target_var, target_preds_cov
 
 def _scc_per_channel_compute(preds: Tensor, target: Tensor, hp_filter: Tensor, window_size: int):
+    """Computes per channel Spatial Correlation Coefficient.
+
+    Args:
+        preds: estimated image of Bx1xHxW shape.
+        target: ground truth image of Bx1xHxW shape.
+        hp_filter: 2D high-pass filter.
+        window_size: size of window for local mean calculation.
+    Return:
+        Tensor with Spatial Correlation Coefficient score"""
+    
     dtype = preds.dtype
     device = preds.device
+
+    # This code is inspired by
+    # https://github.com/andrewekhalel/sewar/blob/master/sewar/full_ref.py#L187.
 
     window = torch.ones(size=(1, 1, window_size, window_size), dtype=dtype, device=device)/( window_size**2 )
     
@@ -112,6 +135,28 @@ def _scc_per_channel_compute(preds: Tensor, target: Tensor, hp_filter: Tensor, w
 def spatial_correlation_coefficient(preds: Tensor, target: Tensor, 
                                     hp_filter: Tensor = tensor([[-1,-1,-1],[-1,8,-1],[-1,-1,-1]]),
                                     window_size: int = 8):
+    """Compute Spatial Correlation Coefficient (SCC_).
+
+    Args:
+        preds: predicted images of shape ``(N,C,H,W)`` or ``(N,H,W)``.
+        target: ground truth images of shape ``(N,C,H,W)`` or ``(N,H,W)``.
+        hp_filter: High-pass filter tensor. default: tensor([[-1,-1,-1],[-1,8,-1],[-1,-1,-1]])
+        window_size: Local window size integer. default: 8
+
+    Return:
+        Tensor with scc score
+
+    Example:
+        >>> import torch
+        >>> from torchmetrics.functional.image import spatial_correlation_coefficient as scc
+        >>> _ = torch.manual_seed(42)
+        >>> x = torch.randn(5, 3, 16, 16)
+        >>> scc(x, x)
+        tensor(1.)
+        >>> x = torch.randn(5, 16, 16)
+        >>> scc(x, x)
+        tensor(1.)
+    """
     preds, target, hp_filter = _scc_update(preds, target, hp_filter, window_size)
 
     per_channel = [_scc_per_channel_compute(preds[:, i, :, :].unsqueeze(1), target[:, i, :, :].unsqueeze(1), hp_filter, window_size) for i in range(preds.size(1))]
