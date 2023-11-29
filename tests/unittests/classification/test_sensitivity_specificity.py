@@ -45,6 +45,7 @@ seed_all(42)
 def _sensitivity_at_specificity_x_multilabel(predictions, targets, min_specificity):
     # get fpr, tpr and thresholds
     fpr, sensitivity, thresholds = sk_roc_curve(targets, predictions, pos_label=1.0, drop_intermediate=False)
+    thresholds[thresholds == np.inf] = 1.0
     # check if fpr is filled with nan (All positive samples),
     # replace nan with zero tensor
     if np.isnan(fpr).all():
