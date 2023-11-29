@@ -23,6 +23,7 @@ from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure, 
 from torchmetrics.image.tv import TotalVariation
 from torchmetrics.image.uqi import UniversalImageQualityIndex
 from torchmetrics.image.vif import VisualInformationFidelity
+from torchmetrics.image.scc import SpatialCorrelationCoefficient
 from torchmetrics.utilities.imports import (
     _TORCH_FIDELITY_AVAILABLE,
     _TORCHVISION_AVAILABLE,
@@ -42,6 +43,7 @@ __all__ = [
     "UniversalImageQualityIndex",
     "VisualInformationFidelity",
     "TotalVariation",
+    "SpatialCorrelationCoefficient",
 ]
 
 if _TORCH_FIDELITY_AVAILABLE:
