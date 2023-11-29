@@ -12,5 +12,5 @@ Feature Sharing
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.aggregation.FeatureShare
+.. autoclass:: torchmetrics.wrappers.FeatureShare
     :exclude-members: update, compute
