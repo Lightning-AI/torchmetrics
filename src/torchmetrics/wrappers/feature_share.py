@@ -18,6 +18,7 @@ from torch.nn import Module
 
 from torchmetrics.collections import MetricCollection
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 
 
 class NetworkCache(Module):
@@ -53,64 +54,53 @@ class FeatureShare(MetricCollection):
             * list or tuple (sequence): if metrics are passed in as a list or tuple, will use the metrics class name
               as key for output dict. Therefore, two metrics of the same class cannot be chained this way.
 
-            * arguments: similar to passing in as a list, metrics passed in as arguments will use their metric
-              class name as key for the output dict.
 
             * dict: if metrics are passed in as a dict, will use each key in the dict as key for output dict.
               Use this format if you want to chain together multiple of the same metric with different parameters.
               Note that the keys in the output dict will be sorted alphabetically.
 
-        network_names: name of the network attribute to share between the metrics.
         max_cache_size: maximum number of input-output pairs to cache per metric. By default, this is none which means
-            that the cache will be set to the number of metrics in the collection.
+            that the cache will be set to the number of metrics in the collection meaning that all features will be
+            cached and shared across all metrics per batch.
 
     """
 
     def __init__(
         self,
         metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]],
-        network_names: Union[str, Sequence[str]],
         max_cache_size: Optional[int] = None,
     ) -> None:
         super().__init__(metrics=metrics)
-
-        if isinstance(network_names, str):
-            network_names = [network_names] * len(self)
-        if len(network_names) != len(self):
-            raise ValueError(
-                "The number of network names should be equal to the number of metrics,"
-                f" but got {len(network_names)} and {len(self)}')"
-            )
 
         if max_cache_size is None:
             max_cache_size = len(self)
         if not isinstance(max_cache_size, int):
             raise TypeError(f"max_cache_size should be an integer, but got {max_cache_size}")
 
-        # get the network of the first metric and create a cached version
         try:
-            shared_net = getattr(getattr(self, next(iter(self.keys()))), network_names[0])
+            first_net = getattr(self, next(iter(self.keys())))
+            network_to_share = getattr(first_net, first_net.feature_network)
         except AttributeError as e:
             raise AttributeError(
-                "The indicated network name of the first metric did not match any known attribute in the metric."
-                "Please make sure that the network name is correct and that the metric has a attribute with that name."
-                " Consider checking the `metric.named_children()` to see the available submodules."
+                "Tried to extract the network to share from the first metric, but it did not have a `feature_network`"
+                " attribute. Please make sure that the metric has a attribute with that name, else it cannot be shared."
             ) from e
-
-        cached_net = NetworkCache(shared_net, max_size=max_cache_size)
+        cached_net = NetworkCache(network_to_share, max_size=max_cache_size)
 
         # set the cached network to all metrics
-        for (metric_name, metric), network_name in zip(self.items(), network_names):
-            attr = getattr(metric, network_name, None)
-            if attr is None:
-                failed_metric = metric_name
-                break
+        for metric_name, metric in self.items():
+            if not hasattr(metric, "feature_network"):
+                raise AttributeError(
+                    "Tried to set the cached network to all metrics, but one of the metrics did not have a "
+                    "`feature_network` attribute. Please make sure that all metrics have a attribute with that name, "
+                    f"else it cannot be shared. Failed on metric {metric_name}."
+                )
+            # check if its the same network as the first metric
+            if str(getattr(metric, metric.feature_network)) != str(network_to_share):
+                rank_zero_warn(
+                    f"The network to share between the metrics is not the same for all metrics. "
+                    f"Metric {metric_name} has a different network than the first metric."
+                    "This may lead to unexpected behavior."
+                )
 
-            setattr(metric, network_name, cached_net)
-
-        if attr is None:
-            raise AttributeError(
-                f"The indicated network name did not match any known attribute in metric {failed_metric}. Please make"
-                " sure that the network name is correct and that the metric has a attribute with that name."
-                " Consider checking the `metric.named_children()` to see the available submodules."
-            )
+            setattr(metric, metric.feature_network, cached_net)

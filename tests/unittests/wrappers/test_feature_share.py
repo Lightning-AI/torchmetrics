@@ -22,25 +22,9 @@ def test_initialization():
     """Test that the feature share wrapper can be initialized."""
     fs = FeatureShare(
         [FrechetInceptionDistance(), InceptionScore(), KernelInceptionDistance()],
-        network_names=["inception", "inception", "inception"],
     )
     assert isinstance(fs, MetricCollection)
     assert len(fs) == 3
-
-
-def test_error_on_wrong_network_names():
-    """Test that an error is raised when the network names are wrong."""
-    with pytest.raises(AttributeError, match="The indicated network name of the first.*"):
-        FeatureShare(
-            [FrechetInceptionDistance(), InceptionScore(), KernelInceptionDistance()],
-            network_names=["network", "inception", "inception"],
-        )
-
-    with pytest.raises(AttributeError, match="The indicated network name did not match any known attribute in.*"):
-        FeatureShare(
-            [FrechetInceptionDistance(), InceptionScore(), KernelInceptionDistance()],
-            network_names=["inception", "inception", "network"],
-        )
 
 
 # def test_speed():
