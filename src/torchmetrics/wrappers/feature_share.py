@@ -20,6 +20,8 @@ from torchmetrics.collections import MetricCollection
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 
+__doctest_requires__ = {("FeatureShare",): ["torch_fidelity"]}
+
 
 class NetworkCache(Module):
     """Create a cached version of a network to be shared between metrics.
@@ -63,6 +65,20 @@ class FeatureShare(MetricCollection):
             that the cache will be set to the number of metrics in the collection meaning that all features will be
             cached and shared across all metrics per batch.
 
+    Example::
+        >>> import torch
+        >>> _ = torch.manual_seed(42)
+        >>> from torchmetrics.wrappers import FeatureShare
+        >>> from torchmetrics.image import FrechetInceptionDistance, KernelInceptionDistance
+        >>> # initialize the metrics
+        >>> fs = FeatureShare([FrechetInceptionDistance(), KernelInceptionDistance(subset_size=10, subsets=2)])
+        >>> # update metric
+        >>> fs.update(torch.randint(255, (50, 3, 64, 64), dtype=torch.uint8), real=True)
+        >>> fs.update(torch.randint(255, (50, 3, 64, 64), dtype=torch.uint8), real=False)
+        >>> # compute metric
+        >>> fs.compute()
+        {'FrechetInceptionDistance': tensor(15.1700), 'KernelInceptionDistance': (tensor(-0.0012), tensor(0.0014))}
+
     """
 
     def __init__(
@@ -70,7 +86,8 @@ class FeatureShare(MetricCollection):
         metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]],
         max_cache_size: Optional[int] = None,
     ) -> None:
-        super().__init__(metrics=metrics)
+        # disable compute groups because the feature sharing is more custom
+        super().__init__(metrics=metrics, compute_groups=False)
 
         if max_cache_size is None:
             max_cache_size = len(self)
@@ -95,12 +112,14 @@ class FeatureShare(MetricCollection):
                     "`feature_network` attribute. Please make sure that all metrics have a attribute with that name, "
                     f"else it cannot be shared. Failed on metric {metric_name}."
                 )
+
             # check if its the same network as the first metric
             if str(getattr(metric, metric.feature_network)) != str(network_to_share):
                 rank_zero_warn(
                     f"The network to share between the metrics is not the same for all metrics. "
                     f"Metric {metric_name} has a different network than the first metric."
-                    "This may lead to unexpected behavior."
+                    "This may lead to unexpected behavior.",
+                    UserWarning,
                 )
 
             setattr(metric, metric.feature_network, cached_net)
