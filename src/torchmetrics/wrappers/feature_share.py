@@ -95,7 +95,7 @@ class FeatureShare(MetricCollection):
             raise TypeError(f"max_cache_size should be an integer, but got {max_cache_size}")
 
         try:
-            first_net = getattr(self, next(iter(self.keys())))
+            first_net = next(iter(self.values()))
             network_to_share = getattr(first_net, first_net.feature_network)
         except AttributeError as e:
             raise AttributeError(
