@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import math
 from typing import Tuple, Union
 
 import torch
@@ -72,6 +73,7 @@ def _scc_update(preds: Tensor, target: Tensor, hp_filter: Tensor, window_size: i
 
 
 def _symmetric_reflect_pad_2d(input: Tensor, pad: Union[int, Tuple[int, ...]]) -> Tensor:
+    """Applies symmetric padding to the 2D image tensor input using `reflect` mode (d c b a | a b c d | d c b a)."""
     if isinstance(pad, int):
         pad = (pad, pad, pad, pad)
     if len(pad) != 4:
@@ -87,6 +89,7 @@ def _symmetric_reflect_pad_2d(input: Tensor, pad: Union[int, Tuple[int, ...]]) -
 
 
 def _signal_convolve_2d(input: Tensor, kernel: Tensor) -> Tensor:
+    """Applies 2D signal convolution to the input tensor with the given kernel."""
     left_padding = int(math.floor((kernel.size(3) - 1) / 2))
     right_padding = int(math.ceil((kernel.size(3) - 1) / 2))
     top_padding = int(math.floor((kernel.size(2) - 1) / 2))
@@ -98,12 +101,17 @@ def _signal_convolve_2d(input: Tensor, kernel: Tensor) -> Tensor:
 
 
 def _hp_2d_laplacian(input: Tensor, kernel: Tensor) -> Tensor:
-    output = _signal_convolve_2d(input, kernel)
-    output += _signal_convolve_2d(input, kernel)
+    """Applies 2-D Laplace filter to the input tensor with the given high pass filter."""
+    output = _signal_convolve_2d(input, kernel) * 2.
     return output
 
 
 def _local_variance_covariance(preds: Tensor, target: Tensor, window: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
+    """Computes local variance and covariance of the input tensors."""
+
+    # This code is inspired by
+    # https://github.com/andrewekhalel/sewar/blob/master/sewar/full_ref.py#L187.
+
     preds_mean = conv2d(preds, window, stride=1, padding="same")
     target_mean = conv2d(target, window, stride=1, padding="same")
 
