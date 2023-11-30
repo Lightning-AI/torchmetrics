@@ -102,13 +102,11 @@ def _signal_convolve_2d(input_img: Tensor, kernel: Tensor) -> Tensor:
 
 def _hp_2d_laplacian(input_img: Tensor, kernel: Tensor) -> Tensor:
     """Applies 2-D Laplace filter to the input tensor with the given high pass filter."""
-    output = _signal_convolve_2d(input_img, kernel) * 2.
-    return output
+    return _signal_convolve_2d(input, kernel) * 2.0
 
 
 def _local_variance_covariance(preds: Tensor, target: Tensor, window: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
     """Computes local variance and covariance of the input tensors."""
-
     # This code is inspired by
     # https://github.com/andrewekhalel/sewar/blob/master/sewar/full_ref.py#L187.
 
