@@ -1,3 +1,16 @@
+# Copyright The Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from typing import Tuple, Union
 
 import torch
@@ -32,7 +45,7 @@ def _scc_update(preds: Tensor, target: Tensor, hp_filter: Tensor, window_size: i
     if preds.dtype != target.dtype:
         target = target.to(preds.dtype)
     _check_same_shape(preds, target)
-    if len(preds.shape) not in (3, 4):
+    if preds.ndim not in (3, 4):
         raise ValueError(
             "Expected `preds` and `target` to have batch of colored images with BxCxHxW shape"
             "  or batch of grayscale images of BxHxW shape."
@@ -61,7 +74,8 @@ def _scc_update(preds: Tensor, target: Tensor, hp_filter: Tensor, window_size: i
 def _symmetric_reflect_pad_2d(input: Tensor, pad: Union[int, Tuple[int, ...]]) -> Tensor:
     if isinstance(pad, int):
         pad = (pad, pad, pad, pad)
-    assert len(pad) == 4
+    if len(pad) != 4:
+        raise ValueError(f"Expected padding to have length 4, but got {len(pad)}")
 
     left_pad = input[:, :, :, 0 : pad[0]].flip(dims=[3])
     right_pad = input[:, :, :, -pad[1] :].flip(dims=[3])
@@ -73,10 +87,10 @@ def _symmetric_reflect_pad_2d(input: Tensor, pad: Union[int, Tuple[int, ...]]) -
 
 
 def _signal_convolve_2d(input: Tensor, kernel: Tensor) -> Tensor:
-    left_padding = int(torch.floor(tensor((kernel.size(3) - 1) / 2)).item())
-    right_padding = int(torch.ceil(tensor((kernel.size(3) - 1) / 2)).item())
-    top_padding = int(torch.floor(tensor((kernel.size(2) - 1) / 2)).item())
-    bottom_padding = int(torch.ceil(tensor((kernel.size(2) - 1) / 2)).item())
+    left_padding = int(math.floor((kernel.size(3) - 1) / 2))
+    right_padding = int(math.ceil((kernel.size(3) - 1) / 2))
+    top_padding = int(math.floor((kernel.size(2) - 1) / 2))
+    bottom_padding = int(math.ceil((kernel.size(2) - 1) / 2))
 
     padded = _symmetric_reflect_pad_2d(input, pad=(left_padding, right_padding, top_padding, bottom_padding))
     kernel = kernel.flip([2, 3])
@@ -89,7 +103,7 @@ def _hp_2d_laplacian(input: Tensor, kernel: Tensor) -> Tensor:
     return output
 
 
-def _local_variance_covariance(preds: Tensor, target: Tensor, window: Tensor):
+def _local_variance_covariance(preds: Tensor, target: Tensor, window: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
     preds_mean = conv2d(preds, window, stride=1, padding="same")
     target_mean = conv2d(target, window, stride=1, padding="same")
 
@@ -100,7 +114,7 @@ def _local_variance_covariance(preds: Tensor, target: Tensor, window: Tensor):
     return preds_var, target_var, target_preds_cov
 
 
-def _scc_per_channel_compute(preds: Tensor, target: Tensor, hp_filter: Tensor, window_size: int):
+def _scc_per_channel_compute(preds: Tensor, target: Tensor, hp_filter: Tensor, window_size: int) -> Tensor:
     """Computes per channel Spatial Correlation Coefficient.
 
     Args:
@@ -142,7 +156,7 @@ def spatial_correlation_coefficient(
     target: Tensor,
     hp_filter: Tensor = tensor([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]]),
     window_size: int = 8,
-):
+) -> Tensor:
     """Compute Spatial Correlation Coefficient (SCC_).
 
     Args:
