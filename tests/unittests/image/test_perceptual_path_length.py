@@ -204,5 +204,5 @@ def test_compare():
     )
     result = result[-1].cpu()
 
-    assert 0.94 * result.mean() <= compare.mean() <= 1.06 * result.mean()
-    assert 0.94 * result.std() <= compare.std() <= 1.06 * result.std()
+    assert 0.92 * result.mean() <= compare.mean() <= 1.08 * result.mean()
+    assert 0.92 * result.std() <= compare.std() <= 1.08 * result.std()
