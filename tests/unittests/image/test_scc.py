@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
+from typing import NamedTuple
 
 import numpy as np
 import pytest
@@ -26,7 +26,9 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
+class Input(NamedTuple):
+    preds: torch.Tensor
+    target: torch.Tensor
 _inputs = [
     Input(
         preds=torch.randn(NUM_BATCHES, BATCH_SIZE, channels, 128, 128),
@@ -52,15 +54,18 @@ def _reference_scc(preds, target):
 
 @pytest.mark.parametrize("preds, target", [(i.preds, i.target) for i in _inputs])
 class TestSpatialCorrelationCoefficient(MetricTester):
+    """Tests for SpatialCorrelationCoefficient metric."""
     atol = 1e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
     def test_scc(self, preds, target, ddp):
+        """Test SpatialCorrelationCoefficient class usage."""
         self.run_class_metric_test(
             ddp, preds, target, metric_class=SpatialCorrelationCoefficient, reference_metric=_reference_scc
         )
 
     def test_scc_functional(self, preds, target):
+        """Test SpatialCorrelationCoefficient functional usage."""
         self.run_functional_metric_test(
             preds,
             target,

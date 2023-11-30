@@ -59,11 +59,14 @@ class SpatialCorrelationCoefficient(Metric):
 
     def __init__(
         self,
-        high_pass_filter: Tensor = tensor([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]]),
-        window_size: int = 11,
+        high_pass_filter: Tensor = None,
+        window_size: int = 8,
         **kwargs: Any
     ) -> None:
         super().__init__(**kwargs)
+
+        if high_pass_filter is None:
+            high_pass_filter = tensor([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]])
 
         self.hp_filter = high_pass_filter
         self.ws = window_size

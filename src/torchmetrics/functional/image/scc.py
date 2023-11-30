@@ -72,37 +72,37 @@ def _scc_update(preds: Tensor, target: Tensor, hp_filter: Tensor, window_size: i
     return preds, target, hp_filter
 
 
-def _symmetric_reflect_pad_2d(input: Tensor, pad: Union[int, Tuple[int, ...]]) -> Tensor:
+def _symmetric_reflect_pad_2d(input_img: Tensor, pad: Union[int, Tuple[int, ...]]) -> Tensor:
     """Applies symmetric padding to the 2D image tensor input using `reflect` mode (d c b a | a b c d | d c b a)."""
     if isinstance(pad, int):
         pad = (pad, pad, pad, pad)
     if len(pad) != 4:
         raise ValueError(f"Expected padding to have length 4, but got {len(pad)}")
 
-    left_pad = input[:, :, :, 0 : pad[0]].flip(dims=[3])
-    right_pad = input[:, :, :, -pad[1] :].flip(dims=[3])
-    padded = torch.cat([left_pad, input, right_pad], dim=3)
+    left_pad = input_img[:, :, :, 0 : pad[0]].flip(dims=[3])
+    right_pad = input_img[:, :, :, -pad[1] :].flip(dims=[3])
+    padded = torch.cat([left_pad, input_img, right_pad], dim=3)
 
     top_pad = padded[:, :, 0 : pad[2], :].flip(dims=[2])
     bottom_pad = padded[:, :, -pad[3] :, :].flip(dims=[2])
     return torch.cat([top_pad, padded, bottom_pad], dim=2)
 
 
-def _signal_convolve_2d(input: Tensor, kernel: Tensor) -> Tensor:
+def _signal_convolve_2d(input_img: Tensor, kernel: Tensor) -> Tensor:
     """Applies 2D signal convolution to the input tensor with the given kernel."""
     left_padding = int(math.floor((kernel.size(3) - 1) / 2))
     right_padding = int(math.ceil((kernel.size(3) - 1) / 2))
     top_padding = int(math.floor((kernel.size(2) - 1) / 2))
     bottom_padding = int(math.ceil((kernel.size(2) - 1) / 2))
 
-    padded = _symmetric_reflect_pad_2d(input, pad=(left_padding, right_padding, top_padding, bottom_padding))
+    padded = _symmetric_reflect_pad_2d(input_img, pad=(left_padding, right_padding, top_padding, bottom_padding))
     kernel = kernel.flip([2, 3])
     return conv2d(padded, kernel, stride=1, padding=0)
 
 
-def _hp_2d_laplacian(input: Tensor, kernel: Tensor) -> Tensor:
+def _hp_2d_laplacian(input_img: Tensor, kernel: Tensor) -> Tensor:
     """Applies 2-D Laplace filter to the input tensor with the given high pass filter."""
-    output = _signal_convolve_2d(input, kernel) * 2.
+    output = _signal_convolve_2d(input_img, kernel) * 2.
     return output
 
 
@@ -162,7 +162,7 @@ def _scc_per_channel_compute(preds: Tensor, target: Tensor, hp_filter: Tensor, w
 def spatial_correlation_coefficient(
     preds: Tensor,
     target: Tensor,
-    hp_filter: Tensor = tensor([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]]),
+    hp_filter: Tensor = None,
     window_size: int = 8,
 ) -> Tensor:
     """Compute Spatial Correlation Coefficient (SCC_).
@@ -188,6 +188,8 @@ def spatial_correlation_coefficient(
         tensor(1.)
 
     """
+    if hp_filter is None:
+        hp_filter = tensor([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]])
     preds, target, hp_filter = _scc_update(preds, target, hp_filter, window_size)
 
     per_channel = [
