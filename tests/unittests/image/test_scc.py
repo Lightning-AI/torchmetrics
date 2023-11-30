@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import NamedTuple
 
 import numpy as np
 import pytest
@@ -20,20 +19,14 @@ from sewar.full_ref import scc as sewar_scc
 from torchmetrics.functional.image import spatial_correlation_coefficient
 from torchmetrics.image import SpatialCorrelationCoefficient
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-
-class Input(NamedTuple):
-    preds: torch.Tensor
-    target: torch.Tensor
-
-
 _inputs = [
-    Input(
+    _Input(
         preds=torch.randn(NUM_BATCHES, BATCH_SIZE, channels, 128, 128),
         target=torch.randn(NUM_BATCHES, BATCH_SIZE, channels, 128, 128),
     )
