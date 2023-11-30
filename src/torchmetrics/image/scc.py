@@ -57,12 +57,7 @@ class SpatialCorrelationCoefficient(Metric):
     scc_score: Tensor
     total: Tensor
 
-    def __init__(
-        self,
-        high_pass_filter: Tensor = None,
-        window_size: int = 8,
-        **kwargs: Any
-    ) -> None:
+    def __init__(self, high_pass_filter: Tensor = None, window_size: int = 8, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
         if high_pass_filter is None:

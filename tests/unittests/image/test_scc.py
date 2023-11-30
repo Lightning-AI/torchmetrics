@@ -26,9 +26,12 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
+
 class Input(NamedTuple):
     preds: torch.Tensor
     target: torch.Tensor
+
+
 _inputs = [
     Input(
         preds=torch.randn(NUM_BATCHES, BATCH_SIZE, channels, 128, 128),
@@ -55,6 +58,7 @@ def _reference_scc(preds, target):
 @pytest.mark.parametrize("preds, target", [(i.preds, i.target) for i in _inputs])
 class TestSpatialCorrelationCoefficient(MetricTester):
     """Tests for SpatialCorrelationCoefficient metric."""
+
     atol = 1e-3
 
     @pytest.mark.parametrize("ddp", [True, False])
