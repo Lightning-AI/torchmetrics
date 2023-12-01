@@ -26,7 +26,7 @@ __doctest_requires__ = {("FeatureShare",): ["torch_fidelity"]}
 class NetworkCache(Module):
     """Create a cached version of a network to be shared between metrics.
 
-    Because the different metrics invoke the same network multiple times, we can save time by caching the input-output
+    Because the different metrics may invoke the same network multiple times, we can save time by caching the input-output
     pairs of the network.
 
     """
@@ -42,7 +42,7 @@ class NetworkCache(Module):
 
 
 class FeatureShare(MetricCollection):
-    """Specialized metric collection that can be used to share features between metrics.
+    """Specialized metric collection that facilitates sharing features between metrics.
 
     Certain metrics rely on an underlying expensive neural network for feature extraction when computing the metric.
     This wrapper allows to share the feature extraction between multiple metrics, which can save a lot of time and
@@ -51,7 +51,7 @@ class FeatureShare(MetricCollection):
     faster.
 
     Args:
-        metrics: One of the following
+        metrics: One of the following:
 
             * list or tuple (sequence): if metrics are passed in as a list or tuple, will use the metrics class name
               as key for output dict. Therefore, two metrics of the same class cannot be chained this way.
@@ -97,28 +97,28 @@ class FeatureShare(MetricCollection):
         try:
             first_net = next(iter(self.values()))
             network_to_share = getattr(first_net, first_net.feature_network)
-        except AttributeError as e:
+        except AttributeError as err:
             raise AttributeError(
                 "Tried to extract the network to share from the first metric, but it did not have a `feature_network`"
-                " attribute. Please make sure that the metric has a attribute with that name, else it cannot be shared."
-            ) from e
+                " attribute. Please make sure that the metric has an attribute with that name, else it cannot be shared."
+            ) from err
         cached_net = NetworkCache(network_to_share, max_size=max_cache_size)
 
         # set the cached network to all metrics
         for metric_name, metric in self.items():
             if not hasattr(metric, "feature_network"):
                 raise AttributeError(
-                    "Tried to set the cached network to all metrics, but one of the metrics did not have a "
-                    "`feature_network` attribute. Please make sure that all metrics have a attribute with that name, "
-                    f"else it cannot be shared. Failed on metric {metric_name}."
+                    "Tried to set the cached network to all metrics, but one of the metrics did not have a"
+                    " `feature_network` attribute. Please make sure that all metrics have a attribute with that name,"
+                    f" else it cannot be shared. Failed on metric {metric_name}."
                 )
 
             # check if its the same network as the first metric
             if str(getattr(metric, metric.feature_network)) != str(network_to_share):
                 rank_zero_warn(
-                    f"The network to share between the metrics is not the same for all metrics. "
-                    f"Metric {metric_name} has a different network than the first metric."
-                    "This may lead to unexpected behavior.",
+                    f"The network to share between the metrics is not the same for all metrics."
+                    f" Metric {metric_name} has a different network than the first metric."
+                    " This may lead to unexpected behavior.",
                     UserWarning,
                 )
 
