@@ -26,8 +26,8 @@ __doctest_requires__ = {("FeatureShare",): ["torch_fidelity"]}
 class NetworkCache(Module):
     """Create a cached version of a network to be shared between metrics.
 
-    Because the different metrics may invoke the same network multiple times, we can save time by caching the input-output
-    pairs of the network.
+    Because the different metrics may invoke the same network multiple times, we can save time by caching the input-
+    output pairs of the network.
 
     """
 
