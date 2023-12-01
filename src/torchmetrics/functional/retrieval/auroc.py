@@ -57,8 +57,8 @@ def retrieval_auroc(
 
     top_k_idx = preds.topk(min(top_k, preds.shape[-1]), sorted=True, dim=-1)[1]
     target = target[top_k_idx]
-    if not target.sum():
-        return tensor(0.0, device=preds.device)
+    if (0 not in target) or (1 not in target):
+        return tensor(0.0, device=preds.device, dtype=preds.dtype)
 
     preds = preds[top_k_idx]
-    return binary_auroc(preds, target, max_fpr=max_fpr)
+    return binary_auroc(preds, target.int(), max_fpr=max_fpr)

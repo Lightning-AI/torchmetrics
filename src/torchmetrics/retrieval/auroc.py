@@ -16,7 +16,7 @@ from typing import Any, Callable, Optional, Sequence, Union
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.classification.auroc import binary_auroc
+from torchmetrics.functional.retrieval.auroc import retrieval_auroc
 from torchmetrics.retrieval.base import RetrievalMetric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -99,6 +99,7 @@ class RetrievalAUROC(RetrievalMetric):
         self,
         empty_target_action: str = "neg",
         ignore_index: Optional[int] = None,
+        top_k: Optional[int] = None,
         max_fpr: Optional[float] = None,
         aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
         **kwargs: Any,
@@ -109,13 +110,15 @@ class RetrievalAUROC(RetrievalMetric):
             aggregation=aggregation,
             **kwargs,
         )
-
+        if top_k is not None and not (isinstance(top_k, int) and top_k > 0):
+            raise ValueError("`top_k` has to be a positive integer or None")
+        self.top_k = top_k
         if max_fpr is not None and not isinstance(max_fpr, float) and 0 < max_fpr <= 1:
             raise ValueError(f"Arguments `max_fpr` should be a float in range (0, 1], but got: {max_fpr}")
         self.max_fpr = max_fpr
 
     def _metric(self, preds: Tensor, target: Tensor) -> Tensor:
-        return binary_auroc(preds, target, max_fpr=self.max_fpr)
+        return retrieval_auroc(preds, target, top_k=self.top_k, max_fpr=self.max_fpr)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
