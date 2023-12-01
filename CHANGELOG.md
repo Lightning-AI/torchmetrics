@@ -86,6 +86,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed bug in `MetricCollection` when using compute groups and `compute` is called more than once ([#2211](https://github.com/Lightning-AI/torchmetrics/pull/2211))
 
 
+- Fixed support for half precision + CPU in metrics requiring topk operator ([#2252](https://github.com/Lightning-AI/torchmetrics/pull/2252))
+
 ## [1.2.0] - 2023-09-22
 
 ### Added
