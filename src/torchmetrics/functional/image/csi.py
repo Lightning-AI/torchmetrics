@@ -20,10 +20,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _critical_success_index_update(
-        preds: Tensor,
-        target: Tensor,
-        threshold: float,
-        keep_sequence_dim: Optional[int] = None
+    preds: Tensor, target: Tensor, threshold: float, keep_sequence_dim: Optional[int] = None
 ) -> tuple[Tensor, Tensor, Tensor]:
     """Update and return variables required to compute Critical Success Index. Checks for same shape of tensors.
 
@@ -71,7 +68,9 @@ def _critical_success_index_compute(hits: Tensor, misses: Tensor, false_alarms: 
     return hits / (hits + misses + false_alarms)
 
 
-def critical_success_index(preds: Tensor, target: Tensor, threshold: float, keep_sequence_dim: Optional[int] = None) -> Tensor:
+def critical_success_index(
+    preds: Tensor, target: Tensor, threshold: float, keep_sequence_dim: Optional[int] = None
+) -> Tensor:
     """Compute critical success index.
 
     Args:

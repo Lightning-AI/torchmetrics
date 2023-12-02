@@ -11,11 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import torch
 from typing import Any, Optional
 
-from torchmetrics.metric import Metric
+import torch
+
 from torchmetrics.functional.image.csi import _critical_success_index_compute, _critical_success_index_update
+from torchmetrics.metric import Metric
 
 
 class CriticalSuccessIndex(Metric):
@@ -54,7 +55,8 @@ class CriticalSuccessIndex(Metric):
         tensor([0.3333, 0.3333])
 
     """
-    def __init__(self, threshold: float, keep_sequence_dim: Optional[int] = None, **kwargs: Any):
+
+    def __init__(self, threshold: float, keep_sequence_dim: Optional[int] = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.threshold = float(threshold)
 
@@ -68,7 +70,9 @@ class CriticalSuccessIndex(Metric):
 
     def update(self, preds: torch.Tensor, target: torch.Tensor):
         """Update state with predictions and targets."""
-        hits, misses, false_alarms = _critical_success_index_update(preds, target, self.threshold, self.keep_sequence_dim)
+        hits, misses, false_alarms = _critical_success_index_update(
+            preds, target, self.threshold, self.keep_sequence_dim
+        )
         self.hits += hits
         self.misses += misses
         self.false_alarms += false_alarms

@@ -43,7 +43,7 @@ __all__ = [
     "UniversalImageQualityIndex",
     "VisualInformationFidelity",
     "TotalVariation",
-    "CriticalSuccessIndex"
+    "CriticalSuccessIndex",
 ]
 
 if _TORCH_FIDELITY_AVAILABLE:

@@ -46,5 +46,5 @@ __all__ = [
     "visual_information_fidelity",
     "learned_perceptual_image_patch_similarity",
     "perceptual_path_length",
-    "critical_success_index"
+    "critical_success_index",
 ]
