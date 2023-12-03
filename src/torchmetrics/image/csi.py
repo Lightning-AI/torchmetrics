@@ -55,6 +55,8 @@ class CriticalSuccessIndex(Metric):
         tensor([0.3333, 0.3333])
 
     """
+    is_differentiable: bool = False
+    higher_is_better: bool = True
 
     def __init__(self, threshold: float, keep_sequence_dim: Optional[int] = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
