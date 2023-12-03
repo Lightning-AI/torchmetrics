@@ -17,6 +17,7 @@ import torch
 from torch import Tensor
 
 from torchmetrics.utilities.checks import _check_same_shape
+from torchmetrics.utilities.compute import _safe_divide
 
 
 def _critical_success_index_update(
@@ -38,7 +39,7 @@ def _critical_success_index_update(
     if keep_sequence_dim is None:
         sum_dims = None
     elif not 0 <= keep_sequence_dim < preds.ndim:
-        raise ValueError(f"Expected keep_sequence dim to be in range [0, {preds.ndim()}] but got {keep_sequence_dim}")
+        raise ValueError(f"Expected keep_sequence dim to be in range [0, {preds.ndim}] but got {keep_sequence_dim}")
     else:
         sum_dims = tuple(i for i in range(preds.ndim) if i != keep_sequence_dim)
 
@@ -65,7 +66,7 @@ def _critical_success_index_compute(hits: Tensor, misses: Tensor, false_alarms: 
         with CSI scores for each image in the sequence. Otherwise, it returns a scalar tensor with the CSI score.
 
     """
-    return hits / (hits + misses + false_alarms)
+    return _safe_divide(hits, hits + misses + false_alarms)
 
 
 def critical_success_index(
