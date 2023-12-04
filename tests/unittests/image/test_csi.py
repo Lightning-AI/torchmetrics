@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import partial
+
 import pytest
 import torch
-from functools import partial
 from sklearn.metrics import jaccard_score
-
 from torchmetrics.functional.image.csi import critical_success_index
 from torchmetrics.image.csi import CriticalSuccessIndex
 
@@ -27,14 +27,8 @@ from unittests.helpers.testers import MetricTester
 seed_all(42)
 
 
-_inputs_1 = _Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE)
-)
-_inputs_2 = _Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE)
-)
+_inputs_1 = _Input(preds=torch.rand(NUM_BATCHES, BATCH_SIZE), target=torch.rand(NUM_BATCHES, BATCH_SIZE))
+_inputs_2 = _Input(preds=torch.rand(NUM_BATCHES, BATCH_SIZE), target=torch.rand(NUM_BATCHES, BATCH_SIZE))
 
 
 def _calculate_ref_metric(preds: torch.Tensor, target: torch.Tensor, threshold: float):
@@ -51,9 +45,7 @@ def _calculate_ref_metric(preds: torch.Tensor, target: torch.Tensor, threshold: 
         (_inputs_2.preds, _inputs_2.target),
     ],
 )
-@pytest.mark.parametrize(
-    "threshold", [0.5, 0.25, 0.75]
-)
+@pytest.mark.parametrize("threshold", [0.5, 0.25, 0.75])
 class TestCriticalSuccessIndex(MetricTester):
     """Test class for `CriticalSuccessIndex` metric."""
 
@@ -66,7 +58,7 @@ class TestCriticalSuccessIndex(MetricTester):
             target=target,
             metric_class=CriticalSuccessIndex,
             reference_metric=partial(_calculate_ref_metric, threshold=threshold),
-            metric_args={"threshold": threshold}
+            metric_args={"threshold": threshold},
         )
 
     def test_csi_functional(self, preds, target, threshold):
@@ -75,26 +67,20 @@ class TestCriticalSuccessIndex(MetricTester):
             target=target,
             metric_functional=critical_success_index,
             reference_metric=partial(_calculate_ref_metric, threshold=threshold),
-            metric_args={"threshold": threshold}
+            metric_args={"threshold": threshold},
         )
 
     def test_csi_half_cpu(self, preds, target, threshold):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
-            preds=preds,
-            target=target,
-            metric_functional=critical_success_index,
-            metric_args={"threshold": threshold}
+            preds=preds, target=target, metric_functional=critical_success_index, metric_args={"threshold": threshold}
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_csi_half_gpu(self, preds, target, threshold):
         """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
-            preds=preds,
-            target=target,
-            metric_functional=critical_success_index,
-            metric_args={"threshold": threshold}
+            preds=preds, target=target, metric_functional=critical_success_index, metric_args={"threshold": threshold}
         )
 
 

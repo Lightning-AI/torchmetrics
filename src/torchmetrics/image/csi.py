@@ -55,6 +55,7 @@ class CriticalSuccessIndex(Metric):
         tensor([0.3333, 0.3333])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
 
