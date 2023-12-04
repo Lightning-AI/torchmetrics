@@ -178,7 +178,8 @@ def spatial_correlation_coefficient(
         target: ground truth images of shape ``(N,C,H,W)`` or ``(N,H,W)``.
         hp_filter: High-pass filter tensor. default: tensor([[-1,-1,-1],[-1,8,-1],[-1,-1,-1]])
         window_size: Local window size integer. default: 8,
-        reduction: Reduction method for output tensor. If ``None`` or ``"none"``, returns a tensor with the per sample results. default: ``"mean"``.
+        reduction: Reduction method for output tensor. If ``None`` or ``"none"``, 
+                   returns a tensor with the per sample results. default: ``"mean"``.
 
     Return:
         Tensor with scc score
