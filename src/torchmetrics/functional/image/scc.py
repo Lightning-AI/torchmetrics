@@ -167,7 +167,7 @@ def _scc_per_channel_compute(preds: Tensor, target: Tensor, hp_filter: Tensor, w
 def spatial_correlation_coefficient(
     preds: Tensor,
     target: Tensor,
-    hp_filter: Tensor = None,
+    hp_filter: Optional[Tensor] = None,
     window_size: int = 8,
     reduction: Optional[Literal["mean", "none", None]] = "mean",
 ) -> Tensor:

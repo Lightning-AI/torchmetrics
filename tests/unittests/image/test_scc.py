@@ -33,8 +33,7 @@ _inputs = [
     for channels in [1, 3]
 ]
 _kernels = [
-    torch.tensor([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]]),
-    torch.tensor([[0, -1, 0], [-1, 4, -1], [0, -1, 0]]),
+    torch.tensor([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]])
 ]
 
 

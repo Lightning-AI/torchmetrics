@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any
+from typing import Any, Optional
 
 import torch
 from torch import Tensor, tensor
@@ -57,7 +57,7 @@ class SpatialCorrelationCoefficient(Metric):
     scc_score: Tensor
     total: Tensor
 
-    def __init__(self, high_pass_filter: Tensor = None, window_size: int = 8, **kwargs: Any) -> None:
+    def __init__(self, high_pass_filter: Optional[Tensor] = None, window_size: int = 8, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
         if high_pass_filter is None:
