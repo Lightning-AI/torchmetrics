@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
-from typing import Tuple, Union
+from typing import Tuple, Union, Optional
+from typing_extensions import Literal
 
 import torch
 from torch import Tensor, tensor
-from torch.nn.functional import conv2d
+from torch.nn.functional import conv2d, pad
 
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
@@ -110,12 +111,18 @@ def _local_variance_covariance(preds: Tensor, target: Tensor, window: Tensor) ->
     # This code is inspired by
     # https://github.com/andrewekhalel/sewar/blob/master/sewar/full_ref.py#L187.
 
-    preds_mean = conv2d(preds, window, stride=1, padding="same")
-    target_mean = conv2d(target, window, stride=1, padding="same")
+    left_padding = int(math.ceil((window.size(3) - 1) / 2))
+    right_padding = int(math.floor((window.size(3) - 1) / 2))
 
-    preds_var = conv2d(preds**2, window, stride=1, padding="same") - preds_mean**2
-    target_var = conv2d(target**2, window, stride=1, padding="same") - target_mean**2
-    target_preds_cov = conv2d(target * preds, window, stride=1, padding="same") - target_mean * preds_mean
+    preds = pad(preds, (left_padding, right_padding, left_padding, right_padding))
+    target = pad(target, (left_padding, right_padding, left_padding, right_padding))
+
+    preds_mean = conv2d(preds, window, stride=1, padding=0)
+    target_mean = conv2d(target, window, stride=1, padding=0)
+
+    preds_var = conv2d(preds**2, window, stride=1, padding=0) - preds_mean**2
+    target_var = conv2d(target**2, window, stride=1, padding=0) - target_mean**2
+    target_preds_cov = conv2d(target * preds, window, stride=1, padding=0) - target_mean * preds_mean
 
     return preds_var, target_var, target_preds_cov
 
@@ -162,6 +169,7 @@ def spatial_correlation_coefficient(
     target: Tensor,
     hp_filter: Tensor = None,
     window_size: int = 8,
+    reduction: Optional[Literal["mean", "none", None]] = "mean",
 ) -> Tensor:
     """Compute Spatial Correlation Coefficient (SCC_).
 
@@ -169,7 +177,8 @@ def spatial_correlation_coefficient(
         preds: predicted images of shape ``(N,C,H,W)`` or ``(N,H,W)``.
         target: ground truth images of shape ``(N,C,H,W)`` or ``(N,H,W)``.
         hp_filter: High-pass filter tensor. default: tensor([[-1,-1,-1],[-1,8,-1],[-1,-1,-1]])
-        window_size: Local window size integer. default: 8
+        window_size: Local window size integer. default: 8,
+        reduction: Reduction method for output tensor. If ``None`` or ``"none"``, returns a tensor with the per sample results. default: ``"mean"``.
 
     Return:
         Tensor with scc score
@@ -188,6 +197,10 @@ def spatial_correlation_coefficient(
     """
     if hp_filter is None:
         hp_filter = tensor([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]])
+    if reduce is None:
+        reduction = "none"
+    if reduction not in ("mean", "none"):
+        raise ValueError(f"Expected reduction to be 'mean' or 'none', but got {reduction}")
     preds, target, hp_filter = _scc_update(preds, target, hp_filter, window_size)
 
     per_channel = [
@@ -196,4 +209,7 @@ def spatial_correlation_coefficient(
         )
         for i in range(preds.size(1))
     ]
-    return reduce(torch.cat(per_channel, dim=1), reduction="elementwise_mean")
+    if reduction == "none":
+        return torch.mean(torch.cat(per_channel, dim=1), dim=[1, 2, 3])
+    if reduction == "mean":
+        return reduce(torch.cat(per_channel, dim=1), reduction="elementwise_mean")
