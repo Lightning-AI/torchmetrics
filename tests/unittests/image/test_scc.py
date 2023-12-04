@@ -32,6 +32,10 @@ _inputs = [
     )
     for channels in [1, 3]
 ]
+_kernels = [
+    torch.tensor([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]]),
+    torch.tensor([[0, -1, 0], [-1, 4, -1], [0, -1, 0]]),
+]
 
 
 def _reference_scc(preds, target):
@@ -47,6 +51,22 @@ def _reference_scc(preds, target):
     ]
     return np.mean(scc)
 
+def _wrapped_reference_scc(win, ws, reduction):
+    """Wrapper around reference implementation of scc from sewar."""
+    def _wrapped(preds, target):
+        preds = torch.movedim(preds, 1, -1)
+        target = torch.movedim(target, 1, -1)
+        preds = preds.cpu().numpy()
+        target = target.cpu().numpy()
+        scc = [
+            sewar_scc(GT=target[batch], P=preds[batch], win=win, ws=ws) for batch in range(preds.shape[0])
+        ]
+        if reduction == 'mean':
+            return np.mean(scc)
+        if reduction == 'none':
+            return scc
+    return _wrapped
+
 
 @pytest.mark.parametrize("preds, target", [(i.preds, i.target) for i in _inputs])
 class TestSpatialCorrelationCoefficient(MetricTester):
@@ -61,11 +81,19 @@ class TestSpatialCorrelationCoefficient(MetricTester):
             ddp, preds, target, metric_class=SpatialCorrelationCoefficient, reference_metric=_reference_scc
         )
 
-    def test_scc_functional(self, preds, target):
+    @pytest.mark.parametrize("hp_filter", _kernels)
+    @pytest.mark.parametrize("window_size", [8, 11])
+    @pytest.mark.parametrize("reduction", ['mean', 'none'])
+    def test_scc_functional(self, preds, target, hp_filter, window_size, reduction):
         """Test SpatialCorrelationCoefficient functional usage."""
         self.run_functional_metric_test(
             preds,
             target,
             metric_functional=spatial_correlation_coefficient,
-            reference_metric=_reference_scc
+            reference_metric=_wrapped_reference_scc(hp_filter, window_size, reduction),
+            metric_args={
+                "hp_filter": hp_filter,
+                "window_size": window_size,
+                "reduction": reduction,
+            }
         )
