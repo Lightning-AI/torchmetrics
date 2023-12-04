@@ -32,9 +32,7 @@ _inputs = [
     )
     for channels in [1, 3]
 ]
-_kernels = [
-    torch.tensor([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]])
-]
+_kernels = [torch.tensor([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]])]
 
 
 def _reference_scc(preds, target):
@@ -50,20 +48,22 @@ def _reference_scc(preds, target):
     ]
     return np.mean(scc)
 
+
 def _wrapped_reference_scc(win, ws, reduction):
     """Wrapper around reference implementation of scc from sewar."""
+
     def _wrapped(preds, target):
         preds = torch.movedim(preds, 1, -1)
         target = torch.movedim(target, 1, -1)
         preds = preds.cpu().numpy()
         target = target.cpu().numpy()
-        scc = [
-            sewar_scc(GT=target[batch], P=preds[batch], win=win, ws=ws) for batch in range(preds.shape[0])
-        ]
-        if reduction == 'mean':
+        scc = [sewar_scc(GT=target[batch], P=preds[batch], win=win, ws=ws) for batch in range(preds.shape[0])]
+        if reduction == "mean":
             return np.mean(scc)
-        if reduction == 'none':
+        if reduction == "none":
             return scc
+        return None
+
     return _wrapped
 
 
@@ -82,7 +82,7 @@ class TestSpatialCorrelationCoefficient(MetricTester):
 
     @pytest.mark.parametrize("hp_filter", _kernels)
     @pytest.mark.parametrize("window_size", [8, 11])
-    @pytest.mark.parametrize("reduction", ['mean', 'none'])
+    @pytest.mark.parametrize("reduction", ["mean", "none"])
     def test_scc_functional(self, preds, target, hp_filter, window_size, reduction):
         """Test SpatialCorrelationCoefficient functional usage."""
         self.run_functional_metric_test(
@@ -94,5 +94,5 @@ class TestSpatialCorrelationCoefficient(MetricTester):
                 "hp_filter": hp_filter,
                 "window_size": window_size,
                 "reduction": reduction,
-            }
+            },
         )
