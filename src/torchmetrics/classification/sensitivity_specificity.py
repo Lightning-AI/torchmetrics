@@ -70,12 +70,12 @@ class BinarySensitivityAtSpecificity(BinaryPrecisionRecallCurve):
         thresholds:
             Can be one of:
 
-            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
-              all the data. Most accurate but also most memory consuming approach.
-            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+            - ``None``, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. It is the most accurate but also the most memory-consuming approach.
+            - ``int`` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
-            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - ``list`` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - 1d ``tensor`` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -159,12 +159,12 @@ class MulticlassSensitivityAtSpecificity(MulticlassPrecisionRecallCurve):
         thresholds:
             Can be one of:
 
-            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
-              all the data. Most accurate but also most memory consuming approach.
-            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+            - ``None``, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. It is the most accurate but also the most memory-consuming approach.
+            - ``int`` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
-            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - ``list`` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - 1d ``tensor`` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -257,12 +257,12 @@ class MultilabelSensitivityAtSpecificity(MultilabelPrecisionRecallCurve):
         thresholds:
             Can be one of:
 
-            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
-              all the data. Most accurate but also most memory consuming approach.
-            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+            - ``None``, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. It is the most accurate but also the most memory-consuming approach.
+            - ``int`` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
-            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - ``list`` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - 1d ``tensor`` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
