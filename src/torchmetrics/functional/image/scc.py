@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
-from typing import Tuple, Union, Optional
-from typing_extensions import Literal
+from typing import Optional, Tuple, Union
 
 import torch
 from torch import Tensor, tensor
 from torch.nn.functional import conv2d, pad
+from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
@@ -214,3 +214,4 @@ def spatial_correlation_coefficient(
         return torch.mean(torch.cat(per_channel, dim=1), dim=[1, 2, 3])
     if reduction == "mean":
         return reduce(torch.cat(per_channel, dim=1), reduction="elementwise_mean")
+    return None
