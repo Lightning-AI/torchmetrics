@@ -256,8 +256,8 @@ def multiclass_sensitivity_at_specificity(
     Returns:
         (tuple): a tuple of either 2 tensors or 2 lists containing
 
-        - recall: an 1d tensor of size (n_classes, ) with the maximum recall for the given precision level per class
-        - thresholds: an 1d tensor of size (n_classes, ) with the corresponding threshold level per class
+        - recall: an 1d tensor of size ``(n_classes, )`` with the maximum recall for the given precision level per class
+        - thresholds: an 1d tensor of size ``(n_classes, )`` with the corresponding threshold level per class
 
     Example:
         >>> from torchmetrics.functional.classification import multiclass_sensitivity_at_specificity

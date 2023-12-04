@@ -272,9 +272,9 @@ class MultilabelSensitivityAtSpecificity(MultilabelPrecisionRecallCurve):
     Returns:
         (tuple): a tuple of either 2 tensors or 2 lists containing
 
-        - sensitivity: an 1d tensor of size (n_classes, ) with the maximum sensitivity for the given
+        - sensitivity: an 1d tensor of size ``(n_classes, )`` with the maximum sensitivity for the given
             specificity level per class
-        - thresholds: an 1d tensor of size (n_classes, ) with the corresponding threshold level per class
+        - thresholds: an 1d tensor of size ``(n_classes, )`` with the corresponding threshold level per class
 
     Example:
         >>> from torchmetrics.classification import MultilabelSensitivityAtSpecificity
