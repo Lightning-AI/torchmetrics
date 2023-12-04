@@ -111,12 +111,12 @@ def _spatial_distortion_index_compute(
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand([16, 3, 32, 32])
         >>> target = {
-        >>>     'ms': torch.rand([16, 3, 16, 16]),
-        >>>     'pan': torch.rand([16, 3, 32, 32]),
-        >>> }
+        ...     'ms': torch.rand([16, 3, 16, 16]),
+        ...     'pan': torch.rand([16, 3, 32, 32]),
+        ... }
         >>> preds, target = _spatial_distortion_index_update(preds, target)
         >>> _spatial_distortion_index_compute(preds, target)
-        tensor(0.0051)
+        tensor(0.0090)
 
     """
     length = preds.shape[1]
@@ -231,11 +231,11 @@ def spatial_distortion_index(
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand([16, 3, 32, 32])
         >>> target = {
-        >>>     'ms': torch.rand([16, 3, 16, 16]),
-        >>>     'pan': torch.rand([16, 3, 32, 32]),
-        >>> }
+        ...     'ms': torch.rand([16, 3, 16, 16]),
+        ...     'pan': torch.rand([16, 3, 32, 32]),
+        ... }
         >>> spatial_distortion_index(preds, target)
-        tensor(0.0051)
+        tensor(0.0090)
 
     """
     if not isinstance(p, int) or p <= 0:

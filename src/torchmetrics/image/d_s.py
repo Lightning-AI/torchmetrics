@@ -65,12 +65,12 @@ class SpatialDistortionIndex(Metric):
         >>> from torchmetrics.image import SpatialDistortionIndex
         >>> preds = torch.rand([16, 3, 32, 32])
         >>> target = {
-        >>>     'ms': torch.rand([16, 3, 16, 16]),
-        >>>     'pan': torch.rand([16, 3, 32, 32]),
-        >>> }
+        ...     'ms': torch.rand([16, 3, 16, 16]),
+        ...     'pan': torch.rand([16, 3, 32, 32]),
+        ... }
         >>> sdi = SpatialDistortionIndex()
         >>> sdi(preds, target)
-        tensor(0.0051)
+        tensor(0.0090)
 
     """
 
@@ -162,9 +162,9 @@ class SpatialDistortionIndex(Metric):
             >>> from torchmetrics.image import SpatialDistortionIndex
             >>> preds = torch.rand([16, 3, 32, 32])
             >>> target = {
-            >>>     'ms': torch.rand([16, 3, 16, 16]),
-            >>>     'pan': torch.rand([16, 3, 32, 32]),
-            >>> }
+            ...     'ms': torch.rand([16, 3, 16, 16]),
+            ...     'pan': torch.rand([16, 3, 32, 32]),
+            ... }
             >>> metric = SpatialDistortionIndex()
             >>> metric.update(preds, target)
             >>> fig_, ax_ = metric.plot()
@@ -178,9 +178,9 @@ class SpatialDistortionIndex(Metric):
             >>> from torchmetrics.image import SpatialDistortionIndex
             >>> preds = torch.rand([16, 3, 32, 32])
             >>> target = {
-            >>>     'ms': torch.rand([16, 3, 16, 16]),
-            >>>     'pan': torch.rand([16, 3, 32, 32]),
-            >>> }
+            ...     'ms': torch.rand([16, 3, 16, 16]),
+            ...     'pan': torch.rand([16, 3, 32, 32]),
+            ... }
             >>> metric = SpatialDistortionIndex()
             >>> values = [ ]
             >>> for _ in range(10):
