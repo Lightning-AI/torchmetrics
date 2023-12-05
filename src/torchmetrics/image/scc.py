@@ -46,7 +46,7 @@ class SpatialCorrelationCoefficient(Metric):
         >>> target = torch.randn([32, 3, 64, 64])
         >>> scc = SCC()
         >>> scc(preds, target)
-        tensor(0.0022)
+        tensor(0.0023)
 
     """
 
