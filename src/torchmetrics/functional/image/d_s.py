@@ -162,6 +162,7 @@ def _spatial_distortion_index_compute(
     pan_degraded = pan_lr
     if pan_degraded is None:
         from kornia.filters import filter2d
+
         kernel = torch.ones(size=(1, ws, ws))
         pan_degraded = filter2d(pan, kernel, border_type="replicate", normalized=True)
         pan_degraded = resize(pan_degraded, size=ms.shape[-2:], antialias=False)
