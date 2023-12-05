@@ -194,11 +194,15 @@ def spatial_correlation_coefficient(
         >>> x = torch.randn(5, 16, 16)
         >>> scc(x, x)
         tensor(1.)
+        >>> x = torch.randn(5, 3, 16, 16)
+        >>> y = torch.randn(5, 3, 16, 16)
+        >>> scc(x, y, reduction="none")
+        tensor([0.0223, 0.0256, 0.0616, 0.0159, 0.0170])
 
     """
     if hp_filter is None:
         hp_filter = tensor([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]])
-    if reduce is None:
+    if reduction is None:
         reduction = "none"
     if reduction not in ("mean", "none"):
         raise ValueError(f"Expected reduction to be 'mean' or 'none', but got {reduction}")
