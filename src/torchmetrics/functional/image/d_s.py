@@ -22,7 +22,7 @@ from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.utilities.distributed import reduce
 
 
-def _spatial_distortion_index_update(preds: Tensor, target: Dict[str, Tensor]) -> Tuple[Tensor, Tensor]:
+def _spatial_distortion_index_update(preds: Tensor, target: Dict[str, Tensor]) -> Tuple[Tensor, Dict[str, Tensor]]:
     """Update and returns variables required to compute Spatial Distortion Index.
 
     Args:
