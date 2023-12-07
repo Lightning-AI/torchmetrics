@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -114,7 +114,7 @@ class SpatialDistortionIndex(Metric):
         self.add_state("pan", default=[], dist_reduce_fx="cat")
         self.add_state("pan_lr", default=[], dist_reduce_fx="cat")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:
+    def update(self, preds: Tensor, target: Dict[str, Tensor]) -> None:
         """Update state with preds and target."""
         preds, target = _spatial_distortion_index_update(preds, target)
         self.preds.append(preds)
