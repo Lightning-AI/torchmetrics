@@ -158,16 +158,15 @@ def _spatial_distortion_index_compute(
                 f"Expected `ms` and `pan_lr` to have the same width. Got ms: {ms_w} and pan_lr: {pan_lr_w}."
             )
 
-    pan_degraded = pan_lr
-    if pan_degraded is None:
+    if pan_lr is None:
         from torchvision.transforms.functional import resize
 
         from torchmetrics.functional.image.helper import _uniform_filter
 
         pan_degraded = _uniform_filter(pan, window_size=ws)
         pan_degraded = resize(pan_degraded, size=ms.shape[-2:], antialias=False)
-
-    assert pan_degraded is not None
+    else:
+        pan_degraded = pan_lr
 
     m1 = torch.zeros(length, device=preds.device)
     m2 = torch.zeros(length, device=preds.device)
