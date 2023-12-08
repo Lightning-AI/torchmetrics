@@ -167,6 +167,8 @@ def _spatial_distortion_index_compute(
         pan_degraded = filter2d(pan, kernel, border_type="replicate", normalized=True)
         pan_degraded = resize(pan_degraded, size=ms.shape[-2:], antialias=False)
 
+    assert pan_degraded is not None
+
     m1 = torch.zeros(length, device=preds.device)
     m2 = torch.zeros(length, device=preds.device)
 
