@@ -23,6 +23,7 @@ from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError, Pearson
 from torchmetrics.wrappers import Running
 
 from unittests import NUM_PROCESSES
+from unittests.helpers.utilities import no_warning_call
 
 
 def test_errors_on_wrong_input():
@@ -150,3 +151,11 @@ def test_ddp_running(dist_sync_on_step, expected):
     pytest.pool.map(
         partial(_test_ddp_running, dist_sync_on_step=dist_sync_on_step, expected=expected), range(NUM_PROCESSES)
     )
+
+
+def test_no_warning_due_to_reset():
+    """Internally we call .reset() which would normally raise a warning, but it should not happen in Runner."""
+    metric = Running(SumMetric(), window=3)
+    metric.update(torch.tensor(2.0))
+    with no_warning_call(UserWarning):
+        metric.compute()
