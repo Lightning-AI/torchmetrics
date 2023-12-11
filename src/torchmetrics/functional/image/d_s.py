@@ -20,6 +20,7 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.utilities.distributed import reduce
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
 
 def _spatial_distortion_index_update(preds: Tensor, target: Dict[str, Tensor]) -> Tuple[Tensor, Dict[str, Tensor]]:
@@ -161,7 +162,8 @@ def _spatial_distortion_index_compute(
     if pan_lr is None:
         if not _TORCHVISION_AVAILABLE:
             raise ValueError(
-                "When `pan_lr` is not provided as input to metric Spatial distortion index, torchvision should be installed. Please install with `pip install torchvision` or `pip install torchmetrics[image]`."
+                "When `pan_lr` is not provided as input to metric Spatial distortion index, torchvision should be "
+                "installed. Please install with `pip install torchvision` or `pip install torchmetrics[image]`."
             )
         from torchvision.transforms.functional import resize
 
