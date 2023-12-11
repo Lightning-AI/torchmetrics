@@ -46,6 +46,12 @@ def _spatial_distortion_index_update(preds: Tensor, target: Dict[str, Tensor]) -
             If ``preds`` and ``target`` don't have the same batch and channel sizes.
         ValueError:
             If ``target`` doesn't have ``ms`` and ``pan``.
+        ValueError:
+            If ``preds`` and ``pan`` don't have the same dimension.
+        ValueError:
+            If ``ms`` and ``pan_lr`` don't have the same dimension.
+        ValueError:
+            If ``preds`` and ``pan`` don't have dimension which is multiple of that of ``ms``.
 
     """
     if len(preds.shape) != 4:
@@ -67,6 +73,44 @@ def _spatial_distortion_index_update(preds: Tensor, target: Dict[str, Tensor]) -
                 f"Expected `preds` and `{name}` to have same batch and channel sizes. "
                 "Got preds: {preds.shape} and {name}: {t.shape}."
             )
+
+    ms = target["ms"]
+    pan = target["pan"]
+    pan_lr = target["pan_lr"] if "pan_lr" in target else None
+
+    preds_h, preds_w = preds.shape[-2:]
+    ms_h, ms_w = ms.shape[-2:]
+    pan_h, pan_w = pan.shape[-2:]
+    if preds_h != pan_h:
+        raise ValueError(f"Expected `preds` and `pan` to have the same height. Got preds: {preds_h} and pan: {pan_h}")
+    if preds_w != pan_w:
+        raise ValueError(f"Expected `preds` and `pan` to have the same width. Got preds: {preds_w} and pan: {pan_w}")
+    if preds_h % ms_h != 0:
+        raise ValueError(
+            f"Expected height of `preds` to be multiple of height of `ms`. Got preds: {preds_h} and ms: {ms_h}."
+        )
+    if preds_w % ms_w != 0:
+        raise ValueError(
+            f"Expected width of `preds` to be multiple of width of `ms`. Got preds: {preds_w} and ms: {ms_w}."
+        )
+    if pan_h % ms_h != 0:
+        raise ValueError(
+            f"Expected height of `pan` to be multiple of height of `ms`. Got preds: {pan_h} and ms: {ms_h}."
+        )
+    if pan_w % ms_w != 0:
+        raise ValueError(f"Expected width of `pan` to be multiple of width of `ms`. Got preds: {pan_w} and ms: {ms_w}.")
+
+    if pan_lr is not None:
+        pan_lr_h, pan_lr_w = pan_lr.shape[-2:]
+        if pan_lr_h != ms_h:
+            raise ValueError(
+                f"Expected `ms` and `pan_lr` to have the same height. Got ms: {ms_h} and pan_lr: {pan_lr_h}."
+            )
+        if pan_lr_w != ms_w:
+            raise ValueError(
+                f"Expected `ms` and `pan_lr` to have the same width. Got ms: {ms_w} and pan_lr: {pan_lr_w}."
+            )
+
     return preds, target
 
 
@@ -99,12 +143,8 @@ def _spatial_distortion_index_compute(
         Tensor with SpatialDistortionIndex score
 
     Raises:
-        ValueError:
-            If ``preds`` and ``pan`` don't have the same dimension.
-        ValueError:
-            If ``ms`` and ``pan_lr`` don't have the same dimension.
-        ValueError:
-            If ``preds`` and ``pan`` don't have dimension which is multiple of that of ``ms``.
+        ValueError
+            If ``ws`` is smaller than dimension of ``ms``.
 
     Example:
         >>> _ = torch.manual_seed(42)
@@ -124,40 +164,9 @@ def _spatial_distortion_index_compute(
     pan = target["pan"]
     pan_lr = target["pan_lr"] if "pan_lr" in target else None
 
-    preds_h, preds_w = preds.shape[-2:]
     ms_h, ms_w = ms.shape[-2:]
-    pan_h, pan_w = pan.shape[-2:]
-    if preds_h != pan_h:
-        raise ValueError(f"Expected `preds` and `pan` to have the same height. Got preds: {preds_h} and pan: {pan_h}")
-    if preds_w != pan_w:
-        raise ValueError(f"Expected `preds` and `pan` to have the same width. Got preds: {preds_w} and pan: {pan_w}")
-    if preds_h % ms_h != 0:
-        raise ValueError(
-            f"Expected height of `preds` to be multiple of height of `ms`. Got preds: {preds_h} and ms: {ms_h}."
-        )
-    if preds_w % ms_w != 0:
-        raise ValueError(
-            f"Expected width of `preds` to be multiple of width of `ms`. Got preds: {preds_w} and ms: {ms_w}."
-        )
-    if pan_h % ms_h != 0:
-        raise ValueError(
-            f"Expected height of `pan` to be multiple of height of `ms`. Got preds: {pan_h} and ms: {ms_h}."
-        )
-    if pan_w % ms_w != 0:
-        raise ValueError(f"Expected width of `pan` to be multiple of width of `ms`. Got preds: {pan_w} and ms: {ms_w}.")
     if ws >= ms_h or ws >= ms_w:
         raise ValueError(f"Expected `ws` to be smaller than dimension of `ms`. Got ws: {ws}.")
-
-    if pan_lr is not None:
-        pan_lr_h, pan_lr_w = pan_lr.shape[-2:]
-        if pan_lr_h != ms_h:
-            raise ValueError(
-                f"Expected `ms` and `pan_lr` to have the same height. Got ms: {ms_h} and pan_lr: {pan_lr_h}."
-            )
-        if pan_lr_w != ms_w:
-            raise ValueError(
-                f"Expected `ms` and `pan_lr` to have the same width. Got ms: {ms_w} and pan_lr: {pan_lr_w}."
-            )
 
     if pan_lr is None:
         if not _TORCHVISION_AVAILABLE:
