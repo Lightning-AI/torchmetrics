@@ -129,11 +129,8 @@ class SpatialDistortionIndex(Metric):
         ms = dim_zero_cat(self.ms)
         pan = dim_zero_cat(self.pan)
         pan_lr = dim_zero_cat(self.pan_lr) if len(self.pan_lr) > 0 else None
-        target = {
-            "ms": ms,
-            "pan": pan,
-            **({"pan_lr": pan_lr} if pan_lr is not None else {}),
-        }
+        target = {"ms": ms, "pan": pan}
+        target.update({"pan_lr": pan_lr} if pan_lr is not None else {})
         return _spatial_distortion_index_compute(preds, target, self.p, self.ws, self.reduction)
 
     def plot(
