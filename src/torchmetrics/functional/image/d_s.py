@@ -159,6 +159,8 @@ def _spatial_distortion_index_compute(
             )
 
     if pan_lr is None:
+        if not _TORCHVISION_AVAILABLE:
+            raise ValueError("When `pan_lr` is not provided as input to metric Spatial distortion index, torchvision should be installed. Please install with `pip install torchvision` or `pip install torchmetrics[image]`.")
         from torchvision.transforms.functional import resize
 
         from torchmetrics.functional.image.helper import _uniform_filter
