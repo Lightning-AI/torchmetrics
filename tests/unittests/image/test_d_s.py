@@ -291,42 +291,42 @@ class TestSpatialDistortionIndex(MetricTester):
             {"ms": [1, 2, 4, 4], "pan": [1, 1, 16, 16]},
             1,
             3,
-            "Expected `preds` and `ms` to have same batch and channel.*",
+            "Expected `preds` and `ms` to have the same batch and channel.*",
         ),  # invalid ms.shape
         (
             [1, 1, 16, 16],
             {"ms": [2, 1, 4, 4], "pan": [1, 1, 16, 16]},
             1,
             3,
-            "Expected `preds` and `ms` to have same batch and channel.*",
+            "Expected `preds` and `ms` to have the same batch and channel.*",
         ),  # invalid ms.shape
         (
             [1, 1, 16, 16],
             {"ms": [1, 1, 4, 4], "pan": [1, 2, 16, 16]},
             1,
             3,
-            "Expected `preds` and `pan` to have same batch and channel.*",
+            "Expected `preds` and `pan` to have the same batch and channel.*",
         ),  # invalid pan.shape
         (
             [1, 1, 16, 16],
             {"ms": [1, 1, 4, 4], "pan": [2, 1, 16, 16]},
             1,
             3,
-            "Expected `preds` and `pan` to have same batch and channel.*",
+            "Expected `preds` and `pan` to have the same batch and channel.*",
         ),  # invalid pan.shape
         (
             [1, 1, 16, 16],
             {"ms": [1, 1, 4, 4], "pan": [1, 1, 16, 16], "pan_lr": [1, 2, 4, 4]},
             1,
             3,
-            "Expected `preds` and `pan_lr` to have same batch and channel.*",
+            "Expected `preds` and `pan_lr` to have the same batch and channel.*",
         ),  # invalid pan_lr.shape
         (
             [1, 1, 16, 16],
             {"ms": [1, 1, 4, 4], "pan": [1, 1, 16, 16], "pan_lr": [2, 1, 4, 4]},
             1,
             3,
-            "Expected `preds` and `pan_lr` to have same batch and channel.*",
+            "Expected `preds` and `pan_lr` to have the same batch and channel.*",
         ),  # invalid pan_lr.shape
         (
             [1, 1, 16, 16],
