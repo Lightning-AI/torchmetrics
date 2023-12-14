@@ -197,7 +197,7 @@ def spatial_distortion_index(
     preds: Tensor,
     target: Dict[str, Tensor],
     p: int = 1,
-    ws: int = 7,
+    window_size: int = 7,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
 ) -> Tensor:
     """Calculate `Spatial Distortion Index`_ (SpatialDistortionIndex_) also known as D_s.
