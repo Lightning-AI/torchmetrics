@@ -117,7 +117,7 @@ def _spatial_distortion_index_update(preds: Tensor, target: Dict[str, Tensor]) -
 def _spatial_distortion_index_compute(
     preds: Tensor,
     target: Dict[str, Tensor],
-    p: int = 1,
+    norm_order: int = 1,
     window_size: int = 7,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
 ) -> Tensor:
@@ -131,7 +131,7 @@ def _spatial_distortion_index_compute(
             - ``'pan'``: high resolution panchromatic image.
             - ``'pan_lr'``: (optional) low resolution panchromatic image.
 
-        p: Order of the norm applied on the difference.
+        norm_order: Order of the norm applied on the difference.
         window_size: Window size of the filter applied to degrade the high resolution panchromatic image.
         reduction: A method to reduce metric score over labels.
 
@@ -191,14 +191,14 @@ def _spatial_distortion_index_compute(
     for i in range(length):
         m1[i] = universal_image_quality_index(ms[:, i : i + 1], pan_degraded[:, i : i + 1])
         m2[i] = universal_image_quality_index(preds[:, i : i + 1], pan[:, i : i + 1])
-    diff = (m1 - m2).abs() ** p
-    return reduce(diff, reduction) ** (1 / p)
+    diff = (m1 - m2).abs() ** norm_order
+    return reduce(diff, reduction) ** (1 / norm_order)
 
 
 def spatial_distortion_index(
     preds: Tensor,
     target: Dict[str, Tensor],
-    p: int = 1,
+    norm_order: int = 1,
     window_size: int = 7,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
 ) -> Tensor:
@@ -214,7 +214,7 @@ def spatial_distortion_index(
             - ``'pan'``: high resolution panchromatic image.
             - ``'pan_lr'``: (optional) low resolution panchromatic image.
 
-        p: Order of the norm applied on the difference.
+        norm_order: Order of the norm applied on the difference.
         window_size: Window size of the filter applied to degrade the high resolution panchromatic image.
         reduction: A method to reduce metric score over labels.
 
@@ -241,7 +241,7 @@ def spatial_distortion_index(
         ValueError:
             If ``preds`` and ``pan`` don't have dimension which is multiple of that of ``ms``.
         ValueError:
-            If ``p`` is not a positive integer.
+            If ``norm_order`` is not a positive integer.
         ValueError:
             If ``window_size`` is not a positive integer.
 
@@ -257,9 +257,9 @@ def spatial_distortion_index(
         tensor(0.0090)
 
     """
-    if not isinstance(p, int) or p <= 0:
-        raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")
+    if not isinstance(norm_order, int) or norm_order <= 0:
+        raise ValueError(f"Expected `norm_order` to be a positive integer. Got norm_order: {norm_order}.")
     if not isinstance(window_size, int) or window_size <= 0:
         raise ValueError(f"Expected `window_size` to be a positive integer. Got window_size: {window_size}.")
     preds, target = _spatial_distortion_index_update(preds, target)
-    return _spatial_distortion_index_compute(preds, target, p, window_size, reduction)
+    return _spatial_distortion_index_compute(preds, target, norm_order, window_size, reduction)

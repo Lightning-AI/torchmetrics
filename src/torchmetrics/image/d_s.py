@@ -49,7 +49,7 @@ class SpatialDistortionIndex(Metric):
       over sample else returns tensor of shape ``(N,)`` with SDI values per sample
 
     Args:
-        p: Order of the norm applied on the difference.
+        norm_order: Order of the norm applied on the difference.
         window_size: Window size of the filter applied to degrade the high resolution panchromatic image.
         reduction: a method to reduce metric score over labels.
 
@@ -87,7 +87,7 @@ class SpatialDistortionIndex(Metric):
 
     def __init__(
         self,
-        p: int = 1,
+        norm_order: int = 1,
         window_size: int = 7,
         reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
         **kwargs: Any,
@@ -99,9 +99,9 @@ class SpatialDistortionIndex(Metric):
             " to large memory footprint."
         )
 
-        if not isinstance(p, int) or p <= 0:
-            raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")
-        self.p = p
+        if not isinstance(norm_order, int) or norm_order <= 0:
+            raise ValueError(f"Expected `norm_order` to be a positive integer. Got norm_order: {norm_order}.")
+        self.norm_order = norm_order
         if not isinstance(window_size, int) or window_size <= 0:
             raise ValueError(f"Expected `window_size` to be a positive integer. Got window_size: {window_size}.")
         self.window_size = window_size
@@ -131,7 +131,7 @@ class SpatialDistortionIndex(Metric):
         pan_lr = dim_zero_cat(self.pan_lr) if len(self.pan_lr) > 0 else None
         target = {"ms": ms, "pan": pan}
         target.update({"pan_lr": pan_lr} if pan_lr is not None else {})
-        return _spatial_distortion_index_compute(preds, target, self.p, self.window_size, self.reduction)
+        return _spatial_distortion_index_compute(preds, target, self.norm_order, self.window_size, self.reduction)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
