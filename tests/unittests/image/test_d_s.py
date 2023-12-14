@@ -36,11 +36,11 @@ class _Input(NamedTuple):
     preds: Tensor
     target: List[Dict[str, Tensor]]
     p: int
-    ws: int
+    window_size: int
 
 
 _inputs = []
-for size, channel, p, r, ws, pan_lr_exists, dtype in [
+for size, channel, p, r, window_size, pan_lr_exists, dtype in [
     (12, 3, 1, 16, 3, False, torch.float),
     (13, 1, 3, 8, 5, False, torch.float32),
     (14, 1, 4, 4, 5, True, torch.double),
@@ -62,22 +62,25 @@ for size, channel, p, r, ws, pan_lr_exists, dtype in [
                 for i in range(NUM_BATCHES)
             ],
             p=p,
-            ws=ws,
+            window_size=window_size,
         )
     )
 
 
 def _baseline_d_s(
-    preds: np.ndarray, ms: np.ndarray, pan: np.ndarray, pan_lr: np.ndarray = None, p: int = 1, ws: int = 7
+    preds: np.ndarray, ms: np.ndarray, pan: np.ndarray, pan_lr: np.ndarray = None, p: int = 1, window_size: int = 7
 ) -> float:
     """NumPy based implementation of Spatial Distortion Index, which uses UQI of TorchMetrics."""
     pan_degraded = pan_lr
     if pan_degraded is None:
         try:
-            pan_degraded = uniform_filter(pan, size=ws, axes=[1, 2])
+            pan_degraded = uniform_filter(pan, size=window_size, axes=[1, 2])
         except TypeError:
             pan_degraded = np.array(
-                [[uniform_filter(pan[i, ..., j], size=ws) for j in range(pan.shape[-1])] for i in range(len(pan))]
+                [
+                    [uniform_filter(pan[i, ..., j], size=window_size) for j in range(pan.shape[-1])]
+                    for i in range(len(pan))
+                ]
             ).transpose((0, 2, 3, 1))
         pan_degraded = np.array([resize(img, ms.shape[1:3], anti_aliasing=False) for img in pan_degraded])
 
@@ -100,7 +103,7 @@ def _baseline_d_s(
     return np.mean(diff) ** (1 / p)
 
 
-def _np_d_s(preds, target, p, ws):
+def _np_d_s(preds, target, p, window_size):
     np_preds = preds.permute(0, 2, 3, 1).cpu().numpy()
     assert isinstance(target, dict), f"Expected `target` to be dict. Got {type(target)}."
     assert "ms" in target, "Expected `target` to contain 'ms'."
@@ -115,13 +118,13 @@ def _np_d_s(preds, target, p, ws):
         np_pan,
         np_pan_lr,
         p=p,
-        ws=ws,
+        window_size=window_size,
     )
 
 
 @pytest.mark.parametrize(
-    "preds, target, p, ws",
-    [(i.preds, i.target, i.p, i.ws) for i in _inputs],
+    "preds, target, p, window_size",
+    [(i.preds, i.target, i.p, i.window_size) for i in _inputs],
 )
 class TestSpatialDistortionIndex(MetricTester):
     """Test class for `SpatialDistortionIndex` metric."""
@@ -129,35 +132,37 @@ class TestSpatialDistortionIndex(MetricTester):
     atol = 3e-6
 
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_d_s(self, preds, target, p, ws, ddp):
+    def test_d_s(self, preds, target, p, window_size, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             SpatialDistortionIndex,
-            partial(_np_d_s, p=p, ws=ws),
-            metric_args={"p": p, "ws": ws},
+            partial(_np_d_s, p=p, window_size=window_size),
+            metric_args={"p": p, "window_size": window_size},
         )
 
-    def test_d_s_functional(self, preds, target, p, ws):
+    def test_d_s_functional(self, preds, target, p, window_size):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
             spatial_distortion_index,
-            partial(_np_d_s, p=p, ws=ws),
-            metric_args={"p": p, "ws": ws},
+            partial(_np_d_s, p=p, window_size=window_size),
+            metric_args={"p": p, "window_size": window_size},
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_d_s_half_gpu(self, preds, target, p, ws):
+    def test_d_s_half_gpu(self, preds, target, p, window_size):
         """Test dtype support of the metric on GPU."""
-        self.run_precision_test_gpu(preds, target, SpatialDistortionIndex, spatial_distortion_index, {"p": p, "ws": ws})
+        self.run_precision_test_gpu(
+            preds, target, SpatialDistortionIndex, spatial_distortion_index, {"p": p, "window_size": window_size}
+        )
 
 
 @pytest.mark.parametrize(
-    ("preds", "target", "p", "ws", "match"),
+    ("preds", "target", "p", "window_size", "match"),
     [
         (
             [1, 16, 16],
@@ -221,15 +226,15 @@ class TestSpatialDistortionIndex(MetricTester):
             {"ms": [1, 1, 4, 4], "pan": [1, 1, 16, 16]},
             1,
             0,
-            "Expected `ws` to be a positive integer. Got ws: 0.",
-        ),  # invalid ws
+            "Expected `window_size` to be a positive integer. Got window_size: 0.",
+        ),  # invalid window_size
         (
             [1, 1, 16, 16],
             {"ms": [1, 1, 4, 4], "pan": [1, 1, 16, 16]},
             1,
             -1,
-            "Expected `ws` to be a positive integer. Got ws: -1.",
-        ),  # invalid ws
+            "Expected `window_size` to be a positive integer. Got window_size: -1.",
+        ),  # invalid window_size
         (
             [1, 1, 16, 16],
             {"ms": [1, 1, 4, 4], "pan": [1, 1, 17, 16]},
@@ -319,16 +324,16 @@ class TestSpatialDistortionIndex(MetricTester):
             {"ms": [1, 1, 4, 4], "pan": [1, 1, 16, 16]},
             1,
             5,
-            "Expected `ws` to be smaller than dimension of `ms`.*",
-        ),  # invalid ws
+            "Expected `window_size` to be smaller than dimension of `ms`.*",
+        ),  # invalid window_size
     ],
 )
-def test_d_s_invalid_inputs(preds, target, p, ws, match):
+def test_d_s_invalid_inputs(preds, target, p, window_size, match):
     """Test that invalid input raises the correct errors."""
     preds_t = torch.rand(preds)
     target_t = {name: torch.rand(t) for name, t in target.items()}
     with pytest.raises(ValueError, match=match):
-        spatial_distortion_index(preds_t, target_t, p, ws)
+        spatial_distortion_index(preds_t, target_t, p, window_size)
 
 
 @pytest.mark.parametrize(
@@ -362,4 +367,4 @@ def test_d_s_invalid_type(target, match):
     """Test that error is raised on different dtypes."""
     preds_t = torch.rand((1, 1, 16, 16))
     with pytest.raises(TypeError, match=match):
-        spatial_distortion_index(preds_t, target, p=1, ws=7)
+        spatial_distortion_index(preds_t, target, p=1, window_size=7)

@@ -117,8 +117,8 @@ def _spatial_distortion_index_update(preds: Tensor, target: Dict[str, Tensor]) -
 def _spatial_distortion_index_compute(
     preds: Tensor,
     target: Dict[str, Tensor],
-    norm_order: int = 1,
-    ws: int = 7,
+    p: int = 1,
+    window_size: int = 7,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
 ) -> Tensor:
     """Compute Spatial Distortion Index (SpatialDistortionIndex_).
@@ -132,7 +132,7 @@ def _spatial_distortion_index_compute(
             - ``'pan_lr'``: (optional) low resolution panchromatic image.
 
         p: Order of the norm applied on the difference.
-        ws: Window size of the filter applied to degrade the high resolution panchromatic image.
+        window_size: Window size of the filter applied to degrade the high resolution panchromatic image.
         reduction: A method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
@@ -144,7 +144,7 @@ def _spatial_distortion_index_compute(
 
     Raises:
         ValueError
-            If ``ws`` is smaller than dimension of ``ms``.
+            If ``window_size`` is smaller than dimension of ``ms``.
 
     Example:
         >>> _ = torch.manual_seed(42)
@@ -165,8 +165,10 @@ def _spatial_distortion_index_compute(
     pan_lr = target["pan_lr"] if "pan_lr" in target else None
 
     ms_h, ms_w = ms.shape[-2:]
-    if ws >= ms_h or ws >= ms_w:
-        raise ValueError(f"Expected `ws` to be smaller than dimension of `ms`. Got ws: {ws}.")
+    if window_size >= ms_h or window_size >= ms_w:
+        raise ValueError(
+            f"Expected `window_size` to be smaller than dimension of `ms`. Got window_size: {window_size}."
+        )
 
     if pan_lr is None:
         if not _TORCHVISION_AVAILABLE:
@@ -178,7 +180,7 @@ def _spatial_distortion_index_compute(
 
         from torchmetrics.functional.image.helper import _uniform_filter
 
-        pan_degraded = _uniform_filter(pan, window_size=ws)
+        pan_degraded = _uniform_filter(pan, window_size=window_size)
         pan_degraded = resize(pan_degraded, size=ms.shape[-2:], antialias=False)
     else:
         pan_degraded = pan_lr
@@ -213,7 +215,7 @@ def spatial_distortion_index(
             - ``'pan_lr'``: (optional) low resolution panchromatic image.
 
         p: Order of the norm applied on the difference.
-        ws: Window size of the filter applied to degrade the high resolution panchromatic image.
+        window_size: Window size of the filter applied to degrade the high resolution panchromatic image.
         reduction: A method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
@@ -241,7 +243,7 @@ def spatial_distortion_index(
         ValueError:
             If ``p`` is not a positive integer.
         ValueError:
-            If ``ws`` is not a positive integer.
+            If ``window_size`` is not a positive integer.
 
     Example:
         >>> from torchmetrics.functional.image import spatial_distortion_index
@@ -257,7 +259,7 @@ def spatial_distortion_index(
     """
     if not isinstance(p, int) or p <= 0:
         raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")
-    if not isinstance(ws, int) or ws <= 0:
-        raise ValueError(f"Expected `ws` to be a positive integer. Got ws: {ws}.")
+    if not isinstance(window_size, int) or window_size <= 0:
+        raise ValueError(f"Expected `window_size` to be a positive integer. Got window_size: {window_size}.")
     preds, target = _spatial_distortion_index_update(preds, target)
-    return _spatial_distortion_index_compute(preds, target, p, ws, reduction)
+    return _spatial_distortion_index_compute(preds, target, p, window_size, reduction)
