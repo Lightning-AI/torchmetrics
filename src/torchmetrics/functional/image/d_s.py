@@ -117,7 +117,7 @@ def _spatial_distortion_index_update(preds: Tensor, target: Dict[str, Tensor]) -
 def _spatial_distortion_index_compute(
     preds: Tensor,
     target: Dict[str, Tensor],
-    p: int = 1,
+    norm_order: int = 1,
     ws: int = 7,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
 ) -> Tensor:
