@@ -61,8 +61,8 @@ def _spatial_distortion_index_update(preds: Tensor, target: Dict[str, Tensor]) -
     for name, t in target.items():
         if preds.dtype != t.dtype:
             raise TypeError(
-                f"Expected `preds` and `{name}` to have the same data type. "
-                "Got preds: {preds.dtype} and {name}: {t.dtype}."
+                f"Expected `preds` and `{name}` to have the same data type."
+                " Got preds: {preds.dtype} and {name}: {t.dtype}."
             )
     for name, t in target.items():
         if len(t.shape) != 4:
