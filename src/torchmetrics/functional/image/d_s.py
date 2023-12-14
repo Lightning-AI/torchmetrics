@@ -70,8 +70,8 @@ def _spatial_distortion_index_update(preds: Tensor, target: Dict[str, Tensor]) -
     for name, t in target.items():
         if preds.shape[:2] != t.shape[:2]:
             raise ValueError(
-                f"Expected `preds` and `{name}` to have same batch and channel sizes. "
-                "Got preds: {preds.shape} and {name}: {t.shape}."
+                f"Expected `preds` and `{name}` to have the same batch and channel sizes."
+                " Got preds: {preds.shape} and {name}: {t.shape}."
             )
 
     ms = target["ms"]
