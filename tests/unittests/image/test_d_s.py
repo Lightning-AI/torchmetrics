@@ -35,6 +35,9 @@ seed_all(42)
 class _Input(NamedTuple):
     preds: Tensor
     target: List[Dict[str, Tensor]]
+    ms: Tensor
+    pan: Tensor
+    pan_lr: Tensor
     norm_order: int
     window_size: int
 
@@ -61,6 +64,9 @@ for size, channel, norm_order, r, window_size, pan_lr_exists, dtype in [
                 }
                 for i in range(NUM_BATCHES)
             ],
+            ms=ms,
+            pan=pan,
+            pan_lr=pan_lr if pan_lr_exists else None,
             norm_order=norm_order,
             window_size=window_size,
         )
@@ -108,14 +114,18 @@ def _baseline_d_s(
     return np.mean(diff) ** (1 / norm_order)
 
 
-def _np_d_s(preds, target, norm_order, window_size):
+def _np_d_s(preds, target, pan=None, pan_lr=None, norm_order=1, window_size=7):
     np_preds = preds.permute(0, 2, 3, 1).cpu().numpy()
-    assert isinstance(target, dict), f"Expected `target` to be dict. Got {type(target)}."
-    assert "ms" in target, "Expected `target` to contain 'ms'."
-    np_ms = target["ms"].permute(0, 2, 3, 1).cpu().numpy()
-    assert "pan" in target, "Expected `target` to contain 'pan'."
-    np_pan = target["pan"].permute(0, 2, 3, 1).cpu().numpy()
-    np_pan_lr = target["pan_lr"].permute(0, 2, 3, 1).cpu().numpy() if "pan_lr" in target else None
+    if isinstance(target, dict):
+        assert "ms" in target, "Expected `target` to contain 'ms'."
+        np_ms = target["ms"].permute(0, 2, 3, 1).cpu().numpy()
+        assert "pan" in target, "Expected `target` to contain 'pan'."
+        np_pan = target["pan"].permute(0, 2, 3, 1).cpu().numpy()
+        np_pan_lr = target["pan_lr"].permute(0, 2, 3, 1).cpu().numpy() if "pan_lr" in target else None
+    else:
+        np_ms = target.permute(0, 2, 3, 1).cpu().numpy()
+        np_pan = pan.permute(0, 2, 3, 1).cpu().numpy()
+        np_pan_lr = pan_lr.permute(0, 2, 3, 1).cpu().numpy() if pan_lr is not None else None
 
     return _baseline_d_s(
         np_preds,
@@ -127,9 +137,16 @@ def _np_d_s(preds, target, norm_order, window_size):
     )
 
 
+def _invoke_spatial_distortion_index(preds, target, ms, pan, pan_lr, norm_order, window_size):
+    ms = target["ms"] if "ms" in target else ms
+    pan = target["pan"] if "pan" in target else pan
+    pan_lr = target["pan_lr"] if "pan_lr" in target else pan_lr
+    return spatial_distortion_index(preds, ms, pan, pan_lr, norm_order, window_size)
+
+
 @pytest.mark.parametrize(
-    "preds, target, norm_order, window_size",
-    [(i.preds, i.target, i.norm_order, i.window_size) for i in _inputs],
+    "preds, target, ms, pan, pan_lr, norm_order, window_size",
+    [(i.preds, i.target, i.ms, i.pan, i.pan_lr, i.norm_order, i.window_size) for i in _inputs],
 )
 class TestSpatialDistortionIndex(MetricTester):
     """Test class for `SpatialDistortionIndex` metric."""
@@ -137,7 +154,7 @@ class TestSpatialDistortionIndex(MetricTester):
     atol = 3e-6
 
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_d_s(self, preds, target, norm_order, window_size, ddp):
+    def test_d_s(self, preds, target, ms, pan, pan_lr, norm_order, window_size, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
@@ -148,232 +165,267 @@ class TestSpatialDistortionIndex(MetricTester):
             metric_args={"norm_order": norm_order, "window_size": window_size},
         )
 
-    def test_d_s_functional(self, preds, target, norm_order, window_size):
+    def test_d_s_functional(self, preds, target, ms, pan, pan_lr, norm_order, window_size):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
-            target,
+            ms,
             spatial_distortion_index,
             partial(_np_d_s, norm_order=norm_order, window_size=window_size),
             metric_args={"norm_order": norm_order, "window_size": window_size},
+            fragment_kwargs=True,
+            pan=pan,
+            pan_lr=pan_lr,
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_d_s_half_gpu(self, preds, target, norm_order, window_size):
+    def test_d_s_half_gpu(self, preds, target, ms, pan, pan_lr, norm_order, window_size):
         """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds,
             target,
             SpatialDistortionIndex,
-            spatial_distortion_index,
+            partial(
+                _invoke_spatial_distortion_index,
+                ms=ms,
+                pan=pan,
+                pan_lr=pan_lr,
+                norm_order=norm_order,
+                window_size=window_size,
+            ),
             {"norm_order": norm_order, "window_size": window_size},
         )
 
 
 @pytest.mark.parametrize(
-    ("preds", "target", "norm_order", "window_size", "match"),
+    ("preds", "ms", "pan", "pan_lr", "norm_order", "window_size", "match"),
     [
         (
             [1, 16, 16],
-            {"ms": [1, 1, 4, 4], "pan": [1, 1, 16, 16]},
+            [1, 1, 4, 4],
+            [1, 1, 16, 16],
+            None,
             1,
             3,
             "Expected `preds` to have BxCxHxW shape.*",
         ),  # len(preds.shape)
-        ([1, 1, 16, 16], {}, 1, 7, r"Expected `target` to have keys \('ms', 'pan'\).*"),  # target.keys()
         (
             [1, 1, 16, 16],
-            {"ms": [1, 1, 4, 4]},
-            1,
-            3,
-            r"Expected `target` to have keys \('ms', 'pan'\).*",
-        ),  # target.keys()
-        (
+            [1, 4, 4],
             [1, 1, 16, 16],
-            {"pan": [1, 1, 16, 16]},
-            1,
-            3,
-            r"Expected `target` to have keys \('ms', 'pan'\).*",
-        ),  # target.keys()
-        (
-            [1, 1, 16, 16],
-            {"ms": [1, 4, 4], "pan": [1, 1, 16, 16]},
+            None,
             1,
             3,
             "Expected `ms` to have BxCxHxW shape.*",
         ),  # len(target.shape)
         (
             [1, 1, 16, 16],
-            {"ms": [1, 1, 4, 4], "pan": [1, 16, 16]},
+            [1, 1, 4, 4],
+            [1, 16, 16],
+            None,
             1,
             3,
             "Expected `pan` to have BxCxHxW shape.*",
         ),  # len(target.shape)
         (
             [1, 1, 16, 16],
-            {"ms": [1, 1, 4, 4], "pan": [1, 1, 16, 16], "pan_lr": [1, 4, 4]},
+            [1, 1, 4, 4],
+            [1, 1, 16, 16],
+            [1, 4, 4],
             1,
             3,
             "Expected `pan_lr` to have BxCxHxW shape.*",
         ),  # len(target.shape)
         (
             [1, 1, 16, 16],
-            {"ms": [1, 1, 4, 4], "pan": [1, 1, 16, 16]},
+            [1, 1, 4, 4],
+            [1, 1, 16, 16],
+            None,
             0,
             3,
             "Expected `norm_order` to be a positive integer. Got norm_order: 0.",
         ),  # invalid p
         (
             [1, 1, 16, 16],
-            {"ms": [1, 1, 4, 4], "pan": [1, 1, 16, 16]},
+            [1, 1, 4, 4],
+            [1, 1, 16, 16],
+            None,
             -1,
             3,
             "Expected `norm_order` to be a positive integer. Got norm_order: -1.",
         ),  # invalid p
         (
             [1, 1, 16, 16],
-            {"ms": [1, 1, 4, 4], "pan": [1, 1, 16, 16]},
+            [1, 1, 4, 4],
+            [1, 1, 16, 16],
+            None,
             1,
             0,
             "Expected `window_size` to be a positive integer. Got window_size: 0.",
         ),  # invalid window_size
         (
             [1, 1, 16, 16],
-            {"ms": [1, 1, 4, 4], "pan": [1, 1, 16, 16]},
+            [1, 1, 4, 4],
+            [1, 1, 16, 16],
+            None,
             1,
             -1,
             "Expected `window_size` to be a positive integer. Got window_size: -1.",
         ),  # invalid window_size
         (
             [1, 1, 16, 16],
-            {"ms": [1, 1, 4, 4], "pan": [1, 1, 17, 16]},
+            [1, 1, 4, 4],
+            [1, 1, 17, 16],
+            None,
             1,
             3,
             "Expected `preds` and `pan` to have the same height.*",
         ),  # invalid pan_h
         (
             [1, 1, 16, 16],
-            {"ms": [1, 1, 4, 4], "pan": [1, 1, 16, 17]},
+            [1, 1, 4, 4],
+            [1, 1, 16, 17],
+            None,
             1,
             3,
             "Expected `preds` and `pan` to have the same width.*",
         ),  # invalid pan_w
         (
             [1, 1, 16, 16],
-            {"ms": [1, 1, 5, 4], "pan": [1, 1, 16, 16]},
+            [1, 1, 5, 4],
+            [1, 1, 16, 16],
+            None,
             1,
             3,
             "Expected height of `preds` to be multiple of height of `ms`.*",
         ),  # invalid ms_h
         (
             [1, 1, 16, 16],
-            {"ms": [1, 1, 4, 5], "pan": [1, 1, 16, 16]},
+            [1, 1, 4, 5],
+            [1, 1, 16, 16],
+            None,
             1,
             3,
             "Expected width of `preds` to be multiple of width of `ms`.*",
         ),  # invalid ms_w
         (
             [1, 1, 16, 16],
-            {"ms": [1, 1, 4, 4], "pan": [1, 1, 16, 16], "pan_lr": [1, 1, 5, 4]},
+            [1, 1, 4, 4],
+            [1, 1, 16, 16],
+            [1, 1, 5, 4],
             1,
             3,
             "Expected `ms` and `pan_lr` to have the same height.*",
         ),  # invalid pan_lr_h
         (
             [1, 1, 16, 16],
-            {"ms": [1, 1, 4, 4], "pan": [1, 1, 16, 16], "pan_lr": [1, 1, 4, 5]},
+            [1, 1, 4, 4],
+            [1, 1, 16, 16],
+            [1, 1, 4, 5],
             1,
             3,
             "Expected `ms` and `pan_lr` to have the same width.*",
         ),  # invalid pan_lr_w
         (
             [1, 1, 16, 16],
-            {"ms": [1, 2, 4, 4], "pan": [1, 1, 16, 16]},
+            [1, 2, 4, 4],
+            [1, 1, 16, 16],
+            None,
             1,
             3,
             "Expected `preds` and `ms` to have the same batch and channel.*",
         ),  # invalid ms.shape
         (
             [1, 1, 16, 16],
-            {"ms": [2, 1, 4, 4], "pan": [1, 1, 16, 16]},
+            [2, 1, 4, 4],
+            [1, 1, 16, 16],
+            None,
             1,
             3,
             "Expected `preds` and `ms` to have the same batch and channel.*",
         ),  # invalid ms.shape
         (
             [1, 1, 16, 16],
-            {"ms": [1, 1, 4, 4], "pan": [1, 2, 16, 16]},
+            [1, 1, 4, 4],
+            [1, 2, 16, 16],
+            None,
             1,
             3,
             "Expected `preds` and `pan` to have the same batch and channel.*",
         ),  # invalid pan.shape
         (
             [1, 1, 16, 16],
-            {"ms": [1, 1, 4, 4], "pan": [2, 1, 16, 16]},
+            [1, 1, 4, 4],
+            [2, 1, 16, 16],
+            None,
             1,
             3,
             "Expected `preds` and `pan` to have the same batch and channel.*",
         ),  # invalid pan.shape
         (
             [1, 1, 16, 16],
-            {"ms": [1, 1, 4, 4], "pan": [1, 1, 16, 16], "pan_lr": [1, 2, 4, 4]},
+            [1, 1, 4, 4],
+            [1, 1, 16, 16],
+            [1, 2, 4, 4],
             1,
             3,
             "Expected `preds` and `pan_lr` to have the same batch and channel.*",
         ),  # invalid pan_lr.shape
         (
             [1, 1, 16, 16],
-            {"ms": [1, 1, 4, 4], "pan": [1, 1, 16, 16], "pan_lr": [2, 1, 4, 4]},
+            [1, 1, 4, 4],
+            [1, 1, 16, 16],
+            [2, 1, 4, 4],
             1,
             3,
             "Expected `preds` and `pan_lr` to have the same batch and channel.*",
         ),  # invalid pan_lr.shape
         (
             [1, 1, 16, 16],
-            {"ms": [1, 1, 4, 4], "pan": [1, 1, 16, 16]},
+            [1, 1, 4, 4],
+            [1, 1, 16, 16],
+            None,
             1,
             5,
             "Expected `window_size` to be smaller than dimension of `ms`.*",
         ),  # invalid window_size
     ],
 )
-def test_d_s_invalid_inputs(preds, target, norm_order, window_size, match):
+def test_d_s_invalid_inputs(preds, ms, pan, pan_lr, norm_order, window_size, match):
     """Test that invalid input raises the correct errors."""
     preds_t = torch.rand(preds)
-    target_t = {name: torch.rand(t) for name, t in target.items()}
+    ms_t = torch.rand(ms)
+    pan_t = torch.rand(pan)
+    pan_lr_t = torch.rand(pan_lr) if pan_lr is not None else None
     with pytest.raises(ValueError, match=match):
-        spatial_distortion_index(preds_t, target_t, norm_order, window_size)
+        spatial_distortion_index(preds_t, ms_t, pan_t, pan_lr_t, norm_order, window_size)
 
 
 @pytest.mark.parametrize(
-    ("target", "match"),
+    ("ms", "pan", "pan_lr", "match"),
     [
         (
-            {
-                "ms": torch.rand((1, 1, 4, 4), dtype=torch.float64),
-                "pan": torch.rand((1, 1, 16, 16)),
-            },
+            torch.rand((1, 1, 4, 4), dtype=torch.float64),
+            torch.rand((1, 1, 16, 16)),
+            None,
             "Expected `preds` and `ms` to have the same data type.*",
         ),
         (
-            {
-                "ms": torch.rand((1, 1, 4, 4)),
-                "pan": torch.rand((1, 1, 16, 16), dtype=torch.float64),
-            },
+            torch.rand((1, 1, 4, 4)),
+            torch.rand((1, 1, 16, 16), dtype=torch.float64),
+            None,
             "Expected `preds` and `pan` to have the same data type.*",
         ),
         (
-            {
-                "ms": torch.rand((1, 1, 4, 4)),
-                "pan": torch.rand((1, 1, 16, 16)),
-                "pan_lr": torch.rand((1, 1, 4, 4), dtype=torch.float64),
-            },
+            torch.rand((1, 1, 4, 4)),
+            torch.rand((1, 1, 16, 16)),
+            torch.rand((1, 1, 4, 4), dtype=torch.float64),
             "Expected `preds` and `pan_lr` to have the same data type.*",
         ),
     ],
 )
-def test_d_s_invalid_type(target, match):
+def test_d_s_invalid_type(ms, pan, pan_lr, match):
     """Test that error is raised on different dtypes."""
     preds_t = torch.rand((1, 1, 16, 16))
     with pytest.raises(TypeError, match=match):
-        spatial_distortion_index(preds_t, target, norm_order=1, window_size=7)
+        spatial_distortion_index(preds_t, ms, pan, pan_lr, norm_order=1, window_size=7)

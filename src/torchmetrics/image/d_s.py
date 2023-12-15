@@ -116,7 +116,10 @@ class SpatialDistortionIndex(Metric):
 
     def update(self, preds: Tensor, target: Dict[str, Tensor]) -> None:
         """Update state with preds and target."""
-        preds, target = _spatial_distortion_index_update(preds, target)
+        ms = target["ms"] if "ms" in target else None
+        pan = target["pan"] if "pan" in target else None
+        pan_lr = target["pan_lr"] if "pan_lr" in target else None
+        preds, ms, pan, pan_lr = _spatial_distortion_index_update(preds, ms, pan, pan_lr)
         self.preds.append(preds)
         self.ms.append(target["ms"])
         self.pan.append(target["pan"])
@@ -131,7 +134,9 @@ class SpatialDistortionIndex(Metric):
         pan_lr = dim_zero_cat(self.pan_lr) if len(self.pan_lr) > 0 else None
         target = {"ms": ms, "pan": pan}
         target.update({"pan_lr": pan_lr} if pan_lr is not None else {})
-        return _spatial_distortion_index_compute(preds, target, self.norm_order, self.window_size, self.reduction)
+        return _spatial_distortion_index_compute(
+            preds, ms, pan, pan_lr, self.norm_order, self.window_size, self.reduction
+        )
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

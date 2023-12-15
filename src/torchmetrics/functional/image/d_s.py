@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, Tuple
+from typing import Tuple
 
 import torch
 from torch import Tensor
@@ -23,29 +23,27 @@ from torchmetrics.utilities.distributed import reduce
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
 
-def _spatial_distortion_index_update(preds: Tensor, target: Dict[str, Tensor]) -> Tuple[Tensor, Dict[str, Tensor]]:
+def _spatial_distortion_index_update(
+    preds: Tensor, ms: Tensor, pan: Tensor, pan_lr: Tensor = None
+) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
     """Update and returns variables required to compute Spatial Distortion Index.
 
     Args:
         preds: High resolution multispectral image.
-        target: A dictionary containing the following keys:
-
-            - ``'ms'``: low resolution multispectral image.
-            - ``'pan'``: high resolution panchromatic image.
-            - ``'pan_lr'``: (optional) low resolution panchromatic image.
+        ms: Low resolution multispectral image.
+        pan: High resolution panchromatic image.
+        pan_lr: Low resolution panchromatic image.
 
     Return:
-        A tuple of Tensors containing ``preds`` and ``target``.
+        A tuple of Tensors containing ``preds``, ``ms``, ``pan`` and ``pan_lr``.
 
     Raises:
         TypeError:
-            If ``preds`` and ``target`` don't have the same data type.
+            If ``preds``, ``ms``, ``pan`` and ``pan_lr`` don't have the same data type.
         ValueError:
-            If ``preds`` and ``target`` don't have ``BxCxHxW shape``.
+            If ``preds``, ``ms``, ``pan`` and ``pan_lr`` don't have ``BxCxHxW shape``.
         ValueError:
-            If ``preds`` and ``target`` don't have the same batch and channel sizes.
-        ValueError:
-            If ``target`` doesn't have ``ms`` and ``pan``.
+            If ``preds``, ``ms``, ``pan`` and ``pan_lr`` don't have the same batch and channel sizes.
         ValueError:
             If ``preds`` and ``pan`` don't have the same dimension.
         ValueError:
@@ -56,27 +54,40 @@ def _spatial_distortion_index_update(preds: Tensor, target: Dict[str, Tensor]) -
     """
     if len(preds.shape) != 4:
         raise ValueError(f"Expected `preds` to have BxCxHxW shape. Got preds: {preds.shape}.")
-    if "ms" not in target or "pan" not in target:
-        raise ValueError(f"Expected `target` to have keys ('ms', 'pan'). Got target: {target.keys()}")
-    for name, t in target.items():
-        if preds.dtype != t.dtype:
-            raise TypeError(
-                f"Expected `preds` and `{name}` to have the same data type."
-                " Got preds: {preds.dtype} and {name}: {t.dtype}."
-            )
-    for name, t in target.items():
-        if len(t.shape) != 4:
-            raise ValueError(f"Expected `{name}` to have BxCxHxW shape. Got {name}: {t.shape}.")
-    for name, t in target.items():
-        if preds.shape[:2] != t.shape[:2]:
-            raise ValueError(
-                f"Expected `preds` and `{name}` to have the same batch and channel sizes."
-                " Got preds: {preds.shape} and {name}: {t.shape}."
-            )
-
-    ms = target["ms"]
-    pan = target["pan"]
-    pan_lr = target["pan_lr"] if "pan_lr" in target else None
+    if preds.dtype != ms.dtype:
+        raise TypeError(
+            f"Expected `preds` and `ms` to have the same data type. Got preds: {preds.dtype} and ms: {ms.dtype}."
+        )
+    if preds.dtype != pan.dtype:
+        raise TypeError(
+            f"Expected `preds` and `pan` to have the same data type. Got preds: {preds.dtype} and pan: {pan.dtype}."
+        )
+    if pan_lr is not None and preds.dtype != pan_lr.dtype:
+        raise TypeError(
+            f"Expected `preds` and `pan_lr` to have the same data type."
+            f" Got preds: {preds.dtype} and pan_lr: {pan_lr.dtype}."
+        )
+    if len(ms.shape) != 4:
+        raise ValueError(f"Expected `ms` to have BxCxHxW shape. Got ms: {ms.shape}.")
+    if len(pan.shape) != 4:
+        raise ValueError(f"Expected `pan` to have BxCxHxW shape. Got pan: {pan.shape}.")
+    if pan_lr is not None and len(pan_lr.shape) != 4:
+        raise ValueError(f"Expected `pan_lr` to have BxCxHxW shape. Got pan_lr: {pan_lr.shape}.")
+    if preds.shape[:2] != ms.shape[:2]:
+        raise ValueError(
+            f"Expected `preds` and `ms` to have the same batch and channel sizes."
+            f" Got preds: {preds.shape} and ms: {ms.shape}."
+        )
+    if preds.shape[:2] != pan.shape[:2]:
+        raise ValueError(
+            f"Expected `preds` and `pan` to have the same batch and channel sizes."
+            f" Got preds: {preds.shape} and pan: {pan.shape}."
+        )
+    if pan_lr is not None and preds.shape[:2] != pan_lr.shape[:2]:
+        raise ValueError(
+            f"Expected `preds` and `pan_lr` to have the same batch and channel sizes."
+            f" Got preds: {preds.shape} and pan_lr: {pan_lr.shape}."
+        )
 
     preds_h, preds_w = preds.shape[-2:]
     ms_h, ms_w = ms.shape[-2:]
@@ -111,12 +122,14 @@ def _spatial_distortion_index_update(preds: Tensor, target: Dict[str, Tensor]) -
                 f"Expected `ms` and `pan_lr` to have the same width. Got ms: {ms_w} and pan_lr: {pan_lr_w}."
             )
 
-    return preds, target
+    return preds, ms, pan, pan_lr
 
 
 def _spatial_distortion_index_compute(
     preds: Tensor,
-    target: Dict[str, Tensor],
+    ms: Tensor,
+    pan: Tensor,
+    pan_lr: Tensor = None,
     norm_order: int = 1,
     window_size: int = 7,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
@@ -125,12 +138,9 @@ def _spatial_distortion_index_compute(
 
     Args:
         preds: High resolution multispectral image.
-        target: A dictionary containing the following keys:
-
-            - ``'ms'``: low resolution multispectral image.
-            - ``'pan'``: high resolution panchromatic image.
-            - ``'pan_lr'``: (optional) low resolution panchromatic image.
-
+        ms: Low resolution multispectral image.
+        pan: High resolution panchromatic image.
+        pan_lr: Low resolution panchromatic image.
         norm_order: Order of the norm applied on the difference.
         window_size: Window size of the filter applied to degrade the high resolution panchromatic image.
         reduction: A method to reduce metric score over labels.
@@ -149,20 +159,14 @@ def _spatial_distortion_index_compute(
     Example:
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand([16, 3, 32, 32])
-        >>> target = {
-        ...     'ms': torch.rand([16, 3, 16, 16]),
-        ...     'pan': torch.rand([16, 3, 32, 32]),
-        ... }
-        >>> preds, target = _spatial_distortion_index_update(preds, target)
-        >>> _spatial_distortion_index_compute(preds, target)
+        >>> ms = torch.rand([16, 3, 16, 16])
+        >>> pan = torch.rand([16, 3, 32, 32])
+        >>> preds, ms, pan, pan_lr = _spatial_distortion_index_update(preds, ms, pan)
+        >>> _spatial_distortion_index_compute(preds, ms, pan, pan_lr)
         tensor(0.0090)
 
     """
     length = preds.shape[1]
-
-    ms = target["ms"]
-    pan = target["pan"]
-    pan_lr = target["pan_lr"] if "pan_lr" in target else None
 
     ms_h, ms_w = ms.shape[-2:]
     if window_size >= ms_h or window_size >= ms_w:
@@ -197,7 +201,9 @@ def _spatial_distortion_index_compute(
 
 def spatial_distortion_index(
     preds: Tensor,
-    target: Dict[str, Tensor],
+    ms: Tensor,
+    pan: Tensor,
+    pan_lr: Tensor = None,
     norm_order: int = 1,
     window_size: int = 7,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
@@ -208,12 +214,9 @@ def spatial_distortion_index(
 
     Args:
         preds: High resolution multispectral image.
-        target: A dictionary containing the following keys:
-
-            - ``'ms'``: low resolution multispectral image.
-            - ``'pan'``: high resolution panchromatic image.
-            - ``'pan_lr'``: (optional) low resolution panchromatic image.
-
+        ms: Low resolution multispectral image.
+        pan: High resolution panchromatic image.
+        pan_lr: Low resolution panchromatic image.
         norm_order: Order of the norm applied on the difference.
         window_size: Window size of the filter applied to degrade the high resolution panchromatic image.
         reduction: A method to reduce metric score over labels.
@@ -227,13 +230,11 @@ def spatial_distortion_index(
 
     Raises:
         TypeError:
-            If ``preds`` and ``target`` don't have the same data type.
+            If ``preds``, ``ms``, ``pan`` and ``pan_lr`` don't have the same data type.
         ValueError:
-            If ``preds`` and ``target`` don't have ``BxCxHxW shape``.
+            If ``preds``, ``ms``, ``pan`` and ``pan_lr`` don't have ``BxCxHxW shape``.
         ValueError:
-            If ``preds`` and ``target`` don't have the same batch and channel sizes.
-        ValueError:
-            If ``target`` doesn't have ``ms`` and ``pan``.
+            If ``preds``, ``ms``, ``pan`` and ``pan_lr`` don't have the same batch and channel sizes.
         ValueError:
             If ``preds`` and ``pan`` don't have the same dimension.
         ValueError:
@@ -249,11 +250,9 @@ def spatial_distortion_index(
         >>> from torchmetrics.functional.image import spatial_distortion_index
         >>> _ = torch.manual_seed(42)
         >>> preds = torch.rand([16, 3, 32, 32])
-        >>> target = {
-        ...     'ms': torch.rand([16, 3, 16, 16]),
-        ...     'pan': torch.rand([16, 3, 32, 32]),
-        ... }
-        >>> spatial_distortion_index(preds, target)
+        >>> ms = torch.rand([16, 3, 16, 16])
+        >>> pan = torch.rand([16, 3, 32, 32])
+        >>> spatial_distortion_index(preds, ms, pan)
         tensor(0.0090)
 
     """
@@ -261,5 +260,5 @@ def spatial_distortion_index(
         raise ValueError(f"Expected `norm_order` to be a positive integer. Got norm_order: {norm_order}.")
     if not isinstance(window_size, int) or window_size <= 0:
         raise ValueError(f"Expected `window_size` to be a positive integer. Got window_size: {window_size}.")
-    preds, target = _spatial_distortion_index_update(preds, target)
-    return _spatial_distortion_index_compute(preds, target, norm_order, window_size, reduction)
+    preds, ms, pan, pan_lr = _spatial_distortion_index_update(preds, ms, pan, pan_lr)
+    return _spatial_distortion_index_compute(preds, ms, pan, pan_lr, norm_order, window_size, reduction)
