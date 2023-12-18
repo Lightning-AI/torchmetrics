@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict, List, Literal, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Literal, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -20,7 +20,11 @@ from torchmetrics.functional.multimodal.clip_score import _get_clip_model_and_pr
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _PIQ_GREATER_EQUAL_0_8, _TRANSFORMERS_GREATER_EQUAL_4_10
 
-if _TRANSFORMERS_GREATER_EQUAL_4_10:
+if TYPE_CHECKING:
+    from transformers import CLIPModel as _CLIPModel
+    from transformers import CLIPProcessor as _CLIPProcessor
+
+if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_GREATER_EQUAL_4_10:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
 
@@ -28,13 +32,10 @@ if _TRANSFORMERS_GREATER_EQUAL_4_10:
         _CLIPModel.from_pretrained("openai/clip-vit-base-patch16")
         _CLIPProcessor.from_pretrained("openai/clip-vit-base-patch16")
 
-    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_clip):
-        __doctest_skip__ = ["clip_score"]
-
+    if not _try_proceed_with_timeout(_download_clip):
+        __doctest_skip__ = ["clip_image_quality_assessment"]
 else:
     __doctest_skip__ = ["clip_image_quality_assessment"]
-    _CLIPModel = None
-    _CLIPProcessor = None
 
 if not _PIQ_GREATER_EQUAL_0_8:
     __doctest_skip__ = ["clip_image_quality_assessment"]
@@ -67,8 +68,10 @@ def _get_clip_iqa_model_and_processor(
         "openai/clip-vit-large-patch14-336",
         "openai/clip-vit-large-patch14",
     ]
-) -> Tuple[_CLIPModel, _CLIPProcessor]:
+) -> Tuple["_CLIPModel", "_CLIPProcessor"]:
     """Extract the CLIP model and processor from the model name or path."""
+    from transformers import CLIPProcessor as _CLIPProcessor
+
     if model_name_or_path == "clip_iqa":
         if not _PIQ_GREATER_EQUAL_0_8:
             raise ValueError(
@@ -141,8 +144,8 @@ def _clip_iqa_format_prompts(prompts: Tuple[Union[str, Tuple[str, str]]] = ("qua
 
 def _clip_iqa_get_anchor_vectors(
     model_name_or_path: str,
-    model: _CLIPModel,
-    processor: _CLIPProcessor,
+    model: "_CLIPModel",
+    processor: "_CLIPProcessor",
     prompts_list: List[str],
     device: Union[str, torch.device],
 ) -> Tensor:
@@ -176,8 +179,8 @@ def _clip_iqa_get_anchor_vectors(
 def _clip_iqa_update(
     model_name_or_path: str,
     images: Tensor,
-    model: _CLIPModel,
-    processor: _CLIPProcessor,
+    model: "_CLIPModel",
+    processor: "_CLIPProcessor",
     data_range: float,
     device: Union[str, torch.device],
 ) -> Tensor:
