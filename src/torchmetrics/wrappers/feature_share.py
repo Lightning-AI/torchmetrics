@@ -100,7 +100,8 @@ class FeatureShare(MetricCollection):
         except AttributeError as err:
             raise AttributeError(
                 "Tried to extract the network to share from the first metric, but it did not have a `feature_network`"
-                " attribute. Please make sure that the metric has an attribute with that name, else it cannot be shared."
+                " attribute. Please make sure that the metric has an attribute with that name,"
+                " else it cannot be shared."
             ) from err
         cached_net = NetworkCache(network_to_share, max_size=max_cache_size)
 
