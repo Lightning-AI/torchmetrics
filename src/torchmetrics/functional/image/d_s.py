@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
+from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
@@ -24,8 +24,8 @@ from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
 
 def _spatial_distortion_index_update(
-    preds: Tensor, ms: Tensor, pan: Tensor, pan_lr: Tensor = None
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    preds: Tensor, ms: Tensor, pan: Tensor, pan_lr: Optional[Tensor] = None
+) -> Tuple[Tensor, Tensor, Tensor, Optional[Tensor]]:
     """Update and returns variables required to compute Spatial Distortion Index.
 
     Args:
@@ -129,7 +129,7 @@ def _spatial_distortion_index_compute(
     preds: Tensor,
     ms: Tensor,
     pan: Tensor,
-    pan_lr: Tensor = None,
+    pan_lr: Optional[Tensor] = None,
     norm_order: int = 1,
     window_size: int = 7,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",
@@ -203,7 +203,7 @@ def spatial_distortion_index(
     preds: Tensor,
     ms: Tensor,
     pan: Tensor,
-    pan_lr: Tensor = None,
+    pan_lr: Optional[Tensor] = None,
     norm_order: int = 1,
     window_size: int = 7,
     reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean",

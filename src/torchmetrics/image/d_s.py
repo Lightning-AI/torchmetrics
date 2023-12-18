@@ -115,9 +115,27 @@ class SpatialDistortionIndex(Metric):
         self.add_state("pan_lr", default=[], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Dict[str, Tensor]) -> None:
-        """Update state with preds and target."""
-        ms = target["ms"] if "ms" in target else None
-        pan = target["pan"] if "pan" in target else None
+        """Update state with preds and target.
+
+        Args:
+            preds: High resolution multispectral image.
+            target: A dictionary containing the following keys:
+
+                - ``'ms'``: low resolution multispectral image.
+                - ``'pan'``: high resolution panchromatic image.
+                - ``'pan_lr'``: (optional) low resolution panchromatic image.
+
+        Raises:
+            ValueError:
+                If ``target`` doesn't have ``ms`` and ``pan``.
+
+        """
+        if "ms" not in target:
+            raise ValueError(f"Expected `target` to have key `ms`. Got target: {target.keys()}.")
+        if "pan" not in target:
+            raise ValueError(f"Expected `target` to have key `pan`. Got target: {target.keys()}.")
+        ms = target["ms"]
+        pan = target["pan"]
         pan_lr = target["pan_lr"] if "pan_lr" in target else None
         preds, ms, pan, pan_lr = _spatial_distortion_index_update(preds, ms, pan, pan_lr)
         self.preds.append(preds)
