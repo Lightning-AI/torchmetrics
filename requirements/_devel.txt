@@ -19,3 +19,4 @@
 -r detection_test.txt
 -r classification_test.txt
 -r nominal_test.txt
+-r segmentation_test.txt
