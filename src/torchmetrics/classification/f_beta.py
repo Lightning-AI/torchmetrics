@@ -684,6 +684,7 @@ class BinaryF1Score(BinaryFBetaScore):
             multidim_average=multidim_average,
             ignore_index=ignore_index,
             validate_args=validate_args,
+            zero_division=zero_division,
             **kwargs,
         )
 
