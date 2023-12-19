@@ -63,7 +63,7 @@ class CriticalSuccessIndex(Metric):
         super().__init__(**kwargs)
         self.threshold = float(threshold)
 
-        if (not isinstance(keep_sequence_dim, Optional[int])) or (keep_sequence_dim and keep_sequence_dim < 0):
+        if keep_sequence_dim and (not isinstance(keep_sequence_dim, int) or keep_sequence_dim < 0):
             raise ValueError(f"Expected keep_sequence_dim to be a non-negative integer but got {keep_sequence_dim}")
         self.keep_sequence_dim = keep_sequence_dim
 
