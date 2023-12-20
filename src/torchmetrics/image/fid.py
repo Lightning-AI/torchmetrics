@@ -230,6 +230,12 @@ class FrechetInceptionDistance(Metric):
             your dataset does not change.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
+    .. note::
+        If a custom feature extractor is provided through the `feature` argument it is expected to either have a
+        attribute called ``num_features`` that indicates the number of features returned by the forward pass or
+        alternatively we will pass through tensor of shape ``(1, 3, 299, 299)`` and dtype ``torch.uint8``` to the
+        forward pass and expect a tensor of shape ``(1, num_features)`` as output.
+
     Raises:
         ValueError:
             If torch version is lower than 1.9
@@ -297,8 +303,11 @@ class FrechetInceptionDistance(Metric):
 
         elif isinstance(feature, Module):
             self.inception = feature
-            dummy_image = torch.randint(0, 255, (1, 3, 299, 299), dtype=torch.uint8)
-            num_features = self.inception(dummy_image).shape[-1]
+            if hasattr(self.inception, "num_features"):
+                num_features = self.inception.num_features
+            else:
+                dummy_image = torch.randint(0, 255, (1, 3, 299, 299), dtype=torch.uint8)
+                num_features = self.inception(dummy_image).shape[-1]
         else:
             raise TypeError("Got unknown input to argument `feature`")
 
