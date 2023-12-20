@@ -29,11 +29,9 @@ from unittests.retrieval.helpers import (
     _default_metric_class_input_arguments,
     _default_metric_class_input_arguments_ignore_index,
     _default_metric_functional_input_arguments,
-    _errors_test_class_metric_parameters_adaptive_k,
     _errors_test_class_metric_parameters_default,
     _errors_test_class_metric_parameters_k,
     _errors_test_class_metric_parameters_no_pos_target,
-    _errors_test_functional_metric_parameters_adaptive_k,
     _errors_test_functional_metric_parameters_default,
     _errors_test_functional_metric_parameters_k,
 )
@@ -172,7 +170,6 @@ class TestAUROC(RetrievalMetricTester):
             _errors_test_class_metric_parameters_default,
             _errors_test_class_metric_parameters_no_pos_target,
             _errors_test_class_metric_parameters_k,
-            _errors_test_class_metric_parameters_adaptive_k,
         )
     )
     def test_arguments_class_metric(
@@ -194,7 +191,6 @@ class TestAUROC(RetrievalMetricTester):
         **_concat_tests(
             _errors_test_functional_metric_parameters_default,
             _errors_test_functional_metric_parameters_k,
-            _errors_test_functional_metric_parameters_adaptive_k,
         )
     )
     def test_arguments_functional_metric(self, preds: Tensor, target: Tensor, message: str, metric_args: dict):
