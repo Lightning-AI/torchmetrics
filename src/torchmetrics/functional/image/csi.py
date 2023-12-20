@@ -47,9 +47,14 @@ def _critical_success_index_update(
     preds_bin = (preds >= threshold).bool()
     target_bin = (target >= threshold).bool()
 
-    hits = torch.sum(preds_bin & target_bin, dim=sum_dims).int()
-    misses = torch.sum((preds_bin ^ target_bin) & target_bin, dim=sum_dims).int()
-    false_alarms = torch.sum((preds_bin ^ target_bin) & preds_bin, dim=sum_dims).int()
+    if keep_sequence_dim is None:
+        hits = torch.sum(preds_bin & target_bin).int()
+        misses = torch.sum((preds_bin ^ target_bin) & target_bin).int()
+        false_alarms = torch.sum((preds_bin ^ target_bin) & preds_bin).int()
+    else:
+        hits = torch.sum(preds_bin & target_bin, dim=sum_dims).int()
+        misses = torch.sum((preds_bin ^ target_bin) & target_bin, dim=sum_dims).int()
+        false_alarms = torch.sum((preds_bin ^ target_bin) & preds_bin, dim=sum_dims).int()
     return hits, misses, false_alarms
 
 
