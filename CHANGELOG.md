@@ -54,7 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--
+- Fixed warning incorrectly being raised in `Running` metrics ([#2256](https://github.com/Lightning-AI/torchmetrics/pull/2265))
 
 
 ## [1.2.1] - 2023-11-30
