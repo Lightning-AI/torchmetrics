@@ -51,6 +51,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed support for half precision + CPU in metrics requiring topk operator ([#2252](https://github.com/Lightning-AI/torchmetrics/pull/2252))
+
+
 - Fixed warning incorrectly being raised in `Running` metrics ([#2256](https://github.com/Lightning-AI/torchmetrics/pull/2265))
 
 
