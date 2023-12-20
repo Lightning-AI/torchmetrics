@@ -232,7 +232,7 @@ def test_custom_topk(dtype, k, dim):
     assert top_k.shape == (100, 10)
     assert top_k.dtype == torch.int
     ref = _reference_topk(x, dim=dim, k=k)
-    assert torch.allclose(top_k, torch.from_numpy(ref))
+    assert torch.allclose(top_k, torch.from_numpy(ref).to(torch.int))
 
 
 def test_half_precision_top_k_cpu_raises_error():
