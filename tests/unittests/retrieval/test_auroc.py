@@ -98,7 +98,7 @@ class TestAUROC(RetrievalMetricTester):
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
-    @pytest.mark.parametrize("max_fpr", [False, True])
+    @pytest.mark.parametrize("max_fpr", [None, 0.25])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments_ignore_index)
     def test_class_metric_ignore_index(
         self,
@@ -130,7 +130,7 @@ class TestAUROC(RetrievalMetricTester):
 
     @pytest.mark.parametrize(**_default_metric_functional_input_arguments)
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
-    @pytest.mark.parametrize("max_fpr", [False, True])
+    @pytest.mark.parametrize("max_fpr", [None, 0.25])
     def test_functional_metric(self, preds: Tensor, target: Tensor, k: int, max_fpr: Optional[float]):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
