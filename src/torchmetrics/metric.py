@@ -592,7 +592,7 @@ class Metric(Module, ABC):
     def _wrap_compute(self, compute: Callable) -> Callable:
         @functools.wraps(compute)
         def wrapped_func(*args: Any, **kwargs: Any) -> Any:
-            if self._update_count == 0:
+            if not self.update_called:
                 rank_zero_warn(
                     f"The ``compute`` method of metric {self.__class__.__name__}"
                     " was called before the ``update`` method which may lead to errors,"
