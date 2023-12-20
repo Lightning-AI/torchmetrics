@@ -11,16 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 import torch
 
 from torchmetrics.functional.image.csi import _critical_success_index_compute, _critical_success_index_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import dim_zero_cat
 
 
 class CriticalSuccessIndex(Metric):
-    """Calculate critical success index (CSI).
+    r"""Calculate critical success index (CSI).
 
     Critical success index (also known as the threat score) is a statistic used weather forecasting that measures
     forecast performance over inputs binarized at a specified threshold. It is defined as:
@@ -59,6 +60,13 @@ class CriticalSuccessIndex(Metric):
     is_differentiable: bool = False
     higher_is_better: bool = True
 
+    hits: torch.Tensor
+    misses: torch.Tensor
+    false_alarms: torch.Tensor
+    hits_list: List[torch.Tensor]
+    misses_list: List[torch.Tensor]
+    false_alarms_list: List[torch.Tensor]
+
     def __init__(self, threshold: float, keep_sequence_dim: Optional[int] = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.threshold = float(threshold)
@@ -67,19 +75,37 @@ class CriticalSuccessIndex(Metric):
             raise ValueError(f"Expected keep_sequence_dim to be a non-negative integer but got {keep_sequence_dim}")
         self.keep_sequence_dim = keep_sequence_dim
 
-        self.add_state("hits", default=torch.tensor(0))
-        self.add_state("misses", default=torch.tensor(0))
-        self.add_state("false_alarms", default=torch.tensor(0))
+        if keep_sequence_dim is None:
+            self.add_state("hits", default=torch.tensor(0), dist_reduce_fx="sum")
+            self.add_state("misses", default=torch.tensor(0), dist_reduce_fx="sum")
+            self.add_state("false_alarms", default=torch.tensor(0), dist_reduce_fx="sum")
+        else:
+            self.add_state("hits_list", default=[], dist_reduce_fx="cat")
+            self.add_state("misses_list", default=[], dist_reduce_fx="cat")
+            self.add_state("false_alarms_list", default=[], dist_reduce_fx="cat")
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
+    def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:
         """Update state with predictions and targets."""
         hits, misses, false_alarms = _critical_success_index_update(
             preds, target, self.threshold, self.keep_sequence_dim
         )
-        self.hits += hits
-        self.misses += misses
-        self.false_alarms += false_alarms
+        if self.keep_sequence_dim is None:
+            self.hits += hits
+            self.misses += misses
+            self.false_alarms += false_alarms
+        else:
+            self.hits_list.append(hits)
+            self.misses_list.append(misses)
+            self.false_alarms_list.append(false_alarms)
 
-    def compute(self):
+    def compute(self) -> torch.Tensor:
         """Compute critical success index over state."""
-        return _critical_success_index_compute(self.hits, self.misses, self.false_alarms)
+        if self.keep_sequence_dim is None:
+            hits = self.hits
+            misses = self.misses
+            false_alarms = self.false_alarms
+        else:
+            hits = dim_zero_cat(self.hits_list)
+            misses = dim_zero_cat(self.misses_list)
+            false_alarms = dim_zero_cat(self.false_alarms_list)
+        return _critical_success_index_compute(hits, misses, false_alarms)
