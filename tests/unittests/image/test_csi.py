@@ -32,6 +32,7 @@ _inputs_2 = _Input(preds=torch.rand(NUM_BATCHES, BATCH_SIZE), target=torch.rand(
 
 
 def _calculate_ref_metric(preds: torch.Tensor, target: torch.Tensor, threshold: float):
+    """Calculate reference metric for `CriticalSuccessIndex`."""
     preds, target = preds.numpy(), target.numpy()
     preds = preds >= threshold
     target = target >= threshold
@@ -62,6 +63,7 @@ class TestCriticalSuccessIndex(MetricTester):
         )
 
     def test_csi_functional(self, preds, target, threshold):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
             target=target,
