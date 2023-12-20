@@ -22,6 +22,9 @@ from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.utilities.distributed import reduce
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
+if not _TORCHVISION_AVAILABLE:
+    __doctest_skip__ = ["_spatial_distortion_index_compute", "spatial_distortion_index"]
+
 
 def _spatial_distortion_index_update(
     preds: Tensor, ms: Tensor, pan: Tensor, pan_lr: Optional[Tensor] = None

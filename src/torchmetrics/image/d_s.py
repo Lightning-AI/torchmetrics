@@ -21,8 +21,11 @@ from torchmetrics.functional.image.d_s import _spatial_distortion_index_compute,
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _TORCHVISION_AVAILABLE:
+    __doctest_skip__ = ["SpatialDistortionIndex", "SpatialDistortionIndex.plot"]
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["SpatialDistortionIndex.plot"]
