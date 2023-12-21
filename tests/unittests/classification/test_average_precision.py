@@ -34,7 +34,12 @@ from torchmetrics.functional.classification.precision_recall_curve import binary
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.classification.inputs import (
+    _binary_cases,
+    _multiclass_cases,
+    _multilabel_cases,
+    check_input_format_matches_data,
+)
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
@@ -56,8 +61,10 @@ class TestBinaryAveragePrecision(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_binary_average_precision(self, inputs, ddp, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
+    def test_binary_average_precision(self, inputs, ddp, ignore_index, input_format, request):
         """Test class implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -70,12 +77,15 @@ class TestBinaryAveragePrecision(MetricTester):
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_binary_average_precision_functional(self, inputs, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
+    def test_binary_average_precision_functional(self, inputs, ignore_index, input_format, request):
         """Test functional implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -87,6 +97,7 @@ class TestBinaryAveragePrecision(MetricTester):
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
@@ -172,8 +183,10 @@ class TestMulticlassAveragePrecision(MetricTester):
     @pytest.mark.parametrize("average", ["macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multiclass_average_precision(self, inputs, average, ddp, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
+    def test_multiclass_average_precision(self, inputs, average, ddp, ignore_index, input_format, request):
         """Test class implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -188,13 +201,16 @@ class TestMulticlassAveragePrecision(MetricTester):
                 "num_classes": NUM_CLASSES,
                 "average": average,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
     @pytest.mark.parametrize("average", ["macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    def test_multiclass_average_precision_functional(self, inputs, average, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
+    def test_multiclass_average_precision_functional(self, inputs, average, ignore_index, input_format, request):
         """Test functional implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -208,6 +224,7 @@ class TestMulticlassAveragePrecision(MetricTester):
                 "num_classes": NUM_CLASSES,
                 "average": average,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
@@ -288,8 +305,10 @@ class TestMultilabelAveragePrecision(MetricTester):
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multilabel_average_precision(self, inputs, ddp, average, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
+    def test_multilabel_average_precision(self, inputs, ddp, average, ignore_index, input_format, request):
         """Test class implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -304,13 +323,16 @@ class TestMultilabelAveragePrecision(MetricTester):
                 "num_labels": NUM_CLASSES,
                 "average": average,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    def test_multilabel_average_precision_functional(self, inputs, average, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
+    def test_multilabel_average_precision_functional(self, inputs, average, ignore_index, input_format, request):
         """Test functional implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -324,6 +346,7 @@ class TestMultilabelAveragePrecision(MetricTester):
                 "num_labels": NUM_CLASSES,
                 "average": average,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 

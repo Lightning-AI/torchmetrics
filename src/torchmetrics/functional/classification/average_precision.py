@@ -81,6 +81,7 @@ def binary_average_precision(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> Tensor:
     r"""Compute the average precision (AP) score for binary tasks.
 
@@ -127,6 +128,17 @@ def binary_average_precision(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         A single scalar with the average precision score
@@ -142,9 +154,11 @@ def binary_average_precision(
 
     """
     if validate_args:
-        _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
-        _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)
-    preds, target, thresholds = _binary_precision_recall_curve_format(preds, target, thresholds, ignore_index)
+        _binary_precision_recall_curve_arg_validation(thresholds, ignore_index, input_format)
+        _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index, input_format)
+    preds, target, thresholds = _binary_precision_recall_curve_format(
+        preds, target, thresholds, ignore_index, input_format
+    )
     state = _binary_precision_recall_curve_update(preds, target, thresholds)
     return _binary_average_precision_compute(state, thresholds)
 
@@ -154,8 +168,9 @@ def _multiclass_average_precision_arg_validation(
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> None:
-    _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
+    _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index, input_format=input_format)
     allowed_average = ("macro", "weighted", "none", None)
     if average not in allowed_average:
         raise ValueError(f"Expected argument `average` to be one of {allowed_average} but got {average}")
@@ -184,6 +199,7 @@ def multiclass_average_precision(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> Tensor:
     r"""Compute the average precision (AP) score for multiclass tasks.
 
@@ -237,6 +253,17 @@ def multiclass_average_precision(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be returned with AP score per class.
@@ -260,10 +287,10 @@ def multiclass_average_precision(
 
     """
     if validate_args:
-        _multiclass_average_precision_arg_validation(num_classes, average, thresholds, ignore_index)
-        _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index)
+        _multiclass_average_precision_arg_validation(num_classes, average, thresholds, ignore_index, input_format)
+        _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index, input_format)
     preds, target, thresholds = _multiclass_precision_recall_curve_format(
-        preds, target, num_classes, thresholds, ignore_index
+        preds, target, num_classes, thresholds, ignore_index, input_format=input_format
     )
     state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
     return _multiclass_average_precision_compute(state, num_classes, average, thresholds)
@@ -274,8 +301,9 @@ def _multilabel_average_precision_arg_validation(
     average: Optional[Literal["micro", "macro", "weighted", "none"]],
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> None:
-    _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
+    _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index, input_format)
     allowed_average = ("micro", "macro", "weighted", "none", None)
     if average not in allowed_average:
         raise ValueError(f"Expected argument `average` to be one of {allowed_average} but got {average}")
@@ -317,6 +345,7 @@ def multilabel_average_precision(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> Tensor:
     r"""Compute the average precision (AP) score for multilabel tasks.
 
@@ -371,6 +400,17 @@ def multilabel_average_precision(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be returned with AP score per class.
@@ -397,10 +437,10 @@ def multilabel_average_precision(
 
     """
     if validate_args:
-        _multilabel_average_precision_arg_validation(num_labels, average, thresholds, ignore_index)
-        _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index)
+        _multilabel_average_precision_arg_validation(num_labels, average, thresholds, ignore_index, input_format)
+        _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index, input_format)
     preds, target, thresholds = _multilabel_precision_recall_curve_format(
-        preds, target, num_labels, thresholds, ignore_index
+        preds, target, num_labels, thresholds, ignore_index, input_format
     )
     state = _multilabel_precision_recall_curve_update(preds, target, num_labels, thresholds)
     return _multilabel_average_precision_compute(state, num_labels, average, thresholds, ignore_index)
