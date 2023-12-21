@@ -116,7 +116,12 @@ class TestBinarySpecificity(MetricTester):
             reference_metric=partial(
                 _baseline_specificity_binary, ignore_index=ignore_index, multidim_average=multidim_average
             ),
-            metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
+            metric_args={
+                "threshold": THRESHOLD,
+                "ignore_index": ignore_index,
+                "multidim_average": multidim_average,
+                "input_format": input_format,
+            },
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
@@ -142,6 +147,7 @@ class TestBinarySpecificity(MetricTester):
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
+                "input_format": input_format,
             },
         )
 
@@ -292,6 +298,7 @@ class TestMulticlassSpecificity(MetricTester):
                 "multidim_average": multidim_average,
                 "average": average,
                 "num_classes": NUM_CLASSES,
+                "input_format": input_format,
             },
         )
 
@@ -325,6 +332,7 @@ class TestMulticlassSpecificity(MetricTester):
                 "multidim_average": multidim_average,
                 "average": average,
                 "num_classes": NUM_CLASSES,
+                "input_format": input_format,
             },
         )
 
@@ -501,6 +509,7 @@ class TestMultilabelSpecificity(MetricTester):
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
                 "average": average,
+                "input_format": input_format,
             },
         )
 
@@ -535,6 +544,7 @@ class TestMultilabelSpecificity(MetricTester):
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
                 "average": average,
+                "input_format": input_format,
             },
         )
 

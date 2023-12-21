@@ -101,6 +101,7 @@ class TestBinaryConfusionMatrix(MetricTester):
                 "threshold": THRESHOLD,
                 "normalize": normalize,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
@@ -183,6 +184,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
                 "num_classes": NUM_CLASSES,
                 "normalize": normalize,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
@@ -206,6 +208,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
                 "num_classes": NUM_CLASSES,
                 "normalize": normalize,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
@@ -304,6 +307,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
                 "num_labels": NUM_CLASSES,
                 "normalize": normalize,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
@@ -327,6 +331,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
                 "num_labels": NUM_CLASSES,
                 "normalize": normalize,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 

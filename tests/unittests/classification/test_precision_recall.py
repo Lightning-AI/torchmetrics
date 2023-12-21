@@ -120,7 +120,12 @@ class TestBinaryPrecisionRecall(MetricTester):
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
             ),
-            metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
+            metric_args={
+                "threshold": THRESHOLD,
+                "ignore_index": ignore_index,
+                "multidim_average": multidim_average,
+                "input_format": input_format,
+            },
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
@@ -151,6 +156,7 @@ class TestBinaryPrecisionRecall(MetricTester):
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
+                "input_format": input_format,
             },
         )
 
@@ -265,6 +271,7 @@ class TestMulticlassPrecisionRecall(MetricTester):
                 "multidim_average": multidim_average,
                 "average": average,
                 "num_classes": NUM_CLASSES,
+                "input_format": input_format,
             },
         )
 
@@ -299,6 +306,7 @@ class TestMulticlassPrecisionRecall(MetricTester):
                 "multidim_average": multidim_average,
                 "average": average,
                 "num_classes": NUM_CLASSES,
+                "input_format": input_format,
             },
         )
 
@@ -507,6 +515,7 @@ class TestMultilabelPrecisionRecall(MetricTester):
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
                 "average": average,
+                "input_format": input_format,
             },
         )
 
@@ -542,6 +551,7 @@ class TestMultilabelPrecisionRecall(MetricTester):
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
                 "average": average,
+                "input_format": input_format,
             },
         )
 
