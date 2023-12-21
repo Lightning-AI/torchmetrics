@@ -25,7 +25,12 @@ from torchmetrics.functional.classification.roc import binary_roc
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.classification.inputs import (
+    _binary_cases,
+    _multiclass_cases,
+    _multilabel_cases,
+    check_input_format_matches_data,
+)
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
@@ -48,8 +53,10 @@ class TestBinaryAUROC(MetricTester):
     @pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_binary_auroc(self, inputs, ddp, max_fpr, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
+    def test_binary_auroc(self, inputs, ddp, max_fpr, ignore_index, input_format, request):
         """Test class implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -63,13 +70,16 @@ class TestBinaryAUROC(MetricTester):
                 "max_fpr": max_fpr,
                 "thresholds": None,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
     @pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    def test_binary_auroc_functional(self, inputs, max_fpr, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
+    def test_binary_auroc_functional(self, inputs, max_fpr, ignore_index, input_format, request):
         """Test functional implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -82,6 +92,7 @@ class TestBinaryAUROC(MetricTester):
                 "max_fpr": max_fpr,
                 "thresholds": None,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
@@ -156,8 +167,10 @@ class TestMulticlassAUROC(MetricTester):
     @pytest.mark.parametrize("average", ["macro", "weighted"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multiclass_auroc(self, inputs, average, ddp, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
+    def test_multiclass_auroc(self, inputs, average, ddp, ignore_index, input_format, request):
         """Test class implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -172,13 +185,16 @@ class TestMulticlassAUROC(MetricTester):
                 "num_classes": NUM_CLASSES,
                 "average": average,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
     @pytest.mark.parametrize("average", ["macro", "weighted"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    def test_multiclass_auroc_functional(self, inputs, average, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
+    def test_multiclass_auroc_functional(self, inputs, average, ignore_index, input_format, request):
         """Test functional implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -192,6 +208,7 @@ class TestMulticlassAUROC(MetricTester):
                 "num_classes": NUM_CLASSES,
                 "average": average,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
@@ -285,8 +302,10 @@ class TestMultilabelAUROC(MetricTester):
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multilabel_auroc(self, inputs, ddp, average, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
+    def test_multilabel_auroc(self, inputs, ddp, average, ignore_index, input_format, request):
         """Test class implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -301,13 +320,16 @@ class TestMultilabelAUROC(MetricTester):
                 "num_labels": NUM_CLASSES,
                 "average": average,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    def test_multilabel_auroc_functional(self, inputs, average, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
+    def test_multilabel_auroc_functional(self, inputs, average, ignore_index, input_format, request):
         """Test functional implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -321,6 +343,7 @@ class TestMultilabelAUROC(MetricTester):
                 "num_labels": NUM_CLASSES,
                 "average": average,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
