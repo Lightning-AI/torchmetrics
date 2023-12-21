@@ -228,6 +228,8 @@ def _reference_topk(x, dim, k):
 @pytest.mark.parametrize("dim", [0, 1])
 def test_custom_topk(dtype, k, dim):
     """Test custom topk implementation."""
+    if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_13:
+        pytest.skip("half precision topk not supported in Pytorch < 1.13")
     x = torch.randn(100, 10, dtype=dtype)
     top_k = select_topk(x, dim=dim, topk=k)
     assert top_k.shape == (100, 10)
