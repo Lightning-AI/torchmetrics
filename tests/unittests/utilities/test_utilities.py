@@ -216,9 +216,10 @@ def _reference_topk(x, dim, k):
     one_hot = np.zeros((x.shape[0], x.shape[1]), dtype=int)
     if dim == 1:
         for i in range(x.shape[0]):
-            one_hot[i, np.argsort(x[i, :])[::-1][:k]] = 1
+            one_hot[i, np.argsort(x[i, :], kind="stable")[::-1][:k]] = 1
+        return one_hot
     for i in range(x.shape[1]):
-        one_hot[np.argsort(x[:, i])[::-1][:k], i] = 1
+        one_hot[np.argsort(x[:, i], kind="stable")[::-1][:k], i] = 1
     return one_hot
 
 
