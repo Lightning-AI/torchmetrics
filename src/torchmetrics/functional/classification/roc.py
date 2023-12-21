@@ -86,6 +86,7 @@ def binary_roc(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> Tuple[Tensor, Tensor, Tensor]:
     r"""Compute the Receiver Operating Characteristic (ROC) for binary tasks.
 
@@ -129,6 +130,17 @@ def binary_roc(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         (tuple): a tuple of 3 tensors containing:
@@ -152,9 +164,11 @@ def binary_roc(
 
     """
     if validate_args:
-        _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
-        _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)
-    preds, target, thresholds = _binary_precision_recall_curve_format(preds, target, thresholds, ignore_index)
+        _binary_precision_recall_curve_arg_validation(thresholds, ignore_index, input_format)
+        _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index, input_format)
+    preds, target, thresholds = _binary_precision_recall_curve_format(
+        preds, target, thresholds, ignore_index, input_format
+    )
     state = _binary_precision_recall_curve_update(preds, target, thresholds)
     return _binary_roc_compute(state, thresholds)
 
@@ -212,6 +226,7 @@ def multiclass_roc(
     average: Optional[Literal["micro", "macro"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Compute the Receiver Operating Characteristic (ROC) for multiclass tasks.
 
@@ -263,6 +278,17 @@ def multiclass_roc(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         (tuple): a tuple of either 3 tensors or 3 lists containing
@@ -312,15 +338,10 @@ def multiclass_roc(
 
     """
     if validate_args:
-        _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index, average)
-        _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index)
+        _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index, average, input_format)
+        _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index, input_format)
     preds, target, thresholds = _multiclass_precision_recall_curve_format(
-        preds,
-        target,
-        num_classes,
-        thresholds,
-        ignore_index,
-        average,
+        preds, target, num_classes, thresholds, ignore_index, average, input_format
     )
     state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds, average)
     return _multiclass_roc_compute(state, num_classes, thresholds, average)
@@ -363,6 +384,7 @@ def multilabel_roc(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Compute the Receiver Operating Characteristic (ROC) for multilabel tasks.
 
@@ -407,6 +429,17 @@ def multilabel_roc(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         (tuple): a tuple of either 3 tensors or 3 lists containing
@@ -459,10 +492,10 @@ def multilabel_roc(
 
     """
     if validate_args:
-        _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
-        _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index)
+        _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index, input_format)
+        _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index, input_format)
     preds, target, thresholds = _multilabel_precision_recall_curve_format(
-        preds, target, num_labels, thresholds, ignore_index
+        preds, target, num_labels, thresholds, ignore_index, input_format
     )
     state = _multilabel_precision_recall_curve_update(preds, target, num_labels, thresholds)
     return _multilabel_roc_compute(state, num_labels, thresholds, ignore_index)
@@ -478,6 +511,7 @@ def roc(
     average: Optional[Literal["micro", "macro"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Compute the Receiver Operating Characteristic (ROC).
 
@@ -538,13 +572,15 @@ def roc(
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
-        return binary_roc(preds, target, thresholds, ignore_index, validate_args)
+        return binary_roc(preds, target, thresholds, ignore_index, validate_args, input_format)
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
-        return multiclass_roc(preds, target, num_classes, thresholds, average, ignore_index, validate_args)
+        return multiclass_roc(
+            preds, target, num_classes, thresholds, average, ignore_index, validate_args, input_format
+        )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
-        return multilabel_roc(preds, target, num_labels, thresholds, ignore_index, validate_args)
+        return multilabel_roc(preds, target, num_labels, thresholds, ignore_index, validate_args, input_format)
     raise ValueError(f"Task {task} not supported, expected one of {ClassificationTask}.")

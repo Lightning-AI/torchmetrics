@@ -24,7 +24,12 @@ from torchmetrics.functional.classification.roc import binary_roc, multiclass_ro
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.classification.inputs import (
+    _binary_cases,
+    _multiclass_cases,
+    _multilabel_cases,
+    check_input_format_matches_data,
+)
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
@@ -48,8 +53,10 @@ class TestBinaryROC(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_binary_roc(self, inputs, ddp, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
+    def test_binary_roc(self, inputs, ddp, ignore_index, input_format, request):
         """Test class implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -62,12 +69,15 @@ class TestBinaryROC(MetricTester):
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_binary_roc_functional(self, inputs, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
+    def test_binary_roc_functional(self, inputs, ignore_index, input_format, request):
         """Test functional implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -79,6 +89,7 @@ class TestBinaryROC(MetricTester):
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
@@ -162,8 +173,10 @@ class TestMulticlassROC(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multiclass_roc(self, inputs, ddp, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
+    def test_multiclass_roc(self, inputs, ddp, ignore_index, input_format, request):
         """Test class implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -177,12 +190,15 @@ class TestMulticlassROC(MetricTester):
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_multiclass_roc_functional(self, inputs, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
+    def test_multiclass_roc_functional(self, inputs, ignore_index, input_format, request):
         """Test functional implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -195,6 +211,7 @@ class TestMulticlassROC(MetricTester):
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
@@ -285,8 +302,10 @@ class TestMultilabelROC(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multilabel_roc(self, inputs, ddp, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
+    def test_multilabel_roc(self, inputs, ddp, ignore_index, input_format, request):
         """Test class implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -300,12 +319,15 @@ class TestMultilabelROC(MetricTester):
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_multilabel_roc_functional(self, inputs, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
+    def test_multilabel_roc_functional(self, inputs, ignore_index, input_format, request):
         """Test functional implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -318,6 +340,7 @@ class TestMultilabelROC(MetricTester):
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
