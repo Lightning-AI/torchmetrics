@@ -93,7 +93,7 @@ def _adjust_threshold_arg(
 def _binary_precision_recall_curve_arg_validation(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
-    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> None:
     """Validate non tensor input.
 
@@ -121,18 +121,15 @@ def _binary_precision_recall_curve_arg_validation(
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
 
-    if not (isinstance(input_format, bool) or input_format in ("auto", "probs", "logits")):
-        raise ValueError(
-            "Expected argument `input_format` to be an bool or one of 'auto', 'probs' or 'logits'"
-            f", but got {input_format}"
-        )
+    if input_format not in ("auto", "probs", "logits", "none"):
+        raise ValueError(f"Expected `input_format` to be one of 'auto','probs','logits',`none` but got {input_format}")
 
 
 def _binary_precision_recall_curve_tensor_validation(
     preds: Tensor,
     target: Tensor,
     ignore_index: Optional[int] = None,
-    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> None:
     """Validate tensor input.
 
@@ -179,7 +176,7 @@ def _binary_precision_recall_curve_format(
     target: Tensor,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
-    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> Tuple[Tensor, Tensor, Optional[Tensor]]:
     """Convert all input to the right format.
 
@@ -196,12 +193,9 @@ def _binary_precision_recall_curve_format(
         preds = preds[idx]
         target = target[idx]
 
-    if input_format:
-        if input_format == "logits":
-            preds = preds.sigmoid()
-        if (input_format == "auto" or input_format is True) and not torch.all((preds >= 0) * (preds <= 1)):
-            preds = preds.sigmoid()
-        target = target.long()
+    if input_format == "logits" or (input_format == "auto" and not torch.all((preds >= 0) * (preds <= 1))):
+        preds = preds.sigmoid()
+    target = target.long()
 
     thresholds = _adjust_threshold_arg(thresholds, preds.device)
     return preds, target, thresholds
@@ -309,7 +303,7 @@ def binary_precision_recall_curve(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> Tuple[Tensor, Tensor, Tensor]:
     r"""Compute the precision-recall curve for binary tasks.
 
@@ -350,16 +344,17 @@ def binary_precision_recall_curve(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        input_format: str or bool specifying the format of the input preds tensor. Can be one of:
+        input_format: str specifying the format of the input preds tensor. Can be one of:
 
-            - ``'auto'`` or ``True``: automatically detect the format based on the values in the tensor. If all values
-                are in the [0,1] range, we consider the tensor to be probabilities and do nothing. Else we consider the
-                tensor to be logits and will apply sigmoid to the tensor before calculating the metric.
-            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. No
-                transformation will be applied to the tensor, but values will be checked to be in [0,1] range.
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
             - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
-                will apply sigmoid to the tensor before calculating the metric.
-            - ``False``: will disable all input formatting. This is the fastest option but also the least safe.
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         (tuple): a tuple of 3 tensors containing:
@@ -397,7 +392,7 @@ def _multiclass_precision_recall_curve_arg_validation(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     average: Optional[Literal["micro", "macro"]] = None,
-    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> None:
     """Validate non tensor input.
 
@@ -418,7 +413,7 @@ def _multiclass_precision_recall_curve_tensor_validation(
     target: Tensor,
     num_classes: int,
     ignore_index: Optional[int] = None,
-    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> None:
     """Validate tensor input.
 
@@ -472,7 +467,7 @@ def _multiclass_precision_recall_curve_format(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     average: Optional[Literal["micro", "macro"]] = None,
-    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> Tuple[Tensor, Tensor, Optional[Tensor]]:
     """Convert all input to the right format.
 
@@ -490,11 +485,8 @@ def _multiclass_precision_recall_curve_format(
         preds = preds[idx]
         target = target[idx]
 
-    if input_format:
-        if input_format == "logits":
-            preds = preds.softmax(1)
-        if (input_format == "auto" or input_format is True) and not torch.all((preds >= 0) * (preds <= 1)):
-            preds = preds.softmax(1)
+    if input_format == "logits" or (input_format == "auto" and not torch.all((preds >= 0) * (preds <= 1))):
+        preds = preds.softmax(1)
 
     if average == "micro":
         preds = preds.flatten()
@@ -640,7 +632,7 @@ def multiclass_precision_recall_curve(
     average: Optional[Literal["micro", "macro"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Compute the precision-recall curve for multiclass tasks.
 
@@ -689,16 +681,18 @@ def multiclass_precision_recall_curve(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        input_format: str or bool specifying the format of the input preds tensor. Can be one of:
+        input_format: str specifying the format of the input preds tensor. Can be one of:
 
-            - ``'auto'`` or ``True``: automatically detect the format based on the values in the tensor. If all values
-                are in the [0,1] range, we consider the tensor to be probabilities and do nothing. Else we consider the
-                tensor to be logits and will apply sigmoid to the tensor before calculating the metric.
-            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. No
-                transformation will be applied to the tensor, but values will be checked to be in [0,1] range.
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
             - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
-                will apply sigmoid to the tensor before calculating the metric.
-            - ``False``: will disable all input formatting. This is the fastest option but also the least safe.
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
+
 
     Returns:
         (tuple): a tuple of either 3 tensors or 3 lists containing
@@ -767,7 +761,7 @@ def _multilabel_precision_recall_curve_arg_validation(
     num_labels: int,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
-    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> None:
     """Validate non tensor input.
 
@@ -776,7 +770,7 @@ def _multilabel_precision_recall_curve_arg_validation(
     - ``ignore_index`` has to be None or int
 
     """
-    _multiclass_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index, input_format)
+    _multiclass_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index, input_format=input_format)
 
 
 def _multilabel_precision_recall_curve_tensor_validation(
@@ -784,7 +778,7 @@ def _multilabel_precision_recall_curve_tensor_validation(
     target: Tensor,
     num_labels: int,
     ignore_index: Optional[int] = None,
-    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> None:
     """Validate tensor input.
 
@@ -808,7 +802,7 @@ def _multilabel_precision_recall_curve_format(
     num_labels: int,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
-    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> Tuple[Tensor, Tensor, Optional[Tensor]]:
     """Convert all input to the right format.
 
@@ -821,12 +815,9 @@ def _multilabel_precision_recall_curve_format(
     preds = preds.transpose(0, 1).reshape(num_labels, -1).T
     target = target.transpose(0, 1).reshape(num_labels, -1).T
 
-    if input_format:
-        if input_format == "logits":
-            preds = preds.sigmoid()
-        if (input_format == "auto" or input_format is True) and not torch.all((preds >= 0) * (preds <= 1)):
-            preds = preds.sigmoid()
-        target = target.long()
+    if input_format == "logits" or (input_format == "auto" and not torch.all((preds >= 0) * (preds <= 1))):
+        preds = preds.sigmoid()
+    target = target.long()
 
     thresholds = _adjust_threshold_arg(thresholds, preds.device)
     if ignore_index is not None and thresholds is not None:
@@ -909,7 +900,7 @@ def multilabel_precision_recall_curve(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Compute the precision-recall curve for multilabel tasks.
 
@@ -1028,7 +1019,7 @@ def precision_recall_curve(
     average: Optional[Literal["micro", "macro"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-    input_format: Union[Literal["auto", "probs", "logits"], bool] = "auto",
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Compute the precision-recall curve.
 
