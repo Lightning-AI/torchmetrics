@@ -227,6 +227,20 @@ _multilabel_cases = (
 )
 
 
+def check_input_format_matches_data(input_format, request):
+    """Check that the input format matches the data type, else we skip the test."""
+    test_id = request.node.callspec.id
+    test_id = "-".join(test_id.split("-")[1:])  # remove the first part of the id which is the input_format
+    if input_format == "labels" and "labels" not in test_id:
+        pytest.skip("input format labels only works with labels data")
+    if input_format == "logits" and "logits" not in test_id:
+        pytest.skip("input format logits only works with logits data")
+    if input_format == "probs" and "probs" not in test_id:
+        pytest.skip("input format probs only works with probs data")
+    if input_format == "none" and "labels" not in test_id:
+        pytest.skip("input format none only works with labels data")
+
+
 _group_cases = (
     pytest.param(
         _GroupInput(
