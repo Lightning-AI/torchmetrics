@@ -633,7 +633,7 @@ def _multilabel_stat_scores_arg_validation(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
-    input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> None:
     """Validate non tensor input.
 
@@ -670,7 +670,7 @@ def _multilabel_stat_scores_tensor_validation(
     num_labels: int,
     multidim_average: str,
     ignore_index: Optional[int] = None,
-    input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> None:
     """Validate tensor input.
 

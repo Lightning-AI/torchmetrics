@@ -576,7 +576,7 @@ class StatScores(_ClassificationTaskWrapper):
         top_k: Optional[int] = 1,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
-        input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
+        input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
         **kwargs: Any,
     ) -> Metric:
         """Initialize task metric."""

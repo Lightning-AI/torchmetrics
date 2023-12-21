@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Type, Union
+from typing import Any, List, Optional, Type
 
 import torch
 from torch import Tensor
@@ -87,6 +87,20 @@ class BinaryConfusionMatrix(Metric):
             - ``'all'``: normalization over the whole matrix
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
@@ -120,7 +134,7 @@ class BinaryConfusionMatrix(Metric):
         ignore_index: Optional[int] = None,
         normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
         validate_args: bool = True,
-        input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
+        input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -225,6 +239,20 @@ class MulticlassConfusionMatrix(Metric):
             - ``'all'``: normalization over the whole matrix
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (pred is integer tensor):
@@ -264,7 +292,7 @@ class MulticlassConfusionMatrix(Metric):
         ignore_index: Optional[int] = None,
         normalize: Optional[Literal["none", "true", "pred", "all"]] = None,
         validate_args: bool = True,
-        input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
+        input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -424,7 +452,7 @@ class MultilabelConfusionMatrix(Metric):
         ignore_index: Optional[int] = None,
         normalize: Optional[Literal["none", "true", "pred", "all"]] = None,
         validate_args: bool = True,
-        input_format: Union[Literal["auto", "probs", "logits", "labels"], bool] = "auto",
+        input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
