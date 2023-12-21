@@ -61,6 +61,7 @@ def binary_specificity(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> Tensor:
     r"""Compute `Specificity`_ for binary tasks.
 
@@ -91,6 +92,19 @@ def binary_specificity(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
@@ -121,9 +135,9 @@ def binary_specificity(
 
     """
     if validate_args:
-        _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
-        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index)
-    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
+        _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index, input_format)
+        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index, input_format)
+    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index, input_format)
     tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
     return _specificity_reduce(tp, fp, tn, fn, average="binary", multidim_average=multidim_average)
 
@@ -137,6 +151,7 @@ def multiclass_specificity(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> Tensor:
     r"""Compute `Specificity`_ for multiclass tasks.
 
@@ -178,6 +193,19 @@ def multiclass_specificity(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
@@ -226,9 +254,13 @@ def multiclass_specificity(
 
     """
     if validate_args:
-        _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
-        _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
-    preds, target = _multiclass_stat_scores_format(preds, target, top_k)
+        _multiclass_stat_scores_arg_validation(
+            num_classes, top_k, average, multidim_average, ignore_index, input_format
+        )
+        _multiclass_stat_scores_tensor_validation(
+            preds, target, num_classes, multidim_average, ignore_index, input_format
+        )
+    preds, target = _multiclass_stat_scores_format(preds, target, top_k, input_format)
     tp, fp, tn, fn = _multiclass_stat_scores_update(
         preds, target, num_classes, top_k, average, multidim_average, ignore_index
     )
@@ -244,6 +276,7 @@ def multilabel_specificity(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> Tensor:
     r"""Compute `Specificity`_ for multilabel tasks.
 
@@ -283,6 +316,19 @@ def multilabel_specificity(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
@@ -329,9 +375,13 @@ def multilabel_specificity(
 
     """
     if validate_args:
-        _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
-        _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
-    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
+        _multilabel_stat_scores_arg_validation(
+            num_labels, threshold, average, multidim_average, ignore_index, input_format
+        )
+        _multilabel_stat_scores_tensor_validation(
+            preds, target, num_labels, multidim_average, ignore_index, input_format
+        )
+    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index, input_format)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
     return _specificity_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True)
 
@@ -348,6 +398,7 @@ def specificity(
     top_k: Optional[int] = 1,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> Tensor:
     r"""Compute `Specificity`_.
 
@@ -376,19 +427,19 @@ def specificity(
     task = ClassificationTask.from_str(task)
     assert multidim_average is not None  # noqa: S101  # needed for mypy
     if task == ClassificationTask.BINARY:
-        return binary_specificity(preds, target, threshold, multidim_average, ignore_index, validate_args)
+        return binary_specificity(preds, target, threshold, multidim_average, ignore_index, validate_args, input_format)
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         if not isinstance(top_k, int):
             raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
         return multiclass_specificity(
-            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
+            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args, input_format
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_specificity(
-            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
+            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args, input_format
         )
     raise ValueError(f"Not handled value: {task}")
