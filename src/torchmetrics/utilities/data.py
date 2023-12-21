@@ -112,6 +112,14 @@ def to_onehot(
     return tensor_onehot.scatter_(1, index, 1.0)
 
 
+def _top_k_with_half_precision_support(x: Tensor, k: int = 1, dim: int = 1) -> Tensor:
+    """torch.top_k does not support half precision on CPU."""
+    if x.dtype == torch.half and not x.is_cuda:
+        idx = torch.argsort(x, dim=dim, descending=True)
+        return idx.narrow(dim, 0, k)
+    return x.topk(k=k, dim=dim).indices
+
+
 def select_topk(prob_tensor: Tensor, topk: int = 1, dim: int = 1) -> Tensor:
     """Convert a probability tensor to binary by selecting top-k the highest entries.
 
@@ -135,7 +143,7 @@ def select_topk(prob_tensor: Tensor, topk: int = 1, dim: int = 1) -> Tensor:
     if topk == 1:  # argmax has better performance than topk
         topk_tensor = zeros.scatter(dim, prob_tensor.argmax(dim=dim, keepdim=True), 1.0)
     else:
-        topk_tensor = zeros.scatter(dim, prob_tensor.topk(k=topk, dim=dim).indices, 1.0)
+        topk_tensor = zeros.scatter(dim, _top_k_with_half_precision_support(prob_tensor, k=topk, dim=dim), 1.0)
     return topk_tensor.int()
 
 
@@ -169,12 +177,10 @@ def _squeeze_if_scalar(data: Any) -> Any:
 def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     """Implement custom bincount.
 
-    PyTorch currently does not support ``torch.bincount`` for:
-
-        - deterministic mode on GPU.
-        - MPS devices
-
-    This implementation fallback to a for-loop counting occurrences in that case.
+    PyTorch currently does not support ``torch.bincount`` when running in deterministic mode on GPU or when running
+    MPS devices or when running on XLA device. This implementation therefore falls back to using a combination of
+    `torch.arange` and `torch.eq` in these scenarios. A small performance hit can expected and higher memory consumption
+    as `[batch_size, mincount]` tensor needs to be initialized compared to native ``torch.bincount``.
 
     Args:
         x: tensor to count
@@ -191,11 +197,11 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     """
     if minlength is None:
         minlength = len(torch.unique(x))
+
     if torch.are_deterministic_algorithms_enabled() or _XLA_AVAILABLE or _TORCH_GREATER_EQUAL_1_12 and x.is_mps:
-        output = torch.zeros(minlength, device=x.device, dtype=torch.long)
-        for i in range(minlength):
-            output[i] = (x == i).sum()
-        return output
+        mesh = torch.arange(minlength, device=x.device).repeat(len(x), 1)
+        return torch.eq(x.reshape(-1, 1), mesh).sum(dim=0)
+
     return torch.bincount(x, minlength=minlength)
 
 

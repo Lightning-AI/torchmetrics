@@ -26,7 +26,7 @@ from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["CLIPScore.plot"]
 
-if _TRANSFORMERS_GREATER_EQUAL_4_10:
+if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_GREATER_EQUAL_4_10:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
 
@@ -34,7 +34,7 @@ if _TRANSFORMERS_GREATER_EQUAL_4_10:
         _CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
         _CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
 
-    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_clip):
+    if not _try_proceed_with_timeout(_download_clip):
         __doctest_skip__ = ["CLIPScore", "CLIPScore.plot"]
 else:
     __doctest_skip__ = ["CLIPScore", "CLIPScore.plot"]

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Type, Union
 
 import torch
 from torch import Tensor
@@ -225,13 +225,16 @@ class BinaryPrecisionRecallCurve(Metric):
 
         """
         curve_computed = curve or self.compute()
+        # switch order as the standard way is recall along x-axis and precision along y-axis
+        curve_computed = (curve_computed[1], curve_computed[0], curve_computed[2])
+
         score = (
             _auc_compute_without_check(curve_computed[0], curve_computed[1], 1.0)
             if not curve and score is True
             else None
         )
         return plot_curve(
-            curve_computed, score=score, ax=ax, label_names=("Precision", "Recall"), name=self.__class__.__name__
+            curve_computed, score=score, ax=ax, label_names=("Recall", "Precision"), name=self.__class__.__name__
         )
 
 
@@ -435,11 +438,13 @@ class MulticlassPrecisionRecallCurve(Metric):
 
         """
         curve_computed = curve or self.compute()
+        # switch order as the standard way is recall along x-axis and precision along y-axis
+        curve_computed = (curve_computed[1], curve_computed[0], curve_computed[2])
         score = (
             _reduce_auroc(curve_computed[0], curve_computed[1], average=None) if not curve and score is True else None
         )
         return plot_curve(
-            curve_computed, score=score, ax=ax, label_names=("Precision", "Recall"), name=self.__class__.__name__
+            curve_computed, score=score, ax=ax, label_names=("Recall", "Precision"), name=self.__class__.__name__
         )
 
 
@@ -640,11 +645,13 @@ class MultilabelPrecisionRecallCurve(Metric):
 
         """
         curve_computed = curve or self.compute()
+        # switch order as the standard way is recall along x-axis and precision along y-axis
+        curve_computed = (curve_computed[1], curve_computed[0], curve_computed[2])
         score = (
             _reduce_auroc(curve_computed[0], curve_computed[1], average=None) if not curve and score is True else None
         )
         return plot_curve(
-            curve_computed, score=score, ax=ax, label_names=("Precision", "Recall"), name=self.__class__.__name__
+            curve_computed, score=score, ax=ax, label_names=("Recall", "Precision"), name=self.__class__.__name__
         )
 
 
@@ -692,7 +699,7 @@ class PrecisionRecallCurve(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls,
+        cls: Type["PrecisionRecallCurve"],
         task: Literal["binary", "multiclass", "multilabel"],
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         num_classes: Optional[int] = None,

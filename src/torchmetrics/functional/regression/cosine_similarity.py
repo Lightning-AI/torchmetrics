@@ -31,6 +31,11 @@ def _cosine_similarity_update(
 
     """
     _check_same_shape(preds, target)
+    if preds.ndim != 2:
+        raise ValueError(
+            "Expected input to cosine similarity to be 2D tensors of shape `[N,D]` where `N` is the number of samples"
+            f" and `D` is the number of dimensions, but got tensor of shape {preds.shape}"
+        )
     preds = preds.float()
     target = target.float()
 

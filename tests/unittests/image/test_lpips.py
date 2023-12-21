@@ -18,8 +18,9 @@ import pytest
 import torch
 from lpips import LPIPS as LPIPS_reference  # noqa: N811
 from torch import Tensor
+from torchmetrics.functional.image.lpips import learned_perceptual_image_patch_similarity
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
-from torchmetrics.utilities.imports import _LPIPS_AVAILABLE
+from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCHVISION_AVAILABLE
 
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -47,6 +48,7 @@ def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, normalize: bool = Fal
     return res.sum()
 
 
+@pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
 class TestLPIPS(MetricTester):
     """Test class for `LearnedPerceptualImagePatchSimilarity` metric."""
@@ -66,6 +68,16 @@ class TestLPIPS(MetricTester):
             check_scriptable=False,
             check_state_dict=False,
             metric_args={"net_type": net_type},
+        )
+
+    def test_lpips_functional(self):
+        """Test functional implementation of metric."""
+        self.run_functional_metric_test(
+            preds=_inputs.img1,
+            target=_inputs.img2,
+            metric_functional=learned_perceptual_image_patch_similarity,
+            reference_metric=partial(_compare_fn, net_type="alex"),
+            metric_args={"net_type": "alex"},
         )
 
     def test_lpips_differentiability(self):
@@ -94,6 +106,7 @@ def test_normalize_arg(normalize):
     assert res == res2
 
 
+@pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
 def test_error_on_wrong_init():
     """Test class raises the expected errors."""
@@ -104,6 +117,7 @@ def test_error_on_wrong_init():
         LearnedPerceptualImagePatchSimilarity(net_type="squeeze", reduction=None)
 
 
+@pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
 @pytest.mark.parametrize(
     ("inp1", "inp2"),

@@ -2,10 +2,10 @@
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
 coverage ==7.3.2
-pytest ==7.4.2
+pytest ==7.4.3
 pytest-cov ==4.1.0
-pytest-doctestplus ==1.0.0
-pytest-rerunfailures ==12.0
+pytest-doctestplus ==1.1.0
+pytest-rerunfailures ==13.0
 pytest-timeout ==2.2.0
 phmdoctest ==1.4.0
 
@@ -13,5 +13,5 @@ psutil <5.10.0
 requests <=2.31.0
 fire <=0.5.0
 
-cloudpickle >1.3, <=2.2.1
+cloudpickle >1.3, <=3.0.0
 scikit-learn >=1.1.1, <1.4.0
