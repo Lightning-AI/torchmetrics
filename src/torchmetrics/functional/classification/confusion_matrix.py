@@ -155,7 +155,7 @@ def _binary_confusion_matrix_format(
         preds = preds.sigmoid()
     if preds.is_floating_point() and input_format == "auto" and not torch.all((preds >= 0) * (preds <= 1)):
         preds = preds.sigmoid()
-    if convert_to_labels and input_format != "labels":
+    if convert_to_labels and input_format not in ("labels", "none"):
         preds = preds > threshold
 
     return preds, target
@@ -751,7 +751,7 @@ def confusion_matrix(
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
-        return binary_confusion_matrix(preds, target, threshold, normalize, ignore_index, validate_args)
+        return binary_confusion_matrix(preds, target, threshold, normalize, ignore_index, validate_args, input_format)
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")

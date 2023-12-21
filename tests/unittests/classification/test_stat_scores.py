@@ -32,7 +32,12 @@ from torchmetrics.functional.classification.stat_scores import (
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.classification.inputs import (
+    _binary_cases,
+    _multiclass_cases,
+    _multilabel_cases,
+    check_input_format_matches_data,
+)
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
@@ -74,8 +79,10 @@ class TestBinaryStatScores(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [False, True])
-    def test_binary_stat_scores(self, ddp, inputs, ignore_index, multidim_average):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
+    def test_binary_stat_scores(self, ddp, inputs, ignore_index, multidim_average, input_format, request):
         """Test class implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -97,8 +104,10 @@ class TestBinaryStatScores(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    def test_binary_stat_scores_functional(self, inputs, ignore_index, multidim_average):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
+    def test_binary_stat_scores_functional(self, inputs, ignore_index, multidim_average, input_format, request):
         """Test functional implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -226,8 +235,10 @@ class TestMulticlassStatScores(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_multiclass_stat_scores(self, ddp, inputs, ignore_index, multidim_average, average):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
+    def test_multiclass_stat_scores(self, ddp, inputs, ignore_index, multidim_average, average, input_format, request):
         """Test class implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -258,8 +269,12 @@ class TestMulticlassStatScores(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
-    def test_multiclass_stat_scores_functional(self, inputs, ignore_index, multidim_average, average):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
+    def test_multiclass_stat_scores_functional(
+        self, inputs, ignore_index, multidim_average, average, input_format, request
+    ):
         """Test functional implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -441,8 +456,10 @@ class TestMultilabelStatScores(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
-    def test_multilabel_stat_scores(self, ddp, inputs, ignore_index, multidim_average, average):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
+    def test_multilabel_stat_scores(self, ddp, inputs, ignore_index, multidim_average, average, input_format, request):
         """Test class implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -474,8 +491,12 @@ class TestMultilabelStatScores(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
-    def test_multilabel_stat_scores_functional(self, inputs, ignore_index, multidim_average, average):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
+    def test_multilabel_stat_scores_functional(
+        self, inputs, ignore_index, multidim_average, average, input_format, request
+    ):
         """Test functional implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
