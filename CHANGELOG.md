@@ -34,7 +34,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `CriticalSuccessIndex` metric to image subpackage ([#2257](https://github.com/Lightning-AI/torchmetrics/pull/2257))
 
 
+- Added `Spatial Correlation Coefficient` to image subpackage ([#2248](https://github.com/Lightning-AI/torchmetrics/pull/2248))
+
+
 - Added `RetrievalAUROC` metric ([#2251](https://github.com/Lightning-AI/torchmetrics/pull/2251))
+
 
 ### Changed
 
