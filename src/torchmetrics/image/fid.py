@@ -277,6 +277,7 @@ class FrechetInceptionDistance(Metric):
     fake_features_num_samples: Tensor
 
     inception: Module
+    feature_network: str = "inception"
 
     def __init__(
         self,
