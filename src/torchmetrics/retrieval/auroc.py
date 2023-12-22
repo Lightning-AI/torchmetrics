@@ -97,7 +97,7 @@ class RetrievalAUROC(RetrievalMetric):
 
     def __init__(
         self,
-        empty_target_action: Literal["error",  "skip", "neg", "pos"] = "neg",
+        empty_target_action: Literal["error", "skip", "neg", "pos"] = "neg",
         ignore_index: Optional[int] = None,
         top_k: Optional[int] = None,
         max_fpr: Optional[float] = None,
