@@ -23,6 +23,7 @@ from torchmetrics.functional.image.psnrb import peak_signal_noise_ratio_with_blo
 from torchmetrics.functional.image.rase import relative_average_spectral_error
 from torchmetrics.functional.image.rmse_sw import root_mean_squared_error_using_sliding_window
 from torchmetrics.functional.image.sam import spectral_angle_mapper
+from torchmetrics.functional.image.scc import spatial_correlation_coefficient
 from torchmetrics.functional.image.ssim import (
     multiscale_structural_similarity_index_measure,
     structural_similarity_index_measure,
@@ -49,4 +50,5 @@ __all__ = [
     "learned_perceptual_image_patch_similarity",
     "perceptual_path_length",
     "critical_success_index",
+    "spatial_correlation_coefficient",
 ]
