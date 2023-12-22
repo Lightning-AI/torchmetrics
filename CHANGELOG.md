@@ -28,11 +28,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `aggregate` argument to retrieval metrics ([#2220](https://github.com/Lightning-AI/torchmetrics/pull/2220))
 
 
-- Added `RetrievalAUROC` metric ([#2251](https://github.com/Lightning-AI/torchmetrics/pull/2251))
+- Added `SpatialDistortionIndex` metric to image domain ([#2260](https://github.com/Lightning-AI/torchmetrics/pull/2260))
 
 
 - Added `CriticalSuccessIndex` metric to image subpackage ([#2257](https://github.com/Lightning-AI/torchmetrics/pull/2257))
 
+
+- Added `RetrievalAUROC` metric ([#2251](https://github.com/Lightning-AI/torchmetrics/pull/2251))
 
 ### Changed
 

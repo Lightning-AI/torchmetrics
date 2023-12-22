@@ -13,6 +13,7 @@
 # limitations under the License.
 from torchmetrics.functional.image.csi import critical_success_index
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
+from torchmetrics.functional.image.d_s import spatial_distortion_index
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
 from torchmetrics.functional.image.gradients import image_gradients
 from torchmetrics.functional.image.lpips import learned_perceptual_image_patch_similarity
@@ -32,6 +33,7 @@ from torchmetrics.functional.image.vif import visual_information_fidelity
 
 __all__ = [
     "spectral_distortion_index",
+    "spatial_distortion_index",
     "error_relative_global_dimensionless_synthesis",
     "image_gradients",
     "peak_signal_noise_ratio",
