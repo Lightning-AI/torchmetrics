@@ -209,6 +209,8 @@ def _class_test(
         total_preds = [item for sublist in preds for item in sublist]
     if isinstance(target, Tensor):
         total_target = torch.cat([target[i] for i in range(num_batches)]).cpu()
+    elif isinstance(target, list) and len(target) > 0 and isinstance(target[0], dict):
+        total_target = {k: torch.cat([t[k] for t in target]) for k in target[0]}
     else:
         total_target = [item for sublist in target for item in sublist]
 
@@ -228,7 +230,7 @@ def _class_test(
 
 def _functional_test(
     preds: Union[Tensor, list],
-    target: Union[Tensor, list],
+    target: Union[Tensor, list, List[Dict[str, Tensor]]],
     metric_functional: Callable,
     reference_metric: Callable,
     metric_args: Optional[dict] = None,
@@ -264,6 +266,13 @@ def _functional_test(
         preds = preds.to(device)
     if isinstance(target, Tensor):
         target = target.to(device)
+    elif isinstance(target, list):
+        for i, target_dict in enumerate(target):
+            if isinstance(target_dict, dict):
+                for k in target_dict:
+                    if isinstance(target_dict[k], Tensor):
+                        target[i][k] = target_dict[k].to(device)
+
     kwargs_update = {k: v.to(device) if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
     for i in range(num_batches // 2):
@@ -286,7 +295,7 @@ def _assert_dtype_support(
     metric_module: Optional[Metric],
     metric_functional: Optional[Callable],
     preds: Tensor,
-    target: Tensor,
+    target: Union[Tensor, List[Dict[str, Tensor]]],
     device: str = "cpu",
     dtype: torch.dtype = torch.half,
     **kwargs_update: Any,
@@ -305,7 +314,18 @@ def _assert_dtype_support(
 
     """
     y_hat = preds[0].to(dtype=dtype, device=device) if preds[0].is_floating_point() else preds[0].to(device)
-    y = target[0].to(dtype=dtype, device=device) if target[0].is_floating_point() else target[0].to(device)
+    y = (
+        target[0].to(dtype=dtype, device=device)
+        if isinstance(target[0], Tensor) and target[0].is_floating_point()
+        else {
+            k: target[0][k].to(dtype=dtype, device=device)
+            if target[0][k].is_floating_point()
+            else target[0][k].to(device)
+            for k in target[0]
+        }
+        if isinstance(target[0], dict)
+        else target[0].to(device)
+    )
     kwargs_update = {
         k: (v[0].to(dtype=dtype) if v.is_floating_point() else v[0]).to(device) if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
@@ -422,6 +442,7 @@ class MetricTester:
                     check_dist_sync_on_step=check_dist_sync_on_step,
                     check_batch=check_batch,
                     atol=atol,
+                    device="cuda" if torch.cuda.is_available() else "cpu",
                     fragment_kwargs=fragment_kwargs,
                     check_scriptable=check_scriptable,
                     check_state_dict=check_state_dict,
