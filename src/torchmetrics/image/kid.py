@@ -163,6 +163,8 @@ class KernelInceptionDistance(Metric):
 
     real_features: List[Tensor]
     fake_features: List[Tensor]
+    inception: Module
+    feature_network: str = "inception"
 
     def __init__(
         self,
