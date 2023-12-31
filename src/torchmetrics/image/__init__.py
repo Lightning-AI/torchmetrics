@@ -18,6 +18,7 @@ from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
 from torchmetrics.image.mifid import MemorizationInformedFrechetInceptionDistance
 from torchmetrics.image.psnr import PeakSignalNoiseRatio
 from torchmetrics.image.psnrb import PeakSignalNoiseRatioWithBlockedEffect
+from torchmetrics.image.qnr import QualityWithNoReference
 from torchmetrics.image.rase import RelativeAverageSpectralError
 from torchmetrics.image.rmse_sw import RootMeanSquaredErrorUsingSlidingWindow
 from torchmetrics.image.sam import SpectralAngleMapper
@@ -48,6 +49,7 @@ __all__ = [
     "TotalVariation",
     "CriticalSuccessIndex",
     "SpatialCorrelationCoefficient",
+    "QualityWithNoReference",
 ]
 
 if _TORCH_FIDELITY_AVAILABLE:
