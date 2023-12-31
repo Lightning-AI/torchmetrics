@@ -100,6 +100,7 @@ class InceptionScore(Metric):
 
     features: List
     inception: Module
+    feature_network: str = "inception"
 
     def __init__(
         self,

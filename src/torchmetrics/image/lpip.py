@@ -98,6 +98,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
 
     sum_scores: Tensor
     total: Tensor
+    feature_network: str = "net"
 
     # due to the use of named tuple in the backbone the net variable cannot be scripted
     __jit_ignored_attributes__: ClassVar[List[str]] = ["net"]

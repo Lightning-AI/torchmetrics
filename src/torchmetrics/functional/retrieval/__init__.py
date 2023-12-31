@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from torchmetrics.functional.retrieval.auroc import retrieval_auroc
 from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
 from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
 from torchmetrics.functional.retrieval.hit_rate import retrieval_hit_rate
@@ -23,6 +23,7 @@ from torchmetrics.functional.retrieval.recall import retrieval_recall
 from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciprocal_rank
 
 __all__ = [
+    "retrieval_auroc",
     "retrieval_average_precision",
     "retrieval_fall_out",
     "retrieval_hit_rate",

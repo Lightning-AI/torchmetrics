@@ -19,7 +19,7 @@ from lightning_utilities import apply_to_collection
 from torch import Tensor
 
 from torchmetrics.utilities.exceptions import TorchMetricsUserWarning
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12, _XLA_AVAILABLE
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12, _TORCH_GREATER_EQUAL_1_13, _XLA_AVAILABLE
 from torchmetrics.utilities.prints import rank_zero_warn
 
 METRIC_EPS = 1e-6
@@ -115,7 +115,9 @@ def to_onehot(
 def _top_k_with_half_precision_support(x: Tensor, k: int = 1, dim: int = 1) -> Tensor:
     """torch.top_k does not support half precision on CPU."""
     if x.dtype == torch.half and not x.is_cuda:
-        idx = torch.argsort(x, dim=dim, descending=True)
+        if not _TORCH_GREATER_EQUAL_1_13:
+            raise RuntimeError("Half precision (torch.float16) is not supported on CPU for PyTorch < 1.13.")
+        idx = torch.argsort(x, dim=dim, stable=True).flip(dim)
         return idx.narrow(dim, 0, k)
     return x.topk(k=k, dim=dim).indices
 
@@ -139,11 +141,11 @@ def select_topk(prob_tensor: Tensor, topk: int = 1, dim: int = 1) -> Tensor:
                 [1, 1, 0]], dtype=torch.int32)
 
     """
-    zeros = torch.zeros_like(prob_tensor)
+    topk_tensor = torch.zeros_like(prob_tensor, dtype=torch.int)
     if topk == 1:  # argmax has better performance than topk
-        topk_tensor = zeros.scatter(dim, prob_tensor.argmax(dim=dim, keepdim=True), 1.0)
+        topk_tensor.scatter_(dim, prob_tensor.argmax(dim=dim, keepdim=True), 1.0)
     else:
-        topk_tensor = zeros.scatter(dim, _top_k_with_half_precision_support(prob_tensor, k=topk, dim=dim), 1.0)
+        topk_tensor.scatter_(dim, _top_k_with_half_precision_support(prob_tensor, k=topk, dim=dim), 1.0)
     return topk_tensor.int()
 
 
