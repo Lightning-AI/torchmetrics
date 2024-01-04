@@ -102,9 +102,8 @@ class QualityWithNoReference(Metric):
     ) -> None:
         super().__init__(**kwargs)
         rank_zero_warn(
-            "Metric `QualityWithNoReference` will save all targets and"
-            " predictions in buffer. For large datasets this may lead"
-            " to large memory footprint."
+            "Metric `QualityWithNoReference` will save all targets and predictions in buffer."
+            " For large datasets this may lead to large memory footprint."
         )
 
         if not isinstance(alpha, (int, float)) or alpha < 0:
