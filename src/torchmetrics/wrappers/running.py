@@ -127,6 +127,7 @@ class Running(WrapperMetric):
         """Compute the metric over the running window."""
         for i in range(self.window):
             self.base_metric._reduce_states({key: getattr(self, key + f"_{i}") for key in self.base_metric._defaults})
+        self.base_metric._update_count = self._num_vals_seen
         val = self.base_metric.compute()
         self.base_metric.reset()
         return val

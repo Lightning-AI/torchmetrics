@@ -122,6 +122,9 @@ class PerceptualPathLength(Metric):
     higher_is_better: Optional[bool] = True
     full_state_update: bool = True
 
+    net: nn.Module
+    feature_network: str = "net"
+
     def __init__(
         self,
         num_samples: int = 10_000,
