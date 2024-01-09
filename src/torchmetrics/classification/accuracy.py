@@ -248,14 +248,12 @@ class MulticlassAccuracy(MulticlassStatScores):
         tensor([0.5000, 1.0000, 1.0000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics.classification impo
-        **kwargs: Any,rt MulticlassAccuracy
+        >>> from torchmetrics.classification import MulticlassAccuracy
         >>> target = tensor([2, 1, 0, 0])
         >>> preds = tensor([[0.16, 0.26, 0.58],
         ...                 [0.22, 0.61, 0.17],
         ...                 [0.71, 0.09, 0.20],
         ...                 [0.05, 0.82, 0.13]])
-        **kwargs: Any,
         >>> metric = MulticlassAccuracy(num_classes=3)
         >>> metric(preds, target)
         tensor(0.8333)
