@@ -19,6 +19,8 @@ import pytest
 import torch
 from numpy import array
 from torch import Tensor, tensor
+from torchmetrics.retrieval.base import _retrieval_aggregate
+from typing_extensions import Literal
 
 from unittests.helpers import seed_all
 from unittests.helpers.testers import Metric, MetricTester
@@ -29,8 +31,8 @@ from unittests.retrieval.inputs import _input_retrieval_scores_extra as _irs_ext
 from unittests.retrieval.inputs import _input_retrieval_scores_float_target as _irs_float_tgt
 from unittests.retrieval.inputs import _input_retrieval_scores_for_adaptive_k as _irs_adpt_k
 from unittests.retrieval.inputs import _input_retrieval_scores_int_target as _irs_int_tgt
-from unittests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes as _irs_mis_sz
-from unittests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_mis_sz_fn
+from unittests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes as _irs_bad_sz
+from unittests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_bad_sz_fn
 from unittests.retrieval.inputs import _input_retrieval_scores_no_target as _irs_no_tgt
 from unittests.retrieval.inputs import _input_retrieval_scores_with_ignore_index as _irs_ii
 from unittests.retrieval.inputs import _input_retrieval_scores_wrong_targets as _irs_bad_tgt
@@ -71,6 +73,10 @@ def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, 
     return [structure(x, dtype=dtype) for x in res.values()]
 
 
+def _custom_aggregate_fn(val: Tensor, dim=None) -> Tensor:
+    return (val**2).mean(dim=dim)
+
+
 def _compute_sklearn_metric(
     preds: Union[Tensor, array],
     target: Union[Tensor, array],
@@ -79,6 +85,7 @@ def _compute_sklearn_metric(
     empty_target_action: str = "skip",
     ignore_index: Optional[int] = None,
     reverse: bool = False,
+    aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
     **kwargs: Any,
 ) -> Tensor:
     """Compute metric with multiple iterations over every query predictions set."""
@@ -122,7 +129,9 @@ def _compute_sklearn_metric(
     sk_results = np.array(sk_results)
     sk_results[np.isnan(sk_results)] = 0.0  # this is needed with old versions of sklearn
 
-    return sk_results.mean() if len(sk_results) > 0 else np.array(0.0)
+    if len(sk_results) > 0:
+        return _retrieval_aggregate(torch.from_numpy(sk_results), aggregation=aggregation).numpy()
+    return np.array(0.0)
 
 
 def _concat_tests(*tests: Tuple[Dict]) -> Dict:
@@ -136,7 +145,7 @@ _errors_test_functional_metric_parameters_default = {
     "argnames": "preds,target,message,metric_args",
     "argvalues": [
         # check input shapes are consistent (func)
-        (_irs_mis_sz_fn.preds, _irs_mis_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
+        (_irs_bad_sz_fn.preds, _irs_bad_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
         # check input tensors are not empty
         (_irs_empty.preds, _irs_empty.target, "`preds` and `target` must be non-empty and non-scalar tensors", {}),
         # check on input dtypes
@@ -150,7 +159,7 @@ _errors_test_functional_metric_parameters_with_nonbinary = {
     "argnames": "preds,target,message,metric_args",
     "argvalues": [
         # check input shapes are consistent (func)
-        (_irs_mis_sz_fn.preds, _irs_mis_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
+        (_irs_bad_sz_fn.preds, _irs_bad_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
         # check input tensors are not empty
         (_irs_empty.preds, _irs_empty.target, "`preds` and `target` must be non-empty and non-scalar tensors", {}),
         # check on input dtypes
@@ -224,9 +233,9 @@ _errors_test_class_metric_parameters_with_nonbinary = {
         ),
         # check input shapes are consistent
         (
-            _irs_mis_sz.indexes,
-            _irs_mis_sz.preds,
-            _irs_mis_sz.target,
+            _irs_bad_sz.indexes,
+            _irs_bad_sz.preds,
+            _irs_bad_sz.target,
             "`indexes`, `preds` and `target` must be of the same shape",
             {"empty_target_action": "skip"},
         ),
@@ -278,9 +287,9 @@ _errors_test_class_metric_parameters_default = {
         ),
         # check input shapes are consistent
         (
-            _irs_mis_sz.indexes,
-            _irs_mis_sz.preds,
-            _irs_mis_sz.target,
+            _irs_bad_sz.indexes,
+            _irs_bad_sz.preds,
+            _irs_bad_sz.target,
             "`indexes`, `preds` and `target` must be of the same shape",
             {"empty_target_action": "skip"},
         ),

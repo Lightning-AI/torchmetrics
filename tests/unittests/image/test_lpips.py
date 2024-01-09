@@ -11,24 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
+from typing import NamedTuple
 
 import pytest
 import torch
 from lpips import LPIPS as LPIPS_reference  # noqa: N811
 from torch import Tensor
+from torchmetrics.functional.image.lpips import learned_perceptual_image_patch_similarity
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
-from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCH_GREATER_EQUAL_1_9
+from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCHVISION_AVAILABLE
 
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["img1", "img2"])
 
-_inputs = Input(
+class _Input(NamedTuple):
+    img1: Tensor
+    img2: Tensor
+
+
+_inputs = _Input(
     img1=torch.rand(4, 2, 3, 50, 50),
     img2=torch.rand(4, 2, 3, 50, 50),
 )
@@ -43,6 +48,7 @@ def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, normalize: bool = Fal
     return res.sum()
 
 
+@pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
 class TestLPIPS(MetricTester):
     """Test class for `LearnedPerceptualImagePatchSimilarity` metric."""
@@ -64,6 +70,16 @@ class TestLPIPS(MetricTester):
             metric_args={"net_type": net_type},
         )
 
+    def test_lpips_functional(self):
+        """Test functional implementation of metric."""
+        self.run_functional_metric_test(
+            preds=_inputs.img1,
+            target=_inputs.img2,
+            metric_functional=learned_perceptual_image_patch_similarity,
+            reference_metric=partial(_compare_fn, net_type="alex"),
+            metric_args={"net_type": "alex"},
+        )
+
     def test_lpips_differentiability(self):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
@@ -73,8 +89,6 @@ class TestLPIPS(MetricTester):
     # LPIPS half + cpu does not work due to missing support in torch.min for older version of torch
     def test_lpips_half_cpu(self):
         """Test for half + cpu support."""
-        if not _TORCH_GREATER_EQUAL_1_9:
-            pytest.xfail(reason="LPIPS metric does not support cpu + half precision for v1.8.1 or lower of Pytorch")
         self.run_precision_test_cpu(_inputs.img1, _inputs.img2, LearnedPerceptualImagePatchSimilarity)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
@@ -92,6 +106,7 @@ def test_normalize_arg(normalize):
     assert res == res2
 
 
+@pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
 def test_error_on_wrong_init():
     """Test class raises the expected errors."""
@@ -102,6 +117,7 @@ def test_error_on_wrong_init():
         LearnedPerceptualImagePatchSimilarity(net_type="squeeze", reduction=None)
 
 
+@pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 @pytest.mark.skipif(not _LPIPS_AVAILABLE, reason="test requires that lpips is installed")
 @pytest.mark.parametrize(
     ("inp1", "inp2"),

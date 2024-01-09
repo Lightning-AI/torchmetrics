@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 from typing import Any
 
@@ -21,6 +20,7 @@ from kornia.losses import total_variation as kornia_total_variation
 from torchmetrics.functional.image.tv import total_variation
 from torchmetrics.image.tv import TotalVariation
 
+from unittests import _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -50,7 +50,7 @@ def _total_variation_kornia_tester(preds, target, reduction):
 
 
 # define inputs
-Input = namedtuple("Input", ["preds", "target"])
+
 
 _inputs = []
 for size, channel, dtype in [
@@ -61,7 +61,7 @@ for size, channel, dtype in [
 ]:
     preds = torch.rand(2, 4, channel, size, size, dtype=dtype)
     target = torch.rand(2, 4, channel, size, size, dtype=dtype)
-    _inputs.append(Input(preds=preds, target=target))
+    _inputs.append(_Input(preds=preds, target=target))
 
 
 @pytest.mark.parametrize(

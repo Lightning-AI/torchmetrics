@@ -35,7 +35,7 @@
 
 import re
 from functools import lru_cache
-from typing import Dict, Iterator, List, Optional, Sequence, Tuple, Union
+from typing import Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union
 
 from torch import Tensor, tensor
 
@@ -60,7 +60,7 @@ class _TercomTokenizer:
     See src/ter/core/Normalizer.java in https://github.com/jhclark/tercom Note that Python doesn't support named Unicode
     blocks so the mapping for relevant blocks was taken from here: https://unicode-table.com/en/blocks/
 
-    This implementation follows the implemenation from
+    This implementation follows the implementation from
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/tokenizers/tokenizer_ter.py.
 
     """
@@ -80,7 +80,7 @@ class _TercomTokenizer:
         Args:
             normalize: An indication whether a general tokenization to be applied.
             no_punctuation: An indication whteher a punctuation to be removed from the sentences.
-            lowercase: An indication whether to enable case-insesitivity.
+            lowercase: An indication whether to enable case-insensitivity.
             asian_support: An indication whether asian characters to be processed.
 
         """
@@ -134,7 +134,7 @@ class _TercomTokenizer:
             (r"&gt;", ">"),
             # tokenize punctuation
             (r"([{-~[-` -&(-+:-@/])", r" \1 "),
-            # handle possesives
+            # handle possessive
             (r"'s ", r" 's "),
             (r"'s$", r" 's"),
             # tokenize period and comma unless preceded by a digit
@@ -150,7 +150,7 @@ class _TercomTokenizer:
         return sentence
 
     @classmethod
-    def _normalize_asian(cls, sentence: str) -> str:
+    def _normalize_asian(cls: Type["_TercomTokenizer"], sentence: str) -> str:
         """Split Chinese chars and Japanese kanji down to character level."""
         # 4E00—9FFF CJK Unified Ideographs
         # 3400—4DBF CJK Unified Ideographs Extension A
@@ -182,7 +182,7 @@ class _TercomTokenizer:
         return re.sub(r"[\.,\?:;!\"\(\)]", "", sentence)
 
     @classmethod
-    def _remove_asian_punct(cls, sentence: str) -> str:
+    def _remove_asian_punct(cls: Type["_TercomTokenizer"], sentence: str) -> str:
         """Remove asian punctuation from an input sentence string."""
         sentence = re.sub(cls._ASIAN_PUNCTUATION, r"", sentence)
         return re.sub(cls._FULL_WIDTH_PUNCTUATION, r"", sentence)
@@ -542,8 +542,8 @@ def translation_edit_rate(
 ) -> Union[Tensor, Tuple[Tensor, List[Tensor]]]:
     """Calculate Translation edit rate (`TER`_)  of machine translated text with one or more references.
 
-    This implementation follows the implmenetaions from
-    https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py. The `sacrebleu` implmenetation is a
+    This implementation follows the implementations from
+    https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py. The `sacrebleu` implementation is a
     near-exact reimplementation of the Tercom algorithm, produces identical results on all "sane" outputs.
 
     Args:
@@ -551,7 +551,7 @@ def translation_edit_rate(
         target: An iterable of iterables of reference corpus.
         normalize: An indication whether a general tokenization to be applied.
         no_punctuation: An indication whteher a punctuation to be removed from the sentences.
-        lowercase: An indication whether to enable case-insesitivity.
+        lowercase: An indication whether to enable case-insensitivity.
         asian_support: An indication whether asian characters to be processed.
         return_sentence_level_score: An indication whether a sentence-level TER to be returned.
 

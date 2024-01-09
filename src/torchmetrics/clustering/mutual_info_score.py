@@ -29,20 +29,21 @@ class MutualInfoScore(Metric):
     r"""Compute `Mutual Information Score`_.
 
     .. math::
-        MI(U,V) = \sum_{i=1}^{\abs{U}} \sum_{j=1}^{\abs{V}} \frac{\abs{U_i\cap V_j}}{N}
-        \log\frac{N\abs{U_i\cap V_j}}{\abs{U_i}\abs{V_j}}
+        MI(U,V) = \sum_{i=1}^{|U|} \sum_{j=1}^{|V|} \frac{|U_i\cap V_j|}{N}
+        \log\frac{N|U_i\cap V_j|}{|U_i||V_j|}
 
     Where :math:`U` is a tensor of target values, :math:`V` is a tensor of predictions,
-    :math:`\abs{U_i}` is the number of samples in cluster :math:`U_i`, and
-    :math:`\abs{V_i}` is the number of samples in cluster :math:`V_i`.
+    :math:`|U_i|` is the number of samples in cluster :math:`U_i`, and :math:`|V_i|` is the number of samples in
+    cluster :math:`V_i`. The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields the same mutual
+    information score.
 
-    The metric is symmetric, therefore swapping :math:`U` and :math:`V` yields
-    the same mutual information score.
+    This clustering metric is an extrinsic measure, because it requires ground truth clustering labels, which may not
+    be available in practice since clustering in generally is used for unsupervised learning.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): either single output float tensor with shape ``(N,)``
-    - ``target`` (:class:`~torch.Tensor`): either single output tensor with shape ``(N,)``
+    - ``preds`` (:class:`~torch.Tensor`): single integer tensor with shape ``(N,)`` with predicted cluster labels
+    - ``target`` (:class:`~torch.Tensor`): single integer tensor with shape ``(N,)`` with ground truth cluster labels
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
@@ -51,7 +52,7 @@ class MutualInfoScore(Metric):
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
+    Example::
         >>> import torch
         >>> from torchmetrics.clustering import MutualInfoScore
         >>> preds = torch.tensor([2, 1, 0, 1, 0])
@@ -62,9 +63,9 @@ class MutualInfoScore(Metric):
 
     """
 
-    is_differentiable = True
-    higher_is_better = None
-    full_state_update: bool = True
+    is_differentiable: bool = True
+    higher_is_better: Optional[bool] = True
+    full_state_update: bool = False
     plot_lower_bound: float = 0.0
     preds: List[Tensor]
     target: List[Tensor]
@@ -117,9 +118,10 @@ class MutualInfoScore(Metric):
             >>> import torch
             >>> from torchmetrics.clustering import MutualInfoScore
             >>> metric = MutualInfoScore()
+            >>> values = [ ]
             >>> for _ in range(10):
-            ...     metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
-            >>> fig_, ax_ = metric.plot(metric.compute())
+            ...     values.append(metric(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,))))
+            >>> fig_, ax_ = metric.plot(values)
 
         """
         return self._plot(val, ax)

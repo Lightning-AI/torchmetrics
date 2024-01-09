@@ -64,7 +64,7 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``.
     - ``groups`` (int tensor): ``(N, ...)``. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
@@ -101,8 +101,8 @@ class BinaryGroupStatRates(_AbstractGroupStatScores):
         {'group_0': tensor([0., 0., 1., 0.]), 'group_1': tensor([1., 0., 0., 0.])}
 
     """
-    is_differentiable = False
-    higher_is_better = False
+    is_differentiable: bool = False
+    higher_is_better: bool = False
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
@@ -159,7 +159,7 @@ class BinaryFairness(_AbstractGroupStatScores):
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``groups`` (int tensor): ``(N, ...)``. The group identifiers should be ``0, 1, ..., (num_groups - 1)``.
     - ``target`` (int tensor): ``(N, ...)``.
@@ -207,8 +207,8 @@ class BinaryFairness(_AbstractGroupStatScores):
         {'DP_0_1': tensor(0.), 'EO_0_1': tensor(0.)}
 
     """
-    is_differentiable = False
-    higher_is_better = False
+    is_differentiable: bool = False
+    higher_is_better: bool = False
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0

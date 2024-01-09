@@ -24,7 +24,6 @@
 # License under BSD 2-clause
 import inspect
 import os
-from collections import namedtuple
 from typing import List, NamedTuple, Optional, Tuple, Union
 
 import torch
@@ -41,8 +40,6 @@ _weight_map = {
 
 if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["learned_perceptual_image_patch_similarity"]
-else:
-    from torchvision import models as tv
 
 
 def _get_net(net: str, pretrained: bool) -> nn.modules.container.Sequential:
@@ -53,6 +50,8 @@ def _get_net(net: str, pretrained: bool) -> nn.modules.container.Sequential:
         pretrained: If pretrained weights should be used
 
     """
+    from torchvision import models as tv
+
     if _TORCHVISION_GREATER_EQUAL_0_13:
         if pretrained:
             pretrained_features = getattr(tv, net)(weights=getattr(tv, _weight_map[net]).IMAGENET1K_V1).features
@@ -86,13 +85,21 @@ class SqueezeNet(torch.nn.Module):
 
     def forward(self, x: Tensor) -> NamedTuple:
         """Process input."""
-        squeeze_output = namedtuple("squeeze_output", ["relu1", "relu2", "relu3", "relu4", "relu5", "relu6", "relu7"])
+
+        class _SqueezeOutput(NamedTuple):
+            relu1: Tensor
+            relu2: Tensor
+            relu3: Tensor
+            relu4: Tensor
+            relu5: Tensor
+            relu6: Tensor
+            relu7: Tensor
 
         relus = []
         for slice_ in self.slices:
             x = slice_(x)
             relus.append(x)
-        return squeeze_output(*relus)
+        return _SqueezeOutput(*relus)
 
 
 class Alexnet(torch.nn.Module):
@@ -134,8 +141,15 @@ class Alexnet(torch.nn.Module):
         h_relu4 = h
         h = self.slice5(h)
         h_relu5 = h
-        alexnet_outputs = namedtuple("alexnet_outputs", ["relu1", "relu2", "relu3", "relu4", "relu5"])
-        return alexnet_outputs(h_relu1, h_relu2, h_relu3, h_relu4, h_relu5)
+
+        class _AlexnetOutputs(NamedTuple):
+            relu1: Tensor
+            relu2: Tensor
+            relu3: Tensor
+            relu4: Tensor
+            relu5: Tensor
+
+        return _AlexnetOutputs(h_relu1, h_relu2, h_relu3, h_relu4, h_relu5)
 
 
 class Vgg16(torch.nn.Module):
@@ -177,27 +191,34 @@ class Vgg16(torch.nn.Module):
         h_relu4_3 = h
         h = self.slice5(h)
         h_relu5_3 = h
-        vgg_outputs = namedtuple("vgg_outputs", ["relu1_2", "relu2_2", "relu3_3", "relu4_3", "relu5_3"])
-        return vgg_outputs(h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3, h_relu5_3)
+
+        class _VGGOutputs(NamedTuple):
+            relu1_2: Tensor
+            relu2_2: Tensor
+            relu3_3: Tensor
+            relu4_3: Tensor
+            relu5_3: Tensor
+
+        return _VGGOutputs(h_relu1_2, h_relu2_2, h_relu3_3, h_relu4_3, h_relu5_3)
 
 
-def spatial_average(in_tens: Tensor, keepdim: bool = True) -> Tensor:
-    """Spatial averaging over heigh and width of images."""
-    return in_tens.mean([2, 3], keepdim=keepdim)
+def _spatial_average(in_tens: Tensor, keep_dim: bool = True) -> Tensor:
+    """Spatial averaging over height and width of images."""
+    return in_tens.mean([2, 3], keepdim=keep_dim)
 
 
-def upsam(in_tens: Tensor, out_hw: Tuple[int, ...] = (64, 64)) -> Tensor:
+def _upsample(in_tens: Tensor, out_hw: Tuple[int, ...] = (64, 64)) -> Tensor:
     """Upsample input with bilinear interpolation."""
     return nn.Upsample(size=out_hw, mode="bilinear", align_corners=False)(in_tens)
 
 
-def normalize_tensor(in_feat: Tensor, eps: float = 1e-10) -> Tensor:
-    """Normalize tensors."""
-    norm_factor = torch.sqrt(torch.sum(in_feat**2, dim=1, keepdim=True))
-    return in_feat / (norm_factor + eps)
+def _normalize_tensor(in_feat: Tensor, eps: float = 1e-8) -> Tensor:
+    """Normalize input tensor."""
+    norm_factor = torch.sqrt(eps + torch.sum(in_feat**2, dim=1, keepdim=True))
+    return in_feat / norm_factor
 
 
-def resize_tensor(x: Tensor, size: int = 64) -> Tensor:
+def _resize_tensor(x: Tensor, size: int = 64) -> Tensor:
     """https://github.com/toshas/torch-fidelity/blob/master/torch_fidelity/sample_similarity_lpips.py#L127C22-L132."""
     if x.shape[-1] > size and x.shape[-2] > size:
         return torch.nn.functional.interpolate(x, (size, size), mode="area")
@@ -318,22 +339,22 @@ class _LPIPS(nn.Module):
 
         # resize input if needed
         if self.resize is not None:
-            in0_input = resize_tensor(in0_input, size=self.resize)
-            in1_input = resize_tensor(in1_input, size=self.resize)
+            in0_input = _resize_tensor(in0_input, size=self.resize)
+            in1_input = _resize_tensor(in1_input, size=self.resize)
 
         outs0, outs1 = self.net.forward(in0_input), self.net.forward(in1_input)
         feats0, feats1, diffs = {}, {}, {}
 
         for kk in range(self.L):
-            feats0[kk], feats1[kk] = normalize_tensor(outs0[kk]), normalize_tensor(outs1[kk])
+            feats0[kk], feats1[kk] = _normalize_tensor(outs0[kk]), _normalize_tensor(outs1[kk])
             diffs[kk] = (feats0[kk] - feats1[kk]) ** 2
 
         res = []
         for kk in range(self.L):
             if self.spatial:
-                res.append(upsam(self.lins[kk](diffs[kk]), out_hw=tuple(in0.shape[2:])))
+                res.append(_upsample(self.lins[kk](diffs[kk]), out_hw=tuple(in0.shape[2:])))
             else:
-                res.append(spatial_average(self.lins[kk](diffs[kk]), keepdim=True))
+                res.append(_spatial_average(self.lins[kk](diffs[kk]), keep_dim=True))
 
         val: Tensor = sum(res)  # type: ignore[assignment]
         if retperlayer:
@@ -378,7 +399,7 @@ def learned_perceptual_image_patch_similarity(
     reduction: Literal["sum", "mean"] = "mean",
     normalize: bool = False,
 ) -> Tensor:
-    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates the perceptual similarity between two images.
+    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates perceptual similarity between two images.
 
     LPIPS essentially computes the similarity between the activations of two image patches for some pre-defined network.
     This measure has been shown to match human perception well. A low LPIPS score means that image patches are
@@ -405,6 +426,6 @@ def learned_perceptual_image_patch_similarity(
         tensor(0.1008, grad_fn=<DivBackward0>)
 
     """
-    net = _NoTrainLpips(net=net_type)
+    net = _NoTrainLpips(net=net_type).to(device=img1.device, dtype=img1.dtype)
     loss, total = _lpips_update(img1, img2, net, normalize)
     return _lpips_compute(loss.sum(), total, reduction)

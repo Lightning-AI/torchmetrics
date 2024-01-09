@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from typing import Any, List, Optional, Sequence, Tuple, Type, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -180,6 +180,10 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
     This is done by first calculating the precision-recall curve for different thresholds and the find the recall for
     a given precision level.
 
+    For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
+    classes as the negative, which is referred to as the one-vs-rest approach. One-vs-one is currently not supported by
+    this metric.
+
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)``. Preds should be a tensor
@@ -207,7 +211,7 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
        size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         min_precision: float value specifying minimum precision threshold.
         thresholds:
             Can be one of:
@@ -349,7 +353,7 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
        size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         min_precision: float value specifying minimum precision threshold.
         thresholds:
             Can be one of:
@@ -477,7 +481,7 @@ class RecallAtFixedPrecision(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls,
+        cls: Type["RecallAtFixedPrecision"],
         task: Literal["binary", "multiclass", "multilabel"],
         min_precision: float,
         thresholds: Optional[Union[int, List[float], Tensor]] = None,

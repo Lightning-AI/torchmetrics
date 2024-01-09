@@ -55,7 +55,7 @@ class CramersV(Metric):
     - ``cramers_v`` (:class:`~torch.Tensor`): Scalar tensor containing the Cramer's V statistic.
 
     Args:
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         bias_correction: Indication of whether to use bias correction.
         nan_strategy: Indication of whether to replace or drop ``NaN`` values
         nan_replace_value: Value to replace ``NaN``s when ``nan_strategy = 'replace'``
@@ -91,7 +91,7 @@ class CramersV(Metric):
         num_classes: int,
         bias_correction: bool = True,
         nan_strategy: Literal["replace", "drop"] = "replace",
-        nan_replace_value: Optional[Union[int, float]] = 0.0,
+        nan_replace_value: Optional[float] = 0.0,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)

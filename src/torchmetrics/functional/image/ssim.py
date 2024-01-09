@@ -54,7 +54,7 @@ def _ssim_update(
     return_full_image: bool = False,
     return_contrast_sensitivity: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Compute Structual Similarity Index Measure.
+    """Compute Structural Similarity Index Measure.
 
     Args:
         preds: estimated image
@@ -68,7 +68,7 @@ def _ssim_update(
         k1: Parameter of SSIM.
         k2: Parameter of SSIM.
         return_full_image: If true, the full ``ssim`` image is returned as a second argument.
-            Mutually exlusive with ``return_contrast_sensitivity``
+            Mutually exclusive with ``return_contrast_sensitivity``
         return_contrast_sensitivity: If true, the contrast term is returned as a second argument.
             The luminance term can be obtained with luminance=ssim/contrast
             Mutually exclusive with ``return_full_image``
@@ -218,7 +218,7 @@ def structural_similarity_index_measure(
     return_full_image: bool = False,
     return_contrast_sensitivity: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Compute Structual Similarity Index Measure.
+    """Compute Structural Similarity Index Measure.
 
     Args:
         preds: estimated image
@@ -336,7 +336,7 @@ def _multiscale_ssim_update(
     ),
     normalize: Optional[Literal["relu", "simple"]] = None,
 ) -> Tensor:
-    """Compute Multi-Scale Structual Similarity Index Measure.
+    """Compute Multi-Scale Structural Similarity Index Measure.
 
     Adapted from: https://github.com/jorge-pessoa/pytorch-msssim/blob/master/pytorch_msssim/__init__.py.
 
@@ -457,9 +457,9 @@ def multiscale_structural_similarity_index_measure(
     betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
     normalize: Optional[Literal["relu", "simple"]] = "relu",
 ) -> Tensor:
-    """Compute `MultiScaleSSIM`_, Multi-scale Structual Similarity Index Measure.
+    """Compute `MultiScaleSSIM`_, Multi-scale Structural Similarity Index Measure.
 
-    This metric is a generalization of Structual Similarity Index Measure by incorporating image details at different
+    This metric is a generalization of Structural Similarity Index Measure by incorporating image details at different
     resolution scores.
 
     Args:
@@ -479,7 +479,7 @@ def multiscale_structural_similarity_index_measure(
             the range is calculated as the difference and input is clamped between the values.
         k1: Parameter of structural similarity index measure.
         k2: Parameter of structural similarity index measure.
-        betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image
+        betas: Exponent parameters for individual similarities and contrastive sensitivities returned by different image
             resolutions.
         normalize: When MultiScaleSSIM loss is used for training, it is desirable to use normalizes to improve the
             training stability. This `normalize` argument is out of scope of the original implementation [1], and it is

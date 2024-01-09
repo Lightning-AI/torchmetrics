@@ -172,9 +172,9 @@ def plot_single_or_multi_val(
 def _get_col_row_split(n: int) -> Tuple[int, int]:
     """Split `n` figures into `rows` x `cols` figures."""
     nsq = sqrt(n)
-    if nsq * nsq == n:
+    if int(nsq) == nsq:  # square number
         return int(nsq), int(nsq)
-    if floor(nsq) * ceil(nsq) > n:
+    if floor(nsq) * ceil(nsq) >= n:
         return floor(nsq), ceil(nsq)
     return ceil(nsq), ceil(nsq)
 

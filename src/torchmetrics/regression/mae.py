@@ -72,10 +72,10 @@ class MeanAbsoluteError(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        sum_abs_error, n_obs = _mean_absolute_error_update(preds, target)
+        sum_abs_error, num_obs = _mean_absolute_error_update(preds, target)
 
         self.sum_abs_error += sum_abs_error
-        self.total += n_obs
+        self.total += num_obs
 
     def compute(self) -> Tensor:
         """Compute mean absolute error over state."""

@@ -20,6 +20,7 @@ def _input_validator(
     preds: Sequence[Dict[str, Tensor]],
     targets: Sequence[Dict[str, Tensor]],
     iou_type: Union[Literal["bbox", "segm"], Tuple[Literal["bbox", "segm"]]] = "bbox",
+    ignore_score: bool = False,
 ) -> None:
     """Ensure the correct input format of `preds` and `targets`."""
     if isinstance(iou_type, str):
@@ -39,7 +40,7 @@ def _input_validator(
             f"Expected argument `preds` and `target` to have the same length, but got {len(preds)} and {len(targets)}"
         )
 
-    for k in [*item_val_name, "scores", "labels"]:
+    for k in [*item_val_name, "labels"] + (["scores"] if not ignore_score else []):
         if any(k not in p for p in preds):
             raise ValueError(f"Expected all dicts in `preds` to contain the `{k}` key")
 
@@ -48,16 +49,16 @@ def _input_validator(
             raise ValueError(f"Expected all dicts in `target` to contain the `{k}` key")
 
     for ivn in item_val_name:
-        if any(type(pred[ivn]) is not Tensor for pred in preds):
+        if not all(isinstance(pred[ivn], Tensor) for pred in preds):
             raise ValueError(f"Expected all {ivn} in `preds` to be of type Tensor")
-    if any(type(pred["scores"]) is not Tensor for pred in preds):
+    if not ignore_score and not all(isinstance(pred["scores"], Tensor) for pred in preds):
         raise ValueError("Expected all scores in `preds` to be of type Tensor")
-    if any(type(pred["labels"]) is not Tensor for pred in preds):
+    if not all(isinstance(pred["labels"], Tensor) for pred in preds):
         raise ValueError("Expected all labels in `preds` to be of type Tensor")
     for ivn in item_val_name:
-        if any(type(target[ivn]) is not Tensor for target in targets):
+        if not all(isinstance(target[ivn], Tensor) for target in targets):
             raise ValueError(f"Expected all {ivn} in `target` to be of type Tensor")
-    if any(type(target["labels"]) is not Tensor for target in targets):
+    if not all(isinstance(target["labels"], Tensor) for target in targets):
         raise ValueError("Expected all labels in `target` to be of type Tensor")
 
     for i, item in enumerate(targets):
@@ -67,6 +68,8 @@ def _input_validator(
                     f"Input '{ivn}' and labels of sample {i} in targets have a"
                     f" different length (expected {item[ivn].size(0)} labels, got {item['labels'].size(0)})"
                 )
+    if ignore_score:
+        return
     for i, item in enumerate(preds):
         for ivn in item_val_name:
             if not (item[ivn].size(0) == item["labels"].size(0) == item["scores"].size(0)):
@@ -85,6 +88,7 @@ def _fix_empty_tensors(boxes: Tensor) -> Tensor:
 
 
 def _validate_iou_type_arg(iou_type: Union[Literal["bbox", "segm"], Tuple[str]] = "bbox") -> Tuple[str]:
+    """Validate that iou type argument is correct."""
     allowed_iou_types = ("segm", "bbox")
     if isinstance(iou_type, str):
         iou_type = (iou_type,)

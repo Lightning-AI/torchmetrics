@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# this is just a bypass for this module name collision with build-in one
-from typing import Any, Dict, Optional, Sequence, Union
+# this is just a bypass for this module name collision with built-in one
+from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Union
 
 from torch import Tensor, nn
 
@@ -31,7 +31,7 @@ class MultitaskWrapper(WrapperMetric):
 
     In multitask learning the different tasks requires different metrics to be evaluated. This wrapper allows
     for easy evaluation in such cases by supporting multiple predictions and targets through a dictionary.
-    Note that only metrics where the signature of `update` follows the stardard `preds, target` is supported.
+    Note that only metrics where the signature of `update` follows the standard `preds, target` is supported.
 
     Args:
         task_metrics:
@@ -102,6 +102,18 @@ class MultitaskWrapper(WrapperMetric):
         super().__init__()
         self.task_metrics = nn.ModuleDict(task_metrics)
 
+    def items(self) -> Iterable[Tuple[str, nn.Module]]:
+        """Iterate over task and task metrics."""
+        return self.task_metrics.items()
+
+    def keys(self) -> Iterable[str]:
+        """Iterate over task names."""
+        return self.task_metrics.keys()
+
+    def values(self) -> Iterable[nn.Module]:
+        """Iterate over task metrics."""
+        return self.task_metrics.values()
+
     @staticmethod
     def _check_task_metrics_type(task_metrics: Dict[str, Union[Metric, MetricCollection]]) -> None:
         if not isinstance(task_metrics, dict):
@@ -140,7 +152,7 @@ class MultitaskWrapper(WrapperMetric):
 
     def forward(self, task_preds: Dict[str, Tensor], task_targets: Dict[str, Tensor]) -> Dict[str, Any]:
         """Call underlying forward methods for all tasks and return the result as a dictionary."""
-        # This method is overriden because we do not need the complex version defined in Metric, that relies on the
+        # This method is overridden because we do not need the complex version defined in Metric, that relies on the
         # value of full_state_update, and that also accumulates the results. Here, all computations are handled by the
         # underlying metrics, which all have their own value of full_state_update, and which all accumulate the results
         # by themselves.

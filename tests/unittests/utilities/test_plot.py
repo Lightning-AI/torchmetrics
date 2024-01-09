@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 from functools import partial
 from typing import Callable
 
@@ -91,6 +92,14 @@ from torchmetrics.classification import (
     MultilabelROC,
     MultilabelSpecificity,
 )
+from torchmetrics.clustering import (
+    AdjustedRandScore,
+    CalinskiHarabaszScore,
+    DunnIndex,
+    MutualInfoScore,
+    NormalizedMutualInfoScore,
+    RandScore,
+)
 from torchmetrics.detection import PanopticQuality
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
@@ -163,10 +172,9 @@ from torchmetrics.text import (
     WordInfoPreserved,
 )
 from torchmetrics.utilities.imports import (
-    _TORCH_GREATER_EQUAL_1_9,
-    _TORCH_GREATER_EQUAL_1_10,
     _TORCHAUDIO_GREATER_EQUAL_0_10,
 )
+from torchmetrics.utilities.plot import _get_col_row_split
 from torchmetrics.wrappers import (
     BootStrapper,
     ClasswiseWrapper,
@@ -472,7 +480,7 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             id="learned perceptual image patch similarity",
         ),
         pytest.param(ConcordanceCorrCoef, _rand_input, _rand_input, id="concordance corr coef"),
-        pytest.param(CosineSimilarity, _rand_input, _rand_input, id="cosine similarity"),
+        pytest.param(CosineSimilarity, _multilabel_rand_input, _multilabel_rand_input, id="cosine similarity"),
         pytest.param(ExplainedVariance, _rand_input, _rand_input, id="explained variance"),
         pytest.param(KendallRankCorrCoef, _rand_input, _rand_input, id="kendall rank corr coef"),
         pytest.param(
@@ -599,7 +607,7 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
         pytest.param(BLEUScore, _text_input_3, _text_input_4, id="bleu score"),
         pytest.param(CHRFScore, _text_input_3, _text_input_4, id="bleu score"),
         pytest.param(
-            partial(InfoLM, model_name_or_path="google/bert_uncased_L-2_H-128_A-2", idf=False),
+            partial(InfoLM, model_name_or_path="google/bert_uncased_L-2_H-128_A-2", idf=False, verbose=False),
             _text_input_1,
             _text_input_2,
             id="info lm",
@@ -614,6 +622,12 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             id="squad",
         ),
         pytest.param(TranslationEditRate, _text_input_3, _text_input_4, id="translation edit rate"),
+        pytest.param(MutualInfoScore, _nominal_input, _nominal_input, id="mutual info score"),
+        pytest.param(RandScore, _nominal_input, _nominal_input, id="rand score"),
+        pytest.param(AdjustedRandScore, _nominal_input, _nominal_input, id="adjusted rand score"),
+        pytest.param(CalinskiHarabaszScore, lambda: torch.randn(100, 3), _nominal_input, id="calinski harabasz score"),
+        pytest.param(NormalizedMutualInfoScore, _nominal_input, _nominal_input, id="normalized mutual info score"),
+        pytest.param(DunnIndex, lambda: torch.randn(100, 3), _nominal_input, id="dunn index"),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 3])
@@ -653,7 +667,6 @@ def test_plot_methods(metric_class: object, preds: Callable, target: Callable, n
             lambda: torch.randint(0, 200, (30, 3, 299, 299), dtype=torch.uint8),
             False,
             id="frechet inception distance",
-            marks=pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_9, reason="test requires torch>=1.9"),
         ),
         pytest.param(
             partial(InceptionScore, feature=64),
@@ -668,7 +681,6 @@ def test_plot_methods(metric_class: object, preds: Callable, target: Callable, n
             lambda: torch.randint(0, 200, (30, 3, 299, 299), dtype=torch.uint8),
             False,
             id="memorization informed frechet inception distance",
-            marks=pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_10, reason="test requires torch>=1.9"),
         ),
     ],
 )
@@ -706,6 +718,7 @@ def test_plot_methods_special_image_metrics(metric_class, preds, target, index_0
     plt.close(fig)
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="DDP not supported on windows")
 def test_plot_methods_special_text_metrics():
     """Test the plot method for text metrics that does not fit the default testing format."""
     metric = BERTScore()
@@ -787,6 +800,17 @@ def test_plot_methods_retrieval(metric_class, preds, target, indexes, num_vals):
     assert isinstance(fig, plt.Figure)
     assert isinstance(ax, matplotlib.axes.Axes)
     plt.close(fig)
+
+
+@pytest.mark.parametrize(
+    ("n", "expected_row", "expected_col"),
+    [(1, 1, 1), (2, 1, 2), (3, 2, 2), (4, 2, 2), (5, 2, 3), (6, 2, 3), (7, 3, 3), (8, 3, 3), (9, 3, 3), (10, 3, 4)],
+)
+def test_row_col_splitter(n, expected_row, expected_col):
+    """Test the row col splitter function works as expected."""
+    row, col = _get_col_row_split(n)
+    assert row == expected_row
+    assert col == expected_col
 
 
 @pytest.mark.parametrize(

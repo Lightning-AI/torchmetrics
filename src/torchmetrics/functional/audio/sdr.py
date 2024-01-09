@@ -24,13 +24,6 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _FAST_BSS_EVAL_AVAILABLE
 
-solve = torch.linalg.solve
-
-if _FAST_BSS_EVAL_AVAILABLE:
-    from fast_bss_eval.torch.cgd import toeplitz_conjugate_gradient
-else:
-    toeplitz_conjugate_gradient = None
-
 
 def _symmetric_toeplitz(vector: Tensor) -> Tensor:
     """Construct a symmetric Toeplitz matrix using one vector.
@@ -63,7 +56,7 @@ def _symmetric_toeplitz(vector: Tensor) -> Tensor:
 def _compute_autocorr_crosscorr(target: Tensor, preds: Tensor, corr_len: int) -> Tuple[Tensor, Tensor]:
     r"""Compute the auto correlation of `target` and the cross correlation of `target` and `preds`.
 
-    This calculation is done using the fast Fourier transform (FFT). Let's denotes the symmetric Toeplitz matric of the
+    This calculation is done using the fast Fourier transform (FFT). Let's denotes the symmetric Toeplitz metric of the
     auto correlation of `target` as `R`, the cross correlation as 'b', then solving the equation `Rh=b` could have `h`
     as the coordinate of `preds` in the column space of the `corr_len` shifts of `target`.
 
@@ -81,7 +74,7 @@ def _compute_autocorr_crosscorr(target: Tensor, preds: Tensor, corr_len: int) ->
     n_fft = 2 ** math.ceil(math.log2(preds.shape[-1] + target.shape[-1] - 1))
 
     # computes the auto correlation of `target`
-    # r_0 is the first row of the symmetric Toeplitz matric
+    # r_0 is the first row of the symmetric Toeplitz metric
     t_fft = torch.fft.rfft(target, n=n_fft, dim=-1)
     r_0 = torch.fft.irfft(t_fft.real**2 + t_fft.imag**2, n=n_fft)[..., :corr_len]
 
@@ -176,6 +169,8 @@ def signal_distortion_ratio(
         r_0[..., 0] += load_diag
 
     if use_cg_iter is not None and _FAST_BSS_EVAL_AVAILABLE:
+        from fast_bss_eval.torch.cgd import toeplitz_conjugate_gradient
+
         # use preconditioned conjugate gradient
         sol = toeplitz_conjugate_gradient(r_0, b, n_iter=use_cg_iter)
     else:
@@ -189,7 +184,7 @@ def signal_distortion_ratio(
             )
         # regular matrix solver
         r = _symmetric_toeplitz(r_0)  # the auto-correlation of the L shifts of `target`
-        sol = solve(r, b)
+        sol = torch.linalg.solve(r, b)
 
     # compute the coherence
     coh = torch.einsum("...l,...l->...", b, sol)

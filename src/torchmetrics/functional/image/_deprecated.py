@@ -42,7 +42,7 @@ def _spectral_distortion_index(
 def _error_relative_global_dimensionless_synthesis(
     preds: Tensor,
     target: Tensor,
-    ratio: Union[int, float] = 4,
+    ratio: float = 4,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
 ) -> Tensor:
     """Wrapper for deprecated import.

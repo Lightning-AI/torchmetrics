@@ -135,7 +135,7 @@ class KernelInceptionDistance(Metric):
         ValueError:
             If ``degree`` is not an integer larger than 0
         ValueError:
-            If ``gamma`` is niether ``None`` or a float larger than 0
+            If ``gamma`` is neither ``None`` or a float larger than 0
         ValueError:
             If ``coef`` is not an float larger than 0
         ValueError:
@@ -163,6 +163,8 @@ class KernelInceptionDistance(Metric):
 
     real_features: List[Tensor]
     fake_features: List[Tensor]
+    inception: Module
+    feature_network: str = "inception"
 
     def __init__(
         self,
@@ -223,7 +225,7 @@ class KernelInceptionDistance(Metric):
         self.coef = coef
 
         if not isinstance(reset_real_features, bool):
-            raise ValueError("Arugment `reset_real_features` expected to be a bool")
+            raise ValueError("Argument `reset_real_features` expected to be a bool")
         self.reset_real_features = reset_real_features
 
         if not isinstance(normalize, bool):

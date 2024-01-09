@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from typing import Any, Optional, Sequence, Type, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -55,7 +55,7 @@ class BinaryFBetaScore(BinaryStatScores):
 
     - ``preds`` (:class:`~torch.Tensor`): An int tensor or float tensor of shape ``(N, ...)``. If preds is a floating
       point tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid
-      per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      per element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -65,6 +65,9 @@ class BinaryFBetaScore(BinaryStatScores):
         - If ``multidim_average`` is set to ``global`` the output will be a scalar tensor
         - If ``multidim_average`` is set to ``samplewise`` the output will be a tensor of shape ``(N,)`` consisting of
           a scalar value per sample.
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         beta: Weighting between precision and recall in calculation. Setting to 1 corresponds to equal weight
@@ -202,7 +205,6 @@ class MulticlassFBetaScore(MulticlassStatScores):
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``mcfbs`` (:class:`~torch.Tensor`): A tensor whose returned shape depends on the ``average`` and
@@ -218,9 +220,12 @@ class MulticlassFBetaScore(MulticlassStatScores):
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
         beta: Weighting between precision and recall in calculation. Setting to 1 corresponds to equal weight
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
@@ -379,9 +384,8 @@ class MultilabelFBetaScore(MultilabelStatScores):
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, C, ...)``. If preds is a floating
       point tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid
-      per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      per element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``.
-
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -398,9 +402,12 @@ class MultilabelFBetaScore(MultilabelStatScores):
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
         beta: Weighting between precision and recall in calculation. Setting to 1 corresponds to equal weight
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
@@ -557,7 +564,7 @@ class BinaryF1Score(BinaryFBetaScore):
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, ...)``. If preds is a floating point
       tensor with values outside [0,1] range we consider the input to be logits and will auto apply sigmoid per
-      element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -567,6 +574,9 @@ class BinaryF1Score(BinaryFBetaScore):
         - If ``multidim_average`` is set to ``global``, the metric returns a scalar value.
         - If ``multidim_average`` is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar
           value per sample.
+
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
 
     Args:
         threshold: Threshold for transforming probability to binary {0,1} predictions
@@ -710,10 +720,13 @@ class MulticlassF1Score(MulticlassFBetaScore):
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
@@ -863,7 +876,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
 
     - ``preds`` (:class:`~torch.Tensor`): An int or float tensor of shape ``(N, C, ...)``.
       If preds is a floating point tensor with values outside [0,1] range we consider the input to be logits and
-      will auto apply sigmoid per element. Addtionally, we convert to int tensor with thresholding using the value
+      will auto apply sigmoid per element. Additionally, we convert to int tensor with thresholding using the value
       in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``.
 
@@ -882,8 +895,11 @@ class MultilabelF1Score(MultilabelFBetaScore):
           - If ``average='micro'/'macro'/'weighted'``, the shape will be ``(N,)``
           - If ``average=None/'none'``, the shape will be ``(N, C)```
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
@@ -1043,7 +1059,7 @@ class FBetaScore(_ClassificationTaskWrapper):
     """
 
     def __new__(
-        cls,
+        cls: Type["FBetaScore"],
         task: Literal["binary", "multiclass", "multilabel"],
         beta: float = 1.0,
         threshold: float = 0.5,
@@ -1105,7 +1121,7 @@ class F1Score(_ClassificationTaskWrapper):
     """
 
     def __new__(
-        cls,
+        cls: Type["F1Score"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,

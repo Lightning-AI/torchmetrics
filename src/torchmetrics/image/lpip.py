@@ -38,7 +38,7 @@ else:
 
 
 class LearnedPerceptualImagePatchSimilarity(Metric):
-    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates the perceptual similarity between two images.
+    """The Learned Perceptual Image Patch Similarity (`LPIPS_`) calculates perceptual similarity between two images.
 
     LPIPS essentially computes the similarity between the activations of two image patches for some pre-defined network.
     This measure has been shown to match human perception well. A low LPIPS score means that image patches are
@@ -47,8 +47,8 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     Both input image patches are expected to have shape ``(N, 3, H, W)``. The minimum size of `H, W` depends on the
     chosen backbone (see `net_type` arg).
 
-    .. note:: using this metrics requires you to have ``lpips`` package installed. Either install
-        as ``pip install torchmetrics[image]`` or ``pip install lpips``
+    .. note:: using this metrics requires you to have ``torchvision`` package installed. Either install as
+        ``pip install torchmetrics[image]`` or ``pip install torchvision``.
 
     .. note:: this metric is not scriptable when using ``torch<1.8``. Please update your pytorch installation
         if this is a issue.
@@ -71,7 +71,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
 
     Raises:
         ModuleNotFoundError:
-            If ``lpips`` package is not installed
+            If ``torchvision`` package is not installed
         ValueError:
             If ``net_type`` is not one of ``"vgg"``, ``"alex"`` or ``"squeeze"``
         ValueError:
@@ -98,6 +98,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
 
     sum_scores: Tensor
     total: Tensor
+    feature_network: str = "net"
 
     # due to the use of named tuple in the backbone the net variable cannot be scripted
     __jit_ignored_attributes__: ClassVar[List[str]] = ["net"]

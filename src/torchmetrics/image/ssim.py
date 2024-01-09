@@ -249,7 +249,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
             The ``data_range`` must be given when ``dim`` is not None.
         k1: Parameter of structural similarity index measure.
         k2: Parameter of structural similarity index measure.
-        betas: Exponent parameters for individual similarities and contrastive sensitivies returned by different image
+        betas: Exponent parameters for individual similarities and contrastive sensitivities returned by different image
             resolutions.
         normalize: When MultiScaleStructuralSimilarityIndexMeasure loss is used for training, it is desirable to use
             normalizes to improve the training stability. This `normalize` argument is out of scope of the original
@@ -263,7 +263,7 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         ValueError:
             If ``kernel_size`` is not an int or a Sequence of ints with size 2 or 3.
         ValueError:
-            If ``betas`` is not a tuple of floats with lengt 2.
+            If ``betas`` is not a tuple of floats with length 2.
         ValueError:
             If ``normalize`` is neither `None`, `ReLU` nor `simple`.
 

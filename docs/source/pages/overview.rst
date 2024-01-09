@@ -117,7 +117,7 @@ the native `MetricCollection`_ module can also be used to wrap multiple metrics.
             self.metric1 = BinaryAccuracy()
             self.metric2 = nn.ModuleList(BinaryAccuracy())
             self.metric3 = nn.ModuleDict({'accuracy': BinaryAccuracy()})
-            self.metric4 = MetricCollection([BinaryAccuracy()]) # torchmetrics build-in collection class
+            self.metric4 = MetricCollection([BinaryAccuracy()]) # torchmetrics built-in collection class
 
         def forward(self, batch):
             data, target = batch
@@ -137,14 +137,13 @@ Metrics and memory management
 As stated before, metrics have states and those states take up a certain amount of memory depending on the metric.
 In general metrics can be divided into two categories when we talk about memory management:
 
-* Metrics with tensor states: These metrics only have states that are insteances of :class:`~torch.Tensor`. When these
-  kind of metrics are updated the values of those tensors are updated. Importantly the size of the tensors are
+* Metrics with tensor states: These metrics only have states that are instances of :class:`~torch.Tensor`. When these
+  kind of metrics are updated the values of those tensors are updated. Importantly the size of the tensors is
   **constant** meaning that regardless of how much data is passed to the metric, its memory footprint will not change.
 
-* Metrics with list states: These metrics have at least one state that is a list, which gets appended tensors as the
-  metric is updated. Importantly the size of the list is therefore **not constant** and will grow as the metric is
-  updated. The growth depends on the particular metric (some metrics only need to store a single value per sample,
-  some much more).
+* Metrics with list states: These metrics have at least one state that is a list, which gets tensors appended as the
+  metric is updated. Importantly the size of the list is therefore **not constant** and will grow. The growth depends
+  on the particular metric (some metrics only need to store a single value per sample, some much more).
 
 You can always check the current metric state by accessing the `.metric_state` property, and checking if any of the
 states are lists.
@@ -183,6 +182,49 @@ In general we have a few recommendations for memory management:
 
 See :ref:`Metric kwargs` for different advanced settings for controlling the memory footprint of metrics.
 
+**************************
+Saving and loading metrics
+**************************
+
+Because metrics are essentially just a subclass of :class:`torch.nn.Module`, saving and loading metrics works in the
+same as any other `nn.Module`, with a key difference. Similar to `nn.Module` it is also recommended to save the state
+dict instead of the actual metric e.g.:
+
+.. code-block:: python
+
+    # Instead of this
+    torch.save(metric, "metric.pt")
+    # do this
+    torch.save(metric.state_dict(), "metric.pt")
+
+The key difference is that metric states are not automatically a part of the state dict. This is to make sure that
+torchmetrics is backward compatible with models that did not use the specific metrics when they were created. This
+behavior can be overwritten by using the `metric.persistent` method, which will mark all metric states to also be saved
+when `.state_dict` is called. Alternatively, for custom metrics, you can set the `persistent` argument when initializing
+the state in the `self.add_state` method.
+
+Therefore a correct example for saving and loading a metric would be:
+
+.. code-block:: python
+
+    import torch
+    from torchmetrics.classification import MulticlassAccuracy
+
+    metric = MulticlassAccuracy(num_classes=5).to("cuda")
+    metric.persistent(True)
+    metric.update(torch.randint(5, (100,)).cuda(), torch.randint(5, (100,)).cuda())
+    torch.save(metric.state_dict(), "metric.pth")
+
+    metric2 = MulticlassAccuracy(num_classes=5).to("cpu")
+    metric2.load_state_dict(torch.load("metric.pth", map_location="cpu"))
+
+    # These will match, but be on different devices
+    print(metric.metric_state)
+    print(metric2.metric_state)
+
+In the example, we also account for the initial metric state that is being saved on a different device than the
+metric it is being loaded into by using the `map_location` argument.
+
 ***********************************************
 Metrics in Distributed Data Parallel (DDP) mode
 ***********************************************
@@ -205,8 +247,8 @@ Most metrics in our collection can be used with 16-bit precision (``torch.half``
 the following limitations:
 
 * In general ``pytorch`` had better support for 16-bit precision much earlier on GPU than CPU. Therefore, we
-  recommend that anyone that want to use metrics with half precision on CPU, upgrade to atleast pytorch v1.6
-  where support for operations such as addition, subtraction, multiplication ect. was added.
+  recommend that anyone that want to use metrics with half precision on CPU, upgrade to at least pytorch v1.6
+  where support for operations such as addition, subtraction, multiplication etc. was added.
 * Some metrics does not work at all in half precision on CPU. We have explicitly stated this in their docstring,
   but they are also listed below:
 
@@ -216,9 +258,9 @@ the following limitations:
 
 You can always check the precision/dtype of the metric by checking the `.dtype` property.
 
-******************
-Metric Arithmetics
-******************
+*****************
+Metric Arithmetic
+*****************
 
 Metrics support most of python built-in operators for arithmetic, logic and bitwise operations.
 
@@ -235,7 +277,7 @@ overhead that is not necessary. It can now be done with:
 ``new_metric.update(*args, **kwargs)`` now calls update of ``first_metric`` and ``second_metric``. It forwards
 all positional arguments but forwards only the keyword arguments that are available in respective metric's update
 declaration. Similarly ``new_metric.compute()`` now calls compute of ``first_metric`` and ``second_metric`` and
-adds the results up. It is important to note that all implemented operations always returns a new metric object. This means
+adds the results up. It is important to note that all implemented operations always return a new metric object. This means
 that the line ``first_metric == second_metric`` will not return a bool indicating if ``first_metric`` and ``second_metric``
 is the same metric, but will return a new metric that checks if the ``first_metric.compute() == second_metric.compute()``.
 
@@ -331,7 +373,7 @@ inside your LightningModule. In most cases we just have to replace ``self.log`` 
             # ...
             self.valid_metrics.update(logits, y)
 
-        def validation_epoch_end(self, outputs):
+        def on_validation_epoch_end(self):
             # use log_dict instead of log
             # metrics are logged with keys: val_Accuracy, val_Precision and val_Recall
             output = self.valid_metrics.compute()
@@ -350,7 +392,7 @@ automatically try to reduce the computations needed by finding groups of metrics
 that share the same underlying metric state. If such a group of metrics is found
 only one of them is actually updated and the updated state will be broadcasted to
 the rest of the metrics within the group. In the example above, this will lead to
-a 2x-3x lower computational cost compared to disabling this feature in the case of
+a 2-3x lower computational cost compared to disabling this feature in the case of
 the validation metrics where only ``update`` is called (this feature does not work
 in combination with ``forward``). However, this speedup comes with a fixed cost upfront,
 where the state-groups have to be determined after the first update. In case the groups
@@ -361,6 +403,59 @@ information on this topic.
 .. autoclass:: torchmetrics.MetricCollection
     :exclude-members: update, compute, forward
 
+***************
+Metric wrappers
+***************
+
+In some cases it is beneficial to transform the output of one metric in some way or add additional logic. For this we
+have implemented a few *Wrapper* metrics. Wrapper metrics always take another :class:`~torchmetrics.Metric` or (
+:class:`~torchmetrics.MetricCollection`) as input and wraps it in some way. A good example of this is the
+:class:`~torchmetrics.wrappers.ClasswiseWrapper` that allows for easy altering the output of certain classification
+metrics to also include label information.
+
+.. testcode::
+
+    from torchmetrics.classification import MulticlassAccuracy
+    from torchmetrics.wrappers import ClasswiseWrapper
+    # creating metrics
+    base_metric = MulticlassAccuracy(num_classes=3, average=None)
+    wrapped_metric = ClasswiseWrapper(base_metric, labels=["cat", "dog", "fish"])
+    # sample prediction and GT
+    target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
+    preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
+    # showing the metric results
+    print(base_metric(preds, target))  # this returns a simple tensor without label info
+    print(wrapped_metric(preds, target))  # this returns a dict with label info
+
+.. testoutput::
+    :options: +NORMALIZE_WHITESPACE
+
+    tensor([0.0000, 0.0000, 0.3333])
+    {'multiclassaccuracy_cat': tensor(0.),
+     'multiclassaccuracy_dog': tensor(0.),
+     'multiclassaccuracy_fish': tensor(0.3333)}
+
+Another good example of wrappers is the :class:`~torchmetrics.wrappers.BootStrapper` that allows for easy bootstrapping
+of metrics e.g. computation of confidence intervals by resampling of input data.
+
+.. testcode::
+
+    from torchmetrics.classification import MulticlassAccuracy
+    from torchmetrics.wrappers import BootStrapper
+    # creating metrics
+    wrapped_metric = BootStrapper(MulticlassAccuracy(num_classes=3))
+    # sample prediction and GT
+    target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
+    preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
+    # showing the metric results
+    print(wrapped_metric(preds, target))  # this returns a dict with label info
+
+.. testoutput::
+    :options: +NORMALIZE_WHITESPACE
+
+    {'mean': tensor(0.1476), 'std': tensor(0.0613)}
+
+You can see all implemented wrappers under the wrapper section of the API docs.
 
 ****************************
 Module vs Functional Metrics
@@ -386,7 +481,7 @@ if a metric is differentiable or not.
 However, note that the cached state is detached from the computational
 graph and cannot be back-propagated. Not doing this would mean storing the computational
 graph for each update call, which can lead to out-of-memory errors.
-In practise this means that:
+In practice this means that:
 
 .. code-block:: python
 
@@ -431,7 +526,7 @@ argument can help:
   of GPU. Only applies to metric states that are lists.
 
 - ``compute_with_cache``: This argument indicates if the result after calling the ``compute`` method should be cached.
-  By default this is ``True`` meaning that repeated calls to ``compute`` (with no change to the metric state inbetween)
+  By default this is ``True`` meaning that repeated calls to ``compute`` (with no change to the metric state in between)
   does not recompute the metric but just returns the cache. By setting it to ``False`` the metric will be recomputed
   every time ``compute`` is called, but it can also help clean up a bit of memory.
 

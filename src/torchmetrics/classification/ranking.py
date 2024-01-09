@@ -59,7 +59,7 @@ class MultilabelCoverageError(Metric):
     - ``mlce`` (:class:`~torch.Tensor`): A tensor containing the multilabel coverage error.
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -106,9 +106,9 @@ class MultilabelCoverageError(Metric):
         preds, target = _multilabel_confusion_matrix_format(
             preds, target, self.num_labels, threshold=0.0, ignore_index=self.ignore_index, should_threshold=False
         )
-        measure, n_elements = _multilabel_coverage_error_update(preds, target)
+        measure, num_elements = _multilabel_coverage_error_update(preds, target)
         self.measure += measure
-        self.total += n_elements
+        self.total += num_elements
 
     def compute(self) -> Tensor:
         """Compute metric."""
@@ -179,7 +179,7 @@ class MultilabelRankingAveragePrecision(Metric):
     - ``mlrap`` (:class:`~torch.Tensor`): A tensor containing the multilabel ranking average precision.
 
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -226,9 +226,9 @@ class MultilabelRankingAveragePrecision(Metric):
         preds, target = _multilabel_confusion_matrix_format(
             preds, target, self.num_labels, threshold=0.0, ignore_index=self.ignore_index, should_threshold=False
         )
-        measure, n_elements = _multilabel_ranking_average_precision_update(preds, target)
+        measure, num_elements = _multilabel_ranking_average_precision_update(preds, target)
         self.measure += measure
-        self.total += n_elements
+        self.total += num_elements
 
     def compute(self) -> Tensor:
         """Compute metric."""
@@ -301,7 +301,7 @@ class MultilabelRankingLoss(Metric):
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -348,9 +348,9 @@ class MultilabelRankingLoss(Metric):
         preds, target = _multilabel_confusion_matrix_format(
             preds, target, self.num_labels, threshold=0.0, ignore_index=self.ignore_index, should_threshold=False
         )
-        measure, n_elements = _multilabel_ranking_loss_update(preds, target)
+        measure, num_elements = _multilabel_ranking_loss_update(preds, target)
         self.measure += measure
-        self.total += n_elements
+        self.total += num_elements
 
     def compute(self) -> Tensor:
         """Compute metric."""

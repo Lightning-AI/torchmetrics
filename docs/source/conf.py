@@ -17,7 +17,7 @@ import re
 import shutil
 import sys
 
-import pt_lightning_sphinx_theme
+import lai_sphinx_theme
 from lightning_utilities.docs import fetch_external_assets
 from lightning_utilities.docs.formatting import _transform_changelog
 
@@ -30,7 +30,7 @@ sys.path.insert(0, os.path.abspath(_PATH_ROOT))
 
 FOLDER_GENERATED = "generated"
 SPHINX_MOCK_REQUIREMENTS = int(os.environ.get("SPHINX_MOCK_REQUIREMENTS", True))
-SPHINX_FETCH_ASSETS = int(os.environ.get("SPHINX_FETCH_ASSETS", True))
+SPHINX_FETCH_ASSETS = int(os.environ.get("SPHINX_FETCH_ASSETS", False))
 
 html_favicon = "_static/images/icon.svg"
 
@@ -67,14 +67,14 @@ _transform_changelog(
 
 def _set_root_image_path(page_path: str):
     """Set relative path to be from the root, drop all `../` in images used gallery."""
-    with open(page_path, encoding="UTF-8") as fo:
-        body = fo.read()
+    with open(page_path, encoding="UTF-8") as fopen:
+        body = fopen.read()
     found = re.findall(r"   :image: (.*)\.svg", body)
     for occur in found:
         occur_ = occur.replace("../", "")
         body = body.replace(occur, occur_)
-    with open(page_path, "w", encoding="UTF-8") as fo:
-        fo.write(body)
+    with open(page_path, "w", encoding="UTF-8") as fopen:
+        fopen.write(body)
 
 
 if SPHINX_FETCH_ASSETS:
@@ -112,7 +112,7 @@ extensions = [
     "sphinx_autodoc_typehints",
     "sphinx_paramlinks",
     "sphinx.ext.githubpages",
-    "pt_lightning_sphinx_theme.extensions.lightning",
+    "lai_sphinx_theme.extensions.lightning",
     "matplotlib.sphinxext.plot_directive",
 ]
 
@@ -168,8 +168,8 @@ pygments_style = None
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 
-html_theme = "pt_lightning_sphinx_theme"
-html_theme_path = [pt_lightning_sphinx_theme.get_html_theme_path()]
+html_theme = "lai_sphinx_theme"
+html_theme_path = [lai_sphinx_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -321,7 +321,7 @@ PACKAGE_MAPPING = {
 MOCK_PACKAGES = []
 if SPHINX_MOCK_REQUIREMENTS:
     # mock also base packages when we are on RTD since we don't install them there
-    MOCK_PACKAGES += package_list_from_file(os.path.join(_PATH_ROOT, "requirements", "docs.txt"))
+    MOCK_PACKAGES += package_list_from_file(os.path.join(_PATH_ROOT, "requirements", "_docs.txt"))
 MOCK_PACKAGES = [PACKAGE_MAPPING.get(pkg, pkg) for pkg in MOCK_PACKAGES]
 
 autodoc_mock_imports = MOCK_PACKAGES
@@ -427,6 +427,9 @@ coverage_skip_undoc_in_source = True
 
 # skip false positive linkcheck errors from anchors
 linkcheck_anchors = False
+
+# A timeout value, in seconds, for the linkcheck builder.
+linkcheck_timeout = 30
 
 # ignore all links in any CHANGELOG file
 linkcheck_exclude_documents = [r"^(.*\/)*CHANGELOG.*$"]

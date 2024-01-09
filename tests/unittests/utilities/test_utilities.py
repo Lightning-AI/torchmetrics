@@ -20,7 +20,15 @@ from torch import tensor
 from torchmetrics.regression import MeanSquaredError, PearsonCorrCoef
 from torchmetrics.utilities import check_forward_full_state_property, rank_zero_debug, rank_zero_info, rank_zero_warn
 from torchmetrics.utilities.checks import _allclose_recursive
-from torchmetrics.utilities.data import _bincount, _cumsum, _flatten, _flatten_dict, to_categorical, to_onehot
+from torchmetrics.utilities.data import (
+    _bincount,
+    _cumsum,
+    _flatten,
+    _flatten_dict,
+    select_topk,
+    to_categorical,
+    to_onehot,
+)
 from torchmetrics.utilities.distributed import class_reduce, reduce
 from torchmetrics.utilities.exceptions import TorchMetricsUserWarning
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_13
@@ -113,8 +121,9 @@ def test_flatten_list():
 def test_flatten_dict():
     """Check that _flatten_dict utility function works as expected."""
     inp = {"a": {"b": 1, "c": 2}, "d": 3}
-    out = _flatten_dict(inp)
-    assert out == {"b": 1, "c": 2, "d": 3}
+    out_dict, out_dup = _flatten_dict(inp)
+    assert out_dict == {"b": 1, "c": 2, "d": 3}
+    assert out_dup is False
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires gpu")
@@ -200,3 +209,41 @@ def test_custom_cumsum():
         res = _cumsum(x, dim=0).cpu()
     res2 = np.cumsum(x.cpu(), axis=0)
     assert torch.allclose(res, res2)
+
+
+def _reference_topk(x, dim, k):
+    x = x.cpu().numpy()
+    one_hot = np.zeros((x.shape[0], x.shape[1]), dtype=int)
+    if dim == 1:
+        for i in range(x.shape[0]):
+            one_hot[i, np.argsort(x[i, :], kind="stable")[::-1][:k]] = 1
+        return one_hot
+    for i in range(x.shape[1]):
+        one_hot[np.argsort(x[:, i], kind="stable")[::-1][:k], i] = 1
+    return one_hot
+
+
+@pytest.mark.parametrize("dtype", [torch.half, torch.float, torch.double])
+@pytest.mark.parametrize("k", [3, 5])
+@pytest.mark.parametrize("dim", [0, 1])
+def test_custom_topk(dtype, k, dim):
+    """Test custom topk implementation."""
+    if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_13:
+        pytest.skip("half precision topk not supported in Pytorch < 1.13")
+    x = torch.randn(100, 10, dtype=dtype)
+    top_k = select_topk(x, dim=dim, topk=k)
+    assert top_k.shape == (100, 10)
+    assert top_k.dtype == torch.int
+    ref = _reference_topk(x, dim=dim, k=k)
+    assert torch.allclose(top_k, torch.from_numpy(ref).to(torch.int))
+
+
+def test_half_precision_top_k_cpu_raises_error():
+    """Test that half precision topk raises error on cpu.
+
+    If this begins to fail, it means newer Pytorch versions support this and we can drop internal support.
+
+    """
+    x = torch.randn(100, 10, dtype=torch.half)
+    with pytest.raises(RuntimeError, match="\"topk_cpu\" not implemented for 'Half'"):
+        torch.topk(x, k=3, dim=1)

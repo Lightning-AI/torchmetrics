@@ -1,0 +1,65 @@
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - docs/**/*
+          - README.md
+
+"topic: Audio":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/torchmetrics/audio/*
+          - src/torchmetrics/functional/audio/*
+
+"topic: Classif":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/torchmetrics/classification/*
+          - src/torchmetrics/functional/classification/*
+
+"topic: Cluster":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/torchmetrics/clustering/*
+          - src/torchmetrics/functional/clustering/*
+
+"topic: Detect":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/torchmetrics/detection/*
+          - src/torchmetrics/functional/detection/*
+
+"topic: Image":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/torchmetrics/image/*
+          - src/torchmetrics/functional/image/*
+
+"topic: MModal":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/torchmetrics/multimodal/*
+          - src/torchmetrics/functional/multimodal/*
+
+"topic: Nominal":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/torchmetrics/nominal/*
+          - src/torchmetrics/functional/nominal/*
+
+"topic: Regress":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/torchmetrics/regression/*
+          - src/torchmetrics/functional/regression/*
+
+"topic: Retrieval":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/torchmetrics/retrieval/*
+          - src/torchmetrics/functional/retrieval/*
+
+"topic: Text":
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/torchmetrics/text/*
+          - src/torchmetrics/functional/text/*

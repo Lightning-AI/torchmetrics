@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from typing import Any, Optional, Sequence, Type, Union
 
 import torch
 from torch import Tensor
@@ -54,7 +54,6 @@ class MulticlassExactMatch(Metric):
       probabilities/logits into an int tensor.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)``.
 
-
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
     - ``mcem`` (:class:`~torch.Tensor`): A tensor whose returned shape depends on the ``multidim_average`` argument:
@@ -62,8 +61,11 @@ class MulticlassExactMatch(Metric):
         - If ``multidim_average`` is set to ``global`` the output will be a scalar tensor
         - If ``multidim_average`` is set to ``samplewise`` the output will be a tensor of shape ``(N,)``
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
-        num_classes: Integer specifing the number of labels
+        num_classes: Integer specifying the number of labels
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
 
@@ -94,8 +96,8 @@ class MulticlassExactMatch(Metric):
         tensor([1., 0.])
 
     """
-    is_differentiable = False
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
@@ -203,9 +205,8 @@ class MultilabelExactMatch(Metric):
 
     - ``preds`` (:class:`~torch.Tensor`): An int tensor or float tensor of shape ``(N, C, ..)``. If preds is a
       floating point tensor with values outside [0,1] range we consider the input to be logits and will auto apply
-      sigmoid per element. Addtionally, we convert to int tensor with thresholding using the value in ``threshold``.
+      sigmoid per element. Additionally, we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``.
-
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -214,8 +215,11 @@ class MultilabelExactMatch(Metric):
         - If ``multidim_average`` is set to ``global`` the output will be a scalar tensor
         - If ``multidim_average`` is set to ``samplewise`` the output will be a tensor of shape ``(N,)``
 
+    If ``multidim_average`` is set to ``samplewise`` we expect at least one additional dimension ``...`` to be present,
+    which the reduction will then be applied over instead of the sample dimension ``N``.
+
     Args:
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -257,8 +261,8 @@ class MultilabelExactMatch(Metric):
 
     """
 
-    is_differentiable = False
-    higher_is_better = True
+    is_differentiable: bool = False
+    higher_is_better: bool = True
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
@@ -389,7 +393,7 @@ class ExactMatch(_ClassificationTaskWrapper):
     """
 
     def __new__(
-        cls,
+        cls: Type["ExactMatch"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,

@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 
 import numpy as np
@@ -21,7 +20,7 @@ from sklearn.metrics.pairwise import cosine_similarity as sk_cosine
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.regression.cosine_similarity import CosineSimilarity
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -29,36 +28,22 @@ seed_all(42)
 
 num_targets = 5
 
-Input = namedtuple("Input", ["preds", "target"])
 
-_single_target_inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE),
+_single_target_inputs = _Input(
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 1),
 )
 
-_multi_target_inputs = Input(
+_multi_target_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
 )
 
 
-def _multi_target_ref_metric(preds, target, reduction, sk_fn=sk_cosine):
-    sk_preds = preds.view(-1, num_targets).numpy()
-    sk_target = target.view(-1, num_targets).numpy()
-    result_array = sk_fn(sk_target, sk_preds)
-    col = np.diagonal(result_array)
-    col_sum = col.sum()
-    if reduction == "sum":
-        return col_sum
-    if reduction == "mean":
-        return col_sum / len(col)
-    return col
-
-
-def _single_target_ref_metric(preds, target, reduction, sk_fn=sk_cosine):
-    sk_preds = preds.view(-1).numpy()
-    sk_target = target.view(-1).numpy()
-    result_array = sk_fn(np.expand_dims(sk_preds, axis=0), np.expand_dims(sk_target, axis=0))
+def _ref_metric(preds, target, reduction):
+    sk_preds = preds.numpy()
+    sk_target = target.numpy()
+    result_array = sk_cosine(sk_target, sk_preds)
     col = np.diagonal(result_array)
     col_sum = col.sum()
     if reduction == "sum":
@@ -72,8 +57,8 @@ def _single_target_ref_metric(preds, target, reduction, sk_fn=sk_cosine):
 @pytest.mark.parametrize(
     "preds, target, ref_metric",
     [
-        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_ref_metric),
-        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_ref_metric),
+        (_single_target_inputs.preds, _single_target_inputs.target, _ref_metric),
+        (_multi_target_inputs.preds, _multi_target_inputs.target, _ref_metric),
     ],
 )
 class TestCosineSimilarity(MetricTester):
@@ -106,4 +91,11 @@ def test_error_on_different_shape(metric_class=CosineSimilarity):
     """Test that error is raised on different shapes of input."""
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
-        metric(torch.randn(100), torch.randn(50))
+        metric(torch.randn(100, 2), torch.randn(50, 2))
+
+
+def test_error_on_non_2d_input():
+    """Test that error is raised if input is not 2-dimensional."""
+    metric = CosineSimilarity()
+    with pytest.raises(ValueError, match="Expected input to cosine similarity to be 2D tensors of shape.*"):
+        metric(torch.randn(100), torch.randn(100))

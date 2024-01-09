@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# this is just a bypass for this module name collision with build-in one
+# this is just a bypass for this module name collision with built-in one
 from collections import OrderedDict
 from copy import deepcopy
 from typing import Any, Dict, Hashable, Iterable, Iterator, List, Optional, Sequence, Tuple, Union
@@ -23,7 +23,7 @@ from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.data import allclose
+from torchmetrics.utilities.data import _flatten_dict, allclose
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
@@ -60,7 +60,7 @@ class MetricCollection(ModuleDict):
             this behaviour. Can also be set to a list of lists of metrics for setting the compute groups yourself.
 
     .. note::
-        The compute groups feature can significatly speedup the calculation of metrics under the right conditions.
+        The compute groups feature can significantly speedup the calculation of metrics under the right conditions.
         First, the feature is only available when calling the ``update`` method and not when calling ``forward`` method
         due to the internal logic of ``forward`` preventing this. Secondly, since we compute groups share metric
         states by reference, calling ``.items()``, ``.values()`` etc. on the metric collection will break this
@@ -68,7 +68,7 @@ class MetricCollection(ModuleDict):
         call to ``update``).
 
     .. note::
-        Metric collections can be nested at initilization (see last example) but the output of the collection will
+        Metric collections can be nested at initialization (see last example) but the output of the collection will
         still be a single flatten dictionary combining the prefix and postfix arguments from the nested collection.
 
     Raises:
@@ -211,7 +211,7 @@ class MetricCollection(ModuleDict):
                 m0 = getattr(self, cg[0])
                 m0.update(*args, **m0._filter_kwargs(**kwargs))
             if self._state_is_copy:
-                # If we have deep copied state inbetween updates, reestablish link
+                # If we have deep copied state in between updates, reestablish link
                 self._compute_groups_create_state_ref()
                 self._state_is_copy = False
         else:  # the first update always do per metric to form compute groups
@@ -232,7 +232,7 @@ class MetricCollection(ModuleDict):
         ``O(number_of_metrics_in_collection ** 2)``, as all metrics need to be compared to all other metrics.
 
         """
-        n_groups = len(self._groups)
+        num_groups = len(self._groups)
         while True:
             for cg_idx1, cg_members1 in deepcopy(self._groups).items():
                 for cg_idx2, cg_members2 in deepcopy(self._groups).items():
@@ -247,13 +247,13 @@ class MetricCollection(ModuleDict):
                         break
 
                 # Start over if we merged groups
-                if len(self._groups) != n_groups:
+                if len(self._groups) != num_groups:
                     break
 
             # Stop when we iterate over everything and do not merge any groups
-            if len(self._groups) == n_groups:
+            if len(self._groups) == num_groups:
                 break
-            n_groups = len(self._groups)
+            num_groups = len(self._groups)
 
         # Re-index groups
         temp = deepcopy(self._groups)
@@ -304,6 +304,7 @@ class MetricCollection(ModuleDict):
                         # Determine if we just should set a reference or a full copy
                         setattr(mi, state, deepcopy(m0_state) if copy else m0_state)
                     mi._update_count = deepcopy(m0._update_count) if copy else m0._update_count
+                    mi._computed = deepcopy(m0._computed) if copy else m0._computed
         self._state_is_copy = copy
 
     def compute(self) -> Dict[str, Any]:
@@ -334,17 +335,28 @@ class MetricCollection(ModuleDict):
                 res = m(*args, **m._filter_kwargs(**kwargs))
             else:
                 raise ValueError("method_name should be either 'compute' or 'forward', but got {method_name}")
+            result[k] = res
 
+        _, duplicates = _flatten_dict(result)
+
+        flattened_results = {}
+        for k, m in self.items(keep_base=True, copy_state=False):
+            res = result[k]
             if isinstance(res, dict):
                 for key, v in res.items():
-                    if hasattr(m, "prefix") and m.prefix is not None:
+                    # if duplicates of keys we need to add unique prefix to each key
+                    if duplicates:
+                        stripped_k = k.replace(getattr(m, "prefix", ""), "")
+                        stripped_k = stripped_k.replace(getattr(m, "postfix", ""), "")
+                        key = f"{stripped_k}_{key}"
+                    if getattr(m, "_from_collection", None) and m.prefix is not None:
                         key = f"{m.prefix}{key}"
-                    if hasattr(m, "postfix") and m.postfix is not None:
+                    if getattr(m, "_from_collection", None) and m.postfix is not None:
                         key = f"{key}{m.postfix}"
-                    result[key] = v
+                    flattened_results[key] = v
             else:
-                result[k] = res
-        return {self._set_name(k): v for k, v in result.items()}
+                flattened_results[k] = res
+        return {self._set_name(k): v for k, v in flattened_results.items()}
 
     def reset(self) -> None:
         """Call reset for each metric sequentially."""
@@ -415,6 +427,7 @@ class MetricCollection(ModuleDict):
                     for k, v in metric.items(keep_base=False):
                         v.postfix = metric.postfix
                         v.prefix = metric.prefix
+                        v._from_collection = True
                         self[f"{name}_{k}"] = v
         elif isinstance(metrics, Sequence):
             for metric in metrics:
@@ -432,6 +445,7 @@ class MetricCollection(ModuleDict):
                     for k, v in metric.items(keep_base=False):
                         v.postfix = metric.postfix
                         v.prefix = metric.prefix
+                        v._from_collection = True
                         self[k] = v
         else:
             raise ValueError(
@@ -579,11 +593,11 @@ class MetricCollection(ModuleDict):
             ax: Either a single instance of matplotlib axis object or an sequence of matplotlib axis objects. If
                 provided, will add the plots to the provided axis objects. If not provided, will create a new. If
                 argument `together` is set to `True`, a single object is expected. If `together` is set to `False`,
-                the number of axis objects needs to be the same lenght as the number of metrics in the collection.
+                the number of axis objects needs to be the same length as the number of metrics in the collection.
             together: If `True`, will plot all metrics in the same axis. If `False`, will plot each metric in a separate
 
         Returns:
-            Either instal tupel of Figure and Axes object or an sequence of tuples with Figure and Axes object for each
+            Either install tuple of Figure and Axes object or an sequence of tuples with Figure and Axes object for each
             metric in the collection.
 
         Raises:

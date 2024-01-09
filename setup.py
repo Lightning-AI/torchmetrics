@@ -96,11 +96,11 @@ def _parse_requirements(strs: Union[str, Iterable[str]]) -> Iterator[_Requiremen
 
 
 def _load_requirements(
-    path_dir: str, file_name: str = "requirements.txt", unfreeze: bool = not _FREEZE_REQUIREMENTS
+    path_dir: str, file_name: str = "base.txt", unfreeze: bool = not _FREEZE_REQUIREMENTS
 ) -> List[str]:
     """Load requirements from a file.
 
-    >>> _load_requirements(_PATH_ROOT)
+    >>> _load_requirements(_PATH_REQUIRE)
     ['numpy...', 'torch..."]
 
     """
@@ -158,28 +158,38 @@ LONG_DESCRIPTION = _load_readme_description(
     homepage=ABOUT.__homepage__,
     version=f"v{ABOUT.__version__}",
 )
-BASE_REQUIREMENTS = _load_requirements(path_dir=_PATH_ROOT, file_name="requirements.txt")
+BASE_REQUIREMENTS = _load_requirements(path_dir=_PATH_REQUIRE, file_name="base.txt")
 
 
-def _prepare_extras(skip_files: Tuple[str] = ("devel.txt", "doctest.txt", "integrate.txt", "docs.txt")) -> dict:
+def _prepare_extras(skip_pattern: str = "^_", skip_files: Tuple[str] = ("base.txt",)) -> dict:
+    """Preparing extras for the package listing requirements.
+
+    Args:
+        skip_pattern: ignore files with this pattern, by default all files starting with _
+        skip_files: ignore some additional files, by default base requirements
+
+    Note, particular domain test requirement are aggregated in single "_tests" extra (which is not accessible).
+
+    """
     # find all extra requirements
     _load_req = partial(_load_requirements, path_dir=_PATH_REQUIRE)
     found_req_files = sorted(os.path.basename(p) for p in glob.glob(os.path.join(_PATH_REQUIRE, "*.txt")))
     # filter unwanted files
+    found_req_files = [n for n in found_req_files if not re.match(skip_pattern, n)]
     found_req_files = [n for n in found_req_files if n not in skip_files]
     found_req_names = [os.path.splitext(req)[0] for req in found_req_files]
     # define basic and extra extras
-    extras_req = {
-        name: _load_req(file_name=fname) for name, fname in zip(found_req_names, found_req_files) if "_test" not in name
-    }
+    extras_req = {"_tests": []}
     for name, fname in zip(found_req_names, found_req_files):
-        if "_test" in name:
-            extras_req["test"] += _load_req(file_name=fname)
+        if name.endswith("_test"):
+            extras_req["_tests"] += _load_req(file_name=fname)
+        else:
+            extras_req[name] = _load_req(file_name=fname)
     # filter the uniques
     extras_req = {n: list(set(req)) for n, req in extras_req.items()}
     # create an 'all' keyword that install all possible dependencies
-    extras_req["all"] = list(chain([pkgs for k, pkgs in extras_req.items() if k not in ("test", "docs")]))
-    extras_req["dev"] = extras_req["all"] + extras_req["test"]
+    extras_req["all"] = list(chain([pkgs for k, pkgs in extras_req.items() if k not in ("_test", "_tests")]))
+    extras_req["dev"] = extras_req["all"] + extras_req["_tests"]
     return extras_req
 
 
