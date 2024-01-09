@@ -17,7 +17,7 @@ import torch
 from torch import Tensor, tensor
 from typing_extensions import Literal
 
-from torchmetrics.utilities.checks import _check_same_shape, _input_format_classification
+from torchmetrics.utilities.checks import _check_same_shape, _input_format_classification, _check_valid_input_format_type
 from torchmetrics.utilities.data import _bincount, select_topk
 from torchmetrics.utilities.enums import AverageMethod, ClassificationTask, DataType, MDMCAverageMethod
 
@@ -45,10 +45,7 @@ def _binary_stat_scores_arg_validation(
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
 
-    if input_format not in ("auto", "probs", "logits", "labels", "none"):
-        raise ValueError(
-            f"Expected `input_format` to be one of 'auto','probs','logits',`labels`,`none` but got {input_format}"
-        )
+    _check_valid_input_format_type(input_format)
 
 
 def _binary_stat_scores_tensor_validation(
@@ -278,10 +275,7 @@ def _multiclass_stat_scores_arg_validation(
         )
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
-    if input_format not in ("auto", "probs", "logits", "labels", "none"):
-        raise ValueError(
-            f"Expected `input_format` to be one of 'auto','probs','logits',`labels`,`none` but got {input_format}"
-        )
+    _check_valid_input_format_type(input_format)
 
 
 def _multiclass_stat_scores_tensor_validation(
@@ -658,10 +652,7 @@ def _multilabel_stat_scores_arg_validation(
         )
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
-    if input_format not in ("auto", "probs", "logits", "labels", "none"):
-        raise ValueError(
-            f"Expected `input_format` to be one of 'auto','probs','logits',`labels`,`none` but got {input_format}"
-        )
+    _check_valid_input_format_type(input_format)
 
 
 def _multilabel_stat_scores_tensor_validation(

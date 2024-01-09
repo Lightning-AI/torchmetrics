@@ -17,7 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.utilities.checks import _check_same_shape
+from torchmetrics.utilities.checks import _check_same_shape, _check_valid_input_format_type
 from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.prints import rank_zero_warn
@@ -79,11 +79,7 @@ def _binary_confusion_matrix_arg_validation(
     allowed_normalize = ("true", "pred", "all", "none", None)
     if normalize not in allowed_normalize:
         raise ValueError(f"Expected argument `normalize` to be one of {allowed_normalize}, but got {normalize}.")
-
-    if input_format not in ("auto", "probs", "logits", "labels", "none"):
-        raise ValueError(
-            f"Expected `input_format` to be one of 'auto','probs','logits',`labels`,`none` but got {input_format}"
-        )
+    _check_valid_input_format_type(input_format)
 
 
 def _binary_confusion_matrix_tensor_validation(
@@ -276,10 +272,7 @@ def _multiclass_confusion_matrix_arg_validation(
     allowed_normalize = ("true", "pred", "all", "none", None)
     if normalize not in allowed_normalize:
         raise ValueError(f"Expected argument `normalize` to be one of {allowed_normalize}, but got {normalize}.")
-    if input_format not in ("auto", "probs", "logits", "labels", "none"):
-        raise ValueError(
-            f"Expected `input_format` to be one of 'auto','probs','logits',`labels`,`none` but got {input_format}"
-        )
+    _check_valid_input_format_type(input_format)
 
 
 def _multiclass_confusion_matrix_tensor_validation(
@@ -504,10 +497,7 @@ def _multilabel_confusion_matrix_arg_validation(
     allowed_normalize = ("true", "pred", "all", "none", None)
     if normalize not in allowed_normalize:
         raise ValueError(f"Expected argument `normalize` to be one of {allowed_normalize}, but got {normalize}.")
-    if input_format not in ("auto", "probs", "logits", "labels", "none"):
-        raise ValueError(
-            f"Expected `input_format` to be one of 'auto','probs','logits',`labels`,`none` but got {input_format}"
-        )
+    _check_valid_input_format_type(input_format)
 
 
 def _multilabel_confusion_matrix_tensor_validation(

@@ -18,7 +18,7 @@ from torch import Tensor, tensor
 from torch.nn import functional as F  # noqa: N812
 from typing_extensions import Literal
 
-from torchmetrics.utilities.checks import _check_same_shape
+from torchmetrics.utilities.checks import _check_same_shape, _check_valid_input_format_type
 from torchmetrics.utilities.compute import _safe_divide, interp
 from torchmetrics.utilities.data import _bincount, _cumsum
 from torchmetrics.utilities.enums import ClassificationTask
@@ -121,8 +121,7 @@ def _binary_precision_recall_curve_arg_validation(
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
 
-    if input_format not in ("auto", "probs", "logits", "none"):
-        raise ValueError(f"Expected `input_format` to be one of 'auto','probs','logits',`none` but got {input_format}")
+    _check_valid_input_format_type(input_format, options=("auto", "probs", "logits", "none"))
 
 
 def _binary_precision_recall_curve_tensor_validation(
