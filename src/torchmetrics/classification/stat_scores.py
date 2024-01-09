@@ -582,7 +582,8 @@ class StatScores(_ClassificationTaskWrapper):
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None  # noqa: S101  # needed for mypy
-        kwargs.update(
+        kwargs_extra = kwargs.copy()
+        kwargs_extra.update(
             {
                 "multidim_average": multidim_average,
                 "ignore_index": ignore_index,
@@ -591,15 +592,15 @@ class StatScores(_ClassificationTaskWrapper):
             }
         )
         if task == ClassificationTask.BINARY:
-            return BinaryStatScores(threshold, **kwargs)
+            return BinaryStatScores(threshold, **kwargs_extra)
         if task == ClassificationTask.MULTICLASS:
             if not isinstance(num_classes, int):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
             if not isinstance(top_k, int):
                 raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
-            return MulticlassStatScores(num_classes, top_k, average, **kwargs)
+            return MulticlassStatScores(num_classes, top_k, average, **kwargs_extra)
         if task == ClassificationTask.MULTILABEL:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
-            return MultilabelStatScores(num_labels, threshold, average, **kwargs)
+            return MultilabelStatScores(num_labels, threshold, average, **kwargs_extra)
         raise ValueError(f"Task {task} not supported!")

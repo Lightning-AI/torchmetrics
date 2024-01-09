@@ -164,10 +164,10 @@ def binary_roc(
 
     """
     if validate_args:
-        _binary_precision_recall_curve_arg_validation(thresholds, ignore_index, input_format)
-        _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index, input_format)
+        _binary_precision_recall_curve_arg_validation(thresholds, ignore_index, input_format=input_format)
+        _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index, input_format=input_format)
     preds, target, thresholds = _binary_precision_recall_curve_format(
-        preds, target, thresholds, ignore_index, input_format
+        preds, target, thresholds, ignore_index, input_format=input_format
     )
     state = _binary_precision_recall_curve_update(preds, target, thresholds)
     return _binary_roc_compute(state, thresholds)
@@ -338,10 +338,10 @@ def multiclass_roc(
 
     """
     if validate_args:
-        _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index, average, input_format)
-        _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index, input_format)
+        _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index, average, input_format=input_format)
+        _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index, input_format=input_format)
     preds, target, thresholds = _multiclass_precision_recall_curve_format(
-        preds, target, num_classes, thresholds, ignore_index, average, input_format
+        preds, target, num_classes, thresholds, ignore_index, average, input_format=input_format
     )
     state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds, average)
     return _multiclass_roc_compute(state, num_classes, thresholds, average)
@@ -492,10 +492,10 @@ def multilabel_roc(
 
     """
     if validate_args:
-        _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index, input_format)
-        _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index, input_format)
+        _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index, input_format=input_format)
+        _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index, input_format=input_format)
     preds, target, thresholds = _multilabel_precision_recall_curve_format(
-        preds, target, num_labels, thresholds, ignore_index, input_format
+        preds, target, num_labels, thresholds, ignore_index, input_format=input_format
     )
     state = _multilabel_precision_recall_curve_update(preds, target, num_labels, thresholds)
     return _multilabel_roc_compute(state, num_labels, thresholds, ignore_index)
@@ -572,15 +572,15 @@ def roc(
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
-        return binary_roc(preds, target, thresholds, ignore_index, validate_args, input_format)
+        return binary_roc(preds, target, thresholds, ignore_index, validate_args, input_format=input_format)
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         return multiclass_roc(
-            preds, target, num_classes, thresholds, average, ignore_index, validate_args, input_format
+            preds, target, num_classes, thresholds, average, ignore_index, validate_args, input_format=input_format
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
-        return multilabel_roc(preds, target, num_labels, thresholds, ignore_index, validate_args, input_format)
+        return multilabel_roc(preds, target, num_labels, thresholds, ignore_index, validate_args, input_format=input_format)
     raise ValueError(f"Task {task} not supported, expected one of {ClassificationTask}.")

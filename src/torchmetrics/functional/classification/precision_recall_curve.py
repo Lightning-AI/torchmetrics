@@ -377,10 +377,10 @@ def binary_precision_recall_curve(
 
     """
     if validate_args:
-        _binary_precision_recall_curve_arg_validation(thresholds, ignore_index, input_format)
-        _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index, input_format)
+        _binary_precision_recall_curve_arg_validation(thresholds, ignore_index, input_format=input_format)
+        _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index, input_format=input_format)
     preds, target, thresholds = _binary_precision_recall_curve_format(
-        preds, target, thresholds, ignore_index, input_format
+        preds, target, thresholds, ignore_index, input_format=input_format
     )
     state = _binary_precision_recall_curve_update(preds, target, thresholds)
     return _binary_precision_recall_curve_compute(state, thresholds)
@@ -404,7 +404,7 @@ def _multiclass_precision_recall_curve_arg_validation(
         raise ValueError(f"Expected argument `num_classes` to be an integer larger than 1, but got {num_classes}")
     if average not in (None, "micro", "macro"):
         raise ValueError(f"Expected argument `average` to be one of None, 'micro' or 'macro', but got {average}")
-    _binary_precision_recall_curve_arg_validation(thresholds, ignore_index, input_format)
+    _binary_precision_recall_curve_arg_validation(thresholds, ignore_index, input_format=input_format)
 
 
 def _multiclass_precision_recall_curve_tensor_validation(
@@ -741,8 +741,8 @@ def multiclass_precision_recall_curve(
 
     """
     if validate_args:
-        _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index, average, input_format)
-        _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index, input_format)
+        _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index, average, input_format=input_format)
+        _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index, input_format=input_format)
     preds, target, thresholds = _multiclass_precision_recall_curve_format(
         preds,
         target,
@@ -787,7 +787,7 @@ def _multilabel_precision_recall_curve_tensor_validation(
     - that the pred tensor is floating point
 
     """
-    _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index, input_format)
+    _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index, input_format=input_format)
     if preds.shape[1] != num_labels:
         raise ValueError(
             "Expected both `target.shape[1]` and `preds.shape[1]` to be equal to the number of labels"
@@ -999,10 +999,10 @@ def multilabel_precision_recall_curve(
 
     """
     if validate_args:
-        _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index, input_format)
-        _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index, input_format)
+        _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index, input_format=input_format)
+        _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index, input_format=input_format)
     preds, target, thresholds = _multilabel_precision_recall_curve_format(
-        preds, target, num_labels, thresholds, ignore_index, input_format
+        preds, target, num_labels, thresholds, ignore_index, input_format=input_format
     )
     state = _multilabel_precision_recall_curve_update(preds, target, num_labels, thresholds)
     return _multilabel_precision_recall_curve_compute(state, num_labels, thresholds, ignore_index)
@@ -1061,17 +1061,17 @@ def precision_recall_curve(
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
-        return binary_precision_recall_curve(preds, target, thresholds, ignore_index, validate_args, input_format)
+        return binary_precision_recall_curve(preds, target, thresholds, ignore_index, validate_args, input_format=input_format)
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         return multiclass_precision_recall_curve(
-            preds, target, num_classes, thresholds, average, ignore_index, validate_args, input_format
+            preds, target, num_classes, thresholds, average, ignore_index, validate_args, input_format=input_format
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_precision_recall_curve(
-            preds, target, num_labels, thresholds, ignore_index, validate_args, input_format
+            preds, target, num_labels, thresholds, ignore_index, validate_args, input_format=input_format
         )
     raise ValueError(f"Task {task} not supported.")

@@ -607,7 +607,8 @@ class ROC(_ClassificationTaskWrapper):
     ) -> Metric:
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
-        kwargs.update(
+        kwargs_extra = kwargs.copy()
+        kwargs_extra.update(
             {
                 "thresholds": thresholds,
                 "ignore_index": ignore_index,
@@ -616,13 +617,13 @@ class ROC(_ClassificationTaskWrapper):
             }
         )
         if task == ClassificationTask.BINARY:
-            return BinaryROC(**kwargs)
+            return BinaryROC(**kwargs_extra)
         if task == ClassificationTask.MULTICLASS:
             if not isinstance(num_classes, int):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
-            return MulticlassROC(num_classes, **kwargs)
+            return MulticlassROC(num_classes, **kwargs_extra)
         if task == ClassificationTask.MULTILABEL:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
-            return MultilabelROC(num_labels, **kwargs)
+            return MultilabelROC(num_labels, **kwargs_extra)
         raise ValueError(f"Task {task} not supported!")

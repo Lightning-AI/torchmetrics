@@ -567,7 +567,8 @@ class AUROC(_ClassificationTaskWrapper):
     ) -> Metric:
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
-        kwargs.update(
+        kwargs_extra = kwargs.copy()
+        kwargs_extra.update(
             {
                 "thresholds": thresholds,
                 "ignore_index": ignore_index,
@@ -576,13 +577,13 @@ class AUROC(_ClassificationTaskWrapper):
             }
         )
         if task == ClassificationTask.BINARY:
-            return BinaryAUROC(max_fpr, **kwargs)
+            return BinaryAUROC(max_fpr, **kwargs_extra)
         if task == ClassificationTask.MULTICLASS:
             if not isinstance(num_classes, int):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
-            return MulticlassAUROC(num_classes, average, **kwargs)
+            return MulticlassAUROC(num_classes, average, **kwargs_extra)
         if task == ClassificationTask.MULTILABEL:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
-            return MultilabelAUROC(num_labels, average, **kwargs)
+            return MultilabelAUROC(num_labels, average, **kwargs_extra)
         raise ValueError(f"Task {task} not supported!")

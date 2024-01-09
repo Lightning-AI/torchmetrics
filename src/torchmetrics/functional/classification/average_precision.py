@@ -154,10 +154,10 @@ def binary_average_precision(
 
     """
     if validate_args:
-        _binary_precision_recall_curve_arg_validation(thresholds, ignore_index, input_format)
-        _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index, input_format)
+        _binary_precision_recall_curve_arg_validation(thresholds, ignore_index, input_format=input_format)
+        _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index, input_format=input_format)
     preds, target, thresholds = _binary_precision_recall_curve_format(
-        preds, target, thresholds, ignore_index, input_format
+        preds, target, thresholds, ignore_index, input_format=input_format
     )
     state = _binary_precision_recall_curve_update(preds, target, thresholds)
     return _binary_average_precision_compute(state, thresholds)
@@ -287,8 +287,8 @@ def multiclass_average_precision(
 
     """
     if validate_args:
-        _multiclass_average_precision_arg_validation(num_classes, average, thresholds, ignore_index, input_format)
-        _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index, input_format)
+        _multiclass_average_precision_arg_validation(num_classes, average, thresholds, ignore_index, input_format=input_format)
+        _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index, input_format=input_format)
     preds, target, thresholds = _multiclass_precision_recall_curve_format(
         preds, target, num_classes, thresholds, ignore_index, input_format=input_format
     )
@@ -303,7 +303,7 @@ def _multilabel_average_precision_arg_validation(
     ignore_index: Optional[int] = None,
     input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> None:
-    _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index, input_format)
+    _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index, input_format=input_format)
     allowed_average = ("micro", "macro", "weighted", "none", None)
     if average not in allowed_average:
         raise ValueError(f"Expected argument `average` to be one of {allowed_average} but got {average}")
@@ -437,10 +437,10 @@ def multilabel_average_precision(
 
     """
     if validate_args:
-        _multilabel_average_precision_arg_validation(num_labels, average, thresholds, ignore_index, input_format)
-        _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index, input_format)
+        _multilabel_average_precision_arg_validation(num_labels, average, thresholds, ignore_index, input_format=input_format)
+        _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index, input_format=input_format)
     preds, target, thresholds = _multilabel_precision_recall_curve_format(
-        preds, target, num_labels, thresholds, ignore_index, input_format
+        preds, target, num_labels, thresholds, ignore_index, input_format=input_format
     )
     state = _multilabel_precision_recall_curve_update(preds, target, num_labels, thresholds)
     return _multilabel_average_precision_compute(state, num_labels, average, thresholds, ignore_index)

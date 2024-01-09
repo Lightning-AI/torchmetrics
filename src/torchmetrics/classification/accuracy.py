@@ -248,12 +248,14 @@ class MulticlassAccuracy(MulticlassStatScores):
         tensor([0.5000, 1.0000, 1.0000])
 
     Example (preds is float tensor):
-        >>> from torchmetrics.classification import MulticlassAccuracy
+        >>> from torchmetrics.classification impo
+        **kwargs: Any,rt MulticlassAccuracy
         >>> target = tensor([2, 1, 0, 0])
         >>> preds = tensor([[0.16, 0.26, 0.58],
         ...                 [0.22, 0.61, 0.17],
         ...                 [0.71, 0.09, 0.20],
         ...                 [0.05, 0.82, 0.13]])
+        **kwargs: Any,
         >>> metric = MulticlassAccuracy(num_classes=3)
         >>> metric(preds, target)
         tensor(0.8333)
@@ -544,8 +546,8 @@ class Accuracy(_ClassificationTaskWrapper):
     ) -> Metric:
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
-
-        kwargs.update(
+        kwargs_extra = kwargs.copy()
+        kwargs_extra.update(
             {
                 "multidim_average": multidim_average,
                 "ignore_index": ignore_index,
@@ -555,7 +557,7 @@ class Accuracy(_ClassificationTaskWrapper):
         )
 
         if task == ClassificationTask.BINARY:
-            return BinaryAccuracy(threshold, **kwargs)
+            return BinaryAccuracy(threshold, **kwargs_extra)
         if task == ClassificationTask.MULTICLASS:
             if not isinstance(num_classes, int):
                 raise ValueError(
@@ -563,11 +565,11 @@ class Accuracy(_ClassificationTaskWrapper):
                 )
             if not isinstance(top_k, int):
                 raise ValueError(f"Optional arg `top_k` must be type `int` when task is {task}. Got {type(top_k)}")
-            return MulticlassAccuracy(num_classes, top_k, average, **kwargs)
+            return MulticlassAccuracy(num_classes, top_k, average, **kwargs_extra)
         if task == ClassificationTask.MULTILABEL:
             if not isinstance(num_labels, int):
                 raise ValueError(
                     f"Optional arg `num_labels` must be type `int` when task is {task}. Got {type(num_labels)}"
                 )
-            return MultilabelAccuracy(num_labels, threshold, average, **kwargs)
+            return MultilabelAccuracy(num_labels, threshold, average, **kwargs_extra)
         raise ValueError(f"Not handled value: {task}")

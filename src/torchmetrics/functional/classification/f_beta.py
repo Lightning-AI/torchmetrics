@@ -66,7 +66,7 @@ def _binary_fbeta_score_arg_validation(
 ) -> None:
     if not (isinstance(beta, float) and beta > 0):
         raise ValueError(f"Expected argument `beta` to be a float larger than 0, but got {beta}.")
-    _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index, input_format)
+    _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index, input_format=input_format)
 
 
 def binary_fbeta_score(
@@ -151,9 +151,9 @@ def binary_fbeta_score(
 
     """
     if validate_args:
-        _binary_fbeta_score_arg_validation(beta, threshold, multidim_average, ignore_index, input_format)
-        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index, input_format)
-    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index, input_format)
+        _binary_fbeta_score_arg_validation(beta, threshold, multidim_average, ignore_index, input_format=input_format)
+        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index, input_format=input_format)
+    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index, input_format=input_format)
     tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
     return _fbeta_reduce(tp, fp, tn, fn, beta, average="binary", multidim_average=multidim_average)
 
@@ -169,7 +169,7 @@ def _multiclass_fbeta_score_arg_validation(
 ) -> None:
     if not (isinstance(beta, float) and beta > 0):
         raise ValueError(f"Expected argument `beta` to be a float larger than 0, but got {beta}.")
-    _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index, input_format)
+    _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index, input_format=input_format)
 
 
 def multiclass_fbeta_score(
@@ -285,12 +285,12 @@ def multiclass_fbeta_score(
     """
     if validate_args:
         _multiclass_fbeta_score_arg_validation(
-            beta, num_classes, top_k, average, multidim_average, ignore_index, input_format
+            beta, num_classes, top_k, average, multidim_average, ignore_index, input_format=input_format
         )
         _multiclass_stat_scores_tensor_validation(
-            preds, target, num_classes, multidim_average, ignore_index, input_format
+            preds, target, num_classes, multidim_average, ignore_index, input_format=input_format
         )
-    preds, target = _multiclass_stat_scores_format(preds, target, top_k, input_format)
+    preds, target = _multiclass_stat_scores_format(preds, target, top_k, input_format=input_format)
     tp, fp, tn, fn = _multiclass_stat_scores_update(
         preds, target, num_classes, top_k, average, multidim_average, ignore_index
     )
@@ -308,7 +308,7 @@ def _multilabel_fbeta_score_arg_validation(
 ) -> None:
     if not (isinstance(beta, float) and beta > 0):
         raise ValueError(f"Expected argument `beta` to be a float larger than 0, but got {beta}.")
-    _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index, input_format)
+    _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index, input_format=input_format)
 
 
 def multilabel_fbeta_score(
@@ -421,12 +421,12 @@ def multilabel_fbeta_score(
     """
     if validate_args:
         _multilabel_fbeta_score_arg_validation(
-            beta, num_labels, threshold, average, multidim_average, ignore_index, input_format
+            beta, num_labels, threshold, average, multidim_average, ignore_index, input_format=input_format
         )
         _multilabel_stat_scores_tensor_validation(
-            preds, target, num_labels, multidim_average, ignore_index, input_format
+            preds, target, num_labels, multidim_average, ignore_index, input_format=input_format
         )
-    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index, input_format)
+    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index, input_format=input_format)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
     return _fbeta_reduce(tp, fp, tn, fn, beta, average=average, multidim_average=multidim_average, multilabel=True)
 
@@ -802,7 +802,7 @@ def fbeta_score(
     assert multidim_average is not None  # noqa: S101  # needed for mypy
     if task == ClassificationTask.BINARY:
         return binary_fbeta_score(
-            preds, target, beta, threshold, multidim_average, ignore_index, validate_args, input_format
+            preds, target, beta, threshold, multidim_average, ignore_index, validate_args, input_format=input_format
         )
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
@@ -819,7 +819,7 @@ def fbeta_score(
             multidim_average,
             ignore_index,
             validate_args,
-            input_format,
+            input_format=input_format,
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
@@ -834,7 +834,7 @@ def fbeta_score(
             multidim_average,
             ignore_index,
             validate_args,
-            input_format,
+            input_format=input_format,
         )
     raise ValueError(f"Unsupported task `{task}` passed.")
 
@@ -876,19 +876,19 @@ def f1_score(
     task = ClassificationTask.from_str(task)
     assert multidim_average is not None  # noqa: S101  # needed for mypy
     if task == ClassificationTask.BINARY:
-        return binary_f1_score(preds, target, threshold, multidim_average, ignore_index, validate_args, input_format)
+        return binary_f1_score(preds, target, threshold, multidim_average, ignore_index, validate_args, input_format=input_format)
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         if not isinstance(top_k, int):
             raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
         return multiclass_f1_score(
-            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args, input_format
+            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args, input_format=input_format
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_f1_score(
-            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args, input_format
+            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args, input_format=input_format
         )
     raise ValueError(f"Unsupported task `{task}` passed.")

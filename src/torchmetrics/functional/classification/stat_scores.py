@@ -233,9 +233,9 @@ def binary_stat_scores(
 
     """
     if validate_args:
-        _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index, input_format)
-        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index, input_format)
-    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index, input_format)
+        _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index, input_format=input_format)
+        _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index, input_format=input_format)
+    preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index, input_format=input_format)
     tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
     return _binary_stat_scores_compute(tp, fp, tn, fn, multidim_average)
 
@@ -609,12 +609,12 @@ def multiclass_stat_scores(
     """
     if validate_args:
         _multiclass_stat_scores_arg_validation(
-            num_classes, top_k, average, multidim_average, ignore_index, input_format
+            num_classes, top_k, average, multidim_average, ignore_index, input_format=input_format
         )
         _multiclass_stat_scores_tensor_validation(
-            preds, target, num_classes, multidim_average, ignore_index, input_format
+            preds, target, num_classes, multidim_average, ignore_index, input_format=input_format
         )
-    preds, target = _multiclass_stat_scores_format(preds, target, top_k, input_format)
+    preds, target = _multiclass_stat_scores_format(preds, target, top_k, input_format=input_format)
     tp, fp, tn, fn = _multiclass_stat_scores_update(
         preds, target, num_classes, top_k, average, multidim_average, ignore_index
     )
@@ -900,12 +900,12 @@ def multilabel_stat_scores(
     """
     if validate_args:
         _multilabel_stat_scores_arg_validation(
-            num_labels, threshold, average, multidim_average, ignore_index, input_format
+            num_labels, threshold, average, multidim_average, ignore_index, input_format=input_format
         )
         _multilabel_stat_scores_tensor_validation(
-            preds, target, num_labels, multidim_average, ignore_index, input_format
+            preds, target, num_labels, multidim_average, ignore_index, input_format=input_format
         )
-    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index, input_format)
+    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index, input_format=input_format)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
     return _multilabel_stat_scores_compute(tp, fp, tn, fn, average, multidim_average)
 
@@ -1205,19 +1205,19 @@ def stat_scores(
     task = ClassificationTask.from_str(task)
     assert multidim_average is not None  # noqa: S101  # needed for mypy
     if task == ClassificationTask.BINARY:
-        return binary_stat_scores(preds, target, threshold, multidim_average, ignore_index, validate_args, input_format)
+        return binary_stat_scores(preds, target, threshold, multidim_average, ignore_index, validate_args, input_format=input_format)
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         if not isinstance(top_k, int):
             raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
         return multiclass_stat_scores(
-            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args, input_format
+            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args, input_format=input_format
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_stat_scores(
-            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args, input_format
+            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args, input_format=input_format
         )
     raise ValueError(f"Unsupported task `{task}`")

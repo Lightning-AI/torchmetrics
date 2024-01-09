@@ -574,7 +574,8 @@ class ConfusionMatrix(_ClassificationTaskWrapper):
     ) -> Metric:
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
-        kwargs.update(
+        kwargs_extra = kwargs.copy()
+        kwargs_extra.update(
             {
                 "normalize": normalize,
                 "ignore_index": ignore_index,
@@ -583,13 +584,13 @@ class ConfusionMatrix(_ClassificationTaskWrapper):
             }
         )
         if task == ClassificationTask.BINARY:
-            return BinaryConfusionMatrix(threshold, **kwargs)
+            return BinaryConfusionMatrix(threshold, **kwargs_extra)
         if task == ClassificationTask.MULTICLASS:
             if not isinstance(num_classes, int):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
-            return MulticlassConfusionMatrix(num_classes, **kwargs)
+            return MulticlassConfusionMatrix(num_classes, **kwargs_extra)
         if task == ClassificationTask.MULTILABEL:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
-            return MultilabelConfusionMatrix(num_labels, threshold, **kwargs)
+            return MultilabelConfusionMatrix(num_labels, threshold, **kwargs_extra)
         raise ValueError(f"Task {task} not supported!")
