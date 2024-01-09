@@ -17,7 +17,11 @@ import torch
 from torch import Tensor, tensor
 from typing_extensions import Literal
 
-from torchmetrics.utilities.checks import _check_same_shape, _input_format_classification, _check_valid_input_format_type
+from torchmetrics.utilities.checks import (
+    _check_same_shape,
+    _check_valid_input_format_type,
+    _input_format_classification,
+)
 from torchmetrics.utilities.data import _bincount, select_topk
 from torchmetrics.utilities.enums import AverageMethod, ClassificationTask, DataType, MDMCAverageMethod
 
