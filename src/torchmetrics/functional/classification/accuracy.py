@@ -416,7 +416,9 @@ def multilabel_accuracy(
         _multilabel_stat_scores_tensor_validation(
             preds, target, num_labels, multidim_average, ignore_index, input_format=input_format
         )
-    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index, input_format=input_format)
+    preds, target = _multilabel_stat_scores_format(
+        preds, target, num_labels, threshold, ignore_index, input_format=input_format
+    )
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
     return _accuracy_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True)
 
@@ -465,7 +467,9 @@ def accuracy(
     task = ClassificationTask.from_str(task)
 
     if task == ClassificationTask.BINARY:
-        return binary_accuracy(preds, target, threshold, multidim_average, ignore_index, validate_args, input_format=input_format)
+        return binary_accuracy(
+            preds, target, threshold, multidim_average, ignore_index, validate_args, input_format=input_format
+        )
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(
@@ -474,7 +478,15 @@ def accuracy(
         if not isinstance(top_k, int):
             raise ValueError(f"Optional arg `top_k` must be type `int` when task is {task}. Got {type(top_k)}")
         return multiclass_accuracy(
-            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args, input_format=input_format
+            preds,
+            target,
+            num_classes,
+            average,
+            top_k,
+            multidim_average,
+            ignore_index,
+            validate_args,
+            input_format=input_format,
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
@@ -482,6 +494,14 @@ def accuracy(
                 f"Optional arg `num_labels` must be type `int` when task is {task}. Got {type(num_labels)}"
             )
         return multilabel_accuracy(
-            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args, input_format=input_format
+            preds,
+            target,
+            num_labels,
+            threshold,
+            average,
+            multidim_average,
+            ignore_index,
+            validate_args,
+            input_format=input_format,
         )
     raise ValueError(f"Not handled value: {task}")

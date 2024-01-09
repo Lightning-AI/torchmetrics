@@ -467,7 +467,9 @@ def multiclass_confusion_matrix(
     """
     if validate_args:
         _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index, normalize, input_format=input_format)
-        _multiclass_confusion_matrix_tensor_validation(preds, target, num_classes, ignore_index, input_format=input_format)
+        _multiclass_confusion_matrix_tensor_validation(
+            preds, target, num_classes, ignore_index, input_format=input_format
+        )
     preds, target = _multiclass_confusion_matrix_format(preds, target, ignore_index, input_format=input_format)
     confmat = _multiclass_confusion_matrix_update(preds, target, num_classes)
     return _multiclass_confusion_matrix_compute(confmat, normalize)
@@ -682,8 +684,12 @@ def multilabel_confusion_matrix(
 
     """
     if validate_args:
-        _multilabel_confusion_matrix_arg_validation(num_labels, threshold, ignore_index, normalize, input_format=input_format)
-        _multilabel_confusion_matrix_tensor_validation(preds, target, num_labels, ignore_index, input_format=input_format)
+        _multilabel_confusion_matrix_arg_validation(
+            num_labels, threshold, ignore_index, normalize, input_format=input_format
+        )
+        _multilabel_confusion_matrix_tensor_validation(
+            preds, target, num_labels, ignore_index, input_format=input_format
+        )
     preds, target = _multilabel_confusion_matrix_format(
         preds, target, num_labels, threshold, ignore_index, input_format=input_format
     )
@@ -741,7 +747,9 @@ def confusion_matrix(
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
-        return binary_confusion_matrix(preds, target, threshold, normalize, ignore_index, validate_args, input_format=input_format)
+        return binary_confusion_matrix(
+            preds, target, threshold, normalize, ignore_index, validate_args, input_format=input_format
+        )
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")

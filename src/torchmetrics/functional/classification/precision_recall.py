@@ -384,7 +384,9 @@ def multilabel_precision(
         _multilabel_stat_scores_tensor_validation(
             preds, target, num_labels, multidim_average, ignore_index, input_format=input_format
         )
-    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index, input_format=input_format)
+    preds, target = _multilabel_stat_scores_format(
+        preds, target, num_labels, threshold, ignore_index, input_format=input_format
+    )
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
     return _precision_recall_reduce(
         "precision", tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True
@@ -718,7 +720,9 @@ def multilabel_recall(
         _multilabel_stat_scores_tensor_validation(
             preds, target, num_labels, multidim_average, ignore_index, input_format=input_format
         )
-    preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index, input_format=input_format)
+    preds, target = _multilabel_stat_scores_format(
+        preds, target, num_labels, threshold, ignore_index, input_format=input_format
+    )
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
     return _precision_recall_reduce(
         "recall", tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True
@@ -765,20 +769,38 @@ def precision(
     """
     assert multidim_average is not None  # noqa: S101  # needed for mypy
     if task == ClassificationTask.BINARY:
-        return binary_precision(preds, target, threshold, multidim_average, ignore_index, validate_args, input_format=input_format)
+        return binary_precision(
+            preds, target, threshold, multidim_average, ignore_index, validate_args, input_format=input_format
+        )
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         if not isinstance(top_k, int):
             raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
         return multiclass_precision(
-            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args, input_format=input_format
+            preds,
+            target,
+            num_classes,
+            average,
+            top_k,
+            multidim_average,
+            ignore_index,
+            validate_args,
+            input_format=input_format,
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_precision(
-            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args, input_format=input_format
+            preds,
+            target,
+            num_labels,
+            threshold,
+            average,
+            multidim_average,
+            ignore_index,
+            validate_args,
+            input_format=input_format,
         )
     raise ValueError(
         f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
@@ -826,19 +848,37 @@ def recall(
     task = ClassificationTask.from_str(task)
     assert multidim_average is not None  # noqa: S101  # needed for mypy
     if task == ClassificationTask.BINARY:
-        return binary_recall(preds, target, threshold, multidim_average, ignore_index, validate_args, input_format=input_format)
+        return binary_recall(
+            preds, target, threshold, multidim_average, ignore_index, validate_args, input_format=input_format
+        )
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         if not isinstance(top_k, int):
             raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
         return multiclass_recall(
-            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args, input_format=input_format
+            preds,
+            target,
+            num_classes,
+            average,
+            top_k,
+            multidim_average,
+            ignore_index,
+            validate_args,
+            input_format=input_format,
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_recall(
-            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args, input_format=input_format
+            preds,
+            target,
+            num_labels,
+            threshold,
+            average,
+            multidim_average,
+            ignore_index,
+            validate_args,
+            input_format=input_format,
         )
     raise ValueError(f"Not handled value: {task}")
