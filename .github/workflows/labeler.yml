@@ -10,7 +10,7 @@ jobs:
     steps:
       # Uploads repository content to the runner
       - uses: actions/checkout@v4
-      - uses: actions/labeler@v4
+      - uses: actions/labeler@v5
         with:
           # The path to the label configuration file.
           configuration-path: .github/labeling-config.yml
