@@ -33,8 +33,12 @@ from torchmetrics.functional.classification.hamming import (
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases, \
-    check_input_format_matches_data
+from unittests.classification.inputs import (
+    _binary_cases,
+    _multiclass_cases,
+    _multilabel_cases,
+    check_input_format_matches_data,
+)
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
@@ -99,7 +103,12 @@ class TestBinaryHammingDistance(MetricTester):
             reference_metric=partial(
                 _sklearn_hamming_distance_binary, ignore_index=ignore_index, multidim_average=multidim_average
             ),
-            metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average, "input_format": input_format},
+            metric_args={
+                "threshold": THRESHOLD,
+                "ignore_index": ignore_index,
+                "multidim_average": multidim_average,
+                "input_format": input_format,
+            },
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
@@ -235,7 +244,9 @@ class TestMulticlassHammingDistance(MetricTester):
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ddp", [True, False])
     @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
-    def test_multiclass_hamming_distance(self, ddp, inputs, ignore_index, multidim_average, average, input_format, request):
+    def test_multiclass_hamming_distance(
+        self, ddp, inputs, ignore_index, multidim_average, average, input_format, request
+    ):
         """Test class implementation of metric."""
         check_input_format_matches_data(input_format, request)
         preds, target = inputs
@@ -270,7 +281,9 @@ class TestMulticlassHammingDistance(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
-    def test_multiclass_hamming_distance_functional(self, inputs, ignore_index, multidim_average, average, input_format, request):
+    def test_multiclass_hamming_distance_functional(
+        self, inputs, ignore_index, multidim_average, average, input_format, request
+    ):
         """Test functional implementation of metric."""
         check_input_format_matches_data(input_format, request)
         preds, target = inputs
@@ -423,7 +436,9 @@ class TestMultilabelHammingDistance(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
     @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
-    def test_multilabel_hamming_distance(self, ddp, inputs, ignore_index, multidim_average, average, input_format, request):
+    def test_multilabel_hamming_distance(
+        self, ddp, inputs, ignore_index, multidim_average, average, input_format, request
+    ):
         """Test class implementation of metric."""
         check_input_format_matches_data(input_format, request)
         preds, target = inputs
@@ -459,7 +474,9 @@ class TestMultilabelHammingDistance(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
     @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
-    def test_multilabel_hamming_distance_functional(self, inputs, ignore_index, multidim_average, average, input_format, request):
+    def test_multilabel_hamming_distance_functional(
+        self, inputs, ignore_index, multidim_average, average, input_format, request
+    ):
         """Test functional implementation of metric."""
         check_input_format_matches_data(input_format, request)
         preds, target = inputs
