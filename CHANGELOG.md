@@ -6,74 +6,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Note: we move fast, but still we preserve 0.1 version (one feature release) back compatibility.**
 
-## [UnReleased] - 2023-MM-DD
+---
+
+## [1.3.0] - 2024-01-10
 
 ### Added
 
-- Added utility functions in `segmentation.utils` for future segmentation metrics ([#2105](https://github.com/Lightning-AI/torchmetrics/pull/2105))
-
-
 - Added more tokenizers for `SacreBLEU` metric ([#2068](https://github.com/Lightning-AI/torchmetrics/pull/2068))
-
-
-- Added `average` argument to multiclass versions of `PrecisionRecallCurve` and `ROC` ([#2084](https://github.com/Lightning-AI/torchmetrics/pull/2084))
-
-
-- Added confidence scores when `extended_summary=True` in `MeanAveragePrecision` ([#2212](https://github.com/Lightning-AI/torchmetrics/pull/2212))
-
-
 - Added support for logging `MultiTaskWrapper` directly with lightnings `log_dict` method ([#2213](https://github.com/Lightning-AI/torchmetrics/pull/2213))
-
-
-- Added `aggregate` argument to retrieval metrics ([#2220](https://github.com/Lightning-AI/torchmetrics/pull/2220))
-
-
 - Added `FeatureShare` wrapper to share submodules containing feature extractors between metrics ([#2120](https://github.com/Lightning-AI/torchmetrics/pull/2120))
-
-
-- Added `SpatialDistortionIndex` metric to image domain ([#2260](https://github.com/Lightning-AI/torchmetrics/pull/2260))
-
-
-- Added `CriticalSuccessIndex` metric to image subpackage ([#2257](https://github.com/Lightning-AI/torchmetrics/pull/2257))
-
-
-- Added `Spatial Correlation Coefficient` to image subpackage ([#2248](https://github.com/Lightning-AI/torchmetrics/pull/2248))
-
-
+- Added new metrics to image domain:
+  * `SpatialDistortionIndex` ([#2260](https://github.com/Lightning-AI/torchmetrics/pull/2260))
+  * Added `CriticalSuccessIndex` ([#2257](https://github.com/Lightning-AI/torchmetrics/pull/2257))
+  * `Spatial Correlation Coefficient` ([#2248](https://github.com/Lightning-AI/torchmetrics/pull/2248))
+- Added `average` argument to multiclass versions of `PrecisionRecallCurve` and `ROC` ([#2084](https://github.com/Lightning-AI/torchmetrics/pull/2084))
+- Added confidence scores when `extended_summary=True` in `MeanAveragePrecision` ([#2212](https://github.com/Lightning-AI/torchmetrics/pull/2212))
 - Added `RetrievalAUROC` metric ([#2251](https://github.com/Lightning-AI/torchmetrics/pull/2251))
-
+- Added `aggregate` argument to retrieval metrics ([#2220](https://github.com/Lightning-AI/torchmetrics/pull/2220))
+- Added utility functions in `segmentation.utils` for future segmentation metrics ([#2105](https://github.com/Lightning-AI/torchmetrics/pull/2105))
 
 ### Changed
 
 - Changed minimum supported Pytorch version from 1.8 to 1.10 ([#2145](https://github.com/Lightning-AI/torchmetrics/pull/2145))
-
-
 - Changed x-/y-axis order for `PrecisionRecallCurve` to be consistent with scikit-learn ([#2183](https://github.com/Lightning-AI/torchmetrics/pull/2183))
-
 
 ### Deprecated
 
 - Deprecated `metric._update_called` ([#2141](https://github.com/Lightning-AI/torchmetrics/pull/2141))
-
-
 - Deprecated `specicity_at_sensitivity` in favour of `specificity_at_sensitivity` ([#2199](https://github.com/Lightning-AI/torchmetrics/pull/2199))
-
-
-### Removed
-
--
-
 
 ### Fixed
 
 - Fixed support for half precision + CPU in metrics requiring topk operator ([#2252](https://github.com/Lightning-AI/torchmetrics/pull/2252))
-
-
 - Fixed warning incorrectly being raised in `Running` metrics ([#2256](https://github.com/Lightning-AI/torchmetrics/pull/2265))
-
-
 - Fixed integration with custom feature extractor in `FID` metric ([#2277](https://github.com/Lightning-AI/torchmetrics/pull/2277))
 
+---
 
 ## [1.2.1] - 2023-11-30
 
@@ -102,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed bug in `CosineSimilarity` where 2d is expected but 1d input was given ([#2241](https://github.com/Lightning-AI/torchmetrics/pull/2241))
 - Fixed bug in `MetricCollection` when using compute groups and `compute` is called more than once ([#2211](https://github.com/Lightning-AI/torchmetrics/pull/2211))
 
+
 ## [1.2.0] - 2023-09-22
 
 ### Added
@@ -121,6 +90,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `DaviesBouldinScore` ([#2071](https://github.com/Lightning-AI/torchmetrics/pull/2071))
 - Added `backend` argument to `MeanAveragePrecision` ([#2034](https://github.com/Lightning-AI/torchmetrics/pull/2034))
 
+---
 
 ## [1.1.2] - 2023-09-11
 
@@ -164,6 +134,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `CLIPImageQualityAssessment` to multimodal package ([#1931](https://github.com/Lightning-AI/torchmetrics/pull/1931))
 - Added new property `metric_state` to all metrics for users to investigate currently stored tensors in memory ([#2006](https://github.com/Lightning-AI/torchmetrics/pull/2006))
 
+---
 
 ## [1.0.3] - 2023-08-08
 
@@ -325,6 +296,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed number of bugs related to `average="macro"` in classification metrics ([#1821](https://github.com/Lightning-AI/torchmetrics/pull/1821))
 - Fixed off-by-one issue when `ignore_index = num_classes + 1` in Multiclass-jaccard ([#1860](https://github.com/Lightning-AI/torchmetrics/pull/1860))
 
+---
 
 ## [0.11.4] - 2023-03-10
 
@@ -397,6 +369,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed precision bug in `pairwise_euclidean_distance` ([#1352](https://github.com/Lightning-AI/metrics/pull/1352))
+
+---
 
 ## [0.10.3] - 2022-11-16
 
@@ -482,6 +456,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed bug in `ClasswiseWrapper` such that `compute` gave wrong result ([#1225](https://github.com/Lightning-AI/metrics/pull/1225))
 - Fixed synchronization of empty list states ([#1219](https://github.com/Lightning-AI/metrics/pull/1219))
 
+---
 
 ## [0.9.3] - 2022-08-22
 
@@ -561,6 +536,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed default value for `mdmc_average` in `Accuracy` ([#1036](https://github.com/Lightning-AI/metrics/pull/1036))
 - Fixed missing copy of property when using compute groups in `MetricCollection` ([#1052](https://github.com/Lightning-AI/metrics/pull/1052))
 
+---
 
 ## [0.8.2] - 2022-05-06
 
@@ -609,7 +585,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `reset_real_features` argument image quality assessment metrics ([#722](https://github.com/Lightning-AI/metrics/pull/722))
 - Added new keyword argument `compute_on_cpu` to all metrics ([#867](https://github.com/Lightning-AI/metrics/pull/867))
 
-
 ### Changed
 
 - Made `num_classes` in `jaccard_index` a required argument ([#853](https://github.com/Lightning-AI/metrics/pull/853), [#914](https://github.com/Lightning-AI/metrics/pull/914))
@@ -657,6 +632,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `BestScore` on GPU ([#912](https://github.com/Lightning-AI/metrics/pull/912))
 - Fixed Lsum computation for `ROUGEScore` ([#944](https://github.com/Lightning-AI/metrics/pull/944))
 
+---
 
 ## [0.7.3] - 2022-03-23
 
@@ -776,6 +752,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed MetricCollection kwargs filtering when no `kwargs` are present in update signature ([#707](https://github.com/Lightning-AI/metrics/pull/707))
 
+---
 
 ## [0.6.2] - 2021-12-15
 
@@ -852,6 +829,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed bug in `pit` by using the returned first result to initialize device and type ([#533](https://github.com/Lightning-AI/metrics/pull/533))
 - Fixed `SSIM` metric using too much memory ([#539](https://github.com/Lightning-AI/metrics/pull/539))
 - Fixed bug where `device` property was not properly update when metric was a child of a module (#542)
+
+---
 
 ## [0.5.1] - 2021-08-30
 
@@ -930,6 +909,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed that `_forward_cache` and `_computed` attributes are also moved to the correct device if metric is moved ([#413](https://github.com/Lightning-AI/metrics/pull/413))
 - Fixed calculation in `IoU` metric when using `ignore_index` argument ([#328](https://github.com/Lightning-AI/metrics/pull/328))
 
+---
 
 ## [0.4.1] - 2021-07-05
 
@@ -992,6 +972,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AUC can also support more dimensional inputs when all but one dimension are of size 1 ([#242](https://github.com/Lightning-AI/metrics/pull/242))
 - Fixed `dtype` of modular metrics after reset has been called ([#243](https://github.com/Lightning-AI/metrics/pull/243))
 - Fixed calculation in `matthews_corrcoef` to correctly match formula ([#321](https://github.com/Lightning-AI/metrics/pull/321))
+
+---
 
 ## [0.3.2] - 2021-05-10
 
@@ -1084,6 +1066,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed to Blau score ([#165](https://github.com/Lightning-AI/metrics/pull/165))
 - Fixed backwards compatibility for logging with older version of pytorch-lightning ([#182](https://github.com/Lightning-AI/metrics/pull/182))
 
+---
 
 ## [0.2.0] - 2021-03-12
 
@@ -1099,7 +1082,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed deprecated metrics from PL base ([#12](https://github.com/Lightning-AI/metrics/pull/12),
     [#15](https://github.com/Lightning-AI/metrics/pull/15))
 
-
+---
 
 ## [0.1.0] - 2021-02-22
 
