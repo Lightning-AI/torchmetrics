@@ -56,7 +56,7 @@ class TestBinaryConfusionMatrix(MetricTester):
 
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_confusion_matrix(self, inputs, ddp, normalize, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -153,7 +153,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
 
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_confusion_matrix(self, inputs, ddp, normalize, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -270,7 +270,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
 
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multilabel_confusion_matrix(self, inputs, ddp, normalize, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs

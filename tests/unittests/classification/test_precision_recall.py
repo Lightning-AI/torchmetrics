@@ -89,7 +89,7 @@ class TestBinaryPrecisionRecall(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_precision_recall(self, ddp, inputs, module, functional, compare, ignore_index, multidim_average):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -222,7 +222,7 @@ class TestMulticlassPrecisionRecall(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_precision_recall(
         self, ddp, inputs, module, functional, compare, ignore_index, multidim_average, average
     ):
@@ -456,7 +456,7 @@ def _sklearn_precision_recall_multilabel(preds, target, sk_fn, ignore_index, mul
 class TestMultilabelPrecisionRecall(MetricTester):
     """Test class for `MultilabelPrecisionRecall` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])

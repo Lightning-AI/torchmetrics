@@ -57,7 +57,7 @@ def _sk_log_cosh_error(preds, target):
 class TestLogCoshError(MetricTester):
     """Test class for `LogCoshError` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_log_cosh_error_class(self, ddp, preds, target):
         """Test class implementation of metric."""
         num_outputs = 1 if preds.ndim == 2 else num_targets

@@ -118,7 +118,7 @@ def _compute_rouge_score(
 class TestROUGEScore(TextTester):
     """Test class for `ROUGEScore` metric."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @skip_on_connection_issues(reason="could not download nltk relevant data")
     def test_rouge_score_class(self, ddp, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate):
         """Test class implementation of metric."""

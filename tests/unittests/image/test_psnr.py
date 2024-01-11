@@ -100,7 +100,7 @@ def _base_e_sk_psnr(preds, target, data_range, reduction, dim):
 class TestPSNR(MetricTester):
     """Test class for `PeakSignalNoiseRatio` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_psnr(self, preds, target, data_range, base, reduction, dim, ref_metric, ddp):
         """Test class implementation of metric."""
         _args = {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim}

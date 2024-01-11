@@ -85,7 +85,7 @@ def _ref_implementation(preds, target, substitution_cost=1, reduction="mean"):
 class TestEditDistance(TextTester):
     """Test class for `EditDistance` metric."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("substitution_cost", [1, 2])
     @pytest.mark.parametrize("reduction", ["none", "mean", "sum"])
     def test_edit_class(self, preds, targets, ddp, substitution_cost, reduction):

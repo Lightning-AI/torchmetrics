@@ -103,7 +103,7 @@ class TestCramersV(MetricTester):
 
     atol = 1e-5
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_cramers_v(self, ddp, preds, target, bias_correction, nan_strategy, nan_replace_value):
         """Test class implementation of metric."""
         metric_args = {

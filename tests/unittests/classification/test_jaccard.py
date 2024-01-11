@@ -53,7 +53,7 @@ class TestBinaryJaccardIndex(MetricTester):
     """Test class for `BinaryJaccardIndex` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_jaccard_index(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -152,7 +152,7 @@ class TestMulticlassJaccardIndex(MetricTester):
 
     @pytest.mark.parametrize("average", ["macro", "micro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_jaccard_index(self, inputs, ddp, ignore_index, average):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -265,7 +265,7 @@ class TestMultilabelJaccardIndex(MetricTester):
 
     @pytest.mark.parametrize("average", ["macro", "micro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multilabel_jaccard_index(self, inputs, ddp, ignore_index, average):
         """Test class implementation of metric."""
         preds, target = inputs

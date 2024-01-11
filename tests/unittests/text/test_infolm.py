@@ -106,7 +106,7 @@ class TestInfoLM(TextTester):
     # Set atol = 1e-4 as reference results are rounded
     atol = 1e-4
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.timeout(240)  # download may be too slow for default timeout
     @skip_on_connection_issues()
     def test_infolm_class(self, ddp, preds, targets, information_measure, idf, alpha, beta):

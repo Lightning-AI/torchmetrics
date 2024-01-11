@@ -87,7 +87,7 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
 
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.85])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_specificity_at_sensitivity(self, inputs, ddp, min_sensitivity, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -208,7 +208,7 @@ class TestMulticlassSpecificityAtSensitivity(MetricTester):
 
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_specificity_at_sensitivity(self, inputs, ddp, min_sensitivity, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -334,7 +334,7 @@ class TestMultilabelSpecificityAtSensitivity(MetricTester):
 
     @pytest.mark.parametrize("min_sensitivity", [0.05, 0.1, 0.3, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multilabel_specificity_at_sensitivity(self, inputs, ddp, min_sensitivity, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs

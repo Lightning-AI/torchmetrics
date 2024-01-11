@@ -100,7 +100,7 @@ class TestTheilsU(MetricTester):
 
     atol = 1e-5
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_theils_u(self, ddp, preds, target, nan_strategy, nan_replace_value):
         """Test class implementation of metric."""
         metric_args = {
