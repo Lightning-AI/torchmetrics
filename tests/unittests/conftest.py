@@ -35,6 +35,9 @@ THRESHOLD = 0.5
 MAX_PORT = 8100
 START_PORT = 8088
 CURRENT_PORT = START_PORT
+TEST_ONLY_DDP = os.getenv("TEST_ONLY_DDP", "0") == "1"
+TEST_ONLY_BASE = os.getenv("TEST_ONLY_BASE", "0") == "1"
+assert not (TEST_ONLY_DDP and TEST_ONLY_BASE), "Cannot set both `TEST_ONLY_DDP` and `TEST_ONLY_BASE`"
 
 
 def setup_ddp(rank, world_size):
@@ -52,12 +55,22 @@ def setup_ddp(rank, world_size):
         torch.distributed.init_process_group("gloo", rank=rank, world_size=world_size)
 
 
+def pytest_collection_modifyitems(config):
+    if config.option.markerexpr == "":
+        if TEST_ONLY_DDP:
+            config.option.markerexpr = "DDP"
+        elif TEST_ONLY_BASE:
+            config.option.markerexpr = "not DDP"
+
+
 def pytest_sessionstart():
     """Global initialization of multiprocessing pool.
 
     Runs before any test.
 
     """
+    if TEST_ONLY_BASE:
+        return
     pool = Pool(processes=NUM_PROCESSES)
     pool.starmap(setup_ddp, [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)])
     pytest.pool = pool
@@ -69,6 +82,8 @@ def pytest_sessionfinish():
     Runs after all tests.
 
     """
+    if TEST_ONLY_BASE:
+        return
     pytest.pool.close()
     pytest.pool.join()
 

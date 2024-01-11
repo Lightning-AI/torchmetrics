@@ -136,6 +136,8 @@ jobs:
 
       - name: Unittests common
         working-directory: ./tests
+        env:
+          TEST_ONLY_BASE: "1"
         run: |
           python -m pytest -v \
             ${{ needs.check-diff.outputs.test-dirs }} \
@@ -143,13 +145,14 @@ jobs:
             --durations=50 \
             --reruns 3 \
             --reruns-delay 1 \
-             -m "not DDP" \
             -n auto \
             --dist=loadfile
             ${{ env.UNITTEST_TIMEOUT }}
 
       - name: Unittests DDP
         working-directory: ./tests
+        env:
+          TEST_ONLY_DDP: "1"
         run: |
           python -m pytest -v \
             ${{ needs.check-diff.outputs.test-dirs }} \
@@ -157,7 +160,6 @@ jobs:
             --durations=50 \
             --reruns 3 \
             --reruns-delay 1 \
-            -m "ddp" \
             ${{ env.UNITTEST_TIMEOUT }}
 
       - name: Statistics
