@@ -120,6 +120,50 @@ jobs:
           python -c "from torch import __version__ as ver; ver = ver.split('+')[0] ; assert ver == '${{ matrix.pytorch-version }}', ver"
           python -c 'import torch ; print("TORCH=" + str(torch.__version__))' >> $GITHUB_OUTPUT
 
+      - name: Pull testing data from S3
+        working-directory: ./tests
+        env:
+          S3_DATA: "https://pl-public-data.s3.amazonaws.com/metrics/data.zip"
+        run: |
+          pip install -q "urllib3>1.0"
+          # wget is simpler but does not work on Windows
+          python -c "from urllib.request import urlretrieve ; urlretrieve('$S3_DATA', 'data.zip')"
+          unzip -o data.zip
+          ls -l _data/*
+
+      - name: Export README tests
+        run: python -m phmdoctest README.md --outfile tests/unittests/test_readme.py
+
+      - name: Unittests
+        working-directory: ./tests
+        run: |
+          python -m pytest -v \
+            ${{ needs.check-diff.outputs.test-dirs }} \
+            --cov=torchmetrics \
+            --durations=50 \
+            --reruns 3 \
+            --reruns-delay 1 \
+            -n auto \
+            --dist=loadfile
+            ${{ env.UNITTEST_TIMEOUT }}
+
+      - name: Statistics
+        if: success()
+        working-directory: ./tests
+        run: |
+          coverage xml
+          coverage report
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: tests/coverage.xml
+          flags: cpu,${{ runner.os }},python${{ matrix.python-version }},torch${{ steps.info.outputs.TORCH }}
+          env_vars: OS,PYTHON
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
       - name: Unittests
         uses: ./.github/actions/unittesting
         if: ${{ needs.check-diff.outputs.test-dirs != '' }}
