@@ -29,6 +29,6 @@ jobs:
           echo $PR_NUMBER
           pip install fire requests
           # python .github/assistant.py changed-domains $PR_NUMBER
-          echo "::set-output name=focus::$(python .github/assistant.py changed-domains $PR_NUMBER 2>&1)"
+          echo "focus=$(python .github/assistant.py changed-domains $PR_NUMBER)" >> $GITHUB_OUTPUT
 
       - run: echo "${{ steps.diff-domains.outputs.focus }}"

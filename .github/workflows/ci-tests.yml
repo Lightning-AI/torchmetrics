@@ -7,6 +7,7 @@ on: # Trigger the workflow on push or pull request, but only for the master bran
   pull_request:
     branches: [master, "release/*"]
     types: [opened, reopened, ready_for_review, synchronize]
+  workflow_dispatch: {}
   schedule:
     # At the end of every day
     - cron: "0 0 * * *"
