@@ -56,10 +56,6 @@ jobs:
         if: matrix.requires == 'oldest'
         run: python .github/assistant.py set-oldest-versions --req_files='["requirements/_integrate.txt"]'
 
-      - name: Freeze PIL (hotfix)
-        # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
-        run: pip install "Pillow<9.0" # It messes with torchvision
-
       - name: Install all dependencies
         run: |
           # this was updated in `source cashing` by optional oldest

@@ -95,7 +95,6 @@ jobs:
           pip install -r requirements/_doctest.txt -U -f $PYPI_CACHE
           pip list
 
-      # todo: copy this to install checks
       - name: DocTests
         timeout-minutes: 25
         working-directory: ./src
@@ -103,11 +102,6 @@ jobs:
           SKIP_SLOW_DOCTEST: 1
         # NOTE: run coverage on tests does not propagate failure status for Win, https://github.com/nedbat/coveragepy/issues/1003
         run: python -m pytest torchmetrics --reruns 3 --reruns-delay 2
-
-      - name: Freeze PIL (hotfix)
-        if: ${{ matrix.python-version != '3.11' }}
-        # import of PILLOW_VERSION which they recently removed in v9.0 in favor of __version__
-        run: pip install "Pillow<9.0" # It messes with torchvision
 
       - name: Install all dependencies
         run: |
