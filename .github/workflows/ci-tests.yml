@@ -157,7 +157,7 @@ jobs:
             --durations=50 \
             --reruns 3 \
             --reruns-delay 1 \
-            -m "DDP" \
+            -m "ddp" \
             ${{ env.UNITTEST_TIMEOUT }}
 
       - name: Statistics
