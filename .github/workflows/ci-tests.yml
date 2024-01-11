@@ -179,18 +179,6 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: false
 
-      - name: Unittests
-        uses: ./.github/actions/unittesting
-        if: ${{ needs.check-diff.outputs.test-dirs != '' }}
-        timeout-minutes: 90
-        with:
-          requires: ${{ matrix.requires }}
-          codecov-token: ${{ secrets.CODECOV_TOKEN }}
-          python-version: ${{ matrix.python-version }}
-          pytorch-version: ${{ steps.info.outputs.TORCH }}
-          dirs: ${{ needs.check-diff.outputs.test-dirs }}
-          test-timeout: ${{ env.UNITTEST_TIMEOUT }}
-
       - name: update cashing
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         continue-on-error: true
