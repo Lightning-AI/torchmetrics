@@ -68,12 +68,12 @@ jobs:
       - name: Setup macOS
         if: ${{ runner.os == 'macOS' }}
         run: |
-          echo 'UNITTEST_TIMEOUT=--timeout=120' >> $GITHUB_ENV
+          echo 'UNITTEST_TIMEOUT=--timeout=75' >> $GITHUB_ENV
           brew install gcc libomp ffmpeg # https://github.com/pytorch/pytorch/issues/20030
       - name: Setup Linux
         if: ${{ runner.os == 'Linux' }}
         run: |
-          echo 'UNITTEST_TIMEOUT=--timeout=120' >> $GITHUB_ENV
+          echo 'UNITTEST_TIMEOUT=--timeout=75' >> $GITHUB_ENV
           sudo apt update --fix-missing
           sudo apt install -y ffmpeg dvipng texlive-latex-extra texlive-fonts-recommended cm-super
       - name: Setup Windows
@@ -134,7 +134,7 @@ jobs:
       - name: Export README tests
         run: python -m phmdoctest README.md --outfile tests/unittests/test_readme.py
 
-      - name: Unittests
+      - name: Unittests common
         working-directory: ./tests
         run: |
           python -m pytest -v \
@@ -143,8 +143,21 @@ jobs:
             --durations=50 \
             --reruns 3 \
             --reruns-delay 1 \
+             -m "not DDP" \
             -n auto \
             --dist=loadfile
+            ${{ env.UNITTEST_TIMEOUT }}
+
+      - name: Unittests DDP
+        working-directory: ./tests
+        run: |
+          python -m pytest -v \
+            ${{ needs.check-diff.outputs.test-dirs }} \
+            --cov=torchmetrics \
+            --durations=50 \
+            --reruns 3 \
+            --reruns-delay 1 \
+            -m "DDP" \
             ${{ env.UNITTEST_TIMEOUT }}
 
       - name: Statistics
