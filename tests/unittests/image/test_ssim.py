@@ -140,7 +140,7 @@ class TestSSIM(MetricTester):
     atol = 6e-3
 
     @pytest.mark.parametrize("data_range", [1.0, (0.1, 1.0)])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_ssim_sk(self, preds, target, sigma, data_range, ddp):
         """Test class implementation of metricvs skimage."""
         self.run_class_metric_test(
@@ -155,7 +155,7 @@ class TestSSIM(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_ssim_pt(self, preds, target, sigma, ddp):
         """Test class implementation of metric vs pytorch_msssim."""
         self.run_class_metric_test(
@@ -170,7 +170,7 @@ class TestSSIM(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_ssim_without_gaussian_kernel(self, preds, target, sigma, ddp):
         """Test class implementation of metric with gaussian kernel."""
         self.run_class_metric_test(

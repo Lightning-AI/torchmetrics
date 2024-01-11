@@ -65,7 +65,7 @@ def _compare_fn(preds, target, model_name_or_path):
 class TestCLIPScore(MetricTester):
     """Test class for `CLIPScore` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @skip_on_connection_issues()
     def test_clip_score(self, inputs, model_name_or_path, ddp):
         """Test class implementation of metric."""

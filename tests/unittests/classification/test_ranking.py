@@ -67,7 +67,7 @@ class TestMultilabelRanking(MetricTester):
     """Test class for `MultilabelRanking` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multilabel_ranking(self, inputs, metric, functional_metric, ref_metric, ddp, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs

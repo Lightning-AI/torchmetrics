@@ -72,7 +72,7 @@ for size, channel, dtype in [
 class TestTotalVariation(MetricTester):
     """Test class for `TotalVariation` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_total_variation(self, preds, target, reduction, ddp):
         """Test class implementation of metric."""
         if reduction is None and ddp:

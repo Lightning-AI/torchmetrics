@@ -73,7 +73,7 @@ class TestSpatialCorrelationCoefficient(MetricTester):
 
     atol = 1e-8
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_scc(self, preds, target, ddp):
         """Test SpatialCorrelationCoefficient class usage."""
         self.run_class_metric_test(

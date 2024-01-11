@@ -83,7 +83,7 @@ def _compare_fn_1_2(preds, target) -> np.ndarray:
 class TestModifiedPanopticQuality(MetricTester):
     """Test class for `ModifiedPanopticQuality` metric."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize(
         ("inputs", "args", "reference_metric"),
         [
