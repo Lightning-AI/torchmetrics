@@ -52,6 +52,7 @@ jobs:
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
       PYPI_CACHE: "_ci-cache_PyPI"
       TOKENIZERS_PARALLELISM: false
+      TEST_DIRS: ${{ needs.check-diff.outputs.test-dirs }}
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that MacOS jobs take much more than orger OS
@@ -138,7 +139,7 @@ jobs:
         working-directory: ./tests
         run: |
           python -m pytest -v \
-            ${{ needs.check-diff.outputs.test-dirs }} \
+            $TEST_DIRS \
             --cov=torchmetrics \
             --durations=50 \
             --reruns 3 \
@@ -154,7 +155,7 @@ jobs:
           USE_PYTEST_POOL: "1"
         run: |
           python -m pytest -v \
-            ${{ needs.check-diff.outputs.test-dirs }} \
+            $TEST_DIRS \
             --cov=torchmetrics \
             --durations=50 \
             -m DDP \
