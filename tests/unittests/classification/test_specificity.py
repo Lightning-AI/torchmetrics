@@ -95,7 +95,7 @@ class TestBinarySpecificity(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
     def test_binary_specificity(self, ddp, inputs, ignore_index, multidim_average, input_format, request):
         """Test class implementation of metric."""
@@ -269,7 +269,7 @@ class TestMulticlassSpecificity(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
     def test_multiclass_specificity(self, ddp, inputs, ignore_index, multidim_average, average, input_format, request):
         """Test class implementation of metric."""
@@ -476,7 +476,7 @@ def _baseline_specificity_multilabel(preds, target, ignore_index, multidim_avera
 class TestMultilabelSpecificity(MetricTester):
     """Test class for `MultilabelSpecificity` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])

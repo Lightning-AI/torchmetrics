@@ -55,7 +55,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
     """Test class for `BinaryMatthewsCorrCoef` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_matthews_corrcoef(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -147,7 +147,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
     """Test class for `MulticlassMatthewsCorrCoef` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_matthews_corrcoef(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -237,7 +237,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
     """Test class for `MultilabelMatthewsCorrCoef` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multilabel_matthews_corrcoef(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs

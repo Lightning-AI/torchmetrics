@@ -60,7 +60,7 @@ class TestBinaryAveragePrecision(MetricTester):
     """Test class for `BinaryAveragePrecision` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
     def test_binary_average_precision(self, inputs, ddp, ignore_index, input_format, request):
         """Test class implementation of metric."""
@@ -182,7 +182,7 @@ class TestMulticlassAveragePrecision(MetricTester):
 
     @pytest.mark.parametrize("average", ["macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
     def test_multiclass_average_precision(self, inputs, average, ddp, ignore_index, input_format, request):
         """Test class implementation of metric."""
@@ -304,7 +304,7 @@ class TestMultilabelAveragePrecision(MetricTester):
 
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("input_format", ["auto", "probs", "logits"])
     def test_multilabel_average_precision(self, inputs, ddp, average, ignore_index, input_format, request):
         """Test class implementation of metric."""

@@ -56,7 +56,7 @@ class TestLPIPS(MetricTester):
     atol: float = 1e-4
 
     @pytest.mark.parametrize("net_type", ["alex", "squeeze"])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_lpips(self, net_type, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(

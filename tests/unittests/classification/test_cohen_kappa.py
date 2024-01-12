@@ -49,7 +49,7 @@ class TestBinaryCohenKappa(MetricTester):
 
     @pytest.mark.parametrize("weights", ["linear", "quadratic", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_cohen_kappa(self, inputs, ddp, weights, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -148,7 +148,7 @@ class TestMulticlassCohenKappa(MetricTester):
 
     @pytest.mark.parametrize("weights", ["linear", "quadratic", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_cohen_kappa(self, inputs, ddp, weights, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs

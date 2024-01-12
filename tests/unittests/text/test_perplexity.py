@@ -49,7 +49,7 @@ def _baseline_perplexity(preds, target, ignore_index):
 class TestPerplexity(MetricTester):
     """Test class for `Perplexity` metric."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_perplexity_class(self, ddp, preds, target, ignore_index):
         """Test class implementation of metric."""
         self.run_class_metric_test(

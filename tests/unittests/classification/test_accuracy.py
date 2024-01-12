@@ -97,7 +97,7 @@ class TestBinaryAccuracy(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
     def test_binary_accuracy(self, ddp, inputs, ignore_index, multidim_average, input_format, request):
         """Test class implementation of metric."""
@@ -251,7 +251,7 @@ class TestMulticlassAccuracy(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
     def test_multiclass_accuracy(self, ddp, inputs, ignore_index, multidim_average, average, input_format, request):
         """Test class implementation of metric."""
@@ -453,7 +453,7 @@ def _sklearn_accuracy_multilabel(preds, target, ignore_index, multidim_average, 
 class TestMultilabelAccuracy(MetricTester):
     """Test class for `MultilabelAccuracy` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])

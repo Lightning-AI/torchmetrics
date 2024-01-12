@@ -89,7 +89,7 @@ class TestKendallRankCorrCoef(MetricTester):
         sys.platform == "darwin" and not _TORCH_LOWER_2_0,
         reason="Tests are not working on mac for newer version of PyTorch.",
     )
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_kendall_rank_corrcoef(self, preds, target, alternative, variant, ddp):
         """Test class implementation of metric."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1

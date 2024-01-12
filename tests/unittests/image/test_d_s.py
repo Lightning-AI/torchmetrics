@@ -153,7 +153,7 @@ class TestSpatialDistortionIndex(MetricTester):
 
     atol = 3e-6
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_d_s(self, preds, target, ms, pan, pan_lr, norm_order, window_size, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(

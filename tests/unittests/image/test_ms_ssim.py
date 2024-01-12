@@ -55,7 +55,7 @@ class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
     # in the pytorch-msssim package, sigma is hardcoded to 1.5. We can thus only test this value, which corresponds
     # to a kernel size of 11
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_ms_ssim(self, preds, target, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(

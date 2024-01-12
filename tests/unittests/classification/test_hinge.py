@@ -47,7 +47,7 @@ class TestBinaryHingeLoss(MetricTester):
     """Test class for `BinaryHingeLoss` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_hinge_loss(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -147,7 +147,7 @@ class TestMulticlassHingeLoss(MetricTester):
 
     @pytest.mark.parametrize("multiclass_mode", ["crammer-singer", "one-vs-all"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_hinge_loss(self, inputs, ddp, multiclass_mode, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs

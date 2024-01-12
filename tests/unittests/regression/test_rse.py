@@ -75,7 +75,7 @@ def _multi_target_ref_metric(preds, target, squared):
 class TestRelativeSquaredError(MetricTester):
     """Test class for `RelativeSquaredError` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_rse(self, squared, preds, target, ref_metric, num_outputs, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(

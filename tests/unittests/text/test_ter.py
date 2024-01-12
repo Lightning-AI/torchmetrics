@@ -63,7 +63,7 @@ def _sacrebleu_ter_fn(
 class TestTER(TextTester):
     """Test class for `TranslationEditRate` metric."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_chrf_score_class(self, ddp, preds, targets, normalize, no_punctuation, asian_support, lowercase):
         """Test class implementation of metric."""
         metric_args = {

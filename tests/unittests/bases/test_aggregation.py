@@ -82,7 +82,7 @@ class WrappedCatMetric(CatMetric):
 class TestAggregation(MetricTester):
     """Test aggregation metrics."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_aggreagation(self, ddp, metric_class, compare_fn, values, weights):
         """Test modular implementation."""
         self.run_class_metric_test(
