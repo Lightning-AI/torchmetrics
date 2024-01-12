@@ -1,4 +1,4 @@
-"""Root package info."""
+r"""Root package info."""
 import logging as __logging
 import os
 
