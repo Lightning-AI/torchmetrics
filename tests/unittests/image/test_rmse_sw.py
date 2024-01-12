@@ -62,7 +62,7 @@ class TestRootMeanSquareErrorWithSlidingWindow(MetricTester):
 
     atol = 1e-2
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_rmse_sw(self, preds, target, window_size, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(

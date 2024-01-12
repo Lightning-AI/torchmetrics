@@ -62,7 +62,7 @@ def _multi_target_ref_metric(preds, target, sk_fn=explained_variance_score):
 class TestExplainedVariance(MetricTester):
     """Test class for `ExplainedVariance` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_explained_variance(self, multioutput, preds, target, ref_metric, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(

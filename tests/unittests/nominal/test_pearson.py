@@ -87,7 +87,7 @@ class TestPearsonsContingencyCoefficient(MetricTester):
 
     atol = 1e-5
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_pearsons_ta(self, ddp, preds, target):
         """Test class implementation of metric."""
         metric_args = {"num_classes": NUM_CLASSES}

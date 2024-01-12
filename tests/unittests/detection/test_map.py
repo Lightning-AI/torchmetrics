@@ -125,7 +125,7 @@ def _compare_against_coco_fn(preds, target, iou_type, iou_thresholds=None, rec_t
 
 @pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 and pycocotools is installed")
 @pytest.mark.parametrize("iou_type", ["bbox", "segm"])
-@pytest.mark.parametrize("ddp", [False, True])
+@pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
 @pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
 class TestMAPUsingCOCOReference(MetricTester):
     """Test map metric on the reference coco data."""

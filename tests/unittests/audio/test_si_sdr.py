@@ -77,7 +77,7 @@ class TestSISDR(MetricTester):
 
     atol = 1e-2
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_si_sdr(self, preds, target, ref_metric, zero_mean, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(

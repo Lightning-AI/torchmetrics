@@ -7,6 +7,7 @@ on: # Trigger the workflow on push or pull request, but only for the master bran
   pull_request:
     branches: [master, "release/*"]
     types: [opened, reopened, ready_for_review, synchronize]
+  workflow_dispatch: {}
   schedule:
     # At the end of every day
     - cron: "0 0 * * *"
@@ -52,6 +53,7 @@ jobs:
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
       PYPI_CACHE: "_ci-cache_PyPI"
       TOKENIZERS_PARALLELISM: false
+      TEST_DIRS: ${{ needs.check-diff.outputs.test-dirs }}
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that MacOS jobs take much more than orger OS
@@ -68,12 +70,12 @@ jobs:
       - name: Setup macOS
         if: ${{ runner.os == 'macOS' }}
         run: |
-          echo 'UNITTEST_TIMEOUT=--timeout=120' >> $GITHUB_ENV
+          echo 'UNITTEST_TIMEOUT=--timeout=75' >> $GITHUB_ENV
           brew install gcc libomp ffmpeg # https://github.com/pytorch/pytorch/issues/20030
       - name: Setup Linux
         if: ${{ runner.os == 'Linux' }}
         run: |
-          echo 'UNITTEST_TIMEOUT=--timeout=120' >> $GITHUB_ENV
+          echo 'UNITTEST_TIMEOUT=--timeout=75' >> $GITHUB_ENV
           sudo apt update --fix-missing
           sudo apt install -y ffmpeg dvipng texlive-latex-extra texlive-fonts-recommended cm-super
       - name: Setup Windows
@@ -120,17 +122,64 @@ jobs:
           python -c "from torch import __version__ as ver; ver = ver.split('+')[0] ; assert ver == '${{ matrix.pytorch-version }}', ver"
           python -c 'import torch ; print("TORCH=" + str(torch.__version__))' >> $GITHUB_OUTPUT
 
-      - name: Unittests
-        uses: ./.github/actions/unittesting
-        if: ${{ needs.check-diff.outputs.test-dirs != '' }}
-        timeout-minutes: 90
+      - name: Pull testing data from S3
+        working-directory: ./tests
+        env:
+          S3_DATA: "https://pl-public-data.s3.amazonaws.com/metrics/data.zip"
+        run: |
+          pip install -q "urllib3>1.0"
+          # wget is simpler but does not work on Windows
+          python -c "from urllib.request import urlretrieve ; urlretrieve('$S3_DATA', 'data.zip')"
+          unzip -o data.zip
+          ls -l _data/*
+
+      - name: Export README tests
+        run: python -m phmdoctest README.md --outfile tests/unittests/test_readme.py
+
+      - name: Unittests common
+        working-directory: ./tests
+        run: |
+          python -m pytest -v \
+            $TEST_DIRS \
+            --cov=torchmetrics \
+            --durations=50 \
+            --reruns 3 \
+            --reruns-delay 1 \
+            -m "not DDP" \
+            -n auto \
+            --dist=loadfile \
+            ${{ env.UNITTEST_TIMEOUT }}
+
+      - name: Unittests DDP
+        working-directory: ./tests
+        env:
+          USE_PYTEST_POOL: "1"
+        run: |
+          python -m pytest -v \
+            $TEST_DIRS \
+            --cov=torchmetrics \
+            --durations=50 \
+            -m DDP \
+            --reruns 3 \
+            --reruns-delay 1 \
+            ${{ env.UNITTEST_TIMEOUT }}
+
+      - name: Statistics
+        if: success()
+        working-directory: ./tests
+        run: |
+          coverage xml
+          coverage report
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
         with:
-          requires: ${{ matrix.requires }}
-          codecov-token: ${{ secrets.CODECOV_TOKEN }}
-          python-version: ${{ matrix.python-version }}
-          pytorch-version: ${{ steps.info.outputs.TORCH }}
-          dirs: ${{ needs.check-diff.outputs.test-dirs }}
-          test-timeout: ${{ env.UNITTEST_TIMEOUT }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: tests/coverage.xml
+          flags: cpu,${{ runner.os }},python${{ matrix.python-version }},torch${{ steps.info.outputs.TORCH }}
+          env_vars: OS,PYTHON
+          name: codecov-umbrella
+          fail_ci_if_error: false
 
       - name: update cashing
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}

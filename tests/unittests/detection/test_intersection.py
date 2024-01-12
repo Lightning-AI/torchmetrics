@@ -198,7 +198,7 @@ class TestIntersectionMetrics(MetricTester):
     @pytest.mark.parametrize("respect_labels", [True, False])
     @pytest.mark.parametrize("iou_threshold", [None, 0.5, 0.7, 0.9])
     @pytest.mark.parametrize("class_metrics", [True, False])
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_intersection_class(
         self,
         class_metric,

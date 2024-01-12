@@ -42,7 +42,7 @@ def _compute_wer_metric_jiwer(preds: Union[str, List[str]], target: Union[str, L
 class TestWER(TextTester):
     """Test class for `WordErrorRate` metric."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_wer_class(self, ddp, preds, targets):
         """Test class implementation of metric."""
         self.run_class_metric_test(

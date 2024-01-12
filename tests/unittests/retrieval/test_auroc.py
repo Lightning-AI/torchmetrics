@@ -57,7 +57,7 @@ def _auroc_at_k(target: np.ndarray, preds: np.ndarray, top_k: Optional[int] = No
 class TestAUROC(RetrievalMetricTester):
     """Test class for `RetrievalAUROC` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
@@ -95,7 +95,7 @@ class TestAUROC(RetrievalMetricTester):
             metric_args=metric_args,
         )
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("k", [None, 1, 4, 10])
     @pytest.mark.parametrize("max_fpr", [None, 0.25])
