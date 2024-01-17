@@ -15,7 +15,7 @@ from typing import Any, List, Optional
 
 import torch
 
-from torchmetrics.functional.image.csi import _critical_success_index_compute, _critical_success_index_update
+from torchmetrics.functional.regression.csi import _critical_success_index_compute, _critical_success_index_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import dim_zero_cat
 
