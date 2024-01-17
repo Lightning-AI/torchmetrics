@@ -89,6 +89,7 @@ from torchmetrics.functional.pairwise import (
 from torchmetrics.functional.regression import (
     concordance_corrcoef,
     cosine_similarity,
+    critical_success_index,
     explained_variance,
     kendall_rank_corrcoef,
     kl_divergence,
@@ -150,6 +151,7 @@ __all__ = [
     "cosine_similarity",
     "cramers_v",
     "cramers_v_matrix",
+    "critical_success_index",
     "tweedie_deviance_score",
     "dice",
     "error_relative_global_dimensionless_synthesis",
