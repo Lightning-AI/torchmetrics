@@ -39,7 +39,7 @@ class CriticalSuccessIndex(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics.image.csi import CriticalSuccessIndex
+        >>> from torchmetrics.regression import CriticalSuccessIndex
         >>> x = torch.Tensor([[0.2, 0.7], [0.9, 0.3]])
         >>> y = torch.Tensor([[0.4, 0.2], [0.8, 0.6]])
         >>> csi = CriticalSuccessIndex(0.5)
@@ -48,7 +48,7 @@ class CriticalSuccessIndex(Metric):
 
     Example:
         >>> import torch
-        >>> from torchmetrics.image.csi import CriticalSuccessIndex
+        >>> from torchmetrics.regression import CriticalSuccessIndex
         >>> x = torch.Tensor([[[0.2, 0.7], [0.9, 0.3]], [[0.2, 0.7], [0.9, 0.3]]])
         >>> y = torch.Tensor([[[0.4, 0.2], [0.8, 0.6]], [[0.4, 0.2], [0.8, 0.6]]])
         >>> csi = CriticalSuccessIndex(0.5, keep_sequence_dim=0)
