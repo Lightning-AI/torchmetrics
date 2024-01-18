@@ -21,7 +21,6 @@ from skimage.metrics import structural_similarity
 from torch import Tensor
 from torchmetrics.functional import structural_similarity_index_measure
 from torchmetrics.image import StructuralSimilarityIndexMeasure
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_2
 
 from unittests import NUM_BATCHES, _Input
 from unittests.helpers import seed_all
@@ -209,8 +208,9 @@ class TestSSIM(MetricTester):
             metric_args={"data_range": 1.0, "sigma": sigma, "reduction": reduction_arg},
         )
 
+    # todo, shall be resolved with PT 2.2
     # SSIM half + cpu does not work due to missing support in torch.log
-    @pytest.mark.xfail(reason="SSIM metric does not support cpu + half precision")
+    @pytest.mark.xfail(reason="SSIM metric does not support cpu + half precision", strict=False)
     def test_ssim_half_cpu(self, preds, target, sigma):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
