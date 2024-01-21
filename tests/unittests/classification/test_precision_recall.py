@@ -89,7 +89,7 @@ class TestBinaryPrecisionRecall(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])  
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("zero_division", [0, 1])
     def test_binary_precision_recall(
         self, ddp, inputs, module, functional, compare, ignore_index, multidim_average, zero_division
