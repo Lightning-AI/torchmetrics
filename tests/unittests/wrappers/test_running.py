@@ -144,6 +144,7 @@ def _test_ddp_running(rank, dist_sync_on_step, expected):
     assert metric.compute() == 6
 
 
+@pytest.mark.DDP()
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 @pytest.mark.parametrize(("dist_sync_on_step", "expected"), [(False, 1), (True, 2)])
 def test_ddp_running(dist_sync_on_step, expected):

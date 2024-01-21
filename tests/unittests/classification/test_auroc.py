@@ -47,7 +47,7 @@ class TestBinaryAUROC(MetricTester):
 
     @pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_auroc(self, inputs, ddp, max_fpr, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -155,7 +155,7 @@ class TestMulticlassAUROC(MetricTester):
 
     @pytest.mark.parametrize("average", ["macro", "weighted"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_auroc(self, inputs, average, ddp, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -284,7 +284,7 @@ class TestMultilabelAUROC(MetricTester):
 
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multilabel_auroc(self, inputs, ddp, average, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs

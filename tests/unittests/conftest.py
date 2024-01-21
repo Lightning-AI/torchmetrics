@@ -35,6 +35,7 @@ THRESHOLD = 0.5
 MAX_PORT = 8100
 START_PORT = 8088
 CURRENT_PORT = START_PORT
+USE_PYTEST_POOL = os.getenv("USE_PYTEST_POOL", "0") == "1"
 
 
 def setup_ddp(rank, world_size):
@@ -58,6 +59,8 @@ def pytest_sessionstart():
     Runs before any test.
 
     """
+    if not USE_PYTEST_POOL:
+        return
     pool = Pool(processes=NUM_PROCESSES)
     pool.starmap(setup_ddp, [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)])
     pytest.pool = pool
@@ -69,6 +72,8 @@ def pytest_sessionfinish():
     Runs after all tests.
 
     """
+    if not USE_PYTEST_POOL:
+        return
     pytest.pool.close()
     pytest.pool.join()
 

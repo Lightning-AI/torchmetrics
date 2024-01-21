@@ -43,7 +43,7 @@ def _compare_fn(preds: Union[str, List[str]], target: Union[str, List[str]]):
 class TestCharErrorRate(TextTester):
     """Test class for character error rate."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_cer_class(self, ddp, preds, targets):
         """Test modular version of cer."""
         self.run_class_metric_test(

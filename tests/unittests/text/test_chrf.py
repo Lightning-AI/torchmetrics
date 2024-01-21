@@ -63,7 +63,7 @@ def _sacrebleu_chrf_fn(
 class TestCHRFScore(TextTester):
     """Test class for `CHRFScore` metric."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_chrf_score_class(self, ddp, preds, targets, char_order, word_order, lowercase, whitespace):
         """Test class implementation of metric."""
         metric_args = {

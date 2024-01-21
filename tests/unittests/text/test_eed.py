@@ -51,7 +51,7 @@ def _rwth_manual_metric(preds, targets) -> Tensor:
 class TestExtendedEditDistance(TextTester):
     """Test class for `ExtendedEditDistance` metric."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_eed_class(self, preds, targets, ddp):
         """Test class implementation of metric."""
         rwth_metric = partial(_rwth_manual_metric)

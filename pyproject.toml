@@ -19,6 +19,9 @@ addopts = [
     "--color=yes",
     "--disable-pytest-warnings",
 ]
+markers = [
+    "DDP: mark a test as Distributed Data Parallel",
+]
 #filterwarnings = ["error::FutureWarning"] # ToDo
 xfail_strict = true
 junit_duration_report = "call"

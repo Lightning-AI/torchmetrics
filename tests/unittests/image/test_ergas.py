@@ -82,7 +82,7 @@ def _baseline_ergas(
 class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
     """Test class for `ErrorRelativeGlobalDimensionlessSynthesis` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_ergas(self, reduction, preds, target, ratio, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(

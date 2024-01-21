@@ -96,7 +96,7 @@ jobs:
     env:
       GCP_TARGET: "gs://lightning-docs-metrics"
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: docs-html-${{ github.sha }}
           path: docs/build/

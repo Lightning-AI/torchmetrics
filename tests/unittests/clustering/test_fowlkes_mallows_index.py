@@ -35,7 +35,7 @@ class TestFowlkesMallowsIndex(MetricTester):
 
     atol = 1e-5
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_fowlkes_mallows_index(self, preds, target, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(

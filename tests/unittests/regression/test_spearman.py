@@ -91,7 +91,7 @@ class TestSpearmanCorrCoef(MetricTester):
 
     atol = 1e-2
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_spearman_corrcoef(self, preds, target, ddp):
         """Test class implementation of metric."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1

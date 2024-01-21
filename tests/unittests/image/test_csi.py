@@ -17,8 +17,8 @@ from functools import partial
 import pytest
 import torch
 from sklearn.metrics import jaccard_score
-from torchmetrics.functional.image.csi import critical_success_index
-from torchmetrics.image.csi import CriticalSuccessIndex
+from torchmetrics.functional.regression.csi import critical_success_index
+from torchmetrics.regression.csi import CriticalSuccessIndex
 
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
@@ -50,7 +50,7 @@ def _calculate_ref_metric(preds: torch.Tensor, target: torch.Tensor, threshold: 
 class TestCriticalSuccessIndex(MetricTester):
     """Test class for `CriticalSuccessIndex` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_csi_class(self, preds, target, threshold, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(

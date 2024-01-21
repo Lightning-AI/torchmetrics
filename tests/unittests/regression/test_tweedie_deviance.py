@@ -61,7 +61,7 @@ def _sklearn_deviance(preds: Tensor, targets: Tensor, power: float):
 class TestDevianceScore(MetricTester):
     """Test class for `TweedieDevianceScore` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_deviance_scores_class(self, ddp, preds, target, power):
         """Test class implementation of metric."""
         self.run_class_metric_test(

@@ -38,7 +38,7 @@ def _compute_wil_metric_jiwer(preds: Union[str, List[str]], target: Union[str, L
 class TestWordInfoLost(TextTester):
     """Test class for `WordInfoLost` metric."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_wil_class(self, ddp, preds, targets):
         """Test class implementation of metric."""
         self.run_class_metric_test(

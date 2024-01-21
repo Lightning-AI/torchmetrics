@@ -69,7 +69,7 @@ def _reciprocal_rank_at_k(target: np.ndarray, preds: np.ndarray, top_k: Optional
 class TestMRR(RetrievalMetricTester):
     """Test class for `RetrievalMRR` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
     @pytest.mark.parametrize("top_k", [None, 1, 4, 10])
@@ -104,7 +104,7 @@ class TestMRR(RetrievalMetricTester):
             metric_args=metric_args,
         )
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("top_k", [None, 1, 4, 10])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments_ignore_index)
