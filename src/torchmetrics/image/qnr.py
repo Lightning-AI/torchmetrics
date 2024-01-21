@@ -41,9 +41,10 @@ class QualityWithNoReference(Metric):
 
     - ``preds`` (:class:`~torch.Tensor`): High resolution multispectral image of shape ``(N,C,H,W)``.
     - ``target`` (:class:`~Dict`): A dictionary containing the following keys:
-        - ``ms`` (:class:`~torch.Tensor`): Low resolution multispectral image of shape ``(N,C,H',W')``.
-        - ``pan`` (:class:`~torch.Tensor`): High resolution panchromatic image of shape ``(N,C,H,W)``.
-        - ``pan_lr`` (:class:`~torch.Tensor`): Low resolution panchromatic image of shape ``(N,C,H',W')``.
+
+      - ``ms`` (:class:`~torch.Tensor`): Low resolution multispectral image of shape ``(N,C,H',W')``.
+      - ``pan`` (:class:`~torch.Tensor`): High resolution panchromatic image of shape ``(N,C,H,W)``.
+      - ``pan_lr`` (:class:`~torch.Tensor`): (optional) Low resolution panchromatic image of shape ``(N,C,H',W')``.
 
     where H and W must be multiple of H' and W'.
 
