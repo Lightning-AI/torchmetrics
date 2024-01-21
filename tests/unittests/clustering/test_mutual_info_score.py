@@ -37,7 +37,7 @@ class TestMutualInfoScore(MetricTester):
 
     atol = 1e-5
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_mutual_info_score(self, preds, target, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(

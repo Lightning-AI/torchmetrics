@@ -168,7 +168,7 @@ def _multi_target_ref_metric(preds, target, sk_fn, metric_args):
 class TestMeanError(MetricTester):
     """Test class for `MeanError` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_mean_error_class(
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args, ddp
     ):

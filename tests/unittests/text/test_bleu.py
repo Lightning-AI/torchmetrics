@@ -51,7 +51,7 @@ def _compute_bleu_metric_nltk(preds, targets, weights, smoothing_function, **kwa
 class TestBLEUScore(TextTester):
     """Test class for `BLEUScore` metric."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_bleu_score_class(self, ddp, preds, targets, weights, n_gram, smooth_func, smooth):
         """Test class implementation of metric."""
         metric_args = {"n_gram": n_gram, "smooth": smooth}

@@ -79,7 +79,7 @@ class TestPESQ(MetricTester):
     atol = 1e-2
 
     @pytest.mark.parametrize("num_processes", [1, 2])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_pesq(self, preds, target, ref_metric, fs, mode, num_processes, ddp):
         """Test class implementation of metric."""
         if num_processes != 1 and ddp:

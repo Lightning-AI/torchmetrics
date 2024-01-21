@@ -114,7 +114,7 @@ def _multi_target_sk_accuracy(preds, target, num_outputs):
 class TestMultioutputWrapper(MetricTester):
     """Test the MultioutputWrapper class with regression and classification inner metrics."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multioutput_wrapper(self, base_metric_class, compare_metric, preds, target, num_outputs, ddp):
         """Test correctness of implementation.
 

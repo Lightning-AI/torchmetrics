@@ -65,7 +65,7 @@ class TestHomogeneityCompletenessVmeasur(MetricTester):
 
     atol = 1e-5
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_homogeneity_completeness_vmeasure(
         self, modular_metric, functional_metric, reference_metric, preds, target, ddp
     ):

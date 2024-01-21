@@ -56,7 +56,7 @@ class TestBinaryCalibrationError(MetricTester):
     @pytest.mark.parametrize("n_bins", [10, 15, 20])
     @pytest.mark.parametrize("norm", ["l1", "max"])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_calibration_error(self, inputs, ddp, n_bins, norm, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -168,7 +168,7 @@ class TestMulticlassCalibrationError(MetricTester):
     @pytest.mark.parametrize("n_bins", [15, 20])
     @pytest.mark.parametrize("norm", ["l1", "max"])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_calibration_error(self, inputs, ddp, n_bins, norm, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs

@@ -69,7 +69,7 @@ class TestPearsonCorrCoef(MetricTester):
     atol = 1e-3
 
     @pytest.mark.parametrize("compute_on_cpu", [True, False])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_pearson_corrcoef(self, preds, target, compute_on_cpu, ddp):
         """Test class implementation of metric."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1

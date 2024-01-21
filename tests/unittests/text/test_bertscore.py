@@ -91,7 +91,7 @@ def _reference_bert_score(
 class TestBERTScore(TextTester):
     """Tests for BERTScore."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @skip_on_connection_issues()
     def test_bertscore_class(self, ddp, preds, targets, num_layers, all_layers, idf, rescale_with_baseline, metric_key):
         """Test the bertscore class."""
