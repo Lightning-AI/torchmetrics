@@ -48,6 +48,9 @@ class QualityWithNoReference(Metric):
 
     where H and W must be multiple of H' and W'.
 
+    When ``pan_lr`` is ``None``, a uniform filter will be applied on ``pan`` to produce a degraded image. The degraded
+    image is then resized to match the size of ``ms`` and served as ``pan_lr`` in the calculation.
+
     As output of `forward` and `compute` the metric returns the following output
 
     - ``qnr`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average QNR value
