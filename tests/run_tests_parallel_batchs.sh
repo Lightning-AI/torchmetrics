@@ -29,7 +29,7 @@ echo "Using defaults: ${defaults}"
 
 # get the list of parametrizations. we need to call them separately. the last two lines are removed.
 # note: if there's a syntax error, this will fail with some garbled output
-python -um pytest -q $test_dirs -m DDP --collect-only --pythonwarnings ignore 2>&1 > $COLLECTED_TESTS_FILE
+python -um pytest -q $test_dirs -m DDP --no-header --collect-only --pythonwarnings ignore 2>&1 > $COLLECTED_TESTS_FILE
 # early terminate if collection failed (e.g. syntax error)
 if [[ $? != 0 ]]; then
   cat $COLLECTED_TESTS_FILE
@@ -62,7 +62,8 @@ rm -f parallel_test_output-*.txt  # in case it exists, remove it
 test_batch_size=$(((test_count + test_parallel_jobs - 1) / test_parallel_jobs))
 printf "Running $test_count tests in $test_parallel_jobs jobs batched by $test_batch_size\n"
 pids=() # array of PID for running tests
-for i in {0..$test_parallel_jobs}; do
+# iterate over the number of parallel jobs
+for i in $(seq 0 $((test_parallel_jobs - 1))); do
   begin=$((i*test_batch_size))
   end=$((begin+test_batch_size))
   tests_batch=${tests[@]:$begin:$end}
