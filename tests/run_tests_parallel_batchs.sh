@@ -16,13 +16,15 @@
 test_parallel_jobs="${NUM_PARALLEL_TESTS:-5}"
 # this is the directory where the tests are located
 test_dirs=$1 # parse the first argument
+printf "Running tests in $test_dirs\n"
 test_args=$2 # parse the first argument
+printf "Running tests with args $test_args\n"
 COLLECTED_TESTS_FILE="collected_tests.txt"
 
 ls -lh .  # show the contents of the directory
 
 # python arguments
-defaults=" -m pytest --no-header -v --cov=torchmetrics --durations=50 " + $test_args
+defaults=" -m pytest -v --cov=torchmetrics --durations=50 " + $test_args
 echo "Using defaults: ${defaults}"
 
 # get the list of parametrizations. we need to call them separately. the last two lines are removed.
