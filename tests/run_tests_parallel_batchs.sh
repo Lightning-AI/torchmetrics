@@ -43,9 +43,7 @@ sed -i '$d' $COLLECTED_TESTS_FILE
 tests=($(grep -oP '\S+::test_\S+' "$COLLECTED_TESTS_FILE"))
 test_count=${#tests[@]}
 # present the collected tests
-printf "collected $test_count tests:\n-------------------\n"
-echo $(IFS='\n'; echo "${tests[@]}")
-printf "\n===================\n"
+printf "collected $test_count tests\n"
 
 # if test count is one print warning
 if [[ $test_count -eq 1 ]]; then
@@ -66,8 +64,9 @@ pids=() # array of PID for running tests
 for i in $(seq 0 $((test_parallel_jobs - 1))); do
   begin=$((i*test_batch_size))
   end=$((begin+test_batch_size))
+  printf "Batch $i with tests from $begin to $end\n"
   tests_batch=${tests[@]:$begin:$end}
-  printf "Batch $i with ${#tests_batch[@]} tests"
+  printf "Batch $i includes ${#tests_batch[@]} tests"
   tests_batch=$(IFS=' '; echo "${tests_subset[@]}")
   # execute the test in the background and redirect to a log file that buffers test output
   python ${defaults} "$tests_batch" 2>&1 > "parallel_test_output-$i.txt" &
