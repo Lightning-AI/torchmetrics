@@ -62,10 +62,10 @@ printf "Running $test_count tests in $test_parallel_jobs jobs batched by $test_b
 pids=() # array of PID for running tests
 # iterate over the number of parallel jobs
 for i in $(seq 0 $((test_parallel_jobs - 1))); do
-  begin=$((i*test_batch_size))
-  end=$((begin+test_batch_size))
+  begin=$((i*test_batch_size)) # get the begin index
   printf "Batch $i with tests from $begin to $end\n"
-  tests_batch=${tests[@]:$begin:$end}
+  # get the subset of tests for the current batch
+  tests_batch=("${tests[@]:$begin:$test_batch_size}")
   printf "Batch $i includes ${#tests_batch[@]} tests"
   tests_batch=$(IFS=' '; echo "${tests_subset[@]}")
   # execute the test in the background and redirect to a log file that buffers test output
