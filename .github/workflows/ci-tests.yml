@@ -175,6 +175,9 @@ jobs:
           bash run_tests_parallel_batchs.sh \
             "$TEST_DIRS" \
             "--reruns 3 --reruns-delay 1 ${{ env.UNITTEST_TIMEOUT }}"
+      - name: Show collected tests if failed
+        if: failure() && github.event_name == 'pull_request'
+        run: cat tests/collected_tests.txt
 
       - name: Statistics
         if: success()

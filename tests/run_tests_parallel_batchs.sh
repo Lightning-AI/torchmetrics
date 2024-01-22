@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +25,7 @@ COLLECTED_TESTS_FILE="collected_tests.txt"
 ls -lh .  # show the contents of the directory
 
 # python arguments
-defaults=" -m pytest -v --cov=torchmetrics --durations=50 " + $test_args
+defaults=" -m pytest -v --cov=torchmetrics --durations=50 $test_args "
 echo "Using defaults: ${defaults}"
 
 # get the list of parametrizations. we need to call them separately. the last two lines are removed.
@@ -39,6 +40,8 @@ fi
 # removes the last line of the file
 sed -i '$d' $COLLECTED_TESTS_FILE
 
+# replace all ` tests/` prefixes with space ' ' to preserve separator in the file with collected tests
+sed -i 's/tests\// /g' $COLLECTED_TESTS_FILE
 # Get test list and run each test individually
 tests=($(grep -oP '\S+::test_\S+' "$COLLECTED_TESTS_FILE"))
 test_count=${#tests[@]}
@@ -63,10 +66,9 @@ pids=() # array of PID for running tests
 # iterate over the number of parallel jobs
 for i in $(seq 0 $((test_parallel_jobs - 1))); do
   begin=$((i*test_batch_size)) # get the begin index
-  printf "Batch $i with tests from $begin to $end\n"
   # get the subset of tests for the current batch
   tests_batch=("${tests[@]:$begin:$test_batch_size}")
-  printf "Batch $i includes ${#tests_batch[@]} tests"
+  printf "Batch $i with indexes from $begi includes ${#tests_batch[@]} tests\n"
   tests_batch=$(IFS=' '; echo "${tests_subset[@]}")
   # execute the test in the background and redirect to a log file that buffers test output
   python ${defaults} "$tests_batch" 2>&1 > "parallel_test_output-$i.txt" &
