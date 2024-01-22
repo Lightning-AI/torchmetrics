@@ -14,6 +14,9 @@
 # limitations under the License.
 # this is just a bypass for this module name collision with built-in one
 
+# instruct the tests to be sing the TM's added pool
+export USE_PYTEST_POOL="1"
+
 test_parallel_jobs="${NUM_PARALLEL_TESTS:-5}"
 # this is the directory where the tests are located
 test_dirs=$1 # parse the first argument
@@ -37,7 +40,7 @@ if [[ $? != 0 ]]; then
   exit 1
 fi
 
-# removes the last line of the file
+# removes the last line of the file with summary
 sed -i '$d' $COLLECTED_TESTS_FILE
 
 # remove all `tests/` prefixes in the file with collected tests
