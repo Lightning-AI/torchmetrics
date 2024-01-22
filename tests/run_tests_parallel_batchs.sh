@@ -41,7 +41,7 @@ fi
 sed -i '$d' $COLLECTED_TESTS_FILE
 
 # replace all ` tests/` prefixes with space ' ' to preserve separator in the file with collected tests
-sed -i 's/tests\// /g' $COLLECTED_TESTS_FILE
+sed -i 's/ tests\// /g' $COLLECTED_TESTS_FILE
 # Get test list and run each test individually
 tests=($(grep -oP '\S+::test_\S+' "$COLLECTED_TESTS_FILE"))
 test_count=${#tests[@]}
