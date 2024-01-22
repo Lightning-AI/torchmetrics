@@ -16,9 +16,9 @@
 test_parallel_jobs="${NUM_PARALLEL_TESTS:-5}"
 # this is the directory where the tests are located
 test_dirs=$1 # parse the first argument
-printf "Running tests in $test_dirs\n"
+printf "Running tests in '$test_dirs'\n"
 test_args=$2 # parse the first argument
-printf "Running tests with args $test_args\n"
+printf "Running tests with args '$test_args'\n"
 COLLECTED_TESTS_FILE="collected_tests.txt"
 
 ls -lh .  # show the contents of the directory
@@ -29,7 +29,7 @@ echo "Using defaults: ${defaults}"
 
 # get the list of parametrizations. we need to call them separately. the last two lines are removed.
 # note: if there's a syntax error, this will fail with some garbled output
-python -um pytest -q -m DDP --collect-only --pythonwarnings ignore 2>&1 > $COLLECTED_TESTS_FILE
+python -um pytest -q $test_dirs -m DDP --collect-only --pythonwarnings ignore 2>&1 > $COLLECTED_TESTS_FILE
 # early terminate if collection failed (e.g. syntax error)
 if [[ $? != 0 ]]; then
   cat $COLLECTED_TESTS_FILE
