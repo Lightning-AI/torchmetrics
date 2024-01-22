@@ -14,9 +14,6 @@
 # limitations under the License.
 # this is just a bypass for this module name collision with built-in one
 
-# instruct the tests to be sing the TM's added pool
-export USE_PYTEST_POOL="1"
-
 test_parallel_jobs="${NUM_PARALLEL_TESTS:-5}"
 # this is the directory where the tests are located
 test_dirs=$1 # parse the first argument
@@ -73,8 +70,9 @@ for i in $(seq 0 $((test_parallel_jobs - 1))); do
   tests_batch=("${tests[@]:$begin:$test_batch_size}")
   printf "Batch $i with indexes from $begi includes ${#tests_batch[@]} tests\n"
   tests_batch=$(IFS=' '; echo "${tests_subset[@]}")
+  # instruct the tests to be sing the TM's added pool
   # execute the test in the background and redirect to a log file that buffers test output
-  python ${defaults} "$tests_batch" 2>&1 > "parallel_test_output-$i.txt" &
+  USE_PYTEST_POOL="1" python ${defaults} "$tests_batch" 2>&1 > "parallel_test_output-$i.txt" &
   test_ids+=($i) # save the test's id in an array with running tests
   pids+=($!) # save the PID in an array with running tests
 done
