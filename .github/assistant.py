@@ -125,13 +125,18 @@ class AssistantCLI:
         files = [d["filename"] for d in data]
 
         # filter out all integrations as they run in separate suit
-        files = [fn for fn in files if not fn.startswith("tests/integrations")]
+        files = [fn for fn in files if not fn.startswith("tests/integrations/")]
         if not files:
             logging.debug("Only integrations was changed so not reason for deep testing...")
             return ""
+        # filter shell files in tests folder
+        files = [fn for fn in files if not re.match(r"tests/.*\.sh", fn)]
+        if not files:
+            logging.debug("Only DDP hash script was changed so rather run all...")
+            return "unittests"
         # filter only docs files
-        files_ = [fn for fn in files if fn.startswith("docs")]
-        if len(files) == len(files_):
+        files_docs = [fn for fn in files if fn.startswith("docs")]
+        if len(files) == len(files_docs):
             logging.debug("Only docs was changed so not reason for deep testing...")
             return ""
 

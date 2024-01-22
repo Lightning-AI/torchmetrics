@@ -13,7 +13,7 @@
 # limitations under the License.
 # this is just a bypass for this module name collision with built-in one
 
-test_batch_size="${NUM_PARALLEL_TESTS:-5}"
+test_parallel_jobs="${NUM_PARALLEL_TESTS:-5}"
 # this is the directory where the tests are located
 test_dirs=$1 # parse the first argument
 test_args=$2 # parse the first argument
@@ -56,9 +56,11 @@ fi
 # clear all the collected reports
 rm -f parallel_test_output-*.txt  # in case it exists, remove it
 
+# round up the number of tests to the next integer
+test_batch_size=$(((test_count + test_parallel_jobs - 1) / test_parallel_jobs))
+printf "Running $test_count tests in $test_parallel_jobs jobs batched by $test_batch_size\n"
 pids=() # array of PID for running tests
-printf "Running $test_count tests in batches of $test_batch_size\n"
-for i in {0..$test_batch_size}; do
+for i in {0..$test_parallel_jobs}; do
   begin=$((i*test_batch_size))
   end=$((begin+test_batch_size))
   tests_batch=${tests[@]:$begin:$end}
