@@ -150,7 +150,8 @@ jobs:
             --dist=loadfile \
             ${{ env.UNITTEST_TIMEOUT }}
 
-      - name: Unittests DDP
+      - name: Unittests DDP sequential (push)
+        if: github.event_name != 'pull_request'
         working-directory: ./tests
         env:
           USE_PYTEST_POOL: "1"
@@ -163,6 +164,16 @@ jobs:
             --reruns 3 \
             --reruns-delay 1 \
             ${{ env.UNITTEST_TIMEOUT }}
+
+      - name: Unittests DDP parallel (PR)
+        if: github.event_name == 'pull_request'
+        working-directory: ./tests
+        env:
+          USE_PYTEST_POOL: "1"
+        run: |
+          bash run_tests_parallel_batchs.sh \
+            "$TEST_DIRS" \
+            "--reruns 3 --reruns-delay 1 ${{ env.UNITTEST_TIMEOUT }}"
 
       - name: Statistics
         if: success()
