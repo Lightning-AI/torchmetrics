@@ -71,6 +71,7 @@ def pytest_sessionfinish():
 
 def skip_on_running_out_of_memory(reason: str = "Skipping test as it ran out of memory."):
     """Handle tests that sometimes runs out of memory, by simply skipping them."""
+
     def test_decorator(function: Callable, *args: Any, **kwargs: Any) -> Optional[Callable]:
         @wraps(function)
         def run_test(*args: Any, **kwargs: Any) -> Optional[Any]:
