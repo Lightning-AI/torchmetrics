@@ -14,7 +14,7 @@
 # limitations under the License.
 # this is just a bypass for this module name collision with built-in one
 
-test_parallel_jobs="${NUM_PARALLEL_TESTS:-5}"
+test_parallel_jobs="${NUM_PARALLEL_TESTS:-3}"
 # this is the directory where the tests are located
 test_dirs=$1 # parse the first argument
 printf "Running tests in '$test_dirs'\n"
