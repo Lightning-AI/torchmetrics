@@ -40,8 +40,9 @@ USE_PYTEST_POOL = os.getenv("USE_PYTEST_POOL", "0") == "1"
 
 def _is_port_in_use(port: int) -> bool:
     import socket
+
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as ss:
-        return ss.connect_ex(('localhost', port)) == 0
+        return ss.connect_ex(("localhost", port)) == 0
 
 
 def setup_ddp(rank, world_size):
