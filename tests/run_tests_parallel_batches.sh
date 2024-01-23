@@ -69,7 +69,7 @@ for i in $(seq 0 $((test_parallel_jobs - 1))); do
   begin=$((i*test_batch_size)) # get the begin index
   # get the subset of tests for the current batch
   tests_batch=("${tests[@]:$begin:$test_batch_size}")
-  printf "Batch $i with indexes from $begi includes ${#tests_batch[@]} tests\n"
+  printf "Batch $i with indexes from $begin includes ${#tests_batch[@]} tests\n"
   tests_batch=$(IFS=' '; echo "${tests_subset[@]}")
   port_range_begin=$((8080 + i * 100)) # get the begin port range
   port_range_end=$((8100 + i * 100)) # get the begin port range
@@ -91,10 +91,18 @@ for i in "${!pids[@]}"; do
   wait -n $pid
   # get the exit status of the test
   test_status=$?
-  # show the output of the failed test
-  printf "=========================================\n"
-  printf "=========================================\n"
   printf "Batch $i finished with status $test_status\n"
+  if [[ $test_status != 0 ]]; then
+    # Process exited with a non-zero exit status
+    status=$test_status
+  fi
+done
+
+for i in $(seq 0 $((test_parallel_jobs - 1))); do
+  # show the output of the finished test
+  printf "=========================================\n"
+  printf "=========================================\n"
+  printf "============Batch $i outputs:============\n"
   printf "=========================================\n"
   cat "parallel_test_output-$i.txt"
   if [[ $test_status != 0 ]]; then
