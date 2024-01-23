@@ -4,7 +4,7 @@
 nltk >=3.6, <=3.8.1
 tqdm >=4.41.0, <=4.66.1
 regex >=2021.9.24, <=2023.12.25
-transformers >4.4.0, <4.37.0
+transformers >4.4.0, <4.38.0
 mecab-python3 >=1.0.6, <1.1.0
 mecab-ko >=1.0.0, <1.1.0
 mecab-ko-dic >=1.0.0, <1.1.0
