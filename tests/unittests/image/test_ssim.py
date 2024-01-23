@@ -208,8 +208,9 @@ class TestSSIM(MetricTester):
             metric_args={"data_range": 1.0, "sigma": sigma, "reduction": reduction_arg},
         )
 
+    # todo, shall be resolved with PT 2.2
     # SSIM half + cpu does not work due to missing support in torch.log
-    @pytest.mark.xfail(reason="SSIM metric does not support cpu + half precision")
+    @pytest.mark.xfail(reason="SSIM metric does not support cpu + half precision", strict=False)
     def test_ssim_half_cpu(self, preds, target, sigma):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
