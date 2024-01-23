@@ -63,4 +63,4 @@ _MECAB_KO_DIC_AVAILABLE = RequirementCache("mecab_ko_dic")
 _IPADIC_AVAILABLE = RequirementCache("ipadic")
 _SENTENCEPIECE_AVAILABLE = RequirementCache("sentencepiece")
 
-_LATEX_AVAILABLE = shutil.which("latex") is not None
+_LATEX_AVAILABLE: bool = shutil.which("latex") is not None
