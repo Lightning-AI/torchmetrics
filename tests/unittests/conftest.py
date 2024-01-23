@@ -54,12 +54,8 @@ def setup_ddp(rank, world_size):
 
 
 def pytest_sessionstart():
-    """Global initialization of multiprocessing pool.
-
-    Runs before any test.
-
-    """
-    if not USE_PYTEST_POOL:
+    """Global initialization of multiprocessing pool; Runs before any test."""
+    if not USE_PYTEST_POOL or hasattr(pytest, "pool"):
         return
     pool = Pool(processes=NUM_PROCESSES)
     pool.starmap(setup_ddp, [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)])
@@ -67,20 +63,14 @@ def pytest_sessionstart():
 
 
 def pytest_sessionfinish():
-    """Correctly closes the global multiprocessing pool.
-
-    Runs after all tests.
-
-    """
-    if not USE_PYTEST_POOL:
-        return
-    pytest.pool.close()
-    pytest.pool.join()
+    """Correctly closes the global multiprocessing pool; Runs after all tests."""
+    if hasattr(pytest, "pool"):
+        pytest.pool.close()
+        pytest.pool.join()
 
 
 def skip_on_running_out_of_memory(reason: str = "Skipping test as it ran out of memory."):
     """Handle tests that sometimes runs out of memory, by simply skipping them."""
-
     def test_decorator(function: Callable, *args: Any, **kwargs: Any) -> Optional[Callable]:
         @wraps(function)
         def run_test(*args: Any, **kwargs: Any) -> Optional[Any]:

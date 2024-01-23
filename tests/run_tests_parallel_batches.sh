@@ -72,7 +72,7 @@ for i in $(seq 0 $((test_parallel_jobs - 1))); do
   tests_batch=$(IFS=' '; echo "${tests_subset[@]}")
   # instruct the tests to be sing the TM's added pool
   # execute the test in the background and redirect to a log file that buffers test output
-  USE_PYTEST_POOL="1" python ${defaults} "$tests_batch" 2>&1 > "parallel_test_output-$i.txt" &
+  python ${defaults} "$tests_batch" 2>&1 > "parallel_test_output-$i.txt" &
   test_ids+=($i) # save the test's id in an array with running tests
   pids+=($!) # save the PID in an array with running tests
 done
@@ -87,6 +87,10 @@ for i in "${!pids[@]}"; do
   # get the exit status of the test
   test_status=$?
   # show the output of the failed test
+  pritnf "=========================================\n"
+  pritnf "=========================================\n"
+  printf "Batch $i finished with status $test_status\n"
+  pritnf "=========================================\n"
   cat "parallel_test_output-$i.txt"
   if [[ $test_status != 0 ]]; then
     # Process exited with a non-zero exit status

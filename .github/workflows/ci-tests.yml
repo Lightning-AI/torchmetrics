@@ -169,8 +169,10 @@ jobs:
       - name: Unittests DDP parallel (PR)
         if: github.event_name == 'pull_request'
         working-directory: ./tests
+        env:
+          USE_PYTEST_POOL: "1"
         run: |
-          bash run_tests_parallel_batchs.sh \
+          bash run_tests_parallel_batches.sh \
             "$TEST_DIRS" \
             "--reruns 3 --reruns-delay 1 ${{ env.UNITTEST_TIMEOUT }}"
       - name: Show collected tests if failed
