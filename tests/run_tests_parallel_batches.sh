@@ -71,9 +71,13 @@ for i in $(seq 0 $((test_parallel_jobs - 1))); do
   tests_batch=("${tests[@]:$begin:$test_batch_size}")
   printf "Batch $i with indexes from $begi includes ${#tests_batch[@]} tests\n"
   tests_batch=$(IFS=' '; echo "${tests_subset[@]}")
+  port_range_begin=$((8080 + i * 100)) # get the begin port range
+  port_range_end=$((8100 + i * 100)) # get the begin port range
+  printf "Batch $i with ports range from $port_range_begin to $port_range_end\n"
   # instruct the tests to be sing the TM's added pool
   # execute the test in the background and redirect to a log file that buffers test output
-  python ${defaults} "$tests_batch" 2>&1 > "parallel_test_output-$i.txt" &
+  PYTEST_DDP_START_PORT="$port_range_begin" PYTEST_DDP_MAX_PORT="$port_range_end" \
+    python ${defaults} "$tests_batch" 2>&1 > "parallel_test_output-$i.txt" &
   test_ids+=($i) # save the test's id in an array with running tests
   pids+=($!) # save the PID in an array with running tests
 done

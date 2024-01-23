@@ -33,37 +33,23 @@ NUM_CLASSES = 5
 EXTRA_DIM = 3
 THRESHOLD = 0.5
 
-MAX_PORT = 8100
-START_PORT = 8088
+START_PORT = int(os.getenv("PYTEST_DDP_START_PORT", "8080"))
+MAX_PORT = int(os.getenv("PYTEST_DDP_MAX_PORT", "8100"))
+assert START_PORT < MAX_PORT, "`PYTEST_DDP_START_PORT` must be smaller than `PYTEST_DDP_MAX_PORT`"
 CURRENT_PORT = START_PORT
 USE_PYTEST_POOL = os.getenv("USE_PYTEST_POOL", "0") == "1"
-
-
-def _is_port_in_use(port: int) -> bool:
-    import socket
-
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as ss:
-        return ss.connect_ex(("localhost", port)) == 0
 
 
 def setup_ddp(rank, world_size):
     """Initialize ddp environment."""
     global CURRENT_PORT
 
-    count_rotation = 0
-    while _is_port_in_use(CURRENT_PORT):
-        logging.debug(f"Port {CURRENT_PORT} is in use, trying next one.")
-        CURRENT_PORT += 1
-        # If we have tried all ports, start again from the beginning
-        if CURRENT_PORT > MAX_PORT:
-            CURRENT_PORT = START_PORT
-            count_rotation += 1
-        # If we have tried all ports 5 times, raise an error
-        if count_rotation > 5:
-            raise RuntimeError("Could not find an available port to initialize DDP.")
-
     os.environ["MASTER_ADDR"] = "localhost"
     os.environ["MASTER_PORT"] = str(CURRENT_PORT)
+
+    CURRENT_PORT += 1
+    if CURRENT_PORT > MAX_PORT:
+        CURRENT_PORT = START_PORT
 
     if torch.distributed.is_available() and sys.platform not in ("win32", "cygwin"):
         torch.distributed.init_process_group("gloo", rank=rank, world_size=world_size)
