@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import contextlib
+import logging
 import os
 import sys
 from functools import wraps
@@ -50,12 +51,15 @@ def setup_ddp(rank, world_size):
 
     count_rotation = 0
     while _is_port_in_use(CURRENT_PORT):
+        logging.debug(f"Port {CURRENT_PORT} is in use, trying next one.")
         CURRENT_PORT += 1
+        # If we have tried all ports, start again from the beginning
         if CURRENT_PORT > MAX_PORT:
             CURRENT_PORT = START_PORT
             count_rotation += 1
+        # If we have tried all ports 5 times, raise an error
         if count_rotation > 5:
-            raise RuntimeError("Could not find an available port to initialize ddp.")
+            raise RuntimeError("Could not find an available port to initialize DDP.")
 
     os.environ["MASTER_ADDR"] = "localhost"
     os.environ["MASTER_PORT"] = str(CURRENT_PORT)
