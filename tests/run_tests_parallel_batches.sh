@@ -41,7 +41,7 @@ fi
 sed -i '$d' $COLLECTED_TESTS_FILE
 
 # remove all `tests/` prefixes in the file with collected tests
-sed -i 's/^tests\///g' $COLLECTED_TESTS_FILE
+sed -i 's/^tests\/unittests\///g' $COLLECTED_TESTS_FILE
 # Get test list and run each test individually
 tests=($(grep -oP '\S+::test_\S+' "$COLLECTED_TESTS_FILE"))
 test_count=${#tests[@]}
@@ -56,6 +56,7 @@ elif [ $test_count -eq 0 ]; then
   exit 1
 fi
 
+cd unittests  # change to the directory with tests
 # clear all the collected reports
 rm -f parallel_test_output-*.txt  # in case it exists, remove it
 
@@ -87,10 +88,10 @@ for i in "${!pids[@]}"; do
   # get the exit status of the test
   test_status=$?
   # show the output of the failed test
-  pritnf "=========================================\n"
-  pritnf "=========================================\n"
+  printf "=========================================\n"
+  printf "=========================================\n"
   printf "Batch $i finished with status $test_status\n"
-  pritnf "=========================================\n"
+  printf "=========================================\n"
   cat "parallel_test_output-$i.txt"
   if [[ $test_status != 0 ]]; then
     # Process exited with a non-zero exit status
