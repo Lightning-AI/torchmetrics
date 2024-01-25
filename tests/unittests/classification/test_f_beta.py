@@ -219,13 +219,24 @@ def _sklearn_fbeta_score_multiclass(preds, target, sk_fn, ignore_index, multidim
         pred = pred.flatten()
         true = true.flatten()
         true, pred = remove_ignore_index(true, pred, ignore_index)
-        r = sk_fn(
-            true,
-            pred,
-            average=average,
-            labels=list(range(NUM_CLASSES)) if average is None else None,
-            zero_division=zero_division,
-        )
+
+        if len(pred) == 0 and average == "weighted":
+            # The result of sk_fn([], [], labels=None, average="weighted", zero_division=zero_division)
+            # varies depending on the sklearn version:
+            # 1.2 -> the value of zero_division
+            # 1.3 -> nan
+            # 1.4 -> nan
+            # To avoid breaking some test cases by this behavior,
+            # hard coded to return 0 in this special case.
+            r = 0.0
+        else:
+            r = sk_fn(
+                true,
+                pred,
+                average=average,
+                labels=list(range(NUM_CLASSES)) if average is None else None,
+                zero_division=zero_division,
+            )
         res.append(0.0 if np.isnan(r).any() else r)
     return np.stack(res, 0)
 
