@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.image.csi import critical_success_index
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.d_s import spatial_distortion_index
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
@@ -49,6 +48,5 @@ __all__ = [
     "visual_information_fidelity",
     "learned_perceptual_image_patch_similarity",
     "perceptual_path_length",
-    "critical_success_index",
     "spatial_correlation_coefficient",
 ]
