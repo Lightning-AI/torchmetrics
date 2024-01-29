@@ -92,13 +92,13 @@ runs:
 
     - name: Post HF
       run: |
-        printf "list $TRANSFORMERS_CACHE:\n"
-        ls -lh $TRANSFORMERS_CACHE
+        printf "list $HF_HOME:\n"
+        ls -lh $HF_HOME
       shell: bash
 
     - name: Cache HF
       continue-on-error: true
       uses: actions/cache/save@v3
       with:
-        path: ${{ env.TRANSFORMERS_CACHE }}
+        path: ${{ env.HF_HOME }}
         key: cache-transformers
