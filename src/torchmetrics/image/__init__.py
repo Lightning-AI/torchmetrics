@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.image.csi import CriticalSuccessIndex
 from torchmetrics.image.d_lambda import SpectralDistortionIndex
 from torchmetrics.image.d_s import SpatialDistortionIndex
 from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
@@ -46,7 +45,6 @@ __all__ = [
     "UniversalImageQualityIndex",
     "VisualInformationFidelity",
     "TotalVariation",
-    "CriticalSuccessIndex",
     "SpatialCorrelationCoefficient",
 ]
 
