@@ -175,7 +175,13 @@ class MultitaskWrapper(WrapperMetric):
         raise ValueError(f"Expected input `{name}` to be a string, but got {type(arg)}")
 
     def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> "MultitaskWrapper":
-        """Make a copy of the metric."""
+        """Make a copy of the metric.
+
+        Args:
+            prefix: a string to append in front of the metric keys
+            postfix: a string to append after the keys of the output dict.
+
+        """
         multitask_copy = deepcopy(self)
         if prefix is not None:
             prefix = self._check_arg(prefix, "prefix")
