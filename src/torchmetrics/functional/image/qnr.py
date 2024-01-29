@@ -22,7 +22,7 @@ from torchmetrics.functional.image.d_s import spatial_distortion_index
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
 if not _TORCHVISION_AVAILABLE:
-    __doctest_skip__ = ["_quality_with_no_reference_compute", "quality_with_no_reference"]
+    __doctest_skip__ = ["quality_with_no_reference"]
 
 
 def quality_with_no_reference(
