@@ -31,7 +31,7 @@ from torchmetrics.utilities.data import (
 )
 from torchmetrics.utilities.distributed import class_reduce, reduce
 from torchmetrics.utilities.exceptions import TorchMetricsUserWarning
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_13
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_13, _TORCH_GREATER_EQUAL_2_2
 
 
 def test_prints():
@@ -238,10 +238,11 @@ def test_custom_topk(dtype, k, dim):
     assert torch.allclose(top_k, torch.from_numpy(ref).to(torch.int))
 
 
+@pytest.mark.skipif(_TORCH_GREATER_EQUAL_2_2, reason="Top-k does not support cpu + half precision")
 def test_half_precision_top_k_cpu_raises_error():
     """Test that half precision topk raises error on cpu.
 
-    If this begins to fail, it means newer Pytorch versions support this and we can drop internal support.
+    If this begins to fail, it means newer Pytorch versions support this, and we can drop internal support.
 
     """
     x = torch.randn(100, 10, dtype=torch.half)

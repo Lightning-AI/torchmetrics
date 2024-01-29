@@ -93,7 +93,7 @@ def critical_success_index(
 
     Example:
         >>> import torch
-        >>> from torchmetrics.functional.image.csi import critical_success_index
+        >>> from torchmetrics.functional.regression import critical_success_index
         >>> x = torch.Tensor([[0.2, 0.7], [0.9, 0.3]])
         >>> y = torch.Tensor([[0.4, 0.2], [0.8, 0.6]])
         >>> critical_success_index(x, y, 0.5)
@@ -101,7 +101,7 @@ def critical_success_index(
 
     Example:
         >>> import torch
-        >>> from torchmetrics.functional.image.csi import critical_success_index
+        >>> from torchmetrics.functional.regression import critical_success_index
         >>> x = torch.Tensor([[[0.2, 0.7], [0.9, 0.3]], [[0.2, 0.7], [0.9, 0.3]]])
         >>> y = torch.Tensor([[[0.4, 0.2], [0.8, 0.6]], [[0.4, 0.2], [0.8, 0.6]]])
         >>> critical_success_index(x, y, 0.5, keep_sequence_dim=0)

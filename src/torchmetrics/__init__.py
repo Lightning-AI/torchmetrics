@@ -96,6 +96,7 @@ from torchmetrics.nominal import (  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
     ConcordanceCorrCoef,
     CosineSimilarity,
+    CriticalSuccessIndex,
     ExplainedVariance,
     KendallRankCorrCoef,
     KLDivergence,
@@ -165,6 +166,7 @@ __all__ = [
     "ConfusionMatrix",
     "CosineSimilarity",
     "CramersV",
+    "CriticalSuccessIndex",
     "Dice",
     "TweedieDevianceScore",
     "ErrorRelativeGlobalDimensionlessSynthesis",
