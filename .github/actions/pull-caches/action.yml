@@ -41,7 +41,7 @@ runs:
         torch_cache=$(python -c "import os ; print(os.path.join(os.getcwd(), '_ci-cache_pytorch'))")
         echo "TORCH_HOME=$torch_cache" >> $GITHUB_ENV
         hf_cache=$(python -c "import os ; print(os.path.join(os.getcwd(), '_ci-cache_huggingface'))")
-        echo "TRANSFORMERS_CACHE=$hf_cache" >> $GITHUB_ENV
+        echo "HF_HOME=$hf_cache" >> $GITHUB_ENV
       shell: bash
 
     - name: Cache pip
@@ -78,12 +78,12 @@ runs:
       continue-on-error: true
       uses: actions/cache/restore@v3
       with:
-        path: ${{ env.TRANSFORMERS_CACHE }}
+        path: ${{ env.HF_HOME }}
         key: cache-transformers
 
     - name: Restored HF
       run: |
-        mkdir -p $TRANSFORMERS_CACHE
-        printf "list $TRANSFORMERS_CACHE:\n"
-        ls -lh $TRANSFORMERS_CACHE
+        mkdir -p $HF_HOME
+        printf "list $HF_HOME:\n"
+        ls -lh $HF_HOME
       shell: bash
