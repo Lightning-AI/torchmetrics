@@ -70,7 +70,6 @@ def _sensitivity_at_specificity_x_multilabel(predictions, targets, min_specifici
 
         # get max_spec and best_threshold
         max_spec, best_threshold = sensitivity[idx], thresholds[idx]
-    print(max_spec, best_threshold)
     return float(max_spec), float(best_threshold)
 
 
@@ -89,7 +88,7 @@ class TestBinarySensitivityAtSpecificity(MetricTester):
 
     @pytest.mark.parametrize("min_specificity", [0.05, 0.10, 0.3, 0.5, 0.85])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_sensitivity_at_specificity(self, inputs, ddp, min_specificity, ignore_index):
         """Test class implementation of metric."""
         min_specificity = min_specificity + 1e-3  # add small epsilon to avoid numerical issues
@@ -212,7 +211,7 @@ class TestMulticlassSensitivityAtSpecificity(MetricTester):
 
     @pytest.mark.parametrize("min_specificity", [0.05, 0.1, 0.3, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_sensitivity_at_specificity(self, inputs, ddp, min_specificity, ignore_index):
         """Test class implementation of metric."""
         min_specificity = min_specificity + 1e-3  # add small epsilon to avoid numerical issues
@@ -340,7 +339,7 @@ class TestMultilabelSensitivityAtSpecificity(MetricTester):
 
     @pytest.mark.parametrize("min_specificity", [0.05, 0.1, 0.3, 0.5, 0.8])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multilabel_sensitivity_at_specificity(self, inputs, ddp, min_specificity, ignore_index):
         """Test class implementation of metric."""
         min_specificity = min_specificity + 1e-3  # add small epsilon to avoid numerical issues
