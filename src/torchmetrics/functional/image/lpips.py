@@ -275,7 +275,7 @@ class _LPIPS(nn.Module):
             net: Indicate backbone to use, choose between ['alex','vgg','squeeze']
             spatial: If input should be spatial averaged
             pnet_rand: If backbone should be random or use imagenet pre-trained weights
-            pnet_tune: If backprop should be enabled
+            pnet_tune: If backprop should be enabled for both backbone and linear layers
             use_dropout: If dropout layers should be added
             model_path: Model path to load pretained models from
             eval_mode: If network should be in evaluation mode
@@ -326,6 +326,10 @@ class _LPIPS(nn.Module):
 
         if eval_mode:
             self.eval()
+
+        if not self.pnet_tune:
+            for param in self.parameters():
+                param.requires_grad = False
 
     def forward(
         self, in0: Tensor, in1: Tensor, retperlayer: bool = False, normalize: bool = False

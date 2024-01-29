@@ -133,3 +133,15 @@ def test_error_on_wrong_update(inp1, inp2):
     metric = LearnedPerceptualImagePatchSimilarity()
     with pytest.raises(ValueError, match="Expected both input arguments to be normalized tensors .*"):
         metric(inp1, inp2)
+
+
+def test_check_for_backprop():
+    """Check that by default the metric supports propagation of gradients, but does not update its parameters."""
+    metric = LearnedPerceptualImagePatchSimilarity()
+    assert not metric.net.lin0.model[1].weight.requires_grad
+    preds, target = _inputs.img1[0], _inputs.img2[0]
+    preds.requires_grad = True
+    loss = metric(preds, target)
+    assert loss.requires_grad
+    loss.backward()
+    assert metric.net.lin0.model[1].weight.grad is None
