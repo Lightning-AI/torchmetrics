@@ -766,7 +766,7 @@ def is_overridden(method_name: str, instance: object, parent: object) -> bool:
 def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIMEOUT) -> bool:
     """Check if a certain function is taking too long to execute.
 
-    Function will only be executed if running inside a doctest context. Currently does not support Windows.
+    Function will only be executed if running inside a doctest context. Currently, does not support Windows.
 
     Args:
         fn: function to check
@@ -789,7 +789,7 @@ def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIM
 
     print(f"`{fn.__name__}` did not complete with {timeout}, killing process and returning False", file=sys.stderr)
     # Terminate - may not work if process is stuck for good
-    proc.terminate()
+    proc.kill()
     # OR Kill - will work for sure, no chance for process to finish nicely however
     # p.kill()
     proc.join()
