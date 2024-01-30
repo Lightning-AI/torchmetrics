@@ -790,7 +790,7 @@ def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIM
     print(f"`{fn.__name__}` did not complete with {timeout}, killing process and returning False", file=sys.stderr)
     # Terminate - may not work if process is stuck for good
     # proc.terminate()
+    # proc.join()
     # OR Kill - will work for sure, no chance for process to finish nicely however
     proc.kill()
-    proc.join()
     return False
