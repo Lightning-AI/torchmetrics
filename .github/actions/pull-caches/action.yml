@@ -89,5 +89,7 @@ runs:
         key: cache-referencesh
 
     - name: Restored References
-      run: ls -lh tests/_reference-cache/
+      run: |
+        mkdir -p tests/_reference-cache
+        ls -lh tests/_reference-cache/
       shell: bash
