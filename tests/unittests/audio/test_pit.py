@@ -51,8 +51,7 @@ inputs2 = _Input(
 )
 
 
-@reference_cachier()
-def _reference_scipy_naive_pit(
+def naive_implementation_scipy_pit(
     preds: Tensor,
     target: Tensor,
     metric_func: Callable,
@@ -102,47 +101,61 @@ def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Ten
     return metric_func(preds, target)[0].mean()
 
 
-snr_pit_scipy = partial(_reference_scipy_naive_pit, metric_func=signal_noise_ratio, eval_func="max")
-si_sdr_pit_scipy = partial(
-    _reference_scipy_naive_pit, metric_func=scale_invariant_signal_distortion_ratio, eval_func="max"
-)
+@reference_cachier()
+def _reference_scipy_pit_snr(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+    return naive_implementation_scipy_pit(
+        preds=preds,
+        target=target,
+        metric_func=signal_noise_ratio,
+        eval_func="max",
+    )
+
+
+@reference_cachier()
+def _reference_scipy_pit_si_sdr(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+    return naive_implementation_scipy_pit(
+        preds=preds,
+        target=target,
+        metric_func=scale_invariant_signal_distortion_ratio,
+        eval_func="max",
+    )
 
 
 @pytest.mark.parametrize(
     "preds, target, ref_metric, metric_func, mode, eval_func",
     [
-        (inputs1.preds, inputs1.target, snr_pit_scipy, signal_noise_ratio, "speaker-wise", "max"),
+        (inputs1.preds, inputs1.target, _reference_scipy_pit_snr, signal_noise_ratio, "speaker-wise", "max"),
         (
             inputs1.preds,
             inputs1.target,
-            si_sdr_pit_scipy,
+            _reference_scipy_pit_si_sdr,
             scale_invariant_signal_distortion_ratio,
             "speaker-wise",
             "max",
         ),
-        (inputs2.preds, inputs2.target, snr_pit_scipy, signal_noise_ratio, "speaker-wise", "max"),
+        (inputs2.preds, inputs2.target, _reference_scipy_pit_snr, signal_noise_ratio, "speaker-wise", "max"),
         (
             inputs2.preds,
             inputs2.target,
-            si_sdr_pit_scipy,
+            _reference_scipy_pit_si_sdr,
             scale_invariant_signal_distortion_ratio,
             "speaker-wise",
             "max",
         ),
-        (inputs1.preds, inputs1.target, snr_pit_scipy, signal_noise_ratio, "permutation-wise", "max"),
+        (inputs1.preds, inputs1.target, _reference_scipy_pit_snr, signal_noise_ratio, "permutation-wise", "max"),
         (
             inputs1.preds,
             inputs1.target,
-            si_sdr_pit_scipy,
+            _reference_scipy_pit_si_sdr,
             scale_invariant_signal_distortion_ratio,
             "permutation-wise",
             "max",
         ),
-        (inputs2.preds, inputs2.target, snr_pit_scipy, signal_noise_ratio, "permutation-wise", "max"),
+        (inputs2.preds, inputs2.target, _reference_scipy_pit_snr, signal_noise_ratio, "permutation-wise", "max"),
         (
             inputs2.preds,
             inputs2.target,
-            si_sdr_pit_scipy,
+            _reference_scipy_pit_si_sdr,
             scale_invariant_signal_distortion_ratio,
             "permutation-wise",
             "max",
