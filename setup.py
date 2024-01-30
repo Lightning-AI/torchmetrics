@@ -190,7 +190,7 @@ def _prepare_extras(skip_pattern: str = "^_", skip_files: Tuple[str] = ("base.tx
     # create an 'all' keyword that install all possible dependencies
     extras_req["all"] = list(chain([pkgs for k, pkgs in extras_req.items() if k not in ("_test", "_tests")]))
     extras_req["dev"] = extras_req["all"] + extras_req["_tests"]
-    return extras_req
+    return {k: v for k, v in extras_req.items() if not k.startswith("_")}
 
 
 # https://packaging.python.org/discussions/install-requires-vs-requirements /

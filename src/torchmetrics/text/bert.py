@@ -35,12 +35,12 @@ _DEFAULT_MODEL: str = "roberta-large"
 if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_GREATER_EQUAL_4_4:
     from transformers import AutoModel, AutoTokenizer
 
-    def _download_model() -> None:
+    def _download_model_for_bert_score() -> None:
         """Download intensive operations."""
-        AutoTokenizer.from_pretrained(_DEFAULT_MODEL)
-        AutoModel.from_pretrained(_DEFAULT_MODEL)
+        AutoTokenizer.from_pretrained(_DEFAULT_MODEL, resume_download=True)
+        AutoModel.from_pretrained(_DEFAULT_MODEL, resume_download=True)
 
-    if not _try_proceed_with_timeout(_download_model):
+    if not _try_proceed_with_timeout(_download_model_for_bert_score):
         __doctest_skip__ = ["BERTScore", "BERTScore.plot"]
 else:
     __doctest_skip__ = ["BERTScore", "BERTScore.plot"]
@@ -187,7 +187,8 @@ class BERTScore(Metric):
                     " `transformers` model is used."
                     f" It will use the default recommended model - {_DEFAULT_MODEL!r}."
                 )
-            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name_or_path)
+            resume_download = self.model_name_or_path == _DEFAULT_MODEL
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name_or_path, resume_download=resume_download)
             self.user_tokenizer = False
 
         self.add_state("preds_input_ids", [], dist_reduce_fx="cat")

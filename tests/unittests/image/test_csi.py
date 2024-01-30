@@ -17,8 +17,8 @@ from functools import partial
 import pytest
 import torch
 from sklearn.metrics import jaccard_score
-from torchmetrics.functional.image.csi import critical_success_index
-from torchmetrics.image.csi import CriticalSuccessIndex
+from torchmetrics.functional.regression.csi import critical_success_index
+from torchmetrics.regression.csi import CriticalSuccessIndex
 
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers import seed_all

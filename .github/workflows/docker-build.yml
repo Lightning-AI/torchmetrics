@@ -70,8 +70,10 @@ jobs:
           - { python: "3.9", pytorch: "1.11", cuda: "11.8.0", ubuntu: "22.04" }
           - { python: "3.9", pytorch: "1.13", cuda: "11.8.0", ubuntu: "22.04" }
           - { python: "3.10", pytorch: "2.0", cuda: "11.8.0", ubuntu: "22.04" }
-          - { python: "3.10", pytorch: "2.0", cuda: "12.1.0", ubuntu: "22.04" }
-          - { python: "3.11", pytorch: "2.1", cuda: "12.1.0", ubuntu: "22.04" }
+          - { python: "3.10", pytorch: "2.0", cuda: "12.1.1", ubuntu: "22.04" }
+          - { python: "3.10", pytorch: "2.1", cuda: "12.1.1", ubuntu: "22.04" }
+          - { python: "3.11", pytorch: "2.1", cuda: "12.1.1", ubuntu: "22.04" }
+          - { python: "3.11", pytorch: "2.2", cuda: "12.1.1", ubuntu: "22.04" }
     steps:
       - uses: actions/checkout@v4
 
