@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import logging
 import multiprocessing
 import os
+import sys
 from functools import partial
 from time import perf_counter
 from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Tuple, no_type_check
@@ -766,7 +766,7 @@ def is_overridden(method_name: str, instance: object, parent: object) -> bool:
 def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIMEOUT) -> bool:
     """Check if a certain function is taking too long to execute.
 
-    Function will only be executed if running inside a doctest context. Currently does not support Windows.
+    Function will only be executed if running inside a doctest context. Currently, does not support Windows.
 
     Args:
         fn: function to check
@@ -778,7 +778,8 @@ def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIM
     """
     # source: https://stackoverflow.com/a/14924210/4521646
     proc = multiprocessing.Process(target=fn)
-    logging.debug(f"try to run `{fn.__name__}` for {timeout}s...")
+
+    print(f"Trying to run `{fn.__name__}` for {timeout}s...", file=sys.stderr)
     proc.start()
     # Wait for N seconds or until process finishes
     proc.join(timeout)
@@ -786,10 +787,10 @@ def _try_proceed_with_timeout(fn: Callable, timeout: int = _DOCTEST_DOWNLOAD_TIM
     if not proc.is_alive():
         return True
 
-    logging.warning(f"running `{fn.__name__}`... let's kill it...")
+    print(f"`{fn.__name__}` did not complete with {timeout}, killing process and returning False", file=sys.stderr)
     # Terminate - may not work if process is stuck for good
-    proc.terminate()
+    # proc.terminate()
+    # proc.join()
     # OR Kill - will work for sure, no chance for process to finish nicely however
-    # p.kill()
-    proc.join()
+    proc.kill()
     return False
