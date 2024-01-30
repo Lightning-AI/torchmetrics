@@ -424,53 +424,31 @@ class MetricTester:
                 target when running update on the metric.
 
         """
-        atol = atol or self.atol
-        metric_args = metric_args or {}
+        common_kwargs = {
+            "preds": preds,
+            "target": target,
+            "metric_class": metric_class,
+            "reference_metric": reference_metric,
+            "metric_args": metric_args or {},
+            "atol": atol or self.atol,
+            "device": "cuda" if torch.cuda.is_available() else "cpu",
+            "dist_sync_on_step": dist_sync_on_step,
+            "check_dist_sync_on_step": check_dist_sync_on_step,
+            "check_batch": check_batch,
+            "fragment_kwargs": fragment_kwargs,
+            "check_scriptable": check_scriptable,
+            "check_state_dict": check_state_dict,
+        }
+
         if ddp and hasattr(pytest, "pool"):
             if sys.platform == "win32":
                 pytest.skip("DDP not supported on windows")
-
             pytest.pool.starmap(
-                partial(
-                    _class_test,
-                    preds=preds,
-                    target=target,
-                    metric_class=metric_class,
-                    reference_metric=reference_metric,
-                    dist_sync_on_step=dist_sync_on_step,
-                    metric_args=metric_args,
-                    check_dist_sync_on_step=check_dist_sync_on_step,
-                    check_batch=check_batch,
-                    atol=atol,
-                    device="cuda" if torch.cuda.is_available() else "cpu",
-                    fragment_kwargs=fragment_kwargs,
-                    check_scriptable=check_scriptable,
-                    check_state_dict=check_state_dict,
-                    **kwargs_update,
-                ),
+                partial(_class_test, **common_kwargs, **kwargs_update),
                 [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)],
             )
         else:
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-
-            _class_test(
-                rank=0,
-                world_size=1,
-                preds=preds,
-                target=target,
-                metric_class=metric_class,
-                reference_metric=reference_metric,
-                dist_sync_on_step=dist_sync_on_step,
-                metric_args=metric_args,
-                check_dist_sync_on_step=check_dist_sync_on_step,
-                check_batch=check_batch,
-                atol=atol,
-                device=device,
-                fragment_kwargs=fragment_kwargs,
-                check_scriptable=check_scriptable,
-                check_state_dict=check_state_dict,
-                **kwargs_update,
-            )
+            _class_test(rank=0, world_size=1, **common_kwargs, **kwargs_update)
 
     @staticmethod
     def run_precision_test_cpu(

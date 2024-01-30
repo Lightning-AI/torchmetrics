@@ -38,7 +38,7 @@ inputs = _Input(
 )
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_sa_sdr(preds: Tensor, target: Tensor, scale_invariant: bool, zero_mean: bool):
     # According to the original paper, the sa-sdr equals to si-sdr with inputs concatenated over the speaker
     # dimension if scale_invariant==True. Accordingly, for scale_invariant==False, the sa-sdr equals to snr.

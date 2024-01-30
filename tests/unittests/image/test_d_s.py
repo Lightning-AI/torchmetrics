@@ -73,7 +73,7 @@ for size, channel, norm_order, r, window_size, pan_lr_exists, dtype in [
     )
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_d_s(
     preds: np.ndarray,
     ms: np.ndarray,

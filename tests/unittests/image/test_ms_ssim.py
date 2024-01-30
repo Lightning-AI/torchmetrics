@@ -38,7 +38,7 @@ for size, coef in [(182, 0.9), (182, 0.7)]:
     )
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_ms_ssim(preds, target, data_range: float = 1.0, kernel_size: int = 11):
     return ms_ssim(preds, target, data_range=data_range, win_size=kernel_size, size_average=False)
 

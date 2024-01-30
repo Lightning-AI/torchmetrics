@@ -24,7 +24,7 @@ from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_jiwer_wil(preds: Union[str, List[str]], target: Union[str, List[str]]):
     return wil(target, preds)
 

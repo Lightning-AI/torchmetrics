@@ -28,7 +28,7 @@ else:
     compute_measures: Callable
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_jiwer_wer(preds: Union[str, List[str]], target: Union[str, List[str]]):
     return compute_measures(target, preds)["wer"]
 

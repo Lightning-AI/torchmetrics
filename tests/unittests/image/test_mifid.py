@@ -24,7 +24,7 @@ from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 from unittests import reference_cachier
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_mifid(preds, target, cosine_distance_eps: float = 0.1):
     """Reference implementation.
 

@@ -37,7 +37,7 @@ inputs = _Input(
 speechmetrics_sisdr = speechmetrics.load("sisdr")
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]

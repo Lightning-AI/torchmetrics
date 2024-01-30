@@ -101,7 +101,7 @@ def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Ten
     return metric_func(preds, target)[0].mean()
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_scipy_pit_snr(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     return naive_implementation_scipy_pit(
         preds=preds,
@@ -111,7 +111,7 @@ def _reference_scipy_pit_snr(preds: Tensor, target: Tensor) -> Tuple[Tensor, Ten
     )
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_scipy_pit_si_sdr(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     return naive_implementation_scipy_pit(
         preds=preds,

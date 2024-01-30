@@ -31,7 +31,7 @@ _inputs_1 = _Input(preds=torch.rand(NUM_BATCHES, BATCH_SIZE), target=torch.rand(
 _inputs_2 = _Input(preds=torch.rand(NUM_BATCHES, BATCH_SIZE), target=torch.rand(NUM_BATCHES, BATCH_SIZE))
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_sklearn_jaccard(preds: torch.Tensor, target: torch.Tensor, threshold: float):
     """Calculate reference metric for `CriticalSuccessIndex`."""
     preds, target = preds.numpy(), target.numpy()

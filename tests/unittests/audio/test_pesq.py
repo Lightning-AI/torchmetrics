@@ -41,7 +41,7 @@ inputs_16k = _Input(
 )
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_pesq_batch(preds: Tensor, target: Tensor, fs: int, mode: str):
     """Comparison function."""
     # shape: preds [BATCH_SIZE, Time] , target [BATCH_SIZE, Time]

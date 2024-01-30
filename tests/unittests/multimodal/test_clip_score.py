@@ -49,7 +49,7 @@ _random_input = _InputImagesCaptions(
 )
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_clip_score(preds, target, model_name_or_path):
     processor = _CLIPProcessor.from_pretrained(model_name_or_path)
     model = _CLIPModel.from_pretrained(model_name_or_path)

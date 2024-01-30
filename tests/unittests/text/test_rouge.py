@@ -44,7 +44,7 @@ _target = "A trainer said her and Moschetto, 54s or weapons say . \nAuthorities 
 _inputs_summarization = _Input(preds=_preds, target=_target)
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_rouge_score(
     preds: Union[str, Sequence[str]],
     target: Union[str, Sequence[Union[str, Sequence[str]]]],

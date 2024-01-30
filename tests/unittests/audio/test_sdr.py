@@ -43,7 +43,7 @@ inputs_2spk = _Input(
 )
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_sdr_batch(preds: Tensor, target: Tensor, compute_permutation: bool = False) -> Tensor:
     # shape: preds [BATCH_SIZE, spk, Time] , target [BATCH_SIZE, spk, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, spk, Time] , target [NUM_BATCHES*BATCH_SIZE, spk, Time]

@@ -53,7 +53,7 @@ for size, channel, p, dtype in [
     )
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_d_lambda(preds: np.ndarray, target: np.ndarray, p: int = 1) -> float:
     """NumPy based implementation of Spectral Distortion Index, which uses UQI of TorchMetrics."""
     target, preds = torch.from_numpy(target), torch.from_numpy(preds)

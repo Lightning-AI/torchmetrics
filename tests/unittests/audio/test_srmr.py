@@ -31,7 +31,7 @@ seed_all(42)
 preds = torch.rand(2, 2, 8000)
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_srmr_batch(preds: Tensor, target: Tensor, fs: int, fast: bool, norm: bool, **kwargs: Dict[str, Any]):
     # shape: preds [BATCH_SIZE, Time]
     shape = preds.shape

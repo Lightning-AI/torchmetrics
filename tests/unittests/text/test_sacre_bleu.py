@@ -29,7 +29,7 @@ if _SACREBLEU_AVAILABLE:
     from sacrebleu.metrics import BLEU
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_sacre_bleu(
     preds: Sequence[str], targets: Sequence[Sequence[str]], tokenize: str, lowercase: bool
 ) -> Tensor:

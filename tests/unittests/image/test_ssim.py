@@ -53,7 +53,7 @@ for size, channel, coef, dtype in [
     )
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_skimage_ssim(
     preds,
     target,

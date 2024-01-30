@@ -152,6 +152,8 @@ jobs:
       - name: Unittests common
         # skip for PR if there is nothing to test, note that outside PR there is default 'unittests'
         if: ${{ env.TEST_DIRS != '' }}
+        env:
+          USE_PERSISTENT_REF_CACHE: "1"
         working-directory: ./tests
         run: |
           python -m pytest -v \
@@ -177,8 +179,6 @@ jobs:
             --cov=torchmetrics \
             --durations=50 \
             -m DDP \
-            --reruns 3 \
-            --reruns-delay 1 \
             ${{ env.UNITTEST_TIMEOUT }}
 
       - name: Statistics

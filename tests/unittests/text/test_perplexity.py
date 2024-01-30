@@ -31,7 +31,7 @@ from unittests.text.inputs import (
 )
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_local_perplexity(preds, target, ignore_index):
     """Baseline implementation of perplexity metric based upon PyTorch Cross Entropy."""
     preds = preds.reshape(-1, preds.shape[-1])

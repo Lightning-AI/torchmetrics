@@ -1,3 +1,4 @@
+import functools
 import os.path
 from typing import NamedTuple
 
@@ -25,8 +26,11 @@ _PATH_UNITTESTS = os.path.dirname(__file__)
 _PATH_ALL_TESTS = os.path.dirname(_PATH_UNITTESTS)
 _PATH_TEST_CACHE = os.getenv("PYTEST_REFERENCE_CACHE", os.path.join(_PATH_ALL_TESTS, "_reference-cache"))
 
-reference_cachier = Memory(_PATH_TEST_CACHE, verbose=0).cache
-# reference_cachier = partial(cachier, cache_dir=_PATH_TEST_CACHE)
+if os.getenv("USE_PERSISTENT_REF_CACHE", "0") == "1":
+    reference_cachier = Memory(_PATH_TEST_CACHE, verbose=0).cache
+    # reference_cachier = partial(cachier, cache_dir=_PATH_TEST_CACHE)
+else:
+    reference_cachier = functools.cache
 
 if torch.cuda.is_available():
     torch.backends.cuda.matmul.allow_tf32 = False

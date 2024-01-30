@@ -66,7 +66,7 @@ def _clip_iqa_wrapped(preds, target):
     return clip_image_quality_assessment(preds)
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_clip_iqa(preds, target, reduce=False):
     """Reference implementation of `CLIPImageQualityAssessment` metric."""
     res = piq.CLIPIQA()(preds).squeeze()

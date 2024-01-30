@@ -28,7 +28,7 @@ if _SACREBLEU_AVAILABLE:
     from sacrebleu.metrics import TER as SacreTER  # noqa: N811
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_sacrebleu_ter(
     preds: Sequence[str],
     target: Sequence[Sequence[str]],

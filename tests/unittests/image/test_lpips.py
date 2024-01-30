@@ -40,7 +40,7 @@ _inputs = _Input(
 )
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_lpips(
     img1: Tensor, img2: Tensor, net_type: str, normalize: bool = False, reduction: str = "mean"
 ) -> Tensor:

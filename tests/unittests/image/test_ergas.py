@@ -45,7 +45,7 @@ for size, channel, coef, ratio, dtype in [
     _inputs.append(_Input(preds=preds, target=preds * coef, ratio=ratio))
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_ergas(
     preds: Tensor,
     target: Tensor,

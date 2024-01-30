@@ -28,7 +28,7 @@ if _SACREBLEU_AVAILABLE:
     from sacrebleu.metrics import CHRF
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_sacrebleu_chrf(
     preds: Sequence[str],
     targets: Sequence[Sequence[str]],

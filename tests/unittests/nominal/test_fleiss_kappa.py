@@ -27,7 +27,7 @@ NUM_RATERS = 20
 NUM_CATEGORIES = NUM_CLASSES
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_fleiss_kappa(preds, target, mode):
     if mode == "probs":
         counts = np.zeros((preds.shape[0], preds.shape[1]))

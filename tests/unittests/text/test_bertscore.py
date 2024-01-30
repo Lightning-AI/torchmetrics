@@ -45,7 +45,7 @@ MODEL_NAME = "albert-base-v2"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
-@reference_cachier()
+@reference_cachier
 @skip_on_connection_issues()
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")

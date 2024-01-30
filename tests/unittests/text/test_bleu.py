@@ -28,7 +28,7 @@ from unittests.text.inputs import _inputs_multiple_references
 smooth_func = SmoothingFunction().method2
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_bleu_metric_nltk(preds, targets, weights, smoothing_function, **kwargs: Any):
     preds_ = [pred.split() for pred in preds]
     targets_ = [[line.split() for line in target] for target in targets]

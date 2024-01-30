@@ -55,7 +55,7 @@ def pearson_matrix_input():
     )
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_pd_pearsons_t(preds, target):
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
@@ -66,7 +66,7 @@ def _reference_pd_pearsons_t(preds, target):
     return torch.tensor(t)
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_pd_pearsons_t_matrix(matrix):
     num_variables = matrix.shape[1]
     pearsons_t_matrix_value = torch.ones(num_variables, num_variables)

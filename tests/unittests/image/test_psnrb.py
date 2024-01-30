@@ -35,7 +35,7 @@ _input = (
 )
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_psnrb(preds, target):
     """Reference implementation of PSNRB metric.
 

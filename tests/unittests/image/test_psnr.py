@@ -58,7 +58,7 @@ def _to_sk_peak_signal_noise_ratio_inputs(value, dim):
     return inputs
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_skimage_psnr(preds, target, data_range, reduction, dim):
     if isinstance(data_range, tuple):
         preds = preds.clamp(min=data_range[0], max=data_range[1])

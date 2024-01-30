@@ -39,7 +39,7 @@ inputs_16k = _Input(
 )
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_stoi_batch(preds: Tensor, target: Tensor, fs: int, extended: bool):
     # shape: preds [BATCH_SIZE, Time] , target [BATCH_SIZE, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, Time] , target [NUM_BATCHES*BATCH_SIZE, Time]

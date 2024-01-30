@@ -62,7 +62,7 @@ def cramers_matrix_input():
     return matrix
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_dython_cramers_v(preds, target, bias_correction, nan_strategy, nan_replace_value):
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target

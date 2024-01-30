@@ -35,7 +35,7 @@ _inputs = [
 _kernels = [torch.tensor([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]])]
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_scc(preds, target):
     """Reference implementation of scc from sewar."""
     preds = torch.movedim(preds, 1, -1)

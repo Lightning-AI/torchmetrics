@@ -35,7 +35,7 @@ _inputs = [
 ]
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_sewar_vif(preds, target, sigma_nsq=2):
     preds = torch.movedim(preds, 1, -1)
     target = torch.movedim(target, 1, -1)

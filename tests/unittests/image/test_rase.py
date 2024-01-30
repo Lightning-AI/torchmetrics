@@ -44,7 +44,7 @@ for size, channel, window_size, dtype in [
     _inputs.append(_InputWindowSized(preds=preds, target=target, window_size=window_size))
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_sewar_rase(preds, target, window_size):
     """Baseline implementation of metric.
 

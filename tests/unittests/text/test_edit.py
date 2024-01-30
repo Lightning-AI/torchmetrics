@@ -70,7 +70,7 @@ def test_for_correctness(
         assert predicted == expected
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_nltk_edit_dist(preds, target, substitution_cost=1, reduction="mean"):
     costs = [nltk_edit_distance(p, t, substitution_cost=substitution_cost) for p, t in zip(preds, target)]
     if reduction == "mean":

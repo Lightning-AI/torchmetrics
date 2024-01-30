@@ -40,7 +40,7 @@ for size, channel, dtype in [
     _inputs.append(_Input(preds=preds, target=target))
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_sam(
     preds: Tensor,
     target: Tensor,

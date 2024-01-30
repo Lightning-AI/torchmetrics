@@ -29,7 +29,7 @@ MODEL_NAME = "google/bert_uncased_L-2_H-128_A-2"
 MAX_LENGTH = 30  # the selected model has default max_length = 20 and we have longer sequences
 
 
-@reference_cachier()
+@reference_cachier
 def _reference_infolm_score(preds, target, model_name, information_measure, idf, alpha, beta):
     """Baseline implementation is currently not available.
 
