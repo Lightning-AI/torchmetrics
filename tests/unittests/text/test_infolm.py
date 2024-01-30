@@ -19,6 +19,7 @@ from torchmetrics.functional.text.infolm import infolm
 from torchmetrics.text.infolm import InfoLM
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
+from unittests import ref_cachier
 from unittests.helpers import skip_on_connection_issues
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import HYPOTHESIS_A, HYPOTHESIS_C, _inputs_single_reference
@@ -28,7 +29,8 @@ MODEL_NAME = "google/bert_uncased_L-2_H-128_A-2"
 MAX_LENGTH = 30  # the selected model has default max_length = 20 and we have longer sequences
 
 
-def reference_infolm_score(preds, target, model_name, information_measure, idf, alpha, beta):
+@ref_cachier()
+def _reference_infolm_score(preds, target, model_name, information_measure, idf, alpha, beta):
     """Baseline implementation is currently not available.
 
     We, therefore, are enforced to relied on hard-coded results for now. The results below were generated using scripts
@@ -121,7 +123,7 @@ class TestInfoLM(TextTester):
             "max_length": MAX_LENGTH,
         }
         reference_metric = partial(
-            reference_infolm_score,
+            _reference_infolm_score,
             model_name=MODEL_NAME,
             information_measure=information_measure,
             idf=idf,
@@ -151,7 +153,7 @@ class TestInfoLM(TextTester):
             "max_length": MAX_LENGTH,
         }
         reference_metric = partial(
-            reference_infolm_score,
+            _reference_infolm_score,
             model_name=MODEL_NAME,
             information_measure=information_measure,
             idf=idf,

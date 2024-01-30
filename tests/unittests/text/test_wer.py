@@ -18,6 +18,7 @@ from torchmetrics.functional.text.wer import word_error_rate
 from torchmetrics.text.wer import WordErrorRate
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
+from unittests import ref_cachier
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 
@@ -27,7 +28,8 @@ else:
     compute_measures: Callable
 
 
-def _compute_wer_metric_jiwer(preds: Union[str, List[str]], target: Union[str, List[str]]):
+@ref_cachier()
+def _reference_jiwer_wer(preds: Union[str, List[str]], target: Union[str, List[str]]):
     return compute_measures(target, preds)["wer"]
 
 
@@ -50,7 +52,7 @@ class TestWER(TextTester):
             preds=preds,
             targets=targets,
             metric_class=WordErrorRate,
-            reference_metric=_compute_wer_metric_jiwer,
+            reference_metric=_reference_jiwer_wer,
         )
 
     def test_wer_functional(self, preds, targets):
@@ -59,7 +61,7 @@ class TestWER(TextTester):
             preds,
             targets,
             metric_functional=word_error_rate,
-            reference_metric=_compute_wer_metric_jiwer,
+            reference_metric=_reference_jiwer_wer,
         )
 
     def test_wer_differentiability(self, preds, targets):

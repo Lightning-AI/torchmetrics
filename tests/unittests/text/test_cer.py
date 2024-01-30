@@ -18,6 +18,7 @@ from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.text.cer import CharErrorRate
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
+from unittests import ref_cachier
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 
@@ -28,7 +29,8 @@ else:
     compute_measures = Callable
 
 
-def _compare_fn(preds: Union[str, List[str]], target: Union[str, List[str]]):
+@ref_cachier()
+def _reference_jiwer_cer(preds: Union[str, List[str]], target: Union[str, List[str]]):
     return cer(target, preds)
 
 
@@ -51,7 +53,7 @@ class TestCharErrorRate(TextTester):
             preds=preds,
             targets=targets,
             metric_class=CharErrorRate,
-            reference_metric=_compare_fn,
+            reference_metric=_reference_jiwer_cer,
         )
 
     def test_cer_functional(self, preds, targets):
@@ -60,7 +62,7 @@ class TestCharErrorRate(TextTester):
             preds,
             targets,
             metric_functional=char_error_rate,
-            reference_metric=_compare_fn,
+            reference_metric=_reference_jiwer_cer,
         )
 
     def test_cer_differentiability(self, preds, targets):

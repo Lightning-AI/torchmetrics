@@ -2,9 +2,9 @@ import os.path
 from functools import partial
 from typing import NamedTuple
 
-from cachier import cachier
 import numpy
 import torch
+from cachier import cachier
 from torch import Tensor
 
 from unittests.conftest import (
