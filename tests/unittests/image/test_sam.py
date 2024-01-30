@@ -21,7 +21,7 @@ from torchmetrics.functional.image.sam import spectral_angle_mapper
 from torchmetrics.image.sam import SpectralAngleMapper
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
-from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input, reference_cachier
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -40,7 +40,8 @@ for size, channel, dtype in [
     _inputs.append(_Input(preds=preds, target=target))
 
 
-def _baseline_sam(
+@reference_cachier()
+def _reference_sam(
     preds: Tensor,
     target: Tensor,
     reduction: str = "elementwise_mean",
@@ -75,7 +76,7 @@ class TestSpectralAngleMapper(MetricTester):
             preds,
             target,
             SpectralAngleMapper,
-            partial(_baseline_sam, reduction=reduction),
+            partial(_reference_sam, reduction=reduction),
             metric_args={"reduction": reduction},
         )
 
@@ -85,7 +86,7 @@ class TestSpectralAngleMapper(MetricTester):
             preds,
             target,
             spectral_angle_mapper,
-            partial(_baseline_sam, reduction=reduction),
+            partial(_reference_sam, reduction=reduction),
             metric_args={"reduction": reduction},
         )
 

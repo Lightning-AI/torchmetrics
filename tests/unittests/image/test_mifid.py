@@ -21,8 +21,11 @@ from scipy.linalg import sqrtm
 from torchmetrics.image.mifid import MemorizationInformedFrechetInceptionDistance, NoTrainInceptionV3
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
+from unittests import reference_cachier
 
-def _compare_mifid(preds, target, cosine_distance_eps: float = 0.1):
+
+@reference_cachier()
+def _reference_mifid(preds, target, cosine_distance_eps: float = 0.1):
     """Reference implementation.
 
     Implementation taken from:
@@ -174,7 +177,7 @@ def test_compare_mifid(equal_size):
     for i in range(m // batch_size):
         metric.update(img2[batch_size * i : batch_size * (i + 1)].cuda(), real=False)
 
-    compare_val = _compare_mifid(img1, img2)
+    compare_val = _reference_mifid(img1, img2)
     tm_res = metric.compute()
 
     assert torch.allclose(tm_res.cpu(), torch.tensor(compare_val, dtype=tm_res.dtype), atol=1e-3)

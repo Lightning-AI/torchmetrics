@@ -25,7 +25,7 @@ from torchmetrics.functional.image.d_s import spatial_distortion_index
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.d_s import SpatialDistortionIndex
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, reference_cachier
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -73,7 +73,8 @@ for size, channel, norm_order, r, window_size, pan_lr_exists, dtype in [
     )
 
 
-def _baseline_d_s(
+@reference_cachier()
+def _reference_d_s(
     preds: np.ndarray,
     ms: np.ndarray,
     pan: np.ndarray,
@@ -127,7 +128,7 @@ def _np_d_s(preds, target, pan=None, pan_lr=None, norm_order=1, window_size=7):
         np_pan = pan.permute(0, 2, 3, 1).cpu().numpy()
         np_pan_lr = pan_lr.permute(0, 2, 3, 1).cpu().numpy() if pan_lr is not None else None
 
-    return _baseline_d_s(
+    return _reference_d_s(
         np_preds,
         np_ms,
         np_pan,

@@ -24,7 +24,7 @@ from torchmetrics.text.rouge import ROUGEScore
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
 from typing_extensions import Literal
 
-from unittests import ref_cachier
+from unittests import reference_cachier
 from unittests.helpers import skip_on_connection_issues
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import _Input, _inputs_multiple_references, _inputs_single_sentence_single_reference
@@ -44,7 +44,7 @@ _target = "A trainer said her and Moschetto, 54s or weapons say . \nAuthorities 
 _inputs_summarization = _Input(preds=_preds, target=_target)
 
 
-@ref_cachier()
+@reference_cachier()
 def _reference_rouge_score(
     preds: Union[str, Sequence[str]],
     target: Union[str, Sequence[Union[str, Sequence[str]]]],

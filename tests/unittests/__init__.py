@@ -26,7 +26,7 @@ _PATH_UNITTESTS = os.path.dirname(__file__)
 _PATH_ALL_TESTS = os.path.dirname(_PATH_UNITTESTS)
 _PATH_TEST_CACHE = os.getenv("PYTEST_REFERENCE_CACHE", os.path.join(_PATH_ALL_TESTS, "_reference-cache"))
 
-ref_cachier = partial(cachier, cache_dir=_PATH_TEST_CACHE)
+reference_cachier = partial(cachier, cache_dir=_PATH_TEST_CACHE)
 
 if torch.cuda.is_available():
     torch.backends.cuda.matmul.allow_tf32 = False

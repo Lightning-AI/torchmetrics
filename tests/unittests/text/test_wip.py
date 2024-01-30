@@ -19,12 +19,12 @@ from torchmetrics.functional.text.wip import word_information_preserved
 from torchmetrics.text.wip import WordInfoPreserved
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
-from unittests import ref_cachier
+from unittests import reference_cachier
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 
 
-@ref_cachier()
+@reference_cachier()
 def _reference_jiwer_wip(preds: Union[str, List[str]], target: Union[str, List[str]]):
     return wip(target, preds)
 

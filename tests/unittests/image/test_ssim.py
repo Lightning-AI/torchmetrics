@@ -22,7 +22,7 @@ from torch import Tensor
 from torchmetrics.functional import structural_similarity_index_measure
 from torchmetrics.image import StructuralSimilarityIndexMeasure
 
-from unittests import NUM_BATCHES, _Input
+from unittests import NUM_BATCHES, _Input, reference_cachier
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -53,7 +53,8 @@ for size, channel, coef, dtype in [
     )
 
 
-def _skimage_ssim(
+@reference_cachier()
+def _reference_skimage_ssim(
     preds,
     target,
     data_range,
@@ -148,7 +149,7 @@ class TestSSIM(MetricTester):
             preds,
             target,
             StructuralSimilarityIndexMeasure,
-            partial(_skimage_ssim, data_range=data_range, sigma=sigma, kernel_size=None),
+            partial(_reference_skimage_ssim, data_range=data_range, sigma=sigma, kernel_size=None),
             metric_args={
                 "data_range": data_range,
                 "sigma": sigma,
@@ -178,7 +179,7 @@ class TestSSIM(MetricTester):
             preds,
             target,
             StructuralSimilarityIndexMeasure,
-            partial(_skimage_ssim, data_range=1.0, sigma=sigma, kernel_size=None),
+            partial(_reference_skimage_ssim, data_range=1.0, sigma=sigma, kernel_size=None),
             metric_args={
                 "gaussian_kernel": False,
                 "data_range": 1.0,
@@ -193,7 +194,9 @@ class TestSSIM(MetricTester):
             preds,
             target,
             structural_similarity_index_measure,
-            partial(_skimage_ssim, data_range=1.0, sigma=sigma, kernel_size=None, reduction_arg=reduction_arg),
+            partial(
+                _reference_skimage_ssim, data_range=1.0, sigma=sigma, kernel_size=None, reduction_arg=reduction_arg
+            ),
             metric_args={"data_range": 1.0, "sigma": sigma, "reduction": reduction_arg},
         )
 

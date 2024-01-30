@@ -19,7 +19,7 @@ from sewar.full_ref import scc as sewar_scc
 from torchmetrics.functional.image import spatial_correlation_coefficient
 from torchmetrics.image import SpatialCorrelationCoefficient
 
-from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input, reference_cachier
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -35,6 +35,7 @@ _inputs = [
 _kernels = [torch.tensor([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]])]
 
 
+@reference_cachier()
 def _reference_scc(preds, target):
     """Reference implementation of scc from sewar."""
     preds = torch.movedim(preds, 1, -1)

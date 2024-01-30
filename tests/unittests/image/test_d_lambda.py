@@ -22,7 +22,7 @@ from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.d_lambda import SpectralDistortionIndex
 
-from unittests import BATCH_SIZE, NUM_BATCHES
+from unittests import BATCH_SIZE, NUM_BATCHES, reference_cachier
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -53,7 +53,8 @@ for size, channel, p, dtype in [
     )
 
 
-def _baseline_d_lambda(preds: np.ndarray, target: np.ndarray, p: int = 1) -> float:
+@reference_cachier()
+def _reference_d_lambda(preds: np.ndarray, target: np.ndarray, p: int = 1) -> float:
     """NumPy based implementation of Spectral Distortion Index, which uses UQI of TorchMetrics."""
     target, preds = torch.from_numpy(target), torch.from_numpy(preds)
     # Permute to ensure B x C x H x W (Pillow/NumPy stores in B x H x W x C)
@@ -85,7 +86,7 @@ def _np_d_lambda(preds, target, p):
     np_preds = preds.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
     np_target = target.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
 
-    return _baseline_d_lambda(
+    return _reference_d_lambda(
         np_preds,
         np_target,
         p=p,

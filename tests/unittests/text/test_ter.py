@@ -20,7 +20,7 @@ from torchmetrics.functional.text.ter import translation_edit_rate
 from torchmetrics.text.ter import TranslationEditRate
 from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
 
-from unittests import ref_cachier
+from unittests import reference_cachier
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 
@@ -28,7 +28,7 @@ if _SACREBLEU_AVAILABLE:
     from sacrebleu.metrics import TER as SacreTER  # noqa: N811
 
 
-@ref_cachier()
+@reference_cachier()
 def _reference_sacrebleu_ter(
     preds: Sequence[str],
     target: Sequence[Sequence[str]],

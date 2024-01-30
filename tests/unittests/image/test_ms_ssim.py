@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from functools import partial
 
 import pytest
 import torch
@@ -19,7 +18,7 @@ from pytorch_msssim import ms_ssim
 from torchmetrics.functional.image.ssim import multiscale_structural_similarity_index_measure
 from torchmetrics.image.ssim import MultiScaleStructuralSimilarityIndexMeasure
 
-from unittests import NUM_BATCHES, _Input
+from unittests import NUM_BATCHES, _Input, reference_cachier
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -39,7 +38,8 @@ for size, coef in [(182, 0.9), (182, 0.7)]:
     )
 
 
-def _pytorch_ms_ssim(preds, target, data_range, kernel_size):
+@reference_cachier()
+def _reference_ms_ssim(preds, target, data_range: float = 1.0, kernel_size: int = 11):
     return ms_ssim(preds, target, data_range=data_range, win_size=kernel_size, size_average=False)
 
 
@@ -63,7 +63,7 @@ class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
             preds,
             target,
             MultiScaleStructuralSimilarityIndexMeasure,
-            partial(_pytorch_ms_ssim, data_range=1.0, kernel_size=11),
+            _reference_ms_ssim,
             metric_args={"data_range": 1.0, "kernel_size": 11},
         )
 
@@ -73,7 +73,7 @@ class TestMultiScaleStructuralSimilarityIndexMeasure(MetricTester):
             preds,
             target,
             multiscale_structural_similarity_index_measure,
-            partial(_pytorch_ms_ssim, data_range=1.0, kernel_size=11),
+            _reference_ms_ssim,
             metric_args={"data_range": 1.0, "kernel_size": 11},
         )
 

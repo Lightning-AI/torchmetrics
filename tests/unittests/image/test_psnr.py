@@ -22,7 +22,7 @@ from torchmetrics.functional import peak_signal_noise_ratio
 from torchmetrics.image import PeakSignalNoiseRatio
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
-from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input, reference_cachier
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -58,7 +58,8 @@ def _to_sk_peak_signal_noise_ratio_inputs(value, dim):
     return inputs
 
 
-def _skimage_psnr(preds, target, data_range, reduction, dim):
+@reference_cachier()
+def _reference_skimage_psnr(preds, target, data_range, reduction, dim):
     if isinstance(data_range, tuple):
         preds = preds.clamp(min=data_range[0], max=data_range[1])
         target = target.clamp(min=data_range[0], max=data_range[1])
@@ -75,7 +76,7 @@ def _skimage_psnr(preds, target, data_range, reduction, dim):
 
 
 def _base_e_sk_psnr(preds, target, data_range, reduction, dim):
-    return _skimage_psnr(preds, target, data_range, reduction, dim) * np.log(10)
+    return _reference_skimage_psnr(preds, target, data_range, reduction, dim) * np.log(10)
 
 
 @pytest.mark.parametrize(
@@ -93,7 +94,7 @@ def _base_e_sk_psnr(preds, target, data_range, reduction, dim):
 @pytest.mark.parametrize(
     "base, ref_metric",
     [
-        (10.0, _skimage_psnr),
+        (10.0, _reference_skimage_psnr),
         (2.718281828459045, _base_e_sk_psnr),
     ],
 )

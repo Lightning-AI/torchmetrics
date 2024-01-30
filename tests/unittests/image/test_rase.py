@@ -22,7 +22,7 @@ from torchmetrics.functional import relative_average_spectral_error
 from torchmetrics.functional.image.helper import _uniform_filter
 from torchmetrics.image import RelativeAverageSpectralError
 
-from unittests import BATCH_SIZE
+from unittests import BATCH_SIZE, reference_cachier
 from unittests.helpers.testers import MetricTester
 
 
@@ -44,7 +44,8 @@ for size, channel, window_size, dtype in [
     _inputs.append(_InputWindowSized(preds=preds, target=target, window_size=window_size))
 
 
-def _sewar_rase(preds, target, window_size):
+@reference_cachier()
+def _reference_sewar_rase(preds, target, window_size):
     """Baseline implementation of metric.
 
     This custom implementation is necessary since sewar only supports single image and aggregation therefore needs
@@ -84,7 +85,7 @@ class TestRelativeAverageSpectralError(MetricTester):
             preds,
             target,
             RelativeAverageSpectralError,
-            partial(_sewar_rase, window_size=window_size),
+            partial(_reference_sewar_rase, window_size=window_size),
             metric_args={"window_size": window_size},
             check_batch=False,
         )
@@ -95,6 +96,6 @@ class TestRelativeAverageSpectralError(MetricTester):
             preds,
             target,
             relative_average_spectral_error,
-            partial(_sewar_rase, window_size=window_size),
+            partial(_reference_sewar_rase, window_size=window_size),
             metric_args={"window_size": window_size},
         )
