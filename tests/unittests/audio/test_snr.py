@@ -21,7 +21,7 @@ from torch import Tensor
 from torchmetrics.audio import SignalNoiseRatio
 from torchmetrics.functional.audio import signal_noise_ratio
 
-from unittests import _Input
+from unittests import _Input, reference_cachier
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -34,7 +34,8 @@ inputs = _Input(
 )
 
 
-def _bss_eval_images_snr(preds: Tensor, target: Tensor, zero_mean: bool):
+@reference_cachier()
+def _reference_bss__snr(preds: Tensor, target: Tensor, zero_mean: bool):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     if zero_mean:
@@ -58,8 +59,8 @@ def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable):
     return metric_func(preds, target).mean()
 
 
-mireval_snr_zeromean = partial(_bss_eval_images_snr, zero_mean=True)
-mireval_snr_nozeromean = partial(_bss_eval_images_snr, zero_mean=False)
+mireval_snr_zeromean = partial(_reference_bss__snr, zero_mean=True)
+mireval_snr_nozeromean = partial(_reference_bss__snr, zero_mean=False)
 
 
 @pytest.mark.parametrize(

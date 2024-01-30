@@ -20,7 +20,7 @@ from torch import Tensor
 from torchmetrics.audio import ScaleInvariantSignalNoiseRatio
 from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
 
-from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input, reference_cachier
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -37,7 +37,8 @@ inputs = _Input(
 speechmetrics_sisdr = speechmetrics.load("sisdr")
 
 
-def _speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True):
+@reference_cachier()
+def _reference_speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     if zero_mean:
@@ -64,7 +65,7 @@ def _average_metric(preds, target, metric_func):
 @pytest.mark.parametrize(
     "preds, target, ref_metric",
     [
-        (inputs.preds, inputs.target, _speechmetrics_si_sdr),
+        (inputs.preds, inputs.target, _reference_speechmetrics_si_sdr),
     ],
 )
 class TestSISNR(MetricTester):

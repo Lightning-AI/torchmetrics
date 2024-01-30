@@ -22,6 +22,7 @@ from torchmetrics.audio.srmr import SpeechReverberationModulationEnergyRatio
 from torchmetrics.functional.audio.srmr import speech_reverberation_modulation_energy_ratio
 from torchmetrics.utilities.imports import _TORCHAUDIO_GREATER_EQUAL_0_10
 
+from unittests import reference_cachier
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -30,7 +31,8 @@ seed_all(42)
 preds = torch.rand(2, 2, 8000)
 
 
-def _ref_metric_batch(preds: Tensor, target: Tensor, fs: int, fast: bool, norm: bool, **kwargs: Dict[str, Any]):
+@reference_cachier()
+def _reference_srmr_batch(preds: Tensor, target: Tensor, fs: int, fast: bool, norm: bool, **kwargs: Dict[str, Any]):
     # shape: preds [BATCH_SIZE, Time]
     shape = preds.shape
     preds = preds.reshape(1, -1) if len(shape) == 1 else preds.reshape(-1, shape[-1])
@@ -89,7 +91,7 @@ class TestSRMR(MetricTester):
             preds=preds,
             target=preds,
             metric_class=_SpeechReverberationModulationEnergyRatioCheat,
-            reference_metric=partial(_average_metric, metric_func=_ref_metric_batch, fs=fs, fast=fast, norm=norm),
+            reference_metric=partial(_average_metric, metric_func=_reference_srmr_batch, fs=fs, fast=fast, norm=norm),
             metric_args={"fs": fs, "fast": fast, "norm": norm},
         )
 
@@ -99,7 +101,7 @@ class TestSRMR(MetricTester):
             preds=preds,
             target=preds,
             metric_functional=_speech_reverberation_modulation_energy_ratio_cheat,
-            reference_metric=partial(_ref_metric_batch, fs=fs, fast=fast, norm=norm),
+            reference_metric=partial(_reference_srmr_batch, fs=fs, fast=fast, norm=norm),
             metric_args={"fs": fs, "fast": fast, "norm": norm},
         )
 

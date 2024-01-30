@@ -23,7 +23,7 @@ from torchmetrics.functional.audio import (
     source_aggregated_signal_distortion_ratio,
 )
 
-from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input, reference_cachier
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -38,7 +38,8 @@ inputs = _Input(
 )
 
 
-def _ref_metric(preds: Tensor, target: Tensor, scale_invariant: bool, zero_mean: bool):
+@reference_cachier()
+def _reference_sa_sdr(preds: Tensor, target: Tensor, scale_invariant: bool, zero_mean: bool):
     # According to the original paper, the sa-sdr equals to si-sdr with inputs concatenated over the speaker
     # dimension if scale_invariant==True. Accordingly, for scale_invariant==False, the sa-sdr equals to snr.
     # shape: preds [BATCH_SIZE, Spk, Time] , target [BATCH_SIZE, Spk, Time]
@@ -58,7 +59,7 @@ def _ref_metric(preds: Tensor, target: Tensor, scale_invariant: bool, zero_mean:
 def _average_metric(preds: Tensor, target: Tensor, scale_invariant: bool, zero_mean: bool):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
-    return _ref_metric(preds, target, scale_invariant, zero_mean).mean()
+    return _reference_sa_sdr(preds, target, scale_invariant, zero_mean).mean()
 
 
 @pytest.mark.parametrize(
@@ -96,7 +97,7 @@ class TestSASDR(MetricTester):
             preds,
             target,
             source_aggregated_signal_distortion_ratio,
-            reference_metric=partial(_ref_metric, scale_invariant=scale_invariant, zero_mean=zero_mean),
+            reference_metric=partial(_reference_sa_sdr, scale_invariant=scale_invariant, zero_mean=zero_mean),
             metric_args={
                 "scale_invariant": scale_invariant,
                 "zero_mean": zero_mean,

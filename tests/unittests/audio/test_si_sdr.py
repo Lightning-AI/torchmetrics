@@ -20,7 +20,7 @@ from torch import Tensor
 from torchmetrics.audio import ScaleInvariantSignalDistortionRatio
 from torchmetrics.functional.audio import scale_invariant_signal_distortion_ratio
 
-from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input, reference_cachier
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -37,7 +37,8 @@ inputs = _Input(
 speechmetrics_sisdr = speechmetrics.load("sisdr")
 
 
-def _speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool):
+@reference_cachier()
+def _reference_speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     if zero_mean:
@@ -61,8 +62,8 @@ def _average_metric(preds, target, metric_func):
     return metric_func(preds, target).mean()
 
 
-speechmetrics_si_sdr_zero_mean = partial(_speechmetrics_si_sdr, zero_mean=True)
-speechmetrics_si_sdr_no_zero_mean = partial(_speechmetrics_si_sdr, zero_mean=False)
+speechmetrics_si_sdr_zero_mean = partial(_reference_speechmetrics_si_sdr, zero_mean=True)
+speechmetrics_si_sdr_no_zero_mean = partial(_reference_speechmetrics_si_sdr, zero_mean=False)
 
 
 @pytest.mark.parametrize(

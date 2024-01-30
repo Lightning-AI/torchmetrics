@@ -21,7 +21,7 @@ from torch import Tensor
 from torchmetrics.audio import PerceptualEvaluationSpeechQuality
 from torchmetrics.functional.audio import perceptual_evaluation_speech_quality
 
-from unittests import _Input
+from unittests import _Input, reference_cachier
 from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
@@ -41,7 +41,8 @@ inputs_16k = _Input(
 )
 
 
-def _pesq_original_batch(preds: Tensor, target: Tensor, fs: int, mode: str):
+@reference_cachier()
+def _reference_pesq_batch(preds: Tensor, target: Tensor, fs: int, mode: str):
     """Comparison function."""
     # shape: preds [BATCH_SIZE, Time] , target [BATCH_SIZE, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, Time] , target [NUM_BATCHES*BATCH_SIZE, Time]
@@ -60,9 +61,9 @@ def _average_metric(preds, target, metric_func):
     return metric_func(preds, target).mean()
 
 
-pesq_original_batch_8k_nb = partial(_pesq_original_batch, fs=8000, mode="nb")
-pesq_original_batch_16k_nb = partial(_pesq_original_batch, fs=16000, mode="nb")
-pesq_original_batch_16k_wb = partial(_pesq_original_batch, fs=16000, mode="wb")
+pesq_original_batch_8k_nb = partial(_reference_pesq_batch, fs=8000, mode="nb")
+pesq_original_batch_16k_nb = partial(_reference_pesq_batch, fs=16000, mode="nb")
+pesq_original_batch_16k_wb = partial(_reference_pesq_batch, fs=16000, mode="wb")
 
 
 @pytest.mark.parametrize(

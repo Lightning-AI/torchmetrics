@@ -30,7 +30,7 @@ from torchmetrics.functional.audio.pit import (
     _find_best_perm_by_linear_sum_assignment,
 )
 
-from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input, reference_cachier
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -51,7 +51,8 @@ inputs2 = _Input(
 )
 
 
-def naive_implementation_pit_scipy(
+@reference_cachier()
+def _reference_scipy_naive_pit(
     preds: Tensor,
     target: Tensor,
     metric_func: Callable,
@@ -66,10 +67,8 @@ def naive_implementation_pit_scipy(
         eval_func: min or max
 
     Returns:
-        best_metric:
-            shape [batch]
-        best_perm:
-            shape [batch, spk]
+        best_metric: shape [batch]
+        best_perm: shape [batch, spk]
 
     """
     batch_size, spk_num = target.shape[0:2]
@@ -103,9 +102,9 @@ def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Ten
     return metric_func(preds, target)[0].mean()
 
 
-snr_pit_scipy = partial(naive_implementation_pit_scipy, metric_func=signal_noise_ratio, eval_func="max")
+snr_pit_scipy = partial(_reference_scipy_naive_pit, metric_func=signal_noise_ratio, eval_func="max")
 si_sdr_pit_scipy = partial(
-    naive_implementation_pit_scipy, metric_func=scale_invariant_signal_distortion_ratio, eval_func="max"
+    _reference_scipy_naive_pit, metric_func=scale_invariant_signal_distortion_ratio, eval_func="max"
 )
 
 
