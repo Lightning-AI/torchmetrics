@@ -22,7 +22,7 @@ from scipy.stats.contingency import association
 from torchmetrics.functional.nominal.tschuprows import tschuprows_t, tschuprows_t_matrix
 from torchmetrics.nominal.tschuprows import TschuprowsT
 
-from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input, reference_cachier
 from unittests.helpers.testers import MetricTester
 
 NUM_CLASSES = 4
@@ -52,7 +52,8 @@ def tschuprows_matrix_input():
     )
 
 
-def _pd_tschuprows_t(preds, target):
+@reference_cachier()
+def _reference_pd_tschuprows_t(preds, target):
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
     preds, target = preds.numpy().astype(int), target.numpy().astype(int)
@@ -62,12 +63,13 @@ def _pd_tschuprows_t(preds, target):
     return torch.tensor(t)
 
 
-def _pd_tschuprows_t_matrix(matrix):
+@reference_cachier()
+def _reference_pd_tschuprows_t_matrix(matrix):
     num_variables = matrix.shape[1]
     tschuprows_t_matrix_value = torch.ones(num_variables, num_variables)
     for i, j in itertools.combinations(range(num_variables), 2):
         x, y = matrix[:, i], matrix[:, j]
-        tschuprows_t_matrix_value[i, j] = tschuprows_t_matrix_value[j, i] = _pd_tschuprows_t(x, y)
+        tschuprows_t_matrix_value[i, j] = tschuprows_t_matrix_value[j, i] = _reference_pd_tschuprows_t(x, y)
     return tschuprows_t_matrix_value
 
 
@@ -93,7 +95,7 @@ class TestTschuprowsT(MetricTester):
             preds=preds,
             target=target,
             metric_class=TschuprowsT,
-            reference_metric=_pd_tschuprows_t,
+            reference_metric=_reference_pd_tschuprows_t,
             metric_args=metric_args,
         )
 
@@ -101,7 +103,11 @@ class TestTschuprowsT(MetricTester):
         """Test functional implementation of metric."""
         metric_args = {"bias_correction": False}
         self.run_functional_metric_test(
-            preds, target, metric_functional=tschuprows_t, reference_metric=_pd_tschuprows_t, metric_args=metric_args
+            preds,
+            target,
+            metric_functional=tschuprows_t,
+            reference_metric=_reference_pd_tschuprows_t,
+            metric_args=metric_args,
         )
 
     def test_tschuprows_t_differentiability(self, preds, target):
@@ -120,5 +126,5 @@ class TestTschuprowsT(MetricTester):
 def test_tschuprows_t_matrix(tschuprows_matrix_input):
     """Test matrix version of metric works as expected."""
     tm_score = tschuprows_t_matrix(tschuprows_matrix_input, bias_correction=False)
-    reference_score = _pd_tschuprows_t_matrix(tschuprows_matrix_input)
+    reference_score = _reference_pd_tschuprows_t_matrix(tschuprows_matrix_input)
     assert torch.allclose(tm_score, reference_score)

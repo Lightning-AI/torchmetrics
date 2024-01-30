@@ -20,14 +20,15 @@ from statsmodels.stats.inter_rater import fleiss_kappa as sk_fleiss_kappa
 from torchmetrics.functional.nominal.fleiss_kappa import fleiss_kappa
 from torchmetrics.nominal.fleiss_kappa import FleissKappa
 
-from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES
+from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, reference_cachier
 from unittests.helpers.testers import MetricTester
 
 NUM_RATERS = 20
 NUM_CATEGORIES = NUM_CLASSES
 
 
-def _compare_func(preds, target, mode):
+@reference_cachier()
+def _reference_fleiss_kappa(preds, target, mode):
     if mode == "probs":
         counts = np.zeros((preds.shape[0], preds.shape[1]))
         preds = preds.argmax(dim=1)
@@ -92,7 +93,7 @@ class TestFleissKappa(MetricTester):
             preds=preds,
             target=target,
             metric_class=WrappedFleissKappa,
-            reference_metric=partial(_compare_func, mode=mode),
+            reference_metric=partial(_reference_fleiss_kappa, mode=mode),
             metric_args={"mode": mode},
         )
 
@@ -102,7 +103,7 @@ class TestFleissKappa(MetricTester):
             preds,
             target,
             metric_functional=wrapped_fleiss_kappa,
-            reference_metric=partial(_compare_func, mode=mode),
+            reference_metric=partial(_reference_fleiss_kappa, mode=mode),
             metric_args={"mode": mode},
         )
 
