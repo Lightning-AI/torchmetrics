@@ -1,6 +1,6 @@
 import functools
 import os.path
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 import numpy
 import torch
@@ -30,7 +30,16 @@ if os.getenv("USE_PERSISTENT_REF_CACHE", "0") == "1":
     reference_cachier = Memory(_PATH_TEST_CACHE, verbose=0).cache
     # reference_cachier = partial(cachier, cache_dir=_PATH_TEST_CACHE)
 else:
-    reference_cachier = functools.cache
+
+    def reference_cachier(func):
+        """Empty/identity wrapper jut to have parity with persistent wrapper."""
+
+        @functools.wraps(func)
+        def wrapped_func(*args: Any, **kwargs: Any):
+            return func(*args, **kwargs)
+
+        return wrapped_func
+
 
 if torch.cuda.is_available():
     torch.backends.cuda.matmul.allow_tf32 = False
