@@ -27,6 +27,7 @@ from torchmetrics.utilities.imports import _PIQ_GREATER_EQUAL_0_8, _TRANSFORMERS
 from torchvision.transforms import PILToTensor
 
 from unittests.helpers import skip_on_connection_issues
+from unittests import reference_cachier
 from unittests.helpers.testers import MetricTester
 from unittests.image import _SAMPLE_IMAGE
 
@@ -60,12 +61,13 @@ class CLIPTesterClass(CLIPImageQualityAssessment):
         return super().compute().sum()
 
 
-def _clip_iqa_tester(preds, target):
+def _clip_iqa_wrapped(preds, target):
     """Tester function for `clip_image_quality_assessment` that supports two input arguments."""
     return clip_image_quality_assessment(preds)
 
 
-def _reference(preds, target, reduce=False):
+@reference_cachier()
+def _reference_clip_iqa(preds, target, reduce=False):
     """Reference implementation of `CLIPImageQualityAssessment` metric."""
     res = piq.CLIPIQA()(preds).squeeze()
     return res.sum() if reduce else res
@@ -85,7 +87,7 @@ class TestCLIPIQA(MetricTester):
             preds=torch.rand(2, 1, 3, 128, 128),
             target=torch.rand(2, 1, 3, 128, 128),
             metric_class=CLIPTesterClass,
-            reference_metric=partial(_reference, reduce=True),
+            reference_metric=partial(_reference_clip_iqa, reduce=True),
             check_scriptable=False,
             check_state_dict=False,
         )
@@ -98,8 +100,8 @@ class TestCLIPIQA(MetricTester):
         self.run_functional_metric_test(
             preds=img,
             target=img,
-            metric_functional=_clip_iqa_tester,
-            reference_metric=_reference,
+            metric_functional=_clip_iqa_wrapped,
+            reference_metric=_reference_clip_iqa,
         )
 
 
