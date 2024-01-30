@@ -1,6 +1,8 @@
 import os.path
+from functools import partial
 from typing import NamedTuple
 
+from cachier import cachier
 import numpy
 import torch
 from torch import Tensor
@@ -20,8 +22,11 @@ for tp_name, tp_ins in [("object", object), ("bool", bool), ("int", int), ("floa
     if not hasattr(numpy, tp_name):
         setattr(numpy, tp_name, tp_ins)
 
-_PATH_TESTS = os.path.dirname(__file__)
-_PATH_ROOT = os.path.dirname(_PATH_TESTS)
+_PATH_UNITTESTS = os.path.dirname(__file__)
+_PATH_ALL_TESTS = os.path.dirname(_PATH_UNITTESTS)
+_PATH_TEST_CACHE = os.getenv("PYTEST_REFERENCE_CACHE", os.path.join(_PATH_ALL_TESTS, "_reference-cache"))
+
+ref_cachier = partial(cachier, cache_dir=_PATH_TEST_CACHE)
 
 if torch.cuda.is_available():
     torch.backends.cuda.matmul.allow_tf32 = False

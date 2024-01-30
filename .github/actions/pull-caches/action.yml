@@ -80,3 +80,14 @@ runs:
         pip install -q py-tree
         py-tree $CACHES_DIR
       shell: bash
+
+    - name: Cache References
+      continue-on-error: true
+      uses: actions/cache/restore@v3
+      with:
+        path: tests/_reference-cache
+        key: cache-referencesh
+
+    - name: Restored References
+      run: ls -lh tests/_reference-cache/
+      shell: bash

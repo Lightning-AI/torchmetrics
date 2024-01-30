@@ -89,3 +89,14 @@ runs:
         enableCrossOsArchive: true
         path: ${{ env.CACHES_DIR }}
         key: ci-caches
+
+    - name: Cache references
+      continue-on-error: true
+      uses: actions/cache/save@v3
+      with:
+        path: tests/_reference-cache
+        key: cache-references
+
+    - name: Post References
+      run: ls -lh tests/_reference-cache/
+      shell: bash
