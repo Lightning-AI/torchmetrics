@@ -86,7 +86,7 @@ runs:
       uses: actions/cache/restore@v3
       with:
         path: tests/_reference-cache
-        key: cache-referencesh
+        key: cache-references
 
     - name: Restored References
       continue-on-error: true
