@@ -202,7 +202,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: update cashing
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        if: github.event_name != 'pull_request'
         continue-on-error: true
         uses: ./.github/actions/push-caches
         with:
