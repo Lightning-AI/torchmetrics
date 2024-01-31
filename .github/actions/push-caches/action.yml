@@ -94,6 +94,7 @@ runs:
       continue-on-error: true
       uses: actions/cache/save@v3
       with:
+        enableCrossOsArchive: true
         path: tests/_reference-cache
         key: cache-references
 
