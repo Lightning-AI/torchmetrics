@@ -75,9 +75,8 @@ runs:
         key: ci-caches
 
     - name: Restored Torch & HF
-      if: ${{ runner.os == 'Linux' }}
       run: |
         mkdir -p $CACHES_DIR
-        sudo apt install -q -y tree
-        tree -h $CACHES_DIR
+        pip install -q py-tree
+        py-tree $CACHES_DIR
       shell: bash

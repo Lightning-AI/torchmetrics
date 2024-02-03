@@ -79,8 +79,7 @@ runs:
         key: ${{ inputs.pypi-key }}
 
     - name: Post Torch & HF
-      if: ${{ runner.os == 'Linux' }}
-      run: tree -h $CACHES_DIR
+      run: py-tree $CACHES_DIR
       shell: bash
 
     - name: Cache Torch & HF
