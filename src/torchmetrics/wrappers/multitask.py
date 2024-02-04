@@ -118,7 +118,8 @@ class MultitaskWrapper(WrapperMetric):
                 else:
                     yield task_name, metric
         else:
-            return self.task_metrics.items()
+            for task_name, metric in self.task_metrics.items():
+                yield task_name, metric
 
     def keys(self, flatten: bool = True) -> Iterable[str]:
         """Iterate over task names.
@@ -136,7 +137,8 @@ class MultitaskWrapper(WrapperMetric):
                 else:
                     yield task_name
         else:
-            return self.task_metrics.keys()
+            for task_name in self.task_metrics:
+                yield task_name
 
     def values(self, flatten: bool = True) -> Iterable[nn.Module]:
         """Iterate over task metrics.
@@ -152,6 +154,9 @@ class MultitaskWrapper(WrapperMetric):
                     yield from metric.values()
                 else:
                     yield metric
+        else:
+            for metric in self.task_metrics.values():
+                yield metric
 
     @staticmethod
     def _check_task_metrics_type(task_metrics: Dict[str, Union[Metric, MetricCollection]]) -> None:
