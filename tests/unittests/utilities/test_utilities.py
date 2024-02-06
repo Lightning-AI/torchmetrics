@@ -200,6 +200,7 @@ def test_custom_cumsum(use_deterministic_algorithms):
             res = _cumsum(x, dim=0).cpu()
     else:
         res = _cumsum(x, dim=0).cpu()
+    torch.use_deterministic_algorithms(False)
     res2 = np.cumsum(x.cpu(), axis=0)
     assert torch.allclose(res, res2)
 
