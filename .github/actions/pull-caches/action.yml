@@ -14,6 +14,10 @@ inputs:
     description: location of local PyPI cache
     required: false
     default: "_ci-cache_PyPI"
+  pypi-key:
+    description: cache restore/dump key
+    required: false
+    default: "pypi-packages"
 
 runs:
   using: "composite"
@@ -38,18 +42,22 @@ runs:
     - name: Define caches
       id: cache_dirs
       run: |
-        torch_cache=$(python -c "import os ; print(os.path.join(os.getcwd(), '_ci-cache_pytorch'))")
-        echo "TORCH_HOME=$torch_cache" >> $GITHUB_ENV
-        hf_cache=$(python -c "import os ; print(os.path.join(os.getcwd(), '_ci-cache_huggingface'))")
-        echo "HF_HOME=$hf_cache" >> $GITHUB_ENV
+        cache_dir=$(python -c "import os ; print(os.path.join(os.getcwd(), '_ci-cache'))")
+        echo "CACHES_DIR=${cache_dir}" >> $GITHUB_ENV
+        dir_sep=$(python -c "import os ; print(os.path.sep)")
+        echo "TORCH_HOME=${cache_dir}${dir_sep}torch" >> $GITHUB_ENV
+        echo "TRANSFORMERS_CACHE=${cache_dir}${dir_sep}transformers" >> $GITHUB_ENV
+        echo "HF_HOME=${cache_dir}${dir_sep}hf-home" >> $GITHUB_ENV
+        echo "HF_HUB_CACHE=${cache_dir}${dir_sep}hf-hub" >> $GITHUB_ENV
       shell: bash
 
     - name: Cache pip
       continue-on-error: true
       uses: actions/cache/restore@v3
       with:
+        enableCrossOsArchive: true
         path: ${{ inputs.pypi-dir }}
-        key: pypi-packages
+        key: ${{ inputs.pypi-key }}
 
     - name: Restored Packages
       run: |
@@ -58,32 +66,17 @@ runs:
         ls -lh ${{ inputs.pypi-dir }}
       shell: bash
 
-    - name: Cache Torch
+    - name: Cache Torch & HF
       continue-on-error: true
       uses: actions/cache/restore@v3
       with:
-        path: ${{ env.TORCH_HOME }}
-        key: cache-pytorch
+        enableCrossOsArchive: true
+        path: ${{ env.CACHES_DIR }}
+        key: ci-caches
 
-    - name: Restored PT
-      if: ${{ runner.os == 'Linux' }}
+    - name: Restored Torch & HF
       run: |
-        mkdir -p $TORCH_HOME
-        printf "list $TORCH_HOME:\n"
-        sudo apt install -q -y tree
-        tree -h $TORCH_HOME
-      shell: bash
-
-    - name: Cache HF
-      continue-on-error: true
-      uses: actions/cache/restore@v3
-      with:
-        path: ${{ env.HF_HOME }}
-        key: cache-transformers
-
-    - name: Restored HF
-      run: |
-        mkdir -p $HF_HOME
-        printf "list $HF_HOME:\n"
-        ls -lh $HF_HOME
+        mkdir -p $CACHES_DIR
+        pip install -q py-tree
+        py-tree $CACHES_DIR
       shell: bash
