@@ -186,7 +186,7 @@ def test_recursive_allclose(inputs, expected):
 def test_cumsum_still_not_supported():
     """Make sure that cumsum on gpu and deterministic mode still fails.
 
-    If this test begins to passes, it means newer Pytorch versions support this and we can drop internal support.
+    If this test begins to pass, it means newer Pytorch versions support this and we can drop internal support.
 
     """
     torch.use_deterministic_algorithms(True)
@@ -207,6 +207,7 @@ def test_custom_cumsum():
             res = _cumsum(x, dim=0).cpu()
     else:
         res = _cumsum(x, dim=0).cpu()
+    torch.use_deterministic_algorithms(False)
     res2 = np.cumsum(x.cpu(), axis=0)
     assert torch.allclose(res, res2)
 
