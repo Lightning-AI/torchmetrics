@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import time
+
 import pytest
 import torch
 from torchmetrics import MetricCollection
@@ -27,8 +29,12 @@ from torchmetrics.wrappers import FeatureShare
 @pytest.mark.parametrize(
     "metrics",
     [
-        [FrechetInceptionDistance(), InceptionScore(), KernelInceptionDistance()],
-        {"fid": FrechetInceptionDistance(), "is": InceptionScore(), "kid": KernelInceptionDistance()},
+        [FrechetInceptionDistance(feature=64), InceptionScore(feature=64), KernelInceptionDistance(feature=64)],
+        {
+            "fid": FrechetInceptionDistance(feature=64),
+            "is": InceptionScore(feature=64),
+            "kid": KernelInceptionDistance(feature=64),
+        },
     ],
 )
 def test_initialization(metrics):
@@ -41,25 +47,29 @@ def test_initialization(metrics):
 def test_error_on_missing_feature_network():
     """Test that an error is raised when the feature network is missing."""
     with pytest.raises(AttributeError, match="Tried to extract the network to share from the first metric.*"):
-        FeatureShare([StructuralSimilarityIndexMeasure(), FrechetInceptionDistance()])
+        FeatureShare([StructuralSimilarityIndexMeasure(), FrechetInceptionDistance(feature=64)])
 
     with pytest.raises(AttributeError, match="Tried to set the cached network to all metrics, but one of the.*"):
-        FeatureShare([FrechetInceptionDistance(), StructuralSimilarityIndexMeasure()])
+        FeatureShare([FrechetInceptionDistance(feature=64), StructuralSimilarityIndexMeasure()])
 
 
 def test_warning_on_mixing_networks():
     """Test that a warning is raised when the metrics use different networks."""
     with pytest.warns(UserWarning, match="The network to share between the metrics is not.*"):
-        FeatureShare([FrechetInceptionDistance(), InceptionScore(), LearnedPerceptualImagePatchSimilarity()])
+        FeatureShare(
+            [FrechetInceptionDistance(feature=64), InceptionScore(feature=64), LearnedPerceptualImagePatchSimilarity()]
+        )
 
 
 def test_feature_share_speed():
     """Test that the feature share wrapper is faster than the metric collection."""
-    mc = MetricCollection([FrechetInceptionDistance(), InceptionScore(), KernelInceptionDistance()])
-    fs = FeatureShare([FrechetInceptionDistance(), InceptionScore(), KernelInceptionDistance()])
+    mc = MetricCollection(
+        [FrechetInceptionDistance(feature=64), InceptionScore(feature=64), KernelInceptionDistance(feature=64)]
+    )
+    fs = FeatureShare(
+        [FrechetInceptionDistance(feature=64), InceptionScore(feature=64), KernelInceptionDistance(feature=64)]
+    )
     x = torch.randint(255, (1, 3, 64, 64), dtype=torch.uint8)
-
-    import time
 
     start = time.time()
     for _ in range(10):
@@ -83,9 +93,9 @@ def test_memory():
     """Test that the feature share wrapper uses less memory than the metric collection."""
     base_memory = torch.cuda.memory_allocated()
 
-    fid = FrechetInceptionDistance().cuda()
-    inception = InceptionScore().cuda()
-    kid = KernelInceptionDistance().cuda()
+    fid = FrechetInceptionDistance(feature=64).cuda()
+    inception = InceptionScore(feature=64).cuda()
+    kid = KernelInceptionDistance(feature=64).cuda()
 
     memory_before_fs = torch.cuda.memory_allocated()
     assert memory_before_fs > base_memory, "The memory usage should be higher after initializing the metrics."
@@ -105,9 +115,9 @@ def test_memory():
 
 def test_same_result_as_individual():
     """Test that the feature share wrapper gives the same result as the individual metrics."""
-    fid = FrechetInceptionDistance(feature=768)
-    inception = InceptionScore(feature=768)
-    kid = KernelInceptionDistance(feature=768, subset_size=10, subsets=2)
+    fid = FrechetInceptionDistance(feature=64)
+    inception = InceptionScore(feature=64)
+    kid = KernelInceptionDistance(feature=64, subset_size=10, subsets=2)
 
     fs = FeatureShare([fid, inception, kid])
 
