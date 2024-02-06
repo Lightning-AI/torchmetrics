@@ -249,7 +249,7 @@ def plot_confusion_matrix(
         if fig_label is not None:
             ax.set_title(f"Label {fig_label[i]}", fontsize=15)
         ax.imshow(confmat[i].cpu().detach() if confmat.ndim == 3 else confmat.cpu().detach())
-        if i // cols == rows-1:  # bottom row only
+        if i // cols == rows - 1:  # bottom row only
             ax.set_xlabel("Predicted class", fontsize=15)
         if i % cols == 0:  # leftmost column only
             ax.set_ylabel("True class", fontsize=15)
