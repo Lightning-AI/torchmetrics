@@ -47,9 +47,10 @@ runs:
         ls -lh .pip-wheels
       shell: bash
 
-    - name: Cache pull
+    - name: Cache pull packages
       uses: actions/cache/restore@v3
       with:
+        enableCrossOsArchive: true
         path: ${{ inputs.pypi-dir }}
         key: ${{ inputs.pypi-key }}
 
@@ -69,36 +70,22 @@ runs:
       if: ${{ steps.wheels-diff.outputs.count-new != 0 }}
       shell: bash
 
-    - name: Cache push
+    - name: Cache push packages
       if: ${{ steps.wheels-diff.outputs.count-new != 0 }}
       uses: actions/cache/save@v3
       with:
+        enableCrossOsArchive: true
         path: ${{ inputs.pypi-dir }}
         key: ${{ inputs.pypi-key }}
 
-    - name: Post PT
-      if: ${{ runner.os == 'Linux' }}
-      run: |
-        printf "list $TORCH_HOME:\n"
-        tree -h $TORCH_HOME
+    - name: Post Torch & HF
+      run: py-tree $CACHES_DIR
       shell: bash
 
-    - name: Cache Torch
+    - name: Cache Torch & HF
       continue-on-error: true
       uses: actions/cache/save@v3
       with:
-        path: ${{ env.TORCH_HOME }}
-        key: cache-pytorch
-
-    - name: Post HF
-      run: |
-        printf "list $HF_HOME:\n"
-        ls -lh $HF_HOME
-      shell: bash
-
-    - name: Cache HF
-      continue-on-error: true
-      uses: actions/cache/save@v3
-      with:
-        path: ${{ env.HF_HOME }}
-        key: cache-transformers
+        enableCrossOsArchive: true
+        path: ${{ env.CACHES_DIR }}
+        key: ci-caches
