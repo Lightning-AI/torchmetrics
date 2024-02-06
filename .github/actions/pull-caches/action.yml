@@ -70,7 +70,7 @@ runs:
       continue-on-error: true
       uses: actions/cache/restore@v3
       with:
-        enableCrossOsArchive: true
+        enableCrossOsArchive: false # there seems to be some problem on Windows with Unix models?
         path: ${{ env.CACHES_DIR }}
         key: ci-caches
 
