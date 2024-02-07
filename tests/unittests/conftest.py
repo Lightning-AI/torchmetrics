@@ -38,6 +38,14 @@ CURRENT_PORT = START_PORT
 USE_PYTEST_POOL = os.getenv("USE_PYTEST_POOL", "0") == "1"
 
 
+@pytest.fixture()
+def use_deterministic_algorithms():  # noqa: PT004
+    """Set deterministic algorithms for the test."""
+    torch.use_deterministic_algorithms(True)
+    yield
+    torch.use_deterministic_algorithms(False)
+
+
 def setup_ddp(rank, world_size):
     """Initialize ddp environment."""
     global CURRENT_PORT
