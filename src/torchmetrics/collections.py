@@ -353,7 +353,7 @@ class MetricCollection(ModuleDict):
                         key = f"{m.prefix}{key}"
                     if getattr(m, "_from_collection", None) and m.postfix is not None:
                         key = f"{key}{m.postfix}"
-                    flattened_results[key] = v
+                    flattened_results[f"{k}{key}"] = v
             else:
                 flattened_results[k] = res
         return {self._set_name(k): v for k, v in flattened_results.items()}
