@@ -95,14 +95,14 @@ def test_memory():
 
     fid = FrechetInceptionDistance(feature=64).cuda()
     inception = InceptionScore(feature=64).cuda()
-    kid = KernelInceptionDistance(feature=64).cuda()
+    kid = KernelInceptionDistance(feature=64, subset_size=5).cuda()
 
     memory_before_fs = torch.cuda.memory_allocated()
     assert memory_before_fs > base_memory, "The memory usage should be higher after initializing the metrics."
 
     torch.cuda.empty_cache()
 
-    FeatureShare([fid, inception, kid]).cuda()
+    feature_share = FeatureShare([fid, inception, kid]).cuda()
     memory_after_fs = torch.cuda.memory_allocated()
 
     assert (
@@ -111,6 +111,19 @@ def test_memory():
     assert (
         memory_after_fs < memory_before_fs
     ), "The memory usage should be higher after initializing the feature share wrapper."
+
+    img1 = torch.randint(255, (50, 3, 220, 220), dtype=torch.uint8).to("cuda")
+    img2 = torch.randint(255, (50, 3, 220, 220), dtype=torch.uint8).to("cuda")
+
+    feature_share.update(img1, real=True)
+    feature_share.update(img2, real=False)
+    res = feature_share.compute()
+
+    assert "cuda" in str(res["FrechetInceptionDistance"].device)
+    assert "cuda" in str(res["InceptionScore"][0].device)
+    assert "cuda" in str(res["InceptionScore"][1].device)
+    assert "cuda" in str(res["KernelInceptionDistance"][0].device)
+    assert "cuda" in str(res["KernelInceptionDistance"][1].device)
 
 
 def test_same_result_as_individual():
