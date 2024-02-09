@@ -144,6 +144,8 @@ jobs:
         run: python -m phmdoctest README.md --outfile tests/unittests/test_readme.py
 
       - name: Unittests common
+        # skip for PR if there is nothing to test, note that outside PR there is default 'unittests'
+        if: ${{ env.TEST_DIRS != '' }}
         working-directory: ./tests
         run: |
           python -m pytest -v \
@@ -158,6 +160,8 @@ jobs:
             ${{ env.UNITTEST_TIMEOUT }}
 
       - name: Unittests DDP
+        # skip for PR if there is nothing to test, note that outside PR there is default 'unittests'
+        if: ${{ env.TEST_DIRS != '' }}
         working-directory: ./tests
         env:
           USE_PYTEST_POOL: "1"
@@ -172,13 +176,16 @@ jobs:
             ${{ env.UNITTEST_TIMEOUT }}
 
       - name: Statistics
-        if: success()
+        # skip for PR if there is nothing to test, note that outside PR there is default 'unittests'
+        if: ${{ env.TEST_DIRS != '' }}
         working-directory: ./tests
         run: |
           coverage xml
           coverage report
 
       - name: Upload coverage to Codecov
+        # skip for PR if there is nothing to test, note that outside PR there is default 'unittests'
+        if: ${{ env.TEST_DIRS != '' }}
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
