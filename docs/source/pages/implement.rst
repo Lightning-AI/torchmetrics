@@ -98,8 +98,8 @@ because we need to calculate the rank of the predictions and targets.
 
         def compute(self):
             # parse inputs
-            preds = dim_zero_cat(preds)
-            target = dim_zero_cat(target)
+            preds = dim_zero_cat(self.preds)
+            target = dim_zero_cat(self.target)
             # some intermediate computation...
             r_preds, r_target = _rank_data(preds), _rank_dat(target)
             preds_diff = r_preds - r_preds.mean(0)
