@@ -91,7 +91,7 @@ def _perplexity_update(preds: Tensor, target: Tensor, ignore_index: Optional[int
     else:
         mask = torch.ones_like(target, dtype=torch.bool)
 
-    probs = probs[:, target].diagonal()[mask]
+    probs = probs[torch.arange(target.numel()), target][mask]
     total_log_probs = -probs.log().sum()
     count = mask.sum()
 
