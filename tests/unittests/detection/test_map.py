@@ -874,6 +874,6 @@ class TestMapProperties:
 
         """
         with pytest.raises(
-            ValueError, match="When using `pycocotools` backend the number of max detection thresholds should.*"
+            ValueError, match="When providing a list of max detection thresholds it should have length 3.*"
         ):
             MeanAveragePrecision(max_detection_thresholds=max_detection_thresholds, backend=backend)
