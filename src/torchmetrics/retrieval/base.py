@@ -35,7 +35,7 @@ def _retrieval_aggregate(
         return values.median() if dim is None else values.median(dim=dim).values
     if aggregation == "min":
         return values.min() if dim is None else values.min(dim=dim).values
-    if aggregation:
+    if aggregation == "max":
         return values.max() if dim is None else values.max(dim=dim).values
     return aggregation(values, dim=dim)
 
