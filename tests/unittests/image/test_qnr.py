@@ -25,8 +25,8 @@ from torchmetrics.image.qnr import QualityWithNoReference
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
-from unittests.image.test_d_lambda import _baseline_d_lambda
-from unittests.image.test_d_s import _baseline_d_s
+from unittests.image.test_d_lambda import _reference_d_lambda
+from unittests.image.test_d_s import _reference_d_s
 
 seed_all(42)
 
@@ -87,8 +87,8 @@ def _baseline_quality_with_no_reference(
     window_size: int = 7,
 ) -> float:
     """NumPy based implementation of Quality with No Reference, which uses D_lambda and D_s."""
-    d_lambda = _baseline_d_lambda(preds, ms, norm_order)
-    d_s = _baseline_d_s(preds, ms, pan, pan_lr, norm_order, window_size)
+    d_lambda = _reference_d_lambda(preds, ms, norm_order)
+    d_s = _reference_d_s(preds, ms, pan, pan_lr, norm_order, window_size)
     return (1 - d_lambda) ** alpha * (1 - d_s) ** beta
 
 
