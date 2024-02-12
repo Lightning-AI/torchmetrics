@@ -157,7 +157,7 @@ class MaxMetric(BaseAggregator):
     ) -> None:
         super().__init__(
             "max",
-            -torch.tensor(float("inf")),
+            -torch.tensor(float("inf"), dtype=torch.get_default_dtype()),
             nan_strategy,
             state_name="max_value",
             **kwargs,
@@ -262,7 +262,7 @@ class MinMetric(BaseAggregator):
     ) -> None:
         super().__init__(
             "min",
-            torch.tensor(float("inf")),
+            torch.tensor(float("inf"), dtype=torch.get_default_dtype()),
             nan_strategy,
             state_name="min_value",
             **kwargs,
@@ -366,7 +366,7 @@ class SumMetric(BaseAggregator):
     ) -> None:
         super().__init__(
             "sum",
-            torch.tensor(0.0),
+            torch.tensor(0.0, dtype=torch.get_default_dtype()),
             nan_strategy,
             state_name="sum_value",
             **kwargs,
@@ -536,12 +536,12 @@ class MeanMetric(BaseAggregator):
     ) -> None:
         super().__init__(
             "sum",
-            torch.tensor(0.0),
+            torch.tensor(0.0, dtype=torch.get_default_dtype()),
             nan_strategy,
             state_name="mean_value",
             **kwargs,
         )
-        self.add_state("weight", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("weight", default=torch.tensor(0.0, dtype=torch.get_default_dtype()), dist_reduce_fx="sum")
 
     def update(self, value: Union[float, Tensor], weight: Union[float, Tensor] = 1.0) -> None:
         """Update state with data.
