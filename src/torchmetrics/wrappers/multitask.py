@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # this is just a bypass for this module name collision with built-in one
+from copy import deepcopy
 from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Union
 
 from torch import Tensor, nn
@@ -166,6 +167,33 @@ class MultitaskWrapper(WrapperMetric):
         for metric in self.task_metrics.values():
             metric.reset()
         super().reset()
+
+    @staticmethod
+    def _check_arg(arg: Optional[str], name: str) -> Optional[str]:
+        if arg is None or isinstance(arg, str):
+            return arg
+        raise ValueError(f"Expected input `{name}` to be a string, but got {type(arg)}")
+
+    def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> "MultitaskWrapper":
+        """Make a copy of the metric.
+
+        Args:
+            prefix: a string to append in front of the metric keys
+            postfix: a string to append after the keys of the output dict.
+
+        """
+        multitask_copy = deepcopy(self)
+        if prefix is not None:
+            prefix = self._check_arg(prefix, "prefix")
+            multitask_copy.task_metrics = nn.ModuleDict(
+                {prefix + key: value for key, value in multitask_copy.task_metrics.items()}
+            )
+        if postfix is not None:
+            postfix = self._check_arg(postfix, "postfix")
+            multitask_copy.task_metrics = nn.ModuleDict(
+                {key + postfix: value for key, value in multitask_copy.task_metrics.items()}
+            )
+        return multitask_copy
 
     def plot(
         self, val: Optional[Union[Dict, Sequence[Dict]]] = None, axes: Optional[Sequence[_AX_TYPE]] = None
