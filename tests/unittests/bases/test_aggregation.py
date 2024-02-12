@@ -204,3 +204,20 @@ def test_mean_metric_broadcast(nan_strategy):
     metric.update(x, w)
     res = metric.compute()
     assert round(res.item(), 4) == 3.2222  # (0*0 + 2*2 + 3*3 + 4*4) / (0 + 2 + 3 + 4)
+
+
+@pytest.mark.parametrize(
+    ("metric_class", "compare_function"),
+    [(MinMetric, torch.min), (MaxMetric, torch.max), (SumMetric, torch.sum), (MeanMetric, torch.mean)],
+)
+def test_with_default_dtype(metric_class, compare_function):
+    """Test that the metric works with a default dtype of float64."""
+    torch.set_default_dtype(torch.float64)
+    metric = metric_class()
+    values = torch.randn(10000)
+    metric.update(values)
+    result = metric.compute()
+    assert result.dtype == torch.float64
+    assert result.dtype == values.dtype
+    assert torch.allclose(result, compare_function(values), atol=1e-12)
+    torch.set_default_dtype(torch.float32)

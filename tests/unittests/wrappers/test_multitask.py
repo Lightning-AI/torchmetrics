@@ -207,3 +207,18 @@ def test_nested_multitask_wrapper():
     multitask_results = multitask_metrics.compute()
 
     assert _dict_results_same_as_individual_results(classification_results, regression_results, multitask_results)
+
+
+def test_clone_with_prefix_and_postfix():
+    """Check that the clone method works with prefix and postfix arguments."""
+    multitask_metrics = MultitaskWrapper({"Classification": BinaryAccuracy(), "Regression": MeanSquaredError()})
+    cloned_metrics_with_prefix = multitask_metrics.clone(prefix="prefix_")
+    cloned_metrics_with_postfix = multitask_metrics.clone(postfix="_postfix")
+
+    # Check if the cloned metrics have the expected keys
+    assert set(cloned_metrics_with_prefix.task_metrics.keys()) == {"prefix_Classification", "prefix_Regression"}
+    assert set(cloned_metrics_with_postfix.task_metrics.keys()) == {"Classification_postfix", "Regression_postfix"}
+
+    # Check if the cloned metrics have the expected values
+    assert isinstance(cloned_metrics_with_prefix.task_metrics["prefix_Classification"], BinaryAccuracy)
+    assert isinstance(cloned_metrics_with_prefix.task_metrics["prefix_Regression"], MeanSquaredError)
