@@ -103,17 +103,49 @@ class MultitaskWrapper(WrapperMetric):
         super().__init__()
         self.task_metrics = nn.ModuleDict(task_metrics)
 
-    def items(self) -> Iterable[Tuple[str, nn.Module]]:
-        """Iterate over task and task metrics."""
-        return self.task_metrics.items()
+    def items(self, flatten: bool = True) -> Iterable[Tuple[str, nn.Module]]:
+        """Iterate over task and task metrics.
 
-    def keys(self) -> Iterable[str]:
-        """Iterate over task names."""
-        return self.task_metrics.keys()
+        Args:
+            flatten: If True, will iterate over all sub-metrics in the case of a MetricCollection.
+                If False, will iterate over the task names and the corresponding metrics.
 
-    def values(self) -> Iterable[nn.Module]:
-        """Iterate over task metrics."""
-        return self.task_metrics.values()
+        """
+        for task_name, metric in self.task_metrics.items():
+            if flatten and isinstance(metric, MetricCollection):
+                for sub_metric_name, sub_metric in metric.items():
+                    yield f"{task_name}_{sub_metric_name}", sub_metric
+            else:
+                yield task_name, metric
+
+    def keys(self, flatten: bool = True) -> Iterable[str]:
+        """Iterate over task names.
+
+        Args:
+            flatten: If True, will iterate over all sub-metrics in the case of a MetricCollection.
+                If False, will iterate over the task names and the corresponding metrics.
+
+        """
+        for task_name, metric in self.task_metrics.items():
+            if flatten and isinstance(metric, MetricCollection):
+                for sub_metric_name in metric:
+                    yield f"{task_name}_{sub_metric_name}"
+            else:
+                yield task_name
+
+    def values(self, flatten: bool = True) -> Iterable[nn.Module]:
+        """Iterate over task metrics.
+
+        Args:
+            flatten: If True, will iterate over all sub-metrics in the case of a MetricCollection.
+                If False, will iterate over the task names and the corresponding metrics.
+
+        """
+        for metric in self.task_metrics.values():
+            if flatten and isinstance(metric, MetricCollection):
+                yield from metric.values()
+            else:
+                yield metric
 
     @staticmethod
     def _check_task_metrics_type(task_metrics: Dict[str, Union[Metric, MetricCollection]]) -> None:

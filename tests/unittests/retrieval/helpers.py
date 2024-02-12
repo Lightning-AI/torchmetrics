@@ -19,7 +19,6 @@ import pytest
 import torch
 from numpy import array
 from torch import Tensor, tensor
-from torchmetrics.retrieval.base import _retrieval_aggregate
 from typing_extensions import Literal
 
 from unittests.helpers import seed_all
@@ -40,6 +39,23 @@ from unittests.retrieval.inputs import _input_retrieval_scores_wrong_targets as 
 seed_all(42)
 
 # a version of get_group_indexes that depends on NumPy is here to avoid this dependency for the full library
+
+
+def _retrieval_aggregate(
+    values: Tensor,
+    aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
+    dim: Optional[int] = None,
+) -> Tensor:
+    """Aggregate the final retrieval values into a single value."""
+    if aggregation == "mean":
+        return values.mean() if dim is None else values.mean(dim=dim)
+    if aggregation == "median":
+        return values.median() if dim is None else values.median(dim=dim).values
+    if aggregation == "min":
+        return values.min() if dim is None else values.min(dim=dim).values
+    if aggregation == "max":
+        return values.max() if dim is None else values.max(dim=dim).values
+    return aggregation(values, dim=dim)
 
 
 def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, np.ndarray]]:
@@ -74,7 +90,7 @@ def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, 
 
 
 def _custom_aggregate_fn(val: Tensor, dim=None) -> Tensor:
-    return (val**2).mean(dim=dim)
+    return (val**2).mean() if dim is None else (val**2).mean(dim=dim)
 
 
 def _compute_sklearn_metric(
