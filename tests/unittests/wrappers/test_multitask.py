@@ -221,9 +221,9 @@ def test_key_value_items_method(method, flatten):
     )
     if method == "keys":
         output = list(multitask.keys(flatten=flatten))
-    if method == "items":
+    elif method == "items":
         output = list(multitask.items(flatten=flatten))
-    if method == "values":
+    elif method == "values":
         output = list(multitask.values(flatten=flatten))
 
     if flatten:
@@ -235,25 +235,25 @@ def test_key_value_items_method(method, flatten):
                 "regression_MeanSquaredError",
                 "regression_MeanAbsoluteError",
             ]
-        if method == "items":
+        elif method == "items":
             assert output == [
                 ("classification_BinaryAccuracy", BinaryAccuracy()),
                 ("classification_BinaryF1Score", BinaryF1Score()),
                 ("regression_MeanSquaredError", MeanSquaredError()),
                 ("regression_MeanAbsoluteError", MeanAbsoluteError()),
             ]
-        if method == "values":
+        elif method == "values":
             assert output == [BinaryAccuracy(), BinaryF1Score(), MeanSquaredError(), MeanAbsoluteError()]
     else:
         assert len(output) == 2
         if method == "keys":
             assert output == ["classification", "regression"]
-        if method == "items":
+        elif method == "items":
             assert output[0][0] == "classification"
             assert output[1][0] == "regression"
             assert isinstance(output[0][1], MetricCollection)
             assert isinstance(output[1][1], MetricCollection)
-        if method == "values":
+        elif method == "values":
             assert isinstance(output[0], MetricCollection)
             assert isinstance(output[1], MetricCollection)
 
