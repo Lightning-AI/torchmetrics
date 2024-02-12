@@ -39,6 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix naming of statistics in `MeanAveragePrecision` with custom max det thresholds ([#2367](https://github.com/Lightning-AI/torchmetrics/pull/2367))
 
 
+- Fixed initialize aggregation metrics with default floating type ([#2366](https://github.com/Lightning-AI/torchmetrics/pull/2366))
+
 ---
 
 ## [1.3.0] - 2024-01-10
