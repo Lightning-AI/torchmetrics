@@ -427,7 +427,7 @@ def learned_perceptual_image_patch_similarity(
         >>> img1 = (torch.rand(10, 3, 100, 100) * 2) - 1
         >>> img2 = (torch.rand(10, 3, 100, 100) * 2) - 1
         >>> learned_perceptual_image_patch_similarity(img1, img2, net_type='squeeze')
-        tensor(0.1008, grad_fn=<DivBackward0>)
+        tensor(0.1008)
 
     """
     net = _NoTrainLpips(net=net_type).to(device=img1.device, dtype=img1.dtype)
