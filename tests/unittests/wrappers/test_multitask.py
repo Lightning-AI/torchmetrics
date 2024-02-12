@@ -207,3 +207,52 @@ def test_nested_multitask_wrapper():
     multitask_results = multitask_metrics.compute()
 
     assert _dict_results_same_as_individual_results(classification_results, regression_results, multitask_results)
+
+
+@pytest.mark.parametrize("method", ["keys", "items", "values"])
+@pytest.mark.parametrize("flatten", [True, False])
+def test_key_value_items_method(method, flatten):
+    """Test the keys, items, and values methods of the MultitaskWrapper."""
+    multitask = MultitaskWrapper(
+        {
+            "classification": MetricCollection([BinaryAccuracy(), BinaryF1Score()]),
+            "regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
+        }
+    )
+    if method == "keys":
+        output = list(multitask.keys(flatten=flatten))
+    elif method == "items":
+        output = list(multitask.items(flatten=flatten))
+    elif method == "values":
+        output = list(multitask.values(flatten=flatten))
+
+    if flatten:
+        assert len(output) == 4
+        if method == "keys":
+            assert output == [
+                "classification_BinaryAccuracy",
+                "classification_BinaryF1Score",
+                "regression_MeanSquaredError",
+                "regression_MeanAbsoluteError",
+            ]
+        elif method == "items":
+            assert output == [
+                ("classification_BinaryAccuracy", BinaryAccuracy()),
+                ("classification_BinaryF1Score", BinaryF1Score()),
+                ("regression_MeanSquaredError", MeanSquaredError()),
+                ("regression_MeanAbsoluteError", MeanAbsoluteError()),
+            ]
+        elif method == "values":
+            assert output == [BinaryAccuracy(), BinaryF1Score(), MeanSquaredError(), MeanAbsoluteError()]
+    else:
+        assert len(output) == 2
+        if method == "keys":
+            assert output == ["classification", "regression"]
+        elif method == "items":
+            assert output[0][0] == "classification"
+            assert output[1][0] == "regression"
+            assert isinstance(output[0][1], MetricCollection)
+            assert isinstance(output[1][1], MetricCollection)
+        elif method == "values":
+            assert isinstance(output[0], MetricCollection)
+            assert isinstance(output[1], MetricCollection)
