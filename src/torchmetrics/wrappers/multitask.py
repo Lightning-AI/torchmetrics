@@ -111,15 +111,11 @@ class MultitaskWrapper(WrapperMetric):
                 If False, will iterate over the task names and the corresponding metrics.
 
         """
-        if flatten:
-            for task_name, metric in self.task_metrics.items():
-                if isinstance(metric, MetricCollection):
-                    for sub_metric_name, sub_metric in metric.items():
-                        yield f"{task_name}_{sub_metric_name}", sub_metric
-                else:
-                    yield task_name, metric
-        else:
-            for task_name, metric in self.task_metrics.items():
+        for task_name, metric in self.task_metrics.items():
+            if flatten and isinstance(metric, MetricCollection):
+                for sub_metric_name, sub_metric in metric.items():
+                    yield f"{task_name}_{sub_metric_name}", sub_metric
+            else:
                 yield task_name, metric
 
     def keys(self, flatten: bool = True) -> Iterable[str]:
@@ -130,15 +126,11 @@ class MultitaskWrapper(WrapperMetric):
                 If False, will iterate over the task names and the corresponding metrics.
 
         """
-        if flatten:
-            for task_name, metric in self.task_metrics.items():
-                if isinstance(metric, MetricCollection):
-                    for sub_metric_name in metric:
-                        yield f"{task_name}_{sub_metric_name}"
-                else:
-                    yield task_name
-        else:
-            for task_name in self.task_metrics:
+        for task_name, metric in self.task_metrics.items():
+            if flatten and isinstance(metric, MetricCollection):
+                for sub_metric_name in metric:
+                    yield f"{task_name}_{sub_metric_name}"
+            else:
                 yield task_name
 
     def values(self, flatten: bool = True) -> Iterable[nn.Module]:
@@ -149,14 +141,10 @@ class MultitaskWrapper(WrapperMetric):
                 If False, will iterate over the task names and the corresponding metrics.
 
         """
-        if flatten:
-            for metric in self.task_metrics.values():
-                if isinstance(metric, MetricCollection):
-                    yield from metric.values()
-                else:
-                    yield metric
-        else:
-            for metric in self.task_metrics.values():
+        for metric in self.task_metrics.values():
+            if flatten and isinstance(metric, MetricCollection):
+                yield from metric.values()
+            else:
                 yield metric
 
     @staticmethod
