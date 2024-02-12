@@ -90,7 +90,7 @@ def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, 
 
 
 def _custom_aggregate_fn(val: Tensor, dim=None) -> Tensor:
-    return (val**2).mean(dim=dim)
+    return (val**2).mean() if dim is None else (val**2).mean(dim=dim)
 
 
 def _compute_sklearn_metric(
