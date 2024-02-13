@@ -86,7 +86,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
         >>> img1 = (torch.rand(10, 3, 100, 100) * 2) - 1
         >>> img2 = (torch.rand(10, 3, 100, 100) * 2) - 1
         >>> lpips(img1, img2)
-        tensor(0.1046, grad_fn=<SqueezeBackward0>)
+        tensor(0.1046)
 
     """
 
