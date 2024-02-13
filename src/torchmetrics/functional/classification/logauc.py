@@ -65,7 +65,7 @@ def binary_logauc(
 def _multiclass_logauc_compute(
 
 ) -> Tensor:
-    pass   
+    pass
 
 
 def multiclass_logauc(
@@ -94,12 +94,12 @@ def multilabel_logauc(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     fpr_range: Tuple[float, float] = (0.001, 0.1),
     ignore_index: Optional[int] = None,
-    validate_args: bool = True,   
+    validate_args: bool = True,
 ) -> Tensor
     fpr, tpr, _ = multilabel_roc(preds, target, num_labels, thresholds, ignore_index, validate_args)
     return _multilabel_logauc_compute(fpr, tpr, fpr_range)
 
 def logauc(
-    
+
 ) -> Tensor:
     pass
