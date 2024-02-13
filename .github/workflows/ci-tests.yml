@@ -123,6 +123,12 @@ jobs:
             --find-links $PYTORCH_URL -f $PYPI_CACHE
           pip list
 
+      - name: set special vars for PR
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          echo 'ALLOW_SKIP_IF_OUT_OF_MEMORY=1' >> $GITHUB_ENV
+          echo 'ALLOW_SKIP_IF_BAD_CONNECTION=1' >> $GITHUB_ENV
+
       - name: Sanity check
         id: info
         run: |
