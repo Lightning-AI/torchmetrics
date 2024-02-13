@@ -19,7 +19,8 @@ from torchmetrics.functional.text.infolm import infolm
 from torchmetrics.text.infolm import InfoLM
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
-from unittests.text.helpers import TextTester, skip_on_connection_issues
+from unittests.helpers import skip_on_connection_issues
+from unittests.text.helpers import TextTester
 from unittests.text.inputs import HYPOTHESIS_A, HYPOTHESIS_C, _inputs_single_reference
 
 # Small bert model with 2 layers, 2 attention heads and hidden dim of 128
