@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
+- Added `LogAUC` metric to classification package ([#2377](https://github.com/Lightning-AI/torchmetrics/pull/2377))
 
 
 - Added `QualityWithNoReference` metric ([#2288](https://github.com/Lightning-AI/torchmetrics/pull/2288))
