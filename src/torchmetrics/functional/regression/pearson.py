@@ -59,8 +59,8 @@ def _pearson_corrcoef_update(
         mx_new = (num_prior * mean_x + preds.sum(0)) / (num_prior + num_obs)
         my_new = (num_prior * mean_y + target.sum(0)) / (num_prior + num_obs)
     else:
-        mx_new = preds.mean(0)
-        my_new = target.mean(0)
+        mx_new = preds.mean(0).to(mean_x.dtype)
+        my_new = target.mean(0).to(mean_y.dtype)
 
     num_prior += num_obs
 
