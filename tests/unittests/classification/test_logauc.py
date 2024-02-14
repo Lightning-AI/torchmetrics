@@ -32,7 +32,7 @@ seed_all(42)
 
 
 def _binary_compare_implementation(preds, target, fpr_range):
-    """ Binary comparison function for logauc. """
+    """Binary comparison function for logauc."""
     preds = preds.flatten().numpy()
     target = target.flatten().numpy()
     if not ((preds > 0) & (preds < 1)).all():
@@ -130,7 +130,7 @@ class TestBinaryLogAUC(MetricTester):
 
 
 def _multiclass_compare_implementation(preds, target, fpr_range, average):
-    """ Multiclass comparison function for logauc. """
+    """Multiclass comparison function for logauc."""
     preds = preds.permute(0, 2, 1).reshape(-1, NUM_CLASSES).numpy() if preds.ndim == 3 else preds.numpy()
     target = target.flatten().numpy()
     if not ((preds > 0) & (preds < 1)).all():
