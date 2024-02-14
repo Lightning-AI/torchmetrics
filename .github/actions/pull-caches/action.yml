@@ -51,7 +51,7 @@ runs:
         echo "HF_HUB_CACHE=${cache_dir}${dir_sep}hf-hub" >> $GITHUB_ENV
       shell: bash
 
-    - name: Cache pip
+    - name: Cache pip packages
       continue-on-error: true
       uses: actions/cache/restore@v3
       with:
@@ -79,4 +79,16 @@ runs:
         mkdir -p $CACHES_DIR
         pip install -q py-tree
         py-tree $CACHES_DIR
+      shell: bash
+
+    - name: Cache References
+      continue-on-error: true
+      uses: actions/cache/restore@v3
+      with:
+        path: tests/_reference-cache
+        key: cache-references
+
+    - name: Restored References
+      continue-on-error: true
+      run: ls -lh tests/_reference-cache/
       shell: bash

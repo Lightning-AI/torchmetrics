@@ -27,7 +27,7 @@ else:
     compute_measures: Callable
 
 
-def _compute_mer_metric_jiwer(preds: Union[str, List[str]], target: Union[str, List[str]]):
+def _reference_jiwer_mer(preds: Union[str, List[str]], target: Union[str, List[str]]):
     return compute_measures(target, preds)["mer"]
 
 
@@ -50,7 +50,7 @@ class TestMatchErrorRate(TextTester):
             preds=preds,
             targets=targets,
             metric_class=MatchErrorRate,
-            reference_metric=_compute_mer_metric_jiwer,
+            reference_metric=_reference_jiwer_mer,
         )
 
     def test_mer_functional(self, preds, targets):
@@ -59,7 +59,7 @@ class TestMatchErrorRate(TextTester):
             preds,
             targets,
             metric_functional=match_error_rate,
-            reference_metric=_compute_mer_metric_jiwer,
+            reference_metric=_reference_jiwer_mer,
         )
 
     def test_mer_differentiability(self, preds, targets):

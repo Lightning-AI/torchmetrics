@@ -16,3 +16,5 @@ fire <=0.5.0
 
 cloudpickle >1.3, <=3.0.0
 scikit-learn >=1.1.1, <1.4.0
+# todo: set proper version when all lands and it is released
+cachier @ https://github.com/python-cachier/cachier/archive/refs/heads/debug/runtime.zip
