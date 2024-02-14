@@ -33,6 +33,7 @@ from torchmetrics.functional.classification.sensitivity_specificity import (
     multilabel_sensitivity_at_specificity,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_11
 
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
@@ -82,6 +83,7 @@ def _sklearn_sensitivity_at_specificity_binary(preds, target, min_specificity, i
     return _sensitivity_at_specificity_x_multilabel(preds, target, min_specificity)
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_11, reason="metric does not support torch versions below 1.11")
 @pytest.mark.parametrize("inputs", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinarySensitivityAtSpecificity(MetricTester):
     """Test class for `BinarySensitivityAtSpecificity` metric."""
@@ -203,6 +205,7 @@ def _sklearn_sensitivity_at_specificity_multiclass(preds, target, min_specificit
     return sensitivity, thresholds
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_11, reason="metric does not support torch versions below 1.11")
 @pytest.mark.parametrize(
     "inputs", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
@@ -331,6 +334,7 @@ def _sklearn_sensitivity_at_specificity_multilabel(preds, target, min_specificit
     return sensitivity, thresholds
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_11, reason="metric does not support torch versions below 1.11")
 @pytest.mark.parametrize(
     "inputs", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
@@ -450,6 +454,7 @@ class TestMultilabelSensitivityAtSpecificity(MetricTester):
             assert all(torch.allclose(r1[i], r2[i]) for i in range(len(r1)))
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_11, reason="metric does not support torch versions below 1.11")
 @pytest.mark.parametrize(
     "metric",
     [
@@ -466,6 +471,7 @@ def test_valid_input_thresholds(metric, thresholds):
     assert len(record) == 0
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_11, reason="metric does not support torch versions below 1.11")
 @pytest.mark.parametrize(
     ("metric", "kwargs"),
     [
