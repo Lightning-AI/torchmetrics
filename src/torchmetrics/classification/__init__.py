@@ -57,7 +57,7 @@ from torchmetrics.classification.jaccard import (
     MulticlassJaccardIndex,
     MultilabelJaccardIndex,
 )
-from torchmetrics.classification.logauc import BinaryLogAUC, LogAUC, MultiClassLogAUC, MultiLabelLogAUC
+from torchmetrics.classification.logauc import BinaryLogAUC, LogAUC, MulticlassLogAUC, MultilabelLogAUC
 from torchmetrics.classification.matthews_corrcoef import (
     BinaryMatthewsCorrCoef,
     MatthewsCorrCoef,
@@ -210,6 +210,6 @@ __all__ = [
     "MultilabelPrecisionAtFixedRecall",
     "BinaryLogAUC",
     "LogAUC",
-    "MultiClassLogAUC",
-    "MultiLabelLogAUC",
+    "MulticlassLogAUC",
+    "MultilabelLogAUC",
 ]
