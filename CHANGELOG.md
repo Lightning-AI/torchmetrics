@@ -30,30 +30,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed negative variance estimates in certain image metrics ([#2378](https://github.com/Lightning-AI/torchmetrics/pull/2378))
+
+
+
+## [1.3.1] - 2024-02-12
+
+### Fixed
+
 - Fixed how backprop is handled in `LPIPS` metric ([#2326](https://github.com/Lightning-AI/torchmetrics/pull/2326))
-
-
 - Fixed `MultitaskWrapper` not being able to be logged in lightning when using metric collections ([#2349](https://github.com/Lightning-AI/torchmetrics/pull/2349))
-
-
 - Fixed high memory consumption in `Perplexity` metric ([#2346](https://github.com/Lightning-AI/torchmetrics/pull/2346))
-
-
 - Fixed cached network in `FeatureShare` not being moved to the correct device ([#2348](https://github.com/Lightning-AI/torchmetrics/pull/2348))
-
-
 - Fix naming of statistics in `MeanAveragePrecision` with custom max det thresholds ([#2367](https://github.com/Lightning-AI/torchmetrics/pull/2367))
-
-
 - Fixed custom aggregation in retrieval metrics ([#2364](https://github.com/Lightning-AI/torchmetrics/pull/2364))
-
-
 - Fixed initialize aggregation metrics with default floating type ([#2366](https://github.com/Lightning-AI/torchmetrics/pull/2366))
-
-
 - Fixed plotting of confusion matrices ([#2358](https://github.com/Lightning-AI/torchmetrics/pull/2358))
 
----
 
 ## [1.3.0] - 2024-01-10
 
