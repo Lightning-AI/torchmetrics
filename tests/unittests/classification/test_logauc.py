@@ -18,7 +18,7 @@ from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from tdc.evaluator import range_logAUC
 from torchmetrics.functional.classification.logauc import binary_logauc, multiclass_logauc, multilabel_logauc
-
+from torchmetrics.classification.logauc import BinaryLogAUC
 from unittests import NUM_CLASSES
 from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
@@ -39,26 +39,22 @@ def _binary_compare_implementation(preds, target, fpr_range):
 class TestBinaryAUROC(MetricTester):
     """Test class for `BinaryAUROC` metric."""
 
-    # @pytest.mark.parametrize("max_fpr", [None, 0.8, 0.5])
-    # @pytest.mark.parametrize("ignore_index", [None, -1])
-    # @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    # def test_binary_auroc(self, inputs, ddp, max_fpr, ignore_index):
-    #     """Test class implementation of metric."""
-    #     preds, target = inputs
-    #     if ignore_index is not None:
-    #         target = inject_ignore_index(target, ignore_index)
-    #     self.run_class_metric_test(
-    #         ddp=ddp,
-    #         preds=preds,
-    #         target=target,
-    #         metric_class=BinaryAUROC,
-    #         reference_metric=partial(_sklearn_auroc_binary, max_fpr=max_fpr, ignore_index=ignore_index),
-    #         metric_args={
-    #             "max_fpr": max_fpr,
-    #             "thresholds": None,
-    #             "ignore_index": ignore_index,
-    #         },
-    #     )
+    @pytest.mark.parametrize("fpr_range", [(0.001, 0.1), (0.01, 0.1), (0.1, 0.2)])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_binary_auroc(self, inputs, ddp, fpr_range):
+        """Test class implementation of metric."""
+        preds, target = inputs
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=BinaryLogAUC,
+            reference_metric=partial(_binary_compare_implementation, fpr_range=fpr_range),
+            metric_args={
+                "fpr_range": fpr_range,
+                "thresholds": None,
+            },
+        )
 
     @pytest.mark.parametrize("fpr_range", [(0.001, 0.1), (0.01, 0.1), (0.1, 0.2)])
     def test_binary_auroc_functional(self, inputs, fpr_range):

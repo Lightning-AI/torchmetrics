@@ -32,6 +32,14 @@ def _interpolate(newpoints: Tensor, x: Tensor, y: Tensor) -> Tensor:
     return torch.from_numpy(np.interp(newpoints_n, x_n, y_n)).to(device)
 
 
+def _validate_fpr_range(fpr_range: Tuple[float, float]) -> None:
+    if not isinstance(fpr_range, tuple) and not len(fpr_range) == 2:
+        raise ValueError(f"The `fpr_range` should be a tuple of two floats, but got {type(fpr_range)}.")
+    if not (0 <= fpr_range[0] < fpr_range[1] <= 1):
+        raise ValueError(
+            f"The `fpr_range` should be a tuple of two floats in the range [0, 1], but got {fpr_range}."
+        )
+
 def _binary_logauc_compute(
     fpr: Tensor,
     tpr: Tensor,
@@ -58,11 +66,12 @@ def _binary_logauc_compute(
 def binary_logauc(
     preds: Tensor,
     target: Tensor,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     fpr_range: Tuple[float, float] = (0.001, 0.1),
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
+    _validate_fpr_range(fpr_range)
     fpr, tpr, _ = binary_roc(preds, target, thresholds, ignore_index, validate_args)
     return _binary_logauc_compute(fpr, tpr, fpr_range)
 
