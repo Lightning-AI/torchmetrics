@@ -449,6 +449,8 @@ def _panoptic_quality_compute(
     true_positives: Tensor,
     false_positives: Tensor,
     false_negatives: Tensor,
+    return_sq_rq: bool = False,
+    return_classwise: bool = False,
 ) -> Tensor:
     """Compute the final panoptic quality from interim values.
 
@@ -457,13 +459,18 @@ def _panoptic_quality_compute(
         true_positives: the TP value from the update step
         false_positives: the FP value from the update step
         false_negatives: the FN value from the update step
+        return_sq_rq: if True, returns both the panoptic, segmentation and recognition qualities.
+        return_classwise: if True, returns the score(s) for each class.
 
     Returns:
         Panoptic quality as a tensor containing a single scalar.
 
     """
     # per category calculation
+    segmentation_quality = torch.where(true_positives > 0.0, iou_sum / true_positives.double(), 0.0)
     denominator = (true_positives + 0.5 * false_positives + 0.5 * false_negatives).double()
-    panoptic_quality = torch.where(denominator > 0.0, iou_sum / denominator, 0.0)
-    # Reduce across categories. TODO: is it useful to have the option of returning per class metrics?
-    return torch.mean(panoptic_quality[denominator > 0])
+    recognition_quality = torch.where(denominator > 0.0, true_positives / denominator, 0.0)
+    score = segmentation_quality * recognition_quality  # panoptic quality
+    if return_sq_rq:
+        score = torch.cat([score, segmentation_quality, recognition_quality])
+    return score if return_classwise else torch.mean(score[score > 0], dim=0)
