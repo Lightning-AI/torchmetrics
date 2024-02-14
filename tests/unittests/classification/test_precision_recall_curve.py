@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import warnings
 from functools import partial
 
 import numpy as np
@@ -432,9 +431,9 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
 @pytest.mark.parametrize("thresholds", [None, 100, [0.3, 0.5, 0.7, 0.9], torch.linspace(0, 1, 10)])
 def test_valid_input_thresholds(metric, thresholds):
     """Test valid formats of the threshold argument."""
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
+    with pytest.warns(None) as record:
         metric(thresholds=thresholds)
+    assert len(record) == 0
 
 
 @pytest.mark.parametrize(
