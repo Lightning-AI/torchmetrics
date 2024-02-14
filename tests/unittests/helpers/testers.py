@@ -426,7 +426,7 @@ class MetricTester:
         """
         atol = atol or self.atol
         metric_args = metric_args or {}
-        if ddp:
+        if ddp and hasattr(pytest, "pool"):
             if sys.platform == "win32":
                 pytest.skip("DDP not supported on windows")
 
