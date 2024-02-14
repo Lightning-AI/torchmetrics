@@ -470,6 +470,6 @@ def _panoptic_quality_compute(
     pq: Tensor = sq * rq
     # compute averages
     pq_avg: Tensor = torch.mean(pq[denominator > 0])
-    sq_avg: Tensor = torch.mean(pq[denominator > 0])
-    rq_avg: Tensor = torch.mean(pq[denominator > 0])
+    sq_avg: Tensor = torch.mean(sq[denominator > 0])
+    rq_avg: Tensor = torch.mean(rq[denominator > 0])
     return pq, sq, rq, pq_avg, sq_avg, rq_avg
