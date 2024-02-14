@@ -13,7 +13,7 @@
 # limitations under the License.
 import pickle
 import sys
-from functools import partial, wraps
+from functools import partial
 from typing import Any, Callable, Dict, Optional, Sequence, Union
 
 import numpy as np
@@ -477,26 +477,3 @@ class TextTester(MetricTester):
         if metric.is_differentiable:
             # check for numerical correctness
             assert torch.autograd.gradcheck(partial(metric_functional, **metric_args), (preds[0], targets[0]))
-
-
-def skip_on_connection_issues(reason: str = "Unable to load checkpoints from HuggingFace `transformers`."):
-    """Handle download related tests if they fail due to connection issues.
-
-    The tests run normally if no connection issue arises, and they're marked as skipped otherwise.
-
-    """
-    _error_msg_starts = ["We couldn't connect to", "Connection error", "Can't load", "`nltk` resource `punkt` is"]
-
-    def test_decorator(function: Callable, *args: Any, **kwargs: Any) -> Optional[Callable]:
-        @wraps(function)
-        def run_test(*args: Any, **kwargs: Any) -> Optional[Any]:
-            try:
-                return function(*args, **kwargs)
-            except (OSError, ValueError) as ex:
-                if all(msg_start not in str(ex) for msg_start in _error_msg_starts):
-                    raise ex
-                pytest.skip(reason)
-
-        return run_test
-
-    return test_decorator

@@ -14,8 +14,6 @@
 import contextlib
 import os
 import sys
-from functools import wraps
-from typing import Any, Callable, Optional
 
 import pytest
 import torch
@@ -84,21 +82,3 @@ def pytest_sessionfinish():
         return
     pytest.pool.close()
     pytest.pool.join()
-
-
-def skip_on_running_out_of_memory(reason: str = "Skipping test as it ran out of memory."):
-    """Handle tests that sometimes runs out of memory, by simply skipping them."""
-
-    def test_decorator(function: Callable, *args: Any, **kwargs: Any) -> Optional[Callable]:
-        @wraps(function)
-        def run_test(*args: Any, **kwargs: Any) -> Optional[Any]:
-            try:
-                return function(*args, **kwargs)
-            except RuntimeError as ex:
-                if "DefaultCPUAllocator: not enough memory:" not in str(ex):
-                    raise ex
-                pytest.skip(reason)
-
-        return run_test
-
-    return test_decorator

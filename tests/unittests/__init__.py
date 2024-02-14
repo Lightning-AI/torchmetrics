@@ -13,7 +13,6 @@ from unittests.conftest import (
     NUM_PROCESSES,
     THRESHOLD,
     setup_ddp,
-    skip_on_running_out_of_memory,
 )
 
 # adding compatibility for numpy >= 1.24
@@ -50,5 +49,4 @@ __all__ = [
     "NUM_PROCESSES",
     "THRESHOLD",
     "setup_ddp",
-    "skip_on_running_out_of_memory",
 ]
