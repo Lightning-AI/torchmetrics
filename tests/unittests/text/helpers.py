@@ -19,6 +19,7 @@ from typing import Any, Callable, Dict, Optional, Sequence, Union
 import numpy as np
 import pytest
 import torch
+from cachier import cachier
 from torch import Tensor
 from torchmetrics import Metric
 
@@ -27,6 +28,8 @@ from unittests.helpers.testers import MetricTester, _assert_allclose, _assert_re
 
 TEXT_METRIC_INPUT = Union[Sequence[str], Sequence[Sequence[str]], Sequence[Sequence[Sequence[str]]]]
 NUM_BATCHES = 2
+
+cachier_ = cachier()
 
 
 def _assert_all_close_regardless_of_order(
@@ -130,7 +133,7 @@ def _class_test(
                 for k, v in (kwargs_update if fragment_kwargs else batch_kwargs_update).items()
             }
 
-            sk_batch_result = ref_metric(ddp_preds, ddp_targets, **ddp_kwargs_upd)
+            sk_batch_result = cachier_(ref_metric)(ddp_preds, ddp_targets, **ddp_kwargs_upd)
             if ignore_order:
                 _assert_all_close_regardless_of_order(batch_result, sk_batch_result, atol=atol, key=key)
             else:
@@ -141,7 +144,7 @@ def _class_test(
                 k: v.cpu() if isinstance(v, Tensor) else v
                 for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
             }
-            sk_batch_result = ref_metric(preds[i], targets[i], **batch_kwargs_update)
+            sk_batch_result = cachier_(ref_metric)(preds[i], targets[i], **batch_kwargs_update)
             if ignore_order:
                 _assert_all_close_regardless_of_order(batch_result, sk_batch_result, atol=atol, key=key)
             else:
@@ -164,7 +167,7 @@ def _class_test(
         k: torch.cat([v[i] for i in range(NUM_BATCHES)]).cpu() if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
     }
-    sk_result = ref_metric(total_preds, total_targets, **total_kwargs_update)
+    sk_result = cachier_(ref_metric)(total_preds, total_targets, **total_kwargs_update)
     # assert after aggregation
     if ignore_order:
         _assert_all_close_regardless_of_order(result, sk_result, atol=atol, key=key)
@@ -217,7 +220,7 @@ def _functional_test(
             k: v.cpu() if isinstance(v, Tensor) else v
             for k, v in (extra_kwargs if fragment_kwargs else kwargs_update).items()
         }
-        sk_result = ref_metric(preds[i], targets[i], **extra_kwargs)
+        sk_result = cachier_(ref_metric)(preds[i], targets[i], **extra_kwargs)
 
         # assert its the same
         _assert_allclose(tm_result, sk_result, atol=atol, key=key)
