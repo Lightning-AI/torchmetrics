@@ -464,7 +464,7 @@ def _panoptic_quality_compute(
     """
     # compute segmentation and recognition quality (per-class)
     sq: Tensor = torch.where(true_positives > 0.0, iou_sum / true_positives, 0.0)
-    denominator: Tensor = (true_positives + 0.5 * false_positives + 0.5 * false_negatives)
+    denominator: Tensor = true_positives + 0.5 * false_positives + 0.5 * false_negatives
     rq: Tensor = torch.where(denominator > 0.0, true_positives / denominator, 0.0)
     # compute per-class panoptic quality
     pq: Tensor = sq * rq

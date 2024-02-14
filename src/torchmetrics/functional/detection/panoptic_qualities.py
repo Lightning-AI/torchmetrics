@@ -27,13 +27,13 @@ from torchmetrics.functional.detection._panoptic_quality_common import (
 
 
 def panoptic_quality(
-        preds: Tensor,
-        target: Tensor,
-        things: Collection[int],
-        stuffs: Collection[int],
-        allow_unknown_preds_category: bool = False,
-        return_sq_and_rq: bool = False,
-        per_class: bool = False,
+    preds: Tensor,
+    target: Tensor,
+    things: Collection[int],
+    stuffs: Collection[int],
+    allow_unknown_preds_category: bool = False,
+    return_sq_and_rq: bool = False,
+    per_class: bool = False,
 ) -> Union[Tensor, Dict[str, Tensor]]:
     r"""Compute `Panoptic Quality`_ for panoptic segmentations.
 
@@ -64,7 +64,7 @@ def panoptic_quality(
             Boolean flag to specify if unknown categories in the predictions are to be ignored in the metric
             computation or raise an exception when found.
         return_sq_and_rq:
-            Boolean flag to specify if Segmentation Quality and Recognition Quality should be also returnd.
+            Boolean flag to specify if Segmentation Quality and Recognition Quality should be also returned.
         per_class:
             Boolean flag to specify if the per-class values should be returned or the class average.
 
@@ -97,7 +97,7 @@ def panoptic_quality(
         >>> panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7})
         tensor(0.5463, dtype=torch.float64)
 
-    You can also return the segmentation and recongition quality alognside the PQ
+    You can also return the segmentation and recognition quality alognside the PQ
         >>> from torch import tensor
         >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
         ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
@@ -137,9 +137,12 @@ def panoptic_quality(
     iou_sum, true_positives, false_positives, false_negatives = _panoptic_quality_update(
         flatten_preds, flatten_target, cat_id_to_continuous_id, void_color
     )
-    pq, sq, rq, pq_avg, sq_avg, rq_avg = _panoptic_quality_compute(iou_sum, true_positives,
-                                                                   false_positives,
-                                                                   false_negatives, )
+    pq, sq, rq, pq_avg, sq_avg, rq_avg = _panoptic_quality_compute(
+        iou_sum,
+        true_positives,
+        false_positives,
+        false_negatives,
+    )
     if per_class:
         if return_sq_and_rq:
             return {"pq": pq, "sq": sq, "rq": rq}
@@ -151,11 +154,11 @@ def panoptic_quality(
 
 
 def modified_panoptic_quality(
-        preds: Tensor,
-        target: Tensor,
-        things: Collection[int],
-        stuffs: Collection[int],
-        allow_unknown_preds_category: bool = False,
+    preds: Tensor,
+    target: Tensor,
+    things: Collection[int],
+    stuffs: Collection[int],
+    allow_unknown_preds_category: bool = False,
 ) -> Tensor:
     r"""Compute `Modified Panoptic Quality`_ for panoptic segmentations.
 
@@ -223,7 +226,5 @@ def modified_panoptic_quality(
         void_color,
         modified_metric_stuffs=stuffs,
     )
-    _, _, _, pq_avg, _, _ = _panoptic_quality_compute(iou_sum, true_positives,
-                                                      false_positives,
-                                                      false_negatives)
+    _, _, _, pq_avg, _, _ = _panoptic_quality_compute(iou_sum, true_positives, false_positives, false_negatives)
     return pq_avg
