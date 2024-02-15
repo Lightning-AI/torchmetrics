@@ -47,6 +47,23 @@ class PanopticQuality(Metric):
         Points in the target tensor that do not map to a known category ID are automatically ignored in the metric
         computation.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+        - ``preds`` (:class:`~torch.Tensor`): An int tensor of shape ``(B, *spatial_dims, 2)``, where there needs to
+          be atleast one spatial dimension.
+        - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(B, *spatial_dims, 2)``, where there needs to
+          be atleast one spatial dimension.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+        - ``quality`` (:class:`~torch.Tensor`): If ``return_sq_and_rq=False`` and ``return_per_class=False`` then a single
+          scalar tensor is returned with average panoptic quality over all classes. If ``return_sq_and_rq=True`` and
+          ``return_per_class=False`` a tensor of length 3 is returned with panoptic, segmentation and recognition quality
+          (in that order). If If ``return_sq_and_rq=False`` and ``return_per_class=True`` a tensor of length equal to the
+          number of classes are returned, with panoptic quality for each class. Finally, if both arguments are ``True``
+          a tensor of shape ``(3, C)`` is returned with individual panoptic, segmentation and recognition quality for each
+          class.
+
     Args:
         things:
             Set of ``category_id`` for countable things.
