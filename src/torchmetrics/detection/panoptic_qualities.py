@@ -50,9 +50,9 @@ class PanopticQuality(Metric):
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
         - ``preds`` (:class:`~torch.Tensor`): An int tensor of shape ``(B, *spatial_dims, 2)``, where there needs to
-          be atleast one spatial dimension.
+          be at least one spatial dimension.
         - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(B, *spatial_dims, 2)``, where there needs to
-          be atleast one spatial dimension.
+          be at least one spatial dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
