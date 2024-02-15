@@ -28,13 +28,13 @@ from torchmetrics.functional.detection._panoptic_quality_common import (
 
 
 def panoptic_quality(
-        preds: Tensor,
-        target: Tensor,
-        things: Collection[int],
-        stuffs: Collection[int],
-        allow_unknown_preds_category: bool = False,
-        return_sq_and_rq: bool = False,
-        return_per_class: bool = False,
+    preds: Tensor,
+    target: Tensor,
+    things: Collection[int],
+    stuffs: Collection[int],
+    allow_unknown_preds_category: bool = False,
+    return_sq_and_rq: bool = False,
+    return_per_class: bool = False,
 ) -> Tensor:
     r"""Compute `Panoptic Quality`_ for panoptic segmentations.
 
@@ -174,11 +174,11 @@ def panoptic_quality(
 
 
 def modified_panoptic_quality(
-        preds: Tensor,
-        target: Tensor,
-        things: Collection[int],
-        stuffs: Collection[int],
-        allow_unknown_preds_category: bool = False,
+    preds: Tensor,
+    target: Tensor,
+    things: Collection[int],
+    stuffs: Collection[int],
+    allow_unknown_preds_category: bool = False,
 ) -> Tensor:
     r"""Compute `Modified Panoptic Quality`_ for panoptic segmentations.
 

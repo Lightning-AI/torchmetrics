@@ -131,13 +131,13 @@ class PanopticQuality(Metric):
     false_negatives: Tensor
 
     def __init__(
-            self,
-            things: Collection[int],
-            stuffs: Collection[int],
-            allow_unknown_preds_category: bool = False,
-            return_sq_and_rq: bool = False,
-            return_per_class: bool = False,
-            **kwargs: Any,
+        self,
+        things: Collection[int],
+        stuffs: Collection[int],
+        allow_unknown_preds_category: bool = False,
+        return_sq_and_rq: bool = False,
+        return_per_class: bool = False,
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
@@ -208,7 +208,7 @@ class PanopticQuality(Metric):
         return pq_avg
 
     def plot(
-            self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -323,11 +323,11 @@ class ModifiedPanopticQuality(Metric):
     false_negatives: Tensor
 
     def __init__(
-            self,
-            things: Collection[int],
-            stuffs: Collection[int],
-            allow_unknown_preds_category: bool = False,
-            **kwargs: Any,
+        self,
+        things: Collection[int],
+        stuffs: Collection[int],
+        allow_unknown_preds_category: bool = False,
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
@@ -393,7 +393,7 @@ class ModifiedPanopticQuality(Metric):
         return pq_avg
 
     def plot(
-            self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
