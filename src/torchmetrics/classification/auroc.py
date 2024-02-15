@@ -98,6 +98,7 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
         tensor(0.5000)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -273,7 +274,10 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multiclass_auroc_compute(
-            state, self.num_classes, self.average, self.thresholds  # type: ignore[arg-type]
+            state,
+            self.num_classes,
+            self.average,  # type: ignore[arg-type]
+            self.thresholds,
         )
 
     def plot(  # type: ignore[override]
@@ -396,6 +400,7 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         tensor([0.6250, 0.5000, 0.8333])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False

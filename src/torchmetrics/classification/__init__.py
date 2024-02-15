@@ -97,6 +97,12 @@ from torchmetrics.classification.recall_fixed_precision import (
     RecallAtFixedPrecision,
 )
 from torchmetrics.classification.roc import ROC, BinaryROC, MulticlassROC, MultilabelROC
+from torchmetrics.classification.sensitivity_specificity import (
+    BinarySensitivityAtSpecificity,
+    MulticlassSensitivityAtSpecificity,
+    MultilabelSensitivityAtSpecificity,
+    SensitivityAtSpecificity,
+)
 from torchmetrics.classification.specificity import (
     BinarySpecificity,
     MulticlassSpecificity,
@@ -207,4 +213,8 @@ __all__ = [
     "BinaryPrecisionAtFixedRecall",
     "MulticlassPrecisionAtFixedRecall",
     "MultilabelPrecisionAtFixedRecall",
+    "BinarySensitivityAtSpecificity",
+    "MulticlassSensitivityAtSpecificity",
+    "MultilabelSensitivityAtSpecificity",
+    "SensitivityAtSpecificity",
 ]

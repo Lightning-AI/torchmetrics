@@ -4,5 +4,5 @@
 # this need to be the same as used inside speechmetrics
 pesq @ git+https://github.com/ludlows/python-pesq
 pystoi >=0.3.0, <0.5.0
-torchaudio >=0.10.0
+torchaudio >=0.10.0, <=2.2.0
 gammatone @ https://github.com/detly/gammatone/archive/master.zip#egg=Gammatone

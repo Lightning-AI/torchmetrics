@@ -108,6 +108,7 @@ class Metric(Module, ABC):
         torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
 
         self._device = torch.device("cpu")
+        self._dtype = torch.get_default_dtype()
 
         self.compute_on_cpu = kwargs.pop("compute_on_cpu", False)
         if not isinstance(self.compute_on_cpu, bool):
@@ -729,7 +730,12 @@ class Metric(Module, ABC):
         """Return the device of the metric."""
         return self._device
 
-    def type(self, dst_type: Union[str, torch.dtype]) -> "Metric":  # noqa: A003
+    @property
+    def dtype(self) -> "torch.dtype":
+        """Return the default dtype of the metric."""
+        return self._dtype
+
+    def type(self, dst_type: Union[str, torch.dtype]) -> "Metric":
         """Override default and prevent dtype casting.
 
         Please use :meth:`Metric.set_dtype` instead.
@@ -737,7 +743,7 @@ class Metric(Module, ABC):
         """
         return self
 
-    def float(self) -> "Metric":  # noqa: A003
+    def float(self) -> "Metric":
         """Override default and prevent dtype casting.
 
         Please use :meth:`Metric.set_dtype` instead.
@@ -813,7 +819,9 @@ class Metric(Module, ABC):
 
         # make sure to update the device attribute
         # if the dummy tensor moves device by fn function we should also update the attribute
-        self._device = fn(torch.zeros(1, device=self.device)).device
+        _dummy_tensor = fn(torch.zeros(1, device=self.device))
+        self._device = _dummy_tensor.device
+        self._dtype = _dummy_tensor.dtype
 
         # Additional apply to forward cache and computed attributes (may be nested)
         if this._computed is not None:
@@ -845,7 +853,9 @@ class Metric(Module, ABC):
 
         """
         destination: Dict[str, Union[torch.Tensor, List, Any]] = super().state_dict(
-            destination=destination, prefix=prefix, keep_vars=keep_vars  # type: ignore[arg-type]
+            destination=destination,  # type: ignore[arg-type]
+            prefix=prefix,
+            keep_vars=keep_vars,
         )
         # Register metric states to be part of the state_dict
         for key in self._defaults:

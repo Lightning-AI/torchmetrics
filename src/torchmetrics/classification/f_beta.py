@@ -304,6 +304,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
                 [0.0000, 0.3571, 0.4545]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -497,6 +498,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
                 [0.0000, 0.0000, 0.0000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -663,6 +665,7 @@ class BinaryF1Score(BinaryFBetaScore):
         tensor([0.5000, 0.0000])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -834,6 +837,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
                 [0.0000, 0.4000, 0.4000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -1006,6 +1010,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
                 [0.0000, 0.0000, 0.0000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False

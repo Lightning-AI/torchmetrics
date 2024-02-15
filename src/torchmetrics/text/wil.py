@@ -61,6 +61,7 @@ class WordInfoLost(Metric):
         tensor(0.6528)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = False
     full_state_update: bool = False

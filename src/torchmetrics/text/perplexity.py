@@ -59,6 +59,7 @@ class Perplexity(Metric):
         tensor(5.8540)
 
     """
+
     is_differentiable = True
     higher_is_better = False
     full_state_update = False

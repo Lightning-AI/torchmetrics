@@ -74,12 +74,10 @@ def test_errors_on_wrong_input():
 
 def test_error_on_wrong_keys():
     """Check that ValueError is raised when the sets of keys of the task metrics, preds, and targets do not match."""
-    multitask_metrics = MultitaskWrapper(
-        {
-            "Classification": BinaryAccuracy(),
-            "Regression": MeanSquaredError(),
-        }
-    )
+    multitask_metrics = MultitaskWrapper({
+        "Classification": BinaryAccuracy(),
+        "Regression": MeanSquaredError(),
+    })
 
     # Classification preds, but not regression preds
     wrong_key_preds = {"Classification": _classification_preds}
@@ -88,11 +86,9 @@ def test_error_on_wrong_keys():
     wrong_key_targets = {"Classification": _classification_target}
 
     # Classification metric, but not regression metric
-    wrong_key_multitask_metrics = MultitaskWrapper(
-        {
-            "Classification": BinaryAccuracy(),
-        }
-    )
+    wrong_key_multitask_metrics = MultitaskWrapper({
+        "Classification": BinaryAccuracy(),
+    })
 
     with pytest.raises(
         ValueError,
@@ -139,12 +135,10 @@ def test_metric_collection_multitask():
     """Check that wrapping some MetricCollections in a MultitaskWrapper is the same as computing them individually."""
     classification_metric = MetricCollection([BinaryAccuracy(), BinaryF1Score()])
     regression_metric = MetricCollection([MeanSquaredError(), MeanAbsoluteError()])
-    multitask_metrics = MultitaskWrapper(
-        {
-            "Classification": MetricCollection([BinaryAccuracy(), BinaryF1Score()]),
-            "Regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
-        }
-    )
+    multitask_metrics = MultitaskWrapper({
+        "Classification": MetricCollection([BinaryAccuracy(), BinaryF1Score()]),
+        "Regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
+    })
 
     assert _multitask_same_as_individual_tasks(classification_metric, regression_metric, multitask_metrics)
 
@@ -167,17 +161,13 @@ def test_nested_multitask_wrapper():
     classification_metric = BinaryAccuracy()
     regression_position_metric = MeanSquaredError()
     regression_size_metric = MeanAbsoluteError()
-    multitask_metrics = MultitaskWrapper(
-        {
-            "Classification": BinaryAccuracy(),
-            "Regression": MultitaskWrapper(
-                {
-                    "Position": MeanSquaredError(),
-                    "Size": MeanAbsoluteError(),
-                }
-            ),
-        }
-    )
+    multitask_metrics = MultitaskWrapper({
+        "Classification": BinaryAccuracy(),
+        "Regression": MultitaskWrapper({
+            "Position": MeanSquaredError(),
+            "Size": MeanAbsoluteError(),
+        }),
+    })
 
     multitask_preds = {
         "Classification": _classification_preds,
@@ -207,3 +197,65 @@ def test_nested_multitask_wrapper():
     multitask_results = multitask_metrics.compute()
 
     assert _dict_results_same_as_individual_results(classification_results, regression_results, multitask_results)
+
+
+@pytest.mark.parametrize("method", ["keys", "items", "values"])
+@pytest.mark.parametrize("flatten", [True, False])
+def test_key_value_items_method(method, flatten):
+    """Test the keys, items, and values methods of the MultitaskWrapper."""
+    multitask = MultitaskWrapper({
+        "classification": MetricCollection([BinaryAccuracy(), BinaryF1Score()]),
+        "regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
+    })
+    if method == "keys":
+        output = list(multitask.keys(flatten=flatten))
+    elif method == "items":
+        output = list(multitask.items(flatten=flatten))
+    elif method == "values":
+        output = list(multitask.values(flatten=flatten))
+
+    if flatten:
+        assert len(output) == 4
+        if method == "keys":
+            assert output == [
+                "classification_BinaryAccuracy",
+                "classification_BinaryF1Score",
+                "regression_MeanSquaredError",
+                "regression_MeanAbsoluteError",
+            ]
+        elif method == "items":
+            assert output == [
+                ("classification_BinaryAccuracy", BinaryAccuracy()),
+                ("classification_BinaryF1Score", BinaryF1Score()),
+                ("regression_MeanSquaredError", MeanSquaredError()),
+                ("regression_MeanAbsoluteError", MeanAbsoluteError()),
+            ]
+        elif method == "values":
+            assert output == [BinaryAccuracy(), BinaryF1Score(), MeanSquaredError(), MeanAbsoluteError()]
+    else:
+        assert len(output) == 2
+        if method == "keys":
+            assert output == ["classification", "regression"]
+        elif method == "items":
+            assert output[0][0] == "classification"
+            assert output[1][0] == "regression"
+            assert isinstance(output[0][1], MetricCollection)
+            assert isinstance(output[1][1], MetricCollection)
+        elif method == "values":
+            assert isinstance(output[0], MetricCollection)
+            assert isinstance(output[1], MetricCollection)
+
+
+def test_clone_with_prefix_and_postfix():
+    """Check that the clone method works with prefix and postfix arguments."""
+    multitask_metrics = MultitaskWrapper({"Classification": BinaryAccuracy(), "Regression": MeanSquaredError()})
+    cloned_metrics_with_prefix = multitask_metrics.clone(prefix="prefix_")
+    cloned_metrics_with_postfix = multitask_metrics.clone(postfix="_postfix")
+
+    # Check if the cloned metrics have the expected keys
+    assert set(cloned_metrics_with_prefix.task_metrics.keys()) == {"prefix_Classification", "prefix_Regression"}
+    assert set(cloned_metrics_with_postfix.task_metrics.keys()) == {"Classification_postfix", "Regression_postfix"}
+
+    # Check if the cloned metrics have the expected values
+    assert isinstance(cloned_metrics_with_prefix.task_metrics["prefix_Classification"], BinaryAccuracy)
+    assert isinstance(cloned_metrics_with_prefix.task_metrics["prefix_Regression"], MeanSquaredError)
