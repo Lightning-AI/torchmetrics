@@ -138,6 +138,7 @@ class BinaryPrecisionRecallCurve(Metric):
          tensor([0.0000, 0.2500, 0.5000, 0.7500, 1.0000]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -345,6 +346,7 @@ class MulticlassPrecisionRecallCurve(Metric):
          tensor([0.0000, 0.2500, 0.5000, 0.7500, 1.0000]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -557,6 +559,7 @@ class MultilabelPrecisionRecallCurve(Metric):
          tensor([0.0000, 0.2500, 0.5000, 0.7500, 1.0000]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False

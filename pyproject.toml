@@ -33,11 +33,6 @@ concurrency = "thread"
 relative_files = true
 
 
-[tool.black]
-# https://github.com/psf/black
-line-length = 120
-exclude = "(.eggs|.git|.hg|.mypy_cache|.venv|_build|buck-out|build|dist)"
-
 [tool.docformatter]
 recursive = true
 # some docstring start with r"""
@@ -85,7 +80,7 @@ wil = "wil"
 target-version = "py38"
 line-length = 120
 # Enable Pyflakes `E` and `F` codes by default.
-select = [
+lint.select = [
     "E",
     "W", # see: https://pypi.org/project/pycodestyle
     "F", # see: https://pypi.org/project/pyflakes
@@ -94,7 +89,7 @@ select = [
     "N", # see: https://pypi.org/project/pep8-naming
     "S", # see: https://pypi.org/project/flake8-bandit
 ]
-extend-select = [
+lint.extend-select = [
     "A",    # see: https://pypi.org/project/flake8-builtins
     "B",    # see: https://pypi.org/project/flake8-bugbear
     "C4",   # see: https://pypi.org/project/flake8-comprehensions
@@ -114,7 +109,7 @@ extend-select = [
     "PERF", # see: https://pypi.org/project/perflint/
     "PYI",  # see: https://pypi.org/project/flake8-pyi/
 ]
-ignore = [
+lint.ignore = [
     "E731",   # Do not assign a lambda expression, use a def
     "D100",   # todo: Missing docstring in public module
     "D104",   # todo: Missing docstring in public package
@@ -136,22 +131,22 @@ exclude = [
     "dist",
     "docs",
 ]
-ignore-init-module-imports = true
-unfixable = ["F401"]
+lint.ignore-init-module-imports = true
+lint.unfixable = ["F401"]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "setup.py" = ["ANN202", "ANN401"]
 "src/**" = ["ANN401"]
 "tests/**" = ["S101", "ANN001", "ANN201", "ANN202", "ANN401"]
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 # Use Google-style docstrings.
 convention = "google"
 
 #[tool.ruff.pycodestyle]
 #ignore-overlong-task-comments = true
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 # Unlike Flake8, default to a complexity level of 10.
 max-complexity = 10
 

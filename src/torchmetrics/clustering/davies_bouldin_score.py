@@ -74,6 +74,7 @@ class DaviesBouldinScore(Metric):
         tensor(1.2540)
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = False

@@ -122,6 +122,7 @@ class BinaryROC(BinaryPrecisionRecallCurve):
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -301,6 +302,7 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -470,6 +472,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
