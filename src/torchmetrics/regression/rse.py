@@ -61,6 +61,7 @@ class RelativeSquaredError(Metric):
         tensor(0.0514)
 
     """
+
     is_differentiable = True
     higher_is_better = False
     full_state_update = False

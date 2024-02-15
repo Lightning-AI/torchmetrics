@@ -67,7 +67,7 @@ def _get_clip_iqa_model_and_processor(
         "openai/clip-vit-base-patch32",
         "openai/clip-vit-large-patch14-336",
         "openai/clip-vit-large-patch14",
-    ]
+    ],
 ) -> Tuple["_CLIPModel", "_CLIPProcessor"]:
     """Extract the CLIP model and processor from the model name or path."""
     from transformers import CLIPProcessor as _CLIPProcessor

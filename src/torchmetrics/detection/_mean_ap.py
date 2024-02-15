@@ -298,6 +298,7 @@ class MeanAveragePrecision(Metric):
          'mar_small': tensor(-1.)}
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = True

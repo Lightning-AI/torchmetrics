@@ -249,9 +249,9 @@ class TextDataset(Dataset):
             token_counter.update(tokens)
 
         tokens_idf: Dict[int, float] = defaultdict(self._get_tokens_idf_default_value)
-        tokens_idf.update(
-            {idx: math.log((self.num_sentences + 1) / (occurrence + 1)) for idx, occurrence in token_counter.items()}
-        )
+        tokens_idf.update({
+            idx: math.log((self.num_sentences + 1) / (occurrence + 1)) for idx, occurrence in token_counter.items()
+        })
         return tokens_idf
 
     def _get_tokens_idf_default_value(self) -> float:
