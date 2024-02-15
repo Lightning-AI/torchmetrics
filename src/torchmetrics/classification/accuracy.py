@@ -108,6 +108,7 @@ class BinaryAccuracy(BinaryStatScores):
         tensor([0.3333, 0.1667])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -274,6 +275,7 @@ class MulticlassAccuracy(MulticlassStatScores):
                 [0.0000, 0.3333, 0.5000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -441,6 +443,7 @@ class MultilabelAccuracy(MultilabelStatScores):
                 [0.0000, 0.0000, 0.5000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -545,14 +548,12 @@ class Accuracy(_ClassificationTaskWrapper):
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         kwargs_extra = kwargs.copy()
-        kwargs_extra.update(
-            {
-                "multidim_average": multidim_average,
-                "ignore_index": ignore_index,
-                "validate_args": validate_args,
-                "input_format": input_format,
-            }
-        )
+        kwargs_extra.update({
+            "multidim_average": multidim_average,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+            "input_format": input_format,
+        })
 
         if task == ClassificationTask.BINARY:
             return BinaryAccuracy(threshold, **kwargs_extra)

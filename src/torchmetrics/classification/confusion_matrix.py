@@ -578,14 +578,12 @@ class ConfusionMatrix(_ClassificationTaskWrapper):
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         kwargs_extra = kwargs.copy()
-        kwargs_extra.update(
-            {
-                "normalize": normalize,
-                "ignore_index": ignore_index,
-                "validate_args": validate_args,
-                "input_format": input_format,
-            }
-        )
+        kwargs_extra.update({
+            "normalize": normalize,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+            "input_format": input_format,
+        })
         if task == ClassificationTask.BINARY:
             return BinaryConfusionMatrix(threshold, **kwargs_extra)
         if task == ClassificationTask.MULTICLASS:
