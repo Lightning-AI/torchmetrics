@@ -142,6 +142,7 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
         tensor(3003.3691)
 
     """
+
     higher_is_better: bool = False
     is_differentiable: bool = False
     full_state_update: bool = False

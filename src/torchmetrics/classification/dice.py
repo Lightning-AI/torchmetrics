@@ -134,6 +134,7 @@ class Dice(Metric):
         tensor(0.2500)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
