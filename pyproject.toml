@@ -33,11 +33,6 @@ concurrency = "thread"
 relative_files = true
 
 
-[tool.black]
-# https://github.com/psf/black
-line-length = 120
-exclude = "(.eggs|.git|.hg|.mypy_cache|.venv|_build|buck-out|build|dist)"
-
 [tool.docformatter]
 recursive = true
 # some docstring start with r"""
