@@ -156,6 +156,7 @@ class BinaryStatScores(_AbstractStatScores):
                 [0, 2, 1, 3, 3]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -297,6 +298,7 @@ class MulticlassStatScores(_AbstractStatScores):
                  [1, 2, 2, 1, 2]]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -444,6 +446,7 @@ class MultilabelStatScores(_AbstractStatScores):
                  [0, 0, 1, 1, 1]]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -528,9 +531,11 @@ class StatScores(_ClassificationTaskWrapper):
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None  # noqa: S101  # needed for mypy
-        kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
-        )
+        kwargs.update({
+            "multidim_average": multidim_average,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+        })
         if task == ClassificationTask.BINARY:
             return BinaryStatScores(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:

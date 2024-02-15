@@ -73,6 +73,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
         tensor(-0.0100)
 
     """
+
     sum_stoi: Tensor
     total: Tensor
     full_state_update: bool = False

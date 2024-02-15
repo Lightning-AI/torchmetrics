@@ -62,6 +62,7 @@ class MeanAbsolutePercentageError(Metric):
         tensor(0.2667)
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False

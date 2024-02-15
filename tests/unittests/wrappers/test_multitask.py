@@ -74,12 +74,10 @@ def test_errors_on_wrong_input():
 
 def test_error_on_wrong_keys():
     """Check that ValueError is raised when the sets of keys of the task metrics, preds, and targets do not match."""
-    multitask_metrics = MultitaskWrapper(
-        {
-            "Classification": BinaryAccuracy(),
-            "Regression": MeanSquaredError(),
-        }
-    )
+    multitask_metrics = MultitaskWrapper({
+        "Classification": BinaryAccuracy(),
+        "Regression": MeanSquaredError(),
+    })
 
     # Classification preds, but not regression preds
     wrong_key_preds = {"Classification": _classification_preds}
@@ -88,11 +86,9 @@ def test_error_on_wrong_keys():
     wrong_key_targets = {"Classification": _classification_target}
 
     # Classification metric, but not regression metric
-    wrong_key_multitask_metrics = MultitaskWrapper(
-        {
-            "Classification": BinaryAccuracy(),
-        }
-    )
+    wrong_key_multitask_metrics = MultitaskWrapper({
+        "Classification": BinaryAccuracy(),
+    })
 
     with pytest.raises(
         ValueError,
@@ -139,12 +135,10 @@ def test_metric_collection_multitask():
     """Check that wrapping some MetricCollections in a MultitaskWrapper is the same as computing them individually."""
     classification_metric = MetricCollection([BinaryAccuracy(), BinaryF1Score()])
     regression_metric = MetricCollection([MeanSquaredError(), MeanAbsoluteError()])
-    multitask_metrics = MultitaskWrapper(
-        {
-            "Classification": MetricCollection([BinaryAccuracy(), BinaryF1Score()]),
-            "Regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
-        }
-    )
+    multitask_metrics = MultitaskWrapper({
+        "Classification": MetricCollection([BinaryAccuracy(), BinaryF1Score()]),
+        "Regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
+    })
 
     assert _multitask_same_as_individual_tasks(classification_metric, regression_metric, multitask_metrics)
 
@@ -167,17 +161,13 @@ def test_nested_multitask_wrapper():
     classification_metric = BinaryAccuracy()
     regression_position_metric = MeanSquaredError()
     regression_size_metric = MeanAbsoluteError()
-    multitask_metrics = MultitaskWrapper(
-        {
-            "Classification": BinaryAccuracy(),
-            "Regression": MultitaskWrapper(
-                {
-                    "Position": MeanSquaredError(),
-                    "Size": MeanAbsoluteError(),
-                }
-            ),
-        }
-    )
+    multitask_metrics = MultitaskWrapper({
+        "Classification": BinaryAccuracy(),
+        "Regression": MultitaskWrapper({
+            "Position": MeanSquaredError(),
+            "Size": MeanAbsoluteError(),
+        }),
+    })
 
     multitask_preds = {
         "Classification": _classification_preds,
@@ -213,12 +203,10 @@ def test_nested_multitask_wrapper():
 @pytest.mark.parametrize("flatten", [True, False])
 def test_key_value_items_method(method, flatten):
     """Test the keys, items, and values methods of the MultitaskWrapper."""
-    multitask = MultitaskWrapper(
-        {
-            "classification": MetricCollection([BinaryAccuracy(), BinaryF1Score()]),
-            "regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
-        }
-    )
+    multitask = MultitaskWrapper({
+        "classification": MetricCollection([BinaryAccuracy(), BinaryF1Score()]),
+        "regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
+    })
     if method == "keys":
         output = list(multitask.keys(flatten=flatten))
     elif method == "items":

@@ -155,6 +155,7 @@ class KernelInceptionDistance(Metric):
         (tensor(0.0337), tensor(0.0023))
 
     """
+
     higher_is_better: bool = False
     is_differentiable: bool = False
     full_state_update: bool = False
