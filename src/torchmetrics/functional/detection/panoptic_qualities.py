@@ -13,6 +13,7 @@
 # limitations under the License.
 from typing import Collection, Dict, Union
 
+import torch
 from torch import Tensor
 
 from torchmetrics.functional.detection._panoptic_quality_common import (
@@ -27,13 +28,13 @@ from torchmetrics.functional.detection._panoptic_quality_common import (
 
 
 def panoptic_quality(
-    preds: Tensor,
-    target: Tensor,
-    things: Collection[int],
-    stuffs: Collection[int],
-    allow_unknown_preds_category: bool = False,
-    return_sq_and_rq: bool = False,
-    per_class: bool = False,
+        preds: Tensor,
+        target: Tensor,
+        things: Collection[int],
+        stuffs: Collection[int],
+        allow_unknown_preds_category: bool = False,
+        return_sq_and_rq: bool = False,
+        return_per_class: bool = False,
 ) -> Union[Tensor, Dict[str, Tensor]]:
     r"""Compute `Panoptic Quality`_ for panoptic segmentations.
 
@@ -65,7 +66,7 @@ def panoptic_quality(
             computation or raise an exception when found.
         return_sq_and_rq:
             Boolean flag to specify if Segmentation Quality and Recognition Quality should be also returned.
-        per_class:
+        return_per_class:
             Boolean flag to specify if the per-class values should be returned or the class average.
 
     Raises:
@@ -110,7 +111,7 @@ def panoptic_quality(
         ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
         ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
         >>> panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7}, return_sq_and_rq=True)
-        {'pq': tensor(0.5463, dtype=torch.float64), 'sq': tensor(0.5463, dtype=torch.float64), 'rq': tensor(0.5463, dtype=torch.float64)}
+        tensor([0.5463, 0.6111, 0.6667], dtype=torch.float64)
 
     You can also specify to return the per-class metrics
         >>> from torch import tensor
@@ -124,8 +125,27 @@ def panoptic_quality(
         ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
         ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
         ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
-        >>> panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7}, per_class=True)
-        tensor([0.5185, 0.0000, 0.6667, 1.0000], dtype=torch.float64)
+        >>> panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7}, return_per_class=True)
+        tensor([[0.5185, 0.0000, 0.6667, 1.0000]], dtype=torch.float64)
+
+    You can also specify to return the per-class metrics and the segmentation and recognition quality
+        >>> from torch import tensor
+        >>> preds = tensor([[[[6, 0], [0, 0], [6, 0], [6, 0]],
+        ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                  [[0, 0], [0, 0], [6, 0], [0, 1]],
+        ...                  [[0, 0], [7, 0], [6, 0], [1, 0]],
+        ...                  [[0, 0], [7, 0], [7, 0], [7, 0]]]])
+        >>> target = tensor([[[[6, 0], [0, 1], [6, 0], [0, 1]],
+        ...                   [[0, 1], [0, 1], [6, 0], [0, 1]],
+        ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
+        ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
+        ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
+        >>> panoptic_quality(preds, target, things = {0, 1}, stuffs = {6, 7},
+        ...                  return_per_class=True, return_sq_and_rq=True)
+        tensor([[0.5185, 0.7778, 0.6667],
+                [0.0000, 0.0000, 0.0000],
+                [0.6667, 0.6667, 1.0000],
+                [1.0000, 1.0000, 1.0000]], dtype=torch.float64)
 
     """
     things, stuffs = _parse_categories(things, stuffs)
@@ -143,22 +163,22 @@ def panoptic_quality(
         false_positives,
         false_negatives,
     )
-    if per_class:
+    if return_per_class:
         if return_sq_and_rq:
-            return {"pq": pq, "sq": sq, "rq": rq}
+            return torch.stack((pq, sq, rq), dim=-1)
         else:
-            return pq
+            return pq.view(1, -1)
     if return_sq_and_rq:
-        return {"pq": pq_avg, "sq": sq_avg, "rq": rq_avg}
+        return torch.stack((pq_avg, sq_avg, rq_avg), dim=0)
     return pq_avg
 
 
 def modified_panoptic_quality(
-    preds: Tensor,
-    target: Tensor,
-    things: Collection[int],
-    stuffs: Collection[int],
-    allow_unknown_preds_category: bool = False,
+        preds: Tensor,
+        target: Tensor,
+        things: Collection[int],
+        stuffs: Collection[int],
+        allow_unknown_preds_category: bool = False,
 ) -> Tensor:
     r"""Compute `Modified Panoptic Quality`_ for panoptic segmentations.
 

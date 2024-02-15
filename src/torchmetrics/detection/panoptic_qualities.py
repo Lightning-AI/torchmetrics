@@ -57,7 +57,7 @@ class PanopticQuality(Metric):
             computation or raise an exception when found.
         return_sq_and_rq:
             Boolean flag to specify if Segmentation Quality and Recognition Quality should be also returned.
-        per_class:
+        return_per_class:
             Boolean flag to specify if the per-class values should be returned or the class average.
 
 
@@ -99,7 +99,7 @@ class PanopticQuality(Metric):
         ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
         >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuffs = {6, 7}, return_sq_and_rq=True)
         >>> panoptic_quality(preds, target)
-        {'pq': tensor(0.5463, dtype=torch.float64), 'sq': tensor(0.5463, dtype=torch.float64), 'rq': tensor(0.5463, dtype=torch.float64)}
+        tensor([0.5463, 0.6111, 0.6667], dtype=torch.float64)
 
     You can also specify to return the per-class metrics
         >>> from torch import tensor
@@ -114,9 +114,9 @@ class PanopticQuality(Metric):
         ...                   [[0, 1], [0, 1], [6, 0], [1, 0]],
         ...                   [[0, 1], [7, 0], [1, 0], [1, 0]],
         ...                   [[0, 1], [7, 0], [7, 0], [7, 0]]]])
-        >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuffs = {6, 7}, per_class=True)
+        >>> panoptic_quality = PanopticQuality(things = {0, 1}, stuffs = {6, 7}, return_per_class=True)
         >>> panoptic_quality(preds, target)
-        tensor([0.5185, 0.0000, 0.6667, 1.0000], dtype=torch.float64)
+        tensor([[0.5185, 0.0000, 0.6667, 1.0000]], dtype=torch.float64)
 
     """
     is_differentiable: bool = False
@@ -131,13 +131,13 @@ class PanopticQuality(Metric):
     false_negatives: Tensor
 
     def __init__(
-        self,
-        things: Collection[int],
-        stuffs: Collection[int],
-        allow_unknown_preds_category: bool = False,
-        return_sq_and_rq: bool = False,
-        per_class: bool = False,
-        **kwargs: Any,
+            self,
+            things: Collection[int],
+            stuffs: Collection[int],
+            allow_unknown_preds_category: bool = False,
+            return_sq_and_rq: bool = False,
+            return_per_class: bool = False,
+            **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
@@ -148,7 +148,7 @@ class PanopticQuality(Metric):
         self.cat_id_to_continuous_id = _get_category_id_to_continuous_id(things, stuffs)
         self.allow_unknown_preds_category = allow_unknown_preds_category
         self.return_sq_and_rq = return_sq_and_rq
-        self.per_class = per_class
+        self.return_per_class = return_per_class
 
         # per category intermediate metrics
         num_categories = len(things) + len(stuffs)
@@ -198,17 +198,17 @@ class PanopticQuality(Metric):
         pq, sq, rq, pq_avg, sq_avg, rq_avg = _panoptic_quality_compute(
             self.iou_sum, self.true_positives, self.false_positives, self.false_negatives
         )
-        if self.per_class:
+        if self.return_per_class:
             if self.return_sq_and_rq:
-                return {"pq": pq, "sq": sq, "rq": rq}
+                return torch.stack((pq, sq, rq), dim=-1)
             else:
-                return pq
+                return pq.view(1, -1)
         if self.return_sq_and_rq:
-            return {"pq": pq_avg, "sq": sq_avg, "rq": rq_avg}
+            return torch.stack((pq_avg, sq_avg, rq_avg), dim=0)
         return pq_avg
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+            self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -323,11 +323,11 @@ class ModifiedPanopticQuality(Metric):
     false_negatives: Tensor
 
     def __init__(
-        self,
-        things: Collection[int],
-        stuffs: Collection[int],
-        allow_unknown_preds_category: bool = False,
-        **kwargs: Any,
+            self,
+            things: Collection[int],
+            stuffs: Collection[int],
+            allow_unknown_preds_category: bool = False,
+            **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
@@ -393,7 +393,7 @@ class ModifiedPanopticQuality(Metric):
         return pq_avg
 
     def plot(
-        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+            self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
