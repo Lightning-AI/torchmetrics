@@ -35,7 +35,7 @@ def panoptic_quality(
         allow_unknown_preds_category: bool = False,
         return_sq_and_rq: bool = False,
         return_per_class: bool = False,
-) -> Union[Tensor, Dict[str, Tensor]]:
+) -> Tensor:
     r"""Compute `Panoptic Quality`_ for panoptic segmentations.
 
     .. math::

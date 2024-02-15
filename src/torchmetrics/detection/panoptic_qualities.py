@@ -193,7 +193,7 @@ class PanopticQuality(Metric):
         self.false_positives += false_positives
         self.false_negatives += false_negatives
 
-    def compute(self) -> Union[Tensor, Dict[str, Tensor]]:
+    def compute(self) -> Tensor:
         """Compute panoptic quality based on inputs passed in to ``update`` previously."""
         pq, sq, rq, pq_avg, sq_avg, rq_avg = _panoptic_quality_compute(
             self.iou_sum, self.true_positives, self.false_positives, self.false_negatives
