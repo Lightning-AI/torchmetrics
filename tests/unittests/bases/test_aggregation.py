@@ -214,10 +214,11 @@ def test_with_default_dtype(metric_class, compare_function):
     """Test that the metric works with a default dtype of float64."""
     torch.set_default_dtype(torch.float64)
     metric = metric_class()
+    assert metric.dtype == torch.float64
     values = torch.randn(10000)
     metric.update(values)
     result = metric.compute()
     assert result.dtype == torch.float64
     assert result.dtype == values.dtype
-    assert torch.allclose(result, compare_function(values), atol=1e-12)
+    assert result == compare_function(values)
     torch.set_default_dtype(torch.float32)

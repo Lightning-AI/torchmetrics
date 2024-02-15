@@ -181,7 +181,7 @@ class CLIPImageQualityAssessment(Metric):
         ] = "clip_iqa",
         data_range: float = 1.0,
         prompts: Tuple[Union[str, Tuple[str, str]]] = ("quality",),
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if not (isinstance(data_range, (int, float)) and data_range > 0):

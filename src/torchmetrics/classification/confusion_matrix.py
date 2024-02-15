@@ -108,6 +108,7 @@ class BinaryConfusionMatrix(Metric):
                 [1, 1]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -248,6 +249,7 @@ class MulticlassConfusionMatrix(Metric):
                 [0, 0, 1]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -387,6 +389,7 @@ class MultilabelConfusionMatrix(Metric):
                 [[0, 1], [0, 1]]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
