@@ -407,7 +407,7 @@ def kendall_rank_corrcoef(
     tau, p_value = _kendall_corrcoef_compute(
         dim_zero_cat(_preds),
         dim_zero_cat(_target),
-        _variant,
+        _variant,  # type: ignore[arg-type]  # todo
         _alternative,  # type: ignore[arg-type]  # todo
     )
 

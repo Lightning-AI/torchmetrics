@@ -853,9 +853,9 @@ class Metric(Module, ABC):
 
         """
         destination: Dict[str, Union[torch.Tensor, List, Any]] = super().state_dict(
-            destination=destination,
+            destination=destination,  # type: ignore[arg-type]
             prefix=prefix,
-            keep_vars=keep_vars,  # type: ignore[arg-type]
+            keep_vars=keep_vars,
         )
         # Register metric states to be part of the state_dict
         for key in self._defaults:

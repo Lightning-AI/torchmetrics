@@ -160,7 +160,7 @@ class KendallRankCorrCoef(Metric):
         tau, p_value = _kendall_corrcoef_compute(
             preds,
             target,
-            self.variant,
+            self.variant,  # type: ignore[arg-type]  # todo
             self.alternative,  # type: ignore[arg-type]  # todo
         )
 

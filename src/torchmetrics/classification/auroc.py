@@ -276,8 +276,8 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         return _multiclass_auroc_compute(
             state,
             self.num_classes,
-            self.average,
-            self.thresholds,  # type: ignore[arg-type]
+            self.average,  # type: ignore[arg-type]
+            self.thresholds,
         )
 
     def plot(  # type: ignore[override]

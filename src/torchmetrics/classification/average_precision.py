@@ -274,8 +274,8 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         return _multiclass_average_precision_compute(
             state,
             self.num_classes,
-            self.average,
-            self.thresholds,  # type: ignore[arg-type]
+            self.average,  # type: ignore[arg-type]
+            self.thresholds,
         )
 
     def plot(  # type: ignore[override]
