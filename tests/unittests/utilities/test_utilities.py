@@ -70,12 +70,10 @@ def test_class_reduce():
 def test_onehot():
     """Test that casting to onehot works as expected."""
     test_tensor = tensor([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
-    expected = torch.stack(
-        [
-            torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
-            torch.cat([torch.zeros((5, 5), dtype=int), torch.eye(5, dtype=int)]),
-        ]
-    )
+    expected = torch.stack([
+        torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
+        torch.cat([torch.zeros((5, 5), dtype=int), torch.eye(5, dtype=int)]),
+    ])
 
     assert test_tensor.shape == (2, 5)
     assert expected.shape == (2, 10, 5)
@@ -94,12 +92,10 @@ def test_onehot():
 
 def test_to_categorical():
     """Test that casting to categorical works as expected."""
-    test_tensor = torch.stack(
-        [
-            torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
-            torch.cat([torch.zeros((5, 5), dtype=int), torch.eye(5, dtype=int)]),
-        ]
-    ).to(torch.float)
+    test_tensor = torch.stack([
+        torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
+        torch.cat([torch.zeros((5, 5), dtype=int), torch.eye(5, dtype=int)]),
+    ]).to(torch.float)
 
     expected = tensor([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
     assert expected.shape == (2, 5)

@@ -86,6 +86,7 @@ class BootStrapper(WrapperMetric):
         {'mean': tensor(0.2205), 'std': tensor(0.0859)}
 
     """
+
     full_state_update: Optional[bool] = True
 
     def __init__(

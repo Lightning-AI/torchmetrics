@@ -75,6 +75,7 @@ class PeakSignalNoiseRatio(Metric):
         tensor(2.5527)
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = False

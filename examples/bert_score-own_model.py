@@ -79,15 +79,13 @@ class UserTokenizer:
             sentence.lower().split()[:max_len] + [self.PAD_TOKEN] * (max_len - len(sentence.lower().split()))
             for sentence in sentences
         ]
-        output_dict["input_ids"] = torch.cat(
-            [torch.cat([self.word2vec[word] for word in sentence]).unsqueeze(0) for sentence in tokenized_sentences]
-        )
-        output_dict["attention_mask"] = torch.cat(
-            [
-                torch.tensor([1 if word != self.PAD_TOKEN else 0 for word in sentence]).unsqueeze(0)
-                for sentence in tokenized_sentences
-            ]
-        ).long()
+        output_dict["input_ids"] = torch.cat([
+            torch.cat([self.word2vec[word] for word in sentence]).unsqueeze(0) for sentence in tokenized_sentences
+        ])
+        output_dict["attention_mask"] = torch.cat([
+            torch.tensor([1 if word != self.PAD_TOKEN else 0 for word in sentence]).unsqueeze(0)
+            for sentence in tokenized_sentences
+        ]).long()
 
         return output_dict
 

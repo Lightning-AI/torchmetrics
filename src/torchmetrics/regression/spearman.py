@@ -67,6 +67,7 @@ class SpearmanCorrCoef(Metric):
         tensor([1.0000, 1.0000])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
