@@ -29,23 +29,16 @@ _PATH_ALL_TESTS = os.path.dirname(_PATH_UNITTESTS)
 _PATH_TEST_CACHE = os.getenv("PYTEST_REFERENCE_CACHE", os.path.join(_PATH_ALL_TESTS, "_reference-cache"))
 
 
-def _convert_list_to_tuple(val):
-    return tuple(_convert_list_to_tuple(x) for x in val) if isinstance(val, list) else val
+def _hash_args_kwargs(args, kwargs):
+    # Sort the kwargs to ensure consistent ordering
+    sorted_kwargs = sorted(kwargs.items())
+    # Serialize args and sorted_kwargs using pickle or similar
+    serialized = pickle.dumps((args, sorted_kwargs))
+    # Create a hash of the serialized data
+    return hashlib.sha256(serialized).hexdigest()
 
 
-def _cachier_hash_func(args, kwds):
-    # convert lists to tuples to make them hashable
-    args = _convert_list_to_tuple(args)
-    kwds = {k: _convert_list_to_tuple(v) for k, v in kwds.items()}
-    # use pickle to hash the arguments
-    key = functools._make_key(args, kwds, typed=True)
-    hash_sha256 = hashlib.sha256()
-    for item in key:
-        hash_sha256.update(pickle.dumps(item))
-    return hash_sha256.hexdigest()
-
-
-_reference_cachier = cachier(cache_dir=_PATH_TEST_CACHE, hash_func=_cachier_hash_func)
+_reference_cachier = cachier(cache_dir=_PATH_TEST_CACHE, hash_func=_hash_args_kwargs)
 
 
 if torch.cuda.is_available():
