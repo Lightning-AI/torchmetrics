@@ -573,3 +573,19 @@ def test_update_properties(metric, method):
     m.reset()
     assert not m.update_called
     assert m.update_count == 0
+
+
+def test_dtype_property():
+    """Test that dtype property works as expected."""
+    metric = DummyMetricSum()
+    assert metric.dtype == torch.float32
+    metric.set_dtype(torch.float64)
+    assert metric.dtype == torch.float64
+
+    torch.set_default_dtype(torch.float64)
+    metric = DummyMetricSum()
+    assert metric.dtype == torch.float64
+    torch.set_default_dtype(torch.float32)
+    assert metric.dtype == torch.float64  # should not change after initialization
+    metric.set_dtype(torch.float32)
+    assert metric.dtype == torch.float32
