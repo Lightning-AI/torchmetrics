@@ -39,12 +39,12 @@ _DEFAULT_MODEL = "roberta-large"
 if _TRANSFORMERS_GREATER_EQUAL_4_4:
     from transformers import AutoModel, AutoTokenizer
 
-    def _download_model() -> None:
+    def _download_model_for_bert_score() -> None:
         """Download intensive operations."""
-        AutoTokenizer.from_pretrained(_DEFAULT_MODEL)
-        AutoModel.from_pretrained(_DEFAULT_MODEL)
+        AutoTokenizer.from_pretrained(_DEFAULT_MODEL, resume_download=True)
+        AutoModel.from_pretrained(_DEFAULT_MODEL, resume_download=True)
 
-    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_model):
+    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_model_for_bert_score):
         __doctest_skip__ = ["bert_score"]
 else:
     __doctest_skip__ = ["bert_score"]

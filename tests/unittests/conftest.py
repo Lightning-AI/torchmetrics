@@ -14,8 +14,6 @@
 import contextlib
 import os
 import sys
-from functools import wraps
-from typing import Any, Callable, Optional
 
 import pytest
 import torch
@@ -36,6 +34,14 @@ MAX_PORT = 8100
 START_PORT = 8088
 CURRENT_PORT = START_PORT
 USE_PYTEST_POOL = os.getenv("USE_PYTEST_POOL", "0") == "1"
+
+
+@pytest.fixture()
+def use_deterministic_algorithms():  # noqa: PT004
+    """Set deterministic algorithms for the test."""
+    torch.use_deterministic_algorithms(True)
+    yield
+    torch.use_deterministic_algorithms(False)
 
 
 def setup_ddp(rank, world_size):
@@ -76,21 +82,3 @@ def pytest_sessionfinish():
         return
     pytest.pool.close()
     pytest.pool.join()
-
-
-def skip_on_running_out_of_memory(reason: str = "Skipping test as it ran out of memory."):
-    """Handle tests that sometimes runs out of memory, by simply skipping them."""
-
-    def test_decorator(function: Callable, *args: Any, **kwargs: Any) -> Optional[Callable]:
-        @wraps(function)
-        def run_test(*args: Any, **kwargs: Any) -> Optional[Any]:
-            try:
-                return function(*args, **kwargs)
-            except RuntimeError as ex:
-                if "DefaultCPUAllocator: not enough memory:" not in str(ex):
-                    raise ex
-                pytest.skip(reason)
-
-        return run_test
-
-    return test_decorator

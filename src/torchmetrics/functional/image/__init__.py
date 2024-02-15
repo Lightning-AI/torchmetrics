@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.functional.image.csi import critical_success_index
 from torchmetrics.functional.image.d_lambda import spectral_distortion_index
 from torchmetrics.functional.image.d_s import spatial_distortion_index
 from torchmetrics.functional.image.ergas import error_relative_global_dimensionless_synthesis
@@ -20,6 +19,7 @@ from torchmetrics.functional.image.lpips import learned_perceptual_image_patch_s
 from torchmetrics.functional.image.perceptual_path_length import perceptual_path_length
 from torchmetrics.functional.image.psnr import peak_signal_noise_ratio
 from torchmetrics.functional.image.psnrb import peak_signal_noise_ratio_with_blocked_effect
+from torchmetrics.functional.image.qnr import quality_with_no_reference
 from torchmetrics.functional.image.rase import relative_average_spectral_error
 from torchmetrics.functional.image.rmse_sw import root_mean_squared_error_using_sliding_window
 from torchmetrics.functional.image.sam import spectral_angle_mapper
@@ -49,6 +49,6 @@ __all__ = [
     "visual_information_fidelity",
     "learned_perceptual_image_patch_similarity",
     "perceptual_path_length",
-    "critical_success_index",
     "spatial_correlation_coefficient",
+    "quality_with_no_reference",
 ]

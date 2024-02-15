@@ -34,7 +34,8 @@ class NetworkCache(Module):
     def __init__(self, network: Module, max_size: int = 100) -> None:
         super().__init__()
         self.max_size = max_size
-        self.network = lru_cache(maxsize=self.max_size)(network)
+        self.network = network
+        self.network.forward = lru_cache(maxsize=self.max_size)(network.forward)
 
     def forward(self, *args: Any, **kwargs: Any) -> Any:
         """Call the network with the given arguments."""
