@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import typing
 from typing import Any, Dict, List, Optional, Sequence, Union
 
 from torch import Tensor
@@ -19,6 +20,9 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 from torchmetrics.wrappers.abstract import WrapperMetric
+
+if typing.TYPE_CHECKING:
+    from torch.nn import Module
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["ClasswiseWrapper.plot"]
@@ -209,3 +213,20 @@ class ClasswiseWrapper(WrapperMetric):
 
         """
         return self._plot(val, ax)
+
+    def __getattr__(self, name: str) -> Union[Tensor, "Module"]:
+        """Get attribute from classwise wrapper."""
+        # return state from self.metric
+        if name in ["tp", "fp", "fn", "tn"]:
+            return getattr(self.metric, name)
+
+        return super().__getattr__(name)
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        """Set attribute to classwise wrapper."""
+        super().__setattr__(name, value)
+        if name == "metric":
+            self._defaults = self.metric._defaults
+        if hasattr(self, "metric") and name in ["tp", "fp", "fn", "tn", "_update_count", "_computed"]:
+            # update ``_update_count`` and ``_computed`` of internal metric to prevent warning.
+            setattr(self.metric, name, value)
