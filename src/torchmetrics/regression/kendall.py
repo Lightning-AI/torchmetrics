@@ -112,6 +112,7 @@ class KendallRankCorrCoef(Metric):
         (tensor([1., 1.]), tensor([nan, nan]))
 
     """
+
     is_differentiable = False
     higher_is_better = None
     full_state_update = True
@@ -157,7 +158,10 @@ class KendallRankCorrCoef(Metric):
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         tau, p_value = _kendall_corrcoef_compute(
-            preds, target, self.variant, self.alternative  # type: ignore[arg-type]  # todo
+            preds,
+            target,
+            self.variant,  # type: ignore[arg-type]  # todo
+            self.alternative,  # type: ignore[arg-type]  # todo
         )
 
         if p_value is not None:

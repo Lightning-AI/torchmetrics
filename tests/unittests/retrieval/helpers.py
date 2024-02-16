@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
+from itertools import chain
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 import numpy as np
@@ -154,7 +155,7 @@ def _concat_tests(*tests: Tuple[Dict]) -> Dict:
     """Concat tests composed by a string and a list of arguments."""
     assert len(tests), "`_concat_tests` expects at least an argument"
     assert all(tests[0]["argnames"] == x["argnames"] for x in tests[1:]), "the header must be the same for all tests"
-    return {"argnames": tests[0]["argnames"], "argvalues": sum((x["argvalues"] for x in tests), [])}
+    return {"argnames": tests[0]["argnames"], "argvalues": list(chain.from_iterable(x["argvalues"] for x in tests))}
 
 
 _errors_test_functional_metric_parameters_default = {

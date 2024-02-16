@@ -58,6 +58,7 @@ class CosineSimilarity(Metric):
         tensor(0.8536)
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = False

@@ -136,6 +136,7 @@ class PanopticQuality(Metric):
         tensor([[0.5185, 0.0000, 0.6667, 1.0000]], dtype=torch.float64)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -328,6 +329,7 @@ class ModifiedPanopticQuality(Metric):
         tensor(0.7667, dtype=torch.float64)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False

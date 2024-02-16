@@ -84,14 +84,14 @@ def _binary_groups_stat_scores(
 
 
 def _groups_reduce(
-    group_stats: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]
+    group_stats: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]],
 ) -> Dict[str, torch.Tensor]:
     """Compute rates for all the group statistics."""
     return {f"group_{group}": torch.stack(stats) / torch.stack(stats).sum() for group, stats in enumerate(group_stats)}
 
 
 def _groups_stat_transform(
-    group_stats: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]]
+    group_stats: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]],
 ) -> Dict[str, torch.Tensor]:
     """Transform group statistics by creating a tensor for each statistic."""
     return {
