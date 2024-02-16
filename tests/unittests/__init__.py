@@ -25,7 +25,7 @@ for tp_name, tp_ins in [("object", object), ("bool", bool), ("int", int), ("floa
 
 _PATH_UNITTESTS = os.path.dirname(__file__)
 _PATH_ALL_TESTS = os.path.dirname(_PATH_UNITTESTS)
-_PATH_TEST_CACHE = os.getenv("PYTEST_REFERENCE_CACHE", os.path.join(_PATH_ALL_TESTS, "_reference-cache"))
+_PATH_TEST_CACHE = os.getenv("PYTEST_REFERENCE_CACHE", os.path.join(_PATH_ALL_TESTS, "_cache-references"))
 
 
 def _hash_args_kwargs(args, kwargs):
