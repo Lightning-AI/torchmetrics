@@ -23,6 +23,7 @@ from torch import Tensor
 from torchmetrics import Metric
 
 from unittests import NUM_PROCESSES, _reference_cachier
+from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester, _assert_allclose, _assert_requires_grad, _assert_tensor
 
 TEXT_METRIC_INPUT = Union[Sequence[str], Sequence[Sequence[str]], Sequence[Sequence[Sequence[str]]]]
@@ -286,7 +287,8 @@ class TextTester(MetricTester):
                 targets when running update on the metric.
 
         """
-        device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
+        seed_all(42)
+        device = "cuda" if torch.cuda.device_count() > 0 else "cpu"
 
         _functional_test(
             preds=preds,
@@ -342,6 +344,7 @@ class TextTester(MetricTester):
                 targets when running update on the metric.
 
         """
+        seed_all(42)
         common_kwargs = {
             "preds": preds,
             "targets": targets,

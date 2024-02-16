@@ -1,4 +1,3 @@
-import functools
 import hashlib
 import os.path
 import pickle
