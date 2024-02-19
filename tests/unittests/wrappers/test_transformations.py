@@ -115,12 +115,12 @@ class TestLambdaInputTransformer:
         assert metric.compute() == wrapped_metric.compute()
 
     def test_no_transform_pred(self) -> None:
-        """Tests that TypeError is raised when an non-callab le is passed as `transform_pred`."""
+        """Tests that TypeError is raised when a non-callable is passed as `transform_pred`."""
         with pytest.raises(TypeError, match=r"Expected transform_pred to be of type .*"):
             LambdaInputTransformer(BinaryAccuracy(), transform_pred=[])
 
     def test_no_transform_target(self) -> None:
-        """Tests that TypeError is raised when an non-callab le is passed as `transform_target`."""
+        """Tests that TypeError is raised when a non-callable is passed as `transform_target`."""
         with pytest.raises(TypeError, match=r"Expected transform_target to be of type .*"):
             LambdaInputTransformer(BinaryAccuracy(), transform_target=[])
 
@@ -199,8 +199,8 @@ class TestBinaryTargetTransformer:
         targets = Tensor(targets).float() if targets is not None else None
         targets_binary = Tensor(targets_binary).float() if targets_binary is not None else None
 
-        args = (preds, targets) if targets is not None else tuple([preds])
-        wrapped_args = (preds, targets_binary) if targets_binary is not None else tuple([preds])
+        args = (preds, targets) if targets is not None else (preds,)
+        wrapped_args = (preds, targets_binary) if targets_binary is not None else (preds,)
         kwargs = {k: Tensor(v).long() for k, v in kwargs.items()}
         assert metric(*wrapped_args, **kwargs) == wrapped_metric(*args, **kwargs)
 
