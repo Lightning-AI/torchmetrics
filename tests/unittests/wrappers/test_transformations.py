@@ -13,9 +13,9 @@
 # limitations under the License.
 import pytest
 from torch import Tensor
-from torchmetrics.retrieval import RetrievalMAP
-from torchmetrics.classification import BinaryAccuracy
 from torchmetrics.aggregation import MeanMetric
+from torchmetrics.classification import BinaryAccuracy
+from torchmetrics.retrieval import RetrievalMAP
 from torchmetrics.wrappers import BinaryTargetTransformer, LambdaInputTransformer, MetricInputTransformer
 
 from unittests.helpers import seed_all
@@ -31,7 +31,15 @@ class TestMetricInputTransformer:
 
 
 class TestLambdaInputTransformer:
-    _test_signature = ("cls", "transform_pred", "transform_target", "preds", "preds_transformed", "targets", "targets_transformed")
+    _test_signature = (
+        "cls",
+        "transform_pred",
+        "transform_target",
+        "preds",
+        "preds_transformed",
+        "targets",
+        "targets_transformed",
+    )
     _test_cases = [
         # No change to input data (identity transform)
         (
@@ -40,8 +48,8 @@ class TestLambdaInputTransformer:
             None,
             [0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.7, 0.8, 0.5, 0.4],
             [0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.7, 0.8, 0.5, 0.4],
-            [1., 0., 0., 0., 0., 1., 1., 0., 0., 0.],
-            [1., 0., 0., 0., 0., 1., 1., 0., 0., 0.],
+            [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0],
         ),
         # Change to pred data (invert transform)
         (
@@ -50,8 +58,8 @@ class TestLambdaInputTransformer:
             None,
             [0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.7, 0.8, 0.5, 0.4],
             [0.1, 0.2, 0.3, 0.4, 0.5, 0.4, 0.3, 0.2, 0.5, 0.6],
-            [1., 0., 0., 0., 0., 1., 1., 0., 0., 0.],
-            [1., 0., 0., 0., 0., 1., 1., 0., 0., 0.],
+            [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0],
         ),
         # Change to target data (invert transform)
         (
@@ -60,8 +68,8 @@ class TestLambdaInputTransformer:
             lambda target: 1 - target,
             [0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.7, 0.8, 0.5, 0.4],
             [0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.7, 0.8, 0.5, 0.4],
-            [1., 0., 0., 0., 0., 1., 1., 0., 0., 0.],
-            [0., 1., 1., 1., 1., 0., 0., 1., 1., 1.],
+            [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0],
         ),
         # Change to all input data (invert transform)
         (
@@ -70,17 +78,20 @@ class TestLambdaInputTransformer:
             lambda target: 1 - target,
             [0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.7, 0.8, 0.5, 0.4],
             [0.1, 0.2, 0.3, 0.4, 0.5, 0.4, 0.3, 0.2, 0.5, 0.6],
-            [1., 0., 0., 0., 0., 1., 1., 0., 0., 0.],
-            [0., 1., 1., 1., 1., 0., 0., 1., 1., 1.],
+            [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0],
+            [0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0],
         ),
     ]
 
     @pytest.mark.parametrize(_test_signature, _test_cases)
-    def test_forward(self, cls, transform_pred, transform_target, preds, preds_transformed, targets, targets_transformed) -> None:
+    def test_forward(
+        self, cls, transform_pred, transform_target, preds, preds_transformed, targets, targets_transformed
+    ) -> None:
         """Tests if the binarized forward matches the output of the metric on manually binarized targets."""
         metric = cls()
-        wrapped_metric = LambdaInputTransformer(metric, transform_pred=transform_pred,
-                                                transform_target=transform_target)
+        wrapped_metric = LambdaInputTransformer(
+            metric, transform_pred=transform_pred, transform_target=transform_target
+        )
         preds = Tensor(preds).float()
         targets = Tensor(targets).float()
         preds_transformed = Tensor(preds_transformed).float() if preds_transformed is not None else preds
@@ -91,11 +102,14 @@ class TestLambdaInputTransformer:
         assert metric(*transformed_args) == wrapped_metric(*args)
 
     @pytest.mark.parametrize(_test_signature, _test_cases)
-    def test_update(self, cls, transform_pred, transform_target, preds, preds_transformed, targets, targets_transformed) -> None:
+    def test_update(
+        self, cls, transform_pred, transform_target, preds, preds_transformed, targets, targets_transformed
+    ) -> None:
         """Tests if the binarized update matches the output of the metric on manually binarized targets."""
         metric = cls()
-        wrapped_metric = LambdaInputTransformer(metric, transform_pred=transform_pred,
-                                                transform_target=transform_target)
+        wrapped_metric = LambdaInputTransformer(
+            metric, transform_pred=transform_pred, transform_target=transform_target
+        )
         preds = Tensor(preds).float()
         targets = Tensor(targets).float()
         preds_transformed = Tensor(preds_transformed).float() if preds_transformed is not None else preds
@@ -126,60 +140,53 @@ class TestBinaryTargetTransformer:
             RetrievalMAP,
             0,
             [0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.7, 0.8, 0.5, 0.4],
-            [1., 0., 0., 0., 0., 2., 1., 0., 0., 0.],
-            [1., 0., 0., 0., 0., 1., 1., 0., 0., 0.],
-            {"indexes":  [0., 0., 0., 0., 0., 1., 1., 1., 1., 1.]}
+            [1.0, 0.0, 0.0, 0.0, 0.0, 2.0, 1.0, 0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0],
+            {"indexes": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0]},
         ),
         (
             RetrievalMAP,
             1,
             [0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.7, 0.8, 0.5, 0.4],
-            [1., 0., 0., 0., 0., 2., 1., 0., 0., 0.],
-            [0., 0., 0., 0., 0., 1., 0., 0., 0., 0.],
-            {"indexes":  [0., 0., 0., 0., 0., 1., 1., 1., 1., 1.]}
+            [1.0, 0.0, 0.0, 0.0, 0.0, 2.0, 1.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0],
+            {"indexes": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0]},
         ),
         (
             RetrievalMAP,
             2,
             [0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.7, 0.8, 0.5, 0.4],
-            [1., 0., 0., 0., 0., 2., 1., 0., 0., 0.],
-            [0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
-            {"indexes":  [0., 0., 0., 0., 0., 1., 1., 1., 1., 1.]}
+            [1.0, 0.0, 0.0, 0.0, 0.0, 2.0, 1.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            {"indexes": [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0]},
         ),
         # Metric with targets and without kwargs
         (
             BinaryAccuracy,
             0,
             [0.9, 0.8, 0.9, 0.6, 0.5, 0.4, 0.4, 0.1, 0.5, 0.4],
-            [1., 0., 0., 0., 0., 2., 1., 0., 0., 0.],
-            [1., 0., 0., 0., 0., 1., 1., 0., 0., 0.],
-            {}
+            [1.0, 0.0, 0.0, 0.0, 0.0, 2.0, 1.0, 0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0],
+            {},
         ),
         (
             BinaryAccuracy,
             1,
             [0.9, 0.8, 0.9, 0.6, 0.5, 0.4, 0.4, 0.1, 0.5, 0.4],
-            [1., 0., 0., 0., 0., 2., 1., 0., 0., 0.],
-            [0., 0., 0., 0., 0., 1., 0., 0., 0., 0.],
-            {}
+            [1.0, 0.0, 0.0, 0.0, 0.0, 2.0, 1.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0],
+            {},
         ),
         (
             BinaryAccuracy,
             2,
             [0.9, 0.8, 0.9, 0.6, 0.5, 0.4, 0.4, 0.1, 0.5, 0.4],
-            [1., 0., 0., 0., 0., 2., 1., 0., 0., 0.],
-            [0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
-            {}
+            [1.0, 0.0, 0.0, 0.0, 0.0, 2.0, 1.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            {},
         ),
         # Metric without targets and without kwargs
-        (
-            MeanMetric,
-            2,
-            [0.9, 0.8, 0.9, 0.6, 0.5, 0.4, 0.4, 0.1, 0.5, 0.4],
-            None,
-            None,
-            {}
-        ),
+        (MeanMetric, 2, [0.9, 0.8, 0.9, 0.6, 0.5, 0.4, 0.4, 0.1, 0.5, 0.4], None, None, {}),
     ]
 
     @pytest.mark.parametrize(_test_signature, _test_cases)
@@ -216,4 +223,3 @@ class TestBinaryTargetTransformer:
         """Tests that TypeError is raised when invalid threshold is passed."""
         with pytest.raises(TypeError, match=r"Expected threshold to be of type .*"):
             BinaryTargetTransformer(RetrievalMAP(), "a")
-

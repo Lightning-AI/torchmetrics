@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Union, Tuple, Dict, Callable, Optional
+from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 import torch
 
-from torchmetrics.metric import Metric
 from torchmetrics.collections import MetricCollection
+from torchmetrics.metric import Metric
 from torchmetrics.wrappers.abstract import WrapperMetric
 
 
@@ -25,20 +25,31 @@ class MetricInputTransformer(WrapperMetric):
 
     Input transformations are characterized by them applying a transformation to the input data of a metric, and then
     forwarding all calls to the wrapped metric with modifications applied.
+
     """
 
     def __init__(self, wrapped_metric: Union[Metric, MetricCollection], **kwargs: Dict[str, Any]):
         super().__init__(**kwargs)
         if not (isinstance(wrapped_metric, Metric) or isinstance(wrapped_metric, MetricCollection)):
-            raise ValueError(f"Expected wrapped metric to be an instance of `torchmetrics.Metric` or `torchmetrics.MetricsCollection`but received {wrapped_metric}")
+            raise ValueError(
+                f"Expected wrapped metric to be an instance of `torchmetrics.Metric` or `torchmetrics.MetricsCollection`but received {wrapped_metric}"
+            )
         self.wrapped_metric = wrapped_metric
 
     def transform_pred(self, pred: torch.Tensor) -> Any:
-        """Defines transform operations on the prediction data. Overridden by subclasses. Identity by default."""
+        """Defines transform operations on the prediction data.
+
+        Overridden by subclasses. Identity by default.
+
+        """
         return pred
 
     def transform_target(self, target: torch.Tensor) -> Any:
-        """Defines transform operations on the target data. Overridden by subclasses. Identity by default."""
+        """Defines transform operations on the target data.
+
+        Overridden by subclasses. Identity by default.
+
+        """
         return target
 
     def _wrap_transform(self, *args: torch.Tensor) -> Tuple:
@@ -68,7 +79,7 @@ class MetricInputTransformer(WrapperMetric):
 class LambdaInputTransformer(MetricInputTransformer):
     """Wrapper class for transforming a metrics' inputs given a user-defined lambda function.
 
-     Args:
+    Args:
         wrapped_metric:
             The underlying `Metric` or `MetricCollection`.
         transform_pred:
@@ -94,10 +105,16 @@ class LambdaInputTransformer(MetricInputTransformer):
         >>> metric.update(preds, targets)
         >>> metric.compute()
         tensor(0.6000)
+
     """
 
-    def __init__(self, wrapped_metric: Metric, transform_pred: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
-                 transform_target: Optional[Callable[[torch.Tensor], torch.Tensor]] = None, **kwargs: Any):
+    def __init__(
+        self,
+        wrapped_metric: Metric,
+        transform_pred: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
+        transform_target: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
+        **kwargs: Any,
+    ):
         super().__init__(wrapped_metric, **kwargs)
         if transform_pred is not None:
             if not isinstance(transform_pred, Callable):
@@ -111,13 +128,15 @@ class LambdaInputTransformer(MetricInputTransformer):
 
 
 class BinaryTargetTransformer(MetricInputTransformer):
-    """Wrapper class for computing a metric on binarized targets. Useful when the given ground-truth targets are continuous, but the metric requires binary targets.
+    """Wrapper class for computing a metric on binarized targets. Useful when the given ground-truth targets are
+    continuous, but the metric requires binary targets.
 
     Args:
         wrapped_metric:
             The underlying `Metric` or `MetricCollection`.
         threshold:
             The binarization threshold for the targets. Targets values `t` are cast to binary with `t > threshold`.
+
     Raises:
         TypeError:
             If `threshold` is not an `int` or `float`.
@@ -140,9 +159,12 @@ class BinaryTargetTransformer(MetricInputTransformer):
         >>> metrics.update(preds, targets, indexes=topics)
         >>> metrics.compute()
         {'RetrievalMRR': tensor(0.7500), 'RetrievalNormalizedDCG': tensor(0.8100)}
+
     """
 
-    def __init__(self, wrapped_metric: Union[Metric, MetricCollection], threshold: Union[float, int] = 0, **kwargs: Any):
+    def __init__(
+        self, wrapped_metric: Union[Metric, MetricCollection], threshold: Union[float, int] = 0, **kwargs: Any
+    ):
         super().__init__(wrapped_metric, **kwargs)
         if not (isinstance(threshold, int) or isinstance(threshold, float)):
             raise TypeError(f"Expected threshold to be of type `int` or `float` but received {threshold}")
