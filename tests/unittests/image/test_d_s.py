@@ -87,12 +87,10 @@ def _baseline_d_s(
         try:
             pan_degraded = uniform_filter(pan, size=window_size, axes=[1, 2])
         except TypeError:
-            pan_degraded = np.array(
-                [
-                    [uniform_filter(pan[i, ..., j], size=window_size) for j in range(pan.shape[-1])]
-                    for i in range(len(pan))
-                ]
-            ).transpose((0, 2, 3, 1))
+            pan_degraded = np.array([
+                [uniform_filter(pan[i, ..., j], size=window_size) for j in range(pan.shape[-1])]
+                for i in range(len(pan))
+            ]).transpose((0, 2, 3, 1))
         pan_degraded = np.array([resize(img, ms.shape[1:3], anti_aliasing=False) for img in pan_degraded])
 
     length = preds.shape[-1]
@@ -138,9 +136,9 @@ def _np_d_s(preds, target, pan=None, pan_lr=None, norm_order=1, window_size=7):
 
 
 def _invoke_spatial_distortion_index(preds, target, ms, pan, pan_lr, norm_order, window_size):
-    ms = target["ms"] if "ms" in target else ms
-    pan = target["pan"] if "pan" in target else pan
-    pan_lr = target["pan_lr"] if "pan_lr" in target else pan_lr
+    ms = target.get("ms", ms)
+    pan = target.get("pan", pan)
+    pan_lr = target.get("pan_lr", pan_lr)
     return spatial_distortion_index(preds, ms, pan, pan_lr, norm_order, window_size)
 
 

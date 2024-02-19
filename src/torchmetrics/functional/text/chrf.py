@@ -33,6 +33,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from collections import defaultdict
+from itertools import chain
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
@@ -127,7 +128,7 @@ def _get_words_and_punctuation(sentence: str) -> List[str]:
         An aggregated list of separated words and punctuations.
 
     """
-    return sum((_separate_word_and_punctuation(word) for word in sentence.strip().split()), [])
+    return list(chain.from_iterable(_separate_word_and_punctuation(word) for word in sentence.strip().split()))
 
 
 def _ngram_counts(char_or_word_list: List[str], n_gram_order: int) -> Dict[int, Dict[Tuple[str, ...], Tensor]]:

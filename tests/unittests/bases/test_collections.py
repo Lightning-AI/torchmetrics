@@ -542,12 +542,10 @@ def test_compute_group_define_by_user():
 
 def test_compute_on_different_dtype():
     """Check that extraction of compute groups are robust towards difference in dtype."""
-    m = MetricCollection(
-        [
-            MulticlassConfusionMatrix(num_classes=3),
-            MulticlassMatthewsCorrCoef(num_classes=3),
-        ]
-    )
+    m = MetricCollection([
+        MulticlassConfusionMatrix(num_classes=3),
+        MulticlassMatthewsCorrCoef(num_classes=3),
+    ])
     assert not m._groups_checked
     assert m.compute_groups == {0: ["MulticlassConfusionMatrix"], 1: ["MulticlassMatthewsCorrCoef"]}
     preds = torch.randn(10, 3).softmax(dim=-1)
@@ -589,18 +587,14 @@ def test_error_on_wrong_specified_compute_groups():
             ),
         ],
         {
-            "macro": MetricCollection(
-                [
-                    MulticlassAccuracy(num_classes=3, average="macro"),
-                    MulticlassPrecision(num_classes=3, average="macro"),
-                ]
-            ),
-            "micro": MetricCollection(
-                [
-                    MulticlassAccuracy(num_classes=3, average="micro"),
-                    MulticlassPrecision(num_classes=3, average="micro"),
-                ]
-            ),
+            "macro": MetricCollection([
+                MulticlassAccuracy(num_classes=3, average="macro"),
+                MulticlassPrecision(num_classes=3, average="macro"),
+            ]),
+            "micro": MetricCollection([
+                MulticlassAccuracy(num_classes=3, average="micro"),
+                MulticlassPrecision(num_classes=3, average="micro"),
+            ]),
         },
     ],
 )

@@ -56,19 +56,25 @@ def test_error_on_missing_feature_network():
 def test_warning_on_mixing_networks():
     """Test that a warning is raised when the metrics use different networks."""
     with pytest.warns(UserWarning, match="The network to share between the metrics is not.*"):
-        FeatureShare(
-            [FrechetInceptionDistance(feature=64), InceptionScore(feature=64), LearnedPerceptualImagePatchSimilarity()]
-        )
+        FeatureShare([
+            FrechetInceptionDistance(feature=64),
+            InceptionScore(feature=64),
+            LearnedPerceptualImagePatchSimilarity(),
+        ])
 
 
 def test_feature_share_speed():
     """Test that the feature share wrapper is faster than the metric collection."""
-    mc = MetricCollection(
-        [FrechetInceptionDistance(feature=64), InceptionScore(feature=64), KernelInceptionDistance(feature=64)]
-    )
-    fs = FeatureShare(
-        [FrechetInceptionDistance(feature=64), InceptionScore(feature=64), KernelInceptionDistance(feature=64)]
-    )
+    mc = MetricCollection([
+        FrechetInceptionDistance(feature=64),
+        InceptionScore(feature=64),
+        KernelInceptionDistance(feature=64),
+    ])
+    fs = FeatureShare([
+        FrechetInceptionDistance(feature=64),
+        InceptionScore(feature=64),
+        KernelInceptionDistance(feature=64),
+    ])
     x = torch.randint(255, (1, 3, 64, 64), dtype=torch.uint8)
 
     start = time.time()
