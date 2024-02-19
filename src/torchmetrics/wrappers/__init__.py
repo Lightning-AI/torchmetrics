@@ -19,7 +19,11 @@ from torchmetrics.wrappers.multioutput import MultioutputWrapper
 from torchmetrics.wrappers.multitask import MultitaskWrapper
 from torchmetrics.wrappers.running import Running
 from torchmetrics.wrappers.tracker import MetricTracker
-from torchmetrics.wrappers.transformations import BinaryTargetTransformer, MetricInputTransformer, LambdaInputTransformer
+from torchmetrics.wrappers.transformations import (
+    BinaryTargetTransformer,
+    LambdaInputTransformer,
+    MetricInputTransformer,
+)
 
 __all__ = [
     "BinaryTargetTransformer",
