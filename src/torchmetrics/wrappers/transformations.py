@@ -27,10 +27,11 @@ class MetricInputTransformer(WrapperMetric):
     forwarding all calls to the wrapped metric with modifications applied.
     """
 
-    def __init__(self, wrapped_metric: Union[Metric, MetricCollection], **kwargs: Dict[str, Any]):
+    def __init__(self, wrapped_metric: Union[Metric, MetricCollection], **kwargs: Dict[str, Any]) -> None:
         super().__init__(**kwargs)
-        if not (isinstance(wrapped_metric, Metric) or isinstance(wrapped_metric, MetricCollection)):
-            raise ValueError(f"Expected wrapped metric to be an instance of `torchmetrics.Metric` or `torchmetrics.MetricsCollection`but received {wrapped_metric}")
+        if not isinstance(wrapped_metric, (Metric, MetricCollection)):
+            raise TypeError(f"Expected wrapped metric to be an instance of `torchmetrics.Metric` or "
+                            f"`torchmetrics.MetricsCollection`but received {wrapped_metric}")
         self.wrapped_metric = wrapped_metric
 
     def transform_pred(self, pred: torch.Tensor) -> Any:
@@ -45,10 +46,9 @@ class MetricInputTransformer(WrapperMetric):
         """Wraps transformation functions to dispatch args to their individual transform functions."""
         if len(args) == 1:
             return tuple([self.transform_pred(args[0])])
-        elif len(args) == 2:
+        if len(args) == 2:
             return self.transform_pred(args[0]), self.transform_target(args[1])
-        else:
-            return tuple([self.transform_pred(args[0]), self.transform_target(args[1]), *args[2:]])
+        return self.transform_pred(args[0]), self.transform_target(args[1]), *args[2:]
 
     def update(self, *args: Tuple[torch.Tensor], **kwargs: Dict[str, Any]) -> None:
         """Wraps the update call of the underlying metric."""
@@ -97,7 +97,7 @@ class LambdaInputTransformer(MetricInputTransformer):
     """
 
     def __init__(self, wrapped_metric: Metric, transform_pred: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
-                 transform_target: Optional[Callable[[torch.Tensor], torch.Tensor]] = None, **kwargs: Any):
+                 transform_target: Optional[Callable[[torch.Tensor], torch.Tensor]] = None, **kwargs: Any) -> None:
         super().__init__(wrapped_metric, **kwargs)
         if transform_pred is not None:
             if not isinstance(transform_pred, Callable):
@@ -111,7 +111,9 @@ class LambdaInputTransformer(MetricInputTransformer):
 
 
 class BinaryTargetTransformer(MetricInputTransformer):
-    """Wrapper class for computing a metric on binarized targets. Useful when the given ground-truth targets are continuous, but the metric requires binary targets.
+    """Wrapper class for computing a metric on binarized targets.
+
+    Useful when the given ground-truth targets are continuous, but the metric requires binary targets.
 
     Args:
         wrapped_metric:
@@ -125,28 +127,25 @@ class BinaryTargetTransformer(MetricInputTransformer):
     Example:
         >>> import torch
         >>> from torchmetrics.wrappers import BinaryTargetTransformer
-        >>> from torchmetrics.collections import MetricCollection
-        >>> from torchmetrics.retrieval import RetrievalNormalizedDCG, RetrievalMRR
+        >>> from torchmetrics.retrieval import RetrievalMRR
         >>>
         >>> preds = torch.tensor([0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.7, 0.8, 0.5, 0.4])
         >>> targets = torch.tensor([1,0,0,0,0,2,1,0,0,0])
         >>> topics = torch.tensor([0,0,0,0,0,1,1,1,1,1])
         >>>
-        >>> metrics = MetricCollection({
-        >>>     "RetrievalNormalizedDCG": RetrievalNormalizedDCG(),
-        >>>     "RetrievalMRR": BinaryTargetTransformer(RetrievalMRR())
-        >>> })
-        >>>
-        >>> metrics.update(preds, targets, indexes=topics)
-        >>> metrics.compute()
-        {'RetrievalMRR': tensor(0.7500), 'RetrievalNormalizedDCG': tensor(0.8100)}
+        >>> metric = BinaryTargetTransformer(RetrievalMRR())
+        >>> metric.update(preds, targets, indexes=topics)
+        >>> metric.compute()
+        tensor(0.7500)
     """
 
-    def __init__(self, wrapped_metric: Union[Metric, MetricCollection], threshold: Union[float, int] = 0, **kwargs: Any):
+    def __init__(self, wrapped_metric: Union[Metric, MetricCollection], threshold: float = 0,
+                 **kwargs: Any) -> None:
         super().__init__(wrapped_metric, **kwargs)
-        if not (isinstance(threshold, int) or isinstance(threshold, float)):
+        if not isinstance(threshold, (int, float)):
             raise TypeError(f"Expected threshold to be of type `int` or `float` but received {threshold}")
         self.threshold = threshold
 
     def transform_target(self, target: torch.Tensor) -> torch.Tensor:
+        """Casts the target tensor to binary values according to the threshold. Output assumes same type as input."""
         return target.gt(self.threshold).to(target.dtype)

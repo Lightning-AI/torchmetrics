@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import pytest
+from typing import ClassVar
 from torch import Tensor
 from torchmetrics.retrieval import RetrievalMAP
 from torchmetrics.classification import BinaryAccuracy
@@ -24,6 +25,8 @@ seed_all(42)
 
 
 class TestMetricInputTransformer:
+    """Test suite for MetricInputTransformer."""
+
     def test_no_base_metric(self) -> None:
         """Tests that TypeError is raised when no wrapped_metric is passed."""
         with pytest.raises(TypeError, match=r"Expected wrapped metric to be an instance of .*"):
@@ -31,8 +34,10 @@ class TestMetricInputTransformer:
 
 
 class TestLambdaInputTransformer:
-    _test_signature = ("cls", "transform_pred", "transform_target", "preds", "preds_transformed", "targets", "targets_transformed")
-    _test_cases = [
+    """Test suite for LambdaInputTransformer."""
+    _test_signature: ClassVar = ("cls", "transform_pred", "transform_target", "preds", "preds_transformed", "targets",
+                                 "targets_transformed")
+    _test_cases: ClassVar = [
         # No change to input data (identity transform)
         (
             BinaryAccuracy,
@@ -76,7 +81,8 @@ class TestLambdaInputTransformer:
     ]
 
     @pytest.mark.parametrize(_test_signature, _test_cases)
-    def test_forward(self, cls, transform_pred, transform_target, preds, preds_transformed, targets, targets_transformed) -> None:
+    def test_forward(self, cls, transform_pred, transform_target, preds, preds_transformed, targets,
+                     targets_transformed) -> None:
         """Tests if the binarized forward matches the output of the metric on manually binarized targets."""
         metric = cls()
         wrapped_metric = LambdaInputTransformer(metric, transform_pred=transform_pred,
@@ -91,7 +97,8 @@ class TestLambdaInputTransformer:
         assert metric(*transformed_args) == wrapped_metric(*args)
 
     @pytest.mark.parametrize(_test_signature, _test_cases)
-    def test_update(self, cls, transform_pred, transform_target, preds, preds_transformed, targets, targets_transformed) -> None:
+    def test_update(self, cls, transform_pred, transform_target, preds, preds_transformed, targets,
+                    targets_transformed) -> None:
         """Tests if the binarized update matches the output of the metric on manually binarized targets."""
         metric = cls()
         wrapped_metric = LambdaInputTransformer(metric, transform_pred=transform_pred,
@@ -119,8 +126,9 @@ class TestLambdaInputTransformer:
 
 
 class TestBinaryTargetTransformer:
-    _test_signature = ("cls", "threshold", "preds", "targets", "targets_binary", "kwargs")
-    _test_cases = [
+    """Test class for BinaryTargetTransformer."""
+    _test_signature: ClassVar = ("cls", "threshold", "preds", "targets", "targets_binary", "kwargs")
+    _test_cases: ClassVar = [
         # Metric with targets and with kwargs
         (
             RetrievalMAP,
@@ -128,7 +136,7 @@ class TestBinaryTargetTransformer:
             [0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.7, 0.8, 0.5, 0.4],
             [1., 0., 0., 0., 0., 2., 1., 0., 0., 0.],
             [1., 0., 0., 0., 0., 1., 1., 0., 0., 0.],
-            {"indexes":  [0., 0., 0., 0., 0., 1., 1., 1., 1., 1.]}
+            {"indexes": [0., 0., 0., 0., 0., 1., 1., 1., 1., 1.]}
         ),
         (
             RetrievalMAP,
@@ -136,7 +144,7 @@ class TestBinaryTargetTransformer:
             [0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.7, 0.8, 0.5, 0.4],
             [1., 0., 0., 0., 0., 2., 1., 0., 0., 0.],
             [0., 0., 0., 0., 0., 1., 0., 0., 0., 0.],
-            {"indexes":  [0., 0., 0., 0., 0., 1., 1., 1., 1., 1.]}
+            {"indexes": [0., 0., 0., 0., 0., 1., 1., 1., 1., 1.]}
         ),
         (
             RetrievalMAP,
@@ -144,7 +152,7 @@ class TestBinaryTargetTransformer:
             [0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.7, 0.8, 0.5, 0.4],
             [1., 0., 0., 0., 0., 2., 1., 0., 0., 0.],
             [0., 0., 0., 0., 0., 0., 0., 0., 0., 0.],
-            {"indexes":  [0., 0., 0., 0., 0., 1., 1., 1., 1., 1.]}
+            {"indexes": [0., 0., 0., 0., 0., 1., 1., 1., 1., 1.]}
         ),
         # Metric with targets and without kwargs
         (
@@ -202,11 +210,12 @@ class TestBinaryTargetTransformer:
         metric = cls()
         wrapped_metric = BinaryTargetTransformer(metric, threshold=threshold)
         preds = Tensor(preds).float()
-        targets = Tensor(targets).float()
-        targets_binary = Tensor(targets_binary).float()
+        if targets is not None:
+            targets = Tensor(targets).float()
+            targets_binary = Tensor(targets_binary).float()
 
-        args = (preds, targets) if targets is not None else (preds)
-        wrapped_args = (preds, targets_binary) if targets_binary is not None else (preds)
+        args = (preds, targets) if targets is not None else [preds]
+        wrapped_args = (preds, targets_binary) if targets_binary is not None else [preds]
         kwargs = {k: Tensor(v).long() for k, v in kwargs.items()}
         metric.update(*wrapped_args, **kwargs)
         wrapped_metric.update(*args, **kwargs)
@@ -216,4 +225,3 @@ class TestBinaryTargetTransformer:
         """Tests that TypeError is raised when invalid threshold is passed."""
         with pytest.raises(TypeError, match=r"Expected threshold to be of type .*"):
             BinaryTargetTransformer(RetrievalMAP(), "a")
-
