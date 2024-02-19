@@ -101,6 +101,7 @@ class BinarySensitivityAtSpecificity(BinaryPrecisionRecallCurve):
         (tensor(0.6667), tensor(0.2500))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -195,6 +196,7 @@ class MulticlassSensitivityAtSpecificity(MulticlassPrecisionRecallCurve):
         (tensor([1., 1., 0., 0., 0.]), tensor([0.7500, 0.7500, 1.0000, 1.0000, 1.0000]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -295,6 +297,7 @@ class MultilabelSensitivityAtSpecificity(MultilabelPrecisionRecallCurve):
         (tensor([0.5000, 1.0000, 0.6667]), tensor([0.7500, 0.5000, 0.2500]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False

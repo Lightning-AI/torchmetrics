@@ -33,8 +33,8 @@ class Perplexity(Metric):
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~torch.Tensor`): Logits or a unnormalized score assigned to each token in a sequence with shape
-        [batch_size, seq_len, vocab_size], which is the output of a language model. Scores will be normalized internally
-        using softmax.
+      [batch_size, seq_len, vocab_size], which is the output of a language model. Scores will be normalized internally
+      using softmax.
     - ``target`` (:class:`~torch.Tensor`): Ground truth values with a shape [batch_size, seq_len]
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
@@ -59,6 +59,7 @@ class Perplexity(Metric):
         tensor(5.8540)
 
     """
+
     is_differentiable = True
     higher_is_better = False
     full_state_update = False

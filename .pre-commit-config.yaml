@@ -67,12 +67,6 @@ repos:
         additional_dependencies: [tomli]
         args: ["--in-place"]
 
-  - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 23.12.1
-    hooks:
-      - id: black
-        name: Format code
-
   - repo: https://github.com/executablebooks/mdformat
     rev: 0.7.17
     hooks:
@@ -130,7 +124,9 @@ repos:
       - id: text-unicode-replacement-char
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.9
+    rev: v0.2.0
     hooks:
+      - id: ruff-format
+        args: ["--preview"]
       - id: ruff
         args: ["--fix"]

@@ -118,9 +118,9 @@ def _np_quality_with_no_reference(preds, target, pan=None, pan_lr=None, alpha=1,
 
 
 def _invoke_quality_with_no_reference(preds, target, ms, pan, pan_lr, alpha, beta, norm_order, window_size):
-    ms = target["ms"] if "ms" in target else ms
-    pan = target["pan"] if "pan" in target else pan
-    pan_lr = target["pan_lr"] if "pan_lr" in target else pan_lr
+    ms = target.get("ms", ms)
+    pan = target.get("pan", pan)
+    pan_lr = target.get("pan_lr", pan_lr)
     return quality_with_no_reference(preds, ms, pan, pan_lr, alpha, beta, norm_order, window_size)
 
 

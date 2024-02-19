@@ -18,11 +18,9 @@ import shutil
 import sys
 
 import lai_sphinx_theme
+import torchmetrics
 from lightning_utilities.docs import fetch_external_assets
 from lightning_utilities.docs.formatting import _transform_changelog
-
-import torchmetrics
-
 
 _PATH_HERE = os.path.abspath(os.path.dirname(__file__))
 _PATH_ROOT = os.path.realpath(os.path.join(_PATH_HERE, "..", ".."))

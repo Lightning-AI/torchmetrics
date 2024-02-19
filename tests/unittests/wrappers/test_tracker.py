@@ -75,24 +75,20 @@ def test_raises_error_if_increment_not_called(method, method_input):
         (MeanSquaredError(), (torch.randn(50), torch.randn(50)), False),
         (MeanAbsoluteError(), (torch.randn(50), torch.randn(50)), False),
         (
-            MetricCollection(
-                [
-                    MulticlassAccuracy(num_classes=10),
-                    MulticlassPrecision(num_classes=10),
-                    MulticlassRecall(num_classes=10),
-                ]
-            ),
+            MetricCollection([
+                MulticlassAccuracy(num_classes=10),
+                MulticlassPrecision(num_classes=10),
+                MulticlassRecall(num_classes=10),
+            ]),
             (torch.randint(10, (50,)), torch.randint(10, (50,))),
             True,
         ),
         (
-            MetricCollection(
-                [
-                    MulticlassAccuracy(num_classes=10),
-                    MulticlassPrecision(num_classes=10),
-                    MulticlassRecall(num_classes=10),
-                ]
-            ),
+            MetricCollection([
+                MulticlassAccuracy(num_classes=10),
+                MulticlassPrecision(num_classes=10),
+                MulticlassRecall(num_classes=10),
+            ]),
             (torch.randint(10, (50,)), torch.randint(10, (50,))),
             [True, True, True],
         ),
@@ -193,12 +189,10 @@ def test_best_metric_for_not_well_defined_metric_collection(base_metric):
     [
         (MultioutputWrapper(MeanSquaredError(), num_outputs=2), torch.Tensor),
         (  # nested version
-            MetricCollection(
-                {
-                    "mse": MultioutputWrapper(MeanSquaredError(), num_outputs=2),
-                    "mae": MultioutputWrapper(MeanAbsoluteError(), num_outputs=2),
-                }
-            ),
+            MetricCollection({
+                "mse": MultioutputWrapper(MeanSquaredError(), num_outputs=2),
+                "mae": MultioutputWrapper(MeanAbsoluteError(), num_outputs=2),
+            }),
             dict,
         ),
     ],
