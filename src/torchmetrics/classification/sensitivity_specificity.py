@@ -22,13 +22,13 @@ from torchmetrics.classification.precision_recall_curve import (
     MulticlassPrecisionRecallCurve,
     MultilabelPrecisionRecallCurve,
 )
-from torchmetrics.functional.classification.specificity_sensitivity import (
-    _binary_specificity_at_sensitivity_arg_validation,
-    _binary_specificity_at_sensitivity_compute,
-    _multiclass_specificity_at_sensitivity_arg_validation,
-    _multiclass_specificity_at_sensitivity_compute,
-    _multilabel_specificity_at_sensitivity_arg_validation,
-    _multilabel_specificity_at_sensitivity_compute,
+from torchmetrics.functional.classification.sensitivity_specificity import (
+    _binary_sensitivity_at_specificity_arg_validation,
+    _binary_sensitivity_at_specificity_compute,
+    _multiclass_sensitivity_at_specificity_arg_validation,
+    _multiclass_sensitivity_at_specificity_compute,
+    _multilabel_sensitivity_at_specificity_arg_validation,
+    _multilabel_sensitivity_at_specificity_compute,
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat as _cat
@@ -37,17 +37,17 @@ from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = [
-        "BinarySpecificityAtSensitivity.plot",
-        "MulticlassSpecificityAtSensitivity.plot",
-        "MultilabelSpecificityAtSensitivity.plot",
+        "BinarySensitivityAtSpecificity.plot",
+        "MulticlassSensitivityAtSpecificity.plot",
+        "MultilabelSensitivityAtSpecificity.plot",
     ]
 
 
-class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
-    r"""Compute the highest possible specificity value given the minimum sensitivity thresholds provided.
+class BinarySensitivityAtSpecificity(BinaryPrecisionRecallCurve):
+    r"""Compute the highest possible sensitivity value given the minimum specificity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
-    find the specificity for a given sensitivity level.
+    find the sensitivity for a given specificity level.
 
     Accepts the following input tensors:
 
@@ -66,16 +66,16 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
     size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
     Args:
-        min_sensitivity: float value specifying minimum sensitivity threshold.
+        min_specificity: float value specifying minimum specificity threshold.
         thresholds:
             Can be one of:
 
-            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
-              all the data. Most accurate but also most memory consuming approach.
-            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+            - ``None``, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. It is the most accurate but also the most memory-consuming approach.
+            - ``int`` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
-            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - ``list`` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - 1d ``tensor`` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -85,20 +85,20 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
     Returns:
         (tuple): a tuple of 2 tensors containing:
 
-        - specificity: an scalar tensor with the maximum specificity for the given sensitivity level
+        - sensitivity: an scalar tensor with the maximum sensitivity for the given specificity level
         - threshold: an scalar tensor with the corresponding threshold level
 
     Example:
-        >>> from torchmetrics.classification import BinarySpecificityAtSensitivity
+        >>> from torchmetrics.classification import BinarySensitivityAtSpecificity
         >>> from torch import tensor
         >>> preds = tensor([0, 0.5, 0.4, 0.1])
         >>> target = tensor([0, 1, 1, 1])
-        >>> metric = BinarySpecificityAtSensitivity(min_sensitivity=0.5, thresholds=None)
+        >>> metric = BinarySensitivityAtSpecificity(min_specificity=0.5, thresholds=None)
         >>> metric(preds, target)
-        (tensor(1.), tensor(0.4000))
-        >>> metric = BinarySpecificityAtSensitivity(min_sensitivity=0.5, thresholds=5)
+        (tensor(1.), tensor(0.1000))
+        >>> metric = BinarySensitivityAtSpecificity(min_specificity=0.5, thresholds=5)
         >>> metric(preds, target)
-        (tensor(1.), tensor(0.2500))
+        (tensor(0.6667), tensor(0.2500))
 
     """
 
@@ -110,7 +110,7 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
 
     def __init__(
         self,
-        min_sensitivity: float,
+        min_specificity: float,
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
@@ -118,21 +118,21 @@ class BinarySpecificityAtSensitivity(BinaryPrecisionRecallCurve):
     ) -> None:
         super().__init__(thresholds, ignore_index, validate_args=False, **kwargs)
         if validate_args:
-            _binary_specificity_at_sensitivity_arg_validation(min_sensitivity, thresholds, ignore_index)
+            _binary_sensitivity_at_specificity_arg_validation(min_specificity, thresholds, ignore_index)
         self.validate_args = validate_args
-        self.min_sensitivity = min_sensitivity
+        self.min_specificity = min_specificity
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
         state = (_cat(self.preds), _cat(self.target)) if self.thresholds is None else self.confmat
-        return _binary_specificity_at_sensitivity_compute(state, self.thresholds, self.min_sensitivity)
+        return _binary_sensitivity_at_specificity_compute(state, self.thresholds, self.min_specificity)
 
 
-class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
-    r"""Compute the highest possible specificity value given the minimum sensitivity thresholds provided.
+class MulticlassSensitivityAtSpecificity(MulticlassPrecisionRecallCurve):
+    r"""Compute the highest possible sensitivity value given the minimum specificity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
-    find the specificity for a given sensitivity level.
+    find the sensitivity for a given specificity level.
 
     For multiclass the metric is calculated by iteratively treating each class as the positive class and all other
     classes as the negative, which is referred to as the one-vs-rest approach. One-vs-one is currently not supported by
@@ -156,16 +156,16 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
 
     Args:
         num_classes: Integer specifying the number of classes
-        min_sensitivity: float value specifying minimum sensitivity threshold.
+        min_specificity: float value specifying minimum specificity threshold.
         thresholds:
             Can be one of:
 
-            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
-              all the data. Most accurate but also most memory consuming approach.
-            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+            - ``None``, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. It is the most accurate but also the most memory-consuming approach.
+            - ``int`` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
-            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - ``list`` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - 1d ``tensor`` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -175,25 +175,25 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
     Returns:
         (tuple): a tuple of either 2 tensors or 2 lists containing
 
-        - specificity: an 1d tensor of size (n_classes, ) with the maximum specificity for the given
-            sensitivity level per class
+        - sensitivity: an 1d tensor of size (n_classes, ) with the maximum sensitivity for the given
+            specificity level per class
         - thresholds: an 1d tensor of size (n_classes, ) with the corresponding threshold level per class
 
 
     Example:
-        >>> from torchmetrics.classification import MulticlassSpecificityAtSensitivity
+        >>> from torchmetrics.classification import MulticlassSensitivityAtSpecificity
         >>> from torch import tensor
         >>> preds = tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
         ...                 [0.05, 0.75, 0.05, 0.05, 0.05],
         ...                 [0.05, 0.05, 0.75, 0.05, 0.05],
         ...                 [0.05, 0.05, 0.05, 0.75, 0.05]])
         >>> target = tensor([0, 1, 3, 2])
-        >>> metric = MulticlassSpecificityAtSensitivity(num_classes=5, min_sensitivity=0.5, thresholds=None)
+        >>> metric = MulticlassSensitivityAtSpecificity(num_classes=5, min_specificity=0.5, thresholds=None)
         >>> metric(preds, target)
-        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 5.0000e-02, 5.0000e-02, 1.0000e+06]))
-        >>> metric = MulticlassSpecificityAtSensitivity(num_classes=5, min_sensitivity=0.5, thresholds=5)
+        (tensor([1., 1., 0., 0., 0.]), tensor([0.7500, 0.7500, 1.0000, 1.0000, 1.0000]))
+        >>> metric = MulticlassSensitivityAtSpecificity(num_classes=5, min_specificity=0.5, thresholds=5)
         >>> metric(preds, target)
-        (tensor([1., 1., 0., 0., 0.]), tensor([7.5000e-01, 7.5000e-01, 0.0000e+00, 0.0000e+00, 1.0000e+06]))
+        (tensor([1., 1., 0., 0., 0.]), tensor([0.7500, 0.7500, 1.0000, 1.0000, 1.0000]))
 
     """
 
@@ -207,7 +207,7 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
     def __init__(
         self,
         num_classes: int,
-        min_sensitivity: float,
+        min_specificity: float,
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
@@ -217,25 +217,25 @@ class MulticlassSpecificityAtSensitivity(MulticlassPrecisionRecallCurve):
             num_classes=num_classes, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs
         )
         if validate_args:
-            _multiclass_specificity_at_sensitivity_arg_validation(
-                num_classes, min_sensitivity, thresholds, ignore_index
+            _multiclass_sensitivity_at_specificity_arg_validation(
+                num_classes, min_specificity, thresholds, ignore_index
             )
         self.validate_args = validate_args
-        self.min_sensitivity = min_sensitivity
+        self.min_specificity = min_specificity
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
         state = (_cat(self.preds), _cat(self.target)) if self.thresholds is None else self.confmat
-        return _multiclass_specificity_at_sensitivity_compute(
-            state, self.num_classes, self.thresholds, self.min_sensitivity
+        return _multiclass_sensitivity_at_specificity_compute(
+            state, self.num_classes, self.thresholds, self.min_specificity
         )
 
 
-class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
-    r"""Compute the highest possible specificity value given the minimum sensitivity thresholds provided.
+class MultilabelSensitivityAtSpecificity(MultilabelPrecisionRecallCurve):
+    r"""Compute the highest possible sensitivity value given the minimum specificity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
-    find the specificity for a given sensitivity level.
+    find the sensitivity for a given specificity level.
 
     Accepts the following input tensors:
 
@@ -255,16 +255,16 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
 
     Args:
         num_labels: Integer specifying the number of labels
-        min_sensitivity: float value specifying minimum sensitivity threshold.
+        min_specificity: float value specifying minimum specificity threshold.
         thresholds:
             Can be one of:
 
-            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
-              all the data. Most accurate but also most memory consuming approach.
-            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+            - ``None``, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. It is the most accurate but also the most memory-consuming approach.
+            - ``int`` (larger than 1), will use that number of thresholds linearly spaced from
               0 to 1 as bins for the calculation.
-            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
-            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+            - ``list`` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - 1d ``tensor`` of floats, will use the indicated thresholds in the tensor as
               bins for the calculation.
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -274,12 +274,12 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
     Returns:
         (tuple): a tuple of either 2 tensors or 2 lists containing
 
-        - specificity: an 1d tensor of size (n_classes, ) with the maximum specificity for the given
-            sensitivity level per class
-        - thresholds: an 1d tensor of size (n_classes, ) with the corresponding threshold level per class
+        - sensitivity: an 1d tensor of size ``(n_classes, )`` with the maximum sensitivity for the given
+            specificity level per class
+        - thresholds: an 1d tensor of size ``(n_classes, )`` with the corresponding threshold level per class
 
     Example:
-        >>> from torchmetrics.classification import MultilabelSpecificityAtSensitivity
+        >>> from torchmetrics.classification import MultilabelSensitivityAtSpecificity
         >>> from torch import tensor
         >>> preds = tensor([[0.75, 0.05, 0.35],
         ...                 [0.45, 0.75, 0.05],
@@ -289,12 +289,12 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
         ...                  [0, 0, 0],
         ...                  [0, 1, 1],
         ...                  [1, 1, 1]])
-        >>> metric = MultilabelSpecificityAtSensitivity(num_labels=3, min_sensitivity=0.5, thresholds=None)
+        >>> metric = MultilabelSensitivityAtSpecificity(num_labels=3, min_specificity=0.5, thresholds=None)
         >>> metric(preds, target)
-        (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.6500, 0.3500]))
-        >>> metric = MultilabelSpecificityAtSensitivity(num_labels=3, min_sensitivity=0.5, thresholds=5)
+        (tensor([0.5000, 1.0000, 0.6667]), tensor([0.7500, 0.5500, 0.3500]))
+        >>> metric = MultilabelSensitivityAtSpecificity(num_labels=3, min_specificity=0.5, thresholds=5)
         >>> metric(preds, target)
-        (tensor([1.0000, 0.5000, 1.0000]), tensor([0.7500, 0.5000, 0.2500]))
+        (tensor([0.5000, 1.0000, 0.6667]), tensor([0.7500, 0.5000, 0.2500]))
 
     """
 
@@ -308,7 +308,7 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
     def __init__(
         self,
         num_labels: int,
-        min_sensitivity: float,
+        min_specificity: float,
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
@@ -318,37 +318,37 @@ class MultilabelSpecificityAtSensitivity(MultilabelPrecisionRecallCurve):
             num_labels=num_labels, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs
         )
         if validate_args:
-            _multilabel_specificity_at_sensitivity_arg_validation(num_labels, min_sensitivity, thresholds, ignore_index)
+            _multilabel_sensitivity_at_specificity_arg_validation(num_labels, min_specificity, thresholds, ignore_index)
         self.validate_args = validate_args
-        self.min_sensitivity = min_sensitivity
+        self.min_specificity = min_specificity
 
     def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
         state = (_cat(self.preds), _cat(self.target)) if self.thresholds is None else self.confmat
-        return _multilabel_specificity_at_sensitivity_compute(
-            state, self.num_labels, self.thresholds, self.ignore_index, self.min_sensitivity
+        return _multilabel_sensitivity_at_specificity_compute(
+            state, self.num_labels, self.thresholds, self.ignore_index, self.min_specificity
         )
 
 
-class SpecificityAtSensitivity(_ClassificationTaskWrapper):
-    r"""Compute the highest possible specificity value given the minimum sensitivity thresholds provided.
+class SensitivityAtSpecificity(_ClassificationTaskWrapper):
+    r"""Compute the highest possible sensitivity value given the minimum specificity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
-    find the specificity for a given sensitivity level.
+    find the sensitivity for a given specificity level.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :class:`~torchmetrics.classification.BinarySpecificityAtSensitivity`,
-    :class:`~torchmetrics.classification.MulticlassSpecificityAtSensitivity` and
-    :class:`~torchmetrics.classification.MultilabelSpecificityAtSensitivity` for the specific details of each argument
+    :class:`~torchmetrics.classification.BinarySensitivityAtSpecificity`,
+    :class:`~torchmetrics.classification.MulticlassSensitivityAtSpecificity` and
+    :class:`~torchmetrics.classification.MultilabelSensitivityAtSpecificity` for the specific details of each argument
     influence and examples.
 
     """
 
     def __new__(  # type: ignore[misc]
-        cls: Type["SpecificityAtSensitivity"],
+        cls: Type["SensitivityAtSpecificity"],
         task: Literal["binary", "multiclass", "multilabel"],
-        min_sensitivity: float,
+        min_specificity: float,
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
@@ -359,17 +359,17 @@ class SpecificityAtSensitivity(_ClassificationTaskWrapper):
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         if task == ClassificationTask.BINARY:
-            return BinarySpecificityAtSensitivity(min_sensitivity, thresholds, ignore_index, validate_args, **kwargs)
+            return BinarySensitivityAtSpecificity(min_specificity, thresholds, ignore_index, validate_args, **kwargs)
         if task == ClassificationTask.MULTICLASS:
             if not isinstance(num_classes, int):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
-            return MulticlassSpecificityAtSensitivity(
-                num_classes, min_sensitivity, thresholds, ignore_index, validate_args, **kwargs
+            return MulticlassSensitivityAtSpecificity(
+                num_classes, min_specificity, thresholds, ignore_index, validate_args, **kwargs
             )
         if task == ClassificationTask.MULTILABEL:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
-            return MultilabelSpecificityAtSensitivity(
-                num_labels, min_sensitivity, thresholds, ignore_index, validate_args, **kwargs
+            return MultilabelSensitivityAtSpecificity(
+                num_labels, min_specificity, thresholds, ignore_index, validate_args, **kwargs
             )
         raise ValueError(f"Task {task} not supported!")

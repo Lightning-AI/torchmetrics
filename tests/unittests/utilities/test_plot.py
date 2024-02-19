@@ -51,7 +51,6 @@ from torchmetrics.classification import (
     BinaryPrecision,
     BinaryPrecisionRecallCurve,
     BinaryRecall,
-    BinaryRecallAtFixedPrecision,
     BinaryROC,
     BinarySpecificity,
     Dice,
@@ -71,7 +70,6 @@ from torchmetrics.classification import (
     MulticlassPrecision,
     MulticlassPrecisionRecallCurve,
     MulticlassRecall,
-    MulticlassRecallAtFixedPrecision,
     MulticlassROC,
     MulticlassSpecificity,
     MultilabelAveragePrecision,
@@ -88,7 +86,6 @@ from torchmetrics.classification import (
     MultilabelRankingAveragePrecision,
     MultilabelRankingLoss,
     MultilabelRecall,
-    MultilabelRecallAtFixedPrecision,
     MultilabelROC,
     MultilabelSpecificity,
 )
@@ -389,24 +386,6 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             _multilabel_rand_input,
             _multilabel_randint_input,
             id="multilabel specificity",
-        ),
-        pytest.param(
-            partial(BinaryRecallAtFixedPrecision, min_precision=0.5),
-            _rand_input,
-            _binary_randint_input,
-            id="binary recall at fixed precision",
-        ),
-        pytest.param(
-            partial(MulticlassRecallAtFixedPrecision, num_classes=3, min_precision=0.5),
-            _multiclass_randn_input,
-            _multiclass_randint_input,
-            id="multiclass recall at fixed precision",
-        ),
-        pytest.param(
-            partial(MultilabelRecallAtFixedPrecision, num_labels=3, min_precision=0.5),
-            _multilabel_rand_input,
-            _multilabel_randint_input,
-            id="multilabel recall at fixed precision",
         ),
         pytest.param(
             partial(MultilabelCoverageError, num_labels=3),

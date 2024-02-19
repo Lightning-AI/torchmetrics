@@ -66,12 +66,10 @@ def _skimage_psnr(preds, target, data_range, reduction, dim):
     sk_preds_lists = _to_sk_peak_signal_noise_ratio_inputs(preds, dim=dim)
     sk_target_lists = _to_sk_peak_signal_noise_ratio_inputs(target, dim=dim)
     np_reduce_map = {"elementwise_mean": np.mean, "none": np.array, "sum": np.sum}
-    return np_reduce_map[reduction](
-        [
-            skimage_peak_signal_noise_ratio(sk_target, sk_preds, data_range=data_range)
-            for sk_target, sk_preds in zip(sk_target_lists, sk_preds_lists)
-        ]
-    )
+    return np_reduce_map[reduction]([
+        skimage_peak_signal_noise_ratio(sk_target, sk_preds, data_range=data_range)
+        for sk_target, sk_preds in zip(sk_target_lists, sk_preds_lists)
+    ])
 
 
 def _base_e_sk_psnr(preds, target, data_range, reduction, dim):

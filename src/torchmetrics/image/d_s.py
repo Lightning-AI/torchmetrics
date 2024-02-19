@@ -139,7 +139,7 @@ class SpatialDistortionIndex(Metric):
             raise ValueError(f"Expected `target` to have key `pan`. Got target: {target.keys()}.")
         ms = target["ms"]
         pan = target["pan"]
-        pan_lr = target["pan_lr"] if "pan_lr" in target else None
+        pan_lr = target.get("pan_lr")
         preds, ms, pan, pan_lr = _spatial_distortion_index_update(preds, ms, pan, pan_lr)
         self.preds.append(preds)
         self.ms.append(target["ms"])

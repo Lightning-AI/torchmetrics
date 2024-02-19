@@ -83,6 +83,7 @@ class BinaryHingeLoss(Metric):
         tensor(0.6905)
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False
@@ -225,6 +226,7 @@ class MulticlassHingeLoss(Metric):
         tensor([0.8750, 1.1250, 1.1000])
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False

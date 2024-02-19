@@ -111,6 +111,7 @@ class BinaryFBetaScore(BinaryStatScores):
         tensor([0.5882, 0.0000])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -288,6 +289,7 @@ class MulticlassFBetaScore(MulticlassStatScores):
                 [0.0000, 0.3571, 0.4545]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -466,6 +468,7 @@ class MultilabelFBetaScore(MultilabelStatScores):
                 [0.0000, 0.0000, 0.0000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -617,6 +620,7 @@ class BinaryF1Score(BinaryFBetaScore):
         tensor([0.5000, 0.0000])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -784,6 +788,7 @@ class MulticlassF1Score(MulticlassFBetaScore):
                 [0.0000, 0.4000, 0.4000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -952,6 +957,7 @@ class MultilabelF1Score(MultilabelFBetaScore):
                 [0.0000, 0.0000, 0.0000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -1069,9 +1075,11 @@ class FBetaScore(_ClassificationTaskWrapper):
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None  # noqa: S101  # needed for mypy
-        kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
-        )
+        kwargs.update({
+            "multidim_average": multidim_average,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+        })
         if task == ClassificationTask.BINARY:
             return BinaryFBetaScore(beta, threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:
@@ -1130,9 +1138,11 @@ class F1Score(_ClassificationTaskWrapper):
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None  # noqa: S101  # needed for mypy
-        kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
-        )
+        kwargs.update({
+            "multidim_average": multidim_average,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+        })
         if task == ClassificationTask.BINARY:
             return BinaryF1Score(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:
