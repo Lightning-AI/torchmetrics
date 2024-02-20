@@ -574,6 +574,9 @@ def test_classwise_wrapper_compute_group():
     for key in expected:
         assert torch.allclose(res[key], expected[key])
 
+    # check metric state_dict
+    m.state_dict()
+
 
 def test_compute_on_different_dtype():
     """Check that extraction of compute groups are robust towards difference in dtype."""
