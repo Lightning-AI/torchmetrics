@@ -227,6 +227,8 @@ class ClasswiseWrapper(WrapperMetric):
         super().__setattr__(name, value)
         if name == "metric":
             self._defaults = self.metric._defaults
+            self._persistent = self.metric._persistent
+            self._reductions = self.metric._reductions
         if hasattr(self, "metric") and name in ["tp", "fp", "fn", "tn", "_update_count", "_computed"]:
             # update ``_update_count`` and ``_computed`` of internal metric to prevent warning.
             setattr(self.metric, name, value)
