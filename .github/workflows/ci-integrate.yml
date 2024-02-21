@@ -78,4 +78,6 @@ jobs:
         working-directory: ./tests
         env:
           PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
-        run: python -m pytest integrations -v --durations=25 --reruns 3 --reruns-delay 2
+        run: |
+          python -m pytest integrations -v --durations=25
+            # --reruns 3 --reruns-delay 2  --only-rerun TimeoutError
