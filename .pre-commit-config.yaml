@@ -135,7 +135,7 @@ repos:
     rev: 1.7.0
     hooks:
       - id: pyproject-fmt
-        additional_dependencies: [ tox ]
+        additional_dependencies: [tox]
   - repo: https://github.com/abravalheri/validate-pyproject
     rev: v0.16
     hooks:
