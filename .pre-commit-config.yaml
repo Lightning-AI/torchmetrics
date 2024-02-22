@@ -67,6 +67,11 @@ repos:
         additional_dependencies: [tomli]
         args: ["--in-place"]
 
+  - repo: https://github.com/sphinx-contrib/sphinx-lint
+    rev: v0.9.1
+    hooks:
+      - id: sphinx-lint
+
   - repo: https://github.com/executablebooks/mdformat
     rev: 0.7.17
     hooks:
