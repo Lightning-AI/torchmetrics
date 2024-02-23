@@ -1,6 +1,4 @@
-import hashlib
 import os.path
-import pickle
 from typing import NamedTuple
 
 import numpy
@@ -28,16 +26,7 @@ _PATH_ALL_TESTS = os.path.dirname(_PATH_UNITTESTS)
 _PATH_TEST_CACHE = os.getenv("PYTEST_REFERENCE_CACHE", os.path.join(_PATH_ALL_TESTS, "_cache-references"))
 
 
-def _hash_args_kwargs(args, kwargs):
-    # Sort the kwargs to ensure consistent ordering
-    sorted_kwargs = sorted(kwargs.items())
-    # Serialize args and sorted_kwargs using pickle or similar
-    serialized = pickle.dumps((args, sorted_kwargs))
-    # Create a hash of the serialized data
-    return hashlib.sha256(serialized).hexdigest()
-
-
-_reference_cachier = cachier(cache_dir=_PATH_TEST_CACHE, hash_func=_hash_args_kwargs)
+_reference_cachier = cachier(cache_dir=_PATH_TEST_CACHE, separate_files=True)
 
 
 if torch.cuda.is_available():
