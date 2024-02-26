@@ -69,7 +69,7 @@ def test_for_correctness(
         assert predicted == expected
 
 
-def _ref_implementation(preds, target, substitution_cost=1, reduction="mean"):
+def _reference_nltk_edit_dist(preds, target, substitution_cost=1, reduction="mean"):
     costs = [nltk_edit_distance(p, t, substitution_cost=substitution_cost) for p, t in zip(preds, target)]
     if reduction == "mean":
         return sum(costs) / len(costs)
@@ -97,7 +97,9 @@ class TestEditDistance(TextTester):
             preds=preds,
             targets=targets,
             metric_class=EditDistance,
-            reference_metric=partial(_ref_implementation, substitution_cost=substitution_cost, reduction=reduction),
+            reference_metric=partial(
+                _reference_nltk_edit_dist, substitution_cost=substitution_cost, reduction=reduction
+            ),
             metric_args={"substitution_cost": substitution_cost, "reduction": reduction},
         )
 
@@ -109,7 +111,9 @@ class TestEditDistance(TextTester):
             preds=preds,
             targets=targets,
             metric_functional=edit_distance,
-            reference_metric=partial(_ref_implementation, substitution_cost=substitution_cost, reduction=reduction),
+            reference_metric=partial(
+                _reference_nltk_edit_dist, substitution_cost=substitution_cost, reduction=reduction
+            ),
             metric_args={"substitution_cost": substitution_cost, "reduction": reduction},
         )
 
