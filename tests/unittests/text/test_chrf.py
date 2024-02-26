@@ -27,7 +27,7 @@ if _SACREBLEU_AVAILABLE:
     from sacrebleu.metrics import CHRF
 
 
-def _sacrebleu_chrf_fn(
+def _reference_sacrebleu_chrf(
     preds: Sequence[str],
     targets: Sequence[Sequence[str]],
     char_order: int,
@@ -73,7 +73,11 @@ class TestCHRFScore(TextTester):
             "whitespace": whitespace,
         }
         nltk_metric = partial(
-            _sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
+            _reference_sacrebleu_chrf,
+            char_order=char_order,
+            word_order=word_order,
+            lowercase=lowercase,
+            whitespace=whitespace,
         )
 
         self.run_class_metric_test(
@@ -94,7 +98,11 @@ class TestCHRFScore(TextTester):
             "whitespace": whitespace,
         }
         nltk_metric = partial(
-            _sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
+            _reference_sacrebleu_chrf,
+            char_order=char_order,
+            word_order=word_order,
+            lowercase=lowercase,
+            whitespace=whitespace,
         )
 
         self.run_functional_metric_test(

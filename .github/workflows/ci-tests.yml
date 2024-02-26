@@ -60,7 +60,7 @@ jobs:
       TEST_DIRS: ${{ needs.check-diff.outputs.test-dirs }}
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
-    # seems that MacOS jobs take much more than orger OS
+    # seems that macOS jobs take much more than orger OS
     timeout-minutes: 120
 
     steps:
@@ -204,7 +204,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: update cashing
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        if: github.event_name != 'pull_request'
         continue-on-error: true
         uses: ./.github/actions/push-caches
         with:

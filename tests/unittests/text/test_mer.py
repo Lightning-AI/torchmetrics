@@ -18,6 +18,7 @@ from torchmetrics.functional.text.mer import match_error_rate
 from torchmetrics.text.mer import MatchErrorRate
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
+from unittests.helpers import seed_all
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 
@@ -26,8 +27,10 @@ if _JIWER_AVAILABLE:
 else:
     compute_measures: Callable
 
+seed_all(42)
 
-def _compute_mer_metric_jiwer(preds: Union[str, List[str]], target: Union[str, List[str]]):
+
+def _reference_jiwer_mer(preds: Union[str, List[str]], target: Union[str, List[str]]):
     return compute_measures(target, preds)["mer"]
 
 
@@ -50,7 +53,7 @@ class TestMatchErrorRate(TextTester):
             preds=preds,
             targets=targets,
             metric_class=MatchErrorRate,
-            reference_metric=_compute_mer_metric_jiwer,
+            reference_metric=_reference_jiwer_mer,
         )
 
     def test_mer_functional(self, preds, targets):
@@ -59,7 +62,7 @@ class TestMatchErrorRate(TextTester):
             preds,
             targets,
             metric_functional=match_error_rate,
-            reference_metric=_compute_mer_metric_jiwer,
+            reference_metric=_reference_jiwer_mer,
         )
 
     def test_mer_differentiability(self, preds, targets):
