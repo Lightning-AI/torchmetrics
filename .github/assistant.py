@@ -12,16 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import glob
-import json
 import logging
 import os
 import re
 import sys
-import traceback
 from typing import List, Optional, Tuple, Union
 
 import fire
-import requests
 from packaging.version import parse
 from pkg_resources import parse_requirements
 
@@ -36,19 +33,6 @@ LUT_PYTHON_TORCH = {
 }
 _path = lambda *ds: os.path.join(_PATH_ROOT, *ds)
 REQUIREMENTS_FILES = (*glob.glob(_path("requirements", "*.txt")), _path("requirements.txt"))
-
-
-def request_url(url: str, auth_token: Optional[str] = None) -> Optional[dict]:
-    """General request with checking if request limit was reached."""
-    auth_header = {"Authorization": f"token {auth_token}"} if auth_token else {}
-    try:
-        req = requests.get(url, headers=auth_header, timeout=_REQUEST_TIMEOUT)
-    except requests.exceptions.Timeout:
-        traceback.print_exc()
-        return None
-    if req.status_code == 403:
-        return None
-    return json.loads(req.content.decode(req.encoding))
 
 
 class AssistantCLI:
@@ -114,15 +98,13 @@ class AssistantCLI:
         general_sub_pkgs: Tuple[str] = _PKG_WIDE_SUBPACKAGES,
     ) -> Union[str, List[str]]:
         """Determine what domains were changed in particular PR."""
+        import github
+
         if not pr:
             return "unittests"
-        url = f"https://api.github.com/repos/Lightning-AI/torchmetrics/pulls/{pr}/files"
-        logging.debug(url)
-        data = request_url(url, auth_token)
-        if not data:
-            logging.debug("WARNING: No data was received -> test everything.")
-            return "unittests"
-        files = [d["filename"] for d in data]
+        gh = github.Github()
+        pr = gh.get_repo("Lightning-AI/torchmetrics").get_pull(pr)
+        files = [f.filename for f in pr.get_files()]
 
         # filter out all integrations as they run in separate suit
         files = [fn for fn in files if not fn.startswith("tests/integrations")]
