@@ -22,7 +22,7 @@ from torchmetrics.functional.classification.exact_match import multiclass_exact_
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
-from unittests.classification.inputs import _multiclass_cases, _multilabel_cases
+from unittests.classification._inputs import _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester, inject_ignore_index
 

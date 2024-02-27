@@ -19,7 +19,7 @@ from torchmetrics.functional.text.edit import edit_distance
 from torchmetrics.text.edit import EditDistance
 
 from unittests.text.helpers import TextTester
-from unittests.text.inputs import _inputs_single_reference
+from unittests.text._inputs import _inputs_single_reference
 
 
 @pytest.mark.parametrize(

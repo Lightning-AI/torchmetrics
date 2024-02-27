@@ -24,7 +24,7 @@ from typing_extensions import Literal
 
 from unittests.helpers import skip_on_connection_issues
 from unittests.text.helpers import TextTester
-from unittests.text.inputs import _inputs_single_reference
+from unittests.text._inputs import _inputs_single_reference
 
 if _BERTSCORE_AVAILABLE:
     from bert_score import score as original_bert_score

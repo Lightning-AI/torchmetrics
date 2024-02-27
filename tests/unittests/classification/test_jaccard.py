@@ -33,7 +33,7 @@ from torchmetrics.functional.classification.jaccard import (
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 

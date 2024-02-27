@@ -29,7 +29,7 @@ from torchmetrics.functional.classification.group_fairness import binary_fairnes
 from torchmetrics.utilities.imports import _PYTHON_LOWER_3_8
 
 from unittests import THRESHOLD
-from unittests.classification.inputs import _group_cases
+from unittests.classification._inputs import _group_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import (
     MetricTester,

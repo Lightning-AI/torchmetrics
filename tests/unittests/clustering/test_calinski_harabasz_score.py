@@ -16,7 +16,7 @@ from sklearn.metrics import calinski_harabasz_score as sklearn_calinski_harabasz
 from torchmetrics.clustering.calinski_harabasz_score import CalinskiHarabaszScore
 from torchmetrics.functional.clustering.calinski_harabasz_score import calinski_harabasz_score
 
-from unittests.clustering.inputs import _single_target_intrinsic1, _single_target_intrinsic2
+from unittests.clustering._inputs import _single_target_intrinsic1, _single_target_intrinsic2
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 

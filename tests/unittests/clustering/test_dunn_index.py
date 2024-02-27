@@ -19,7 +19,7 @@ import pytest
 from torchmetrics.clustering.dunn_index import DunnIndex
 from torchmetrics.functional.clustering.dunn_index import dunn_index
 
-from unittests.clustering.inputs import (
+from unittests.clustering._inputs import (
     _single_target_intrinsic1,
     _single_target_intrinsic2,
 )
