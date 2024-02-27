@@ -70,7 +70,7 @@ def test_ranking(preds, target):
         assert (torch.tensor(scipy_ranking[1]) == tm_ranking[1]).all()
 
 
-def _scipy_spearman(preds, target):
+def _reference_scipy_spearman(preds, target):
     if preds.ndim == 2:
         return [spearmanr(t.numpy(), p.numpy())[0] for t, p in zip(target.T, preds.T)]
     return spearmanr(target.numpy(), preds.numpy())[0]
@@ -100,13 +100,13 @@ class TestSpearmanCorrCoef(MetricTester):
             preds,
             target,
             SpearmanCorrCoef,
-            _scipy_spearman,
+            _reference_scipy_spearman,
             metric_args={"num_outputs": num_outputs},
         )
 
     def test_spearman_corrcoef_functional(self, preds, target):
         """Test functional implementation of metric."""
-        self.run_functional_metric_test(preds, target, spearman_corrcoef, _scipy_spearman)
+        self.run_functional_metric_test(preds, target, spearman_corrcoef, _reference_scipy_spearman)
 
     def test_spearman_corrcoef_differentiability(self, preds, target):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""

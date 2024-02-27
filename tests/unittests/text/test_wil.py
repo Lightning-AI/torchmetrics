@@ -19,8 +19,8 @@ from torchmetrics.functional.text.wil import word_information_lost
 from torchmetrics.text.wil import WordInfoLost
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
+from unittests.text._inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 from unittests.text.helpers import TextTester
-from unittests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 
 
 def _reference_jiwer_wil(preds: Union[str, List[str]], target: Union[str, List[str]]):

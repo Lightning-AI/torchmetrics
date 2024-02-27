@@ -53,7 +53,7 @@ for size, channel, coef, dtype in [
     )
 
 
-def _skimage_ssim(
+def _reference_skimage_ssim(
     preds,
     target,
     data_range,
@@ -116,7 +116,7 @@ def _skimage_ssim(
     return results, fullimages
 
 
-def _pt_ssim(
+def _reference_msssim_ssim(
     preds,
     target,
     data_range,
@@ -147,8 +147,8 @@ class TestSSIM(MetricTester):
             ddp,
             preds,
             target,
-            StructuralSimilarityIndexMeasure,
-            partial(_skimage_ssim, data_range=data_range, sigma=sigma, kernel_size=None),
+            metric_class=StructuralSimilarityIndexMeasure,
+            reference_metric=partial(_reference_skimage_ssim, data_range=data_range, sigma=sigma, kernel_size=None),
             metric_args={
                 "data_range": data_range,
                 "sigma": sigma,
@@ -162,8 +162,8 @@ class TestSSIM(MetricTester):
             ddp,
             preds,
             target,
-            StructuralSimilarityIndexMeasure,
-            partial(_pt_ssim, data_range=1.0, sigma=sigma),
+            metric_class=StructuralSimilarityIndexMeasure,
+            reference_metric=partial(_reference_msssim_ssim, data_range=1.0, sigma=sigma),
             metric_args={
                 "data_range": 1.0,
                 "sigma": sigma,
@@ -177,8 +177,8 @@ class TestSSIM(MetricTester):
             ddp,
             preds,
             target,
-            StructuralSimilarityIndexMeasure,
-            partial(_skimage_ssim, data_range=1.0, sigma=sigma, kernel_size=None),
+            metric_class=StructuralSimilarityIndexMeasure,
+            reference_metric=partial(_reference_skimage_ssim, data_range=1.0, sigma=sigma, kernel_size=None),
             metric_args={
                 "gaussian_kernel": False,
                 "data_range": 1.0,
@@ -192,8 +192,10 @@ class TestSSIM(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            structural_similarity_index_measure,
-            partial(_skimage_ssim, data_range=1.0, sigma=sigma, kernel_size=None, reduction_arg=reduction_arg),
+            metric_functional=structural_similarity_index_measure,
+            reference_metric=partial(
+                _reference_skimage_ssim, data_range=1.0, sigma=sigma, kernel_size=None, reduction_arg=reduction_arg
+            ),
             metric_args={"data_range": 1.0, "sigma": sigma, "reduction": reduction_arg},
         )
 
@@ -203,8 +205,8 @@ class TestSSIM(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            structural_similarity_index_measure,
-            partial(_pt_ssim, data_range=1.0, sigma=sigma, reduction_arg=reduction_arg),
+            metric_functional=structural_similarity_index_measure,
+            reference_metric=partial(_reference_msssim_ssim, data_range=1.0, sigma=sigma, reduction_arg=reduction_arg),
             metric_args={"data_range": 1.0, "sigma": sigma, "reduction": reduction_arg},
         )
 
