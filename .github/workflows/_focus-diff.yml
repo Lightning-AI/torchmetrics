@@ -27,7 +27,7 @@ jobs:
           PR_NUMBER: "${{ github.event.pull_request.number }}"
         run: |
           echo $PR_NUMBER
-          pip install fire requests
+          pip install -q packaging fire pyGithub
           # python .github/assistant.py changed-domains $PR_NUMBER
           echo "focus=$(python .github/assistant.py changed-domains $PR_NUMBER)" >> $GITHUB_OUTPUT
 
