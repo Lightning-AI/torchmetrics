@@ -17,8 +17,8 @@ from typing import Tuple
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.image.helper import _uniform_filter
 from torchmetrics.functional.image.rmse_sw import _rmse_sw_compute, _rmse_sw_update
+from torchmetrics.functional.image.utils import _uniform_filter
 
 
 def _rase_update(
