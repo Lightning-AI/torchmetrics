@@ -26,6 +26,7 @@ jobs:
         env:
           PR_NUMBER: "${{ github.event.pull_request.number }}"
         run: |
+          set -e
           echo $PR_NUMBER
           pip install -q packaging fire pyGithub
           # python .github/assistant.py changed-domains $PR_NUMBER
