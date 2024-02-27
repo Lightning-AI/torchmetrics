@@ -1,7 +1,7 @@
 # NOTE: the upper bound for the package version is only set for CI stability, and it is dropped while installing this package
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
-coverage ==7.4.1
+coverage ==7.4.3
 pytest ==8.0.0
 pytest-cov ==4.1.0
 pytest-doctestplus ==1.1.0
@@ -17,4 +17,4 @@ fire <=0.5.0
 cloudpickle >1.3, <=3.0.0
 scikit-learn >=1.1.1, <1.4.0
 # todo: set proper version when all lands and it is released
-cachier @ https://github.com/python-cachier/cachier/archive/refs/heads/master.zip
+cachier ==3.0.0
