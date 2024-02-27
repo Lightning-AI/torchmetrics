@@ -36,7 +36,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_11
 
 from unittests import NUM_CLASSES
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
@@ -74,7 +74,7 @@ def _sensitivity_at_specificity_x_multilabel(predictions, targets, min_specifici
     return float(max_spec), float(best_threshold)
 
 
-def _sklearn_sensitivity_at_specificity_binary(preds, target, min_specificity, ignore_index=None):
+def _reference_sklearn_sensitivity_at_specificity_binary(preds, target, min_specificity, ignore_index=None):
     preds = preds.flatten().numpy()
     target = target.flatten().numpy()
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
@@ -103,7 +103,9 @@ class TestBinarySensitivityAtSpecificity(MetricTester):
             target=target,
             metric_class=BinarySensitivityAtSpecificity,
             reference_metric=partial(
-                _sklearn_sensitivity_at_specificity_binary, min_specificity=min_specificity, ignore_index=ignore_index
+                _reference_sklearn_sensitivity_at_specificity_binary,
+                min_specificity=min_specificity,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_specificity": min_specificity,
@@ -125,7 +127,9 @@ class TestBinarySensitivityAtSpecificity(MetricTester):
             target=target,
             metric_functional=binary_sensitivity_at_specificity,
             reference_metric=partial(
-                _sklearn_sensitivity_at_specificity_binary, min_specificity=min_specificity, ignore_index=ignore_index
+                _reference_sklearn_sensitivity_at_specificity_binary,
+                min_specificity=min_specificity,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_specificity": min_specificity,
@@ -188,7 +192,7 @@ class TestBinarySensitivityAtSpecificity(MetricTester):
             assert torch.allclose(r1, r2)
 
 
-def _sklearn_sensitivity_at_specificity_multiclass(preds, target, min_specificity, ignore_index=None):
+def _reference_sklearn_sensitivity_at_specificity_multiclass(preds, target, min_specificity, ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
@@ -227,7 +231,7 @@ class TestMulticlassSensitivityAtSpecificity(MetricTester):
             target=target,
             metric_class=MulticlassSensitivityAtSpecificity,
             reference_metric=partial(
-                _sklearn_sensitivity_at_specificity_multiclass,
+                _reference_sklearn_sensitivity_at_specificity_multiclass,
                 min_specificity=min_specificity,
                 ignore_index=ignore_index,
             ),
@@ -252,7 +256,7 @@ class TestMulticlassSensitivityAtSpecificity(MetricTester):
             target=target,
             metric_functional=multiclass_sensitivity_at_specificity,
             reference_metric=partial(
-                _sklearn_sensitivity_at_specificity_multiclass,
+                _reference_sklearn_sensitivity_at_specificity_multiclass,
                 min_specificity=min_specificity,
                 ignore_index=ignore_index,
             ),
@@ -325,10 +329,12 @@ class TestMulticlassSensitivityAtSpecificity(MetricTester):
             assert all(torch.allclose(r1[i], r2[i]) for i in range(len(r1)))
 
 
-def _sklearn_sensitivity_at_specificity_multilabel(preds, target, min_specificity, ignore_index=None):
+def _reference_sklearn_sensitivity_at_specificity_multilabel(preds, target, min_specificity, ignore_index=None):
     sensitivity, thresholds = [], []
     for i in range(NUM_CLASSES):
-        res = _sklearn_sensitivity_at_specificity_binary(preds[:, i], target[:, i], min_specificity, ignore_index)
+        res = _reference_sklearn_sensitivity_at_specificity_binary(
+            preds[:, i], target[:, i], min_specificity, ignore_index
+        )
         sensitivity.append(res[0])
         thresholds.append(res[1])
     return sensitivity, thresholds
@@ -356,7 +362,7 @@ class TestMultilabelSensitivityAtSpecificity(MetricTester):
             target=target,
             metric_class=MultilabelSensitivityAtSpecificity,
             reference_metric=partial(
-                _sklearn_sensitivity_at_specificity_multilabel,
+                _reference_sklearn_sensitivity_at_specificity_multilabel,
                 min_specificity=min_specificity,
                 ignore_index=ignore_index,
             ),
@@ -381,7 +387,7 @@ class TestMultilabelSensitivityAtSpecificity(MetricTester):
             target=target,
             metric_functional=multilabel_sensitivity_at_specificity,
             reference_metric=partial(
-                _sklearn_sensitivity_at_specificity_multilabel,
+                _reference_sklearn_sensitivity_at_specificity_multilabel,
                 min_specificity=min_specificity,
                 ignore_index=ignore_index,
             ),

@@ -58,7 +58,7 @@ def _to_sk_peak_signal_noise_ratio_inputs(value, dim):
     return inputs
 
 
-def _skimage_psnr(preds, target, data_range, reduction, dim):
+def _reference_skimage_psnr(preds, target, data_range, reduction, dim):
     if isinstance(data_range, tuple):
         preds = preds.clamp(min=data_range[0], max=data_range[1])
         target = target.clamp(min=data_range[0], max=data_range[1])
@@ -72,8 +72,8 @@ def _skimage_psnr(preds, target, data_range, reduction, dim):
     ])
 
 
-def _base_e_sk_psnr(preds, target, data_range, reduction, dim):
-    return _skimage_psnr(preds, target, data_range, reduction, dim) * np.log(10)
+def _reference_sklearn_psnr_log(preds, target, data_range, reduction, dim):
+    return _reference_skimage_psnr(preds, target, data_range, reduction, dim) * np.log(10)
 
 
 @pytest.mark.parametrize(
@@ -91,8 +91,8 @@ def _base_e_sk_psnr(preds, target, data_range, reduction, dim):
 @pytest.mark.parametrize(
     "base, ref_metric",
     [
-        (10.0, _skimage_psnr),
-        (2.718281828459045, _base_e_sk_psnr),
+        (10.0, _reference_skimage_psnr),
+        (2.718281828459045, _reference_sklearn_psnr_log),
     ],
 )
 class TestPSNR(MetricTester):
@@ -106,8 +106,8 @@ class TestPSNR(MetricTester):
             ddp,
             preds,
             target,
-            PeakSignalNoiseRatio,
-            partial(ref_metric, data_range=data_range, reduction=reduction, dim=dim),
+            metric_class=PeakSignalNoiseRatio,
+            reference_metric=partial(ref_metric, data_range=data_range, reduction=reduction, dim=dim),
             metric_args=_args,
         )
 
@@ -117,8 +117,8 @@ class TestPSNR(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            peak_signal_noise_ratio,
-            partial(ref_metric, data_range=data_range, reduction=reduction, dim=dim),
+            metric_functional=peak_signal_noise_ratio,
+            reference_metric=partial(ref_metric, data_range=data_range, reduction=reduction, dim=dim),
             metric_args=_args,
         )
 

@@ -19,11 +19,11 @@ from torchmetrics.functional.text.wip import word_information_preserved
 from torchmetrics.text.wip import WordInfoPreserved
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
+from unittests.text._inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 from unittests.text.helpers import TextTester
-from unittests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 
 
-def _compute_wip_metric_jiwer(preds: Union[str, List[str]], target: Union[str, List[str]]):
+def _reference_jiwer_wip(preds: Union[str, List[str]], target: Union[str, List[str]]):
     return wip(target, preds)
 
 
@@ -46,7 +46,7 @@ class TestWordInfoPreserved(TextTester):
             preds=preds,
             targets=targets,
             metric_class=WordInfoPreserved,
-            reference_metric=_compute_wip_metric_jiwer,
+            reference_metric=_reference_jiwer_wip,
         )
 
     def test_wip_functional(self, preds, targets):
@@ -55,7 +55,7 @@ class TestWordInfoPreserved(TextTester):
             preds,
             targets,
             metric_functional=word_information_preserved,
-            reference_metric=_compute_wip_metric_jiwer,
+            reference_metric=_reference_jiwer_wip,
         )
 
     def test_wip_differentiability(self, preds, targets):

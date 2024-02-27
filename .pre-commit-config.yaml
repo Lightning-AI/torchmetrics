@@ -93,17 +93,6 @@ repos:
         # https://prettier.io/docs/en/options.html#print-width
         args: ["--print-width=120"]
 
-  - repo: https://github.com/asottile/yesqa
-    rev: v1.5.0
-    hooks:
-      - id: yesqa
-        additional_dependencies:
-          - pep8-naming
-          - flake8-pytest-style
-          - flake8-bandit
-          - flake8-builtins
-          - flake8-bugbear
-
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
@@ -135,3 +124,13 @@ repos:
         args: ["--preview"]
       - id: ruff
         args: ["--fix"]
+
+  - repo: https://github.com/tox-dev/pyproject-fmt
+    rev: 1.7.0
+    hooks:
+      - id: pyproject-fmt
+        additional_dependencies: [tox]
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: v0.16
+    hooks:
+      - id: validate-pyproject

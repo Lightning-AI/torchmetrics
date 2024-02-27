@@ -40,18 +40,18 @@ jobs:
           - "1.13.1"
           - "2.0.1"
           - "2.1.2"
-          - "2.2.0"
+          - "2.2.1"
         include:
           - { os: "ubuntu-22.04", python-version: "3.8", pytorch-version: "1.13.1" }
           - { os: "ubuntu-22.04", python-version: "3.10", pytorch-version: "2.0.1" }
-          - { os: "ubuntu-22.04", python-version: "3.10", pytorch-version: "2.2.0" }
-          - { os: "ubuntu-22.04", python-version: "3.11", pytorch-version: "2.2.0" }
+          - { os: "ubuntu-22.04", python-version: "3.10", pytorch-version: "2.2.1" }
+          - { os: "ubuntu-22.04", python-version: "3.11", pytorch-version: "2.2.1" }
           - { os: "macOS-12", python-version: "3.8", pytorch-version: "1.13.1" }
           - { os: "macOS-12", python-version: "3.10", pytorch-version: "2.0.1" }
-          - { os: "macOS-12", python-version: "3.11", pytorch-version: "2.2.0" }
+          - { os: "macOS-12", python-version: "3.11", pytorch-version: "2.2.1" }
           - { os: "windows-2022", python-version: "3.8", pytorch-version: "1.13.1" }
           - { os: "windows-2022", python-version: "3.10", pytorch-version: "2.0.1" }
-          - { os: "windows-2022", python-version: "3.11", pytorch-version: "2.2.0" }
+          - { os: "windows-2022", python-version: "3.11", pytorch-version: "2.2.1" }
     env:
       PYTORCH_URL: "https://download.pytorch.org/whl/cpu/torch_stable.html"
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
@@ -60,7 +60,7 @@ jobs:
       TEST_DIRS: ${{ needs.check-diff.outputs.test-dirs }}
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
-    # seems that MacOS jobs take much more than orger OS
+    # seems that macOS jobs take much more than orger OS
     timeout-minutes: 120
 
     steps:
@@ -202,7 +202,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: update cashing
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        if: github.event_name != 'pull_request'
         continue-on-error: true
         uses: ./.github/actions/push-caches
         with:
