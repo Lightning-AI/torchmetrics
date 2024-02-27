@@ -94,6 +94,7 @@ class CompleteIntersectionOverUnion(IntersectionOverUnion):
             If torchvision is not installed with version 0.13.0 or newer.
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = True

@@ -20,7 +20,6 @@ from torchmetrics.functional.text.perplexity import perplexity
 from torchmetrics.text.perplexity import Perplexity
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_2
 
-from unittests import reference_cachier
 from unittests.helpers.testers import MetricTester
 from unittests.text.inputs import (
     MASK_INDEX,
@@ -31,7 +30,6 @@ from unittests.text.inputs import (
 )
 
 
-@reference_cachier
 def _reference_local_perplexity(preds, target, ignore_index):
     """Baseline implementation of perplexity metric based upon PyTorch Cross Entropy."""
     preds = preds.reshape(-1, preds.shape[-1])

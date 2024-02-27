@@ -64,6 +64,7 @@ class CalinskiHarabaszScore(Metric):
         tensor(3.0053)
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = False

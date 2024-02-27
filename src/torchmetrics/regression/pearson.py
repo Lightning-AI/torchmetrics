@@ -110,6 +110,7 @@ class PearsonCorrCoef(Metric):
         tensor([1., 1.])
 
     """
+
     is_differentiable: bool = True
     higher_is_better: Optional[bool] = None  # both -1 and 1 are optimal
     full_state_update: bool = True

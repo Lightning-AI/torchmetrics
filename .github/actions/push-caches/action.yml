@@ -94,10 +94,10 @@ runs:
       continue-on-error: true
       uses: actions/cache/save@v3
       with:
-        enableCrossOsArchive: true
-        path: tests/_reference-cache
+        #enableCrossOsArchive: true
+        path: tests/_cache-references
         key: cache-references
 
     - name: Post References
-      run: ls -lh tests/_reference-cache/
+      run: ls -lh tests/_cache-references/
       shell: bash

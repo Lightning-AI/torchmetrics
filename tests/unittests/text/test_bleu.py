@@ -20,7 +20,6 @@ from torch import tensor
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.text.bleu import BLEUScore
 
-from unittests import reference_cachier
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_multiple_references
 
@@ -28,7 +27,6 @@ from unittests.text.inputs import _inputs_multiple_references
 smooth_func = SmoothingFunction().method2
 
 
-@reference_cachier
 def _reference_bleu_metric_nltk(preds, targets, weights, smoothing_function, **kwargs: Any):
     preds_ = [pred.split() for pred in preds]
     targets_ = [[line.split() for line in target] for target in targets]

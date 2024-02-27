@@ -1,10 +1,9 @@
-import functools
 import os.path
-from typing import Any, NamedTuple
+from typing import NamedTuple
 
 import numpy
 import torch
-from joblib import Memory
+from cachier import cachier
 from torch import Tensor
 
 from unittests.conftest import (
@@ -24,21 +23,10 @@ for tp_name, tp_ins in [("object", object), ("bool", bool), ("int", int), ("floa
 
 _PATH_UNITTESTS = os.path.dirname(__file__)
 _PATH_ALL_TESTS = os.path.dirname(_PATH_UNITTESTS)
-_PATH_TEST_CACHE = os.getenv("PYTEST_REFERENCE_CACHE", os.path.join(_PATH_ALL_TESTS, "_reference-cache"))
+_PATH_TEST_CACHE = os.getenv("PYTEST_REFERENCE_CACHE", os.path.join(_PATH_ALL_TESTS, "_cache-references"))
 
-if os.getenv("USE_PERSISTENT_REF_CACHE", "0") == "1":
-    reference_cachier = Memory(_PATH_TEST_CACHE, verbose=0).cache
-    # reference_cachier = partial(cachier, cache_dir=_PATH_TEST_CACHE)
-else:
 
-    def reference_cachier(func):
-        """Empty/identity wrapper jut to have parity with persistent wrapper."""
-
-        @functools.wraps(func)
-        def wrapped_func(*args: Any, **kwargs: Any):
-            return func(*args, **kwargs)
-
-        return wrapped_func
+_reference_cachier = cachier(cache_dir=_PATH_TEST_CACHE, separate_files=True)
 
 
 if torch.cuda.is_available():

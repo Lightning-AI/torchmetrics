@@ -22,7 +22,8 @@ import torch
 from torch import Tensor
 from torchmetrics import Metric
 
-from unittests import NUM_PROCESSES
+from unittests import NUM_PROCESSES, _reference_cachier
+from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester, _assert_allclose, _assert_requires_grad, _assert_tensor
 
 TEXT_METRIC_INPUT = Union[Sequence[str], Sequence[Sequence[str]], Sequence[Sequence[Sequence[str]]]]
@@ -30,21 +31,21 @@ NUM_BATCHES = 2
 
 
 def _assert_all_close_regardless_of_order(
-    pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Optional[str] = None
+    pl_result: Any, ref_result: Any, atol: float = 1e-8, key: Optional[str] = None
 ) -> None:
     """Recursively asserting that two results are within a certain tolerance regardless of the order."""
     # single output compare
     if isinstance(pl_result, Tensor):
-        assert np.allclose(pl_result.detach().cpu().numpy().mean(-1), sk_result.mean(-1), atol=atol, equal_nan=True)
+        assert np.allclose(pl_result.detach().cpu().numpy().mean(-1), ref_result.mean(-1), atol=atol, equal_nan=True)
     # multi output compare
     elif isinstance(pl_result, Sequence):
-        for pl_res, sk_res in zip(pl_result, sk_result):
-            _assert_allclose(pl_res, sk_res, atol=atol)
+        for pl_res, ref_res in zip(pl_result, ref_result):
+            _assert_allclose(pl_res, ref_res, atol=atol)
     elif isinstance(pl_result, Dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
         assert np.allclose(
-            pl_result[key].detach().cpu().numpy().mean(-1), sk_result.mean(-1), atol=atol, equal_nan=True
+            pl_result[key].detach().cpu().numpy().mean(-1), ref_result.mean(-1), atol=atol, equal_nan=True
         )
     else:
         raise ValueError("Unknown format for comparison")
@@ -130,22 +131,22 @@ def _class_test(
                 for k, v in (kwargs_update if fragment_kwargs else batch_kwargs_update).items()
             }
 
-            sk_batch_result = reference_metric(ddp_preds, ddp_targets, **ddp_kwargs_upd)
+            ref_batch_result = _reference_cachier(reference_metric)(ddp_preds, ddp_targets, **ddp_kwargs_upd)
             if ignore_order:
-                _assert_all_close_regardless_of_order(batch_result, sk_batch_result, atol=atol, key=key)
+                _assert_all_close_regardless_of_order(batch_result, ref_batch_result, atol=atol, key=key)
             else:
-                _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
+                _assert_allclose(batch_result, ref_batch_result, atol=atol, key=key)
 
         elif check_batch and not metric.dist_sync_on_step:
             batch_kwargs_update = {
                 k: v.cpu() if isinstance(v, Tensor) else v
                 for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
             }
-            sk_batch_result = reference_metric(preds[i], targets[i], **batch_kwargs_update)
+            ref_batch_result = _reference_cachier(reference_metric)(preds[i], targets[i], **batch_kwargs_update)
             if ignore_order:
-                _assert_all_close_regardless_of_order(batch_result, sk_batch_result, atol=atol, key=key)
+                _assert_all_close_regardless_of_order(batch_result, ref_batch_result, atol=atol, key=key)
             else:
-                _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
+                _assert_allclose(batch_result, ref_batch_result, atol=atol, key=key)
 
     # check that metrics are hashable
     assert hash(metric)
@@ -164,12 +165,12 @@ def _class_test(
         k: torch.cat([v[i] for i in range(NUM_BATCHES)]).cpu() if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
     }
-    sk_result = reference_metric(total_preds, total_targets, **total_kwargs_update)
+    ref_result = _reference_cachier(reference_metric)(total_preds, total_targets, **total_kwargs_update)
     # assert after aggregation
     if ignore_order:
-        _assert_all_close_regardless_of_order(result, sk_result, atol=atol, key=key)
+        _assert_all_close_regardless_of_order(result, ref_result, atol=atol, key=key)
     else:
-        _assert_allclose(result, sk_result, atol=atol, key=key)
+        _assert_allclose(result, ref_result, atol=atol, key=key)
 
 
 def _functional_test(
@@ -214,10 +215,10 @@ def _functional_test(
             k: v.cpu() if isinstance(v, Tensor) else v
             for k, v in (extra_kwargs if fragment_kwargs else kwargs_update).items()
         }
-        sk_result = reference_metric(preds[i], targets[i], **extra_kwargs)
+        ref_result = _reference_cachier(reference_metric)(preds[i], targets[i], **extra_kwargs)
 
         # assert its the same
-        _assert_allclose(tm_result, sk_result, atol=atol, key=key)
+        _assert_allclose(tm_result, ref_result, atol=atol, key=key)
 
 
 def _assert_half_support(
@@ -286,7 +287,8 @@ class TextTester(MetricTester):
                 targets when running update on the metric.
 
         """
-        device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
+        seed_all(42)
+        device = "cuda" if torch.cuda.device_count() > 0 else "cpu"
 
         _functional_test(
             preds=preds,
@@ -342,6 +344,7 @@ class TextTester(MetricTester):
                 targets when running update on the metric.
 
         """
+        seed_all(42)
         common_kwargs = {
             "preds": preds,
             "targets": targets,

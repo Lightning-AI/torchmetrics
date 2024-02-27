@@ -68,6 +68,7 @@ class SignalNoiseRatio(Metric):
         tensor(16.1805)
 
     """
+
     full_state_update: bool = False
     is_differentiable: bool = True
     higher_is_better: bool = True

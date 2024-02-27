@@ -17,7 +17,7 @@ from typing import Optional, Tuple, Union
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.image.helper import _uniform_filter
+from torchmetrics.functional.image.utils import _uniform_filter
 from torchmetrics.utilities.checks import _check_same_shape
 
 

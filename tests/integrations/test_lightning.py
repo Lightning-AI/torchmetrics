@@ -367,12 +367,10 @@ def test_task_wrapper_lightning_logging(tmpdir):
         def __init__(self) -> None:
             super().__init__()
             self.multitask = MultitaskWrapper({"classification": BinaryAccuracy(), "regression": MeanSquaredError()})
-            self.multitask_collection = MultitaskWrapper(
-                {
-                    "classification": MetricCollection([BinaryAccuracy(), BinaryAveragePrecision()]),
-                    "regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
-                }
-            )
+            self.multitask_collection = MultitaskWrapper({
+                "classification": MetricCollection([BinaryAccuracy(), BinaryAveragePrecision()]),
+                "regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
+            })
 
             self.accuracy = BinaryAccuracy()
             self.mse = MeanSquaredError()

@@ -230,9 +230,7 @@ def scale_invariant_signal_distortion_ratio(preds: Tensor, target: Tensor, zero_
         target = target - torch.mean(target, dim=-1, keepdim=True)
         preds = preds - torch.mean(preds, dim=-1, keepdim=True)
 
-    alpha = (torch.sum(preds * target, dim=-1, keepdim=True) + eps) / (
-        torch.sum(target**2, dim=-1, keepdim=True) + eps
-    )
+    alpha = (torch.sum(preds * target, dim=-1, keepdim=True) + eps) / (torch.sum(target**2, dim=-1, keepdim=True) + eps)
     target_scaled = alpha * target
 
     noise = target_scaled - preds

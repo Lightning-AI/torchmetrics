@@ -19,7 +19,6 @@ from torchmetrics.functional.text.infolm import infolm
 from torchmetrics.text.infolm import InfoLM
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
-from unittests import reference_cachier
 from unittests.helpers import skip_on_connection_issues
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import HYPOTHESIS_A, HYPOTHESIS_C, _inputs_single_reference
@@ -29,7 +28,6 @@ MODEL_NAME = "google/bert_uncased_L-2_H-128_A-2"
 MAX_LENGTH = 30  # the selected model has default max_length = 20 and we have longer sequences
 
 
-@reference_cachier
 def _reference_infolm_score(preds, target, model_name, information_measure, idf, alpha, beta):
     """Baseline implementation is currently not available.
 
@@ -52,23 +50,19 @@ def _reference_infolm_score(preds, target, model_name, information_measure, idf,
     }
     # Add results for idf=True -> for functional metrics, we calculate idf only over the batch yet
     if len(preds) == 2:
-        precomputed_result.update(
-            {
-                "alpha_divergence": torch.tensor([-1.2851, -0.1262, -0.1262, -1.3096]),
-                "ab_divergence": torch.tensor([5.9517, 0.5222, 0.5222, 7.0017]),
-                "l1_distance": torch.tensor([0.9679, 0.1877, 0.1877, 0.9561]),
-                "l_infinity_distance": torch.tensor([0.0789, 0.0869, 0.0869, 0.2324]),
-            }
-        )
+        precomputed_result.update({
+            "alpha_divergence": torch.tensor([-1.2851, -0.1262, -0.1262, -1.3096]),
+            "ab_divergence": torch.tensor([5.9517, 0.5222, 0.5222, 7.0017]),
+            "l1_distance": torch.tensor([0.9679, 0.1877, 0.1877, 0.9561]),
+            "l_infinity_distance": torch.tensor([0.0789, 0.0869, 0.0869, 0.2324]),
+        })
     elif len(preds) == 4:
-        precomputed_result.update(
-            {
-                "alpha_divergence": torch.tensor([-1.2893, -0.1262, -0.1262, -1.4035]),
-                "ab_divergence": torch.tensor([5.9565, 0.5222, 0.5222, 7.1950]),
-                "l1_distance": torch.tensor([0.9591, 0.1877, 0.1877, 1.0823]),
-                "l_infinity_distance": torch.tensor([0.0777, 0.0869, 0.0869, 0.2614]),
-            }
-        )
+        precomputed_result.update({
+            "alpha_divergence": torch.tensor([-1.2893, -0.1262, -0.1262, -1.4035]),
+            "ab_divergence": torch.tensor([5.9565, 0.5222, 0.5222, 7.1950]),
+            "l1_distance": torch.tensor([0.9591, 0.1877, 0.1877, 1.0823]),
+            "l_infinity_distance": torch.tensor([0.0777, 0.0869, 0.0869, 0.2614]),
+        })
     else:
         raise ValueError("Invalid batch provided.")
 

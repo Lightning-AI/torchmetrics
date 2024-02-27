@@ -18,7 +18,6 @@ from nltk.metrics.distance import edit_distance as nltk_edit_distance
 from torchmetrics.functional.text.edit import edit_distance
 from torchmetrics.text.edit import EditDistance
 
-from unittests import reference_cachier
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_single_reference
 
@@ -70,7 +69,6 @@ def test_for_correctness(
         assert predicted == expected
 
 
-@reference_cachier
 def _reference_nltk_edit_dist(preds, target, substitution_cost=1, reduction="mean"):
     costs = [nltk_edit_distance(p, t, substitution_cost=substitution_cost) for p, t in zip(preds, target)]
     if reduction == "mean":
