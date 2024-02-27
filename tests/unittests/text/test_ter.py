@@ -20,14 +20,14 @@ from torchmetrics.functional.text.ter import translation_edit_rate
 from torchmetrics.text.ter import TranslationEditRate
 from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
 
+from unittests.text._inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 from unittests.text.helpers import TextTester
-from unittests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 
 if _SACREBLEU_AVAILABLE:
     from sacrebleu.metrics import TER as SacreTER  # noqa: N811
 
 
-def _sacrebleu_ter_fn(
+def _reference_sacrebleu_ter(
     preds: Sequence[str],
     target: Sequence[Sequence[str]],
     normalized: bool,
@@ -73,7 +73,7 @@ class TestTER(TextTester):
             "lowercase": lowercase,
         }
         nltk_metric = partial(
-            _sacrebleu_ter_fn,
+            _reference_sacrebleu_ter,
             normalized=normalize,
             no_punct=no_punctuation,
             asian_support=asian_support,
@@ -98,7 +98,7 @@ class TestTER(TextTester):
             "lowercase": lowercase,
         }
         nltk_metric = partial(
-            _sacrebleu_ter_fn,
+            _reference_sacrebleu_ter,
             normalized=normalize,
             no_punct=no_punctuation,
             asian_support=asian_support,

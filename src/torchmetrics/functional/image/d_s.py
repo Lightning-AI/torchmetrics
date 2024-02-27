@@ -185,7 +185,7 @@ def _spatial_distortion_index_compute(
             )
         from torchvision.transforms.functional import resize
 
-        from torchmetrics.functional.image.helper import _uniform_filter
+        from torchmetrics.functional.image.utils import _uniform_filter
 
         pan_degraded = _uniform_filter(pan, window_size=window_size)
         pan_degraded = resize(pan_degraded, size=ms.shape[-2:], antialias=False)

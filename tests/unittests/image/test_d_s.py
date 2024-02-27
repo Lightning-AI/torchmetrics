@@ -73,7 +73,7 @@ for size, channel, norm_order, r, window_size, pan_lr_exists, dtype in [
     )
 
 
-def _baseline_d_s(
+def _reference_d_s(
     preds: np.ndarray,
     ms: np.ndarray,
     pan: np.ndarray,
@@ -125,7 +125,7 @@ def _np_d_s(preds, target, pan=None, pan_lr=None, norm_order=1, window_size=7):
         np_pan = pan.permute(0, 2, 3, 1).cpu().numpy()
         np_pan_lr = pan_lr.permute(0, 2, 3, 1).cpu().numpy() if pan_lr is not None else None
 
-    return _baseline_d_s(
+    return _reference_d_s(
         np_preds,
         np_ms,
         np_pan,

@@ -62,7 +62,7 @@ def cramers_matrix_input():
     return matrix
 
 
-def _dython_cramers_v(preds, target, bias_correction, nan_strategy, nan_replace_value):
+def _reference_dython_cramers_v(preds, target, bias_correction, nan_strategy, nan_replace_value):
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
 
@@ -81,7 +81,7 @@ def _dython_cramers_v_matrix(matrix, bias_correction, nan_strategy, nan_replace_
     cramers_v_matrix_value = torch.ones(num_variables, num_variables)
     for i, j in itertools.combinations(range(num_variables), 2):
         x, y = matrix[:, i], matrix[:, j]
-        cramers_v_matrix_value[i, j] = cramers_v_matrix_value[j, i] = _dython_cramers_v(
+        cramers_v_matrix_value[i, j] = cramers_v_matrix_value[j, i] = _reference_dython_cramers_v(
             x, y, bias_correction, nan_strategy, nan_replace_value
         )
     return cramers_v_matrix_value
@@ -113,7 +113,7 @@ class TestCramersV(MetricTester):
             "num_classes": NUM_CLASSES,
         }
         reference_metric = partial(
-            _dython_cramers_v,
+            _reference_dython_cramers_v,
             bias_correction=bias_correction,
             nan_strategy=nan_strategy,
             nan_replace_value=nan_replace_value,
@@ -135,7 +135,7 @@ class TestCramersV(MetricTester):
             "nan_replace_value": nan_replace_value,
         }
         reference_metric = partial(
-            _dython_cramers_v,
+            _reference_dython_cramers_v,
             bias_correction=bias_correction,
             nan_strategy=nan_strategy,
             nan_replace_value=nan_replace_value,

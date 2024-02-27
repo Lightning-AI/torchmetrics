@@ -23,8 +23,8 @@ from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE, _TRANSFORMERS_G
 from typing_extensions import Literal
 
 from unittests.helpers import skip_on_connection_issues
+from unittests.text._inputs import _inputs_single_reference
 from unittests.text.helpers import TextTester
-from unittests.text.inputs import _inputs_single_reference
 
 if _BERTSCORE_AVAILABLE:
     from bert_score import score as original_bert_score
@@ -43,9 +43,9 @@ MODEL_NAME = "albert-base-v2"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
+@skip_on_connection_issues()
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
-@skip_on_connection_issues()
 def _reference_bert_score(
     preds: Sequence[str],
     target: Sequence[str],
@@ -95,7 +95,7 @@ class TestBERTScore(TextTester):
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @skip_on_connection_issues()
     def test_bertscore_class(self, ddp, preds, targets, num_layers, all_layers, idf, rescale_with_baseline, metric_key):
-        """Test the bertscore class."""
+        """Test the bert score class."""
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "num_layers": num_layers,

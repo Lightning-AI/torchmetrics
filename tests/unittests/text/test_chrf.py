@@ -20,14 +20,14 @@ from torchmetrics.functional.text.chrf import chrf_score
 from torchmetrics.text.chrf import CHRFScore
 from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
 
+from unittests.text._inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 from unittests.text.helpers import TextTester
-from unittests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 
 if _SACREBLEU_AVAILABLE:
     from sacrebleu.metrics import CHRF
 
 
-def _sacrebleu_chrf_fn(
+def _reference_sacrebleu_chrf(
     preds: Sequence[str],
     targets: Sequence[Sequence[str]],
     char_order: int,
@@ -73,7 +73,11 @@ class TestCHRFScore(TextTester):
             "whitespace": whitespace,
         }
         nltk_metric = partial(
-            _sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
+            _reference_sacrebleu_chrf,
+            char_order=char_order,
+            word_order=word_order,
+            lowercase=lowercase,
+            whitespace=whitespace,
         )
 
         self.run_class_metric_test(
@@ -94,7 +98,11 @@ class TestCHRFScore(TextTester):
             "whitespace": whitespace,
         }
         nltk_metric = partial(
-            _sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
+            _reference_sacrebleu_chrf,
+            char_order=char_order,
+            word_order=word_order,
+            lowercase=lowercase,
+            whitespace=whitespace,
         )
 
         self.run_functional_metric_test(
