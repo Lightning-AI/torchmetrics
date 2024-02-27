@@ -9,7 +9,6 @@ pytest-rerunfailures ==13.0
 pytest-timeout ==2.2.0
 pytest-xdist ==3.5.0
 phmdoctest ==1.4.0
-joblib ==1.3.2
 
 psutil <5.10.0
 requests <=2.31.0
