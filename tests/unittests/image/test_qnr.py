@@ -91,7 +91,7 @@ def _reference_numpy_quality_with_no_ref(
         pan_lr = pan_lr.permute(0, 2, 3, 1).cpu().numpy() if pan_lr is not None else None
 
     d_lambda = _baseline_d_lambda(preds, ms, norm_order)
-    d_s = _reference_d_s(preds, ms, pan, pan_lr, alpha=alpha, beta=beta, norm_order=norm_order, window_size=window_size)
+    d_s = _reference_d_s(preds, ms, pan, pan_lr, norm_order=norm_order, window_size=window_size)
     return (1 - d_lambda) ** alpha * (1 - d_s) ** beta
 
 
