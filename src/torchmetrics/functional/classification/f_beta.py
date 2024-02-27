@@ -386,10 +386,12 @@ def binary_f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute F-1 score for binary tasks.
+    r"""Compute F-1 score (also known as Dice score/similarity) for binary tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
+
+    F-1 score correspond to equally weighted average of the precision and recall scores.
 
     Accepts the following input tensors:
 
@@ -463,10 +465,12 @@ def multiclass_f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute F-1 score for multiclass tasks.
+    r"""Compute F-1 score (also known as Dice score/similarity) for multiclass tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
+
+    F-1 score correspond to equally weighted average of the precision and recall scores.
 
     Accepts the following input tensors:
 
@@ -570,10 +574,12 @@ def multilabel_f1_score(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute F-1 score for multilabel tasks.
+    r"""Compute F-1 score (also known as Dice score/similarity) for multilabel tasks:
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
+
+    F-1 score correspond to equally weighted average of the precision and recall scores.
 
     Accepts the following input tensors:
 

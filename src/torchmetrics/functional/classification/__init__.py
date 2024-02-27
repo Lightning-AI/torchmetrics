@@ -52,6 +52,7 @@ from torchmetrics.functional.classification.f_beta import (
     multilabel_f1_score,
     multilabel_fbeta_score,
 )
+from torchmetrics.functional.classification.generalized_dice import generalized_dice_score
 from torchmetrics.functional.classification.group_fairness import (
     binary_fairness,
     binary_groups_stat_rates,
@@ -159,6 +160,7 @@ __all__ = [
     "confusion_matrix",
     "multiclass_confusion_matrix",
     "multilabel_confusion_matrix",
+    "generalized_dice_score",
     "dice",
     "exact_match",
     "multiclass_exact_match",
