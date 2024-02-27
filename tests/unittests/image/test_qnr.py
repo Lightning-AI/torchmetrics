@@ -25,7 +25,7 @@ from torchmetrics.image.qnr import QualityWithNoReference
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
-from unittests.image.test_d_lambda import _reference_d_lambda
+from unittests.image.test_d_lambda import _baseline_d_lambda
 from unittests.image.test_d_s import _reference_d_s
 
 seed_all(42)
@@ -76,45 +76,26 @@ for size, channel, alpha, beta, norm_order, r, window_size, pan_lr_exists, dtype
     )
 
 
-def _baseline_quality_with_no_reference(
-    preds: np.ndarray,
-    ms: np.ndarray,
-    pan: np.ndarray,
-    pan_lr: np.ndarray = None,
-    alpha: float = 1,
-    beta: float = 1,
-    norm_order: int = 1,
-    window_size: int = 7,
-) -> float:
-    """NumPy based implementation of Quality with No Reference, which uses D_lambda and D_s."""
-    d_lambda = _reference_d_lambda(preds, ms, norm_order)
-    d_s = _reference_d_s(preds, ms, pan, pan_lr, norm_order, window_size)
-    return (1 - d_lambda) ** alpha * (1 - d_s) ** beta
-
-
-def _np_quality_with_no_reference(preds, target, pan=None, pan_lr=None, alpha=1, beta=1, norm_order=1, window_size=7):
+def _reference_numpy_quality_with_no_ref(preds, target, pan=None, pan_lr=None, alpha=1, beta=1, norm_order=1, window_size=7):
     np_preds = preds.permute(0, 2, 3, 1).cpu().numpy()
     if isinstance(target, dict):
         assert "ms" in target, "Expected `target` to contain 'ms'."
-        np_ms = target["ms"].permute(0, 2, 3, 1).cpu().numpy()
+        ms = target["ms"].permute(0, 2, 3, 1).cpu().numpy()
         assert "pan" in target, "Expected `target` to contain 'pan'."
-        np_pan = target["pan"].permute(0, 2, 3, 1).cpu().numpy()
-        np_pan_lr = target["pan_lr"].permute(0, 2, 3, 1).cpu().numpy() if "pan_lr" in target else None
+        pan = target["pan"].permute(0, 2, 3, 1).cpu().numpy()
+        pan_lr = target["pan_lr"].permute(0, 2, 3, 1).cpu().numpy() if "pan_lr" in target else None
     else:
-        np_ms = target.permute(0, 2, 3, 1).cpu().numpy()
-        np_pan = pan.permute(0, 2, 3, 1).cpu().numpy()
-        np_pan_lr = pan_lr.permute(0, 2, 3, 1).cpu().numpy() if pan_lr is not None else None
+        ms = target.permute(0, 2, 3, 1).cpu().numpy()
+        pan = pan.permute(0, 2, 3, 1).cpu().numpy()
+        pan_lr = pan_lr.permute(0, 2, 3, 1).cpu().numpy() if pan_lr is not None else None
 
-    return _baseline_quality_with_no_reference(
-        np_preds,
-        np_ms,
-        np_pan,
-        np_pan_lr,
+    d_lambda = _baseline_d_lambda(preds, ms, norm_order)
+    d_s = _reference_d_s(preds, ms, pan, pan_lr,
         alpha=alpha,
         beta=beta,
         norm_order=norm_order,
-        window_size=window_size,
-    )
+        window_size=window_size)
+    return (1 - d_lambda) ** alpha * (1 - d_s) ** beta
 
 
 def _invoke_quality_with_no_reference(preds, target, ms, pan, pan_lr, alpha, beta, norm_order, window_size):
@@ -141,7 +122,7 @@ class TestQualityWithNoReference(MetricTester):
             preds,
             target,
             QualityWithNoReference,
-            partial(_np_quality_with_no_reference, norm_order=norm_order, window_size=window_size),
+            partial(_reference_numpy_quality_with_no_ref, norm_order=norm_order, window_size=window_size),
             metric_args={"alpha": alpha, "beta": beta, "norm_order": norm_order, "window_size": window_size},
         )
 
@@ -154,7 +135,7 @@ class TestQualityWithNoReference(MetricTester):
             ms,
             quality_with_no_reference,
             partial(
-                _np_quality_with_no_reference, alpha=alpha, beta=beta, norm_order=norm_order, window_size=window_size
+                _reference_numpy_quality_with_no_ref, alpha=alpha, beta=beta, norm_order=norm_order, window_size=window_size
             ),
             metric_args={"alpha": alpha, "beta": beta, "norm_order": norm_order, "window_size": window_size},
             fragment_kwargs=True,

@@ -21,10 +21,10 @@ from scipy.linalg import sqrtm
 from torchmetrics.image.mifid import MemorizationInformedFrechetInceptionDistance, NoTrainInceptionV3
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
-from unittests import reference_cachier
+from unittests import _reference_cachier
 
 
-@reference_cachier
+@_reference_cachier
 def _reference_mifid(preds, target, cosine_distance_eps: float = 0.1):
     """Reference implementation.
 

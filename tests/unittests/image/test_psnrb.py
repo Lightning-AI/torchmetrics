@@ -20,7 +20,7 @@ from sewar.utils import _compute_bef
 from torchmetrics.functional.image.psnrb import peak_signal_noise_ratio_with_blocked_effect
 from torchmetrics.image import PeakSignalNoiseRatioWithBlockedEffect
 
-from unittests import BATCH_SIZE, NUM_BATCHES, reference_cachier
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -35,7 +35,6 @@ _input = (
 )
 
 
-@reference_cachier
 def _reference_psnrb(preds, target):
     """Reference implementation of PSNRB metric.
 
@@ -67,11 +66,11 @@ class TestPSNR(MetricTester):
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_psnr(self, preds, target, ddp):
         """Test that modular PSNRB metric returns the same result as the reference implementation."""
-        self.run_class_metric_test(ddp, preds, target, PeakSignalNoiseRatioWithBlockedEffect, _reference_psnrb)
+        self.run_class_metric_test(ddp, preds, target, metric_class=PeakSignalNoiseRatioWithBlockedEffect, reference_metric=_reference_psnrb)
 
     def test_psnr_functional(self, preds, target):
         """Test that functional PSNRB metric returns the same result as the reference implementation."""
-        self.run_functional_metric_test(preds, target, peak_signal_noise_ratio_with_blocked_effect, _reference_psnrb)
+        self.run_functional_metric_test(preds, target, metric_functional=peak_signal_noise_ratio_with_blocked_effect, reference_metric=_reference_psnrb)
 
     def test_psnr_half_cpu(self, preds, target):
         """Test that PSNRB metric works with half precision on cpu."""

@@ -25,7 +25,7 @@ from torchmetrics.functional.image.d_s import spatial_distortion_index
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.d_s import SpatialDistortionIndex
 
-from unittests import BATCH_SIZE, NUM_BATCHES, reference_cachier
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -73,7 +73,6 @@ for size, channel, norm_order, r, window_size, pan_lr_exists, dtype in [
     )
 
 
-@reference_cachier
 def _reference_d_s(
     preds: np.ndarray,
     ms: np.ndarray,

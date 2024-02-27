@@ -21,7 +21,7 @@ from torchmetrics.functional.image.ergas import error_relative_global_dimensionl
 from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
-from unittests import BATCH_SIZE, NUM_BATCHES, reference_cachier
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -45,7 +45,6 @@ for size, channel, coef, ratio, dtype in [
     _inputs.append(_Input(preds=preds, target=preds * coef, ratio=ratio))
 
 
-@reference_cachier
 def _reference_ergas(
     preds: Tensor,
     target: Tensor,
@@ -90,8 +89,8 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
             ddp,
             preds,
             target,
-            ErrorRelativeGlobalDimensionlessSynthesis,
-            partial(_reference_ergas, ratio=ratio, reduction=reduction),
+            metric_class=ErrorRelativeGlobalDimensionlessSynthesis,
+            reference_metric=partial(_reference_ergas, ratio=ratio, reduction=reduction),
             metric_args={"ratio": ratio, "reduction": reduction},
         )
 
@@ -100,8 +99,8 @@ class TestErrorRelativeGlobalDimensionlessSynthesis(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            error_relative_global_dimensionless_synthesis,
-            partial(_reference_ergas, ratio=ratio, reduction=reduction),
+            metric_functional=error_relative_global_dimensionless_synthesis,
+            reference_metric=partial(_reference_ergas, ratio=ratio, reduction=reduction),
             metric_args={"ratio": ratio, "reduction": reduction},
         )
 

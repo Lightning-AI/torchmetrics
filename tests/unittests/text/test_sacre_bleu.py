@@ -21,7 +21,6 @@ from torchmetrics.functional.text.sacre_bleu import AVAILABLE_TOKENIZERS, _Token
 from torchmetrics.text.sacre_bleu import SacreBLEUScore
 from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
 
-from unittests import reference_cachier
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_multiple_references
 
@@ -29,7 +28,6 @@ if _SACREBLEU_AVAILABLE:
     from sacrebleu.metrics import BLEU
 
 
-@reference_cachier
 def _reference_sacre_bleu(
     preds: Sequence[str], targets: Sequence[Sequence[str]], tokenize: str, lowercase: bool
 ) -> Tensor:

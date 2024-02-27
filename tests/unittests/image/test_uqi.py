@@ -21,7 +21,7 @@ from torch import Tensor
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.uqi import UniversalImageQualityIndex
 
-from unittests import BATCH_SIZE, NUM_BATCHES, reference_cachier
+from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -55,7 +55,7 @@ for size, channel, coef, multichannel, dtype in [
     )
 
 
-@reference_cachier
+
 def _reference_skimage_uqi(preds, target, multichannel, kernel_size):
     c, h, w = preds.shape[-3:]
     sk_preds = preds.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
@@ -94,8 +94,8 @@ class TestUQI(MetricTester):
             ddp,
             preds,
             target,
-            UniversalImageQualityIndex,
-            partial(_reference_skimage_uqi, multichannel=multichannel, kernel_size=kernel_size),
+            metric_class=UniversalImageQualityIndex,
+            reference_metric=partial(_reference_skimage_uqi, multichannel=multichannel, kernel_size=kernel_size),
             metric_args={"kernel_size": (kernel_size, kernel_size)},
         )
 
@@ -104,8 +104,8 @@ class TestUQI(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            universal_image_quality_index,
-            partial(_reference_skimage_uqi, multichannel=multichannel, kernel_size=kernel_size),
+            metric_functional=universal_image_quality_index,
+            reference_metric=partial(_reference_skimage_uqi, multichannel=multichannel, kernel_size=kernel_size),
             metric_args={"kernel_size": (kernel_size, kernel_size)},
         )
 

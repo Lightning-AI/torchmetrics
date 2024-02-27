@@ -22,7 +22,6 @@ from torchmetrics.functional.image.lpips import learned_perceptual_image_patch_s
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 from torchmetrics.utilities.imports import _LPIPS_AVAILABLE, _TORCHVISION_AVAILABLE
 
-from unittests import reference_cachier
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -40,7 +39,6 @@ _inputs = _Input(
 )
 
 
-@reference_cachier
 def _reference_lpips(
     img1: Tensor, img2: Tensor, net_type: str, normalize: bool = False, reduction: str = "mean"
 ) -> Tensor:
