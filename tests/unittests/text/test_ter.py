@@ -20,8 +20,8 @@ from torchmetrics.functional.text.ter import translation_edit_rate
 from torchmetrics.text.ter import TranslationEditRate
 from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
 
-from unittests.text.helpers import TextTester
 from unittests.text._inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
+from unittests.text.helpers import TextTester
 
 if _SACREBLEU_AVAILABLE:
     from sacrebleu.metrics import TER as SacreTER  # noqa: N811

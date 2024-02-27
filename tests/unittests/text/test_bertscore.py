@@ -23,8 +23,8 @@ from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE, _TRANSFORMERS_G
 from typing_extensions import Literal
 
 from unittests.helpers import skip_on_connection_issues
-from unittests.text.helpers import TextTester
 from unittests.text._inputs import _inputs_single_reference
+from unittests.text.helpers import TextTester
 
 if _BERTSCORE_AVAILABLE:
     from bert_score import score as original_bert_score

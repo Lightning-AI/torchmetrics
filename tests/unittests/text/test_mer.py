@@ -19,8 +19,8 @@ from torchmetrics.text.mer import MatchErrorRate
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
 from unittests.helpers import seed_all
-from unittests.text.helpers import TextTester
 from unittests.text._inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
+from unittests.text.helpers import TextTester
 
 if _JIWER_AVAILABLE:
     from jiwer import compute_measures

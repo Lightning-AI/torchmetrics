@@ -18,8 +18,8 @@ from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.text.cer import CharErrorRate
 from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
-from unittests.text.helpers import TextTester
 from unittests.text._inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
+from unittests.text.helpers import TextTester
 
 if _JIWER_AVAILABLE:
     from jiwer import cer

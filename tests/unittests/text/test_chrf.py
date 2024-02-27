@@ -20,8 +20,8 @@ from torchmetrics.functional.text.chrf import chrf_score
 from torchmetrics.text.chrf import CHRFScore
 from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
 
-from unittests.text.helpers import TextTester
 from unittests.text._inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
+from unittests.text.helpers import TextTester
 
 if _SACREBLEU_AVAILABLE:
     from sacrebleu.metrics import CHRF
