@@ -27,7 +27,7 @@ from unittests.text.inputs import _inputs_multiple_references
 smooth_func = SmoothingFunction().method2
 
 
-def _compute_bleu_metric_nltk(preds, targets, weights, smoothing_function, **kwargs: Any):
+def _reference_bleu_metric_nltk(preds, targets, weights, smoothing_function, **kwargs: Any):
     preds_ = [pred.split() for pred in preds]
     targets_ = [[line.split() for line in target] for target in targets]
     return corpus_bleu(
@@ -55,7 +55,7 @@ class TestBLEUScore(TextTester):
     def test_bleu_score_class(self, ddp, preds, targets, weights, n_gram, smooth_func, smooth):
         """Test class implementation of metric."""
         metric_args = {"n_gram": n_gram, "smooth": smooth}
-        compute_bleu_metric_nltk = partial(_compute_bleu_metric_nltk, weights=weights, smoothing_function=smooth_func)
+        compute_bleu_metric_nltk = partial(_reference_bleu_metric_nltk, weights=weights, smoothing_function=smooth_func)
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -69,7 +69,7 @@ class TestBLEUScore(TextTester):
     def test_bleu_score_functional(self, preds, targets, weights, n_gram, smooth_func, smooth):
         """Test functional implementation of metric."""
         metric_args = {"n_gram": n_gram, "smooth": smooth}
-        compute_bleu_metric_nltk = partial(_compute_bleu_metric_nltk, weights=weights, smoothing_function=smooth_func)
+        compute_bleu_metric_nltk = partial(_reference_bleu_metric_nltk, weights=weights, smoothing_function=smooth_func)
 
         self.run_functional_metric_test(
             preds,

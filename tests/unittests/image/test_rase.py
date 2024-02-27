@@ -19,7 +19,7 @@ import sewar
 import torch
 from torch import Tensor
 from torchmetrics.functional import relative_average_spectral_error
-from torchmetrics.functional.image.helper import _uniform_filter
+from torchmetrics.functional.image.utils import _uniform_filter
 from torchmetrics.image import RelativeAverageSpectralError
 
 from unittests import BATCH_SIZE

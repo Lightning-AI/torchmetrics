@@ -77,9 +77,9 @@ class BaseAggregator(Metric):
     ) -> Tuple[Tensor, Tensor]:
         """Convert input ``x`` to a tensor and check for Nans."""
         if not isinstance(x, Tensor):
-            x = torch.as_tensor(x, dtype=torch.float32, device=self.device)
+            x = torch.as_tensor(x, dtype=self.dtype, device=self.device)
         if weight is not None and not isinstance(weight, Tensor):
-            weight = torch.as_tensor(weight, dtype=torch.float32, device=self.device)
+            weight = torch.as_tensor(weight, dtype=self.dtype, device=self.device)
 
         nans = torch.isnan(x)
         if weight is not None:
@@ -101,7 +101,7 @@ class BaseAggregator(Metric):
                 x[nans | nans_weight] = self.nan_strategy
                 weight[nans | nans_weight] = self.nan_strategy
 
-        return x.float(), weight.float()
+        return x.to(self.dtype), weight.to(self.dtype)
 
     def update(self, value: Union[float, Tensor]) -> None:
         """Overwrite in child class."""
@@ -157,7 +157,7 @@ class MaxMetric(BaseAggregator):
     ) -> None:
         super().__init__(
             "max",
-            -torch.tensor(float("inf")),
+            -torch.tensor(float("inf"), dtype=torch.get_default_dtype()),
             nan_strategy,
             state_name="max_value",
             **kwargs,
@@ -262,7 +262,7 @@ class MinMetric(BaseAggregator):
     ) -> None:
         super().__init__(
             "min",
-            torch.tensor(float("inf")),
+            torch.tensor(float("inf"), dtype=torch.get_default_dtype()),
             nan_strategy,
             state_name="min_value",
             **kwargs,
@@ -366,7 +366,7 @@ class SumMetric(BaseAggregator):
     ) -> None:
         super().__init__(
             "sum",
-            torch.tensor(0.0),
+            torch.tensor(0.0, dtype=torch.get_default_dtype()),
             nan_strategy,
             state_name="sum_value",
             **kwargs,
@@ -536,12 +536,12 @@ class MeanMetric(BaseAggregator):
     ) -> None:
         super().__init__(
             "sum",
-            torch.tensor(0.0),
+            torch.tensor(0.0, dtype=torch.get_default_dtype()),
             nan_strategy,
             state_name="mean_value",
             **kwargs,
         )
-        self.add_state("weight", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("weight", default=torch.tensor(0.0, dtype=torch.get_default_dtype()), dist_reduce_fx="sum")
 
     def update(self, value: Union[float, Tensor], weight: Union[float, Tensor] = 1.0) -> None:
         """Update state with data.
@@ -557,9 +557,9 @@ class MeanMetric(BaseAggregator):
         """
         # broadcast weight to value shape
         if not isinstance(value, Tensor):
-            value = torch.as_tensor(value, dtype=torch.float32, device=self.device)
+            value = torch.as_tensor(value, dtype=self.dtype, device=self.device)
         if weight is not None and not isinstance(weight, Tensor):
-            weight = torch.as_tensor(weight, dtype=torch.float32, device=self.device)
+            weight = torch.as_tensor(weight, dtype=self.dtype, device=self.device)
         weight = torch.broadcast_to(weight, value.shape)
         value, weight = self._cast_and_nan_check_input(value, weight)
 

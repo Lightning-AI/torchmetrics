@@ -85,6 +85,7 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         tensor(0.5000)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -209,6 +210,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         tensor(0.6667)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False

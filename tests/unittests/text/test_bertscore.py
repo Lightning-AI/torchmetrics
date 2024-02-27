@@ -22,7 +22,8 @@ from torchmetrics.text.bert import BERTScore
 from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
 from typing_extensions import Literal
 
-from unittests.text.helpers import TextTester, skip_on_connection_issues
+from unittests.helpers import skip_on_connection_issues
+from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_single_reference
 
 if _BERTSCORE_AVAILABLE:
@@ -94,7 +95,7 @@ class TestBERTScore(TextTester):
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @skip_on_connection_issues()
     def test_bertscore_class(self, ddp, preds, targets, num_layers, all_layers, idf, rescale_with_baseline, metric_key):
-        """Test the bertscore class."""
+        """Test the bert score class."""
         metric_args = {
             "model_name_or_path": MODEL_NAME,
             "num_layers": num_layers,

@@ -38,9 +38,9 @@ def _np_dunn_index(data, labels, p):
         np.stack([a - b for a, b in combinations(centroids, 2)], axis=0), ord=p, axis=1
     )
 
-    max_intracluster_distance = np.stack(
-        [np.linalg.norm(ci - mu, ord=p, axis=1).max() for ci, mu in zip(clusters, centroids)]
-    )
+    max_intracluster_distance = np.stack([
+        np.linalg.norm(ci - mu, ord=p, axis=1).max() for ci, mu in zip(clusters, centroids)
+    ])
 
     return intercluster_distance.min() / max_intracluster_distance.max()
 
