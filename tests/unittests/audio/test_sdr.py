@@ -66,7 +66,7 @@ def _reference_sdr_batch(preds: Tensor, target: Tensor, compute_permutation: boo
     "preds, target",
     [
         (inputs_1spk.preds, inputs_1spk.target),
-        (inputs_2spk.preds, inputs_2spk.target),
+        (inputs_2spk.preds, inputs_2spk.target)
     ],
 )
 class TestSDR(MetricTester):

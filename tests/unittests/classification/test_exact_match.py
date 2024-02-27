@@ -29,7 +29,7 @@ from unittests.helpers.testers import MetricTester, inject_ignore_index
 seed_all(42)
 
 
-def _baseline_exact_match_multiclass(preds, target, ignore_index, multidim_average):
+def _reference_exact_match_multiclass(preds, target, ignore_index, multidim_average):
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
     preds = preds.numpy()
@@ -68,7 +68,7 @@ class TestMulticlassExactMatch(MetricTester):
             target=target,
             metric_class=MulticlassExactMatch,
             reference_metric=partial(
-                _baseline_exact_match_multiclass,
+                _reference_exact_match_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
             ),
@@ -94,7 +94,7 @@ class TestMulticlassExactMatch(MetricTester):
             target=target,
             metric_functional=multiclass_exact_match,
             reference_metric=partial(
-                _baseline_exact_match_multiclass,
+                _reference_exact_match_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
             ),
@@ -147,7 +147,7 @@ class TestMulticlassExactMatch(MetricTester):
         )
 
 
-def _baseline_exact_match_multilabel(preds, target, ignore_index, multidim_average):
+def _reference_exact_match_multilabel(preds, target, ignore_index, multidim_average):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -195,7 +195,7 @@ class TestMultilabelExactMatch(MetricTester):
             target=target,
             metric_class=MultilabelExactMatch,
             reference_metric=partial(
-                _baseline_exact_match_multilabel,
+                _reference_exact_match_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
             ),
@@ -222,7 +222,7 @@ class TestMultilabelExactMatch(MetricTester):
             target=target,
             metric_functional=multilabel_exact_match,
             reference_metric=partial(
-                _baseline_exact_match_multilabel,
+                _reference_exact_match_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
             ),

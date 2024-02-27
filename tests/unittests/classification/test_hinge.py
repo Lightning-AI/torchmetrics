@@ -31,7 +31,7 @@ from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_
 torch.manual_seed(42)
 
 
-def _sklearn_binary_hinge_loss(preds, target, ignore_index):
+def _reference_sklearn_binary_hinge_loss(preds, target, ignore_index):
     preds = preds.numpy().flatten()
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
@@ -58,7 +58,7 @@ class TestBinaryHingeLoss(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryHingeLoss,
-            reference_metric=partial(_sklearn_binary_hinge_loss, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_binary_hinge_loss, ignore_index=ignore_index),
             metric_args={
                 "ignore_index": ignore_index,
             },
@@ -74,7 +74,7 @@ class TestBinaryHingeLoss(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_hinge_loss,
-            reference_metric=partial(_sklearn_binary_hinge_loss, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_binary_hinge_loss, ignore_index=ignore_index),
             metric_args={
                 "ignore_index": ignore_index,
             },
@@ -118,7 +118,7 @@ class TestBinaryHingeLoss(MetricTester):
         )
 
 
-def _sklearn_multiclass_hinge_loss(preds, target, multiclass_mode, ignore_index):
+def _reference_sklearn_multiclass_hinge_loss(preds, target, multiclass_mode, ignore_index):
     preds = preds.numpy()
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
@@ -159,7 +159,7 @@ class TestMulticlassHingeLoss(MetricTester):
             target=target,
             metric_class=MulticlassHingeLoss,
             reference_metric=partial(
-                _sklearn_multiclass_hinge_loss, multiclass_mode=multiclass_mode, ignore_index=ignore_index
+                _reference_sklearn_multiclass_hinge_loss, multiclass_mode=multiclass_mode, ignore_index=ignore_index
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,
@@ -180,7 +180,7 @@ class TestMulticlassHingeLoss(MetricTester):
             target=target,
             metric_functional=multiclass_hinge_loss,
             reference_metric=partial(
-                _sklearn_multiclass_hinge_loss, multiclass_mode=multiclass_mode, ignore_index=ignore_index
+                _reference_sklearn_multiclass_hinge_loss, multiclass_mode=multiclass_mode, ignore_index=ignore_index
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,

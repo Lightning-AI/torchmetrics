@@ -53,7 +53,7 @@ def _recall_at_precision_x_multilabel(predictions, targets, min_precision):
     return float(max_recall), float(best_threshold)
 
 
-def _sklearn_recall_at_fixed_precision_binary(preds, target, min_precision, ignore_index=None):
+def _reference_sklearn_recall_at_fixed_precision_binary(preds, target, min_precision, ignore_index=None):
     preds = preds.flatten().numpy()
     target = target.flatten().numpy()
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
@@ -80,7 +80,7 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
             target=target,
             metric_class=BinaryRecallAtFixedPrecision,
             reference_metric=partial(
-                _sklearn_recall_at_fixed_precision_binary, min_precision=min_precision, ignore_index=ignore_index
+                _reference_sklearn_recall_at_fixed_precision_binary, min_precision=min_precision, ignore_index=ignore_index
             ),
             metric_args={
                 "min_precision": min_precision,
@@ -101,7 +101,7 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
             target=target,
             metric_functional=binary_recall_at_fixed_precision,
             reference_metric=partial(
-                _sklearn_recall_at_fixed_precision_binary, min_precision=min_precision, ignore_index=ignore_index
+                _reference_sklearn_recall_at_fixed_precision_binary, min_precision=min_precision, ignore_index=ignore_index
             ),
             metric_args={
                 "min_precision": min_precision,
@@ -164,7 +164,7 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
             assert torch.allclose(r1, r2)
 
 
-def _sklearn_recall_at_fixed_precision_multiclass(preds, target, min_precision, ignore_index=None):
+def _reference_sklearn_recall_at_fixed_precision_multiclass(preds, target, min_precision, ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
@@ -201,7 +201,7 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
             target=target,
             metric_class=MulticlassRecallAtFixedPrecision,
             reference_metric=partial(
-                _sklearn_recall_at_fixed_precision_multiclass, min_precision=min_precision, ignore_index=ignore_index
+                _reference_sklearn_recall_at_fixed_precision_multiclass, min_precision=min_precision, ignore_index=ignore_index
             ),
             metric_args={
                 "min_precision": min_precision,
@@ -223,7 +223,7 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
             target=target,
             metric_functional=multiclass_recall_at_fixed_precision,
             reference_metric=partial(
-                _sklearn_recall_at_fixed_precision_multiclass, min_precision=min_precision, ignore_index=ignore_index
+                _reference_sklearn_recall_at_fixed_precision_multiclass, min_precision=min_precision, ignore_index=ignore_index
             ),
             metric_args={
                 "min_precision": min_precision,
@@ -290,10 +290,10 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
             assert all(torch.allclose(r1[i], r2[i]) for i in range(len(r1)))
 
 
-def _sklearn_recall_at_fixed_precision_multilabel(preds, target, min_precision, ignore_index=None):
+def _reference_sklearn_recall_at_fixed_precision_multilabel(preds, target, min_precision, ignore_index=None):
     recall, thresholds = [], []
     for i in range(NUM_CLASSES):
-        res = _sklearn_recall_at_fixed_precision_binary(preds[:, i], target[:, i], min_precision, ignore_index)
+        res = _reference_sklearn_recall_at_fixed_precision_binary(preds[:, i], target[:, i], min_precision, ignore_index)
         recall.append(res[0])
         thresholds.append(res[1])
     return recall, thresholds
@@ -319,7 +319,7 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
             target=target,
             metric_class=MultilabelRecallAtFixedPrecision,
             reference_metric=partial(
-                _sklearn_recall_at_fixed_precision_multilabel, min_precision=min_precision, ignore_index=ignore_index
+                _reference_sklearn_recall_at_fixed_precision_multilabel, min_precision=min_precision, ignore_index=ignore_index
             ),
             metric_args={
                 "min_precision": min_precision,
@@ -341,7 +341,7 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
             target=target,
             metric_functional=multilabel_recall_at_fixed_precision,
             reference_metric=partial(
-                _sklearn_recall_at_fixed_precision_multilabel, min_precision=min_precision, ignore_index=ignore_index
+                _reference_sklearn_recall_at_fixed_precision_multilabel, min_precision=min_precision, ignore_index=ignore_index
             ),
             metric_args={
                 "min_precision": min_precision,

@@ -39,7 +39,7 @@ from unittests.helpers.testers import MetricTester
 seed_all(42)
 
 
-def _scipy_dice(
+def _reference_scipy_dice(
     preds: Tensor,
     target: Tensor,
     ignore_index: Optional[int] = None,
@@ -102,7 +102,7 @@ class TestDiceBinary(MetricTester):
             preds=preds,
             target=target,
             metric_class=Dice,
-            reference_metric=partial(_scipy_dice, ignore_index=ignore_index),
+            reference_metric=partial(_reference_scipy_dice, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )
 
@@ -112,7 +112,7 @@ class TestDiceBinary(MetricTester):
             preds,
             target,
             metric_functional=dice,
-            reference_metric=partial(_scipy_dice, ignore_index=ignore_index),
+            reference_metric=partial(_reference_scipy_dice, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )
 
@@ -143,7 +143,7 @@ class TestDiceMulti(MetricTester):
             preds=preds,
             target=target,
             metric_class=Dice,
-            reference_metric=partial(_scipy_dice, ignore_index=ignore_index),
+            reference_metric=partial(_reference_scipy_dice, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )
 
@@ -153,6 +153,6 @@ class TestDiceMulti(MetricTester):
             preds,
             target,
             metric_functional=dice,
-            reference_metric=partial(_scipy_dice, ignore_index=ignore_index),
+            reference_metric=partial(_reference_scipy_dice, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )

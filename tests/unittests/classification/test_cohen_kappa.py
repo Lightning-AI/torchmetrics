@@ -30,7 +30,7 @@ from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_
 seed_all(42)
 
 
-def _sklearn_cohen_kappa_binary(preds, target, weights=None, ignore_index=None):
+def _reference_sklearn_cohen_kappa_binary(preds, target, weights=None, ignore_index=None):
     preds = preds.view(-1).numpy()
     target = target.view(-1).numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -60,7 +60,7 @@ class TestBinaryCohenKappa(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryCohenKappa,
-            reference_metric=partial(_sklearn_cohen_kappa_binary, weights=weights, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_cohen_kappa_binary, weights=weights, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "weights": weights,
@@ -79,7 +79,7 @@ class TestBinaryCohenKappa(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_cohen_kappa,
-            reference_metric=partial(_sklearn_cohen_kappa_binary, weights=weights, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_cohen_kappa_binary, weights=weights, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "weights": weights,
@@ -129,7 +129,7 @@ class TestBinaryCohenKappa(MetricTester):
         )
 
 
-def _sklearn_cohen_kappa_multiclass(preds, target, weights, ignore_index=None):
+def _reference_sklearn_cohen_kappa_multiclass(preds, target, weights, ignore_index=None):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -159,7 +159,7 @@ class TestMulticlassCohenKappa(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassCohenKappa,
-            reference_metric=partial(_sklearn_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "weights": weights,
@@ -178,7 +178,7 @@ class TestMulticlassCohenKappa(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_cohen_kappa,
-            reference_metric=partial(_sklearn_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "weights": weights,
