@@ -73,8 +73,9 @@ def _binary_auroc_arg_validation(
     max_fpr: Optional[float] = None,
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> None:
-    _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
+    _binary_precision_recall_curve_arg_validation(thresholds, ignore_index, input_format=input_format)
     if max_fpr is not None and not isinstance(max_fpr, float) and 0 < max_fpr <= 1:
         raise ValueError(f"Arguments `max_fpr` should be a float in range (0, 1], but got: {max_fpr}")
 
@@ -113,6 +114,7 @@ def binary_auroc(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> Tensor:
     r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for binary tasks.
 
@@ -155,6 +157,17 @@ def binary_auroc(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         A single scalar with the auroc score
@@ -170,9 +183,11 @@ def binary_auroc(
 
     """
     if validate_args:
-        _binary_auroc_arg_validation(max_fpr, thresholds, ignore_index)
-        _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index)
-    preds, target, thresholds = _binary_precision_recall_curve_format(preds, target, thresholds, ignore_index)
+        _binary_auroc_arg_validation(max_fpr, thresholds, ignore_index, input_format=input_format)
+        _binary_precision_recall_curve_tensor_validation(preds, target, ignore_index, input_format=input_format)
+    preds, target, thresholds = _binary_precision_recall_curve_format(
+        preds, target, thresholds, ignore_index, input_format=input_format
+    )
     state = _binary_precision_recall_curve_update(preds, target, thresholds)
     return _binary_auroc_compute(state, thresholds, max_fpr)
 
@@ -182,8 +197,9 @@ def _multiclass_auroc_arg_validation(
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> None:
-    _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
+    _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index, input_format=input_format)
     allowed_average = ("macro", "weighted", "none", None)
     if average not in allowed_average:
         raise ValueError(f"Expected argument `average` to be one of {allowed_average} but got {average}")
@@ -212,6 +228,7 @@ def multiclass_auroc(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> Tensor:
     r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multiclass tasks.
 
@@ -260,6 +277,17 @@ def multiclass_auroc(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be returned with auroc score per class.
@@ -283,10 +311,12 @@ def multiclass_auroc(
 
     """
     if validate_args:
-        _multiclass_auroc_arg_validation(num_classes, average, thresholds, ignore_index)
-        _multiclass_precision_recall_curve_tensor_validation(preds, target, num_classes, ignore_index)
+        _multiclass_auroc_arg_validation(num_classes, average, thresholds, ignore_index, input_format=input_format)
+        _multiclass_precision_recall_curve_tensor_validation(
+            preds, target, num_classes, ignore_index, input_format=input_format
+        )
     preds, target, thresholds = _multiclass_precision_recall_curve_format(
-        preds, target, num_classes, thresholds, ignore_index
+        preds, target, num_classes, thresholds, ignore_index, input_format=input_format
     )
     state = _multiclass_precision_recall_curve_update(preds, target, num_classes, thresholds)
     return _multiclass_auroc_compute(state, num_classes, average, thresholds)
@@ -297,8 +327,9 @@ def _multilabel_auroc_arg_validation(
     average: Optional[Literal["micro", "macro", "weighted", "none"]],
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> None:
-    _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
+    _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index, input_format=input_format)
     allowed_average = ("micro", "macro", "weighted", "none", None)
     if average not in allowed_average:
         raise ValueError(f"Expected argument `average` to be one of {allowed_average} but got {average}")
@@ -340,6 +371,7 @@ def multilabel_auroc(
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> Tensor:
     r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_) for multilabel tasks.
 
@@ -389,6 +421,17 @@ def multilabel_auroc(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         If `average=None|"none"` then a 1d tensor of shape (n_classes, ) will be returned with auroc score per class.
@@ -415,10 +458,17 @@ def multilabel_auroc(
 
     """
     if validate_args:
-        _multilabel_auroc_arg_validation(num_labels, average, thresholds, ignore_index)
-        _multilabel_precision_recall_curve_tensor_validation(preds, target, num_labels, ignore_index)
+        _multilabel_auroc_arg_validation(num_labels, average, thresholds, ignore_index, input_format=input_format)
+        _multilabel_precision_recall_curve_tensor_validation(
+            preds, target, num_labels, ignore_index, input_format=input_format
+        )
     preds, target, thresholds = _multilabel_precision_recall_curve_format(
-        preds, target, num_labels, thresholds, ignore_index
+        preds,
+        target,
+        num_labels,
+        thresholds,
+        ignore_index,
+        input_format=input_format,
     )
     state = _multilabel_precision_recall_curve_update(preds, target, num_labels, thresholds)
     return _multilabel_auroc_compute(state, num_labels, average, thresholds, ignore_index)
@@ -435,6 +485,7 @@ def auroc(
     max_fpr: Optional[float] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "none"] = "auto",
 ) -> Optional[Tensor]:
     r"""Compute Area Under the Receiver Operating Characteristic Curve (`ROC AUC`_).
 
@@ -467,13 +518,17 @@ def auroc(
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
-        return binary_auroc(preds, target, max_fpr, thresholds, ignore_index, validate_args)
+        return binary_auroc(preds, target, max_fpr, thresholds, ignore_index, validate_args, input_format=input_format)
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
-        return multiclass_auroc(preds, target, num_classes, average, thresholds, ignore_index, validate_args)
+        return multiclass_auroc(
+            preds, target, num_classes, average, thresholds, ignore_index, validate_args, input_format=input_format
+        )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
-        return multilabel_auroc(preds, target, num_labels, average, thresholds, ignore_index, validate_args)
+        return multilabel_auroc(
+            preds, target, num_labels, average, thresholds, ignore_index, validate_args, input_format=input_format
+        )
     return None

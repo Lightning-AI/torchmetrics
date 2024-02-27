@@ -42,7 +42,12 @@ from torchmetrics.functional.classification.precision_recall import (
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.classification.inputs import (
+    _binary_cases,
+    _multiclass_cases,
+    _multilabel_cases,
+    check_input_format_matches_data,
+)
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
@@ -90,8 +95,12 @@ class TestBinaryPrecisionRecall(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_binary_precision_recall(self, ddp, inputs, module, functional, compare, ignore_index, multidim_average):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
+    def test_binary_precision_recall(
+        self, ddp, inputs, module, functional, compare, ignore_index, multidim_average, input_format, request
+    ):
         """Test class implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -111,15 +120,22 @@ class TestBinaryPrecisionRecall(MetricTester):
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
             ),
-            metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
+            metric_args={
+                "threshold": THRESHOLD,
+                "ignore_index": ignore_index,
+                "multidim_average": multidim_average,
+                "input_format": input_format,
+            },
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
     def test_binary_precision_recall_functional(
-        self, inputs, module, functional, compare, ignore_index, multidim_average
+        self, inputs, module, functional, compare, ignore_index, multidim_average, input_format, request
     ):
         """Test functional implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -140,6 +156,7 @@ class TestBinaryPrecisionRecall(MetricTester):
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
+                "input_format": input_format,
             },
         )
 
@@ -223,10 +240,12 @@ class TestMulticlassPrecisionRecall(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
     def test_multiclass_precision_recall(
-        self, ddp, inputs, module, functional, compare, ignore_index, multidim_average, average
+        self, ddp, inputs, module, functional, compare, ignore_index, multidim_average, average, input_format, request
     ):
         """Test class implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -252,16 +271,19 @@ class TestMulticlassPrecisionRecall(MetricTester):
                 "multidim_average": multidim_average,
                 "average": average,
                 "num_classes": NUM_CLASSES,
+                "input_format": input_format,
             },
         )
 
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
     def test_multiclass_precision_recall_functional(
-        self, inputs, module, functional, compare, ignore_index, multidim_average, average
+        self, inputs, module, functional, compare, ignore_index, multidim_average, average, input_format, request
     ):
         """Test functional implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -284,6 +306,7 @@ class TestMulticlassPrecisionRecall(MetricTester):
                 "multidim_average": multidim_average,
                 "average": average,
                 "num_classes": NUM_CLASSES,
+                "input_format": input_format,
             },
         )
 
@@ -460,10 +483,12 @@ class TestMultilabelPrecisionRecall(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
     def test_multilabel_precision_recall(
-        self, ddp, inputs, module, functional, compare, ignore_index, multidim_average, average
+        self, ddp, inputs, module, functional, compare, ignore_index, multidim_average, average, input_format, request
     ):
         """Test class implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -490,16 +515,19 @@ class TestMultilabelPrecisionRecall(MetricTester):
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
                 "average": average,
+                "input_format": input_format,
             },
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
     def test_multilabel_precision_recall_functional(
-        self, inputs, module, functional, compare, ignore_index, multidim_average, average
+        self, inputs, module, functional, compare, ignore_index, multidim_average, average, input_format, request
     ):
         """Test functional implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
@@ -523,6 +551,7 @@ class TestMultilabelPrecisionRecall(MetricTester):
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
                 "average": average,
+                "input_format": input_format,
             },
         )
 

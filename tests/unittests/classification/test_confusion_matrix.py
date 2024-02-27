@@ -32,7 +32,12 @@ from torchmetrics.functional.classification.confusion_matrix import (
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.classification.inputs import (
+    _binary_cases,
+    _multiclass_cases,
+    _multilabel_cases,
+    check_input_format_matches_data,
+)
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
@@ -57,8 +62,10 @@ class TestBinaryConfusionMatrix(MetricTester):
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_binary_confusion_matrix(self, inputs, ddp, normalize, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
+    def test_binary_confusion_matrix(self, inputs, ddp, normalize, ignore_index, input_format, request):
         """Test class implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -72,13 +79,16 @@ class TestBinaryConfusionMatrix(MetricTester):
                 "threshold": THRESHOLD,
                 "normalize": normalize,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_binary_confusion_matrix_functional(self, inputs, normalize, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
+    def test_binary_confusion_matrix_functional(self, inputs, normalize, ignore_index, input_format, request):
         """Test functional implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -91,6 +101,7 @@ class TestBinaryConfusionMatrix(MetricTester):
                 "threshold": THRESHOLD,
                 "normalize": normalize,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
@@ -154,8 +165,10 @@ class TestMulticlassConfusionMatrix(MetricTester):
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_multiclass_confusion_matrix(self, inputs, ddp, normalize, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
+    def test_multiclass_confusion_matrix(self, inputs, ddp, normalize, ignore_index, input_format, request):
         """Test class implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -171,13 +184,16 @@ class TestMulticlassConfusionMatrix(MetricTester):
                 "num_classes": NUM_CLASSES,
                 "normalize": normalize,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_multiclass_confusion_matrix_functional(self, inputs, normalize, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
+    def test_multiclass_confusion_matrix_functional(self, inputs, normalize, ignore_index, input_format, request):
         """Test functional implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -192,6 +208,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
                 "num_classes": NUM_CLASSES,
                 "normalize": normalize,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
@@ -271,8 +288,10 @@ class TestMultilabelConfusionMatrix(MetricTester):
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_multilabel_confusion_matrix(self, inputs, ddp, normalize, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
+    def test_multilabel_confusion_matrix(self, inputs, ddp, normalize, ignore_index, input_format, request):
         """Test class implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -288,13 +307,16 @@ class TestMultilabelConfusionMatrix(MetricTester):
                 "num_labels": NUM_CLASSES,
                 "normalize": normalize,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_multilabel_confusion_matrix_functional(self, inputs, normalize, ignore_index):
+    @pytest.mark.parametrize("input_format", ["auto", "probs", "logits", "labels"])
+    def test_multilabel_confusion_matrix_functional(self, inputs, normalize, ignore_index, input_format, request):
         """Test functional implementation of metric."""
+        check_input_format_matches_data(input_format, request)
         preds, target = inputs
         if ignore_index is not None:
             target = inject_ignore_index(target, ignore_index)
@@ -309,6 +331,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
                 "num_labels": NUM_CLASSES,
                 "normalize": normalize,
                 "ignore_index": ignore_index,
+                "input_format": input_format,
             },
         )
 

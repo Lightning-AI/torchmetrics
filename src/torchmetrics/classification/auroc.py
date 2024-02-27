@@ -83,6 +83,18 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -111,11 +123,14 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        input_format: Literal["auto", "probs", "logits", "none"] = "auto",
         **kwargs: Any,
     ) -> None:
-        super().__init__(thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs)
+        super().__init__(
+            thresholds=thresholds, ignore_index=ignore_index, validate_args=False, input_format=input_format, **kwargs
+        )
         if validate_args:
-            _binary_auroc_arg_validation(max_fpr, thresholds, ignore_index)
+            _binary_auroc_arg_validation(max_fpr, thresholds, ignore_index, input_format)
         self.max_fpr = max_fpr
 
     def compute(self) -> Tensor:  # type: ignore[override]
@@ -221,6 +236,18 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -260,13 +287,19 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        input_format: Literal["auto", "probs", "logits", "none"] = "auto",
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            num_classes=num_classes, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs
+            num_classes=num_classes,
+            thresholds=thresholds,
+            ignore_index=ignore_index,
+            validate_args=False,
+            input_format=input_format,
+            **kwargs,
         )
         if validate_args:
-            _multiclass_auroc_arg_validation(num_classes, average, thresholds, ignore_index)
+            _multiclass_auroc_arg_validation(num_classes, average, thresholds, ignore_index, input_format)
         self.average = average  # type: ignore[assignment]
         self.validate_args = validate_args
 
@@ -373,6 +406,18 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -415,13 +460,19 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        input_format: Literal["auto", "probs", "logits", "none"] = "auto",
         **kwargs: Any,
     ) -> None:
         super().__init__(
-            num_labels=num_labels, thresholds=thresholds, ignore_index=ignore_index, validate_args=False, **kwargs
+            num_labels=num_labels,
+            thresholds=thresholds,
+            ignore_index=ignore_index,
+            validate_args=False,
+            input_format=input_format,
+            **kwargs,
         )
         if validate_args:
-            _multilabel_auroc_arg_validation(num_labels, average, thresholds, ignore_index)
+            _multilabel_auroc_arg_validation(num_labels, average, thresholds, ignore_index, input_format)
         self.average = average
         self.validate_args = validate_args
 
@@ -516,31 +567,26 @@ class AUROC(_ClassificationTaskWrapper):
         max_fpr: Optional[float] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        input_format: Literal["auto", "probs", "logits", "none"] = "auto",
         **kwargs: Any,
     ) -> Metric:
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
-        kwargs.update({"thresholds": thresholds, "ignore_index": ignore_index, "validate_args": validate_args})
+        kwargs_extra = kwargs.copy()
+        kwargs_extra.update({
+            "thresholds": thresholds,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+            "input_format": input_format,
+        })
         if task == ClassificationTask.BINARY:
-            return BinaryAUROC(max_fpr, **kwargs)
+            return BinaryAUROC(max_fpr, **kwargs_extra)
         if task == ClassificationTask.MULTICLASS:
             if not isinstance(num_classes, int):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
-            return MulticlassAUROC(num_classes, average, **kwargs)
+            return MulticlassAUROC(num_classes, average, **kwargs_extra)
         if task == ClassificationTask.MULTILABEL:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
-            return MultilabelAUROC(num_labels, average, **kwargs)
+            return MultilabelAUROC(num_labels, average, **kwargs_extra)
         raise ValueError(f"Task {task} not supported!")
-
-    def update(self, *args: Any, **kwargs: Any) -> None:
-        """Update metric state."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `update` method. Use the task specific metric."
-        )
-
-    def compute(self) -> None:
-        """Compute metric."""
-        raise NotImplementedError(
-            f"{self.__class__.__name__} metric does not have a global `compute` method. Use the task specific metric."
-        )

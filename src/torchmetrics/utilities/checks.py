@@ -44,6 +44,15 @@ def _check_same_shape(preds: Tensor, target: Tensor) -> None:
         )
 
 
+def _check_valid_input_format_type(
+    input_format: Optional[str], options: Tuple[str] = ("auto", "probs", "logits", "labels", "none")
+) -> None:
+    if not input_format:
+        return
+    if input_format not in options:
+        raise ValueError(f"The `input_format` should be one of {options}, got {input_format}.")
+
+
 def _basic_input_validation(
     preds: Tensor, target: Tensor, threshold: float, multiclass: Optional[bool], ignore_index: Optional[int]
 ) -> None:

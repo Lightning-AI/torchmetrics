@@ -17,7 +17,7 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.utilities.checks import _check_same_shape
+from torchmetrics.utilities.checks import _check_same_shape, _check_valid_input_format_type
 from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.prints import rank_zero_warn
@@ -63,6 +63,7 @@ def _binary_confusion_matrix_arg_validation(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> None:
     """Validate non tensor input.
 
@@ -78,10 +79,14 @@ def _binary_confusion_matrix_arg_validation(
     allowed_normalize = ("true", "pred", "all", "none", None)
     if normalize not in allowed_normalize:
         raise ValueError(f"Expected argument `normalize` to be one of {allowed_normalize}, but got {normalize}.")
+    _check_valid_input_format_type(input_format)
 
 
 def _binary_confusion_matrix_tensor_validation(
-    preds: Tensor, target: Tensor, ignore_index: Optional[int] = None
+    preds: Tensor,
+    target: Tensor,
+    ignore_index: Optional[int] = None,
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> None:
     """Validate tensor input.
 
@@ -106,13 +111,18 @@ def _binary_confusion_matrix_tensor_validation(
         )
 
     # If preds is label tensor, also check that it only contains {0,1} values
-    if not preds.is_floating_point():
+    if not preds.is_floating_point() or input_format == "labels":
         unique_values = torch.unique(preds)
         if torch.any((unique_values != 0) & (unique_values != 1)):
             raise RuntimeError(
                 f"Detected the following values in `preds`: {unique_values} but expected only"
                 " the following values [0,1] since preds is a label tensor."
             )
+    if input_format == "probs" and not torch.all((preds >= 0) * (preds <= 1)):
+        raise ValueError(
+            "Expected argument `preds` to be a tensor with values in the [0,1] range,"
+            f" but got tensor with values {preds}"
+        )
 
 
 def _binary_confusion_matrix_format(
@@ -121,6 +131,7 @@ def _binary_confusion_matrix_format(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     convert_to_labels: bool = True,
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> Tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
@@ -136,12 +147,12 @@ def _binary_confusion_matrix_format(
         preds = preds[idx]
         target = target[idx]
 
-    if preds.is_floating_point():
-        if not torch.all((preds >= 0) * (preds <= 1)):
-            # preds is logits, convert with sigmoid
-            preds = preds.sigmoid()
-        if convert_to_labels:
-            preds = preds > threshold
+    if input_format == "logits":
+        preds = preds.sigmoid()
+    if preds.is_floating_point() and input_format == "auto" and not torch.all((preds >= 0) * (preds <= 1)):
+        preds = preds.sigmoid()
+    if convert_to_labels and input_format not in ("labels", "none"):
+        preds = preds > threshold
 
     return preds, target
 
@@ -171,6 +182,7 @@ def binary_confusion_matrix(
     normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> Tensor:
     r"""Compute the `confusion matrix`_ for binary tasks.
 
@@ -197,6 +209,19 @@ def binary_confusion_matrix(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         A ``[2, 2]`` tensor
@@ -220,9 +245,9 @@ def binary_confusion_matrix(
 
     """
     if validate_args:
-        _binary_confusion_matrix_arg_validation(threshold, ignore_index, normalize)
-        _binary_confusion_matrix_tensor_validation(preds, target, ignore_index)
-    preds, target = _binary_confusion_matrix_format(preds, target, threshold, ignore_index)
+        _binary_confusion_matrix_arg_validation(threshold, ignore_index, normalize, input_format=input_format)
+        _binary_confusion_matrix_tensor_validation(preds, target, ignore_index, input_format=input_format)
+    preds, target = _binary_confusion_matrix_format(preds, target, threshold, ignore_index, input_format=input_format)
     confmat = _binary_confusion_matrix_update(preds, target)
     return _binary_confusion_matrix_compute(confmat, normalize)
 
@@ -231,6 +256,7 @@ def _multiclass_confusion_matrix_arg_validation(
     num_classes: int,
     ignore_index: Optional[int] = None,
     normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> None:
     """Validate non tensor input.
 
@@ -246,10 +272,15 @@ def _multiclass_confusion_matrix_arg_validation(
     allowed_normalize = ("true", "pred", "all", "none", None)
     if normalize not in allowed_normalize:
         raise ValueError(f"Expected argument `normalize` to be one of {allowed_normalize}, but got {normalize}.")
+    _check_valid_input_format_type(input_format)
 
 
 def _multiclass_confusion_matrix_tensor_validation(
-    preds: Tensor, target: Tensor, num_classes: int, ignore_index: Optional[int] = None
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    ignore_index: Optional[int] = None,
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> None:
     """Validate tensor input.
 
@@ -294,7 +325,7 @@ def _multiclass_confusion_matrix_tensor_validation(
             f"{num_unique_values} in `target`."
         )
 
-    if not preds.is_floating_point():
+    if not preds.is_floating_point() or input_format == "labels":
         num_unique_values = len(torch.unique(preds))
         if num_unique_values > num_classes:
             raise RuntimeError(
@@ -302,12 +333,19 @@ def _multiclass_confusion_matrix_tensor_validation(
                 f"{num_classes} but found {num_unique_values} in `preds`."
             )
 
+    if input_format == "probs" and not torch.all((preds >= 0) * (preds <= 1)):
+        raise ValueError(
+            "Expected argument `preds` to be a tensor with values in the [0,1] range,"
+            f" but got tensor with values {preds}"
+        )
+
 
 def _multiclass_confusion_matrix_format(
     preds: Tensor,
     target: Tensor,
     ignore_index: Optional[int] = None,
     convert_to_labels: bool = True,
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> Tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
@@ -316,7 +354,12 @@ def _multiclass_confusion_matrix_format(
 
     """
     # Apply argmax if we have one more dimension
-    if preds.ndim == target.ndim + 1 and convert_to_labels:
+    if (
+        input_format == "logits"
+        or input_format == "probs"
+        or (input_format == "auto" and preds.ndim == target.ndim + 1)
+        and convert_to_labels
+    ):
         preds = preds.argmax(dim=1)
 
     preds = preds.flatten() if convert_to_labels else torch.movedim(preds, 1, -1).reshape(-1, preds.shape[1])
@@ -355,6 +398,7 @@ def multiclass_confusion_matrix(
     normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> Tensor:
     r"""Compute the `confusion matrix`_ for multiclass tasks.
 
@@ -381,6 +425,19 @@ def multiclass_confusion_matrix(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         A ``[num_classes, num_classes]`` tensor
@@ -409,9 +466,11 @@ def multiclass_confusion_matrix(
 
     """
     if validate_args:
-        _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index, normalize)
-        _multiclass_confusion_matrix_tensor_validation(preds, target, num_classes, ignore_index)
-    preds, target = _multiclass_confusion_matrix_format(preds, target, ignore_index)
+        _multiclass_confusion_matrix_arg_validation(num_classes, ignore_index, normalize, input_format=input_format)
+        _multiclass_confusion_matrix_tensor_validation(
+            preds, target, num_classes, ignore_index, input_format=input_format
+        )
+    preds, target = _multiclass_confusion_matrix_format(preds, target, ignore_index, input_format=input_format)
     confmat = _multiclass_confusion_matrix_update(preds, target, num_classes)
     return _multiclass_confusion_matrix_compute(confmat, normalize)
 
@@ -421,6 +480,7 @@ def _multilabel_confusion_matrix_arg_validation(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> None:
     """Validate non tensor input.
 
@@ -439,10 +499,15 @@ def _multilabel_confusion_matrix_arg_validation(
     allowed_normalize = ("true", "pred", "all", "none", None)
     if normalize not in allowed_normalize:
         raise ValueError(f"Expected argument `normalize` to be one of {allowed_normalize}, but got {normalize}.")
+    _check_valid_input_format_type(input_format)
 
 
 def _multilabel_confusion_matrix_tensor_validation(
-    preds: Tensor, target: Tensor, num_labels: int, ignore_index: Optional[int] = None
+    preds: Tensor,
+    target: Tensor,
+    num_labels: int,
+    ignore_index: Optional[int] = None,
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> None:
     """Validate tensor input.
 
@@ -474,13 +539,19 @@ def _multilabel_confusion_matrix_tensor_validation(
         )
 
     # If preds is label tensor, also check that it only contains [0,1] values
-    if not preds.is_floating_point():
+    if not preds.is_floating_point() or input_format == "labels":
         unique_values = torch.unique(preds)
         if torch.any((unique_values != 0) & (unique_values != 1)):
             raise RuntimeError(
                 f"Detected the following values in `preds`: {unique_values} but expected only"
                 " the following values [0,1] since preds is a label tensor."
             )
+
+    if input_format == "probs" and not torch.all((preds >= 0) * (preds <= 1)):
+        raise ValueError(
+            "Expected argument `preds` to be a tensor with values in the [0,1] range,"
+            f" but got tensor with values {preds}"
+        )
 
 
 def _multilabel_confusion_matrix_format(
@@ -490,6 +561,7 @@ def _multilabel_confusion_matrix_format(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     should_threshold: bool = True,
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> Tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
@@ -498,11 +570,12 @@ def _multilabel_confusion_matrix_format(
     - Mask all elements that should be ignored with negative numbers for later filtration
 
     """
-    if preds.is_floating_point():
-        if not torch.all((preds >= 0) * (preds <= 1)):
-            preds = preds.sigmoid()
-        if should_threshold:
-            preds = preds > threshold
+    if input_format == "logits":
+        preds = preds.sigmoid()
+    if preds.is_floating_point() and input_format == "auto" and not torch.all((preds >= 0) * (preds <= 1)):
+        preds = preds.sigmoid()
+    if should_threshold and input_format != "labels":
+        preds = preds > threshold
     preds = torch.movedim(preds, 1, -1).reshape(-1, num_labels)
     target = torch.movedim(target, 1, -1).reshape(-1, num_labels)
 
@@ -545,6 +618,7 @@ def multilabel_confusion_matrix(
     normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> Tensor:
     r"""Compute the `confusion matrix`_ for multilabel tasks.
 
@@ -572,6 +646,19 @@ def multilabel_confusion_matrix(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'labels'``: preds tensor contains integer values and is considered to be labels. No formatting will be
+                applied to preds tensor.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
 
     Returns:
         A ``[num_labels, 2, 2]`` tensor
@@ -597,9 +684,15 @@ def multilabel_confusion_matrix(
 
     """
     if validate_args:
-        _multilabel_confusion_matrix_arg_validation(num_labels, threshold, ignore_index, normalize)
-        _multilabel_confusion_matrix_tensor_validation(preds, target, num_labels, ignore_index)
-    preds, target = _multilabel_confusion_matrix_format(preds, target, num_labels, threshold, ignore_index)
+        _multilabel_confusion_matrix_arg_validation(
+            num_labels, threshold, ignore_index, normalize, input_format=input_format
+        )
+        _multilabel_confusion_matrix_tensor_validation(
+            preds, target, num_labels, ignore_index, input_format=input_format
+        )
+    preds, target = _multilabel_confusion_matrix_format(
+        preds, target, num_labels, threshold, ignore_index, input_format=input_format
+    )
     confmat = _multilabel_confusion_matrix_update(preds, target, num_labels)
     return _multilabel_confusion_matrix_compute(confmat, normalize)
 
@@ -614,6 +707,7 @@ def confusion_matrix(
     normalize: Optional[Literal["true", "pred", "all", "none"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    input_format: Literal["auto", "probs", "logits", "labels", "none"] = "auto",
 ) -> Tensor:
     r"""Compute the `confusion matrix`_.
 
@@ -653,13 +747,19 @@ def confusion_matrix(
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
-        return binary_confusion_matrix(preds, target, threshold, normalize, ignore_index, validate_args)
+        return binary_confusion_matrix(
+            preds, target, threshold, normalize, ignore_index, validate_args, input_format=input_format
+        )
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
-        return multiclass_confusion_matrix(preds, target, num_classes, normalize, ignore_index, validate_args)
+        return multiclass_confusion_matrix(
+            preds, target, num_classes, normalize, ignore_index, validate_args, input_format=input_format
+        )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
-        return multilabel_confusion_matrix(preds, target, num_labels, threshold, normalize, ignore_index, validate_args)
+        return multilabel_confusion_matrix(
+            preds, target, num_labels, threshold, normalize, ignore_index, validate_args, input_format=input_format
+        )
     raise ValueError(f"Task {task} not supported.")

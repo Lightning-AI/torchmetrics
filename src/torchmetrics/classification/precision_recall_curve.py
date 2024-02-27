@@ -107,6 +107,19 @@ class BinaryPrecisionRecallCurve(Metric):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
+
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -139,14 +152,15 @@ class BinaryPrecisionRecallCurve(Metric):
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        input_format: Literal["auto", "probs", "logits", "none"] = "auto",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if validate_args:
-            _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
-
+            _binary_precision_recall_curve_arg_validation(thresholds, ignore_index, input_format)
         self.ignore_index = ignore_index
         self.validate_args = validate_args
+        self.input_format = input_format
 
         thresholds = _adjust_threshold_arg(thresholds)
         if thresholds is None:
@@ -162,8 +176,10 @@ class BinaryPrecisionRecallCurve(Metric):
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update metric states."""
         if self.validate_args:
-            _binary_precision_recall_curve_tensor_validation(preds, target, self.ignore_index)
-        preds, target, _ = _binary_precision_recall_curve_format(preds, target, self.thresholds, self.ignore_index)
+            _binary_precision_recall_curve_tensor_validation(preds, target, self.ignore_index, self.input_format)
+        preds, target, _ = _binary_precision_recall_curve_format(
+            preds, target, self.thresholds, self.ignore_index, self.input_format
+        )
         state = _binary_precision_recall_curve_update(preds, target, self.thresholds)
         if isinstance(state, Tensor):
             self.confmat += state
@@ -283,6 +299,19 @@ class MulticlassPrecisionRecallCurve(Metric):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and only thresholds the values.
+                If all values are non-float we consider the tensor to be labels and does nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor and threshold the values.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. Only
+                thresholding will be applied to the tensor and values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor and threshold the values before calculating the metric.
+            - ``'none'``: will disable all input formatting. This is the fastest option but also the least safe.
+
+
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -333,16 +362,19 @@ class MulticlassPrecisionRecallCurve(Metric):
         average: Optional[Literal["micro", "macro"]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        input_format: Literal["auto", "probs", "logits", "none"] = "auto",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if validate_args:
-            _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index, average)
-
+            _multiclass_precision_recall_curve_arg_validation(
+                num_classes, thresholds, ignore_index, average, input_format
+            )
         self.num_classes = num_classes
         self.average = average
         self.ignore_index = ignore_index
         self.validate_args = validate_args
+        self.input_format = input_format
 
         thresholds = _adjust_threshold_arg(thresholds)
         if thresholds is None:
@@ -360,9 +392,11 @@ class MulticlassPrecisionRecallCurve(Metric):
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update metric states."""
         if self.validate_args:
-            _multiclass_precision_recall_curve_tensor_validation(preds, target, self.num_classes, self.ignore_index)
+            _multiclass_precision_recall_curve_tensor_validation(
+                preds, target, self.num_classes, self.ignore_index, self.input_format
+            )
         preds, target, _ = _multiclass_precision_recall_curve_format(
-            preds, target, self.num_classes, self.thresholds, self.ignore_index, self.average
+            preds, target, self.num_classes, self.thresholds, self.ignore_index, self.average, self.input_format
         )
         state = _multiclass_precision_recall_curve_update(
             preds, target, self.num_classes, self.thresholds, self.average
@@ -482,6 +516,17 @@ class MultilabelPrecisionRecallCurve(Metric):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        input_format: str or bool specifying the format of the input preds tensor. Can be one of:
+
+            - ``'auto'`` or ``True``: automatically detect the format based on the values in the tensor. If all values
+                are in the [0,1] range, we consider the tensor to be probabilities and do nothing. Else we consider the
+                tensor to be logits and will apply sigmoid to the tensor before calculating the metric.
+            - ``'probs'``: preds tensor contains values in the [0,1] range and is considered to be probabilities. No
+                transformation will be applied to the tensor, but values will be checked to be in [0,1] range.
+            - ``'logits'``: preds tensor contains values outside the [0,1] range and is considered to be logits. We
+                will apply sigmoid to the tensor before calculating the metric.
+            - ``False``: will disable all input formatting. This is the fastest option but also the least safe.
+
 
     Example:
         >>> from torchmetrics.classification import MultilabelPrecisionRecallCurve
@@ -529,15 +574,16 @@ class MultilabelPrecisionRecallCurve(Metric):
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        input_format: Literal["auto", "probs", "logits", "none"] = "auto",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if validate_args:
-            _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
-
+            _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index, input_format)
         self.num_labels = num_labels
         self.ignore_index = ignore_index
         self.validate_args = validate_args
+        self.input_format = input_format
 
         thresholds = _adjust_threshold_arg(thresholds)
         if thresholds is None:
@@ -555,9 +601,11 @@ class MultilabelPrecisionRecallCurve(Metric):
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update metric states."""
         if self.validate_args:
-            _multilabel_precision_recall_curve_tensor_validation(preds, target, self.num_labels, self.ignore_index)
+            _multilabel_precision_recall_curve_tensor_validation(
+                preds, target, self.num_labels, self.ignore_index, self.input_format
+            )
         preds, target, _ = _multilabel_precision_recall_curve_format(
-            preds, target, self.num_labels, self.thresholds, self.ignore_index
+            preds, target, self.num_labels, self.thresholds, self.ignore_index, self.input_format
         )
         state = _multilabel_precision_recall_curve_update(preds, target, self.num_labels, self.thresholds)
         if isinstance(state, Tensor):
@@ -667,19 +715,26 @@ class PrecisionRecallCurve(_ClassificationTaskWrapper):
         num_labels: Optional[int] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        input_format: Literal["auto", "probs", "logits", "none"] = "auto",
         **kwargs: Any,
     ) -> Metric:
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
-        kwargs.update({"thresholds": thresholds, "ignore_index": ignore_index, "validate_args": validate_args})
+        kwargs_extra = kwargs.copy()
+        kwargs_extra.update({
+            "thresholds": thresholds,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+            "input_format": input_format,
+        })
         if task == ClassificationTask.BINARY:
-            return BinaryPrecisionRecallCurve(**kwargs)
+            return BinaryPrecisionRecallCurve(**kwargs_extra)
         if task == ClassificationTask.MULTICLASS:
             if not isinstance(num_classes, int):
                 raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
-            return MulticlassPrecisionRecallCurve(num_classes, **kwargs)
+            return MulticlassPrecisionRecallCurve(num_classes, **kwargs_extra)
         if task == ClassificationTask.MULTILABEL:
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
-            return MultilabelPrecisionRecallCurve(num_labels, **kwargs)
+            return MultilabelPrecisionRecallCurve(num_labels, **kwargs_extra)
         raise ValueError(f"Task {task} not supported!")
