@@ -49,7 +49,7 @@ _multi_target_inputs2 = _Input(
 )
 
 
-def _scipy_concordance(preds, target):
+def _reference_scipy_concordance(preds, target):
     preds, target = preds.numpy(), target.numpy()
     if preds.ndim == 2:
         mean_pred = np.mean(preds, axis=0)
@@ -89,13 +89,13 @@ class TestConcordanceCorrCoef(MetricTester):
             preds,
             target,
             ConcordanceCorrCoef,
-            _scipy_concordance,
+            _reference_scipy_concordance,
             metric_args={"num_outputs": num_outputs},
         )
 
     def test_concordance_corrcoef_functional(self, preds, target):
         """Test functional implementation of metric."""
-        self.run_functional_metric_test(preds, target, concordance_corrcoef, _scipy_concordance)
+        self.run_functional_metric_test(preds, target, concordance_corrcoef, _reference_scipy_concordance)
 
     def test_concordance_corrcoef_differentiability(self, preds, target):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
