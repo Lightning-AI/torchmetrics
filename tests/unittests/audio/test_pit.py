@@ -30,28 +30,29 @@ from torchmetrics.functional.audio.pit import (
     _find_best_perm_by_linear_sum_assignment,
 )
 
-from unittests import BATCH_SIZE, NUM_BATCHES, _Input, reference_cachier
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests.audio import _average_metric_wrapper
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-TIME = 10
+TIME_FRAME = 10
 
 
 # three speaker examples to test _find_best_perm_by_linear_sum_assignment
 inputs1 = _Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 3, TIME),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 3, TIME),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 3, TIME_FRAME),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 3, TIME_FRAME),
 )
 # two speaker examples to test _find_best_perm_by_exhuastive_method
 inputs2 = _Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, TIME),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, TIME),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, TIME_FRAME),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, TIME_FRAME),
 )
 
 
-def naive_implementation_scipy_pit(
+def _reference_scipy_pit(
     preds: Tensor,
     target: Tensor,
     metric_func: Callable,
@@ -86,24 +87,8 @@ def naive_implementation_scipy_pit(
     return torch.from_numpy(np.stack(best_metrics)), torch.from_numpy(np.stack(best_perms))
 
 
-def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Tensor:
-    """Average the metric values.
-
-    Args:
-        preds: predictions, shape[batch, spk, time]
-        target: targets, shape[batch, spk, time]
-        metric_func: a function which return best_metric and best_perm
-
-    Returns:
-        the average of best_metric
-
-    """
-    return metric_func(preds, target)[0].mean()
-
-
-@reference_cachier
 def _reference_scipy_pit_snr(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    return naive_implementation_scipy_pit(
+    return _reference_scipy_pit(
         preds=preds,
         target=target,
         metric_func=signal_noise_ratio,
@@ -111,9 +96,8 @@ def _reference_scipy_pit_snr(preds: Tensor, target: Tensor) -> Tuple[Tensor, Ten
     )
 
 
-@reference_cachier
 def _reference_scipy_pit_si_sdr(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    return naive_implementation_scipy_pit(
+    return _reference_scipy_pit(
         preds=preds,
         target=target,
         metric_func=scale_invariant_signal_distortion_ratio,
@@ -175,7 +159,7 @@ class TestPIT(MetricTester):
             preds,
             target,
             PermutationInvariantTraining,
-            reference_metric=partial(_average_metric, metric_func=ref_metric),
+            reference_metric=partial(_average_metric_wrapper, metric_func=ref_metric, res_index=0),
             metric_args={"metric_func": metric_func, "mode": mode, "eval_func": eval_func},
         )
 

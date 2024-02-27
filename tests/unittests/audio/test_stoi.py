@@ -21,8 +21,8 @@ from torch import Tensor
 from torchmetrics.audio import ShortTimeObjectiveIntelligibility
 from torchmetrics.functional.audio import short_time_objective_intelligibility
 
-from unittests import _Input, reference_cachier
-from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
+from unittests import _Input
+from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB, _average_metric_wrapper
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -39,7 +39,6 @@ inputs_16k = _Input(
 )
 
 
-@reference_cachier
 def _reference_stoi_batch(preds: Tensor, target: Tensor, fs: int, extended: bool):
     # shape: preds [BATCH_SIZE, Time] , target [BATCH_SIZE, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, Time] , target [NUM_BATCHES*BATCH_SIZE, Time]
@@ -52,25 +51,13 @@ def _reference_stoi_batch(preds: Tensor, target: Tensor, fs: int, extended: bool
     return torch.tensor(mss)
 
 
-def _average_metric(preds, target, metric_func):
-    # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
-    # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
-    return metric_func(preds, target).mean()
-
-
-stoi_original_batch_8k_ext = partial(_reference_stoi_batch, fs=8000, extended=True)
-stoi_original_batch_16k_ext = partial(_reference_stoi_batch, fs=16000, extended=True)
-stoi_original_batch_8k_noext = partial(_reference_stoi_batch, fs=8000, extended=False)
-stoi_original_batch_16k_noext = partial(_reference_stoi_batch, fs=16000, extended=False)
-
-
 @pytest.mark.parametrize(
     "preds, target, ref_metric, fs, extended",
     [
-        (inputs_8k.preds, inputs_8k.target, stoi_original_batch_8k_ext, 8000, True),
-        (inputs_16k.preds, inputs_16k.target, stoi_original_batch_16k_ext, 16000, True),
-        (inputs_8k.preds, inputs_8k.target, stoi_original_batch_8k_noext, 8000, False),
-        (inputs_16k.preds, inputs_16k.target, stoi_original_batch_16k_noext, 16000, False),
+        (inputs_8k.preds, inputs_8k.target, partial(_reference_stoi_batch, fs=8000, extended=True), 8000, True),
+        (inputs_16k.preds, inputs_16k.target, partial(_reference_stoi_batch, fs=16000, extended=True), 16000, True),
+        (inputs_8k.preds, inputs_8k.target, partial(_reference_stoi_batch, fs=8000, extended=False), 8000, False),
+        (inputs_16k.preds, inputs_16k.target, partial(_reference_stoi_batch, fs=16000, extended=False), 16000, False),
     ],
 )
 class TestSTOI(MetricTester):
@@ -86,7 +73,7 @@ class TestSTOI(MetricTester):
             preds,
             target,
             ShortTimeObjectiveIntelligibility,
-            reference_metric=partial(_average_metric, metric_func=ref_metric),
+            reference_metric=partial(_average_metric_wrapper, metric_func=ref_metric),
             metric_args={"fs": fs, "extended": extended},
         )
 

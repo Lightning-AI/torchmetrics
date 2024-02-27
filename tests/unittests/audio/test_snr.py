@@ -21,7 +21,8 @@ from torch import Tensor
 from torchmetrics.audio import SignalNoiseRatio
 from torchmetrics.functional.audio import signal_noise_ratio
 
-from unittests import _Input, reference_cachier
+from unittests import _Input
+from unittests.audio import _average_metric_wrapper
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -34,8 +35,7 @@ inputs = _Input(
 )
 
 
-@reference_cachier
-def _reference_bss__snr(preds: Tensor, target: Tensor, zero_mean: bool):
+def _reference_bss_snr(preds: Tensor, target: Tensor, zero_mean: bool):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     if zero_mean:
@@ -53,21 +53,11 @@ def _reference_bss__snr(preds: Tensor, target: Tensor, zero_mean: bool):
     return torch.tensor(mss)
 
 
-def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable):
-    # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
-    # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
-    return metric_func(preds, target).mean()
-
-
-mireval_snr_zeromean = partial(_reference_bss__snr, zero_mean=True)
-mireval_snr_nozeromean = partial(_reference_bss__snr, zero_mean=False)
-
-
 @pytest.mark.parametrize(
     "preds, target, ref_metric, zero_mean",
     [
-        (inputs.preds, inputs.target, mireval_snr_zeromean, True),
-        (inputs.preds, inputs.target, mireval_snr_nozeromean, False),
+        (inputs.preds, inputs.target, partial(_reference_bss_snr, zero_mean=True), True),
+        (inputs.preds, inputs.target, partial(_reference_bss_snr, zero_mean=False), False),
     ],
 )
 class TestSNR(MetricTester):
@@ -83,7 +73,7 @@ class TestSNR(MetricTester):
             preds,
             target,
             SignalNoiseRatio,
-            reference_metric=partial(_average_metric, metric_func=ref_metric),
+            reference_metric=partial(_average_metric_wrapper, metric_func=ref_metric),
             metric_args={"zero_mean": zero_mean},
         )
 

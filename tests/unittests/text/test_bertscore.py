@@ -22,7 +22,6 @@ from torchmetrics.text.bert import BERTScore
 from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
 from typing_extensions import Literal
 
-from unittests import ref_cachier, reference_cachier
 from unittests.helpers import skip_on_connection_issues
 from unittests.text.helpers import TextTester
 from unittests.text.inputs import _inputs_single_reference
@@ -44,7 +43,6 @@ MODEL_NAME = "albert-base-v2"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
-@reference_cachier
 @skip_on_connection_issues()
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
 @pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")

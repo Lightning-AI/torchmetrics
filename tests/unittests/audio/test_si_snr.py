@@ -20,7 +20,7 @@ from torch import Tensor
 from torchmetrics.audio import ScaleInvariantSignalNoiseRatio
 from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
 
-from unittests import BATCH_SIZE, NUM_BATCHES, _Input, reference_cachier
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -37,8 +37,7 @@ inputs = _Input(
 speechmetrics_sisdr = speechmetrics.load("sisdr")
 
 
-@reference_cachier
-def _reference_speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True):
+def _reference_speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True, reduce_mean: bool = False):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     if zero_mean:
@@ -53,13 +52,12 @@ def _reference_speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bo
             metric = speechmetrics_sisdr(preds[i, j], target[i, j], rate=16000)
             ms.append(metric["sisdr"][0])
         mss.append(ms)
-    return torch.tensor(mss)
-
-
-def _average_metric(preds, target, metric_func):
-    # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
-    # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
-    return metric_func(preds, target).mean()
+    si_sdr =  torch.tensor(mss)
+    if reduce_mean:
+        # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
+        # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
+        return si_sdr.mean()
+    return si_sdr
 
 
 @pytest.mark.parametrize(
@@ -81,7 +79,7 @@ class TestSISNR(MetricTester):
             preds,
             target,
             ScaleInvariantSignalNoiseRatio,
-            reference_metric=partial(_average_metric, metric_func=ref_metric),
+            reference_metric=partial(_reference_speechmetrics_si_sdr, reduce_mean=True),
         )
 
     def test_si_snr_functional(self, preds, target, ref_metric):
