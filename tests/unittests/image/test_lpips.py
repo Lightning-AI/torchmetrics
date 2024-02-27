@@ -39,7 +39,9 @@ _inputs = _Input(
 )
 
 
-def _compare_fn(img1: Tensor, img2: Tensor, net_type: str, normalize: bool = False, reduction: str = "mean") -> Tensor:
+def _reference_lpips(
+    img1: Tensor, img2: Tensor, net_type: str, normalize: bool = False, reduction: str = "mean"
+) -> Tensor:
     """Comparison function for tm implementation."""
     ref = LPIPS_reference(net=net_type)
     res = ref(img1, img2, normalize=normalize).detach().cpu().numpy()
@@ -64,7 +66,7 @@ class TestLPIPS(MetricTester):
             preds=_inputs.img1,
             target=_inputs.img2,
             metric_class=LearnedPerceptualImagePatchSimilarity,
-            reference_metric=partial(_compare_fn, net_type=net_type),
+            reference_metric=partial(_reference_lpips, net_type=net_type),
             check_scriptable=False,
             check_state_dict=False,
             metric_args={"net_type": net_type},
@@ -76,7 +78,7 @@ class TestLPIPS(MetricTester):
             preds=_inputs.img1,
             target=_inputs.img2,
             metric_functional=learned_perceptual_image_patch_similarity,
-            reference_metric=partial(_compare_fn, net_type="alex"),
+            reference_metric=partial(_reference_lpips, net_type="alex"),
             metric_args={"net_type": "alex"},
         )
 
@@ -102,7 +104,7 @@ def test_normalize_arg(normalize):
     """Test that normalize argument works as expected."""
     metric = LearnedPerceptualImagePatchSimilarity(net_type="squeeze", normalize=normalize)
     res = metric(_inputs.img1[0], _inputs.img2[1])
-    res2 = _compare_fn(_inputs.img1[0], _inputs.img2[1], net_type="squeeze", normalize=normalize)
+    res2 = _reference_lpips(_inputs.img1[0], _inputs.img2[1], net_type="squeeze", normalize=normalize)
     assert res == res2
 
 

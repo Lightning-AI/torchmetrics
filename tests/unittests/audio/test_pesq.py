@@ -22,7 +22,7 @@ from torchmetrics.audio import PerceptualEvaluationSpeechQuality
 from torchmetrics.functional.audio import perceptual_evaluation_speech_quality
 
 from unittests import _Input
-from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB
+from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB, _average_metric_wrapper
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
@@ -41,7 +41,7 @@ inputs_16k = _Input(
 )
 
 
-def _pesq_original_batch(preds: Tensor, target: Tensor, fs: int, mode: str):
+def _reference_pesq_batch(preds: Tensor, target: Tensor, fs: int, mode: str):
     """Comparison function."""
     # shape: preds [BATCH_SIZE, Time] , target [BATCH_SIZE, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, Time] , target [NUM_BATCHES*BATCH_SIZE, Time]
@@ -54,23 +54,12 @@ def _pesq_original_batch(preds: Tensor, target: Tensor, fs: int, mode: str):
     return torch.tensor(mss)
 
 
-def _average_metric(preds, target, metric_func):
-    # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
-    # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
-    return metric_func(preds, target).mean()
-
-
-pesq_original_batch_8k_nb = partial(_pesq_original_batch, fs=8000, mode="nb")
-pesq_original_batch_16k_nb = partial(_pesq_original_batch, fs=16000, mode="nb")
-pesq_original_batch_16k_wb = partial(_pesq_original_batch, fs=16000, mode="wb")
-
-
 @pytest.mark.parametrize(
     "preds, target, ref_metric, fs, mode",
     [
-        (inputs_8k.preds, inputs_8k.target, pesq_original_batch_8k_nb, 8000, "nb"),
-        (inputs_16k.preds, inputs_16k.target, pesq_original_batch_16k_nb, 16000, "nb"),
-        (inputs_16k.preds, inputs_16k.target, pesq_original_batch_16k_wb, 16000, "wb"),
+        (inputs_8k.preds, inputs_8k.target, partial(_reference_pesq_batch, fs=8000, mode="nb"), 8000, "nb"),
+        (inputs_16k.preds, inputs_16k.target, partial(_reference_pesq_batch, fs=16000, mode="nb"), 16000, "nb"),
+        (inputs_16k.preds, inputs_16k.target, partial(_reference_pesq_batch, fs=16000, mode="wb"), 16000, "wb"),
     ],
 )
 class TestPESQ(MetricTester):
@@ -89,7 +78,7 @@ class TestPESQ(MetricTester):
             preds,
             target,
             PerceptualEvaluationSpeechQuality,
-            reference_metric=partial(_average_metric, metric_func=ref_metric),
+            reference_metric=partial(_average_metric_wrapper, metric_func=ref_metric),
             metric_args={"fs": fs, "mode": mode, "n_processes": num_processes},
         )
 

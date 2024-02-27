@@ -44,13 +44,7 @@ for size, channel, p, dtype in [
 ]:
     preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
     target = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
-    _inputs.append(
-        _Input(
-            preds=preds,
-            target=target,
-            p=p,
-        )
-    )
+    _inputs.append(_Input(preds=preds, target=target, p=p))
 
 
 def _baseline_d_lambda(preds: np.ndarray, target: np.ndarray, p: int = 1) -> float:
@@ -80,16 +74,12 @@ def _baseline_d_lambda(preds: np.ndarray, target: np.ndarray, p: int = 1) -> flo
     return (1.0 / (length * (length - 1)) * np.sum(diff)) ** (1.0 / p)
 
 
-def _np_d_lambda(preds, target, p):
+def _reference_numpy_d_lambda(preds, target, p):
     c, h, w = preds.shape[-3:]
     np_preds = preds.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
     np_target = target.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
 
-    return _baseline_d_lambda(
-        np_preds,
-        np_target,
-        p=p,
-    )
+    return _baseline_d_lambda(np_preds, np_target, p=p)
 
 
 @pytest.mark.parametrize(
@@ -108,8 +98,8 @@ class TestSpectralDistortionIndex(MetricTester):
             ddp,
             preds,
             target,
-            SpectralDistortionIndex,
-            partial(_np_d_lambda, p=p),
+            metric_class=SpectralDistortionIndex,
+            reference_metric=partial(_reference_numpy_d_lambda, p=p),
             metric_args={"p": p},
         )
 
@@ -118,8 +108,8 @@ class TestSpectralDistortionIndex(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            spectral_distortion_index,
-            partial(_np_d_lambda, p=p),
+            metric_functional=spectral_distortion_index,
+            reference_metric=partial(_reference_numpy_d_lambda, p=p),
             metric_args={"p": p},
         )
 

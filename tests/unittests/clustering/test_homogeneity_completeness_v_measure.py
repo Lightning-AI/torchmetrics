@@ -28,14 +28,14 @@ from torchmetrics.functional.clustering.homogeneity_completeness_v_measure impor
     v_measure_score,
 )
 
-from unittests.clustering.inputs import _float_inputs_extrinsic, _single_target_extrinsic1, _single_target_extrinsic2
+from unittests.clustering._inputs import _float_inputs_extrinsic, _single_target_extrinsic1, _single_target_extrinsic2
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
 
-def _sk_reference(preds, target, fn):
+def _reference_sklearn_wrapper(preds, target, fn):
     """Compute reference values using sklearn."""
     return fn(target, preds)
 
@@ -75,7 +75,7 @@ class TestHomogeneityCompletenessVmeasur(MetricTester):
             preds=preds,
             target=target,
             metric_class=modular_metric,
-            reference_metric=partial(_sk_reference, fn=reference_metric),
+            reference_metric=partial(_reference_sklearn_wrapper, fn=reference_metric),
         )
 
     def test_homogeneity_completeness_vmeasure_functional(
@@ -86,7 +86,7 @@ class TestHomogeneityCompletenessVmeasur(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional_metric,
-            reference_metric=partial(_sk_reference, fn=reference_metric),
+            reference_metric=partial(_reference_sklearn_wrapper, fn=reference_metric),
         )
 
 

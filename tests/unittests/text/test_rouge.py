@@ -25,8 +25,8 @@ from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILAB
 from typing_extensions import Literal
 
 from unittests.helpers import skip_on_connection_issues
+from unittests.text._inputs import _Input, _inputs_multiple_references, _inputs_single_sentence_single_reference
 from unittests.text.helpers import TextTester
-from unittests.text.inputs import _Input, _inputs_multiple_references, _inputs_single_sentence_single_reference
 
 if _ROUGE_SCORE_AVAILABLE:
     from rouge_score.rouge_scorer import RougeScorer
