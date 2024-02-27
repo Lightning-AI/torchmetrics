@@ -26,7 +26,6 @@ from torch import Tensor
 from torchmetrics import Metric
 from torchmetrics.classification.group_fairness import BinaryFairness
 from torchmetrics.functional.classification.group_fairness import binary_fairness
-from torchmetrics.utilities.imports import _PYTHON_LOWER_3_8
 
 from unittests import THRESHOLD
 from unittests.classification._inputs import _group_cases
@@ -222,7 +221,6 @@ class BinaryFairnessTester(MetricTester):
 
 @mock.patch("unittests.helpers.testers._assert_tensor", _assert_tensor)
 @mock.patch("unittests.helpers.testers._assert_allclose", _assert_allclose)
-@pytest.mark.skipif(_PYTHON_LOWER_3_8, reason="`TestBinaryFairness` requires `python>=3.8`.")
 @pytest.mark.parametrize("inputs", _group_cases)
 class TestBinaryFairness(BinaryFairnessTester):
     """Test class for `BinaryFairness` metric."""
