@@ -26,7 +26,7 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-num_targets = 5
+NUM_TARGETS = 5
 
 
 _single_target_inputs = _Input(
@@ -35,12 +35,12 @@ _single_target_inputs = _Input(
 )
 
 _multi_target_inputs = _Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_TARGETS),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_TARGETS),
 )
 
 
-def _sk_rse(target, preds, squared):
+def _reference_rse(target, preds, squared):
     mean = np.mean(target, axis=0, keepdims=True)
     error = target - preds
     sum_squared_error = np.sum(error * error, axis=0)
@@ -52,24 +52,24 @@ def _sk_rse(target, preds, squared):
     return np.mean(rse)
 
 
-def _single_target_ref_metric(preds, target, squared):
+def _single_target_ref_wrapper(preds, target, squared):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
-    return _sk_rse(sk_target, sk_preds, squared=squared)
+    return _reference_rse(sk_target, sk_preds, squared=squared)
 
 
-def _multi_target_ref_metric(preds, target, squared):
-    sk_preds = preds.view(-1, num_targets).numpy()
-    sk_target = target.view(-1, num_targets).numpy()
-    return _sk_rse(sk_target, sk_preds, squared=squared)
+def _multi_target_ref_wrapper(preds, target, squared):
+    sk_preds = preds.view(-1, NUM_TARGETS).numpy()
+    sk_target = target.view(-1, NUM_TARGETS).numpy()
+    return _reference_rse(sk_target, sk_preds, squared=squared)
 
 
 @pytest.mark.parametrize("squared", [False, True])
 @pytest.mark.parametrize(
     "preds, target, ref_metric, num_outputs",
     [
-        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_ref_metric, 1),
-        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_ref_metric, num_targets),
+        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_ref_wrapper, 1),
+        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_ref_wrapper, NUM_TARGETS),
     ],
 )
 class TestRelativeSquaredError(MetricTester):

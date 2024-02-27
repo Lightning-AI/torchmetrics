@@ -62,7 +62,7 @@ def theils_u_matrix_input():
     return matrix
 
 
-def _dython_theils_u(preds, target, nan_strategy, nan_replace_value):
+def _reference_dython_theils_u(preds, target, nan_strategy, nan_replace_value):
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
 
@@ -75,13 +75,13 @@ def _dython_theils_u(preds, target, nan_strategy, nan_replace_value):
     return torch.tensor(v)
 
 
-def _dython_theils_u_matrix(matrix, nan_strategy, nan_replace_value):
+def _reference_dython_theils_u_matrix(matrix, nan_strategy, nan_replace_value):
     num_variables = matrix.shape[1]
     theils_u_matrix_value = torch.ones(num_variables, num_variables)
     for i, j in itertools.combinations(range(num_variables), 2):
         x, y = matrix[:, i], matrix[:, j]
-        theils_u_matrix_value[i, j] = _dython_theils_u(x, y, nan_strategy, nan_replace_value)
-        theils_u_matrix_value[j, i] = _dython_theils_u(y, x, nan_strategy, nan_replace_value)
+        theils_u_matrix_value[i, j] = _reference_dython_theils_u(x, y, nan_strategy, nan_replace_value)
+        theils_u_matrix_value[j, i] = _reference_dython_theils_u(y, x, nan_strategy, nan_replace_value)
     return theils_u_matrix_value
 
 
@@ -109,7 +109,7 @@ class TestTheilsU(MetricTester):
             "num_classes": NUM_CLASSES,
         }
         reference_metric = partial(
-            _dython_theils_u,
+            _reference_dython_theils_u,
             nan_strategy=nan_strategy,
             nan_replace_value=nan_replace_value,
         )
@@ -129,7 +129,7 @@ class TestTheilsU(MetricTester):
             "nan_replace_value": nan_replace_value,
         }
         reference_metric = partial(
-            _dython_theils_u,
+            _reference_dython_theils_u,
             nan_strategy=nan_strategy,
             nan_replace_value=nan_replace_value,
         )
@@ -158,5 +158,5 @@ class TestTheilsU(MetricTester):
 def test_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value):
     """Test matrix version of metric works as expected."""
     tm_score = theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
-    reference_score = _dython_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
+    reference_score = _reference_dython_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value)
     assert torch.allclose(tm_score, reference_score, atol=1e-6)
