@@ -106,7 +106,10 @@ class TestBinaryFBetaScore(MetricTester):
             target=target,
             metric_class=module,
             reference_metric=partial(
-                _reference_sklearn_fbeta_score_binary, sk_fn=compare, ignore_index=ignore_index, multidim_average=multidim_average
+                _reference_sklearn_fbeta_score_binary,
+                sk_fn=compare,
+                ignore_index=ignore_index,
+                multidim_average=multidim_average,
             ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
@@ -126,7 +129,10 @@ class TestBinaryFBetaScore(MetricTester):
             target=target,
             metric_functional=functional,
             reference_metric=partial(
-                _reference_sklearn_fbeta_score_binary, sk_fn=compare, ignore_index=ignore_index, multidim_average=multidim_average
+                _reference_sklearn_fbeta_score_binary,
+                sk_fn=compare,
+                ignore_index=ignore_index,
+                multidim_average=multidim_average,
             ),
             metric_args={
                 "threshold": THRESHOLD,

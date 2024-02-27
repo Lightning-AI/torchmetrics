@@ -42,7 +42,9 @@ inputs_2spk = _Input(
 )
 
 
-def _reference_sdr_batch(preds: Tensor, target: Tensor, compute_permutation: bool = False, reduce_mean: bool = False) -> Tensor:
+def _reference_sdr_batch(
+    preds: Tensor, target: Tensor, compute_permutation: bool = False, reduce_mean: bool = False
+) -> Tensor:
     # shape: preds [BATCH_SIZE, spk, Time] , target [BATCH_SIZE, spk, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, spk, Time] , target [NUM_BATCHES*BATCH_SIZE, spk, Time]
     target = target.detach().cpu().numpy()
@@ -64,10 +66,7 @@ def _reference_sdr_batch(preds: Tensor, target: Tensor, compute_permutation: boo
 )
 @pytest.mark.parametrize(
     "preds, target",
-    [
-        (inputs_1spk.preds, inputs_1spk.target),
-        (inputs_2spk.preds, inputs_2spk.target)
-    ],
+    [(inputs_1spk.preds, inputs_1spk.target), (inputs_2spk.preds, inputs_2spk.target)],
 )
 class TestSDR(MetricTester):
     """Test class for `SignalDistortionRatio` metric."""

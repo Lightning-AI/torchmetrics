@@ -22,7 +22,7 @@ from lightning_utilities.core.imports import compare_version
 from torchmetrics.functional.nominal.theils_u import theils_u, theils_u_matrix
 from torchmetrics.nominal import TheilsU
 
-from unittests import BATCH_SIZE, NUM_BATCHES, _Input, reference_cachier
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers.testers import MetricTester
 
 NUM_CLASSES = 4
@@ -62,7 +62,6 @@ def theils_u_matrix_input():
     return matrix
 
 
-@reference_cachier
 def _reference_dython_theils_u(preds, target, nan_strategy, nan_replace_value):
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
@@ -76,7 +75,6 @@ def _reference_dython_theils_u(preds, target, nan_strategy, nan_replace_value):
     return torch.tensor(v)
 
 
-@reference_cachier
 def _reference_dython_theils_u_matrix(matrix, nan_strategy, nan_replace_value):
     num_variables = matrix.shape[1]
     theils_u_matrix_value = torch.ones(num_variables, num_variables)

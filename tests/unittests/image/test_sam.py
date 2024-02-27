@@ -40,11 +40,7 @@ for size, channel, dtype in [
     _inputs.append(_Input(preds=preds, target=target))
 
 
-def _reference_sam(
-    preds: Tensor,
-    target: Tensor,
-    reduction: str = "elementwise_mean"
-) -> Tensor:
+def _reference_sam(preds: Tensor, target: Tensor, reduction: str = "elementwise_mean") -> Tensor:
     """Baseline implementation of spectral angle mapper."""
     reduction_options = ("elementwise_mean", "sum", "none")
     if reduction not in reduction_options:

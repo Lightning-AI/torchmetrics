@@ -25,7 +25,6 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
 from transformers import CLIPModel as _CLIPModel
 from transformers import CLIPProcessor as _CLIPProcessor
 
-from unittests import reference_cachier
 from unittests.helpers import seed_all, skip_on_connection_issues
 from unittests.helpers.testers import MetricTester
 
@@ -49,7 +48,6 @@ _random_input = _InputImagesCaptions(
 )
 
 
-@reference_cachier
 def _reference_clip_score(preds, target, model_name_or_path):
     processor = _CLIPProcessor.from_pretrained(model_name_or_path)
     model = _CLIPModel.from_pretrained(model_name_or_path)

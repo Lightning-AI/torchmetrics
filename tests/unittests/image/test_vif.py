@@ -53,8 +53,12 @@ class TestVIF(MetricTester):
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_vif(self, preds, target, ddp):
         """Test class implementation of metric."""
-        self.run_class_metric_test(ddp, preds, target, metric_class=VisualInformationFidelity, reference_metric=_reference_sewar_vif)
+        self.run_class_metric_test(
+            ddp, preds, target, metric_class=VisualInformationFidelity, reference_metric=_reference_sewar_vif
+        )
 
     def test_vif_functional(self, preds, target):
         """Test functional implementation of metric."""
-        self.run_functional_metric_test(preds, target, metric_functional=visual_information_fidelity, reference_metric=_reference_sewar_vif)
+        self.run_functional_metric_test(
+            preds, target, metric_functional=visual_information_fidelity, reference_metric=_reference_sewar_vif
+        )

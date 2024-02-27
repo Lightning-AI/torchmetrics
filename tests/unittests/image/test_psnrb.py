@@ -66,11 +66,18 @@ class TestPSNR(MetricTester):
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_psnr(self, preds, target, ddp):
         """Test that modular PSNRB metric returns the same result as the reference implementation."""
-        self.run_class_metric_test(ddp, preds, target, metric_class=PeakSignalNoiseRatioWithBlockedEffect, reference_metric=_reference_psnrb)
+        self.run_class_metric_test(
+            ddp, preds, target, metric_class=PeakSignalNoiseRatioWithBlockedEffect, reference_metric=_reference_psnrb
+        )
 
     def test_psnr_functional(self, preds, target):
         """Test that functional PSNRB metric returns the same result as the reference implementation."""
-        self.run_functional_metric_test(preds, target, metric_functional=peak_signal_noise_ratio_with_blocked_effect, reference_metric=_reference_psnrb)
+        self.run_functional_metric_test(
+            preds,
+            target,
+            metric_functional=peak_signal_noise_ratio_with_blocked_effect,
+            reference_metric=_reference_psnrb,
+        )
 
     def test_psnr_half_cpu(self, preds, target):
         """Test that PSNRB metric works with half precision on cpu."""

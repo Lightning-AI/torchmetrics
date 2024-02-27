@@ -103,7 +103,9 @@ class TestBinarySensitivityAtSpecificity(MetricTester):
             target=target,
             metric_class=BinarySensitivityAtSpecificity,
             reference_metric=partial(
-                _reference_sklearn_sensitivity_at_specificity_binary, min_specificity=min_specificity, ignore_index=ignore_index
+                _reference_sklearn_sensitivity_at_specificity_binary,
+                min_specificity=min_specificity,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_specificity": min_specificity,
@@ -125,7 +127,9 @@ class TestBinarySensitivityAtSpecificity(MetricTester):
             target=target,
             metric_functional=binary_sensitivity_at_specificity,
             reference_metric=partial(
-                _reference_sklearn_sensitivity_at_specificity_binary, min_specificity=min_specificity, ignore_index=ignore_index
+                _reference_sklearn_sensitivity_at_specificity_binary,
+                min_specificity=min_specificity,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_specificity": min_specificity,
@@ -328,7 +332,9 @@ class TestMulticlassSensitivityAtSpecificity(MetricTester):
 def _reference_sklearn_sensitivity_at_specificity_multilabel(preds, target, min_specificity, ignore_index=None):
     sensitivity, thresholds = [], []
     for i in range(NUM_CLASSES):
-        res = _reference_sklearn_sensitivity_at_specificity_binary(preds[:, i], target[:, i], min_specificity, ignore_index)
+        res = _reference_sklearn_sensitivity_at_specificity_binary(
+            preds[:, i], target[:, i], min_specificity, ignore_index
+        )
         sensitivity.append(res[0])
         thresholds.append(res[1])
     return sensitivity, thresholds

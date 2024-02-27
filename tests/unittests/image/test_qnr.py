@@ -15,7 +15,6 @@
 from functools import partial
 from typing import Dict, List, NamedTuple
 
-import numpy as np
 import pytest
 import torch
 from torch import Tensor
@@ -76,8 +75,10 @@ for size, channel, alpha, beta, norm_order, r, window_size, pan_lr_exists, dtype
     )
 
 
-def _reference_numpy_quality_with_no_ref(preds, target, pan=None, pan_lr=None, alpha=1, beta=1, norm_order=1, window_size=7):
-    np_preds = preds.permute(0, 2, 3, 1).cpu().numpy()
+def _reference_numpy_quality_with_no_ref(
+    preds, target, pan=None, pan_lr=None, alpha=1, beta=1, norm_order=1, window_size=7
+):
+    preds = preds.permute(0, 2, 3, 1).cpu().numpy()
     if isinstance(target, dict):
         assert "ms" in target, "Expected `target` to contain 'ms'."
         ms = target["ms"].permute(0, 2, 3, 1).cpu().numpy()
@@ -90,11 +91,7 @@ def _reference_numpy_quality_with_no_ref(preds, target, pan=None, pan_lr=None, a
         pan_lr = pan_lr.permute(0, 2, 3, 1).cpu().numpy() if pan_lr is not None else None
 
     d_lambda = _baseline_d_lambda(preds, ms, norm_order)
-    d_s = _reference_d_s(preds, ms, pan, pan_lr,
-        alpha=alpha,
-        beta=beta,
-        norm_order=norm_order,
-        window_size=window_size)
+    d_s = _reference_d_s(preds, ms, pan, pan_lr, alpha=alpha, beta=beta, norm_order=norm_order, window_size=window_size)
     return (1 - d_lambda) ** alpha * (1 - d_s) ** beta
 
 
@@ -135,7 +132,11 @@ class TestQualityWithNoReference(MetricTester):
             ms,
             quality_with_no_reference,
             partial(
-                _reference_numpy_quality_with_no_ref, alpha=alpha, beta=beta, norm_order=norm_order, window_size=window_size
+                _reference_numpy_quality_with_no_ref,
+                alpha=alpha,
+                beta=beta,
+                norm_order=norm_order,
+                window_size=window_size,
             ),
             metric_args={"alpha": alpha, "beta": beta, "norm_order": norm_order, "window_size": window_size},
             fragment_kwargs=True,

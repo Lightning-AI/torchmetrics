@@ -52,7 +52,7 @@ def _reference_speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bo
             metric = speechmetrics_sisdr(preds[i, j], target[i, j], rate=16000)
             ms.append(metric["sisdr"][0])
         mss.append(ms)
-    si_sdr =  torch.tensor(mss)
+    si_sdr = torch.tensor(mss)
     if reduce_mean:
         # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
         # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
@@ -62,9 +62,7 @@ def _reference_speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bo
 
 @pytest.mark.parametrize(
     "preds, target, ref_metric",
-    [
-        (inputs.preds, inputs.target, _reference_speechmetrics_si_sdr)
-    ],
+    [(inputs.preds, inputs.target, _reference_speechmetrics_si_sdr)],
 )
 class TestSISNR(MetricTester):
     """Test class for `ScaleInvariantSignalNoiseRatio` metric."""

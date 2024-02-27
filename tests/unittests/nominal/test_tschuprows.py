@@ -22,7 +22,7 @@ from scipy.stats.contingency import association
 from torchmetrics.functional.nominal.tschuprows import tschuprows_t, tschuprows_t_matrix
 from torchmetrics.nominal.tschuprows import TschuprowsT
 
-from unittests import BATCH_SIZE, NUM_BATCHES, _Input, reference_cachier
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers.testers import MetricTester
 
 NUM_CLASSES = 4
@@ -52,7 +52,6 @@ def tschuprows_matrix_input():
     )
 
 
-@reference_cachier
 def _reference_pd_tschuprows_t(preds, target):
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
@@ -63,7 +62,6 @@ def _reference_pd_tschuprows_t(preds, target):
     return torch.tensor(t)
 
 
-@reference_cachier
 def _reference_pd_tschuprows_t_matrix(matrix):
     num_variables = matrix.shape[1]
     tschuprows_t_matrix_value = torch.ones(num_variables, num_variables)

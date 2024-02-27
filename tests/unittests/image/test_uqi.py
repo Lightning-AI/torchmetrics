@@ -55,7 +55,6 @@ for size, channel, coef, multichannel, dtype in [
     )
 
 
-
 def _reference_skimage_uqi(preds, target, multichannel, kernel_size):
     c, h, w = preds.shape[-3:]
     sk_preds = preds.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()

@@ -26,7 +26,6 @@ from torchmetrics.multimodal.clip_iqa import CLIPImageQualityAssessment
 from torchmetrics.utilities.imports import _PIQ_GREATER_EQUAL_0_8, _TRANSFORMERS_GREATER_EQUAL_4_10
 from torchvision.transforms import PILToTensor
 
-from unittests import reference_cachier
 from unittests.helpers import skip_on_connection_issues
 from unittests.helpers.testers import MetricTester
 from unittests.image import _SAMPLE_IMAGE
@@ -66,7 +65,6 @@ def _clip_iqa_wrapped(preds, target):
     return clip_image_quality_assessment(preds)
 
 
-@reference_cachier
 def _reference_clip_iqa(preds, target, reduce=False):
     """Reference implementation of `CLIPImageQualityAssessment` metric."""
     res = piq.CLIPIQA()(preds).squeeze()

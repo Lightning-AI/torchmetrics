@@ -10,7 +10,9 @@ _SAMPLE_AUDIO_SPEECH_BAB_DB = os.path.join(_PATH_ALL_TESTS, "_data", "audio", "a
 _SAMPLE_NUMPY_ISSUE_895 = os.path.join(_PATH_ALL_TESTS, "_data", "audio", "issue_895.npz")
 
 
-def _average_metric_wrapper(preds: Tensor, target: Tensor, metric_func: Callable, res_index:Optional[int] = None) -> Tensor:
+def _average_metric_wrapper(
+    preds: Tensor, target: Tensor, metric_func: Callable, res_index: Optional[int] = None
+) -> Tensor:
     """Average the metric values.
 
     Args:

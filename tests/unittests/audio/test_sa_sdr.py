@@ -38,7 +38,9 @@ inputs = _Input(
 )
 
 
-def _reference_local_sa_sdr(preds: Tensor, target: Tensor, scale_invariant: bool, zero_mean: bool, reduce_mean: bool = False):
+def _reference_local_sa_sdr(
+    preds: Tensor, target: Tensor, scale_invariant: bool, zero_mean: bool, reduce_mean: bool = False
+):
     # According to the original paper, the sa-sdr equals to si-sdr with inputs concatenated over the speaker
     # dimension if scale_invariant==True. Accordingly, for scale_invariant==False, the sa-sdr equals to snr.
     # shape: preds [BATCH_SIZE, Spk, Time] , target [BATCH_SIZE, Spk, Time]
@@ -51,7 +53,7 @@ def _reference_local_sa_sdr(preds: Tensor, target: Tensor, scale_invariant: bool
     preds = preds.reshape(preds.shape[0], preds.shape[1] * preds.shape[2])
     target = target.reshape(target.shape[0], target.shape[1] * target.shape[2])
     if scale_invariant:
-        sa_sdr= scale_invariant_signal_distortion_ratio(preds=preds, target=target, zero_mean=False)
+        sa_sdr = scale_invariant_signal_distortion_ratio(preds=preds, target=target, zero_mean=False)
     else:
         sa_sdr = signal_noise_ratio(preds=preds, target=target, zero_mean=zero_mean)
     if reduce_mean:
@@ -83,7 +85,9 @@ class TestSASDR(MetricTester):
             preds,
             target,
             SourceAggregatedSignalDistortionRatio,
-            reference_metric=partial(_reference_local_sa_sdr, scale_invariant=scale_invariant, zero_mean=zero_mean, reduce_mean=True),
+            reference_metric=partial(
+                _reference_local_sa_sdr, scale_invariant=scale_invariant, zero_mean=zero_mean, reduce_mean=True
+            ),
             metric_args={
                 "scale_invariant": scale_invariant,
                 "zero_mean": zero_mean,

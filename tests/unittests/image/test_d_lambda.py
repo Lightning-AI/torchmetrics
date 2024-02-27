@@ -44,13 +44,7 @@ for size, channel, p, dtype in [
 ]:
     preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
     target = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
-    _inputs.append(
-        _Input(
-            preds=preds,
-            target=target,
-            p=p
-        )
-    )
+    _inputs.append(_Input(preds=preds, target=target, p=p))
 
 
 def _baseline_d_lambda(preds: np.ndarray, target: np.ndarray, p: int = 1) -> float:
@@ -85,11 +79,7 @@ def _reference_numpy_d_lambda(preds, target, p):
     np_preds = preds.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
     np_target = target.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
 
-    return _baseline_d_lambda(
-        np_preds,
-        np_target,
-        p=p
-    )
+    return _baseline_d_lambda(np_preds, np_target, p=p)
 
 
 @pytest.mark.parametrize(

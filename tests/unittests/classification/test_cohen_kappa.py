@@ -159,7 +159,9 @@ class TestMulticlassCohenKappa(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassCohenKappa,
-            reference_metric=partial(_reference_sklearn_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index),
+            reference_metric=partial(
+                _reference_sklearn_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index
+            ),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "weights": weights,
@@ -178,7 +180,9 @@ class TestMulticlassCohenKappa(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_cohen_kappa,
-            reference_metric=partial(_reference_sklearn_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index),
+            reference_metric=partial(
+                _reference_sklearn_cohen_kappa_multiclass, weights=weights, ignore_index=ignore_index
+            ),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "weights": weights,

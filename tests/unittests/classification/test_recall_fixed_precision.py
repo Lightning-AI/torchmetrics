@@ -80,7 +80,9 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
             target=target,
             metric_class=BinaryRecallAtFixedPrecision,
             reference_metric=partial(
-                _reference_sklearn_recall_at_fixed_precision_binary, min_precision=min_precision, ignore_index=ignore_index
+                _reference_sklearn_recall_at_fixed_precision_binary,
+                min_precision=min_precision,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_precision": min_precision,
@@ -101,7 +103,9 @@ class TestBinaryRecallAtFixedPrecision(MetricTester):
             target=target,
             metric_functional=binary_recall_at_fixed_precision,
             reference_metric=partial(
-                _reference_sklearn_recall_at_fixed_precision_binary, min_precision=min_precision, ignore_index=ignore_index
+                _reference_sklearn_recall_at_fixed_precision_binary,
+                min_precision=min_precision,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_precision": min_precision,
@@ -201,7 +205,9 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
             target=target,
             metric_class=MulticlassRecallAtFixedPrecision,
             reference_metric=partial(
-                _reference_sklearn_recall_at_fixed_precision_multiclass, min_precision=min_precision, ignore_index=ignore_index
+                _reference_sklearn_recall_at_fixed_precision_multiclass,
+                min_precision=min_precision,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_precision": min_precision,
@@ -223,7 +229,9 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
             target=target,
             metric_functional=multiclass_recall_at_fixed_precision,
             reference_metric=partial(
-                _reference_sklearn_recall_at_fixed_precision_multiclass, min_precision=min_precision, ignore_index=ignore_index
+                _reference_sklearn_recall_at_fixed_precision_multiclass,
+                min_precision=min_precision,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_precision": min_precision,
@@ -293,7 +301,9 @@ class TestMulticlassRecallAtFixedPrecision(MetricTester):
 def _reference_sklearn_recall_at_fixed_precision_multilabel(preds, target, min_precision, ignore_index=None):
     recall, thresholds = [], []
     for i in range(NUM_CLASSES):
-        res = _reference_sklearn_recall_at_fixed_precision_binary(preds[:, i], target[:, i], min_precision, ignore_index)
+        res = _reference_sklearn_recall_at_fixed_precision_binary(
+            preds[:, i], target[:, i], min_precision, ignore_index
+        )
         recall.append(res[0])
         thresholds.append(res[1])
     return recall, thresholds
@@ -319,7 +329,9 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
             target=target,
             metric_class=MultilabelRecallAtFixedPrecision,
             reference_metric=partial(
-                _reference_sklearn_recall_at_fixed_precision_multilabel, min_precision=min_precision, ignore_index=ignore_index
+                _reference_sklearn_recall_at_fixed_precision_multilabel,
+                min_precision=min_precision,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_precision": min_precision,
@@ -341,7 +353,9 @@ class TestMultilabelRecallAtFixedPrecision(MetricTester):
             target=target,
             metric_functional=multilabel_recall_at_fixed_precision,
             reference_metric=partial(
-                _reference_sklearn_recall_at_fixed_precision_multilabel, min_precision=min_precision, ignore_index=ignore_index
+                _reference_sklearn_recall_at_fixed_precision_multilabel,
+                min_precision=min_precision,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_precision": min_precision,

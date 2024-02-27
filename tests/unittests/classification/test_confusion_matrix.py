@@ -67,7 +67,9 @@ class TestBinaryConfusionMatrix(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryConfusionMatrix,
-            reference_metric=partial(_reference_sklearn_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index),
+            reference_metric=partial(
+                _reference_sklearn_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index
+            ),
             metric_args={
                 "threshold": THRESHOLD,
                 "normalize": normalize,
@@ -86,7 +88,9 @@ class TestBinaryConfusionMatrix(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_confusion_matrix,
-            reference_metric=partial(_reference_sklearn_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index),
+            reference_metric=partial(
+                _reference_sklearn_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index
+            ),
             metric_args={
                 "threshold": THRESHOLD,
                 "normalize": normalize,

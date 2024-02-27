@@ -201,7 +201,9 @@ class TestMulticlassPrecisionAtFixedRecall(MetricTester):
             target=target,
             metric_class=MulticlassPrecisionAtFixedRecall,
             reference_metric=partial(
-                _reference_sklearn_precision_at_fixed_recall_multiclass, min_recall=min_recall, ignore_index=ignore_index
+                _reference_sklearn_precision_at_fixed_recall_multiclass,
+                min_recall=min_recall,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_recall": min_recall,
@@ -223,7 +225,9 @@ class TestMulticlassPrecisionAtFixedRecall(MetricTester):
             target=target,
             metric_functional=multiclass_precision_at_fixed_recall,
             reference_metric=partial(
-                _reference_sklearn_precision_at_fixed_recall_multiclass, min_recall=min_recall, ignore_index=ignore_index
+                _reference_sklearn_precision_at_fixed_recall_multiclass,
+                min_recall=min_recall,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_recall": min_recall,
@@ -319,7 +323,9 @@ class TestMultilabelPrecisionAtFixedRecall(MetricTester):
             target=target,
             metric_class=MultilabelPrecisionAtFixedRecall,
             reference_metric=partial(
-                _reference_sklearn_precision_at_fixed_recall_multilabel, min_recall=min_recall, ignore_index=ignore_index
+                _reference_sklearn_precision_at_fixed_recall_multilabel,
+                min_recall=min_recall,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_recall": min_recall,
@@ -341,7 +347,9 @@ class TestMultilabelPrecisionAtFixedRecall(MetricTester):
             target=target,
             metric_functional=multilabel_precision_at_fixed_recall,
             reference_metric=partial(
-                _reference_sklearn_precision_at_fixed_recall_multilabel, min_recall=min_recall, ignore_index=ignore_index
+                _reference_sklearn_precision_at_fixed_recall_multilabel,
+                min_recall=min_recall,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_recall": min_recall,

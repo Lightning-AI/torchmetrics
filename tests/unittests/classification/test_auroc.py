@@ -262,7 +262,9 @@ def _reference_sklearn_auroc_multilabel(preds, target, average="macro", ignore_i
             preds = sigmoid(preds)
         return sk_roc_auc_score(target, preds, average=average, max_fpr=None)
     if average == "micro":
-        return _reference_sklearn_auroc_binary(preds.flatten(), target.flatten(), max_fpr=None, ignore_index=ignore_index)
+        return _reference_sklearn_auroc_binary(
+            preds.flatten(), target.flatten(), max_fpr=None, ignore_index=ignore_index
+        )
     res = [
         _reference_sklearn_auroc_binary(preds[:, i], target[:, i], max_fpr=None, ignore_index=ignore_index)
         for i in range(NUM_CLASSES)

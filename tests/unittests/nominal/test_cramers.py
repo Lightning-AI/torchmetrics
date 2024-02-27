@@ -22,7 +22,7 @@ from lightning_utilities.core.imports import compare_version
 from torchmetrics.functional.nominal.cramers import cramers_v, cramers_v_matrix
 from torchmetrics.nominal.cramers import CramersV
 
-from unittests import BATCH_SIZE, NUM_BATCHES, _Input, reference_cachier
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests.helpers.testers import MetricTester
 
 NUM_CLASSES = 4
@@ -62,7 +62,6 @@ def cramers_matrix_input():
     return matrix
 
 
-@reference_cachier
 def _reference_dython_cramers_v(preds, target, bias_correction, nan_strategy, nan_replace_value):
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target

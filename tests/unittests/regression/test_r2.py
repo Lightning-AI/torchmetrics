@@ -39,7 +39,7 @@ _multi_target_inputs = _Input(
 )
 
 
-def _single_target_ref_WRAPPER(preds, target, adjusted, multioutput):
+def _single_target_ref_wrapper(preds, target, adjusted, multioutput):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
     r2_score = sk_r2score(sk_target, sk_preds, multioutput=multioutput)
@@ -48,7 +48,7 @@ def _single_target_ref_WRAPPER(preds, target, adjusted, multioutput):
     return r2_score
 
 
-def _multi_target_ref_WRAPPER(preds, target, adjusted, multioutput):
+def _multi_target_ref_wrapper(preds, target, adjusted, multioutput):
     sk_preds = preds.view(-1, NUM_TARGETS).numpy()
     sk_target = target.view(-1, NUM_TARGETS).numpy()
     r2_score = sk_r2score(sk_target, sk_preds, multioutput=multioutput)
@@ -62,8 +62,8 @@ def _multi_target_ref_WRAPPER(preds, target, adjusted, multioutput):
 @pytest.mark.parametrize(
     "preds, target, ref_metric, num_outputs",
     [
-        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_ref_WRAPPER, 1),
-        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_ref_WRAPPER, NUM_TARGETS),
+        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_ref_wrapper, 1),
+        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_ref_wrapper, NUM_TARGETS),
     ],
 )
 class TestR2Score(MetricTester):
