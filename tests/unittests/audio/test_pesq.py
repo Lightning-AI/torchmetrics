@@ -131,6 +131,6 @@ def test_on_real_audio():
     rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
     rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
     pesq_score = perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "wb")
-    assert torch.round(pesq_score, decimals=4) == 1.0832
+    assert torch.allclose(pesq_score, torch.tensor(1.0832337141036987), atol=1e-4)
     pesq_score = perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "nb")
-    assert torch.round(pesq_score, decimals=4) == 1.6072
+    assert torch.allclose(pesq_score, torch.tensor(1.6072081327438354), atol=1e-4)
