@@ -40,7 +40,7 @@ pip-delete-this-directory.txt
 # Unit test / coverage reports
 tests/_data/
 data.zip
-tests/_reference-cache/
+tests/_cache-references/
 htmlcov/
 .coverage
 .coverage.*

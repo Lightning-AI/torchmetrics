@@ -99,5 +99,5 @@ runs:
         key: cache-references
 
     - name: Post References
-      run: ls -lh tests/_cache-references/
+      run: py-tree tests/_cache-references/ --show_hidden
       shell: bash

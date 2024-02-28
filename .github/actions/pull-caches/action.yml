@@ -90,5 +90,5 @@ runs:
 
     - name: Restored References
       continue-on-error: true
-      run: ls -lh tests/_cache-references/
+      run: py-tree tests/_cache-references/ --show_hidden
       shell: bash
