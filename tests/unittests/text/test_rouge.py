@@ -91,7 +91,7 @@ def _reference_rouge_score(
     return torch.tensor(rs_result, dtype=torch.float)
 
 
-@pytest.mark.skipif(not _NLTK_AVAILABLE, reason="test requires nltk")
+@pytest.mark.skipif(not _NLTK_AVAILABLE, reason="metric requires nltk")
 @pytest.mark.parametrize(
     ["pl_rouge_metric_key", "use_stemmer"],
     [

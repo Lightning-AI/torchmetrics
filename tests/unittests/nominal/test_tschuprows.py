@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import itertools
-import operator
 
 import pandas as pd
 import pytest
 import torch
-from lightning_utilities.core.imports import compare_version
-from scipy.stats.contingency import association
 from torchmetrics.functional.nominal.tschuprows import tschuprows_t, tschuprows_t_matrix
 from torchmetrics.nominal.tschuprows import TschuprowsT
 
@@ -53,6 +50,10 @@ def tschuprows_matrix_input():
 
 
 def _reference_pd_tschuprows_t(preds, target):
+    try:
+        from scipy.stats.contingency import association
+    except ImportError:
+        pytest.skip("test requires scipy package to be installed")
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
     preds, target = preds.numpy().astype(int), target.numpy().astype(int)
@@ -71,7 +72,6 @@ def _reference_pd_tschuprows_t_matrix(matrix):
     return tschuprows_t_matrix_value
 
 
-@pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
 @pytest.mark.parametrize(
     "preds, target",
     [
@@ -120,7 +120,6 @@ class TestTschuprowsT(MetricTester):
         )
 
 
-@pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
 def test_tschuprows_t_matrix(tschuprows_matrix_input):
     """Test matrix version of metric works as expected."""
     tm_score = tschuprows_t_matrix(tschuprows_matrix_input, bias_correction=False)
