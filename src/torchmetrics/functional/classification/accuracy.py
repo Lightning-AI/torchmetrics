@@ -42,7 +42,6 @@ def _accuracy_reduce(
     average: Optional[Literal["binary", "micro", "macro", "weighted", "none"]],
     multidim_average: Literal["global", "samplewise"] = "global",
     multilabel: bool = False,
-    top_k: int = 1,
 ) -> Tensor:
     """Reduce classification statistics into accuracy score.
 
@@ -67,7 +66,6 @@ def _accuracy_reduce(
             - ``samplewise``: Statistic will be calculated independently for each sample on the ``N`` axis.
 
         multilabel: If input is multilabel or not
-        top_k: value for top-k accuracy, else 1
 
     Returns:
         Accuracy score
@@ -85,7 +83,7 @@ def _accuracy_reduce(
         return _safe_divide(tp, tp + fn)
 
     score = _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else _safe_divide(tp, tp + fn)
-    return _adjust_weights_safe_divide(score, average, multilabel, tp, fp, fn, top_k)
+    return _adjust_weights_safe_divide(score, average, multilabel, tp, fp, fn)
 
 
 def binary_accuracy(
@@ -268,7 +266,7 @@ def multiclass_accuracy(
     tp, fp, tn, fn = _multiclass_stat_scores_update(
         preds, target, num_classes, top_k, average, multidim_average, ignore_index
     )
-    return _accuracy_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average, top_k=top_k)
+    return _accuracy_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average)
 
 
 def multilabel_accuracy(

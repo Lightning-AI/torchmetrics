@@ -256,9 +256,7 @@ class MulticlassAccuracy(MulticlassStatScores):
     def compute(self) -> Tensor:
         """Compute accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
-        return _accuracy_reduce(
-            tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, top_k=self.top_k
-        )
+        return _accuracy_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
