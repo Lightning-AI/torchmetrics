@@ -110,7 +110,7 @@ def _relative_average_spectral_error(preds: Tensor, target: Tensor, window_size:
     >>> preds = torch.rand(4, 3, 16, 16, generator=gen)
     >>> target = torch.rand(4, 3, 16, 16, generator=gen)
     >>> _relative_average_spectral_error(preds, target)
-    tensor(5114.6641)
+    tensor(5114.66...)
 
     """
     _deprecated_root_import_func("relative_average_spectral_error", "image")

@@ -25,14 +25,14 @@ from torchmetrics.functional.classification.roc import binary_roc
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
 
-def _sklearn_auroc_binary(preds, target, max_fpr=None, ignore_index=None):
+def _reference_sklearn_auroc_binary(preds, target, max_fpr=None, ignore_index=None):
     preds = preds.flatten().numpy()
     target = target.flatten().numpy()
     if not ((preds > 0) & (preds < 1)).all():
@@ -58,7 +58,7 @@ class TestBinaryAUROC(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryAUROC,
-            reference_metric=partial(_sklearn_auroc_binary, max_fpr=max_fpr, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_auroc_binary, max_fpr=max_fpr, ignore_index=ignore_index),
             metric_args={
                 "max_fpr": max_fpr,
                 "thresholds": None,
@@ -77,7 +77,7 @@ class TestBinaryAUROC(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_auroc,
-            reference_metric=partial(_sklearn_auroc_binary, max_fpr=max_fpr, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_auroc_binary, max_fpr=max_fpr, ignore_index=ignore_index),
             metric_args={
                 "max_fpr": max_fpr,
                 "thresholds": None,
@@ -138,7 +138,7 @@ class TestBinaryAUROC(MetricTester):
             assert torch.allclose(ap1, ap2)
 
 
-def _sklearn_auroc_multiclass(preds, target, average="macro", ignore_index=None):
+def _reference_sklearn_auroc_multiclass(preds, target, average="macro", ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
@@ -166,7 +166,7 @@ class TestMulticlassAUROC(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassAUROC,
-            reference_metric=partial(_sklearn_auroc_multiclass, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_auroc_multiclass, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -186,7 +186,7 @@ class TestMulticlassAUROC(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_auroc,
-            reference_metric=partial(_sklearn_auroc_multiclass, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_auroc_multiclass, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -251,7 +251,7 @@ class TestMulticlassAUROC(MetricTester):
             assert torch.allclose(ap1, ap2)
 
 
-def _sklearn_auroc_multilabel(preds, target, average="macro", ignore_index=None):
+def _reference_sklearn_auroc_multilabel(preds, target, average="macro", ignore_index=None):
     if ignore_index is None:
         if preds.ndim > 2:
             target = target.transpose(2, 1).reshape(-1, NUM_CLASSES)
@@ -262,9 +262,11 @@ def _sklearn_auroc_multilabel(preds, target, average="macro", ignore_index=None)
             preds = sigmoid(preds)
         return sk_roc_auc_score(target, preds, average=average, max_fpr=None)
     if average == "micro":
-        return _sklearn_auroc_binary(preds.flatten(), target.flatten(), max_fpr=None, ignore_index=ignore_index)
+        return _reference_sklearn_auroc_binary(
+            preds.flatten(), target.flatten(), max_fpr=None, ignore_index=ignore_index
+        )
     res = [
-        _sklearn_auroc_binary(preds[:, i], target[:, i], max_fpr=None, ignore_index=ignore_index)
+        _reference_sklearn_auroc_binary(preds[:, i], target[:, i], max_fpr=None, ignore_index=ignore_index)
         for i in range(NUM_CLASSES)
     ]
     if average == "macro":
@@ -295,7 +297,7 @@ class TestMultilabelAUROC(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelAUROC,
-            reference_metric=partial(_sklearn_auroc_multilabel, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_auroc_multilabel, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
@@ -315,7 +317,7 @@ class TestMultilabelAUROC(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_auroc,
-            reference_metric=partial(_sklearn_auroc_multilabel, average=average, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_auroc_multilabel, average=average, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,

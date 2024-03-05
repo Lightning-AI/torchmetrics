@@ -36,11 +36,11 @@ class TotalVariationTester(TotalVariation):
         super().update(img=img)
 
 
-def _total_variaion_tester(preds, target, reduction="mean"):
+def _total_variaion_wrapped(preds, target, reduction="mean"):
     return total_variation(preds, reduction)
 
 
-def _total_variation_kornia_tester(preds, target, reduction):
+def _reference_kornia_tv(preds, target, reduction):
     score = kornia_total_variation(preds).sum(-1)
     if reduction == "sum":
         return score.sum()
@@ -82,7 +82,7 @@ class TestTotalVariation(MetricTester):
             preds,
             target,
             TotalVariationTester,
-            partial(_total_variation_kornia_tester, reduction=reduction),
+            partial(_reference_kornia_tv, reduction=reduction),
             metric_args={"reduction": reduction},
         )
 
@@ -91,8 +91,8 @@ class TestTotalVariation(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            _total_variaion_tester,
-            partial(_total_variation_kornia_tester, reduction=reduction),
+            _total_variaion_wrapped,
+            partial(_reference_kornia_tv, reduction=reduction),
             metric_args={"reduction": reduction},
         )
 
@@ -102,13 +102,13 @@ class TestTotalVariation(MetricTester):
             preds,
             target,
             TotalVariationTester,
-            _total_variaion_tester,
+            _total_variaion_wrapped,
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_sam_half_gpu(self, preds, target, reduction):
         """Test for half precision on GPU."""
-        self.run_precision_test_gpu(preds, target, TotalVariationTester, _total_variaion_tester)
+        self.run_precision_test_gpu(preds, target, TotalVariationTester, _total_variaion_wrapped)
 
 
 def test_correct_args():

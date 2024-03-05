@@ -33,7 +33,7 @@ class WordInfoPreserved(Metric):
     computed as:
 
     .. math::
-        wip = \frac{C}{N} + \frac{C}{P}
+        wip = \frac{C}{N} * \frac{C}{P}
 
     where:
 
