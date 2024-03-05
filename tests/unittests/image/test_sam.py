@@ -40,11 +40,7 @@ for size, channel, dtype in [
     _inputs.append(_Input(preds=preds, target=target))
 
 
-def _baseline_sam(
-    preds: Tensor,
-    target: Tensor,
-    reduction: str = "elementwise_mean",
-) -> Tensor:
+def _reference_sam(preds: Tensor, target: Tensor, reduction: str = "elementwise_mean") -> Tensor:
     """Baseline implementation of spectral angle mapper."""
     reduction_options = ("elementwise_mean", "sum", "none")
     if reduction not in reduction_options:
@@ -74,8 +70,8 @@ class TestSpectralAngleMapper(MetricTester):
             ddp,
             preds,
             target,
-            SpectralAngleMapper,
-            partial(_baseline_sam, reduction=reduction),
+            metric_class=SpectralAngleMapper,
+            reference_metric=partial(_reference_sam, reduction=reduction),
             metric_args={"reduction": reduction},
         )
 
@@ -84,8 +80,8 @@ class TestSpectralAngleMapper(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            spectral_angle_mapper,
-            partial(_baseline_sam, reduction=reduction),
+            metric_functional=spectral_angle_mapper,
+            reference_metric=partial(_reference_sam, reduction=reduction),
             metric_args={"reduction": reduction},
         )
 

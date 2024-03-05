@@ -25,7 +25,7 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-num_targets = 5
+NUM_TARGETS = 5
 
 
 _single_target_inputs = _Input(
@@ -34,8 +34,8 @@ _single_target_inputs = _Input(
 )
 
 _multi_target_inputs = _Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_TARGETS),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_TARGETS),
 )
 
 
@@ -46,8 +46,8 @@ def _single_target_ref_metric(preds, target, sk_fn=explained_variance_score):
 
 
 def _multi_target_ref_metric(preds, target, sk_fn=explained_variance_score):
-    sk_preds = preds.view(-1, num_targets).numpy()
-    sk_target = target.view(-1, num_targets).numpy()
+    sk_preds = preds.view(-1, NUM_TARGETS).numpy()
+    sk_target = target.view(-1, NUM_TARGETS).numpy()
     return sk_fn(sk_target, sk_preds)
 
 

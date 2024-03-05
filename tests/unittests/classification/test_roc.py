@@ -25,14 +25,14 @@ from torchmetrics.functional.classification.roc import binary_roc, multiclass_ro
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
 
-def _sklearn_roc_binary(preds, target, ignore_index=None):
+def _reference_sklearn_roc_binary(preds, target, ignore_index=None):
     preds = preds.flatten().numpy()
     target = target.flatten().numpy()
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
@@ -59,7 +59,7 @@ class TestBinaryROC(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryROC,
-            reference_metric=partial(_sklearn_roc_binary, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_roc_binary, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
@@ -76,7 +76,7 @@ class TestBinaryROC(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_roc,
-            reference_metric=partial(_sklearn_roc_binary, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_roc_binary, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
@@ -135,7 +135,7 @@ class TestBinaryROC(MetricTester):
             assert torch.allclose(t1, t2)
 
 
-def _sklearn_roc_multiclass(preds, target, ignore_index=None):
+def _reference_sklearn_roc_multiclass(preds, target, ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
@@ -173,7 +173,7 @@ class TestMulticlassROC(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassROC,
-            reference_metric=partial(_sklearn_roc_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_roc_multiclass, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -191,7 +191,7 @@ class TestMulticlassROC(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_roc,
-            reference_metric=partial(_sklearn_roc_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_roc_multiclass, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -268,10 +268,10 @@ class TestMulticlassROC(MetricTester):
             )
 
 
-def _sklearn_roc_multilabel(preds, target, ignore_index=None):
+def _reference_sklearn_roc_multilabel(preds, target, ignore_index=None):
     fpr, tpr, thresholds = [], [], []
     for i in range(NUM_CLASSES):
-        res = _sklearn_roc_binary(preds[:, i], target[:, i], ignore_index)
+        res = _reference_sklearn_roc_binary(preds[:, i], target[:, i], ignore_index)
         fpr.append(res[0])
         tpr.append(res[1])
         thresholds.append(res[2])
@@ -296,7 +296,7 @@ class TestMultilabelROC(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelROC,
-            reference_metric=partial(_sklearn_roc_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_roc_multilabel, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
@@ -314,7 +314,7 @@ class TestMultilabelROC(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_roc,
-            reference_metric=partial(_sklearn_roc_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_roc_multilabel, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,

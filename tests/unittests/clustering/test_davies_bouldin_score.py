@@ -16,7 +16,7 @@ from sklearn.metrics import davies_bouldin_score as sklearn_davies_bouldin_score
 from torchmetrics.clustering.davies_bouldin_score import DaviesBouldinScore
 from torchmetrics.functional.clustering.davies_bouldin_score import davies_bouldin_score
 
-from unittests.clustering.inputs import _single_target_intrinsic1, _single_target_intrinsic2
+from unittests.clustering._inputs import _single_target_intrinsic1, _single_target_intrinsic2
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester
 
