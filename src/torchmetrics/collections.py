@@ -547,6 +547,10 @@ class MetricCollection(ModuleDict):
 
         """
         self._compute_groups_create_state_ref(copy_state)
+        if self.prefix is not None:
+            key = key.removeprefix(self.prefix)
+        if self.postfix is not None:
+            key = key.removesuffix(self.postfix)
         return self._modules[key]
 
     @staticmethod
