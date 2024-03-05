@@ -88,7 +88,7 @@ class SpatialDistortionIndex(Metric):
 
     """
 
-    higher_is_better: bool = True
+    higher_is_better: bool = False
     is_differentiable: bool = True
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
