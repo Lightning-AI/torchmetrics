@@ -18,13 +18,9 @@ import pytest
 from torch import Tensor, tensor
 from torchmetrics.functional.text.chrf import chrf_score
 from torchmetrics.text.chrf import CHRFScore
-from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
 
+from unittests.text._inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 from unittests.text.helpers import TextTester
-from unittests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
-
-if _SACREBLEU_AVAILABLE:
-    from sacrebleu.metrics import CHRF
 
 
 def _reference_sacrebleu_chrf(
@@ -35,6 +31,11 @@ def _reference_sacrebleu_chrf(
     lowercase: bool,
     whitespace: bool,
 ) -> Tensor:
+    try:
+        from sacrebleu import CHRF
+    except ImportError:
+        pytest.skip("test requires sacrebleu package to be installed")
+
     sacrebleu_chrf = CHRF(
         char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace, eps_smoothing=True
     )
@@ -59,7 +60,6 @@ def _reference_sacrebleu_chrf(
     ["preds", "targets"],
     [(_inputs_multiple_references.preds, _inputs_multiple_references.target)],
 )
-@pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestCHRFScore(TextTester):
     """Test class for `CHRFScore` metric."""
 

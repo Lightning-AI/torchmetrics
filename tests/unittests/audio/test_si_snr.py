@@ -37,7 +37,7 @@ inputs = _Input(
 speechmetrics_sisdr = speechmetrics.load("sisdr")
 
 
-def _speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True):
+def _reference_speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True, reduce_mean: bool = False):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     if zero_mean:
@@ -52,20 +52,17 @@ def _speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True)
             metric = speechmetrics_sisdr(preds[i, j], target[i, j], rate=16000)
             ms.append(metric["sisdr"][0])
         mss.append(ms)
-    return torch.tensor(mss)
-
-
-def _average_metric(preds, target, metric_func):
-    # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
-    # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
-    return metric_func(preds, target).mean()
+    si_sdr = torch.tensor(mss)
+    if reduce_mean:
+        # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
+        # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
+        return si_sdr.mean()
+    return si_sdr
 
 
 @pytest.mark.parametrize(
     "preds, target, ref_metric",
-    [
-        (inputs.preds, inputs.target, _speechmetrics_si_sdr),
-    ],
+    [(inputs.preds, inputs.target, _reference_speechmetrics_si_sdr)],
 )
 class TestSISNR(MetricTester):
     """Test class for `ScaleInvariantSignalNoiseRatio` metric."""
@@ -80,7 +77,7 @@ class TestSISNR(MetricTester):
             preds,
             target,
             ScaleInvariantSignalNoiseRatio,
-            reference_metric=partial(_average_metric, metric_func=ref_metric),
+            reference_metric=partial(_reference_speechmetrics_si_sdr, reduce_mean=True),
         )
 
     def test_si_snr_functional(self, preds, target, ref_metric):

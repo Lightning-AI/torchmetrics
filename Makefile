@@ -36,5 +36,6 @@ env:
 	pip install -e . -U -r requirements/_devel.txt
 
 data:
-	python -c "from urllib.request import urlretrieve ; urlretrieve('https://pl-public-data.s3.amazonaws.com/metrics/data.zip', 'data.zip')"
+	pip install -q wget
+	python -m wget https://pl-public-data.s3.amazonaws.com/metrics/data.zip
 	unzip -o data.zip -d ./tests

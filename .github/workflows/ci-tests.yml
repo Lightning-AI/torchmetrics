@@ -40,18 +40,24 @@ jobs:
           - "1.13.1"
           - "2.0.1"
           - "2.1.2"
-          - "2.2.0"
+          - "2.2.1"
         include:
+          # cover additional python nad PR combinations
           - { os: "ubuntu-22.04", python-version: "3.8", pytorch-version: "1.13.1" }
           - { os: "ubuntu-22.04", python-version: "3.10", pytorch-version: "2.0.1" }
-          - { os: "ubuntu-22.04", python-version: "3.10", pytorch-version: "2.2.0" }
-          - { os: "ubuntu-22.04", python-version: "3.11", pytorch-version: "2.2.0" }
+          - { os: "ubuntu-22.04", python-version: "3.10", pytorch-version: "2.2.1" }
+          - { os: "ubuntu-22.04", python-version: "3.11", pytorch-version: "2.2.1" }
+          # standard mac machine, not the M1
           - { os: "macOS-12", python-version: "3.8", pytorch-version: "1.13.1" }
           - { os: "macOS-12", python-version: "3.10", pytorch-version: "2.0.1" }
-          - { os: "macOS-12", python-version: "3.11", pytorch-version: "2.2.0" }
+          - { os: "macOS-12", python-version: "3.11", pytorch-version: "2.2.1" }
+          # using the ARM based M1 machine
+          - { os: "macOS-14", python-version: "3.10", pytorch-version: "2.0.1" }
+          - { os: "macOS-14", python-version: "3.11", pytorch-version: "2.2.1" }
+          # some windows
           - { os: "windows-2022", python-version: "3.8", pytorch-version: "1.13.1" }
           - { os: "windows-2022", python-version: "3.10", pytorch-version: "2.0.1" }
-          - { os: "windows-2022", python-version: "3.11", pytorch-version: "2.2.0" }
+          - { os: "windows-2022", python-version: "3.11", pytorch-version: "2.2.1" }
     env:
       PYTORCH_URL: "https://download.pytorch.org/whl/cpu/torch_stable.html"
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
@@ -75,6 +81,7 @@ jobs:
         if: ${{ runner.os == 'macOS' }}
         run: |
           echo 'UNITTEST_TIMEOUT=--timeout=75' >> $GITHUB_ENV
+          brew install mecab # https://github.com/coqui-ai/TTS/issues/1533#issuecomment-1338662303
           brew install gcc libomp ffmpeg # https://github.com/pytorch/pytorch/issues/20030
       - name: Setup Linux
         if: ${{ runner.os == 'Linux' }}

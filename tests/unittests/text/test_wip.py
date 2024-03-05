@@ -14,20 +14,22 @@
 from typing import List, Union
 
 import pytest
-from jiwer import wip
 from torchmetrics.functional.text.wip import word_information_preserved
 from torchmetrics.text.wip import WordInfoPreserved
-from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
+from unittests.text._inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 from unittests.text.helpers import TextTester
-from unittests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 
 
 def _reference_jiwer_wip(preds: Union[str, List[str]], target: Union[str, List[str]]):
+    try:
+        from jiwer import wip
+    except ImportError:
+        pytest.skip("test requires jiwer package to be installed")
+
     return wip(target, preds)
 
 
-@pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
 @pytest.mark.parametrize(
     ["preds", "targets"],
     [

@@ -19,7 +19,7 @@ import pytest
 from torchmetrics.clustering.dunn_index import DunnIndex
 from torchmetrics.functional.clustering.dunn_index import dunn_index
 
-from unittests.clustering.inputs import (
+from unittests.clustering._inputs import (
     _single_target_intrinsic1,
     _single_target_intrinsic2,
 )
@@ -29,7 +29,7 @@ from unittests.helpers.testers import MetricTester
 seed_all(42)
 
 
-def _np_dunn_index(data, labels, p):
+def _reference_np_dunn_index(data, labels, p):
     unique_labels, inverse_indices = np.unique(labels, return_inverse=True)
     clusters = [data[inverse_indices == label_idx] for label_idx in range(len(unique_labels))]
     centroids = [c.mean(axis=0) for c in clusters]
@@ -69,7 +69,7 @@ class TestDunnIndex(MetricTester):
             preds=data,
             target=labels,
             metric_class=DunnIndex,
-            reference_metric=partial(_np_dunn_index, p=p),
+            reference_metric=partial(_reference_np_dunn_index, p=p),
             metric_args={"p": p},
         )
 
@@ -79,6 +79,6 @@ class TestDunnIndex(MetricTester):
             preds=data,
             target=labels,
             metric_functional=dunn_index,
-            reference_metric=partial(_np_dunn_index, p=p),
+            reference_metric=partial(_reference_np_dunn_index, p=p),
             p=p,
         )

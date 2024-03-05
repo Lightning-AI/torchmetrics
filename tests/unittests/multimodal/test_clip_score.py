@@ -48,7 +48,7 @@ _random_input = _InputImagesCaptions(
 )
 
 
-def _compare_fn(preds, target, model_name_or_path):
+def _reference_clip_score(preds, target, model_name_or_path):
     processor = _CLIPProcessor.from_pretrained(model_name_or_path)
     model = _CLIPModel.from_pretrained(model_name_or_path)
     inputs = processor(text=target, images=[p.cpu() for p in preds], return_tensors="pt", padding=True)
@@ -75,7 +75,7 @@ class TestCLIPScore(MetricTester):
             preds=preds,
             target=target,
             metric_class=CLIPScore,
-            reference_metric=partial(_compare_fn, model_name_or_path=model_name_or_path),
+            reference_metric=partial(_reference_clip_score, model_name_or_path=model_name_or_path),
             metric_args={"model_name_or_path": model_name_or_path},
             check_scriptable=False,
             check_state_dict=False,
@@ -90,7 +90,7 @@ class TestCLIPScore(MetricTester):
             preds=preds,
             target=target,
             metric_functional=clip_score,
-            reference_metric=partial(_compare_fn, model_name_or_path=model_name_or_path),
+            reference_metric=partial(_reference_clip_score, model_name_or_path=model_name_or_path),
             metric_args={"model_name_or_path": model_name_or_path},
         )
 
