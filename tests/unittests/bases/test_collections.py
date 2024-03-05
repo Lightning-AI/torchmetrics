@@ -204,6 +204,10 @@ def test_metric_collection_prefix_postfix_args(prefix, postfix):
     for name in names:
         assert f"new_prefix_{name}_new_postfix" in out, "postfix argument not working as intended with clone method"
 
+    keys = list(new_metric_collection.keys())
+    for k in keys:
+        assert new_metric_collection[k]  # check that the keys are valid even with prefix and postfix
+
 
 def test_metric_collection_repr():
     """Test MetricCollection."""
