@@ -19,18 +19,19 @@ import pytest
 from torch import Tensor, tensor
 from torchmetrics.functional.text.sacre_bleu import AVAILABLE_TOKENIZERS, _TokenizersLiteral, sacre_bleu_score
 from torchmetrics.text.sacre_bleu import SacreBLEUScore
-from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
 
 from unittests.text._inputs import _inputs_multiple_references
 from unittests.text.helpers import TextTester
-
-if _SACREBLEU_AVAILABLE:
-    from sacrebleu.metrics import BLEU
 
 
 def _reference_sacre_bleu(
     preds: Sequence[str], targets: Sequence[Sequence[str]], tokenize: str, lowercase: bool
 ) -> Tensor:
+    try:
+        from sacrebleu.metrics import BLEU
+    except ImportError:
+        pytest.skip("test requires sacrebleu package to be installed")
+
     sacrebleu_fn = BLEU(tokenize=tokenize, lowercase=lowercase)
     # Sacrebleu expects different format of input
     targets = [[target[i] for target in targets] for i in range(len(targets[0]))]
@@ -44,7 +45,6 @@ def _reference_sacre_bleu(
 )
 @pytest.mark.parametrize(["lowercase"], [(False,), (True,)])
 @pytest.mark.parametrize("tokenize", AVAILABLE_TOKENIZERS)
-@pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestSacreBLEUScore(TextTester):
     """Test class for `SacreBLEUScore` metric."""
 
