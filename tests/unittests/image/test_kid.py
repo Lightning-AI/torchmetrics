@@ -24,7 +24,7 @@ from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 torch.manual_seed(42)
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 def test_no_train():
     """Assert that metric never leaves evaluation mode."""
 
@@ -42,7 +42,7 @@ def test_no_train():
     assert not model.metric.inception.training, "FID metric was changed to training mode which should not happen"
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 def test_kid_pickle():
     """Assert that we can initialize the metric and pickle it."""
     metric = KernelInceptionDistance()
@@ -83,7 +83,7 @@ def test_kid_raises_errors_and_warnings():
         m.compute()
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 def test_kid_extra_parameters():
     """Test that the different input arguments raises expected errors if wrong."""
     with pytest.raises(ValueError, match="Argument `subsets` expected to be integer larger than 0"):
@@ -102,7 +102,7 @@ def test_kid_extra_parameters():
         KernelInceptionDistance(coef=-1)
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 @pytest.mark.parametrize("feature", [64, 192, 768, 2048])
 def test_kid_same_input(feature):
     """Test that the metric works."""
@@ -132,7 +132,7 @@ class _ImgDataset(Dataset):
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 def test_compare_kid(tmpdir, feature=2048):
     """Check that the hole pipeline give the same result as torch-fidelity."""
     from torch_fidelity import calculate_metrics

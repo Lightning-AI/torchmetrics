@@ -26,10 +26,9 @@ from torch import Tensor
 from torchmetrics import Metric
 from torchmetrics.classification.group_fairness import BinaryFairness
 from torchmetrics.functional.classification.group_fairness import binary_fairness
-from torchmetrics.utilities.imports import _PYTHON_LOWER_3_8
 
 from unittests import THRESHOLD
-from unittests.classification.inputs import _group_cases
+from unittests.classification._inputs import _group_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import (
     MetricTester,
@@ -44,7 +43,7 @@ from unittests.helpers.testers import _assert_tensor as _core_assert_tensor
 seed_all(42)
 
 
-def _fairlearn_binary(preds, target, groups, ignore_index):
+def _reference_fairlearn_binary(preds, target, groups, ignore_index):
     metrics = {"dp": selection_rate, "eo": true_positive_rate}
 
     preds = preds.numpy()
@@ -81,7 +80,7 @@ def _assert_tensor(pl_result: Dict[str, Tensor], key: Optional[str] = None) -> N
         _core_assert_tensor(pl_result, key)
 
 
-def _assert_allclose(
+def _assert_allclose(  # todo: unify with the general assert_allclose
     pl_result: Dict[str, Tensor], sk_result: Dict[str, Tensor], atol: float = 1e-8, key: Optional[str] = None
 ) -> None:
     if isinstance(pl_result, dict) and key is None:
@@ -222,7 +221,6 @@ class BinaryFairnessTester(MetricTester):
 
 @mock.patch("unittests.helpers.testers._assert_tensor", _assert_tensor)
 @mock.patch("unittests.helpers.testers._assert_allclose", _assert_allclose)
-@pytest.mark.skipif(_PYTHON_LOWER_3_8, reason="`TestBinaryFairness` requires `python>=3.8`.")
 @pytest.mark.parametrize("inputs", _group_cases)
 class TestBinaryFairness(BinaryFairnessTester):
     """Test class for `BinaryFairness` metric."""
@@ -240,7 +238,7 @@ class TestBinaryFairness(BinaryFairnessTester):
             preds=preds,
             target=target,
             metric_class=BinaryFairness,
-            reference_metric=partial(_fairlearn_binary, ignore_index=ignore_index),
+            reference_metric=partial(_reference_fairlearn_binary, ignore_index=ignore_index),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "num_groups": 2, "task": "all"},
             groups=groups,
             fragment_kwargs=True,
@@ -257,7 +255,7 @@ class TestBinaryFairness(BinaryFairnessTester):
             preds=preds,
             target=target,
             metric_functional=binary_fairness,
-            reference_metric=partial(_fairlearn_binary, ignore_index=ignore_index),
+            reference_metric=partial(_reference_fairlearn_binary, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,

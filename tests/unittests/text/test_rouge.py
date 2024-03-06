@@ -25,8 +25,8 @@ from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILAB
 from typing_extensions import Literal
 
 from unittests.helpers import skip_on_connection_issues
+from unittests.text._inputs import _Input, _inputs_multiple_references, _inputs_single_sentence_single_reference
 from unittests.text.helpers import TextTester
-from unittests.text.inputs import _Input, _inputs_multiple_references, _inputs_single_sentence_single_reference
 
 if _ROUGE_SCORE_AVAILABLE:
     from rouge_score.rouge_scorer import RougeScorer
@@ -91,7 +91,7 @@ def _reference_rouge_score(
     return torch.tensor(rs_result, dtype=torch.float)
 
 
-@pytest.mark.skipif(not _NLTK_AVAILABLE, reason="test requires nltk")
+@pytest.mark.skipif(not _NLTK_AVAILABLE, reason="metric requires nltk")
 @pytest.mark.parametrize(
     ["pl_rouge_metric_key", "use_stemmer"],
     [

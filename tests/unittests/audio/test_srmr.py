@@ -30,7 +30,9 @@ seed_all(42)
 preds = torch.rand(2, 2, 8000)
 
 
-def _ref_metric_batch(preds: Tensor, target: Tensor, fs: int, fast: bool, norm: bool, **kwargs: Dict[str, Any]):
+def _reference_srmr_batch(
+    preds: Tensor, target: Tensor, fs: int, fast: bool, norm: bool, reduce_mean: bool = False, **kwargs: Dict[str, Any]
+):
     # shape: preds [BATCH_SIZE, Time]
     shape = preds.shape
     preds = preds.reshape(1, -1) if len(shape) == 1 else preds.reshape(-1, shape[-1])
@@ -42,13 +44,12 @@ def _ref_metric_batch(preds: Tensor, target: Tensor, fs: int, fast: bool, norm: 
         val, _ = srmrpy_srmr(preds[b, ...], fs=fs, fast=fast, norm=norm, max_cf=128 if not norm else 30)
         score.append(val)
     score = torch.tensor(score)
-    return score.reshape(*shape[:-1])
-
-
-def _average_metric(preds, target, metric_func, **kwargs: Dict[str, Any]):
-    # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
-    # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
-    return metric_func(preds, target, **kwargs).mean()
+    srmr = score.reshape(*shape[:-1])
+    if reduce_mean:
+        # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
+        # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
+        return srmr.mean()
+    return srmr
 
 
 def _speech_reverberation_modulation_energy_ratio_cheat(preds, target, **kwargs: Dict[str, Any]):
@@ -62,6 +63,7 @@ class _SpeechReverberationModulationEnergyRatioCheat(SpeechReverberationModulati
         super().update(preds=preds)
 
 
+# FIXME: bring compatibility with torchaudio 0.10+
 @pytest.mark.skipif(not _TORCHAUDIO_GREATER_EQUAL_0_10, reason="torchaudio>=0.10.0 is required")
 @pytest.mark.parametrize(
     "preds, fs, fast, norm",
@@ -89,7 +91,7 @@ class TestSRMR(MetricTester):
             preds=preds,
             target=preds,
             metric_class=_SpeechReverberationModulationEnergyRatioCheat,
-            reference_metric=partial(_average_metric, metric_func=_ref_metric_batch, fs=fs, fast=fast, norm=norm),
+            reference_metric=partial(_reference_srmr_batch, fs=fs, fast=fast, norm=norm, reduce_mean=True),
             metric_args={"fs": fs, "fast": fast, "norm": norm},
         )
 
@@ -99,7 +101,7 @@ class TestSRMR(MetricTester):
             preds=preds,
             target=preds,
             metric_functional=_speech_reverberation_modulation_energy_ratio_cheat,
-            reference_metric=partial(_ref_metric_batch, fs=fs, fast=fast, norm=norm),
+            reference_metric=partial(_reference_srmr_batch, fs=fs, fast=fast, norm=norm),
             metric_args={"fs": fs, "fast": fast, "norm": norm},
         )
 
