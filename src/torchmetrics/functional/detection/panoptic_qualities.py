@@ -27,6 +27,9 @@ from torchmetrics.functional.detection._panoptic_quality_common import (
 )
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12
 
+if not _TORCH_GREATER_EQUAL_1_12:
+    __doctest_skip__ = ["panoptic_qualit"]
+
 
 def panoptic_quality(
     preds: Tensor,

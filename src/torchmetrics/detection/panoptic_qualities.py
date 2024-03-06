@@ -32,6 +32,9 @@ from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["PanopticQuality.plot", "ModifiedPanopticQuality.plot"]
 
+if not _TORCH_GREATER_EQUAL_1_12:
+    __doctest_skip__ = ["PanopticQuality", "ModifiedPanopticQuality"]
+
 
 class PanopticQuality(Metric):
     r"""Compute the `Panoptic Quality`_ for panoptic segmentations.
