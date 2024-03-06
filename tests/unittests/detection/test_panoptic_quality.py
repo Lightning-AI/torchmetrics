@@ -18,6 +18,7 @@ import pytest
 import torch
 from torchmetrics.detection.panoptic_qualities import PanopticQuality
 from torchmetrics.functional.detection.panoptic_qualities import panoptic_quality
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12
 
 from unittests import _Input
 from unittests.helpers import seed_all
@@ -83,6 +84,7 @@ def _reference_fn_1_2(preds, target) -> np.ndarray:
     return np.array([(2 / 3 + 1 + 2 / 3) / 3])
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_12, reason="PanopticQuality metric only supports PyTorch >= 1.12")
 class TestPanopticQuality(MetricTester):
     """Test class for `PanopticQuality` metric."""
 

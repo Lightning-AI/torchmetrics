@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Collection, Dict, Optional, Sequence, Union
+from typing import Any, Collection, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -26,7 +26,7 @@ from torchmetrics.functional.detection._panoptic_quality_common import (
     _validate_inputs,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_GREATER_EQUAL_1_12
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
@@ -56,13 +56,13 @@ class PanopticQuality(Metric):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-        - ``quality`` (:class:`~torch.Tensor`): If ``return_sq_and_rq=False`` and ``return_per_class=False`` then a single
-          scalar tensor is returned with average panoptic quality over all classes. If ``return_sq_and_rq=True`` and
-          ``return_per_class=False`` a tensor of length 3 is returned with panoptic, segmentation and recognition quality
-          (in that order). If If ``return_sq_and_rq=False`` and ``return_per_class=True`` a tensor of length equal to the
-          number of classes are returned, with panoptic quality for each class. Finally, if both arguments are ``True``
-          a tensor of shape ``(3, C)`` is returned with individual panoptic, segmentation and recognition quality for each
-          class.
+        - ``quality`` (:class:`~torch.Tensor`): If ``return_sq_and_rq=False`` and ``return_per_class=False`` then a
+          single scalar tensor is returned with average panoptic quality over all classes. If ``return_sq_and_rq=True``
+          and ``return_per_class=False`` a tensor of length 3 is returned with panoptic, segmentation and recognition
+          quality (in that order). If If ``return_sq_and_rq=False`` and ``return_per_class=True`` a tensor of length
+          equal to the number of classes are returned, with panoptic quality for each class. Finally, if both arguments
+          are ``True`` a tensor of shape ``(3, C)`` is returned with individual panoptic, segmentation and recognition
+          quality for each class.
 
     Args:
         things:
@@ -158,6 +158,8 @@ class PanopticQuality(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
+        if not _TORCH_GREATER_EQUAL_1_12:
+            raise RuntimeError("Panoptic Quality metric requires PyTorch 1.12 or later")
 
         things, stuffs = _parse_categories(things, stuffs)
         self.things = things
@@ -219,8 +221,7 @@ class PanopticQuality(Metric):
         if self.return_per_class:
             if self.return_sq_and_rq:
                 return torch.stack((pq, sq, rq), dim=-1)
-            else:
-                return pq.view(1, -1)
+            return pq.view(1, -1)
         if self.return_sq_and_rq:
             return torch.stack((pq_avg, sq_avg, rq_avg), dim=0)
         return pq_avg
