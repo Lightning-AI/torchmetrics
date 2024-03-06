@@ -331,6 +331,9 @@ class TestMulticlassPrecisionRecall(MetricTester):
 _mc_k_target = tensor([0, 1, 2])
 _mc_k_preds = tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
 
+_mc_k_targets2 = torch.tensor([0, 0, 2])
+_mc_k_preds2 = torch.tensor([[0.9, 0.1, 0.0], [0.9, 0.1, 0.0], [0.9, 0.1, 0.0]])
+
 
 @pytest.mark.parametrize(
     ("metric_class", "metric_fn"), [(MulticlassPrecision, multiclass_precision), (MulticlassRecall, multiclass_recall)]
@@ -340,6 +343,8 @@ _mc_k_preds = tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
     [
         (1, _mc_k_preds, _mc_k_target, "micro", tensor(2 / 3), tensor(2 / 3)),
         (2, _mc_k_preds, _mc_k_target, "micro", tensor(1 / 2), tensor(1.0)),
+        (1, _mc_k_preds2, _mc_k_targets2, "macro", tensor(1 / 3), tensor(1 / 2)),
+        (2, _mc_k_preds2, _mc_k_targets2, "macro", tensor(1 / 3), tensor(1 / 2)),
     ],
 )
 def test_top_k(
