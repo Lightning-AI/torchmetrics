@@ -333,7 +333,9 @@ def multilabel_negative_predictive_value(
         _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
-    return _negative_predictive_value_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True)
+    return _negative_predictive_value_reduce(
+        tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True
+    )
 
 
 def negative_predictive_value(
