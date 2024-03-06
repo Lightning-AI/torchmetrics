@@ -107,7 +107,9 @@ class TestBinaryNegativePredictiveValue(MetricTester):
             target=target,
             metric_class=BinaryNegativePredictiveValue,
             reference_metric=partial(
-                _reference_negative_predictive_value_binary, ignore_index=ignore_index, multidim_average=multidim_average
+                _reference_negative_predictive_value_binary,
+                ignore_index=ignore_index,
+                multidim_average=multidim_average,
             ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
@@ -127,7 +129,9 @@ class TestBinaryNegativePredictiveValue(MetricTester):
             target=target,
             metric_functional=binary_negative_predictive_value,
             reference_metric=partial(
-                _reference_negative_predictive_value_binary, ignore_index=ignore_index, multidim_average=multidim_average
+                _reference_negative_predictive_value_binary,
+                ignore_index=ignore_index,
+                multidim_average=multidim_average,
             ),
             metric_args={
                 "threshold": THRESHOLD,
@@ -371,7 +375,9 @@ def test_top_k(k: int, preds: Tensor, target: Tensor, average: str, expected_spe
     class_metric.update(preds, target)
 
     assert torch.equal(class_metric.compute(), expected_spec)
-    assert torch.equal(multiclass_negative_predictive_value(preds, target, top_k=k, average=average, num_classes=3), expected_spec)
+    assert torch.equal(
+        multiclass_negative_predictive_value(preds, target, top_k=k, average=average, num_classes=3), expected_spec
+    )
 
 
 def _reference_negative_predictive_value_multilabel_global(preds, target, ignore_index, average):
