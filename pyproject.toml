@@ -16,6 +16,7 @@ lint.select = [
     "D", # see: https://pypi.org/project/pydocstyle
     "N", # see: https://pypi.org/project/pep8-naming
     "S", # see: https://pypi.org/project/flake8-bandit
+    "UP", # see: https://docs.astral.sh/ruff/rules/#pyupgrade-up
 ]
 lint.extend-select = [
     "A",    # see: https://pypi.org/project/flake8-builtins
