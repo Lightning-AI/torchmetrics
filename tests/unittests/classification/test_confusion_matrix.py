@@ -258,13 +258,13 @@ class TestMulticlassConfusionMatrix(MetricTester):
             torch.randint(NUM_CLASSES + 2, (100,)),
             torch.randint(NUM_CLASSES, (100,)),
             1,
-            f"Detected more unique values in `preds` than expected. Expected only {NUM_CLASSES+1}.*",
+            f"Detected more unique values in `preds` than expected. Expected only {NUM_CLASSES + 1}.*",
         ),
         (
             torch.randint(NUM_CLASSES, (100,)),
             torch.randint(NUM_CLASSES + 2, (100,)),
             1,
-            f"Detected more unique values in `target` than expected. Expected only {NUM_CLASSES+1}.*",
+            f"Detected more unique values in `target` than expected. Expected only {NUM_CLASSES + 1}.*",
         ),
     ],
 )
