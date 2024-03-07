@@ -158,7 +158,7 @@ class MultitaskWrapper(WrapperMetric):
                     f"Found a metric of type {type(metric)}"
                 )
 
-    def update(self, task_preds: Dict[str, Tensor], task_targets: Dict[str, Tensor]) -> None:
+    def update(self, task_preds: Dict[str, Any], task_targets: Dict[str, Any]) -> None:
         """Update each task's metric with its corresponding pred and target.
 
         Args:
