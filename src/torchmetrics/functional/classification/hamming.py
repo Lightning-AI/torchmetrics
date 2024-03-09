@@ -80,7 +80,7 @@ def _hamming_distance_reduce(
         return 1 - _safe_divide(tp, tp + fn)
 
     score = 1 - _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else 1 - _safe_divide(tp, tp + fn)
-    return _adjust_weights_safe_divide(score, average, multilabel, tp, fp, fn)
+    return _adjust_weights_safe_divide(score, average, multilabel, tp, fn)
 
 
 def binary_hamming_distance(
