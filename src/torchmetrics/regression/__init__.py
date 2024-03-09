@@ -23,6 +23,7 @@ from torchmetrics.regression.mae import MeanAbsoluteError
 from torchmetrics.regression.mape import MeanAbsolutePercentageError
 from torchmetrics.regression.minkowski import MinkowskiDistance
 from torchmetrics.regression.mse import MeanSquaredError
+from torchmetrics.regression.nrmse import NormalizedRootMeanSquaredError
 from torchmetrics.regression.pearson import PearsonCorrCoef
 from torchmetrics.regression.r2 import R2Score
 from torchmetrics.regression.rse import RelativeSquaredError
@@ -36,14 +37,15 @@ __all__ = [
     "CosineSimilarity",
     "CriticalSuccessIndex",
     "ExplainedVariance",
-    "KendallRankCorrCoef",
     "KLDivergence",
+    "KendallRankCorrCoef",
     "LogCoshError",
-    "MeanSquaredLogError",
     "MeanAbsoluteError",
     "MeanAbsolutePercentageError",
-    "MinkowskiDistance",
     "MeanSquaredError",
+    "MeanSquaredLogError",
+    "MinkowskiDistance",
+    "NormalizedRootMeanSquaredError",
     "PearsonCorrCoef",
     "R2Score",
     "RelativeSquaredError",
