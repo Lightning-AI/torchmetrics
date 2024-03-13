@@ -17,7 +17,7 @@ from typing import Any
 
 import pytest
 import torch
-from torchmetrics import Metric, MetricCollection
+from torchmetrics import ClasswiseWrapper, Metric, MetricCollection
 from torchmetrics.classification import (
     BinaryAccuracy,
     MulticlassAccuracy,
@@ -540,14 +540,50 @@ def test_compute_group_define_by_user():
     assert m.compute()
 
 
+def test_classwise_wrapper_compute_group():
+    """Check that user can provide compute groups."""
+    classwise_accuracy = ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None), prefix="accuracy")
+    classwise_recall = ClasswiseWrapper(MulticlassRecall(num_classes=3, average=None), prefix="recall")
+    classwise_precision = ClasswiseWrapper(MulticlassPrecision(num_classes=3, average=None), prefix="precision")
+
+    m = MetricCollection(
+        {
+            "accuracy": ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None), prefix="accuracy"),
+            "recall": ClasswiseWrapper(MulticlassRecall(num_classes=3, average=None), prefix="recall"),
+            "precision": ClasswiseWrapper(MulticlassPrecision(num_classes=3, average=None), prefix="precision"),
+        },
+        compute_groups=[["accuracy", "recall", "precision"]],
+    )
+
+    # Check that we are not going to check the groups in the first update
+    assert m._groups_checked
+    assert m.compute_groups == {0: ["accuracy", "recall", "precision"]}
+
+    preds = torch.randn(10, 3).softmax(dim=-1)
+    target = torch.randint(3, (10,))
+
+    expected = {
+        **classwise_accuracy(preds, target),
+        **classwise_recall(preds, target),
+        **classwise_precision(preds, target),
+    }
+
+    m.update(preds, target)
+    res = m.compute()
+
+    for key in expected:
+        assert torch.allclose(res[key], expected[key])
+
+    # check metric state_dict
+    m.state_dict()
+
+
 def test_compute_on_different_dtype():
     """Check that extraction of compute groups are robust towards difference in dtype."""
-    m = MetricCollection(
-        [
-            MulticlassConfusionMatrix(num_classes=3),
-            MulticlassMatthewsCorrCoef(num_classes=3),
-        ]
-    )
+    m = MetricCollection([
+        MulticlassConfusionMatrix(num_classes=3),
+        MulticlassMatthewsCorrCoef(num_classes=3),
+    ])
     assert not m._groups_checked
     assert m.compute_groups == {0: ["MulticlassConfusionMatrix"], 1: ["MulticlassMatthewsCorrCoef"]}
     preds = torch.randn(10, 3).softmax(dim=-1)
@@ -589,18 +625,14 @@ def test_error_on_wrong_specified_compute_groups():
             ),
         ],
         {
-            "macro": MetricCollection(
-                [
-                    MulticlassAccuracy(num_classes=3, average="macro"),
-                    MulticlassPrecision(num_classes=3, average="macro"),
-                ]
-            ),
-            "micro": MetricCollection(
-                [
-                    MulticlassAccuracy(num_classes=3, average="micro"),
-                    MulticlassPrecision(num_classes=3, average="micro"),
-                ]
-            ),
+            "macro": MetricCollection([
+                MulticlassAccuracy(num_classes=3, average="macro"),
+                MulticlassPrecision(num_classes=3, average="macro"),
+            ]),
+            "micro": MetricCollection([
+                MulticlassAccuracy(num_classes=3, average="micro"),
+                MulticlassPrecision(num_classes=3, average="micro"),
+            ]),
         },
     ],
 )

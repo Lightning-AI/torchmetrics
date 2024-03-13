@@ -39,9 +39,9 @@ def _dunn_index_update(data: Tensor, labels: Tensor, p: float) -> Tuple[Tensor, 
         torch.stack([a - b for a, b in combinations(centroids, 2)], dim=0), ord=p, dim=1
     )
 
-    max_intracluster_distance = torch.stack(
-        [torch.linalg.norm(ci - mu, ord=p, dim=1).max() for ci, mu in zip(clusters, centroids)]
-    )
+    max_intracluster_distance = torch.stack([
+        torch.linalg.norm(ci - mu, ord=p, dim=1).max() for ci, mu in zip(clusters, centroids)
+    ])
 
     return intercluster_distance, max_intracluster_distance
 

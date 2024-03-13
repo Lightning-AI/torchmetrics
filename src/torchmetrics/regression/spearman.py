@@ -67,6 +67,7 @@ class SpearmanCorrCoef(Metric):
         tensor([1.0000, 1.0000])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -96,8 +97,8 @@ class SpearmanCorrCoef(Metric):
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         preds, target = _spearman_corrcoef_update(preds, target, num_outputs=self.num_outputs)
-        self.preds.append(preds)
-        self.target.append(target)
+        self.preds.append(preds.to(self.dtype))
+        self.target.append(target.to(self.dtype))
 
     def compute(self) -> Tensor:
         """Compute Spearman's correlation coefficient."""

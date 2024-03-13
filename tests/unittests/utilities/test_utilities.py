@@ -70,12 +70,10 @@ def test_class_reduce():
 def test_onehot():
     """Test that casting to onehot works as expected."""
     test_tensor = tensor([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
-    expected = torch.stack(
-        [
-            torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
-            torch.cat([torch.zeros((5, 5), dtype=int), torch.eye(5, dtype=int)]),
-        ]
-    )
+    expected = torch.stack([
+        torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
+        torch.cat([torch.zeros((5, 5), dtype=int), torch.eye(5, dtype=int)]),
+    ])
 
     assert test_tensor.shape == (2, 5)
     assert expected.shape == (2, 10, 5)
@@ -94,12 +92,10 @@ def test_onehot():
 
 def test_to_categorical():
     """Test that casting to categorical works as expected."""
-    test_tensor = torch.stack(
-        [
-            torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
-            torch.cat([torch.zeros((5, 5), dtype=int), torch.eye(5, dtype=int)]),
-        ]
-    ).to(torch.float)
+    test_tensor = torch.stack([
+        torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
+        torch.cat([torch.zeros((5, 5), dtype=int), torch.eye(5, dtype=int)]),
+    ]).to(torch.float)
 
     expected = tensor([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
     assert expected.shape == (2, 5)
@@ -127,15 +123,11 @@ def test_flatten_dict():
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires gpu")
-def test_bincount():
+def test_bincount(use_deterministic_algorithms):
     """Test that bincount works in deterministic setting on GPU."""
-    torch.use_deterministic_algorithms(True)
-
     x = torch.randint(10, size=(100,))
     # uses custom implementation
     res1 = _bincount(x, minlength=10)
-
-    torch.use_deterministic_algorithms(False)
 
     # uses torch.bincount
     res2 = _bincount(x, minlength=10)
@@ -183,22 +175,19 @@ def test_recursive_allclose(inputs, expected):
 @pytest.mark.skipif(
     not _TORCH_GREATER_EQUAL_1_13, reason="earlier versions was silently non-deterministic, even in deterministic mode"
 )
-def test_cumsum_still_not_supported():
+def test_cumsum_still_not_supported(use_deterministic_algorithms):
     """Make sure that cumsum on gpu and deterministic mode still fails.
 
-    If this test begins to passes, it means newer Pytorch versions support this and we can drop internal support.
+    If this test begins to pass, it means newer Pytorch versions support this and we can drop internal support.
 
     """
-    torch.use_deterministic_algorithms(True)
     with pytest.raises(RuntimeError, match="cumsum_cuda_kernel does not have a deterministic implementation.*"):
         torch.arange(10).float().cuda().cumsum(0)
-    torch.use_deterministic_algorithms(False)
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU")
-def test_custom_cumsum():
+def test_custom_cumsum(use_deterministic_algorithms):
     """Test custom cumsum implementation."""
-    torch.use_deterministic_algorithms(True)
     x = torch.arange(100).float().cuda()
     if sys.platform != "win32":
         with pytest.warns(

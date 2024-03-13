@@ -26,7 +26,7 @@ from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
-num_targets = 5
+NUM_TARGETS = 5
 
 
 _single_target_inputs = _Input(
@@ -35,12 +35,12 @@ _single_target_inputs = _Input(
 )
 
 _multi_target_inputs = _Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_TARGETS),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_TARGETS),
 )
 
 
-def _ref_metric(preds, target, reduction):
+def _reference_sklearn_cosine(preds, target, reduction):
     sk_preds = preds.numpy()
     sk_target = target.numpy()
     result_array = sk_cosine(sk_target, sk_preds)
@@ -57,8 +57,8 @@ def _ref_metric(preds, target, reduction):
 @pytest.mark.parametrize(
     "preds, target, ref_metric",
     [
-        (_single_target_inputs.preds, _single_target_inputs.target, _ref_metric),
-        (_multi_target_inputs.preds, _multi_target_inputs.target, _ref_metric),
+        (_single_target_inputs.preds, _single_target_inputs.target, _reference_sklearn_cosine),
+        (_multi_target_inputs.preds, _multi_target_inputs.target, _reference_sklearn_cosine),
     ],
 )
 class TestCosineSimilarity(MetricTester):

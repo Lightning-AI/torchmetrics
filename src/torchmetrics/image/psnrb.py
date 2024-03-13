@@ -61,6 +61,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
         tensor(7.2893)
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = False

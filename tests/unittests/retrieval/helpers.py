@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
+from itertools import chain
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 import numpy as np
@@ -19,27 +20,43 @@ import pytest
 import torch
 from numpy import array
 from torch import Tensor, tensor
-from torchmetrics.retrieval.base import _retrieval_aggregate
 from typing_extensions import Literal
 
 from unittests.helpers import seed_all
 from unittests.helpers.testers import Metric, MetricTester
-from unittests.retrieval.inputs import _input_retrieval_scores as _irs
-from unittests.retrieval.inputs import _input_retrieval_scores_all_target as _irs_all
-from unittests.retrieval.inputs import _input_retrieval_scores_empty as _irs_empty
-from unittests.retrieval.inputs import _input_retrieval_scores_extra as _irs_extra
-from unittests.retrieval.inputs import _input_retrieval_scores_float_target as _irs_float_tgt
-from unittests.retrieval.inputs import _input_retrieval_scores_for_adaptive_k as _irs_adpt_k
-from unittests.retrieval.inputs import _input_retrieval_scores_int_target as _irs_int_tgt
-from unittests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes as _irs_bad_sz
-from unittests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_bad_sz_fn
-from unittests.retrieval.inputs import _input_retrieval_scores_no_target as _irs_no_tgt
-from unittests.retrieval.inputs import _input_retrieval_scores_with_ignore_index as _irs_ii
-from unittests.retrieval.inputs import _input_retrieval_scores_wrong_targets as _irs_bad_tgt
+from unittests.retrieval._inputs import _input_retrieval_scores as _irs
+from unittests.retrieval._inputs import _input_retrieval_scores_all_target as _irs_all
+from unittests.retrieval._inputs import _input_retrieval_scores_empty as _irs_empty
+from unittests.retrieval._inputs import _input_retrieval_scores_extra as _irs_extra
+from unittests.retrieval._inputs import _input_retrieval_scores_float_target as _irs_float_tgt
+from unittests.retrieval._inputs import _input_retrieval_scores_for_adaptive_k as _irs_adpt_k
+from unittests.retrieval._inputs import _input_retrieval_scores_int_target as _irs_int_tgt
+from unittests.retrieval._inputs import _input_retrieval_scores_mismatching_sizes as _irs_bad_sz
+from unittests.retrieval._inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_bad_sz_fn
+from unittests.retrieval._inputs import _input_retrieval_scores_no_target as _irs_no_tgt
+from unittests.retrieval._inputs import _input_retrieval_scores_with_ignore_index as _irs_ii
+from unittests.retrieval._inputs import _input_retrieval_scores_wrong_targets as _irs_bad_tgt
 
 seed_all(42)
 
 # a version of get_group_indexes that depends on NumPy is here to avoid this dependency for the full library
+
+
+def _retrieval_aggregate(
+    values: Tensor,
+    aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
+    dim: Optional[int] = None,
+) -> Tensor:
+    """Aggregate the final retrieval values into a single value."""
+    if aggregation == "mean":
+        return values.mean() if dim is None else values.mean(dim=dim)
+    if aggregation == "median":
+        return values.median() if dim is None else values.median(dim=dim).values
+    if aggregation == "min":
+        return values.min() if dim is None else values.min(dim=dim).values
+    if aggregation == "max":
+        return values.max() if dim is None else values.max(dim=dim).values
+    return aggregation(values, dim=dim)
 
 
 def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, np.ndarray]]:
@@ -74,7 +91,7 @@ def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, 
 
 
 def _custom_aggregate_fn(val: Tensor, dim=None) -> Tensor:
-    return (val**2).mean(dim=dim)
+    return (val**2).mean() if dim is None else (val**2).mean(dim=dim)
 
 
 def _compute_sklearn_metric(
@@ -138,7 +155,7 @@ def _concat_tests(*tests: Tuple[Dict]) -> Dict:
     """Concat tests composed by a string and a list of arguments."""
     assert len(tests), "`_concat_tests` expects at least an argument"
     assert all(tests[0]["argnames"] == x["argnames"] for x in tests[1:]), "the header must be the same for all tests"
-    return {"argnames": tests[0]["argnames"], "argvalues": sum((x["argvalues"] for x in tests), [])}
+    return {"argnames": tests[0]["argnames"], "argvalues": list(chain.from_iterable(x["argvalues"] for x in tests))}
 
 
 _errors_test_functional_metric_parameters_default = {

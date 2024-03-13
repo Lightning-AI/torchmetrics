@@ -13,6 +13,7 @@
 # limitations under the License.
 import os
 import pickle
+import warnings
 from collections import OrderedDict
 from typing import Any
 from unittest.mock import Mock
@@ -29,7 +30,6 @@ from torchmetrics.regression import PearsonCorrCoef
 
 from unittests.helpers import seed_all
 from unittests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
-from unittests.helpers.utilities import no_warning_call
 
 seed_all(42)
 
@@ -337,9 +337,9 @@ def test_warning_on_compute_before_update():
     metric = DummyMetricSum()
 
     # make sure everything is fine with forward
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         val = metric(1)
-    assert not record
 
     metric.reset()
 
@@ -349,9 +349,9 @@ def test_warning_on_compute_before_update():
 
     # after update things should be fine
     metric.update(2.0)
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         val = metric.compute()
-    assert not record
     assert val == 2.0
 
 
@@ -498,7 +498,7 @@ def test_specific_error_on_wrong_device():
 
 
 @pytest.mark.parametrize("metric_class", [DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum])
-def test_no_warning_on_custom_forward(metric_class):
+def test_no_warning_on_custom_forward(metric_class, recwarn):
     """If metric is using custom forward, full_state_update is irrelevant."""
 
     class UnsetProperty(metric_class):
@@ -507,11 +507,8 @@ def test_no_warning_on_custom_forward(metric_class):
         def forward(self, *args: Any, **kwargs: Any):
             self.update(*args, **kwargs)
 
-    with no_warning_call(
-        UserWarning,
-        match="Torchmetrics v0.9 introduced a new argument class property called.*",
-    ):
-        UnsetProperty()
+    UnsetProperty()
+    assert len(recwarn) == 0, "Warning was raised when it should not have been."
 
 
 def test_custom_availability_check_and_sync_fn():
@@ -573,3 +570,19 @@ def test_update_properties(metric, method):
     m.reset()
     assert not m.update_called
     assert m.update_count == 0
+
+
+def test_dtype_property():
+    """Test that dtype property works as expected."""
+    metric = DummyMetricSum()
+    assert metric.dtype == torch.float32
+    metric.set_dtype(torch.float64)
+    assert metric.dtype == torch.float64
+
+    torch.set_default_dtype(torch.float64)
+    metric = DummyMetricSum()
+    assert metric.dtype == torch.float64
+    torch.set_default_dtype(torch.float32)
+    assert metric.dtype == torch.float64  # should not change after initialization
+    metric.set_dtype(torch.float32)
+    assert metric.dtype == torch.float32

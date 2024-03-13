@@ -23,7 +23,6 @@ from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError, Pearson
 from torchmetrics.wrappers import Running
 
 from unittests import NUM_PROCESSES
-from unittests.helpers.utilities import no_warning_call
 
 
 def test_errors_on_wrong_input():
@@ -102,9 +101,10 @@ def test_advance_running(metric, preds, target, window):
 
     for i in range(10):  # using update
         p, t = preds[i], target[i]
-        p_run, t_run = preds[max(i - (window - 1), 0) : i + 1, :].reshape(-1), target[
-            max(i - (window - 1), 0) : i + 1, :
-        ].reshape(-1)
+        p_run, t_run = (
+            preds[max(i - (window - 1), 0) : i + 1, :].reshape(-1),
+            target[max(i - (window - 1), 0) : i + 1, :].reshape(-1),
+        )
 
         running_metric.update(p, t)
         assert torch.allclose(base_metric(p_run, t_run), running_metric.compute())
@@ -114,20 +114,19 @@ def test_advance_running(metric, preds, target, window):
 def test_metric_collection(window):
     """Check that running metric works as expected for metric collections."""
     compare = MetricCollection({"mse": MeanSquaredError(), "msa": MeanAbsoluteError()})
-    metric = MetricCollection(
-        {
-            "mse": Running(MeanSquaredError(), window=window),
-            "msa": Running(MeanAbsoluteError(), window=window),
-        }
-    )
+    metric = MetricCollection({
+        "mse": Running(MeanSquaredError(), window=window),
+        "msa": Running(MeanAbsoluteError(), window=window),
+    })
     preds = torch.rand(10, 20)
     target = torch.rand(10, 20)
 
     for i in range(10):
         p, t = preds[i], target[i]
-        p_run, t_run = preds[max(i - (window - 1), 0) : i + 1, :].reshape(-1), target[
-            max(i - (window - 1), 0) : i + 1, :
-        ].reshape(-1)
+        p_run, t_run = (
+            preds[max(i - (window - 1), 0) : i + 1, :].reshape(-1),
+            target[max(i - (window - 1), 0) : i + 1, :].reshape(-1),
+        )
         metric.update(p, t)
 
         res1, res2 = compare(p_run, t_run), metric.compute()
@@ -154,9 +153,8 @@ def test_ddp_running(dist_sync_on_step, expected):
     )
 
 
-def test_no_warning_due_to_reset():
+def test_no_warning_due_to_reset(recwarn):
     """Internally we call .reset() which would normally raise a warning, but it should not happen in Runner."""
     metric = Running(SumMetric(), window=3)
     metric.update(torch.tensor(2.0))
-    with no_warning_call(UserWarning):
-        metric.compute()
+    assert len(recwarn) == 0, f"Warnings: {recwarn.list}"

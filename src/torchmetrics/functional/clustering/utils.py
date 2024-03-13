@@ -35,7 +35,7 @@ def is_nonnegative(x: Tensor, atol: float = 1e-5) -> Tensor:
 
 
 def _validate_average_method_arg(
-    average_method: Literal["min", "geometric", "arithmetic", "max"] = "arithmetic"
+    average_method: Literal["min", "geometric", "arithmetic", "max"] = "arithmetic",
 ) -> None:
     if average_method not in ("min", "geometric", "arithmetic", "max"):
         raise ValueError(
@@ -154,12 +154,10 @@ def calculate_contingency_matrix(
     num_classes_target = target_classes.size(0)
 
     contingency = torch.sparse_coo_tensor(
-        torch.stack(
-            (
-                target_idx,
-                preds_idx,
-            )
-        ),
+        torch.stack((
+            target_idx,
+            preds_idx,
+        )),
         torch.ones(target_idx.shape[0], dtype=preds_idx.dtype, device=preds_idx.device),
         (
             num_classes_target,

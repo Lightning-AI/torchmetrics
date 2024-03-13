@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import warnings
 from functools import partial
 
 import numpy as np
@@ -34,7 +34,7 @@ from torchmetrics.functional.classification.precision_fixed_recall import (
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
@@ -53,7 +53,7 @@ def _precision_at_recall_x_multilabel(predictions, targets, min_recall):
     return float(max_precision), float(best_threshold)
 
 
-def _sklearn_precision_at_fixed_recall_binary(preds, target, min_recall, ignore_index=None):
+def _reference_sklearn_precision_at_fixed_recall_binary(preds, target, min_recall, ignore_index=None):
     preds = preds.flatten().numpy()
     target = target.flatten().numpy()
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
@@ -80,7 +80,7 @@ class TestBinaryPrecisionAtFixedRecall(MetricTester):
             target=target,
             metric_class=BinaryPrecisionAtFixedRecall,
             reference_metric=partial(
-                _sklearn_precision_at_fixed_recall_binary, min_recall=min_recall, ignore_index=ignore_index
+                _reference_sklearn_precision_at_fixed_recall_binary, min_recall=min_recall, ignore_index=ignore_index
             ),
             metric_args={
                 "min_recall": min_recall,
@@ -101,7 +101,7 @@ class TestBinaryPrecisionAtFixedRecall(MetricTester):
             target=target,
             metric_functional=binary_precision_at_fixed_recall,
             reference_metric=partial(
-                _sklearn_precision_at_fixed_recall_binary, min_recall=min_recall, ignore_index=ignore_index
+                _reference_sklearn_precision_at_fixed_recall_binary, min_recall=min_recall, ignore_index=ignore_index
             ),
             metric_args={
                 "min_recall": min_recall,
@@ -164,7 +164,7 @@ class TestBinaryPrecisionAtFixedRecall(MetricTester):
             assert torch.allclose(r1, r2)
 
 
-def _sklearn_precision_at_fixed_recall_multiclass(preds, target, min_recall, ignore_index=None):
+def _reference_sklearn_precision_at_fixed_recall_multiclass(preds, target, min_recall, ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
@@ -201,7 +201,9 @@ class TestMulticlassPrecisionAtFixedRecall(MetricTester):
             target=target,
             metric_class=MulticlassPrecisionAtFixedRecall,
             reference_metric=partial(
-                _sklearn_precision_at_fixed_recall_multiclass, min_recall=min_recall, ignore_index=ignore_index
+                _reference_sklearn_precision_at_fixed_recall_multiclass,
+                min_recall=min_recall,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_recall": min_recall,
@@ -223,7 +225,9 @@ class TestMulticlassPrecisionAtFixedRecall(MetricTester):
             target=target,
             metric_functional=multiclass_precision_at_fixed_recall,
             reference_metric=partial(
-                _sklearn_precision_at_fixed_recall_multiclass, min_recall=min_recall, ignore_index=ignore_index
+                _reference_sklearn_precision_at_fixed_recall_multiclass,
+                min_recall=min_recall,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_recall": min_recall,
@@ -290,10 +294,10 @@ class TestMulticlassPrecisionAtFixedRecall(MetricTester):
             assert all(torch.allclose(r1[i], r2[i]) for i in range(len(r1)))
 
 
-def _sklearn_precision_at_fixed_recall_multilabel(preds, target, min_recall, ignore_index=None):
+def _reference_sklearn_precision_at_fixed_recall_multilabel(preds, target, min_recall, ignore_index=None):
     precision, thresholds = [], []
     for i in range(NUM_CLASSES):
-        res = _sklearn_precision_at_fixed_recall_binary(preds[:, i], target[:, i], min_recall, ignore_index)
+        res = _reference_sklearn_precision_at_fixed_recall_binary(preds[:, i], target[:, i], min_recall, ignore_index)
         precision.append(res[0])
         thresholds.append(res[1])
     return precision, thresholds
@@ -319,7 +323,9 @@ class TestMultilabelPrecisionAtFixedRecall(MetricTester):
             target=target,
             metric_class=MultilabelPrecisionAtFixedRecall,
             reference_metric=partial(
-                _sklearn_precision_at_fixed_recall_multilabel, min_recall=min_recall, ignore_index=ignore_index
+                _reference_sklearn_precision_at_fixed_recall_multilabel,
+                min_recall=min_recall,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_recall": min_recall,
@@ -341,7 +347,9 @@ class TestMultilabelPrecisionAtFixedRecall(MetricTester):
             target=target,
             metric_functional=multilabel_precision_at_fixed_recall,
             reference_metric=partial(
-                _sklearn_precision_at_fixed_recall_multilabel, min_recall=min_recall, ignore_index=ignore_index
+                _reference_sklearn_precision_at_fixed_recall_multilabel,
+                min_recall=min_recall,
+                ignore_index=ignore_index,
             ),
             metric_args={
                 "min_recall": min_recall,
@@ -419,9 +427,9 @@ class TestMultilabelPrecisionAtFixedRecall(MetricTester):
 @pytest.mark.parametrize("thresholds", [None, 100, [0.3, 0.5, 0.7, 0.9], torch.linspace(0, 1, 10)])
 def test_valid_input_thresholds(metric, thresholds):
     """Test valid formats of the threshold argument."""
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         metric(min_recall=0.5, thresholds=thresholds)
-    assert len(record) == 0
 
 
 @pytest.mark.parametrize(

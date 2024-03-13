@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import warnings
 from functools import partial
 
 import numpy as np
@@ -33,14 +34,14 @@ from torchmetrics.functional.classification.precision_recall_curve import (
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 from unittests.helpers import seed_all
 from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
 
-def _sklearn_precision_recall_curve_binary(preds, target, ignore_index=None):
+def _reference_sklearn_precision_recall_curve_binary(preds, target, ignore_index=None):
     preds = preds.flatten().numpy()
     target = target.flatten().numpy()
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
@@ -65,7 +66,7 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryPrecisionRecallCurve,
-            reference_metric=partial(_sklearn_precision_recall_curve_binary, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_precision_recall_curve_binary, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
@@ -82,7 +83,7 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_precision_recall_curve,
-            reference_metric=partial(_sklearn_precision_recall_curve_binary, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_precision_recall_curve_binary, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
@@ -153,7 +154,7 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
             binary_precision_recall_curve(preds[0].long(), target[0])
 
 
-def _sklearn_precision_recall_curve_multiclass(preds, target, ignore_index=None):
+def _reference_sklearn_precision_recall_curve_multiclass(preds, target, ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
@@ -189,7 +190,7 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassPrecisionRecallCurve,
-            reference_metric=partial(_sklearn_precision_recall_curve_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_precision_recall_curve_multiclass, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -207,7 +208,7 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_precision_recall_curve,
-            reference_metric=partial(_sklearn_precision_recall_curve_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_precision_recall_curve_multiclass, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -300,10 +301,10 @@ class TestMulticlassPrecisionRecallCurve(MetricTester):
             )
 
 
-def _sklearn_precision_recall_curve_multilabel(preds, target, ignore_index=None):
+def _reference_sklearn_precision_recall_curve_multilabel(preds, target, ignore_index=None):
     precision, recall, thresholds = [], [], []
     for i in range(NUM_CLASSES):
-        res = _sklearn_precision_recall_curve_binary(preds[:, i], target[:, i], ignore_index)
+        res = _reference_sklearn_precision_recall_curve_binary(preds[:, i], target[:, i], ignore_index)
         precision.append(res[0])
         recall.append(res[1])
         thresholds.append(res[2])
@@ -328,7 +329,7 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelPrecisionRecallCurve,
-            reference_metric=partial(_sklearn_precision_recall_curve_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_precision_recall_curve_multilabel, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
@@ -346,7 +347,7 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_precision_recall_curve,
-            reference_metric=partial(_sklearn_precision_recall_curve_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_precision_recall_curve_multilabel, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
@@ -431,9 +432,9 @@ class TestMultilabelPrecisionRecallCurve(MetricTester):
 @pytest.mark.parametrize("thresholds", [None, 100, [0.3, 0.5, 0.7, 0.9], torch.linspace(0, 1, 10)])
 def test_valid_input_thresholds(metric, thresholds):
     """Test valid formats of the threshold argument."""
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         metric(thresholds=thresholds)
-    assert len(record) == 0
 
 
 @pytest.mark.parametrize(

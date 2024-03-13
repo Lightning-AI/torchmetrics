@@ -69,6 +69,7 @@ class MeanSquaredError(Metric):
         tensor([1., 4., 9.])
 
     """
+
     is_differentiable = True
     higher_is_better = False
     full_state_update = False

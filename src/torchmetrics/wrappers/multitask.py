@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # this is just a bypass for this module name collision with built-in one
+from copy import deepcopy
 from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Union
 
 from torch import Tensor, nn
@@ -102,17 +103,49 @@ class MultitaskWrapper(WrapperMetric):
         super().__init__()
         self.task_metrics = nn.ModuleDict(task_metrics)
 
-    def items(self) -> Iterable[Tuple[str, nn.Module]]:
-        """Iterate over task and task metrics."""
-        return self.task_metrics.items()
+    def items(self, flatten: bool = True) -> Iterable[Tuple[str, nn.Module]]:
+        """Iterate over task and task metrics.
 
-    def keys(self) -> Iterable[str]:
-        """Iterate over task names."""
-        return self.task_metrics.keys()
+        Args:
+            flatten: If True, will iterate over all sub-metrics in the case of a MetricCollection.
+                If False, will iterate over the task names and the corresponding metrics.
 
-    def values(self) -> Iterable[nn.Module]:
-        """Iterate over task metrics."""
-        return self.task_metrics.values()
+        """
+        for task_name, metric in self.task_metrics.items():
+            if flatten and isinstance(metric, MetricCollection):
+                for sub_metric_name, sub_metric in metric.items():
+                    yield f"{task_name}_{sub_metric_name}", sub_metric
+            else:
+                yield task_name, metric
+
+    def keys(self, flatten: bool = True) -> Iterable[str]:
+        """Iterate over task names.
+
+        Args:
+            flatten: If True, will iterate over all sub-metrics in the case of a MetricCollection.
+                If False, will iterate over the task names and the corresponding metrics.
+
+        """
+        for task_name, metric in self.task_metrics.items():
+            if flatten and isinstance(metric, MetricCollection):
+                for sub_metric_name in metric:
+                    yield f"{task_name}_{sub_metric_name}"
+            else:
+                yield task_name
+
+    def values(self, flatten: bool = True) -> Iterable[nn.Module]:
+        """Iterate over task metrics.
+
+        Args:
+            flatten: If True, will iterate over all sub-metrics in the case of a MetricCollection.
+                If False, will iterate over the task names and the corresponding metrics.
+
+        """
+        for metric in self.task_metrics.values():
+            if flatten and isinstance(metric, MetricCollection):
+                yield from metric.values()
+            else:
+                yield metric
 
     @staticmethod
     def _check_task_metrics_type(task_metrics: Dict[str, Union[Metric, MetricCollection]]) -> None:
@@ -126,7 +159,7 @@ class MultitaskWrapper(WrapperMetric):
                     f"Found a metric of type {type(metric)}"
                 )
 
-    def update(self, task_preds: Dict[str, Tensor], task_targets: Dict[str, Tensor]) -> None:
+    def update(self, task_preds: Dict[str, Any], task_targets: Dict[str, Any]) -> None:
         """Update each task's metric with its corresponding pred and target.
 
         Args:
@@ -166,6 +199,33 @@ class MultitaskWrapper(WrapperMetric):
         for metric in self.task_metrics.values():
             metric.reset()
         super().reset()
+
+    @staticmethod
+    def _check_arg(arg: Optional[str], name: str) -> Optional[str]:
+        if arg is None or isinstance(arg, str):
+            return arg
+        raise ValueError(f"Expected input `{name}` to be a string, but got {type(arg)}")
+
+    def clone(self, prefix: Optional[str] = None, postfix: Optional[str] = None) -> "MultitaskWrapper":
+        """Make a copy of the metric.
+
+        Args:
+            prefix: a string to append in front of the metric keys
+            postfix: a string to append after the keys of the output dict.
+
+        """
+        multitask_copy = deepcopy(self)
+        if prefix is not None:
+            prefix = self._check_arg(prefix, "prefix")
+            multitask_copy.task_metrics = nn.ModuleDict({
+                prefix + key: value for key, value in multitask_copy.task_metrics.items()
+            })
+        if postfix is not None:
+            postfix = self._check_arg(postfix, "postfix")
+            multitask_copy.task_metrics = nn.ModuleDict({
+                key + postfix: value for key, value in multitask_copy.task_metrics.items()
+            })
+        return multitask_copy
 
     def plot(
         self, val: Optional[Union[Dict, Sequence[Dict]]] = None, axes: Optional[Sequence[_AX_TYPE]] = None

@@ -28,10 +28,9 @@ else:
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import SumMetric
 from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision
-from torchmetrics.regression import MeanSquaredError
+from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
 from torchmetrics.wrappers import MultitaskWrapper
 
-from integrations.helpers import no_warning_call
 from integrations.lightning.boring_model import BoringModel
 
 
@@ -249,11 +248,7 @@ def test_metric_lightning_log(tmpdir):
         log_every_n_steps=1,
         logger=logger,
     )
-    with no_warning_call(
-        UserWarning,
-        match="Torchmetrics v0.9 introduced a new argument class property called.*",
-    ):
-        trainer.fit(model)
+    trainer.fit(model)
 
     logged_metrics = logger._experiment.metrics
 
@@ -349,11 +344,7 @@ def test_metric_collection_lightning_log(tmpdir):
         max_epochs=1,
         log_every_n_steps=1,
     )
-    with no_warning_call(
-        UserWarning,
-        match="Torchmetrics v0.9 introduced a new argument class property called.*",
-    ):
-        trainer.fit(model)
+    trainer.fit(model)
 
     logged = trainer.logged_metrics
     assert torch.allclose(tensor(logged["SumMetric_epoch"]), model.sum, atol=2e-4)
@@ -366,22 +357,32 @@ def test_task_wrapper_lightning_logging(tmpdir):
     class TestModel(BoringModel):
         def __init__(self) -> None:
             super().__init__()
-            self.metric = MultitaskWrapper({"classification": BinaryAccuracy(), "regression": MeanSquaredError()})
+            self.multitask = MultitaskWrapper({"classification": BinaryAccuracy(), "regression": MeanSquaredError()})
+            self.multitask_collection = MultitaskWrapper({
+                "classification": MetricCollection([BinaryAccuracy(), BinaryAveragePrecision()]),
+                "regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
+            })
+
             self.accuracy = BinaryAccuracy()
             self.mse = MeanSquaredError()
 
         def training_step(self, batch, batch_idx):
             preds = torch.rand(10)
             target = torch.rand(10)
-            self.metric(
-                {"classification": preds.round(), "regression": preds},
-                {"classification": target.round(), "regression": target},
+            self.multitask(
+                {"classification": preds, "regression": preds},
+                {"classification": target.round().int(), "regression": target},
+            )
+            self.multitask_collection(
+                {"classification": preds, "regression": preds},
+                {"classification": target.round().int(), "regression": target},
             )
             self.accuracy(preds.round(), target.round())
             self.mse(preds, target)
             self.log("accuracy", self.accuracy, on_epoch=True)
             self.log("mse", self.mse, on_epoch=True)
-            self.log_dict(self.metric, on_epoch=True)
+            self.log_dict(self.multitask, on_epoch=True)
+            self.log_dict(self.multitask_collection, on_epoch=True)
             return self.step(batch)
 
     model = TestModel()
@@ -393,17 +394,17 @@ def test_task_wrapper_lightning_logging(tmpdir):
         max_epochs=1,
         log_every_n_steps=1,
     )
-    with no_warning_call(
-        UserWarning,
-        match="Torchmetrics v0.9 introduced a new argument class property called.*",
-    ):
-        trainer.fit(model)
+    trainer.fit(model)
 
     logged = trainer.logged_metrics
     assert torch.allclose(logged["accuracy_step"], logged["classification_step"])
     assert torch.allclose(logged["accuracy_epoch"], logged["classification_epoch"])
     assert torch.allclose(logged["mse_step"], logged["regression_step"])
     assert torch.allclose(logged["mse_epoch"], logged["regression_epoch"])
+    assert "regression_MeanAbsoluteError_epoch" in logged
+    assert "regression_MeanSquaredError_epoch" in logged
+    assert "classification_BinaryAccuracy_epoch" in logged
+    assert "classification_BinaryAveragePrecision_epoch" in logged
 
 
 def test_scriptable(tmpdir):
