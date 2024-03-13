@@ -28,17 +28,17 @@ from torchmetrics.classification.group_fairness import BinaryFairness
 from torchmetrics.functional.classification.group_fairness import binary_fairness
 
 from unittests import THRESHOLD
-from unittests.classification._inputs import _group_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import (
+from unittests._helpers import seed_all
+from unittests._helpers.testers import (
     MetricTester,
     _assert_dtype_support,
     inject_ignore_index,
     remove_ignore_index_groups,
 )
-from unittests.helpers.testers import _assert_allclose as _core_assert_allclose
-from unittests.helpers.testers import _assert_requires_grad as _core_assert_requires_grad
-from unittests.helpers.testers import _assert_tensor as _core_assert_tensor
+from unittests._helpers.testers import _assert_allclose as _core_assert_allclose
+from unittests._helpers.testers import _assert_requires_grad as _core_assert_requires_grad
+from unittests._helpers.testers import _assert_tensor as _core_assert_tensor
+from unittests.classification._inputs import _group_cases
 
 seed_all(42)
 
