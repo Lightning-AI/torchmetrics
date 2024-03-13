@@ -13,7 +13,6 @@
 # limitations under the License.
 import os
 import pickle
-import warnings
 from collections import OrderedDict
 from typing import Any
 from unittest.mock import Mock
@@ -500,7 +499,7 @@ def test_specific_error_on_wrong_device():
 
 
 @pytest.mark.parametrize("metric_class", [DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum])
-def test_no_warning_on_custom_forward(recwar, nmetric_class):
+def test_no_warning_on_custom_forward(recwarn, metric_class):
     """If metric is using custom forward, full_state_update is irrelevant."""
 
     class UnsetProperty(metric_class):
