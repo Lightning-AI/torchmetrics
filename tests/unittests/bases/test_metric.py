@@ -332,14 +332,15 @@ def test_disable_of_normal_dtype_methods():
     assert metric.x.dtype == torch.float32
 
 
-def test_warning_on_compute_before_update():
+def test_warning_on_compute_before_update(recwarn):
     """Test that an warning is raised if user tries to call compute before update."""
     metric = DummyMetricSum()
 
     # make sure everything is fine with forward
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-        val = metric(1)
+    wcount = len(recwarn)
+    _ = metric(1)
+    # Check that no new warning was raised
+    assert len(recwarn) == wcount
 
     metric.reset()
 
@@ -349,10 +350,11 @@ def test_warning_on_compute_before_update():
 
     # after update things should be fine
     metric.update(2.0)
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-        val = metric.compute()
+    wcount = len(recwarn)
+    val = metric.compute()
     assert val == 2.0
+    # Check that no new warning was raised
+    assert len(recwarn) == wcount
 
 
 @pytest.mark.parametrize("metric_class", [DummyMetric, DummyMetricSum, DummyMetricMultiOutput, DummyListMetric])
@@ -498,7 +500,7 @@ def test_specific_error_on_wrong_device():
 
 
 @pytest.mark.parametrize("metric_class", [DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum])
-def test_no_warning_on_custom_forward(metric_class, recwarn):
+def test_no_warning_on_custom_forward(recwar, nmetric_class):
     """If metric is using custom forward, full_state_update is irrelevant."""
 
     class UnsetProperty(metric_class):

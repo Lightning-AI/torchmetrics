@@ -473,7 +473,7 @@ class TestMultilabelSensitivityAtSpecificity(MetricTester):
 def test_valid_input_thresholds(recwarn, metric, thresholds):
     """Test valid formats of the threshold argument."""
     metric(min_specificity=0.5, thresholds=thresholds)
-    assert len(recwarn) == 0
+    assert len(recwarn) == 0, "Warning was raised when it should not have been."
 
 
 @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_11, reason="metric does not support torch versions below 1.11")
