@@ -4,7 +4,7 @@
 coverage ==7.4.1
 pytest ==8.0.0
 pytest-cov ==4.1.0
-pytest-doctestplus ==1.1.0
+pytest-doctestplus ==1.2.1
 pytest-rerunfailures ==13.0
 pytest-timeout ==2.2.0
 pytest-xdist ==3.3.1
