@@ -15,7 +15,6 @@ import pickle
 import sys
 from copy import deepcopy
 from functools import partial
-from random import randrange
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
@@ -343,7 +342,8 @@ def _select_rand_best_device() -> str:
     nb_gpus = torch.cuda.device_count()
     # todo: debug the eventual device checks/assets
     # if nb_gpus > 1:
-    #     return f"cuda:{randrange(nb_gpus)}"  # noqa: S311
+    #     from random import randrange
+    #     return f"cuda:{randrange(nb_gpus)}"
     if nb_gpus:
         return "cuda"
     return "cpu"

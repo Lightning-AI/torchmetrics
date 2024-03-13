@@ -219,8 +219,8 @@ class BinaryFairnessTester(MetricTester):
         )
 
 
-@mock.patch("unittests.helpers.testers._assert_tensor", _assert_tensor)
-@mock.patch("unittests.helpers.testers._assert_allclose", _assert_allclose)
+@mock.patch("unittests._helpers.testers._assert_tensor", _assert_tensor)
+@mock.patch("unittests._helpers.testers._assert_allclose", _assert_allclose)
 @pytest.mark.parametrize("inputs", _group_cases)
 class TestBinaryFairness(BinaryFairnessTester):
     """Test class for `BinaryFairness` metric."""
