@@ -29,7 +29,6 @@ from torchmetrics.regression import PearsonCorrCoef
 
 from unittests.helpers import seed_all
 from unittests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
-from unittests.helpers.utilities import no_warning_call
 
 seed_all(42)
 
@@ -332,14 +331,15 @@ def test_disable_of_normal_dtype_methods():
     assert metric.x.dtype == torch.float32
 
 
-def test_warning_on_compute_before_update():
+def test_warning_on_compute_before_update(recwarn):
     """Test that an warning is raised if user tries to call compute before update."""
     metric = DummyMetricSum()
 
     # make sure everything is fine with forward
-    with pytest.warns(None) as record:
-        val = metric(1)
-    assert not record
+    wcount = len(recwarn)
+    _ = metric(1)
+    # Check that no new warning was raised
+    assert len(recwarn) == wcount
 
     metric.reset()
 
@@ -349,10 +349,11 @@ def test_warning_on_compute_before_update():
 
     # after update things should be fine
     metric.update(2.0)
-    with pytest.warns(None) as record:
-        val = metric.compute()
-    assert not record
+    wcount = len(recwarn)
+    val = metric.compute()
     assert val == 2.0
+    # Check that no new warning was raised
+    assert len(recwarn) == wcount
 
 
 @pytest.mark.parametrize("metric_class", [DummyMetric, DummyMetricSum, DummyMetricMultiOutput, DummyListMetric])
@@ -498,7 +499,7 @@ def test_specific_error_on_wrong_device():
 
 
 @pytest.mark.parametrize("metric_class", [DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum])
-def test_no_warning_on_custom_forward(metric_class):
+def test_no_warning_on_custom_forward(recwarn, metric_class):
     """If metric is using custom forward, full_state_update is irrelevant."""
 
     class UnsetProperty(metric_class):
@@ -507,11 +508,8 @@ def test_no_warning_on_custom_forward(metric_class):
         def forward(self, *args: Any, **kwargs: Any):
             self.update(*args, **kwargs)
 
-    with no_warning_call(
-        UserWarning,
-        match="Torchmetrics v0.9 introduced a new argument class property called.*",
-    ):
-        UnsetProperty()
+    UnsetProperty()
+    assert len(recwarn) == 0, "Warning was raised when it should not have been."
 
 
 def test_custom_availability_check_and_sync_fn():
