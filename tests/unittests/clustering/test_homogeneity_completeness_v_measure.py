@@ -28,9 +28,9 @@ from torchmetrics.functional.clustering.homogeneity_completeness_v_measure impor
     v_measure_score,
 )
 
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 from unittests.clustering._inputs import _float_inputs_extrinsic, _single_target_extrinsic1, _single_target_extrinsic2
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 

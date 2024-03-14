@@ -337,6 +337,18 @@ def _assert_dtype_support(
         _assert_tensor(metric_functional(y_hat, y, **kwargs_update))
 
 
+def _select_rand_best_device() -> str:
+    """Select the best device to run tests on."""
+    nb_gpus = torch.cuda.device_count()
+    # todo: debug the eventual device checks/assets
+    # if nb_gpus > 1:
+    #     from random import randrange
+    #     return f"cuda:{randrange(nb_gpus)}"
+    if nb_gpus:
+        return "cuda"
+    return "cpu"
+
+
 class MetricTester:
     """Test class for all metrics.
 
@@ -371,8 +383,6 @@ class MetricTester:
                 target when running update on the metric.
 
         """
-        device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
-
         _functional_test(
             preds=preds,
             target=target,
@@ -380,7 +390,7 @@ class MetricTester:
             reference_metric=reference_metric,
             metric_args=metric_args,
             atol=self.atol,
-            device=device,
+            device=_select_rand_best_device(),
             fragment_kwargs=fragment_kwargs,
             **kwargs_update,
         )
@@ -431,7 +441,7 @@ class MetricTester:
             "reference_metric": reference_metric,
             "metric_args": metric_args or {},
             "atol": atol or self.atol,
-            "device": "cuda" if torch.cuda.is_available() else "cpu",
+            "device": _select_rand_best_device(),
             "dist_sync_on_step": dist_sync_on_step,
             "check_dist_sync_on_step": check_dist_sync_on_step,
             "check_batch": check_batch,

@@ -20,7 +20,7 @@ from torchmetrics.functional.retrieval.precision import retrieval_precision
 from torchmetrics.retrieval.precision import RetrievalPrecision
 from typing_extensions import Literal
 
-from unittests.helpers import seed_all
+from unittests._helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,
     _concat_tests,

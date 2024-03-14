@@ -22,7 +22,7 @@ from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
 from torchmetrics.wrappers import MultitaskWrapper
 
 from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers import seed_all
+from unittests._helpers import seed_all
 
 seed_all(42)
 
