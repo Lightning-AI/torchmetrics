@@ -21,8 +21,8 @@ from torchmetrics.functional.regression.csi import critical_success_index
 from torchmetrics.regression.csi import CriticalSuccessIndex
 
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -31,7 +31,7 @@ _inputs_1 = _Input(preds=torch.rand(NUM_BATCHES, BATCH_SIZE), target=torch.rand(
 _inputs_2 = _Input(preds=torch.rand(NUM_BATCHES, BATCH_SIZE), target=torch.rand(NUM_BATCHES, BATCH_SIZE))
 
 
-def _calculate_ref_metric(preds: torch.Tensor, target: torch.Tensor, threshold: float):
+def _reference_sklearn_jaccard(preds: torch.Tensor, target: torch.Tensor, threshold: float):
     """Calculate reference metric for `CriticalSuccessIndex`."""
     preds, target = preds.numpy(), target.numpy()
     preds = preds >= threshold
@@ -58,7 +58,7 @@ class TestCriticalSuccessIndex(MetricTester):
             preds=preds,
             target=target,
             metric_class=CriticalSuccessIndex,
-            reference_metric=partial(_calculate_ref_metric, threshold=threshold),
+            reference_metric=partial(_reference_sklearn_jaccard, threshold=threshold),
             metric_args={"threshold": threshold},
         )
 
@@ -68,7 +68,7 @@ class TestCriticalSuccessIndex(MetricTester):
             preds=preds,
             target=target,
             metric_functional=critical_success_index,
-            reference_metric=partial(_calculate_ref_metric, threshold=threshold),
+            reference_metric=partial(_reference_sklearn_jaccard, threshold=threshold),
             metric_args={"threshold": threshold},
         )
 

@@ -32,14 +32,14 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_13
 
 from unittests import NUM_CLASSES
-from unittests.classification.inputs import _binary_cases, _multiclass_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.classification._inputs import _binary_cases, _multiclass_cases
 
 seed_all(42)
 
 
-def _netcal_binary_calibration_error(preds, target, n_bins, norm, ignore_index):
+def _reference_netcal_binary_calibration_error(preds, target, n_bins, norm, ignore_index):
     preds = preds.numpy().flatten()
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
@@ -68,7 +68,7 @@ class TestBinaryCalibrationError(MetricTester):
             target=target,
             metric_class=BinaryCalibrationError,
             reference_metric=partial(
-                _netcal_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
+                _reference_netcal_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
             ),
             metric_args={
                 "n_bins": n_bins,
@@ -90,7 +90,7 @@ class TestBinaryCalibrationError(MetricTester):
             target=target,
             metric_functional=binary_calibration_error,
             reference_metric=partial(
-                _netcal_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
+                _reference_netcal_binary_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
             ),
             metric_args={
                 "n_bins": n_bins,
@@ -148,7 +148,7 @@ def test_binary_with_zero_pred():
     assert binary_calibration_error(preds, target, n_bins=2, norm="l1") == torch.tensor(0.6)
 
 
-def _netcal_multiclass_calibration_error(preds, target, n_bins, norm, ignore_index):
+def _reference_netcal_multiclass_calibration_error(preds, target, n_bins, norm, ignore_index):
     preds = preds.numpy()
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
@@ -180,7 +180,7 @@ class TestMulticlassCalibrationError(MetricTester):
             target=target,
             metric_class=MulticlassCalibrationError,
             reference_metric=partial(
-                _netcal_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
+                _reference_netcal_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,
@@ -203,7 +203,7 @@ class TestMulticlassCalibrationError(MetricTester):
             target=target,
             metric_functional=multiclass_calibration_error,
             reference_metric=partial(
-                _netcal_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
+                _reference_netcal_multiclass_calibration_error, n_bins=n_bins, norm=norm, ignore_index=ignore_index
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,

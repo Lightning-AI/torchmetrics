@@ -17,7 +17,7 @@ from typing import Any
 
 import pytest
 import torch
-from torchmetrics import Metric, MetricCollection
+from torchmetrics import ClasswiseWrapper, Metric, MetricCollection
 from torchmetrics.classification import (
     BinaryAccuracy,
     MulticlassAccuracy,
@@ -34,8 +34,8 @@ from torchmetrics.classification import (
 )
 from torchmetrics.utilities.checks import _allclose_recursive
 
-from unittests.helpers import seed_all
-from unittests.helpers.testers import DummyMetricDiff, DummyMetricMultiOutputDict, DummyMetricSum
+from unittests._helpers import seed_all
+from unittests._helpers.testers import DummyMetricDiff, DummyMetricMultiOutputDict, DummyMetricSum
 
 seed_all(42)
 
@@ -538,6 +538,44 @@ def test_compute_group_define_by_user():
     target = torch.randint(3, (10,))
     m.update(preds, target)
     assert m.compute()
+
+
+def test_classwise_wrapper_compute_group():
+    """Check that user can provide compute groups."""
+    classwise_accuracy = ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None), prefix="accuracy")
+    classwise_recall = ClasswiseWrapper(MulticlassRecall(num_classes=3, average=None), prefix="recall")
+    classwise_precision = ClasswiseWrapper(MulticlassPrecision(num_classes=3, average=None), prefix="precision")
+
+    m = MetricCollection(
+        {
+            "accuracy": ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None), prefix="accuracy"),
+            "recall": ClasswiseWrapper(MulticlassRecall(num_classes=3, average=None), prefix="recall"),
+            "precision": ClasswiseWrapper(MulticlassPrecision(num_classes=3, average=None), prefix="precision"),
+        },
+        compute_groups=[["accuracy", "recall", "precision"]],
+    )
+
+    # Check that we are not going to check the groups in the first update
+    assert m._groups_checked
+    assert m.compute_groups == {0: ["accuracy", "recall", "precision"]}
+
+    preds = torch.randn(10, 3).softmax(dim=-1)
+    target = torch.randint(3, (10,))
+
+    expected = {
+        **classwise_accuracy(preds, target),
+        **classwise_recall(preds, target),
+        **classwise_precision(preds, target),
+    }
+
+    m.update(preds, target)
+    res = m.compute()
+
+    for key in expected:
+        assert torch.allclose(res[key], expected[key])
+
+    # check metric state_dict
+    m.state_dict()
 
 
 def test_compute_on_different_dtype():

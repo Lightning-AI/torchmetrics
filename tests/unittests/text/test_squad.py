@@ -20,8 +20,8 @@ import torch.multiprocessing as mp
 from torchmetrics.functional.text import squad
 from torchmetrics.text.squad import SQuAD
 
-from unittests.helpers.testers import _assert_allclose, _assert_tensor
-from unittests.text.inputs import _inputs_squad_batch_match, _inputs_squad_exact_match, _inputs_squad_exact_mismatch
+from unittests._helpers.testers import _assert_allclose, _assert_tensor
+from unittests.text._inputs import _inputs_squad_batch_match, _inputs_squad_exact_match, _inputs_squad_exact_mismatch
 
 
 @pytest.mark.parametrize(

@@ -32,9 +32,20 @@ if not _TORCHVISION_AVAILABLE:
 
 
 class SpatialDistortionIndex(Metric):
-    """Compute Spatial Distortion Index (SpatialDistortionIndex_) also now as D_s.
+    r"""Compute Spatial Distortion Index (SpatialDistortionIndex_) also now as D_s.
 
-    The metric is used to compare the spatial distortion between two images.
+    The metric is used to compare the spatial distortion between two images. A value of 0 indicates no distortion
+    (optimal value) and corresponds to the case where the high resolution panchromatic image is equal to the low
+    resolution panchromatic image. The metric is defined as:
+
+    .. math::
+        D_s = \\sqrt[q]{\frac{1}{L}\\sum_{l=1}^L|Q(\\hat{G_l}, P) - Q(\tilde{G}, \tilde{P})|^q}
+
+    where :math:`Q` is the universal image quality index (see this
+    :class:`~torchmetrics.image.UniversalImageQualityIndex` for more info), :math:`\\hat{G_l}` is the l-th band of the
+    high resolution multispectral image, :math:`\tilde{G}` is the high resolution panchromatic image, :math:`P` is the
+    high resolution panchromatic image, :math:`\tilde{P}` is the low resolution panchromatic image, :math:`L` is the
+    number of bands and :math:`q` is the order of the norm applied on the difference.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -77,7 +88,7 @@ class SpatialDistortionIndex(Metric):
 
     """
 
-    higher_is_better: bool = True
+    higher_is_better: bool = False
     is_differentiable: bool = True
     full_state_update: bool = False
     plot_lower_bound: float = 0.0

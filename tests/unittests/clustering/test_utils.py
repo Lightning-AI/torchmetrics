@@ -27,7 +27,7 @@ from torchmetrics.functional.clustering.utils import (
 )
 
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
-from unittests.helpers import seed_all
+from unittests._helpers import seed_all
 
 seed_all(42)
 

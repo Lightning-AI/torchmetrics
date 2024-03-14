@@ -17,10 +17,8 @@ import shutil
 import sys
 
 from lightning_utilities.core.imports import RequirementCache
-from packaging.version import Version, parse
 
 _PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-_PYTHON_LOWER_3_8 = parse(_PYTHON_VERSION) < Version("3.8")
 _TORCH_LOWER_2_0 = RequirementCache("torch<2.0.0")
 _TORCH_GREATER_EQUAL_1_11 = RequirementCache("torch>=1.11.0")
 _TORCH_GREATER_EQUAL_1_12 = RequirementCache("torch>=1.12.0")
@@ -29,7 +27,6 @@ _TORCH_GREATER_EQUAL_2_0 = RequirementCache("torch>=2.0.0")
 _TORCH_GREATER_EQUAL_2_1 = RequirementCache("torch>=2.1.0")
 _TORCH_GREATER_EQUAL_2_2 = RequirementCache("torch>=2.2.0")
 
-_JIWER_AVAILABLE = RequirementCache("jiwer")
 _NLTK_AVAILABLE = RequirementCache("nltk")
 _ROUGE_SCORE_AVAILABLE = RequirementCache("rouge_score")
 _BERTSCORE_AVAILABLE = RequirementCache("bert_score")
@@ -49,7 +46,6 @@ _PESQ_AVAILABLE = RequirementCache("pesq")
 _GAMMATONE_AVAILABLE = RequirementCache("gammatone")
 _TORCHAUDIO_AVAILABLE = RequirementCache("torchaudio")
 _TORCHAUDIO_GREATER_EQUAL_0_10 = RequirementCache("torchaudio>=0.10.0")
-_SACREBLEU_AVAILABLE = RequirementCache("sacrebleu")
 _REGEX_AVAILABLE = RequirementCache("regex")
 _PYSTOI_AVAILABLE = RequirementCache("pystoi")
 _FAST_BSS_EVAL_AVAILABLE = RequirementCache("fast_bss_eval")

@@ -34,7 +34,7 @@ def test_no_train_network_missing_torch_fidelity():
         NoTrainInceptionV3(name="inception-v3-compat", features_list=["2048"])
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 def test_no_train():
     """Assert that metric never leaves evaluation mode."""
 
@@ -52,7 +52,7 @@ def test_no_train():
     assert not model.metric.inception.training, "FID metric was changed to training mode which should not happen"
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 def test_fid_pickle():
     """Assert that we can initialize the metric and pickle it."""
     metric = FrechetInceptionDistance()
@@ -80,7 +80,7 @@ def test_fid_raises_errors_and_warnings():
         _ = FrechetInceptionDistance(feature=[1, 2])
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 @pytest.mark.parametrize("feature", [64, 192, 768, 2048])
 def test_fid_same_input(feature):
     """If real and fake are update on the same data the fid score should be 0."""
@@ -111,7 +111,7 @@ class _ImgDataset(Dataset):
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 @pytest.mark.parametrize("equal_size", [False, True])
 def test_compare_fid(tmpdir, equal_size, feature=768):
     """Check that the hole pipeline give the same result as torch-fidelity."""

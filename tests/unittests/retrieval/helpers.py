@@ -22,20 +22,20 @@ from numpy import array
 from torch import Tensor, tensor
 from typing_extensions import Literal
 
-from unittests.helpers import seed_all
-from unittests.helpers.testers import Metric, MetricTester
-from unittests.retrieval.inputs import _input_retrieval_scores as _irs
-from unittests.retrieval.inputs import _input_retrieval_scores_all_target as _irs_all
-from unittests.retrieval.inputs import _input_retrieval_scores_empty as _irs_empty
-from unittests.retrieval.inputs import _input_retrieval_scores_extra as _irs_extra
-from unittests.retrieval.inputs import _input_retrieval_scores_float_target as _irs_float_tgt
-from unittests.retrieval.inputs import _input_retrieval_scores_for_adaptive_k as _irs_adpt_k
-from unittests.retrieval.inputs import _input_retrieval_scores_int_target as _irs_int_tgt
-from unittests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes as _irs_bad_sz
-from unittests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_bad_sz_fn
-from unittests.retrieval.inputs import _input_retrieval_scores_no_target as _irs_no_tgt
-from unittests.retrieval.inputs import _input_retrieval_scores_with_ignore_index as _irs_ii
-from unittests.retrieval.inputs import _input_retrieval_scores_wrong_targets as _irs_bad_tgt
+from unittests._helpers import seed_all
+from unittests._helpers.testers import Metric, MetricTester
+from unittests.retrieval._inputs import _input_retrieval_scores as _irs
+from unittests.retrieval._inputs import _input_retrieval_scores_all_target as _irs_all
+from unittests.retrieval._inputs import _input_retrieval_scores_empty as _irs_empty
+from unittests.retrieval._inputs import _input_retrieval_scores_extra as _irs_extra
+from unittests.retrieval._inputs import _input_retrieval_scores_float_target as _irs_float_tgt
+from unittests.retrieval._inputs import _input_retrieval_scores_for_adaptive_k as _irs_adpt_k
+from unittests.retrieval._inputs import _input_retrieval_scores_int_target as _irs_int_tgt
+from unittests.retrieval._inputs import _input_retrieval_scores_mismatching_sizes as _irs_bad_sz
+from unittests.retrieval._inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_bad_sz_fn
+from unittests.retrieval._inputs import _input_retrieval_scores_no_target as _irs_no_tgt
+from unittests.retrieval._inputs import _input_retrieval_scores_with_ignore_index as _irs_ii
+from unittests.retrieval._inputs import _input_retrieval_scores_wrong_targets as _irs_bad_tgt
 
 seed_all(42)
 

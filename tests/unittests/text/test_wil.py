@@ -14,20 +14,22 @@
 from typing import List, Union
 
 import pytest
-from jiwer import wil
 from torchmetrics.functional.text.wil import word_information_lost
 from torchmetrics.text.wil import WordInfoLost
-from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
-from unittests.text.helpers import TextTester
-from unittests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
+from unittests.text._helpers import TextTester
+from unittests.text._inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 
 
-def _compute_wil_metric_jiwer(preds: Union[str, List[str]], target: Union[str, List[str]]):
+def _reference_jiwer_wil(preds: Union[str, List[str]], target: Union[str, List[str]]):
+    try:
+        from jiwer import wil
+    except ImportError:
+        pytest.skip("test requires jiwer package to be installed")
+
     return wil(target, preds)
 
 
-@pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
 @pytest.mark.parametrize(
     ["preds", "targets"],
     [
@@ -46,7 +48,7 @@ class TestWordInfoLost(TextTester):
             preds=preds,
             targets=targets,
             metric_class=WordInfoLost,
-            reference_metric=_compute_wil_metric_jiwer,
+            reference_metric=_reference_jiwer_wil,
         )
 
     def test_wil_functional(self, preds, targets):
@@ -55,7 +57,7 @@ class TestWordInfoLost(TextTester):
             preds,
             targets,
             metric_functional=word_information_lost,
-            reference_metric=_compute_wil_metric_jiwer,
+            reference_metric=_reference_jiwer_wil,
         )
 
     def test_wil_differentiability(self, preds, targets):

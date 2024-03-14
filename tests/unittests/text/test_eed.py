@@ -19,11 +19,11 @@ from torch import Tensor, tensor
 from torchmetrics.functional.text.eed import extended_edit_distance
 from torchmetrics.text.eed import ExtendedEditDistance
 
-from unittests.text.helpers import TextTester
-from unittests.text.inputs import _inputs_single_reference, _inputs_single_sentence_multiple_references
+from unittests.text._helpers import TextTester
+from unittests.text._inputs import _inputs_single_reference, _inputs_single_sentence_multiple_references
 
 
-def _rwth_manual_metric(preds, targets) -> Tensor:
+def _reference_rwth_manual(preds, targets) -> Tensor:
     """Baseline implementation of metric.
 
     The results were obtained w.r.t. the examples defined in `tests.text.inputs` with the script from
@@ -54,7 +54,7 @@ class TestExtendedEditDistance(TextTester):
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_eed_class(self, preds, targets, ddp):
         """Test class implementation of metric."""
-        rwth_metric = partial(_rwth_manual_metric)
+        rwth_metric = partial(_reference_rwth_manual)
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -65,7 +65,7 @@ class TestExtendedEditDistance(TextTester):
 
     def test_eed_functional(self, preds, targets):
         """Test functional implementation of metric."""
-        rwth_metric = partial(_rwth_manual_metric)
+        rwth_metric = partial(_reference_rwth_manual)
         self.run_functional_metric_test(
             preds,
             targets,

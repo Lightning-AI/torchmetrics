@@ -19,16 +19,19 @@ import pytest
 from torch import Tensor, tensor
 from torchmetrics.functional.text.sacre_bleu import AVAILABLE_TOKENIZERS, _TokenizersLiteral, sacre_bleu_score
 from torchmetrics.text.sacre_bleu import SacreBLEUScore
-from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
 
-from unittests.text.helpers import TextTester
-from unittests.text.inputs import _inputs_multiple_references
-
-if _SACREBLEU_AVAILABLE:
-    from sacrebleu.metrics import BLEU
+from unittests.text._helpers import TextTester
+from unittests.text._inputs import _inputs_multiple_references
 
 
-def _sacrebleu_fn(preds: Sequence[str], targets: Sequence[Sequence[str]], tokenize: str, lowercase: bool) -> Tensor:
+def _reference_sacre_bleu(
+    preds: Sequence[str], targets: Sequence[Sequence[str]], tokenize: str, lowercase: bool
+) -> Tensor:
+    try:
+        from sacrebleu.metrics import BLEU
+    except ImportError:
+        pytest.skip("test requires sacrebleu package to be installed")
+
     sacrebleu_fn = BLEU(tokenize=tokenize, lowercase=lowercase)
     # Sacrebleu expects different format of input
     targets = [[target[i] for target in targets] for i in range(len(targets[0]))]
@@ -42,7 +45,6 @@ def _sacrebleu_fn(preds: Sequence[str], targets: Sequence[Sequence[str]], tokeni
 )
 @pytest.mark.parametrize(["lowercase"], [(False,), (True,)])
 @pytest.mark.parametrize("tokenize", AVAILABLE_TOKENIZERS)
-@pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestSacreBLEUScore(TextTester):
     """Test class for `SacreBLEUScore` metric."""
 
@@ -50,7 +52,7 @@ class TestSacreBLEUScore(TextTester):
     def test_bleu_score_class(self, ddp, preds, targets, tokenize, lowercase):
         """Test class implementation of metric."""
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
-        original_sacrebleu = partial(_sacrebleu_fn, tokenize=tokenize, lowercase=lowercase)
+        original_sacrebleu = partial(_reference_sacre_bleu, tokenize=tokenize, lowercase=lowercase)
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -64,7 +66,7 @@ class TestSacreBLEUScore(TextTester):
     def test_bleu_score_functional(self, preds, targets, tokenize, lowercase):
         """Test functional implementation of metric."""
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
-        original_sacrebleu = partial(_sacrebleu_fn, tokenize=tokenize, lowercase=lowercase)
+        original_sacrebleu = partial(_reference_sacre_bleu, tokenize=tokenize, lowercase=lowercase)
 
         self.run_functional_metric_test(
             preds,
@@ -114,7 +116,7 @@ def test_tokenize_ja_mecab():
 
     preds = ["これは美しい花です。"]
     targets = [["これは美しい花です。", "おいしい寿司を食べたい。"]]
-    assert sacrebleu(preds, targets) == _sacrebleu_fn(preds, targets, tokenize="ja-mecab", lowercase=False)
+    assert sacrebleu(preds, targets) == _reference_sacre_bleu(preds, targets, tokenize="ja-mecab", lowercase=False)
 
 
 def test_tokenize_ko_mecab():
@@ -123,7 +125,7 @@ def test_tokenize_ko_mecab():
 
     preds = ["이 책은 정말 재미있어요."]
     targets = [["이 책은 정말 재미있어요.", "고마워요, 너무 도와줘서."]]
-    assert sacrebleu(preds, targets) == _sacrebleu_fn(preds, targets, tokenize="ko-mecab", lowercase=False)
+    assert sacrebleu(preds, targets) == _reference_sacre_bleu(preds, targets, tokenize="ko-mecab", lowercase=False)
 
 
 def test_equivalence_of_available_tokenizers_and_annotation():
