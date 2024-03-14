@@ -20,7 +20,7 @@ from torchmetrics.functional.nominal.theils_u import theils_u, theils_u_matrix
 from torchmetrics.nominal import TheilsU
 
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
-from unittests.helpers.testers import MetricTester
+from unittests._helpers.testers import MetricTester
 
 NUM_CLASSES = 4
 

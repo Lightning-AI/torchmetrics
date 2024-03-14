@@ -17,8 +17,8 @@ import pytest
 from torchmetrics.functional.text.wip import word_information_preserved
 from torchmetrics.text.wip import WordInfoPreserved
 
+from unittests.text._helpers import TextTester
 from unittests.text._inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
-from unittests.text.helpers import TextTester
 
 
 def _reference_jiwer_wip(preds: Union[str, List[str]], target: Union[str, List[str]]):

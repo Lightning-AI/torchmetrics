@@ -169,7 +169,7 @@ jobs:
             --reruns-delay 1 \
             -m "not DDP" \
             -n auto \
-            --dist=loadfile \
+            --dist=load \
             ${{ env.UNITTEST_TIMEOUT }}
 
       - name: Unittests DDP

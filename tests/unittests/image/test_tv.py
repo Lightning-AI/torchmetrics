@@ -21,8 +21,8 @@ from torchmetrics.functional.image.tv import total_variation
 from torchmetrics.image.tv import TotalVariation
 
 from unittests import _Input
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
