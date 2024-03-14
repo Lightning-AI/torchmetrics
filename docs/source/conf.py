@@ -96,7 +96,10 @@ if SPHINX_PIN_RELEASE_VERSIONS:
         "https://pytorch.org/docs/stable/", "https://pytorch.org/docs/{torch.__version__}/", _PATH_ROOT
     )
     adjust_linked_external_docs(
-        "https://matplotlib.org/stable/", "https://matplotlib.org/{matplotlib.__version__}/", _PATH_ROOT, version_digits=3
+        "https://matplotlib.org/stable/",
+        "https://matplotlib.org/{matplotlib.__version__}/",
+        _PATH_ROOT,
+        version_digits=3,
     )
     adjust_linked_external_docs(
         "https://scikit-learn.org/stable/", "https://scikit-learn.org/{sklearn.__version__}/", _PATH_ROOT
