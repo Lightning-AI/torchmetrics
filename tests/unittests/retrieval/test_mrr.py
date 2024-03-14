@@ -21,7 +21,7 @@ from torchmetrics.functional.retrieval.reciprocal_rank import retrieval_reciproc
 from torchmetrics.retrieval.reciprocal_rank import RetrievalMRR
 from typing_extensions import Literal
 
-from unittests.helpers import seed_all
+from unittests._helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,
     _concat_tests,

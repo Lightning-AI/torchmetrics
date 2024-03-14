@@ -23,7 +23,7 @@ from torchmetrics.functional.image.utils import _uniform_filter
 from torchmetrics.image import RelativeAverageSpectralError
 
 from unittests import BATCH_SIZE
-from unittests.helpers.testers import MetricTester
+from unittests._helpers.testers import MetricTester
 
 
 class _InputWindowSized(NamedTuple):

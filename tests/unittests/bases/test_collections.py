@@ -34,8 +34,8 @@ from torchmetrics.classification import (
 )
 from torchmetrics.utilities.checks import _allclose_recursive
 
-from unittests.helpers import seed_all
-from unittests.helpers.testers import DummyMetricDiff, DummyMetricMultiOutputDict, DummyMetricSum
+from unittests._helpers import seed_all
+from unittests._helpers.testers import DummyMetricDiff, DummyMetricMultiOutputDict, DummyMetricSum
 
 seed_all(42)
 
