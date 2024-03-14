@@ -205,7 +205,7 @@ def _prepocess_inputs(
     mask_stuffs_instance = torch.stack([torch.zeros_like(mask_stuffs), mask_stuffs], dim=-1)
     out[mask_stuffs_instance] = 0
     if not allow_unknown_category and not torch.all(mask_things | mask_stuffs):
-        raise ValueError(f"Unknown categories found: {out[~(mask_things|mask_stuffs)]}")
+        raise ValueError(f"Unknown categories found: {out[~(mask_things | mask_stuffs)]}")
     # set unknown categories to void color
     out[~(mask_things | mask_stuffs)] = out.new(void_color)
     return out

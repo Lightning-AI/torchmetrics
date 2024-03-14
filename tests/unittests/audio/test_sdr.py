@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Callable
 
 import numpy as np
 import pytest
@@ -25,9 +24,9 @@ from torchmetrics.functional import signal_distortion_ratio
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_11
 
 from unittests import _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB, _SAMPLE_NUMPY_ISSUE_895
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -43,7 +42,9 @@ inputs_2spk = _Input(
 )
 
 
-def _sdr_original_batch(preds: Tensor, target: Tensor, compute_permutation: bool = False) -> Tensor:
+def _reference_sdr_batch(
+    preds: Tensor, target: Tensor, compute_permutation: bool = False, reduce_mean: bool = False
+) -> Tensor:
     # shape: preds [BATCH_SIZE, spk, Time] , target [BATCH_SIZE, spk, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, spk, Time] , target [NUM_BATCHES*BATCH_SIZE, spk, Time]
     target = target.detach().cpu().numpy()
@@ -52,27 +53,20 @@ def _sdr_original_batch(preds: Tensor, target: Tensor, compute_permutation: bool
     for b in range(preds.shape[0]):
         sdr_val_np, _, _, _ = bss_eval_sources(target[b], preds[b], compute_permutation)
         mss.append(sdr_val_np)
-    return torch.tensor(np.array(mss))
+    sdr = torch.tensor(np.array(mss))
+    if reduce_mean:
+        # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
+        # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
+        return sdr.mean()
+    return sdr
 
 
-def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Tensor:
-    # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
-    # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
-    return metric_func(preds, target).mean()
-
-
-original_impl_compute_permutation = partial(_sdr_original_batch)
-
-
-@pytest.mark.skipif(  # TODO: figure out why tests leads to cuda errors on latest torch
+@pytest.mark.skipif(  # FIXME: figure out why tests leads to cuda errors on latest torch
     _TORCH_GREATER_EQUAL_1_11 and torch.cuda.is_available(), reason="tests leads to cuda errors on latest torch"
 )
 @pytest.mark.parametrize(
-    "preds, target, ref_metric",
-    [
-        (inputs_1spk.preds, inputs_1spk.target, original_impl_compute_permutation),
-        (inputs_2spk.preds, inputs_2spk.target, original_impl_compute_permutation),
-    ],
+    "preds, target",
+    [(inputs_1spk.preds, inputs_1spk.target), (inputs_2spk.preds, inputs_2spk.target)],
 )
 class TestSDR(MetricTester):
     """Test class for `SignalDistortionRatio` metric."""
@@ -80,28 +74,28 @@ class TestSDR(MetricTester):
     atol = 1e-2
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_sdr(self, preds, target, ref_metric, ddp):
+    def test_sdr(self, preds, target, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             SignalDistortionRatio,
-            reference_metric=partial(_average_metric, metric_func=ref_metric),
+            reference_metric=partial(_reference_sdr_batch, reduce_mean=True),
             metric_args={},
         )
 
-    def test_sdr_functional(self, preds, target, ref_metric):
+    def test_sdr_functional(self, preds, target):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
             signal_distortion_ratio,
-            ref_metric,
+            _reference_sdr_batch,
             metric_args={},
         )
 
-    def test_sdr_differentiability(self, preds, target, ref_metric):
+    def test_sdr_differentiability(self, preds, target):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
@@ -110,7 +104,7 @@ class TestSDR(MetricTester):
             metric_args={},
         )
 
-    def test_sdr_half_cpu(self, preds, target, ref_metric):
+    def test_sdr_half_cpu(self, preds, target):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
             preds=preds,
@@ -121,7 +115,7 @@ class TestSDR(MetricTester):
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_sdr_half_gpu(self, preds, target, ref_metric):
+    def test_sdr_half_gpu(self, preds, target):
         """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds=preds,
