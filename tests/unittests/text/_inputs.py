@@ -17,7 +17,7 @@ import torch
 from torch import Tensor
 
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, NUM_CLASSES, _Input
-from unittests.helpers import seed_all
+from unittests._helpers import seed_all
 
 seed_all(1)
 

@@ -5,7 +5,7 @@ from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric
 from torchmetrics.collections import MetricCollection
 
 from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers.testers import MetricTester
+from unittests._helpers.testers import MetricTester
 
 
 def compare_mean(values, weights):
