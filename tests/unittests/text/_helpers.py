@@ -23,8 +23,14 @@ from torch import Tensor
 from torchmetrics import Metric
 
 from unittests import NUM_PROCESSES, _reference_cachier
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, _assert_allclose, _assert_requires_grad, _assert_tensor
+from unittests._helpers import seed_all
+from unittests._helpers.testers import (
+    MetricTester,
+    _assert_allclose,
+    _assert_requires_grad,
+    _assert_tensor,
+    _select_rand_best_device,
+)
 
 TEXT_METRIC_INPUT = Union[Sequence[str], Sequence[Sequence[str]], Sequence[Sequence[Sequence[str]]]]
 NUM_BATCHES = 2
@@ -288,7 +294,6 @@ class TextTester(MetricTester):
 
         """
         seed_all(42)
-        device = "cuda" if torch.cuda.device_count() > 0 else "cpu"
 
         _functional_test(
             preds=preds,
@@ -297,7 +302,7 @@ class TextTester(MetricTester):
             reference_metric=reference_metric,
             metric_args=metric_args,
             atol=self.atol,
-            device=device,
+            device=_select_rand_best_device(),
             fragment_kwargs=fragment_kwargs,
             key=key,
             **kwargs_update,
@@ -352,7 +357,7 @@ class TextTester(MetricTester):
             "reference_metric": reference_metric,
             "metric_args": metric_args or {},
             "atol": self.atol,
-            "device": "cuda" if torch.cuda.is_available() else "cpu",
+            "device": _select_rand_best_device(),
             "dist_sync_on_step": dist_sync_on_step,
             "check_dist_sync_on_step": check_dist_sync_on_step,
             "check_batch": check_batch,

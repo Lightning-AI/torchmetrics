@@ -23,8 +23,8 @@ from torchmetrics.retrieval import RetrievalPrecisionRecallCurve
 from torchmetrics.retrieval.base import _retrieval_aggregate
 from typing_extensions import Literal
 
-from unittests.helpers import seed_all
-from unittests.helpers.testers import Metric, MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import Metric, MetricTester
 from unittests.retrieval.helpers import _custom_aggregate_fn, _default_metric_class_input_arguments, get_group_indexes
 from unittests.retrieval.test_precision import _precision_at_k
 from unittests.retrieval.test_recall import _recall_at_k

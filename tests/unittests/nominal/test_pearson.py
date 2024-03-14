@@ -23,7 +23,7 @@ from torchmetrics.functional.nominal.pearson import (
 from torchmetrics.nominal.pearson import PearsonsContingencyCoefficient
 
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
-from unittests.helpers.testers import MetricTester
+from unittests._helpers.testers import MetricTester
 
 NUM_CLASSES = 4
 

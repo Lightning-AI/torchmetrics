@@ -19,8 +19,8 @@ from torch import Tensor, tensor
 from torchmetrics.functional.text.ter import translation_edit_rate
 from torchmetrics.text.ter import TranslationEditRate
 
+from unittests.text._helpers import TextTester
 from unittests.text._inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
-from unittests.text.helpers import TextTester
 
 
 def _reference_sacrebleu_ter(

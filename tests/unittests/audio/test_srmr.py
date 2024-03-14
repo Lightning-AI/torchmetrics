@@ -22,8 +22,8 @@ from torchmetrics.audio.srmr import SpeechReverberationModulationEnergyRatio
 from torchmetrics.functional.audio.srmr import speech_reverberation_modulation_energy_ratio
 from torchmetrics.utilities.imports import _TORCHAUDIO_GREATER_EQUAL_0_10
 
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 

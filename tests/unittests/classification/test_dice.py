@@ -23,6 +23,8 @@ from torchmetrics.functional.classification.stat_scores import _del_column
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
 
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 from unittests.classification._inputs import _input_binary, _input_binary_logits, _input_binary_prob
 from unittests.classification._inputs import _input_multiclass as _input_mcls
 from unittests.classification._inputs import _input_multiclass_logits as _input_mcls_logits
@@ -33,8 +35,6 @@ from unittests.classification._inputs import _input_multilabel_logits as _input_
 from unittests.classification._inputs import _input_multilabel_multidim as _input_mlmd
 from unittests.classification._inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
 from unittests.classification._inputs import _input_multilabel_prob as _input_mlb_prob
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
