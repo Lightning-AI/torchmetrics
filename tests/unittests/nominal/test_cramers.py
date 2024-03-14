@@ -20,7 +20,7 @@ from torchmetrics.functional.nominal.cramers import cramers_v, cramers_v_matrix
 from torchmetrics.nominal.cramers import CramersV
 
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
-from unittests.helpers.testers import MetricTester
+from unittests._helpers.testers import MetricTester
 
 NUM_CLASSES = 4
 
