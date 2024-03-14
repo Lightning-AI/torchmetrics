@@ -32,6 +32,7 @@ _reference_cachier = cachier(cache_dir=_PATH_TEST_CACHE, separate_files=True)
 # ignore FutureWarnings while testing (mainly appearing with DDP runs)
 warnings.filterwarnings("ignore", category=FutureWarning, module="sklearn.*")
 warnings.filterwarnings("ignore", category=FutureWarning, module="transformers.*")
+warnings.filterwarnings("ignore", category=UserWarning, module="sklearn.*")
 
 
 if torch.cuda.is_available():
