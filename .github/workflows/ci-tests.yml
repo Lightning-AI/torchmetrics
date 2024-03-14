@@ -186,7 +186,6 @@ jobs:
             -m DDP \
             --reruns 3 \
             --reruns-delay 1 \
-            -p no:warnings \
             ${{ env.UNITTEST_TIMEOUT }}
 
       - name: Statistics
