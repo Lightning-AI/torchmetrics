@@ -1,4 +1,5 @@
 import os.path
+import warnings
 from typing import NamedTuple
 
 import numpy
@@ -27,6 +28,10 @@ _PATH_TEST_CACHE = os.getenv("PYTEST_REFERENCE_CACHE", os.path.join(_PATH_ALL_TE
 
 
 _reference_cachier = cachier(cache_dir=_PATH_TEST_CACHE, separate_files=True)
+
+# ignore FutureWarnings while testing (mainly appearing with DDP runs)
+warnings.filterwarnings("ignore", category=FutureWarning, module="sklearn.*")
+warnings.filterwarnings("ignore", category=FutureWarning, module="transformers.*")
 
 
 if torch.cuda.is_available():
