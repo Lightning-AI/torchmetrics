@@ -21,8 +21,8 @@ from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance
 from torchmetrics.regression.tweedie_deviance import TweedieDevianceScore
 
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
