@@ -21,8 +21,8 @@ from torchmetrics.functional.image import spatial_correlation_coefficient
 from torchmetrics.image import SpatialCorrelationCoefficient
 
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 

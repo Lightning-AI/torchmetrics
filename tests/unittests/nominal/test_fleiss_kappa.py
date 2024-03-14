@@ -21,7 +21,7 @@ from torchmetrics.functional.nominal.fleiss_kappa import fleiss_kappa
 from torchmetrics.nominal.fleiss_kappa import FleissKappa
 
 from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES
-from unittests.helpers.testers import MetricTester
+from unittests._helpers.testers import MetricTester
 
 NUM_RATERS = 20
 NUM_CATEGORIES = NUM_CLASSES

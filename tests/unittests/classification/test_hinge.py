@@ -25,8 +25,8 @@ from torchmetrics.functional.classification.hinge import binary_hinge_loss, mult
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES
+from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 from unittests.classification._inputs import _binary_cases, _multiclass_cases
-from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 torch.manual_seed(42)
 

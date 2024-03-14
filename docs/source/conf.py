@@ -16,6 +16,7 @@ import os
 import re
 import shutil
 import sys
+from typing import Optional
 
 import lai_sphinx_theme
 import torchmetrics
@@ -64,7 +65,7 @@ _transform_changelog(
 )
 
 
-def _set_root_image_path(page_path: str):
+def _set_root_image_path(page_path: str) -> None:
     """Set relative path to be from the root, drop all `../` in images used gallery."""
     with open(page_path, encoding="UTF-8") as fopen:
         body = fopen.read()
@@ -301,7 +302,7 @@ PACKAGES = [
 ]
 
 
-def setup(app):
+def setup(app) -> None:  # noqa: ANN001
     # this is for hiding doctest decoration,
     # see: http://z4r.github.io/python/2011/12/02/hides-the-prompts-and-output/
     app.add_js_file("copybutton.js")
@@ -318,7 +319,7 @@ for path_ipynb in glob.glob(os.path.join(_PATH_ROOT, "notebooks", "*.ipynb")):
 
 # Ignoring Third-party packages
 # https://stackoverflow.com/questions/15889621/sphinx-how-to-exclude-imports-in-automodule
-def package_list_from_file(file):
+def package_list_from_file(file: str) -> list[str]:
     mocked_packages = []
     with open(file) as fp:
         for ln in fp.readlines():
@@ -344,7 +345,7 @@ autodoc_mock_imports = MOCK_PACKAGES
 
 # Resolve function
 # This function is used to populate the (source) links in the API
-def linkcode_resolve(domain, info):
+def linkcode_resolve(domain, info) -> Optional[str]:  # noqa: ANN001
     # try to find the file and line number, based on code from numpy:
     # https://github.com/numpy/numpy/blob/master/doc/source/conf.py#L424
 
@@ -360,11 +361,10 @@ def linkcode_resolve(domain, info):
     line_str = _get_line_str(obj)
     version_str = _get_version_str()
 
-    link = f"https://github.com/{github_user}/{github_repo}/blob/{version_str}/src/torchmetrics/{file_name}{line_str}"
-    return link
+    return f"https://github.com/{github_user}/{github_repo}/blob/{version_str}/src/torchmetrics/{file_name}{line_str}"
 
 
-def _get_obj(info):
+def _get_obj(info: dict) -> object:
     module_name = info["module"]
     full_name = info["fullname"]
     sub_module = sys.modules.get(module_name)
@@ -372,11 +372,10 @@ def _get_obj(info):
     for part in full_name.split("."):
         obj = getattr(obj, part)
     # strip decorators, which would resolve to the source of the decorator
-    obj = inspect.unwrap(obj)
-    return obj
+    return inspect.unwrap(obj)
 
 
-def _get_file_name(obj):
+def _get_file_name(obj) -> str:  # noqa: ANN001
     try:
         file_name = inspect.getsourcefile(obj)
         file_name = os.path.relpath(file_name, start=os.path.dirname(torchmetrics.__file__))
@@ -385,13 +384,12 @@ def _get_file_name(obj):
     return file_name
 
 
-def _get_line_str(obj):
+def _get_line_str(obj) -> str:  # noqa: ANN001
     source, line_number = inspect.getsourcelines(obj)
-    line_str = "#L%d-L%d" % (line_number, line_number + len(source) - 1)
-    return line_str
+    return "#L%d-L%d" % (line_number, line_number + len(source) - 1)
 
 
-def _get_version_str():
+def _get_version_str() -> str:
     if any(s in torchmetrics.__version__ for s in ("dev", "rc")):
         version_str = "master"
     else:
@@ -465,7 +463,7 @@ linkcheck_ignore = [
     "https://ieeexplore.ieee.org/abstract/document/7539284",
     # A short-time objective intelligibility measure for time-frequency weighted noisy speech
     "https://ieeexplore.ieee.org/abstract/document/5495701",
-    # An Algorithm for Intelligibility Prediction of Time–Frequency Weighted Noisy Speech
+    # An Algorithm for Intelligibility Prediction of Time-Frequency Weighted Noisy Speech
     "https://ieeexplore.ieee.org/abstract/document/5713237",
     # A universal image quality index
     "https://ieeexplore.ieee.org/abstract/document/995823",

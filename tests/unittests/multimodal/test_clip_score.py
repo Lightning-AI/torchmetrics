@@ -25,8 +25,8 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
 from transformers import CLIPModel as _CLIPModel
 from transformers import CLIPProcessor as _CLIPProcessor
 
-from unittests.helpers import seed_all, skip_on_connection_issues
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all, skip_on_connection_issues
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 

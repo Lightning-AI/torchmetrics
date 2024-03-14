@@ -22,9 +22,9 @@ from torchmetrics.text.bert import BERTScore
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 from typing_extensions import Literal
 
-from unittests.helpers import skip_on_connection_issues
+from unittests._helpers import skip_on_connection_issues
+from unittests.text._helpers import TextTester
 from unittests.text._inputs import _inputs_single_reference
-from unittests.text.helpers import TextTester
 
 _METRIC_KEY_TO_IDX = {
     "precision": 0,
