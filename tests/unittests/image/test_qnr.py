@@ -22,8 +22,8 @@ from torchmetrics.functional.image.qnr import quality_with_no_reference
 from torchmetrics.image.qnr import QualityWithNoReference
 
 from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 from unittests.image.test_d_lambda import _baseline_d_lambda
 from unittests.image.test_d_s import _reference_d_s
 

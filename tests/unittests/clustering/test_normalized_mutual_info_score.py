@@ -20,9 +20,9 @@ from torchmetrics.clustering import NormalizedMutualInfoScore
 from torchmetrics.functional.clustering import normalized_mutual_info_score
 
 from unittests import BATCH_SIZE, NUM_CLASSES
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 from unittests.clustering._inputs import _float_inputs_extrinsic, _single_target_extrinsic1, _single_target_extrinsic2
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
