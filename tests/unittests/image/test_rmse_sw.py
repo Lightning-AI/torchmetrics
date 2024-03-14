@@ -22,7 +22,7 @@ from torchmetrics.functional import root_mean_squared_error_using_sliding_window
 from torchmetrics.image import RootMeanSquaredErrorUsingSlidingWindow
 
 from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers.testers import MetricTester
+from unittests._helpers.testers import MetricTester
 
 
 class _InputWindowSized(NamedTuple):

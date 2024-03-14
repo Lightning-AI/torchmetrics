@@ -24,8 +24,8 @@ from torchmetrics.regression.kendall import KendallRankCorrCoef
 from torchmetrics.utilities.imports import _SCIPY_GREATER_EQUAL_1_8, _TORCH_LOWER_2_0
 
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
