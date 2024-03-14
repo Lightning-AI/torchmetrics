@@ -27,8 +27,8 @@ from torch.nn import Module, Parameter
 from torchmetrics.classification import BinaryAccuracy
 from torchmetrics.regression import PearsonCorrCoef
 
-from unittests.helpers import seed_all
-from unittests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
+from unittests._helpers import seed_all
+from unittests._helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
 
 seed_all(42)
 

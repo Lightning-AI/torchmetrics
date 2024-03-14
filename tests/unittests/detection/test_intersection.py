@@ -35,7 +35,7 @@ if _TORCHVISION_GREATER_EQUAL_0_13:
 else:
     tv_iou, tv_ciou, tv_diou, tv_giou = ..., ..., ..., ...
 
-from unittests.helpers.testers import MetricTester
+from unittests._helpers.testers import MetricTester
 
 
 def _tv_wrapper(preds, target, base_fn, aggregate=True, iou_threshold=None):

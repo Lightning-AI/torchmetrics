@@ -24,8 +24,8 @@ from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 
 from unittests import NUM_PROCESSES
-from unittests.helpers import seed_all
-from unittests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
+from unittests._helpers import seed_all
+from unittests._helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
 
 seed_all(42)
 

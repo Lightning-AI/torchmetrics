@@ -33,8 +33,8 @@ from torchmetrics.functional.classification.jaccard import (
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
+from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
-from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 
 def _reference_sklearn_jaccard_index_binary(preds, target, ignore_index=None):

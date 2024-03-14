@@ -20,8 +20,8 @@ from torchmetrics.detection import ModifiedPanopticQuality
 from torchmetrics.functional.detection import modified_panoptic_quality
 
 from unittests import _Input
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
