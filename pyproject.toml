@@ -107,8 +107,8 @@ markers = [
     "DDP: mark a test as Distributed Data Parallel",
 ]
 filterwarnings = [
-    "ignore::FutureWarning:sklearn.*",
-    "ignore::FutureWarning:transformers.*",
+    "ignore::FutureWarning",
+    "default:::torchmetrics",
 ]
 xfail_strict = true
 junit_duration_report = "call"
