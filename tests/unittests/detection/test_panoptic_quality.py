@@ -21,8 +21,8 @@ from torchmetrics.functional.detection.panoptic_qualities import panoptic_qualit
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12
 
 from unittests import _Input
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 

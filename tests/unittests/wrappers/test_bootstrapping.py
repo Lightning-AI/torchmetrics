@@ -25,7 +25,7 @@ from torchmetrics.classification import MulticlassF1Score, MulticlassPrecision, 
 from torchmetrics.regression import MeanSquaredError
 from torchmetrics.wrappers.bootstrapping import BootStrapper, _bootstrap_sampler
 
-from unittests.helpers import seed_all
+from unittests._helpers import seed_all
 
 seed_all(42)
 

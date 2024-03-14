@@ -21,9 +21,9 @@ from torchmetrics.audio import SignalNoiseRatio
 from torchmetrics.functional.audio import signal_noise_ratio
 
 from unittests import _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 from unittests.audio import _average_metric_wrapper
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
