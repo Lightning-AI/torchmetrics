@@ -18,6 +18,7 @@ from typing import Optional
 import numpy as np
 import pytest
 import torch
+from permetrics.regression import RegressionMetric
 from sklearn.metrics import mean_absolute_error as sk_mean_absolute_error
 from sklearn.metrics import mean_absolute_percentage_error as sk_mean_abs_percentage_error
 from sklearn.metrics import mean_squared_error as sk_mean_squared_error
@@ -29,6 +30,7 @@ from torchmetrics.functional import (
     mean_absolute_percentage_error,
     mean_squared_error,
     mean_squared_log_error,
+    normalized_root_mean_squared_error,
     weighted_mean_absolute_percentage_error,
 )
 from torchmetrics.functional.regression.symmetric_mape import symmetric_mean_absolute_percentage_error
@@ -39,6 +41,7 @@ from torchmetrics.regression import (
     MeanSquaredLogError,
     WeightedMeanAbsolutePercentageError,
 )
+from torchmetrics.regression.nrmse import NormalizedRootMeanSquaredError
 from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError
 
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
@@ -114,6 +117,23 @@ def _reference_symmetric_mape(
     return np.average(output_errors, weights=multioutput)
 
 
+def _reference_normalized_root_mean_squared_error(
+    y_true: np.ndarray, y_pred: np.ndarray, normalization: str = "mean", num_outputs: int = 1
+):
+    """Reference implementation of Normalized Root Mean Squared Error (NRMSE) metric."""
+    if num_outputs == 1:
+        y_true = y_true.flatten()
+        y_pred = y_pred.flatten()
+    evaluator = RegressionMetric(y_true, y_pred) if normalization == "range" else RegressionMetric(y_pred, y_true)
+    arg_mapping = {
+        "mean": 1,
+        "range": 2,
+        "std": 4,
+    }
+
+    return evaluator.normalized_root_mean_square_error(model=arg_mapping[normalization])
+
+
 def _reference_weighted_mean_abs_percentage_error(target, preds):
     return np.sum(np.abs(target - preds)) / np.sum(np.abs(target))
 
@@ -122,17 +142,26 @@ def _single_target_ref_wrapper(preds, target, sk_fn, metric_args):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
 
-    res = sk_fn(sk_target, sk_preds)
-
-    return math.sqrt(res) if (metric_args and not metric_args["squared"]) else res
+    if metric_args and "normalization" in metric_args:
+        res = sk_fn(sk_target, sk_preds, normalization=metric_args["normalization"])
+    else:
+        res = sk_fn(sk_target, sk_preds)
+    if metric_args and "squared" in metric_args and not metric_args["squared"]:
+        res = math.sqrt(res)
+    return res
 
 
 def _multi_target_ref_wrapper(preds, target, sk_fn, metric_args):
     sk_preds = preds.view(-1, NUM_TARGETS).numpy()
     sk_target = target.view(-1, NUM_TARGETS).numpy()
     sk_kwargs = {"multioutput": "raw_values"} if metric_args and "num_outputs" in metric_args else {}
-    res = sk_fn(sk_target, sk_preds, **sk_kwargs)
-    return math.sqrt(res) if (metric_args and not metric_args["squared"]) else res
+    if metric_args and "normalization" in metric_args:
+        res = sk_fn(sk_target, sk_preds, **metric_args)
+    else:
+        res = sk_fn(sk_target, sk_preds, **sk_kwargs)
+    if metric_args and "squared" in metric_args and not metric_args["squared"]:
+        res = math.sqrt(res)
+    return res
 
 
 @pytest.mark.parametrize(
@@ -163,6 +192,42 @@ def _multi_target_ref_wrapper(preds, target, sk_fn, metric_args):
             _reference_weighted_mean_abs_percentage_error,
             {},
         ),
+        (
+            NormalizedRootMeanSquaredError,
+            normalized_root_mean_squared_error,
+            _reference_normalized_root_mean_squared_error,
+            {"normalization": "mean", "num_outputs": 1},
+        ),
+        (
+            NormalizedRootMeanSquaredError,
+            normalized_root_mean_squared_error,
+            _reference_normalized_root_mean_squared_error,
+            {"normalization": "range", "num_outputs": 1},
+        ),
+        (
+            NormalizedRootMeanSquaredError,
+            normalized_root_mean_squared_error,
+            _reference_normalized_root_mean_squared_error,
+            {"normalization": "std", "num_outputs": 1},
+        ),
+        (
+            NormalizedRootMeanSquaredError,
+            normalized_root_mean_squared_error,
+            _reference_normalized_root_mean_squared_error,
+            {"normalization": "mean", "num_outputs": NUM_TARGETS},
+        ),
+        (
+            NormalizedRootMeanSquaredError,
+            normalized_root_mean_squared_error,
+            _reference_normalized_root_mean_squared_error,
+            {"normalization": "range", "num_outputs": NUM_TARGETS},
+        ),
+        (
+            NormalizedRootMeanSquaredError,
+            normalized_root_mean_squared_error,
+            _reference_normalized_root_mean_squared_error,
+            {"normalization": "std", "num_outputs": NUM_TARGETS},
+        ),
     ],
 )
 class TestMeanError(MetricTester):
@@ -173,6 +238,8 @@ class TestMeanError(MetricTester):
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args, ddp
     ):
         """Test class implementation of metric."""
+        if metric_args and "num_outputs" in metric_args and preds.ndim < 3:
+            pytest.skip("Test only runs for multi-output setting")
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -186,6 +253,8 @@ class TestMeanError(MetricTester):
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args
     ):
         """Test functional implementation of metric."""
+        if metric_args and "num_outputs" in metric_args and preds.ndim < 3:
+            pytest.skip("Test only runs for multi-output setting")
         self.run_functional_metric_test(
             preds=preds,
             target=target,
