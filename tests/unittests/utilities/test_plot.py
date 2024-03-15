@@ -855,12 +855,17 @@ def test_confusion_matrix_plotter(metric_class, preds, target, labels, use_label
 
 @pytest.mark.parametrize("together", [True, False])
 @pytest.mark.parametrize("num_vals", [1, 2])
-def test_plot_method_collection(together, num_vals):
+@pytest.mark.parametrize(
+    ("prefix", "postfix"), [(None, None), ("prefix", None), (None, "postfix"), ("prefix", "postfix")]
+)
+def test_plot_method_collection(together, num_vals, prefix, postfix):
     """Test the plot method of metric collection."""
     m_collection = MetricCollection(
         BinaryAccuracy(),
         BinaryPrecision(),
         BinaryRecall(),
+        prefix=prefix,
+        postfix=postfix,
     )
     if num_vals == 1:
         m_collection.update(torch.randint(0, 2, size=(10,)), torch.randint(0, 2, size=(10,)))
