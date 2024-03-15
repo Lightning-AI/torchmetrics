@@ -110,7 +110,10 @@ addopts = [
 markers = [
     "DDP: mark a test as Distributed Data Parallel",
 ]
-#filterwarnings = ["error::FutureWarning"] # ToDo
+filterwarnings = [
+    "ignore::FutureWarning",
+    "default:::torchmetrics",
+]
 xfail_strict = true
 junit_duration_report = "call"
 
