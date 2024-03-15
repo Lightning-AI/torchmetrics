@@ -325,6 +325,41 @@ class TestMulticlassStatScores(MetricTester):
         )
 
 
+@pytest.mark.parametrize(
+    ("preds", "target", "ignore_index", "error_message"),
+    [
+        (
+            torch.randint(NUM_CLASSES + 1, (100,)),
+            torch.randint(NUM_CLASSES, (100,)),
+            None,
+            f"Detected more unique values in `preds` than expected. Expected only {NUM_CLASSES}.*",
+        ),
+        (
+            torch.randint(NUM_CLASSES, (100,)),
+            torch.randint(NUM_CLASSES + 1, (100,)),
+            None,
+            f"Detected more unique values in `target` than expected. Expected only {NUM_CLASSES}.*",
+        ),
+        (
+            torch.randint(NUM_CLASSES + 2, (100,)),
+            torch.randint(NUM_CLASSES, (100,)),
+            1,
+            f"Detected more unique values in `preds` than expected. Expected only {NUM_CLASSES + 1}.*",
+        ),
+        (
+            torch.randint(NUM_CLASSES, (100,)),
+            torch.randint(NUM_CLASSES + 2, (100,)),
+            1,
+            f"Detected more unique values in `target` than expected. Expected only {NUM_CLASSES + 1}.*",
+        ),
+    ],
+)
+def test_raises_error_on_too_many_classes(preds, target, ignore_index, error_message):
+    """Test that an error is raised if the number of classes in preds or target is larger than expected."""
+    with pytest.raises(RuntimeError, match=error_message):
+        multiclass_stat_scores(preds, target, num_classes=NUM_CLASSES, ignore_index=ignore_index)
+
+
 _mc_k_target = torch.tensor([0, 1, 2])
 _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
 
