@@ -147,26 +147,6 @@ disable_error_code = "attr-defined"
 # style choices
 warn_no_return = "False"
 
-# Ignore mypy errors for these files
-# TODO: the goal is for this to be empty
-[[tool.mypy.overrides]]
-module = [
-    "torchmetrics.classification.exact_match",
-    "torchmetrics.classification.f_beta",
-    "torchmetrics.classification.precision_recall",
-    "torchmetrics.classification.ranking",
-    "torchmetrics.classification.recall_at_fixed_precision",
-    "torchmetrics.classification.roc",
-    "torchmetrics.classification.stat_scores",
-    "torchmetrics.detection._mean_ap",
-    "torchmetrics.detection.mean_ap",
-    "torchmetrics.functional.image.psnr",
-    "torchmetrics.functional.image.ssim",
-    "torchmetrics.image.psnr",
-    "torchmetrics.image.ssim",
-]
-ignore_errors = "True"
-
 [tool.typos.default]
 extend-ignore-identifiers-re = [
     # *sigh* this just isn't worth the cost of fixing
