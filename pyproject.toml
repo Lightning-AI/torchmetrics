@@ -7,8 +7,12 @@ requires = [
 [tool.ruff]
 target-version = "py38"
 line-length = 120
-# Enable Pyflakes `E` and `F` codes by default.
-lint.select = [
+
+[tool.ruff.format]
+preview = true
+
+[tool.ruff.lint]
+select = [
     "E",
     "W", # see: https://pypi.org/project/pycodestyle
     "F", # see: https://pypi.org/project/pyflakes
@@ -18,7 +22,7 @@ lint.select = [
     "S", # see: https://pypi.org/project/flake8-bandit
     "UP", # see: https://docs.astral.sh/ruff/rules/#pyupgrade-up
 ]
-lint.extend-select = [
+extend-select = [
     "A",    # see: https://pypi.org/project/flake8-builtins
     "B",    # see: https://pypi.org/project/flake8-bugbear
     "C4",   # see: https://pypi.org/project/flake8-comprehensions
@@ -38,7 +42,7 @@ lint.extend-select = [
     "PERF", # see: https://pypi.org/project/perflint/
     "PYI",  # see: https://pypi.org/project/flake8-pyi/
 ]
-lint.ignore = [
+ignore = [
     "E731",   # Do not assign a lambda expression, use a def
     "D100",   # todo: Missing docstring in public module
     "D104",   # todo: Missing docstring in public package
@@ -48,8 +52,8 @@ lint.ignore = [
     "S310",   # todo: Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.  # todo
     "B905",   # todo: `zip()` without an explicit `strict=` parameter
 ]
-lint.ignore-init-module-imports = true
-lint.unfixable = ["F401"]
+ignore-init-module-imports = true
+unfixable = ["F401"]
 
 [tool.ruff.lint.per-file-ignores]
 "setup.py" = ["ANN202", "ANN401"]
