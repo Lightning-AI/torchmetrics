@@ -120,7 +120,6 @@ repos:
       - id: ruff-format
       # validate if all is fine with preview mode
       - id: ruff
-        args: ["--preview"]
 
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: 1.7.0
