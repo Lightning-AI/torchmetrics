@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Type, Union
+from typing import Any, List, Optional, Sequence, Type, Union, override
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -118,12 +118,14 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
             _binary_auroc_arg_validation(max_fpr, thresholds, ignore_index)
         self.max_fpr = max_fpr
 
-    def compute(self) -> Tensor:  # type: ignore[override]
+    @override
+    def compute(self) -> Tensor:
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _binary_auroc_compute(state, self.thresholds, self.max_fpr)
 
-    def plot(  # type: ignore[override]
+    @override
+    def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -270,7 +272,8 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         self.average = average  # type: ignore[assignment]
         self.validate_args = validate_args
 
-    def compute(self) -> Tensor:  # type: ignore[override]
+    @override
+    def compute(self) -> Tensor:
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multiclass_auroc_compute(
@@ -280,7 +283,8 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
             self.thresholds,
         )
 
-    def plot(  # type: ignore[override]
+    @override
+    def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -425,12 +429,14 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         self.average = average
         self.validate_args = validate_args
 
-    def compute(self) -> Tensor:  # type: ignore[override]
+    @override
+    def compute(self) -> Tensor:
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multilabel_auroc_compute(state, self.num_labels, self.average, self.thresholds, self.ignore_index)
 
-    def plot(  # type: ignore[override]
+    @override
+    def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Tuple, Type, Union
+from typing import Any, List, Optional, Tuple, Type, Union, override
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -122,7 +122,8 @@ class BinarySensitivityAtSpecificity(BinaryPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_specificity = min_specificity
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+    @override
+    def compute(self) -> Tuple[Tensor, Tensor]:
         """Compute metric."""
         state = (_cat(self.preds), _cat(self.target)) if self.thresholds is None else self.confmat
         return _binary_sensitivity_at_specificity_compute(state, self.thresholds, self.min_specificity)
@@ -223,7 +224,8 @@ class MulticlassSensitivityAtSpecificity(MulticlassPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_specificity = min_specificity
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+    @override
+    def compute(self) -> Tuple[Tensor, Tensor]:
         """Compute metric."""
         state = (_cat(self.preds), _cat(self.target)) if self.thresholds is None else self.confmat
         return _multiclass_sensitivity_at_specificity_compute(
@@ -322,7 +324,8 @@ class MultilabelSensitivityAtSpecificity(MultilabelPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_specificity = min_specificity
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+    @override
+    def compute(self) -> Tuple[Tensor, Tensor]:
         """Compute metric."""
         state = (_cat(self.preds), _cat(self.target)) if self.thresholds is None else self.confmat
         return _multilabel_sensitivity_at_specificity_compute(

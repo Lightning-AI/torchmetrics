@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Type, Union
+from typing import Any, Optional, Sequence, Type, Union, override
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -107,7 +107,8 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average="binary")
 
-    def plot(  # type: ignore[override]
+    @override
+    def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -238,7 +239,8 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average=self.average, ignore_index=self.ignore_index)
 
-    def plot(  # type: ignore[override]
+    @override
+    def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -373,7 +375,8 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         """Compute metric."""
         return _jaccard_index_reduce(self.confmat, average=self.average)
 
-    def plot(  # type: ignore[override]
+    @override
+    def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.

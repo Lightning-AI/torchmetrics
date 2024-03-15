@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union, override
 
 import numpy as np
 import torch
@@ -888,7 +888,8 @@ class MeanAveragePrecision(Metric):
         metrics.classes = torch.tensor(classes, dtype=torch.int)
         return metrics
 
-    def _apply(self, fn: Callable) -> torch.nn.Module:  # type: ignore[override]
+    @override
+    def _apply(self, fn: Callable) -> torch.nn.Module:
         """Custom apply function.
 
         Excludes the detections and groundtruths from the casting when the iou_type is set to `segm` as the state is

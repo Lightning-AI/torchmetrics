@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Type, Union
+from typing import Any, Optional, Sequence, Type, Union, override
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -101,7 +101,8 @@ class BinaryMatthewsCorrCoef(BinaryConfusionMatrix):
         """Compute metric."""
         return _matthews_corrcoef_reduce(self.confmat)
 
-    def plot(  # type: ignore[override]
+    @override
+    def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -213,7 +214,8 @@ class MulticlassMatthewsCorrCoef(MulticlassConfusionMatrix):
         """Compute metric."""
         return _matthews_corrcoef_reduce(self.confmat)
 
-    def plot(  # type: ignore[override]
+    @override
+    def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -324,7 +326,8 @@ class MultilabelMatthewsCorrCoef(MultilabelConfusionMatrix):
         """Compute metric."""
         return _matthews_corrcoef_reduce(self.confmat)
 
-    def plot(  # type: ignore[override]
+    @override
+    def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.

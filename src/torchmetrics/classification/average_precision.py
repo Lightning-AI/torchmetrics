@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Type, Union
+from typing import Any, List, Optional, Sequence, Type, Union, override
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -112,12 +112,14 @@ class BinaryAveragePrecision(BinaryPrecisionRecallCurve):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    def compute(self) -> Tensor:  # type: ignore[override]
+    @override
+    def compute(self) -> Tensor:
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _binary_average_precision_compute(state, self.thresholds)
 
-    def plot(  # type: ignore[override]
+    @override
+    def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -268,7 +270,8 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         self.average = average  # type: ignore[assignment]
         self.validate_args = validate_args
 
-    def compute(self) -> Tensor:  # type: ignore[override]
+    @override
+    def compute(self) -> Tensor:
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multiclass_average_precision_compute(
@@ -278,7 +281,8 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
             self.thresholds,
         )
 
-    def plot(  # type: ignore[override]
+    @override
+    def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -428,14 +432,16 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         self.average = average
         self.validate_args = validate_args
 
-    def compute(self) -> Tensor:  # type: ignore[override]
+    @override
+    def compute(self) -> Tensor:
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multilabel_average_precision_compute(
             state, self.num_labels, self.average, self.thresholds, self.ignore_index
         )
 
-    def plot(  # type: ignore[override]
+    @override
+    def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.

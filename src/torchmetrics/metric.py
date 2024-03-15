@@ -20,7 +20,7 @@ import inspect
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, ClassVar, Dict, Generator, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, ClassVar, Dict, Generator, List, Optional, Sequence, Tuple, Union, override
 
 import torch
 from lightning_utilities import apply_to_collection
@@ -836,7 +836,8 @@ class Metric(Module, ABC):
         for key in self._persistent:
             self._persistent[key] = mode
 
-    def state_dict(  # type: ignore[override]  # todo
+    @override
+    def state_dict(
         self,
         destination: Optional[Dict[str, Any]] = None,
         prefix: str = "",
@@ -943,7 +944,8 @@ class Metric(Module, ABC):
         """Construct compositional metric using the logical and operator."""
         return CompositionalMetric(torch.bitwise_and, self, other)
 
-    def __eq__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[override]
+    @override
+    def __eq__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the equal operator."""
         return CompositionalMetric(torch.eq, self, other)
 
@@ -979,7 +981,8 @@ class Metric(Module, ABC):
         """Construct compositional metric using the multiplication operator."""
         return CompositionalMetric(torch.mul, self, other)
 
-    def __ne__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[override]
+    @override
+    def __ne__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the not equal operator."""
         return CompositionalMetric(torch.ne, self, other)
 

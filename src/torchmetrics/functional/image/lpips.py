@@ -24,7 +24,7 @@
 # License under BSD 2-clause
 import inspect
 import os
-from typing import List, NamedTuple, Optional, Tuple, Union
+from typing import List, NamedTuple, Optional, Tuple, Union, override
 
 import torch
 from torch import Tensor, nn
@@ -369,7 +369,8 @@ class _LPIPS(nn.Module):
 class _NoTrainLpips(_LPIPS):
     """Wrapper to make sure LPIPS never leaves evaluation mode."""
 
-    def train(self, mode: bool) -> "_NoTrainLpips":  # type: ignore[override]
+    @override
+    def train(self, mode: bool) -> "_NoTrainLpips":
         """Force network to always be in evaluation mode."""
         return super().train(False)
 
