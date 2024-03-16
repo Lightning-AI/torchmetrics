@@ -15,14 +15,14 @@ import contextlib
 import io
 import json
 from types import ModuleType
-from typing import Any, Callable, ClassVar, Dict, List, Optional, Sequence, Tuple, Union, override
+from typing import Any, Callable, ClassVar, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
 from lightning_utilities import apply_to_collection
 from torch import Tensor
 from torch import distributed as dist
-from typing_extensions import Literal
+from typing_extensions import Literal, override
 
 from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator, _validate_iou_type_arg
 from torchmetrics.metric import Metric

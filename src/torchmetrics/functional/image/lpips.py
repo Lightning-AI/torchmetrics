@@ -24,11 +24,11 @@
 # License under BSD 2-clause
 import inspect
 import os
-from typing import List, NamedTuple, Optional, Tuple, Union, override
+from typing import List, NamedTuple, Optional, Tuple, Union
 
 import torch
 from torch import Tensor, nn
-from typing_extensions import Literal
+from typing_extensions import Literal, override
 
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_13
 

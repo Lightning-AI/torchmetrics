@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, List, Optional, Sequence, Tuple, Union, override
+from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
-from typing_extensions import Literal
+from typing_extensions import Literal, override
 
 from torchmetrics import Metric
 from torchmetrics.functional.retrieval.precision_recall_curve import retrieval_precision_recall_curve

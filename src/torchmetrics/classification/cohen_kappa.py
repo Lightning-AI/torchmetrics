@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Type, Union, override
+from typing import Any, Optional, Sequence, Type, Union
 
 from torch import Tensor
-from typing_extensions import Literal
+from typing_extensions import Literal, override
 
 from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.confusion_matrix import BinaryConfusionMatrix, MulticlassConfusionMatrix

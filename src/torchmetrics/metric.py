@@ -20,12 +20,13 @@ import inspect
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, ClassVar, Dict, Generator, List, Optional, Sequence, Tuple, Union, override
+from typing import Any, Callable, ClassVar, Dict, Generator, List, Optional, Sequence, Tuple, Union
 
 import torch
 from lightning_utilities import apply_to_collection
 from torch import Tensor
 from torch.nn import Module
+from typing_extensions import override
 
 from torchmetrics.utilities.data import (
     _flatten,
