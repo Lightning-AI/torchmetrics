@@ -57,7 +57,7 @@ def _safe_divide(num: Tensor, denom: Tensor, zero_division: float = 0) -> Tensor
 
 
 def _adjust_weights_safe_divide(
-    score: Tensor, average: Optional[str], multilabel: bool, tp: Tensor, fp: Tensor, fn: Tensor
+    score: Tensor, average: Optional[str], multilabel: bool, tp: Tensor, fp: Tensor, fn: Tensor, top_k: int = 1
 ) -> Tensor:
     if average is None or average == "none":
         return score
@@ -66,7 +66,7 @@ def _adjust_weights_safe_divide(
     else:
         weights = torch.ones_like(score)
         if not multilabel:
-            weights[tp + fp + fn == 0] = 0.0
+            weights[tp + fp + fn == 0 if top_k == 1 else tp + fn == 0] = 0.0
     return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
@@ -93,8 +93,8 @@ def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float, axis: int
 
     """
     with torch.no_grad():
-        auc_: Tensor = torch.trapz(y, x, dim=axis) * direction
-    return auc_
+        auc_score: Tensor = torch.trapz(y, x, dim=axis) * direction
+    return auc_score
 
 
 def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:

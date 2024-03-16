@@ -29,19 +29,19 @@ from torchmetrics.functional.classification.accuracy import (
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
-from unittests.classification.inputs import _binary_cases, _input_binary, _multiclass_cases, _multilabel_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.classification._inputs import _binary_cases, _input_binary, _multiclass_cases, _multilabel_cases
 
 seed_all(42)
 
 
-def _sklearn_accuracy(target, preds):
+def _reference_sklearn_accuracy(target, preds):
     score = sk_accuracy(target, preds)
     return score if not np.isnan(score) else 0.0
 
 
-def _sklearn_accuracy_binary(preds, target, ignore_index, multidim_average):
+def _reference_sklearn_accuracy_binary(preds, target, ignore_index, multidim_average):
     if multidim_average == "global":
         preds = preds.view(-1).numpy()
         target = target.view(-1).numpy()
@@ -56,14 +56,14 @@ def _sklearn_accuracy_binary(preds, target, ignore_index, multidim_average):
 
     if multidim_average == "global":
         target, preds = remove_ignore_index(target, preds, ignore_index)
-        return _sklearn_accuracy(target, preds)
+        return _reference_sklearn_accuracy(target, preds)
 
     res = []
     for pred, true in zip(preds, target):
         pred = pred.flatten()
         true = true.flatten()
         true, pred = remove_ignore_index(true, pred, ignore_index)
-        res.append(_sklearn_accuracy(true, pred))
+        res.append(_reference_sklearn_accuracy(true, pred))
     return np.stack(res)
 
 
@@ -108,7 +108,7 @@ class TestBinaryAccuracy(MetricTester):
             target=target,
             metric_class=BinaryAccuracy,
             reference_metric=partial(
-                _sklearn_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average
+                _reference_sklearn_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average
             ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
@@ -128,7 +128,7 @@ class TestBinaryAccuracy(MetricTester):
             target=target,
             metric_functional=binary_accuracy,
             reference_metric=partial(
-                _sklearn_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average
+                _reference_sklearn_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average
             ),
             metric_args={
                 "threshold": THRESHOLD,
@@ -179,7 +179,7 @@ class TestBinaryAccuracy(MetricTester):
         )
 
 
-def _sklearn_accuracy_multiclass(preds, target, ignore_index, multidim_average, average):
+def _reference_sklearn_accuracy_multiclass(preds, target, ignore_index, multidim_average, average):
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
     if multidim_average == "global":
@@ -187,7 +187,7 @@ def _sklearn_accuracy_multiclass(preds, target, ignore_index, multidim_average, 
         target = target.numpy().flatten()
         target, preds = remove_ignore_index(target, preds, ignore_index)
         if average == "micro":
-            return _sklearn_accuracy(target, preds)
+            return _reference_sklearn_accuracy(target, preds)
         confmat = sk_confusion_matrix(target, preds, labels=list(range(NUM_CLASSES)))
         acc_per_class = confmat.diagonal() / confmat.sum(axis=1)
         acc_per_class[np.isnan(acc_per_class)] = 0.0
@@ -209,7 +209,7 @@ def _sklearn_accuracy_multiclass(preds, target, ignore_index, multidim_average, 
         true = true.flatten()
         true, pred = remove_ignore_index(true, pred, ignore_index)
         if average == "micro":
-            res.append(_sklearn_accuracy(true, pred))
+            res.append(_reference_sklearn_accuracy(true, pred))
         else:
             confmat = sk_confusion_matrix(true, pred, labels=list(range(NUM_CLASSES)))
             acc_per_class = confmat.diagonal() / confmat.sum(axis=1)
@@ -252,7 +252,7 @@ class TestMulticlassAccuracy(MetricTester):
             target=target,
             metric_class=MulticlassAccuracy,
             reference_metric=partial(
-                _sklearn_accuracy_multiclass,
+                _reference_sklearn_accuracy_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -281,7 +281,7 @@ class TestMulticlassAccuracy(MetricTester):
             target=target,
             metric_functional=multiclass_accuracy,
             reference_metric=partial(
-                _sklearn_accuracy_multiclass,
+                _reference_sklearn_accuracy_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -339,12 +339,17 @@ class TestMulticlassAccuracy(MetricTester):
 _mc_k_target = torch.tensor([0, 1, 2])
 _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
 
+_mc_k_targets2 = torch.tensor([0, 0, 2])
+_mc_k_preds2 = torch.tensor([[0.9, 0.1, 0.0], [0.9, 0.1, 0.0], [0.9, 0.1, 0.0]])
+
 
 @pytest.mark.parametrize(
     ("k", "preds", "target", "average", "expected"),
     [
         (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor(2 / 3)),
         (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor(3 / 3)),
+        (1, _mc_k_preds2, _mc_k_targets2, "macro", torch.tensor(1 / 2)),
+        (2, _mc_k_preds2, _mc_k_targets2, "macro", torch.tensor(1 / 2)),
     ],
 )
 def test_top_k(k, preds, target, average, expected):
@@ -355,7 +360,7 @@ def test_top_k(k, preds, target, average, expected):
     assert torch.isclose(multiclass_accuracy(preds, target, top_k=k, average=average, num_classes=3), expected)
 
 
-def _sklearn_accuracy_multilabel(preds, target, ignore_index, multidim_average, average):
+def _reference_sklearn_accuracy_multilabel(preds, target, ignore_index, multidim_average, average):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -370,14 +375,14 @@ def _sklearn_accuracy_multilabel(preds, target, ignore_index, multidim_average, 
             preds = preds.flatten()
             target = target.flatten()
             target, preds = remove_ignore_index(target, preds, ignore_index)
-            return _sklearn_accuracy(target, preds)
+            return _reference_sklearn_accuracy(target, preds)
 
         accuracy, weights = [], []
         for i in range(preds.shape[1]):
             pred, true = preds[:, i].flatten(), target[:, i].flatten()
             true, pred = remove_ignore_index(true, pred, ignore_index)
             confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
-            accuracy.append(_sklearn_accuracy(true, pred))
+            accuracy.append(_reference_sklearn_accuracy(true, pred))
             weights.append(confmat[1, 1] + confmat[1, 0])
         res = np.stack(accuracy, axis=0)
 
@@ -397,7 +402,7 @@ def _sklearn_accuracy_multilabel(preds, target, ignore_index, multidim_average, 
         if average == "micro":
             pred, true = preds[i].flatten(), target[i].flatten()
             true, pred = remove_ignore_index(true, pred, ignore_index)
-            accuracy.append(_sklearn_accuracy(true, pred))
+            accuracy.append(_reference_sklearn_accuracy(true, pred))
             confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
             weights.append(confmat[1, 1] + confmat[1, 0])
         else:
@@ -405,7 +410,7 @@ def _sklearn_accuracy_multilabel(preds, target, ignore_index, multidim_average, 
             for j in range(preds.shape[1]):
                 pred, true = preds[i, j], target[i, j]
                 true, pred = remove_ignore_index(true, pred, ignore_index)
-                scores.append(_sklearn_accuracy(true, pred))
+                scores.append(_reference_sklearn_accuracy(true, pred))
                 confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
                 w.append(confmat[1, 1] + confmat[1, 0])
             accuracy.append(np.stack(scores))
@@ -449,7 +454,7 @@ class TestMultilabelAccuracy(MetricTester):
             target=target,
             metric_class=MultilabelAccuracy,
             reference_metric=partial(
-                _sklearn_accuracy_multilabel,
+                _reference_sklearn_accuracy_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -479,7 +484,7 @@ class TestMultilabelAccuracy(MetricTester):
             target=target,
             metric_functional=multilabel_accuracy,
             reference_metric=partial(
-                _sklearn_accuracy_multilabel,
+                _reference_sklearn_accuracy_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,

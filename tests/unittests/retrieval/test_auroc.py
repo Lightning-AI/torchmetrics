@@ -21,7 +21,7 @@ from torchmetrics.functional.retrieval.auroc import retrieval_auroc
 from torchmetrics.retrieval.auroc import RetrievalAUROC
 from typing_extensions import Literal
 
-from unittests.helpers import seed_all
+from unittests._helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,
     _concat_tests,

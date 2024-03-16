@@ -32,14 +32,14 @@ from torchmetrics.functional.classification.ranking import (
 )
 
 from unittests import NUM_CLASSES
-from unittests.classification.inputs import _multilabel_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index
+from unittests.classification._inputs import _multilabel_cases
 
 seed_all(42)
 
 
-def _sklearn_ranking(preds, target, fn, ignore_index):
+def _reference_sklearn_ranking(preds, target, fn, ignore_index):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
@@ -78,7 +78,7 @@ class TestMultilabelRanking(MetricTester):
             preds=preds,
             target=target,
             metric_class=metric,
-            reference_metric=partial(_sklearn_ranking, fn=ref_metric, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_ranking, fn=ref_metric, ignore_index=ignore_index),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -95,7 +95,7 @@ class TestMultilabelRanking(MetricTester):
             preds=preds,
             target=target,
             metric_functional=functional_metric,
-            reference_metric=partial(_sklearn_ranking, fn=ref_metric, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_ranking, fn=ref_metric, ignore_index=ignore_index),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,

@@ -69,10 +69,10 @@ class _AbstractStatScores(Metric):
     def _update_state(self, tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> None:
         """Update states depending on multidim_average argument."""
         if self.multidim_average == "samplewise":
-            self.tp.append(tp)
-            self.fp.append(fp)
-            self.tn.append(tn)
-            self.fn.append(fn)
+            self.tp.append(tp)  # type: ignore[union-attr]
+            self.fp.append(fp)  # type: ignore[union-attr]
+            self.tn.append(tn)  # type: ignore[union-attr]
+            self.fn.append(fn)  # type: ignore[union-attr]
         else:
             self.tp += tp
             self.fp += fp
@@ -525,7 +525,7 @@ class StatScores(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls: Type["StatScores"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,

@@ -25,7 +25,7 @@ from torch import Tensor, tensor
 from torchmetrics import Metric
 from torchmetrics.utilities.data import _flatten
 
-from unittests import NUM_PROCESSES
+from unittests import NUM_PROCESSES, _reference_cachier
 
 
 def _assert_allclose(tm_result: Any, ref_result: Any, atol: float = 1e-8, key: Optional[str] = None) -> None:
@@ -35,8 +35,8 @@ def _assert_allclose(tm_result: Any, ref_result: Any, atol: float = 1e-8, key: O
         assert np.allclose(tm_result.detach().cpu().numpy(), ref_result, atol=atol, equal_nan=True)
     # multi output compare
     elif isinstance(tm_result, Sequence):
-        for pl_res, sk_res in zip(tm_result, ref_result):
-            _assert_allclose(pl_res, sk_res, atol=atol)
+        for pl_res, ref_res in zip(tm_result, ref_result):
+            _assert_allclose(pl_res, ref_res, atol=atol)
     elif isinstance(tm_result, Dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
@@ -167,7 +167,7 @@ def _class_test(
                 k: torch.cat([v[i + r] for r in range(world_size)]).cpu() if isinstance(v, Tensor) else v
                 for k, v in (kwargs_update if fragment_kwargs else batch_kwargs_update).items()
             }
-            ref_batch_result = reference_metric(ddp_preds, ddp_target, **ddp_kwargs_upd)
+            ref_batch_result = _reference_cachier(reference_metric)(ddp_preds, ddp_target, **ddp_kwargs_upd)
             if isinstance(batch_result, dict):
                 for key in batch_result:
                     _assert_allclose(batch_result, ref_batch_result[key].numpy(), atol=atol, key=key)
@@ -181,7 +181,7 @@ def _class_test(
             }
             preds_ = preds[i].cpu() if isinstance(preds, Tensor) else preds[i]
             target_ = target[i].cpu() if isinstance(target, Tensor) else target[i]
-            ref_batch_result = reference_metric(preds_, target_, **batch_kwargs_update)
+            ref_batch_result = _reference_cachier(reference_metric)(preds_, target_, **batch_kwargs_update)
             if isinstance(batch_result, dict):
                 for key in batch_result:
                     _assert_allclose(batch_result, ref_batch_result[key].numpy(), atol=atol, key=key)
@@ -218,14 +218,14 @@ def _class_test(
         k: torch.cat([v[i] for i in range(num_batches)]).cpu() if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
     }
-    sk_result = reference_metric(total_preds, total_target, **total_kwargs_update)
+    ref_result = _reference_cachier(reference_metric)(total_preds, total_target, **total_kwargs_update)
 
     # assert after aggregation
-    if isinstance(sk_result, dict):
-        for key in sk_result:
-            _assert_allclose(result, sk_result[key].numpy(), atol=atol, key=key)
+    if isinstance(ref_result, dict):
+        for key in ref_result:
+            _assert_allclose(result, ref_result[key].numpy(), atol=atol, key=key)
     else:
-        _assert_allclose(result, sk_result, atol=atol)
+        _assert_allclose(result, ref_result, atol=atol)
 
 
 def _functional_test(
@@ -282,7 +282,7 @@ def _functional_test(
             k: v.cpu() if isinstance(v, Tensor) else v
             for k, v in (extra_kwargs if fragment_kwargs else kwargs_update).items()
         }
-        ref_result = reference_metric(
+        ref_result = _reference_cachier(reference_metric)(
             preds[i].cpu() if isinstance(preds, Tensor) else preds[i],
             target[i].cpu() if isinstance(target, Tensor) else target[i],
             **extra_kwargs,
@@ -337,6 +337,18 @@ def _assert_dtype_support(
         _assert_tensor(metric_functional(y_hat, y, **kwargs_update))
 
 
+def _select_rand_best_device() -> str:
+    """Select the best device to run tests on."""
+    nb_gpus = torch.cuda.device_count()
+    # todo: debug the eventual device checks/assets
+    # if nb_gpus > 1:
+    #     from random import randrange
+    #     return f"cuda:{randrange(nb_gpus)}"
+    if nb_gpus:
+        return "cuda"
+    return "cpu"
+
+
 class MetricTester:
     """Test class for all metrics.
 
@@ -371,8 +383,6 @@ class MetricTester:
                 target when running update on the metric.
 
         """
-        device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
-
         _functional_test(
             preds=preds,
             target=target,
@@ -380,7 +390,7 @@ class MetricTester:
             reference_metric=reference_metric,
             metric_args=metric_args,
             atol=self.atol,
-            device=device,
+            device=_select_rand_best_device(),
             fragment_kwargs=fragment_kwargs,
             **kwargs_update,
         )
@@ -424,53 +434,31 @@ class MetricTester:
                 target when running update on the metric.
 
         """
-        atol = atol or self.atol
-        metric_args = metric_args or {}
+        common_kwargs = {
+            "preds": preds,
+            "target": target,
+            "metric_class": metric_class,
+            "reference_metric": reference_metric,
+            "metric_args": metric_args or {},
+            "atol": atol or self.atol,
+            "device": _select_rand_best_device(),
+            "dist_sync_on_step": dist_sync_on_step,
+            "check_dist_sync_on_step": check_dist_sync_on_step,
+            "check_batch": check_batch,
+            "fragment_kwargs": fragment_kwargs,
+            "check_scriptable": check_scriptable,
+            "check_state_dict": check_state_dict,
+        }
+
         if ddp and hasattr(pytest, "pool"):
             if sys.platform == "win32":
                 pytest.skip("DDP not supported on windows")
-
             pytest.pool.starmap(
-                partial(
-                    _class_test,
-                    preds=preds,
-                    target=target,
-                    metric_class=metric_class,
-                    reference_metric=reference_metric,
-                    dist_sync_on_step=dist_sync_on_step,
-                    metric_args=metric_args,
-                    check_dist_sync_on_step=check_dist_sync_on_step,
-                    check_batch=check_batch,
-                    atol=atol,
-                    device="cuda" if torch.cuda.is_available() else "cpu",
-                    fragment_kwargs=fragment_kwargs,
-                    check_scriptable=check_scriptable,
-                    check_state_dict=check_state_dict,
-                    **kwargs_update,
-                ),
+                partial(_class_test, **common_kwargs, **kwargs_update),
                 [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)],
             )
         else:
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-
-            _class_test(
-                rank=0,
-                world_size=1,
-                preds=preds,
-                target=target,
-                metric_class=metric_class,
-                reference_metric=reference_metric,
-                dist_sync_on_step=dist_sync_on_step,
-                metric_args=metric_args,
-                check_dist_sync_on_step=check_dist_sync_on_step,
-                check_batch=check_batch,
-                atol=atol,
-                device=device,
-                fragment_kwargs=fragment_kwargs,
-                check_scriptable=check_scriptable,
-                check_state_dict=check_state_dict,
-                **kwargs_update,
-            )
+            _class_test(rank=0, world_size=1, **common_kwargs, **kwargs_update)
 
     @staticmethod
     def run_precision_test_cpu(
