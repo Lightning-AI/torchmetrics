@@ -95,5 +95,5 @@ runs:
       working-directory: tests/
       run: |
         mkdir -p _cache-references
-        py-tree _cache-references/ --show_hidden
+        ls -lh _cache-references/
       shell: bash
