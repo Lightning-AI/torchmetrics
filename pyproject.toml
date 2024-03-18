@@ -7,8 +7,12 @@ requires = [
 [tool.ruff]
 target-version = "py38"
 line-length = 120
-# Enable Pyflakes `E` and `F` codes by default.
-lint.select = [
+
+[tool.ruff.format]
+preview = true
+
+[tool.ruff.lint]
+select = [
     "E",
     "W", # see: https://pypi.org/project/pycodestyle
     "F", # see: https://pypi.org/project/pyflakes
@@ -18,7 +22,7 @@ lint.select = [
     "S", # see: https://pypi.org/project/flake8-bandit
     "UP", # see: https://docs.astral.sh/ruff/rules/#pyupgrade-up
 ]
-lint.extend-select = [
+extend-select = [
     "A",    # see: https://pypi.org/project/flake8-builtins
     "B",    # see: https://pypi.org/project/flake8-bugbear
     "C4",   # see: https://pypi.org/project/flake8-comprehensions
@@ -38,24 +42,31 @@ lint.extend-select = [
     "PERF", # see: https://pypi.org/project/perflint/
     "PYI",  # see: https://pypi.org/project/flake8-pyi/
 ]
-lint.ignore = [
+ignore = [
     "E731",   # Do not assign a lambda expression, use a def
     "D100",   # todo: Missing docstring in public module
     "D104",   # todo: Missing docstring in public package
     "D107",   # Missing docstring in `__init__`
     "ANN101", # Missing type annotation for `self` in method
-    "S301",   # todo: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue  # todo
-    "S310",   # todo: Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.  # todo
-    "B905",   # todo: `zip()` without an explicit `strict=` parameter
 ]
-lint.ignore-init-module-imports = true
-lint.unfixable = ["F401"]
+ignore-init-module-imports = true
+unfixable = ["F401"]
 
 [tool.ruff.lint.per-file-ignores]
 "setup.py" = ["ANN202", "ANN401"]
 "docs/source/conf.py" = ["A001", "D103"]
-"src/**" = ["ANN401"]
-"tests/**" = ["S101", "ANN001", "ANN201", "ANN202", "ANN401"]
+"src/**" = [
+    "ANN401",
+    "S310",   # todo: Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.  # todo
+    ]
+"tests/**" = [
+    "ANN001",
+    "ANN201",
+    "ANN202",
+    "ANN401",
+    "S101",
+    "S301",   # todo: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue  # todo
+    ]
 
 [tool.ruff.lint.pydocstyle]
 # Use Google-style docstrings.
@@ -106,7 +117,10 @@ addopts = [
 markers = [
     "DDP: mark a test as Distributed Data Parallel",
 ]
-#filterwarnings = ["error::FutureWarning"] # ToDo
+filterwarnings = [
+    "ignore::FutureWarning",
+    "default:::torchmetrics",
+]
 xfail_strict = true
 junit_duration_report = "call"
 
@@ -132,26 +146,6 @@ allow_redefinition = "True"
 disable_error_code = "attr-defined"
 # style choices
 warn_no_return = "False"
-
-# Ignore mypy errors for these files
-# TODO: the goal is for this to be empty
-[[tool.mypy.overrides]]
-module = [
-    "torchmetrics.classification.exact_match",
-    "torchmetrics.classification.f_beta",
-    "torchmetrics.classification.precision_recall",
-    "torchmetrics.classification.ranking",
-    "torchmetrics.classification.recall_at_fixed_precision",
-    "torchmetrics.classification.roc",
-    "torchmetrics.classification.stat_scores",
-    "torchmetrics.detection._mean_ap",
-    "torchmetrics.detection.mean_ap",
-    "torchmetrics.functional.image.psnr",
-    "torchmetrics.functional.image.ssim",
-    "torchmetrics.image.psnr",
-    "torchmetrics.image.ssim",
-]
-ignore_errors = "True"
 
 [tool.typos.default]
 extend-ignore-identifiers-re = [
