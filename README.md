@@ -342,11 +342,11 @@ The lightning + TorchMetrics team is hard at work adding even more metrics.
 But we're looking for incredible contributors like you to submit new metrics
 and improve existing ones!
 
-Join our [Slack](https://www.pytorchlightning.ai/community) to get help with becoming a contributor!
+Join our [Discord](https://discord.com/invite/tfXFetEZxv) to get help with becoming a contributor!
 
 ## Community
 
-For help or questions, join our huge community on [Slack](https://www.pytorchlightning.ai/community)!
+For help or questions, join our huge community on [Discord](https://discord.com/invite/tfXFetEZxv)!
 
 ## Citation
 

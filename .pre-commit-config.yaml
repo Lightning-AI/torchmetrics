@@ -111,12 +111,15 @@ repos:
       - id: text-unicode-replacement-char
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.0
+    rev: v0.3.2
     hooks:
-      - id: ruff-format
-        args: ["--preview"]
+      # try to fix what is possible
       - id: ruff
         args: ["--fix"]
+      # perform formatting updates
+      - id: ruff-format
+      # validate if all is fine with preview mode
+      - id: ruff
 
   - repo: https://github.com/tox-dev/pyproject-fmt
     rev: 1.7.0
