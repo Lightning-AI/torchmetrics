@@ -161,7 +161,7 @@ jobs:
         if: ${{ env.TEST_DIRS != '' }}
         working-directory: ./tests
         run: |
-          python -m pytest -v \
+          python -m pytest \
             $TEST_DIRS \
             --cov=torchmetrics \
             --durations=50 \
