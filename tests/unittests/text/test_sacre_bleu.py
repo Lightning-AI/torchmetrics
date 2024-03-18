@@ -120,7 +120,7 @@ def test_tokenize_ja_mecab():
     assert sacrebleu(preds, targets) == _reference_sacre_bleu(preds, targets, tokenize="ja-mecab", lowercase=False)
 
 
-@pytest.mark.skipif(not RequirementCache("mecab-ko"))
+@pytest.mark.skipif(not RequirementCache("mecab-ko"), reason="this test requires `mecab-ko` package to be installed")
 def test_tokenize_ko_mecab():
     """Test that `ja-mecab` tokenizer works on a Japanese text in alignment with the SacreBleu implementation."""
     sacrebleu = SacreBLEUScore(tokenize="ko-mecab")
