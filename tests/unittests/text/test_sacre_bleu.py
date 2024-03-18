@@ -16,6 +16,7 @@ from functools import partial
 from typing import Sequence
 
 import pytest
+from lightning_utilities.core.imports import RequirementCache
 from torch import Tensor, tensor
 from torchmetrics.functional.text.sacre_bleu import AVAILABLE_TOKENIZERS, _TokenizersLiteral, sacre_bleu_score
 from torchmetrics.text.sacre_bleu import SacreBLEUScore
@@ -119,6 +120,7 @@ def test_tokenize_ja_mecab():
     assert sacrebleu(preds, targets) == _reference_sacre_bleu(preds, targets, tokenize="ja-mecab", lowercase=False)
 
 
+@pytest.mark.skipif(not RequirementCache("mecab-ko"))
 def test_tokenize_ko_mecab():
     """Test that `ja-mecab` tokenizer works on a Japanese text in alignment with the SacreBleu implementation."""
     sacrebleu = SacreBLEUScore(tokenize="ko-mecab")
