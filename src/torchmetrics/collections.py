@@ -651,12 +651,11 @@ class MetricCollection(ModuleDict):
                     f"Expected argument `ax` to be a sequence of matplotlib axis objects with the same length as the "
                     f"number of metrics in the collection, but got {type(ax)} with len {len(ax)} when `together=False`"
                 )
-
         val = val or self.compute()
         if together:
             return plot_single_or_multi_val(val, ax=ax)
         fig_axs = []
-        for i, (k, m) in enumerate(self.items(keep_base=True, copy_state=False)):
+        for i, (k, m) in enumerate(self.items(keep_base=False, copy_state=False)):
             if isinstance(val, dict):
                 f, a = m.plot(val[k], ax=ax[i] if ax is not None else ax)
             elif isinstance(val, Sequence):
