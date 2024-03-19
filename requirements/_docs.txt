@@ -24,3 +24,6 @@ pydantic > 1.0.0, < 3.0.0
 -r multimodal.txt
 -r text.txt
 -r text_test.txt
+
+# needed for replacing stable keyword with latest version linkd
+scikit-learn
