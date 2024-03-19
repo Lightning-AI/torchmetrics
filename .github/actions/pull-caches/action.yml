@@ -88,7 +88,7 @@ runs:
       uses: actions/cache/restore@v3
       with:
         path: tests/_cache-references
-        key: cache-references-mono-files
+        key: cache-references
 
     - name: Restored References
       continue-on-error: true
