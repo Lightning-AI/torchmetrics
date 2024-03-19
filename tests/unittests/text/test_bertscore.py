@@ -19,17 +19,12 @@ import pytest
 from torch import Tensor
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.text.bert import BERTScore
-from torchmetrics.utilities.imports import _BERTSCORE_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
+from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 from typing_extensions import Literal
 
-from unittests.helpers import skip_on_connection_issues
+from unittests._helpers import skip_on_connection_issues
+from unittests.text._helpers import TextTester
 from unittests.text._inputs import _inputs_single_reference
-from unittests.text.helpers import TextTester
-
-if _BERTSCORE_AVAILABLE:
-    from bert_score import score as original_bert_score
-else:
-    original_bert_score = None
 
 _METRIC_KEY_TO_IDX = {
     "precision": 0,
@@ -45,7 +40,6 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 @skip_on_connection_issues()
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
-@pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 def _reference_bert_score(
     preds: Sequence[str],
     target: Sequence[str],
@@ -55,6 +49,11 @@ def _reference_bert_score(
     rescale_with_baseline: bool,
     metric_key: Literal["f1", "precision", "recall"],
 ) -> Tensor:
+    try:
+        from bert_score import score as original_bert_score
+    except ImportError:
+        pytest.skip("test requires bert_score package to be installed.")
+
     score_tuple = original_bert_score(
         preds,
         target,
@@ -88,7 +87,6 @@ def _reference_bert_score(
     [(_inputs_single_reference.preds, _inputs_single_reference.target)],
 )
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
-@pytest.mark.skipif(not _BERTSCORE_AVAILABLE, reason="test requires bert_score")
 class TestBERTScore(TextTester):
     """Tests for BERTScore."""
 

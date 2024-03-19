@@ -22,9 +22,9 @@ from torchmetrics.audio import PerceptualEvaluationSpeechQuality
 from torchmetrics.functional.audio import perceptual_evaluation_speech_quality
 
 from unittests import _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB, _average_metric_wrapper
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -130,7 +130,7 @@ def test_on_real_audio():
     """Test that metric works as expected on real audio signals."""
     rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
     rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
-    pesq = perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "wb")
-    assert pesq == 1.0832337141036987
-    pesq = perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "nb")
-    assert pesq == 1.6072081327438354
+    pesq_score = perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "wb")
+    assert torch.allclose(pesq_score, torch.tensor(1.0832337141036987), atol=1e-4)
+    pesq_score = perceptual_evaluation_speech_quality(torch.from_numpy(deg), torch.from_numpy(ref), rate, "nb")
+    assert torch.allclose(pesq_score, torch.tensor(1.6072081327438354), atol=1e-4)

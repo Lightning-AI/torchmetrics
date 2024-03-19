@@ -32,9 +32,9 @@ from torchmetrics.functional.classification.ranking import (
 )
 
 from unittests import NUM_CLASSES
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index
 from unittests.classification._inputs import _multilabel_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index
 
 seed_all(42)
 

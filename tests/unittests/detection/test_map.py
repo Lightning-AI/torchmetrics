@@ -32,8 +32,8 @@ from torchmetrics.utilities.imports import (
     _TORCHVISION_GREATER_EQUAL_0_8,
 )
 
+from unittests._helpers.testers import MetricTester
 from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL
-from unittests.helpers.testers import MetricTester
 
 _pytest_condition = not (_PYCOCOTOOLS_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
 

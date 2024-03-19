@@ -22,8 +22,8 @@ from numpy import array
 from torch import Tensor, tensor
 from typing_extensions import Literal
 
-from unittests.helpers import seed_all
-from unittests.helpers.testers import Metric, MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import Metric, MetricTester
 from unittests.retrieval._inputs import _input_retrieval_scores as _irs
 from unittests.retrieval._inputs import _input_retrieval_scores_all_target as _irs_all
 from unittests.retrieval._inputs import _input_retrieval_scores_empty as _irs_empty

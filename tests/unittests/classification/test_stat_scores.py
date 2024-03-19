@@ -32,9 +32,9 @@ from torchmetrics.functional.classification.stat_scores import (
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 
 seed_all(42)
 
@@ -323,6 +323,41 @@ class TestMulticlassStatScores(MetricTester):
             metric_args={"num_classes": NUM_CLASSES},
             dtype=dtype,
         )
+
+
+@pytest.mark.parametrize(
+    ("preds", "target", "ignore_index", "error_message"),
+    [
+        (
+            torch.randint(NUM_CLASSES + 1, (100,)),
+            torch.randint(NUM_CLASSES, (100,)),
+            None,
+            f"Detected more unique values in `preds` than expected. Expected only {NUM_CLASSES}.*",
+        ),
+        (
+            torch.randint(NUM_CLASSES, (100,)),
+            torch.randint(NUM_CLASSES + 1, (100,)),
+            None,
+            f"Detected more unique values in `target` than expected. Expected only {NUM_CLASSES}.*",
+        ),
+        (
+            torch.randint(NUM_CLASSES + 2, (100,)),
+            torch.randint(NUM_CLASSES, (100,)),
+            1,
+            f"Detected more unique values in `preds` than expected. Expected only {NUM_CLASSES + 1}.*",
+        ),
+        (
+            torch.randint(NUM_CLASSES, (100,)),
+            torch.randint(NUM_CLASSES + 2, (100,)),
+            1,
+            f"Detected more unique values in `target` than expected. Expected only {NUM_CLASSES + 1}.*",
+        ),
+    ],
+)
+def test_raises_error_on_too_many_classes(preds, target, ignore_index, error_message):
+    """Test that an error is raised if the number of classes in preds or target is larger than expected."""
+    with pytest.raises(RuntimeError, match=error_message):
+        multiclass_stat_scores(preds, target, num_classes=NUM_CLASSES, ignore_index=ignore_index)
 
 
 _mc_k_target = torch.tensor([0, 1, 2])

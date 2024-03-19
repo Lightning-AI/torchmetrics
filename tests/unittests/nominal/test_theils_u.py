@@ -12,18 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import itertools
-import operator
 from functools import partial
 
 import pytest
 import torch
-from dython.nominal import theils_u as dython_theils_u
-from lightning_utilities.core.imports import compare_version
 from torchmetrics.functional.nominal.theils_u import theils_u, theils_u_matrix
 from torchmetrics.nominal import TheilsU
 
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
-from unittests.helpers.testers import MetricTester
+from unittests._helpers.testers import MetricTester
 
 NUM_CLASSES = 4
 
@@ -63,6 +60,11 @@ def theils_u_matrix_input():
 
 
 def _reference_dython_theils_u(preds, target, nan_strategy, nan_replace_value):
+    try:
+        from dython.nominal import theils_u as dython_theils_u
+    except ImportError:
+        pytest.skip("Test requires `dython` package to be installed.")
+
     preds = preds.argmax(1) if preds.ndim == 2 else preds
     target = target.argmax(1) if target.ndim == 2 else target
 
@@ -85,7 +87,6 @@ def _reference_dython_theils_u_matrix(matrix, nan_strategy, nan_replace_value):
     return theils_u_matrix_value
 
 
-@pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
 @pytest.mark.parametrize(
     "preds, target",
     [
@@ -153,7 +154,6 @@ class TestTheilsU(MetricTester):
         )
 
 
-@pytest.mark.skipif(compare_version("pandas", operator.lt, "1.3.2"), reason="`dython` package requires `pandas>=1.3.2`")
 @pytest.mark.parametrize(("nan_strategy", "nan_replace_value"), [("replace", 1.0), ("drop", None)])
 def test_theils_u_matrix(theils_u_matrix_input, nan_strategy, nan_replace_value):
     """Test matrix version of metric works as expected."""

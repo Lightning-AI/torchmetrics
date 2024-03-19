@@ -11,28 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Callable, List, Union
+from typing import List, Union
 
 import pytest
 from torchmetrics.functional.text.cer import char_error_rate
 from torchmetrics.text.cer import CharErrorRate
-from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
+from unittests.text._helpers import TextTester
 from unittests.text._inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
-from unittests.text.helpers import TextTester
-
-if _JIWER_AVAILABLE:
-    from jiwer import cer
-
-else:
-    compute_measures = Callable
 
 
 def _reference_jiwer_cer(preds: Union[str, List[str]], target: Union[str, List[str]]):
+    try:
+        from jiwer import cer
+    except ImportError:
+        pytest.skip("test requires jiwer package to be installed.")
+
     return cer(target, preds)
 
 
-@pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
 @pytest.mark.parametrize(
     ["preds", "targets"],
     [
