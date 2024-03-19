@@ -142,13 +142,13 @@ def peak_signal_noise_ratio(
             # `data_range` in the future.
             raise ValueError("The `data_range` must be given when `dim` is not None.")
 
-        data_range = target.max() - target.min()
+        data_range = target.max() - target.min()  # type: ignore[assignment]
     elif isinstance(data_range, tuple):
         preds = torch.clamp(preds, min=data_range[0], max=data_range[1])
         target = torch.clamp(target, min=data_range[0], max=data_range[1])
-        data_range = tensor(data_range[1] - data_range[0])
+        data_range = tensor(data_range[1] - data_range[0])  # type: ignore[assignment]
     else:
-        data_range = tensor(float(data_range))
+        data_range = tensor(float(data_range))  # type: ignore[assignment]
 
     sum_squared_error, num_obs = _psnr_update(preds, target, dim=dim)
-    return _psnr_compute(sum_squared_error, num_obs, data_range, base=base, reduction=reduction)
+    return _psnr_compute(sum_squared_error, num_obs, data_range, base=base, reduction=reduction)  # type: ignore[arg-type]

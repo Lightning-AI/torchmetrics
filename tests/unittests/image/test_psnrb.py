@@ -21,8 +21,8 @@ from torchmetrics.functional.image.psnrb import peak_signal_noise_ratio_with_blo
 from torchmetrics.image import PeakSignalNoiseRatioWithBlockedEffect
 
 from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 

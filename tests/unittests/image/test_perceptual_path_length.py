@@ -24,7 +24,7 @@ from torchmetrics.functional.image.perceptual_path_length import _interpolate, p
 from torchmetrics.image.perceptual_path_length import PerceptualPathLength
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
-from unittests.helpers import seed_all, skip_on_running_out_of_memory
+from unittests._helpers import seed_all, skip_on_running_out_of_memory
 
 seed_all(42)
 

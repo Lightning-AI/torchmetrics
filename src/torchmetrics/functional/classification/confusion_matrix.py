@@ -285,21 +285,13 @@ def _multiclass_confusion_matrix_tensor_validation(
             " and `preds` should be (N, C, ...)."
         )
 
-    num_unique_values = len(torch.unique(target))
-    check = num_unique_values > num_classes if ignore_index is None else num_unique_values > num_classes + 1
-    if check:
-        raise RuntimeError(
-            "Detected more unique values in `target` than `num_classes`. Expected only "
-            f"{num_classes if ignore_index is None else num_classes + 1} but found "
-            f"{num_unique_values} in `target`."
-        )
-
-    if not preds.is_floating_point():
-        num_unique_values = len(torch.unique(preds))
-        if num_unique_values > num_classes:
+    check_value = num_classes if ignore_index is None else num_classes + 1
+    for t, name in ((target, "target"),) + ((preds, "preds"),) if not preds.is_floating_point() else ():  # noqa: RUF005
+        num_unique_values = len(torch.unique(t))
+        if num_unique_values > check_value:
             raise RuntimeError(
-                "Detected more unique values in `preds` than `num_classes`. Expected only "
-                f"{num_classes} but found {num_unique_values} in `preds`."
+                f"Detected more unique values in `{name}` than expected. Expected only {check_value} but found"
+                f" {num_unique_values} in `target`."
             )
 
 
