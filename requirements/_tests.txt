@@ -1,11 +1,11 @@
 # NOTE: the upper bound for the package version is only set for CI stability, and it is dropped while installing this package
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
-coverage ==7.4.3
+coverage ==7.4.4
 pytest ==8.1.1
 pytest-cov ==4.1.0
 pytest-doctestplus ==1.2.1
-pytest-rerunfailures ==13.0
+pytest-rerunfailures ==14.0
 pytest-timeout ==2.3.1
 pytest-xdist ==3.5.0
 phmdoctest ==1.4.0

@@ -110,14 +110,14 @@ def _ssim_update(
         raise ValueError(f"Expected `sigma` to have positive number. Got {sigma}.")
 
     if data_range is None:
-        data_range = max(preds.max() - preds.min(), target.max() - target.min())
+        data_range = max(preds.max() - preds.min(), target.max() - target.min())  # type: ignore[call-overload]
     elif isinstance(data_range, tuple):
         preds = torch.clamp(preds, min=data_range[0], max=data_range[1])
         target = torch.clamp(target, min=data_range[0], max=data_range[1])
         data_range = data_range[1] - data_range[0]
 
-    c1 = pow(k1 * data_range, 2)
-    c2 = pow(k2 * data_range, 2)
+    c1 = pow(k1 * data_range, 2)  # type: ignore[operator]
+    c2 = pow(k2 * data_range, 2)  # type: ignore[operator]
     device = preds.device
 
     channel = preds.size(1)
@@ -421,7 +421,7 @@ def _multiscale_ssim_update(
 
     betas = torch.tensor(betas, device=mcs_stack.device).view(-1, 1)
     mcs_weighted = mcs_stack**betas
-    return torch.prod(mcs_weighted, axis=0)
+    return torch.prod(mcs_weighted, axis=0)  # type: ignore[call-overload]
 
 
 def _multiscale_ssim_compute(
