@@ -20,7 +20,6 @@ from typing import Optional
 
 import lai_sphinx_theme
 import torchmetrics
-from lightning_utilities.docs import adjust_linked_external_docs, fetch_external_assets
 from lightning_utilities.docs.formatting import _transform_changelog
 
 _PATH_HERE = os.path.abspath(os.path.dirname(__file__))
@@ -78,6 +77,8 @@ def _set_root_image_path(page_path: str) -> None:
 
 
 if SPHINX_FETCH_ASSETS:
+    from lightning_utilities.docs import fetch_external_assets
+
     fetch_external_assets(
         docs_folder=_PATH_HERE,
         assets_folder="_static/fetched-s3-assets",
@@ -89,6 +90,8 @@ if SPHINX_FETCH_ASSETS:
 
 
 if SPHINX_PIN_RELEASE_VERSIONS:
+    from lightning_utilities.docs import adjust_linked_external_docs
+
     adjust_linked_external_docs(
         "https://numpy.org/doc/stable/", "https://numpy.org/doc/{numpy.__version__}/", _PATH_ROOT
     )
