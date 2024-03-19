@@ -27,7 +27,7 @@ _PATH_ALL_TESTS = os.path.dirname(_PATH_UNITTESTS)
 _PATH_TEST_CACHE = os.getenv("PYTEST_REFERENCE_CACHE", os.path.join(_PATH_ALL_TESTS, "_cache-references"))
 
 
-_reference_cachier = cachier(cache_dir=_PATH_TEST_CACHE, separate_files=True)
+_reference_cachier = cachier(cache_dir=_PATH_TEST_CACHE, separate_files=False)
 
 # ignore FutureWarnings while testing (mainly appearing with DDP runs)
 warnings.filterwarnings("ignore", category=FutureWarning, module="sklearn.*")

@@ -96,7 +96,7 @@ runs:
       with:
         #enableCrossOsArchive: true
         path: tests/_cache-references
-        key: cache-references
+        key: cache-references-mono-files
 
     - name: Post References
       run: py-tree tests/_cache-references/ --show_hidden
