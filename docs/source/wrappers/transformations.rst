@@ -10,8 +10,8 @@ Transformations
 ###############
 
 Transformations allow for modifications to the input a metric receives by wrapping its `pred` and `target` arguments.
-Transformations can be implemented by either subclassing the `MetricInputTransformer` base class and overriding the `.transform_pred()` and/or `transform_target()` functions, or by supplying a lambda function via the `LambdaInputTransformer`.
-A `BinaryTargetTransformer` which casts target labels to 0/1 given a threshold is provided for convenience.
+Transformations can be implemented by either subclassing the ``MetricInputTransformer`` base class and overriding the ``.transform_pred()`` and/or ``transform_target()`` functions, or by supplying a lambda function via the ``LambdaInputTransformer``.
+A ``BinaryTargetTransformer`` which casts target labels to 0/1 given a threshold is provided for convenience.
 
 Module Interface
 ________________
