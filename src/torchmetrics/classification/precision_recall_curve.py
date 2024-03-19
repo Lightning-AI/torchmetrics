@@ -188,7 +188,8 @@ class BinaryPrecisionRecallCurve(Metric):
             curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
                 automatically call `metric.compute` and plot that result.
             score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
-                will automatically compute the score.
+                will automatically compute the score. The score is computed by using the trapezoidal rule to compute the
+                area under the curve.
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
@@ -215,7 +216,7 @@ class BinaryPrecisionRecallCurve(Metric):
         curve_computed = (curve_computed[1], curve_computed[0], curve_computed[2])
 
         score = (
-            _auc_compute_without_check(curve_computed[0], curve_computed[1], 1.0)
+            _auc_compute_without_check(curve_computed[0], curve_computed[1], direction=-1.0)
             if not curve and score is True
             else None
         )
@@ -390,7 +391,8 @@ class MulticlassPrecisionRecallCurve(Metric):
             curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
                 automatically call `metric.compute` and plot that result.
             score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
-                will automatically compute the score.
+                will automatically compute the score. The score is computed by using the trapezoidal rule to compute the
+                area under the curve.
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
@@ -416,7 +418,9 @@ class MulticlassPrecisionRecallCurve(Metric):
         # switch order as the standard way is recall along x-axis and precision along y-axis
         curve_computed = (curve_computed[1], curve_computed[0], curve_computed[2])
         score = (
-            _reduce_auroc(curve_computed[0], curve_computed[1], average=None) if not curve and score is True else None
+            _reduce_auroc(curve_computed[0], curve_computed[1], average=None, direction=-1.0)
+            if not curve and score is True
+            else None
         )
         return plot_curve(
             curve_computed, score=score, ax=ax, label_names=("Recall", "Precision"), name=self.__class__.__name__
@@ -583,7 +587,8 @@ class MultilabelPrecisionRecallCurve(Metric):
             curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
                 automatically call `metric.compute` and plot that result.
             score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
-                will automatically compute the score.
+                will automatically compute the score. The score is computed by using the trapezoidal rule to compute the
+                area under the curve.
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
@@ -609,7 +614,9 @@ class MultilabelPrecisionRecallCurve(Metric):
         # switch order as the standard way is recall along x-axis and precision along y-axis
         curve_computed = (curve_computed[1], curve_computed[0], curve_computed[2])
         score = (
-            _reduce_auroc(curve_computed[0], curve_computed[1], average=None) if not curve and score is True else None
+            _reduce_auroc(curve_computed[0], curve_computed[1], average=None, direction=-1.0)
+            if not curve and score is True
+            else None
         )
         return plot_curve(
             curve_computed, score=score, ax=ax, label_names=("Recall", "Precision"), name=self.__class__.__name__
