@@ -20,7 +20,6 @@ from typing import Optional
 
 import lai_sphinx_theme
 import torchmetrics
-from lightning_utilities.docs import fetch_external_assets
 from lightning_utilities.docs.formatting import _transform_changelog
 
 _PATH_HERE = os.path.abspath(os.path.dirname(__file__))
@@ -30,6 +29,7 @@ sys.path.insert(0, os.path.abspath(_PATH_ROOT))
 FOLDER_GENERATED = "generated"
 SPHINX_MOCK_REQUIREMENTS = int(os.environ.get("SPHINX_MOCK_REQUIREMENTS", True))
 SPHINX_FETCH_ASSETS = int(os.environ.get("SPHINX_FETCH_ASSETS", False))
+SPHINX_PIN_RELEASE_VERSIONS = int(os.getenv("SPHINX_PIN_RELEASE_VERSIONS", False))
 
 html_favicon = "_static/images/icon.svg"
 
@@ -77,6 +77,8 @@ def _set_root_image_path(page_path: str) -> None:
 
 
 if SPHINX_FETCH_ASSETS:
+    from lightning_utilities.docs import fetch_external_assets
+
     fetch_external_assets(
         docs_folder=_PATH_HERE,
         assets_folder="_static/fetched-s3-assets",
@@ -85,6 +87,27 @@ if SPHINX_FETCH_ASSETS:
     all_pages = glob.glob(os.path.join(_PATH_HERE, "**", "*.rst"), recursive=True)
     for page in all_pages:
         _set_root_image_path(page)
+
+
+if SPHINX_PIN_RELEASE_VERSIONS:
+    from lightning_utilities.docs import adjust_linked_external_docs
+
+    adjust_linked_external_docs(
+        "https://numpy.org/doc/stable/", "https://numpy.org/doc/{numpy.__version__}/", _PATH_ROOT
+    )
+    adjust_linked_external_docs(
+        "https://pytorch.org/docs/stable/", "https://pytorch.org/docs/{torch.__version__}/", _PATH_ROOT
+    )
+    adjust_linked_external_docs(
+        "https://matplotlib.org/stable/",
+        "https://matplotlib.org/{matplotlib.__version__}/",
+        _PATH_ROOT,
+        version_digits=3,
+    )
+    adjust_linked_external_docs(
+        "https://scikit-learn.org/stable/", "https://scikit-learn.org/{sklearn.__version__}/", _PATH_ROOT
+    )
+
 
 # -- General configuration ---------------------------------------------------
 
@@ -263,7 +286,7 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "torch": ("https://pytorch.org/docs/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
-    "matplotlib": ("http://matplotlib.org/stable", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
 }
 nitpicky = True
 
