@@ -60,7 +60,8 @@ class InceptionScore(Metric):
     As output of `forward` and `compute` the metric returns the following output
 
     - ``inception_mean`` (:class:`~torch.Tensor`): float scalar tensor with mean inception score over subsets
-    - ``inception_std`` (:class:`~torch.Tensor`): float scalar tensor with standard deviation of inception score over subsets
+    - ``inception_std`` (:class:`~torch.Tensor`): float scalar tensor with standard deviation of inception score
+      over subsets
 
     Args:
         feature:
