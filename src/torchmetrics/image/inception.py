@@ -38,7 +38,7 @@ class InceptionScore(Metric):
         IS = exp(\mathbb{E}_x KL(p(y | x ) || p(y)))
 
     where :math:`KL(p(y | x) || p(y))` is the KL divergence between the conditional distribution :math:`p(y|x)`
-    and the margianl distribution :math:`p(y)`. Both the conditional and marginal distribution is calculated
+    and the marginal distribution :math:`p(y)`. Both the conditional and marginal distribution is calculated
     from features extracted from the images. The score is calculated on random splits of the images such that
     both a mean and standard deviation of the score are returned. The metric was originally proposed in
     `inception ref1`_.
@@ -59,7 +59,8 @@ class InceptionScore(Metric):
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``fid`` (:class:`~torch.Tensor`): float scalar tensor with mean FID value over samples
+    - ``inception_mean`` (:class:`~torch.Tensor`): float scalar tensor with mean inception score over subsets
+    - ``inception_std`` (:class:`~torch.Tensor`): float scalar tensor with standard deviation of inception score over subsets
 
     Args:
         feature:
