@@ -277,3 +277,18 @@ def _test_sync_with_empty_lists(rank):
 def test_sync_with_empty_lists():
     """Test that synchronization of states can be enabled and disabled for compute."""
     pytest.pool.map(_test_sync_with_empty_lists, range(NUM_PROCESSES))
+
+
+def _test_sync_with_unequal_size_lists(rank):
+    """Test that synchronization of list states work even when some ranks have not received any data yet."""
+    dummy = DummyListMetric()
+    if rank == 0:
+        dummy.update(torch.zeros(2))
+    assert dummy.compute() == tensor([0.0, 0.0])
+
+
+@pytest.mark.DDP()
+@pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+def test_sync_with_unequal_size_lists():
+    """Test that synchronization of states can be enabled and disabled for compute."""
+    pytest.pool.map(_test_sync_with_unequal_size_lists, range(NUM_PROCESSES))
