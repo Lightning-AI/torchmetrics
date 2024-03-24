@@ -29,11 +29,11 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_GREATER_EQUAL_1_12
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
+if not _TORCH_GREATER_EQUAL_1_12:
+    __doctest_skip__ = ["PanopticQuality", "PanopticQuality.*", "ModifiedPanopticQuality", "ModifiedPanopticQuality.*"]
+
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["PanopticQuality.plot", "ModifiedPanopticQuality.plot"]
-
-if not _TORCH_GREATER_EQUAL_1_12:
-    __doctest_skip__ = ["PanopticQuality", "ModifiedPanopticQuality"]
 
 
 class PanopticQuality(Metric):
