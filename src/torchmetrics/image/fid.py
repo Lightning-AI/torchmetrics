@@ -287,6 +287,11 @@ class FrechetInceptionDistance(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
+        
+        if not isinstance(normalize, bool):
+            raise ValueError("Argument `normalize` expected to be a bool")
+        self.normalize = normalize
+
         if isinstance(feature, int):
             num_features = feature
             if not _TORCH_FIDELITY_AVAILABLE:
@@ -307,7 +312,10 @@ class FrechetInceptionDistance(Metric):
             if hasattr(self.inception, "num_features"):
                 num_features = self.inception.num_features
             else:
-                dummy_image = torch.randint(0, 255, (1, 3, 299, 299), dtype=torch.uint8)
+                if self.normalize:
+                    dummy_image = torch.rand((1, 3, 299, 299), dtype=torch.float16)
+                else:
+                    dummy_image = torch.randint(0, 255, (1, 3, 299, 299), dtype=torch.uint8)
                 num_features = self.inception(dummy_image).shape[-1]
         else:
             raise TypeError("Got unknown input to argument `feature`")
@@ -315,10 +323,6 @@ class FrechetInceptionDistance(Metric):
         if not isinstance(reset_real_features, bool):
             raise ValueError("Argument `reset_real_features` expected to be a bool")
         self.reset_real_features = reset_real_features
-
-        if not isinstance(normalize, bool):
-            raise ValueError("Argument `normalize` expected to be a bool")
-        self.normalize = normalize
 
         mx_num_feats = (num_features, num_features)
         self.add_state("real_features_sum", torch.zeros(num_features).double(), dist_reduce_fx="sum")
