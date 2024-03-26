@@ -26,12 +26,14 @@ def _binary_stat_scores_arg_validation(
     threshold: float = 0.5,
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
+    zero_division: float = 0,
 ) -> None:
     """Validate non tensor input.
 
     - ``threshold`` has to be a float in the [0,1] range
     - ``multidim_average`` has to be either "global" or "samplewise"
     - ``ignore_index`` has to be None or int
+    - ``zero_division`` has to be 0 or 1
 
     """
     if not (isinstance(threshold, float) and (0 <= threshold <= 1)):
@@ -43,6 +45,8 @@ def _binary_stat_scores_arg_validation(
         )
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
+    if zero_division not in [0, 1]:
+        raise ValueError(f"Expected argument `zero_division` to be 0 or 1, but got {zero_division}.")
 
 
 def _binary_stat_scores_tensor_validation(
@@ -220,6 +224,7 @@ def _multiclass_stat_scores_arg_validation(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
+    zero_division: float = 0,
 ) -> None:
     """Validate non tensor input.
 
@@ -228,6 +233,7 @@ def _multiclass_stat_scores_arg_validation(
     - ``average`` has to be "micro" | "macro" | "weighted" | "none"
     - ``multidim_average`` has to be either "global" or "samplewise"
     - ``ignore_index`` has to be None or int
+    - ``zero_division`` has to be 0 or 1
 
     """
     if not isinstance(num_classes, int) or num_classes < 2:
@@ -248,6 +254,8 @@ def _multiclass_stat_scores_arg_validation(
         )
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
+    if zero_division not in [0, 1]:
+        raise ValueError(f"Expected argument `zero_division` to be 0 or 1, but got {zero_division}.")
 
 
 def _multiclass_stat_scores_tensor_validation(
@@ -560,6 +568,7 @@ def _multilabel_stat_scores_arg_validation(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
+    zero_division: float = 0,
 ) -> None:
     """Validate non tensor input.
 
@@ -568,6 +577,7 @@ def _multilabel_stat_scores_arg_validation(
     - ``average`` has to be "micro" | "macro" | "weighted" | "none"
     - ``multidim_average`` has to be either "global" or "samplewise"
     - ``ignore_index`` has to be None or int
+    - ``zero_division`` has to be 0 or 1
 
     """
     if not isinstance(num_labels, int) or num_labels < 2:
@@ -584,6 +594,8 @@ def _multilabel_stat_scores_arg_validation(
         )
     if ignore_index is not None and not isinstance(ignore_index, int):
         raise ValueError(f"Expected argument `ignore_index` to either be `None` or an integer, but got {ignore_index}")
+    if zero_division not in [0, 1]:
+        raise ValueError(f"Expected argument `zero_division` to be 0 or 1, but got {zero_division}.")
 
 
 def _multilabel_stat_scores_tensor_validation(

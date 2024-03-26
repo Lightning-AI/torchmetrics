@@ -43,17 +43,18 @@ def _fbeta_reduce(
     average: Optional[Literal["binary", "micro", "macro", "weighted", "none"]],
     multidim_average: Literal["global", "samplewise"] = "global",
     multilabel: bool = False,
+    zero_division: float = 0,
 ) -> Tensor:
     beta2 = beta**2
     if average == "binary":
-        return _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
+        return _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp, zero_division)
     if average == "micro":
         tp = tp.sum(dim=0 if multidim_average == "global" else 1)
         fn = fn.sum(dim=0 if multidim_average == "global" else 1)
         fp = fp.sum(dim=0 if multidim_average == "global" else 1)
-        return _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
+        return _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp, zero_division)
 
-    fbeta_score = _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
+    fbeta_score = _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp, zero_division)
     return _adjust_weights_safe_divide(fbeta_score, average, multilabel, tp, fp, fn)
 
 
@@ -62,10 +63,11 @@ def _binary_fbeta_score_arg_validation(
     threshold: float = 0.5,
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
+    zero_division: float = 0,
 ) -> None:
     if not (isinstance(beta, float) and beta > 0):
         raise ValueError(f"Expected argument `beta` to be a float larger than 0, but got {beta}.")
-    _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
+    _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index, zero_division)
 
 
 def binary_fbeta_score(
@@ -76,6 +78,7 @@ def binary_fbeta_score(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
     r"""Compute `F-score`_ metric for binary tasks.
 
@@ -106,6 +109,8 @@ def binary_fbeta_score(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Returns:
         If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
@@ -136,11 +141,13 @@ def binary_fbeta_score(
 
     """
     if validate_args:
-        _binary_fbeta_score_arg_validation(beta, threshold, multidim_average, ignore_index)
+        _binary_fbeta_score_arg_validation(beta, threshold, multidim_average, ignore_index, zero_division)
         _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index)
     preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
     tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
-    return _fbeta_reduce(tp, fp, tn, fn, beta, average="binary", multidim_average=multidim_average)
+    return _fbeta_reduce(
+        tp, fp, tn, fn, beta, average="binary", multidim_average=multidim_average, zero_division=zero_division
+    )
 
 
 def _multiclass_fbeta_score_arg_validation(
@@ -150,10 +157,11 @@ def _multiclass_fbeta_score_arg_validation(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
+    zero_division: float = 0,
 ) -> None:
     if not (isinstance(beta, float) and beta > 0):
         raise ValueError(f"Expected argument `beta` to be a float larger than 0, but got {beta}.")
-    _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
+    _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index, zero_division)
 
 
 def multiclass_fbeta_score(
@@ -166,6 +174,7 @@ def multiclass_fbeta_score(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
     r"""Compute `F-score`_ metric for multiclass tasks.
 
@@ -206,6 +215,8 @@ def multiclass_fbeta_score(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
@@ -254,13 +265,17 @@ def multiclass_fbeta_score(
 
     """
     if validate_args:
-        _multiclass_fbeta_score_arg_validation(beta, num_classes, top_k, average, multidim_average, ignore_index)
+        _multiclass_fbeta_score_arg_validation(
+            beta, num_classes, top_k, average, multidim_average, ignore_index, zero_division
+        )
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
     preds, target = _multiclass_stat_scores_format(preds, target, top_k)
     tp, fp, tn, fn = _multiclass_stat_scores_update(
         preds, target, num_classes, top_k, average, multidim_average, ignore_index
     )
-    return _fbeta_reduce(tp, fp, tn, fn, beta, average=average, multidim_average=multidim_average)
+    return _fbeta_reduce(
+        tp, fp, tn, fn, beta, average=average, multidim_average=multidim_average, zero_division=zero_division
+    )
 
 
 def _multilabel_fbeta_score_arg_validation(
@@ -270,10 +285,13 @@ def _multilabel_fbeta_score_arg_validation(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
+    zero_division: float = 0,
 ) -> None:
     if not (isinstance(beta, float) and beta > 0):
         raise ValueError(f"Expected argument `beta` to be a float larger than 0, but got {beta}.")
-    _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
+    _multilabel_stat_scores_arg_validation(
+        num_labels, threshold, average, multidim_average, ignore_index, zero_division
+    )
 
 
 def multilabel_fbeta_score(
@@ -286,6 +304,7 @@ def multilabel_fbeta_score(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
     r"""Compute `F-score`_ metric for multilabel tasks.
 
@@ -325,6 +344,8 @@ def multilabel_fbeta_score(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
@@ -371,11 +392,23 @@ def multilabel_fbeta_score(
 
     """
     if validate_args:
-        _multilabel_fbeta_score_arg_validation(beta, num_labels, threshold, average, multidim_average, ignore_index)
+        _multilabel_fbeta_score_arg_validation(
+            beta, num_labels, threshold, average, multidim_average, ignore_index, zero_division
+        )
         _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
-    return _fbeta_reduce(tp, fp, tn, fn, beta, average=average, multidim_average=multidim_average, multilabel=True)
+    return _fbeta_reduce(
+        tp,
+        fp,
+        tn,
+        fn,
+        beta,
+        average=average,
+        multidim_average=multidim_average,
+        multilabel=True,
+        zero_division=zero_division,
+    )
 
 
 def binary_f1_score(
@@ -385,6 +418,7 @@ def binary_f1_score(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
     r"""Compute F-1 score for binary tasks.
 
@@ -413,6 +447,8 @@ def binary_f1_score(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Returns:
         If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
@@ -450,6 +486,7 @@ def binary_f1_score(
         multidim_average=multidim_average,
         ignore_index=ignore_index,
         validate_args=validate_args,
+        zero_division=zero_division,
     )
 
 
@@ -462,6 +499,7 @@ def multiclass_f1_score(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
     r"""Compute F-1 score for multiclass tasks.
 
@@ -500,6 +538,8 @@ def multiclass_f1_score(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
@@ -557,6 +597,7 @@ def multiclass_f1_score(
         multidim_average=multidim_average,
         ignore_index=ignore_index,
         validate_args=validate_args,
+        zero_division=zero_division,
     )
 
 
@@ -569,6 +610,7 @@ def multilabel_f1_score(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
     r"""Compute F-1 score for multilabel tasks.
 
@@ -606,6 +648,8 @@ def multilabel_f1_score(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when
+            :math:`\text{TP} + \text{FP} = 0 \wedge \text{TP} + \text{FN} = 0`.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
@@ -661,6 +705,7 @@ def multilabel_f1_score(
         multidim_average=multidim_average,
         ignore_index=ignore_index,
         validate_args=validate_args,
+        zero_division=zero_division,
     )
 
 
@@ -677,6 +722,7 @@ def fbeta_score(
     top_k: Optional[int] = 1,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
     r"""Compute `F-score`_ metric.
 
@@ -702,20 +748,40 @@ def fbeta_score(
     task = ClassificationTask.from_str(task)
     assert multidim_average is not None  # noqa: S101  # needed for mypy
     if task == ClassificationTask.BINARY:
-        return binary_fbeta_score(preds, target, beta, threshold, multidim_average, ignore_index, validate_args)
+        return binary_fbeta_score(
+            preds, target, beta, threshold, multidim_average, ignore_index, validate_args, zero_division
+        )
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         if not isinstance(top_k, int):
             raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
         return multiclass_fbeta_score(
-            preds, target, beta, num_classes, average, top_k, multidim_average, ignore_index, validate_args
+            preds,
+            target,
+            beta,
+            num_classes,
+            average,
+            top_k,
+            multidim_average,
+            ignore_index,
+            validate_args,
+            zero_division,
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_fbeta_score(
-            preds, target, beta, num_labels, threshold, average, multidim_average, ignore_index, validate_args
+            preds,
+            target,
+            beta,
+            num_labels,
+            threshold,
+            average,
+            multidim_average,
+            ignore_index,
+            validate_args,
+            zero_division,
         )
     raise ValueError(f"Unsupported task `{task}` passed.")
 
@@ -732,6 +798,7 @@ def f1_score(
     top_k: Optional[int] = 1,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
     r"""Compute F-1 score.
 
@@ -756,19 +823,19 @@ def f1_score(
     task = ClassificationTask.from_str(task)
     assert multidim_average is not None  # noqa: S101  # needed for mypy
     if task == ClassificationTask.BINARY:
-        return binary_f1_score(preds, target, threshold, multidim_average, ignore_index, validate_args)
+        return binary_f1_score(preds, target, threshold, multidim_average, ignore_index, validate_args, zero_division)
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         if not isinstance(top_k, int):
             raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
         return multiclass_f1_score(
-            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
+            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args, zero_division
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_f1_score(
-            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
+            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args, zero_division
         )
     raise ValueError(f"Unsupported task `{task}` passed.")
