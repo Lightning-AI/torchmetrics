@@ -169,6 +169,7 @@ from torchmetrics.text import (
     WordInfoPreserved,
 )
 from torchmetrics.utilities.imports import (
+    _TORCH_GREATER_EQUAL_1_12,
     _TORCHAUDIO_GREATER_EQUAL_0_10,
 )
 from torchmetrics.utilities.plot import _get_col_row_split
@@ -341,6 +342,9 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             _panoptic_input,
             _panoptic_input,
             id="panoptic quality",
+            marks=pytest.mark.skipif(
+                not _TORCH_GREATER_EQUAL_1_12, reason="Panoptic Quality metric requires PyTorch 1.12 or later"
+            ),
         ),
         pytest.param(BinaryAveragePrecision, _rand_input, _binary_randint_input, id="binary average precision"),
         pytest.param(
