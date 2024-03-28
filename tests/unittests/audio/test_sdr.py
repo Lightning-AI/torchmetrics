@@ -24,9 +24,9 @@ from torchmetrics.functional import signal_distortion_ratio
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_11
 
 from unittests import _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB, _SAMPLE_NUMPY_ISSUE_895
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 

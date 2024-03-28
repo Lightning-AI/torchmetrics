@@ -47,12 +47,13 @@ def _reduce_auroc(
     tpr: Union[Tensor, List[Tensor]],
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
     weights: Optional[Tensor] = None,
+    direction: float = 1.0,
 ) -> Tensor:
     """Reduce multiple average precision score into one number."""
     if isinstance(fpr, Tensor) and isinstance(tpr, Tensor):
-        res = _auc_compute_without_check(fpr, tpr, 1.0, axis=1)
+        res = _auc_compute_without_check(fpr, tpr, direction=direction, axis=1)
     else:
-        res = torch.stack([_auc_compute_without_check(x, y, 1.0) for x, y in zip(fpr, tpr)])
+        res = torch.stack([_auc_compute_without_check(x, y, direction=direction) for x, y in zip(fpr, tpr)])
     if average is None or average == "none":
         return res
     if torch.isnan(res).any():

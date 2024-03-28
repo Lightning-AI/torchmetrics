@@ -20,7 +20,7 @@ from torchmetrics.functional.retrieval.hit_rate import retrieval_hit_rate
 from torchmetrics.retrieval.hit_rate import RetrievalHitRate
 from typing_extensions import Literal
 
-from unittests.helpers import seed_all
+from unittests._helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,
     _concat_tests,
