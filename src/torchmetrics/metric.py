@@ -432,6 +432,10 @@ class Metric(Module, ABC):
             if reduction_fn == dim_zero_cat and isinstance(input_dict[attr], list) and len(input_dict[attr]) > 1:
                 input_dict[attr] = [dim_zero_cat(input_dict[attr])]
 
+            # cornor case in distributed settings where a rank have not received any data, create empty to concatenate
+            if reduction_fn == dim_zero_cat and isinstance(input_dict[attr], list) and len(input_dict[attr]) == 0:
+                input_dict[attr] = [torch.tensor([], device=self.device, dtype=self.dtype)]
+
         output_dict = apply_to_collection(
             input_dict,
             Tensor,
