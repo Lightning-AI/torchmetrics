@@ -51,7 +51,7 @@ def _specificity_reduce(
         return _safe_divide(tn, tn + fp)
 
     specificity_score = _safe_divide(tn, tn + fp)
-    return _adjust_weights_safe_divide(specificity_score, average, multilabel, tp, fp, fn)
+    return _adjust_weights_safe_divide(specificity_score, average, multilabel, tp, fn)
 
 
 def binary_specificity(

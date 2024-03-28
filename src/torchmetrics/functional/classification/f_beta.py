@@ -54,7 +54,7 @@ def _fbeta_reduce(
         return _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
 
     fbeta_score = _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp)
-    return _adjust_weights_safe_divide(fbeta_score, average, multilabel, tp, fp, fn)
+    return _adjust_weights_safe_divide(fbeta_score, average, multilabel, tp, fn)
 
 
 def _binary_fbeta_score_arg_validation(

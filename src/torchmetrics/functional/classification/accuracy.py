@@ -85,7 +85,7 @@ def _accuracy_reduce(
         return _safe_divide(tp, tp + fn)
 
     score = _safe_divide(tp + tn, tp + tn + fp + fn) if multilabel else _safe_divide(tp, tp + fn)
-    return _adjust_weights_safe_divide(score, average, multilabel, tp, fp, fn, top_k)
+    return _adjust_weights_safe_divide(score, average, multilabel, tp, fn)
 
 
 def binary_accuracy(
