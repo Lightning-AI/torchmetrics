@@ -252,14 +252,16 @@ def test_metric_lightning_log(tmpdir):
             pass
 
     logger = CustomCSVLogger("tmpdir/logs")
+    is_cuda = torch.cuda.is_available()
+    cuda_extra = {"devices": int(is_cuda)} if is_cuda else {}
     trainer = Trainer(
-        devices=int(torch.cuda.is_available()),
         default_root_dir=tmpdir,
         limit_train_batches=2,
         limit_val_batches=0,
         max_epochs=2,
         log_every_n_steps=1,
         logger=logger,
+        **cuda_extra,
     )
     trainer.fit(model)
 
@@ -349,14 +351,16 @@ def test_metric_collection_lightning_log(tmpdir):
             self.log_dict({f"{k}_epoch": v for k, v in metric_vals.items()})
 
     model = TestModel()
+    is_cuda = torch.cuda.is_available()
+    cuda_extra = {"devices": int(is_cuda)} if is_cuda else {}
 
     trainer = Trainer(
-        devices=int(torch.cuda.is_available()),
         default_root_dir=tmpdir,
         limit_train_batches=2,
         limit_val_batches=0,
         max_epochs=1,
         log_every_n_steps=1,
+        **cuda_extra,
     )
     trainer.fit(model)
 
