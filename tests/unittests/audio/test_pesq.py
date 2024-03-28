@@ -22,9 +22,9 @@ from torchmetrics.audio import PerceptualEvaluationSpeechQuality
 from torchmetrics.functional.audio import perceptual_evaluation_speech_quality
 
 from unittests import _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 from unittests.audio import _SAMPLE_AUDIO_SPEECH, _SAMPLE_AUDIO_SPEECH_BAB_DB, _average_metric_wrapper
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 

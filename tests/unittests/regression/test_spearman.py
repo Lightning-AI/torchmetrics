@@ -21,8 +21,8 @@ from torchmetrics.regression.spearman import SpearmanCorrCoef
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 

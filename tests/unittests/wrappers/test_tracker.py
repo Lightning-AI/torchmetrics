@@ -24,7 +24,7 @@ from torchmetrics.classification import (
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
 from torchmetrics.wrappers import MetricTracker, MultioutputWrapper
 
-from unittests.helpers import seed_all
+from unittests._helpers import seed_all
 
 seed_all(42)
 

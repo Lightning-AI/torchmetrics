@@ -22,8 +22,8 @@ from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 

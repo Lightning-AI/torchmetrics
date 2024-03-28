@@ -169,6 +169,7 @@ from torchmetrics.text import (
     WordInfoPreserved,
 )
 from torchmetrics.utilities.imports import (
+    _TORCH_GREATER_EQUAL_1_12,
     _TORCHAUDIO_GREATER_EQUAL_0_10,
 )
 from torchmetrics.utilities.plot import _get_col_row_split
@@ -341,6 +342,9 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             _panoptic_input,
             _panoptic_input,
             id="panoptic quality",
+            marks=pytest.mark.skipif(
+                not _TORCH_GREATER_EQUAL_1_12, reason="Panoptic Quality metric requires PyTorch 1.12 or later"
+            ),
         ),
         pytest.param(BinaryAveragePrecision, _rand_input, _binary_randint_input, id="binary average precision"),
         pytest.param(
@@ -834,12 +838,17 @@ def test_confusion_matrix_plotter(metric_class, preds, target, labels, use_label
 
 @pytest.mark.parametrize("together", [True, False])
 @pytest.mark.parametrize("num_vals", [1, 2])
-def test_plot_method_collection(together, num_vals):
+@pytest.mark.parametrize(
+    ("prefix", "postfix"), [(None, None), ("prefix", None), (None, "postfix"), ("prefix", "postfix")]
+)
+def test_plot_method_collection(together, num_vals, prefix, postfix):
     """Test the plot method of metric collection."""
     m_collection = MetricCollection(
         BinaryAccuracy(),
         BinaryPrecision(),
         BinaryRecall(),
+        prefix=prefix,
+        postfix=postfix,
     )
     if num_vals == 1:
         m_collection.update(torch.randint(0, 2, size=(10,)), torch.randint(0, 2, size=(10,)))
