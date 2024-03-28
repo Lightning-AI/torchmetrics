@@ -253,6 +253,7 @@ def test_metric_lightning_log(tmpdir):
 
     logger = CustomCSVLogger("tmpdir/logs")
     trainer = Trainer(
+        devices=int(torch.cuda.is_available()),
         default_root_dir=tmpdir,
         limit_train_batches=2,
         limit_val_batches=0,
@@ -350,6 +351,7 @@ def test_metric_collection_lightning_log(tmpdir):
     model = TestModel()
 
     trainer = Trainer(
+        devices=int(torch.cuda.is_available()),
         default_root_dir=tmpdir,
         limit_train_batches=2,
         limit_val_batches=0,
