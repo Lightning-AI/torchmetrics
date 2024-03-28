@@ -105,7 +105,7 @@ if SPHINX_PIN_RELEASE_VERSIONS:
         version_digits=3,
     )
     adjust_linked_external_docs(
-        "https://scikit-learn.org/stable/", "https://scikit-learn.org/{sklearn.__version__}/", _PATH_ROOT
+        "https://scikit-learn.org/stable/", "https://scikit-learn.org/{scikit-learn}/", _PATH_ROOT
     )
 
 
