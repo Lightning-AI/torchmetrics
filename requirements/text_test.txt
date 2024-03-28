@@ -6,3 +6,6 @@ rouge-score >0.1.0, <=0.1.2
 bert_score ==0.3.13
 huggingface-hub <0.22
 sacrebleu >=2.3.0, <2.5.0
+
+mecab-ko >=1.0.0, <1.1.0
+mecab-ko-dic >=1.0.0, <1.1.0
