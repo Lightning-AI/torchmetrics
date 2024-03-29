@@ -57,8 +57,8 @@ def intersect_and_union(pred_label, label, num_classes, ignore_index, label_map=
             The prediction histogram on all classes.
         torch.Tensor:
             The ground truth histogram on all classes.
-    """
 
+    """
     if label_map is not None:
         label_copy = label.clone()
         for old_id, new_id in label_map.items():
@@ -99,7 +99,7 @@ def total_intersect_and_union(preds, target, num_classes, ignore_index, label_ma
         reduce_zero_label (bool):
             Whether ignore zero label. Default: False.
 
-     Returns:
+    Returns:
         torch.Tensor:
             The intersection of prediction and ground truth histogram on all classes.
         torch.Tensor:
@@ -108,6 +108,7 @@ def total_intersect_and_union(preds, target, num_classes, ignore_index, label_ma
             The prediction histogram on all classes.
         torch.Tensor:
             The ground truth histogram on all classes.
+
     """
     total_area_intersect = torch.zeros((num_classes,), dtype=torch.float64)
     total_area_union = torch.zeros((num_classes,), dtype=torch.float64)
@@ -153,6 +154,7 @@ def _mean_iou_update(
             Mapping old labels to new labels. Default: dict().
         reduce_zero_label (bool):
             Whether ignore zero label. Default: False.
+
     """
     _input_validator(preds, target)
 
@@ -182,6 +184,7 @@ def _mean_iou_compute(total_area_intersect, total_area_union, total_area_pred_la
         >>> total_area_intersect, total_area_union, total_area_pred_label, total_area_label = _mean_iou_update(preds, target)
         >>> _mean_iou_compute(total_area_intersect, total_area_union, total_area_pred_label, total_area_label)
         tensor(0.2500)
+
     """
     iou = total_area_intersect / total_area_union
 
@@ -226,6 +229,7 @@ def mean_iou(
         >>> target = [torch.tensor([[255,255],[2,3]])]
         >>> mean_iou(preds, target)
         tensor(0.2500)
+
     """
     total_area_intersect, total_area_union, total_area_pred_label, total_area_label = _mean_iou_update(
         preds, target, num_labels, ignore_index, nan_to_num, label_map, reduce_labels
