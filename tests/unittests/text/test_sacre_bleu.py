@@ -52,6 +52,9 @@ class TestSacreBLEUScore(TextTester):
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_bleu_score_class(self, ddp, preds, targets, tokenize, lowercase):
         """Test class implementation of metric."""
+        if _should_skip_tokenizer(tokenize):
+            pytest.skip(reason="`ko-mecab` tokenizer requires  `mecab-ko` package to be installed")
+
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
         original_sacrebleu = partial(_reference_sacre_bleu, tokenize=tokenize, lowercase=lowercase)
 
@@ -66,6 +69,9 @@ class TestSacreBLEUScore(TextTester):
 
     def test_bleu_score_functional(self, preds, targets, tokenize, lowercase):
         """Test functional implementation of metric."""
+        if _should_skip_tokenizer(tokenize):
+            pytest.skip(reason="`ko-mecab` tokenizer requires  `mecab-ko` package to be installed")
+
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
         original_sacrebleu = partial(_reference_sacre_bleu, tokenize=tokenize, lowercase=lowercase)
 
@@ -79,6 +85,9 @@ class TestSacreBLEUScore(TextTester):
 
     def test_bleu_score_differentiability(self, preds, targets, tokenize, lowercase):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        if _should_skip_tokenizer(tokenize):
+            pytest.skip(reason="`ko-mecab` tokenizer requires  `mecab-ko` package to be installed")
+
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
 
         self.run_differentiability_test(
@@ -133,3 +142,7 @@ def test_tokenize_ko_mecab():
 def test_equivalence_of_available_tokenizers_and_annotation():
     """Test equivalence of SacreBLEU available tokenizers and corresponding type annotation."""
     assert set(AVAILABLE_TOKENIZERS) == set(_TokenizersLiteral.__args__)
+
+
+def _should_skip_tokenizer(tokenizer: _TokenizersLiteral) -> bool:
+    return tokenizer == "ko-mecab" and not RequirementCache("mecab-ko")
