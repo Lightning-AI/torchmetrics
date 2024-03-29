@@ -12,11 +12,10 @@ Char Error Rate
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.CharErrorRate
-    :noindex:
+.. autoclass:: torchmetrics.text.CharErrorRate
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.char_error_rate
-    :noindex:
+.. autofunction:: torchmetrics.functional.text.char_error_rate

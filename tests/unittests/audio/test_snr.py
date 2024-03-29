@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,35 +11,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
-from typing import Callable
 
 import pytest
 import torch
 from mir_eval.separation import bss_eval_images as mir_eval_bss_eval_images
 from torch import Tensor
-
 from torchmetrics.audio import SignalNoiseRatio
-from torchmetrics.functional import signal_noise_ratio
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
-from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_BATCHES, MetricTester
+from torchmetrics.functional.audio import signal_noise_ratio
+
+from unittests import _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
+from unittests.audio import _average_metric_wrapper
 
 seed_all(42)
 
-TIME = 100
 
-Input = namedtuple("Input", ["preds", "target"])
-
-BATCH_SIZE = 2
-inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, TIME),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 1, TIME),
+inputs = _Input(
+    preds=torch.rand(2, 1, 1, 25),
+    target=torch.rand(2, 1, 1, 25),
 )
 
 
-def bss_eval_images_snr(preds: Tensor, target: Tensor, metric_func: Callable, zero_mean: bool):
+def _reference_bss_snr(preds: Tensor, target: Tensor, zero_mean: bool):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     if zero_mean:
@@ -51,58 +46,48 @@ def bss_eval_images_snr(preds: Tensor, target: Tensor, metric_func: Callable, ze
     for i in range(preds.shape[0]):
         ms = []
         for j in range(preds.shape[1]):
-            if metric_func == mir_eval_bss_eval_images:
-                snr_v = metric_func([target[i, j]], [preds[i, j]])[0][0]
-            else:
-                snr_v = metric_func([target[i, j]], [preds[i, j]])[0][0][0]
+            snr_v = mir_eval_bss_eval_images([target[i, j]], [preds[i, j]], compute_permutation=True)[0][0]
             ms.append(snr_v)
         mss.append(ms)
     return torch.tensor(mss)
 
 
-def average_metric(preds: Tensor, target: Tensor, metric_func: Callable):
-    # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
-    # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
-    return metric_func(preds, target).mean()
-
-
-mireval_snr_zeromean = partial(bss_eval_images_snr, metric_func=mir_eval_bss_eval_images, zero_mean=True)
-mireval_snr_nozeromean = partial(bss_eval_images_snr, metric_func=mir_eval_bss_eval_images, zero_mean=False)
-
-
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, zero_mean",
+    "preds, target, ref_metric, zero_mean",
     [
-        (inputs.preds, inputs.target, mireval_snr_zeromean, True),
-        (inputs.preds, inputs.target, mireval_snr_nozeromean, False),
+        (inputs.preds, inputs.target, partial(_reference_bss_snr, zero_mean=True), True),
+        (inputs.preds, inputs.target, partial(_reference_bss_snr, zero_mean=False), False),
     ],
 )
 class TestSNR(MetricTester):
+    """Test class for `SignalNoiseRatio` metric."""
+
     atol = 1e-2
 
-    @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_snr(self, preds, target, sk_metric, zero_mean, ddp, dist_sync_on_step):
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_snr(self, preds, target, ref_metric, zero_mean, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             SignalNoiseRatio,
-            sk_metric=partial(average_metric, metric_func=sk_metric),
-            dist_sync_on_step=dist_sync_on_step,
-            metric_args=dict(zero_mean=zero_mean),
+            reference_metric=partial(_average_metric_wrapper, metric_func=ref_metric),
+            metric_args={"zero_mean": zero_mean},
         )
 
-    def test_snr_functional(self, preds, target, sk_metric, zero_mean):
+    def test_snr_functional(self, preds, target, ref_metric, zero_mean):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
             signal_noise_ratio,
-            sk_metric,
-            metric_args=dict(zero_mean=zero_mean),
+            ref_metric,
+            metric_args={"zero_mean": zero_mean},
         )
 
-    def test_snr_differentiability(self, preds, target, sk_metric, zero_mean):
+    def test_snr_differentiability(self, preds, target, ref_metric, zero_mean):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -111,14 +96,13 @@ class TestSNR(MetricTester):
             metric_args={"zero_mean": zero_mean},
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
-    )
-    def test_snr_half_cpu(self, preds, target, sk_metric, zero_mean):
+    def test_snr_half_cpu(self, preds, target, ref_metric, zero_mean):
+        """Test dtype support of the metric on CPU."""
         pytest.xfail("SNR metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_snr_half_gpu(self, preds, target, sk_metric, zero_mean):
+    def test_snr_half_gpu(self, preds, target, ref_metric, zero_mean):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -129,6 +113,7 @@ class TestSNR(MetricTester):
 
 
 def test_error_on_different_shape(metric_class=SignalNoiseRatio):
+    """Test that error is raised on different shapes of input."""
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))

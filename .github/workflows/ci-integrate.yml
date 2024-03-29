@@ -1,0 +1,82 @@
+name: "CI integrations | CPU"
+
+# see: https://help.github.com/en/actions/reference/events-that-trigger-workflows
+on: # Trigger the workflow on push or pull request, but only for the master branch
+  push:
+    branches: [master, "release/*"]
+  pull_request:
+    branches: [master, "release/*"]
+    types: [opened, reopened, ready_for_review, synchronize]
+  schedule:
+    # At the end of every day
+    - cron: "0 0 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.head_ref }}
+  cancel-in-progress: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  pytest:
+    runs-on: ${{ matrix.os }}
+    if: github.event.pull_request.draft == false
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-22.04", "macOS-12", "windows-2022"]
+        python-version: ["3.8", "3.10"]
+        requires: ["oldest", "latest"]
+        exclude:
+          - { python-version: "3.10", requires: "oldest" }
+          - { python-version: "3.10", os: "windows" } # todo: https://discuss.pytorch.org/t/numpy-is-not-available-error/146192
+        include:
+          - { python-version: "3.10", requires: "latest", os: "ubuntu-22.04" }
+          - { python-version: "3.10", requires: "latest", os: "macOS-14" } # M1 machine
+    env:
+      PYTORCH_URL: "https://download.pytorch.org/whl/cpu/torch_stable.html"
+      FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
+      PYPI_CACHE: "_ci-cache_PyPI"
+
+    # Timeout: https://stackoverflow.com/a/59076067/4521646
+    # seems that MacOS jobs take much more than orger OS
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: source cashing
+        uses: ./.github/actions/pull-caches
+      - name: set oldest if/only for integrations
+        if: matrix.requires == 'oldest'
+        run: python .github/assistant.py set-oldest-versions --req_files='["requirements/_integrate.txt"]'
+
+      - name: Install all dependencies
+        run: |
+          # this was updated in `source cashing` by optional oldest
+          cat requirements/_integrate.txt
+          # to have install pyTorch
+          pip install -e . --find-links=${PYTORCH_URL}
+
+          # adjust version to PT ecosystem based on installed TM
+          python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py
+          python adjust-torch-versions.py requirements/base.txt
+          python adjust-torch-versions.py requirements/image.txt
+
+          # install package and dependencies
+          pip install -e . -r requirements/_tests.txt -r requirements/_integrate.txt \
+            --find-links=${PYTORCH_URL} --find-links=${PYPI_CACHE} \
+            --upgrade-strategy eager
+          pip list
+
+      - name: Integrations
+        working-directory: ./tests
+        env:
+          PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
+        run: python -m pytest integrations -v --durations=25 --reruns 3 --reruns-delay 2

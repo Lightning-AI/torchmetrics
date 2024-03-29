@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,8 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.wrappers.bootstrapping import BootStrapper  # noqa: F401
-from torchmetrics.wrappers.classwise import ClasswiseWrapper  # noqa: F401
-from torchmetrics.wrappers.minmax import MinMaxMetric  # noqa: F401
-from torchmetrics.wrappers.multioutput import MultioutputWrapper  # noqa: F401
-from torchmetrics.wrappers.tracker import MetricTracker  # noqa: F401
+from torchmetrics.wrappers.bootstrapping import BootStrapper
+from torchmetrics.wrappers.classwise import ClasswiseWrapper
+from torchmetrics.wrappers.feature_share import FeatureShare
+from torchmetrics.wrappers.minmax import MinMaxMetric
+from torchmetrics.wrappers.multioutput import MultioutputWrapper
+from torchmetrics.wrappers.multitask import MultitaskWrapper
+from torchmetrics.wrappers.running import Running
+from torchmetrics.wrappers.tracker import MetricTracker
+
+__all__ = [
+    "BootStrapper",
+    "ClasswiseWrapper",
+    "FeatureShare",
+    "MinMaxMetric",
+    "MultioutputWrapper",
+    "MultitaskWrapper",
+    "MetricTracker",
+    "Running",
+]

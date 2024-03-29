@@ -12,11 +12,10 @@ Universal Image Quality Index
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.UniversalImageQualityIndex
-    :noindex:
+.. autoclass:: torchmetrics.image.UniversalImageQualityIndex
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.universal_image_quality_index
-    :noindex:
+.. autofunction:: torchmetrics.functional.image.universal_image_quality_index

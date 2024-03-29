@@ -3,6 +3,8 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/audio_classification.svg
    :tags: Audio
 
+.. include:: ../links.rst
+
 ################################
 Signal to Distortion Ratio (SDR)
 ################################
@@ -10,11 +12,10 @@ Signal to Distortion Ratio (SDR)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.SignalDistortionRatio
-    :noindex:
+.. autoclass:: torchmetrics.audio.SignalDistortionRatio
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.signal_distortion_ratio
-    :noindex:
+.. autofunction:: torchmetrics.functional.audio.signal_distortion_ratio

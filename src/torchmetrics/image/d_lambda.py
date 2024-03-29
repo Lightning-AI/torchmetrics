@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List
+from typing import Any, List, Optional, Sequence, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -20,11 +20,27 @@ from torchmetrics.functional.image.d_lambda import _spectral_distortion_index_co
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["SpectralDistortionIndex.plot"]
 
 
 class SpectralDistortionIndex(Metric):
-    """Computes Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda is used to compare the
-    spectral distortion between two images.
+    """Compute Spectral Distortion Index (SpectralDistortionIndex_) also now as D_lambda.
+
+    The metric is used to compare the spectral distortion between two images.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``preds`` (:class:`~torch.Tensor`): Low resolution multispectral image of shape ``(N,C,H,W)``
+    - ``target``(:class:`~torch.Tensor`): High resolution fused image of shape ``(N,C,H,W)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``sdi`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average SDI value
+      over sample else returns tensor of shape ``(N,)`` with SDI values per sample
 
     Args:
         p: Large spectral differences
@@ -36,27 +52,23 @@ class SpectralDistortionIndex(Metric):
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(42)
-        >>> from torchmetrics import SpectralDistortionIndex
+        >>> from torchmetrics.image import SpectralDistortionIndex
         >>> preds = torch.rand([16, 3, 16, 16])
         >>> target = torch.rand([16, 3, 16, 16])
         >>> sdi = SpectralDistortionIndex()
         >>> sdi(preds, target)
         tensor(0.0234)
 
-    References:
-        [1] Alparone, Luciano & Aiazzi, Bruno & Baronti, Stefano & Garzelli, Andrea & Nencini,
-        Filippo & Selva, Massimo. (2008). Multispectral and Panchromatic Data Fusion
-        Assessment Without Reference. ASPRS Journal of Photogrammetric Engineering
-        and Remote Sensing. 74. 193-200. 10.14358/PERS.74.2.193.
     """
 
     higher_is_better: bool = True
     is_differentiable: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     preds: List[Tensor]
     target: List[Tensor]
@@ -74,26 +86,69 @@ class SpectralDistortionIndex(Metric):
         if not isinstance(p, int) or p <= 0:
             raise ValueError(f"Expected `p` to be a positive integer. Got p: {p}.")
         self.p = p
-        ALLOWED_REDUCTION = ("elementwise_mean", "sum", "none")
-        if reduction not in ALLOWED_REDUCTION:
-            raise ValueError(f"Expected argument `reduction` be one of {ALLOWED_REDUCTION} but got {reduction}")
+        allowed_reductions = ("elementwise_mean", "sum", "none")
+        if reduction not in allowed_reductions:
+            raise ValueError(f"Expected argument `reduction` be one of {allowed_reductions} but got {reduction}")
         self.reduction = reduction
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with preds and target.
-
-        Args:
-            preds: Low resolution multispectral image
-            target: High resolution fused image
-        """
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update state with preds and target."""
         preds, target = _spectral_distortion_index_update(preds, target)
         self.preds.append(preds)
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """Computes and returns spectral distortion index."""
+        """Compute and returns spectral distortion index."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _spectral_distortion_index_compute(preds, target, self.p, self.reduction)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> _ = torch.manual_seed(42)
+            >>> from torchmetrics.image import SpectralDistortionIndex
+            >>> preds = torch.rand([16, 3, 16, 16])
+            >>> target = torch.rand([16, 3, 16, 16])
+            >>> metric = SpectralDistortionIndex()
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> _ = torch.manual_seed(42)
+            >>> from torchmetrics.image import SpectralDistortionIndex
+            >>> preds = torch.rand([16, 3, 16, 16])
+            >>> target = torch.rand([16, 3, 16, 16])
+            >>> metric = SpectralDistortionIndex()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+
+        """
+        return self._plot(val, ax)

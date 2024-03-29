@@ -1,12 +1,31 @@
+# Copyright The Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from copy import deepcopy
-from typing import Any, List, Tuple
+from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import torch
+from lightning_utilities import apply_to_collection
 from torch import Tensor
 from torch.nn import ModuleList
 
-from torchmetrics import Metric
-from torchmetrics.utilities import apply_to_collection
+from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+from torchmetrics.wrappers.abstract import WrapperMetric
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["MultioutputWrapper.plot"]
 
 
 def _get_nan_indices(*tensors: Tensor) -> Tensor:
@@ -21,10 +40,10 @@ def _get_nan_indices(*tensors: Tensor) -> Tensor:
     return nan_idxs
 
 
-class MultioutputWrapper(Metric):
+class MultioutputWrapper(WrapperMetric):
     """Wrap a base metric to enable it to support multiple outputs.
 
-    Several torchmetrics metrics, such as :class:`torchmetrics.regression.spearman.SpearmanCorrcoef` lack support for
+    Several torchmetrics metrics, such as :class:`~torchmetrics.regression.spearman.SpearmanCorrCoef` lack support for
     multioutput mode. This class wraps such metrics to support computing one metric per output.
     Unlike specific torchmetric metrics, it doesn't support any aggregation across outputs.
     This means if you set ``num_outputs`` to 2, ``.compute()`` will return a Tensor of dimension
@@ -56,26 +75,16 @@ class MultioutputWrapper(Metric):
             for certain classification metrics that can't handle additional 1-item dimensions.
 
     Example:
-
          >>> # Mimic R2Score in `multioutput`, `raw_values` mode:
          >>> import torch
-         >>> from torchmetrics import MultioutputWrapper, R2Score
+         >>> from torchmetrics.wrappers import MultioutputWrapper
+         >>> from torchmetrics.regression import R2Score
          >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
          >>> preds = torch.tensor([[0, 2], [-1, 2], [8, -5]])
          >>> r2score = MultioutputWrapper(R2Score(), 2)
          >>> r2score(preds, target)
-         [tensor(0.9654), tensor(0.9082)]
-         >>> # Classification metric where prediction and label tensors have different shapes.
-         >>> from torchmetrics import BinnedAveragePrecision
-         >>> target = torch.tensor([[1, 2], [2, 0], [1, 2]])
-         >>> preds = torch.tensor([
-         ...     [[.1, .8], [.8, .05], [.1, .15]],
-         ...     [[.1, .1], [.2, .3], [.7, .6]],
-         ...     [[.002, .4], [.95, .45], [.048, .15]]
-         ... ])
-         >>> binned_avg_precision = MultioutputWrapper(BinnedAveragePrecision(3, thresholds=5), 2)
-         >>> binned_avg_precision(preds, target)
-         [[tensor(-0.), tensor(1.0000), tensor(1.0000)], [tensor(0.3333), tensor(-0.), tensor(0.6667)]]
+         tensor([0.9654, 0.9082])
+
     """
 
     is_differentiable = False
@@ -87,7 +96,7 @@ class MultioutputWrapper(Metric):
         output_dim: int = -1,
         remove_nans: bool = True,
         squeeze_outputs: bool = True,
-    ):
+    ) -> None:
         super().__init__()
         self.metrics = ModuleList([deepcopy(base_metric) for _ in range(num_outputs)])
         self.output_dim = output_dim
@@ -112,6 +121,7 @@ class MultioutputWrapper(Metric):
 
             if self.squeeze_outputs:
                 selected_args = [arg.squeeze(self.output_dim) for arg in selected_args]
+                selected_kwargs = {k: v.squeeze(self.output_dim) for k, v in selected_kwargs.items()}
             args_kwargs_by_output.append((selected_args, selected_kwargs))
         return args_kwargs_by_output
 
@@ -121,25 +131,72 @@ class MultioutputWrapper(Metric):
         for metric, (selected_args, selected_kwargs) in zip(self.metrics, reshaped_args_kwargs):
             metric.update(*selected_args, **selected_kwargs)
 
-    def compute(self) -> List[Tensor]:
+    def compute(self) -> Tensor:
         """Compute metrics."""
-        return [m.compute() for m in self.metrics]
+        return torch.stack([m.compute() for m in self.metrics], 0)
 
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Any:
         """Call underlying forward methods and aggregate the results if they're non-null.
 
         We override this method to ensure that state variables get copied over on the underlying metrics.
+
         """
-        results = []
         reshaped_args_kwargs = self._get_args_kwargs_by_output(*args, **kwargs)
-        for metric, (selected_args, selected_kwargs) in zip(self.metrics, reshaped_args_kwargs):
-            results.append(metric(*selected_args, **selected_kwargs))
+        results = [
+            metric(*selected_args, **selected_kwargs)
+            for metric, (selected_args, selected_kwargs) in zip(self.metrics, reshaped_args_kwargs)
+        ]
         if results[0] is None:
             return None
-        return results
+        return torch.stack(results, 0)
 
     def reset(self) -> None:
         """Reset all underlying metrics."""
         for metric in self.metrics:
             metric.reset()
+        super().reset()
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.wrappers import MultioutputWrapper
+            >>> from torchmetrics.regression import R2Score
+            >>> metric = MultioutputWrapper(R2Score(), 2)
+            >>> metric.update(torch.randn(20, 2), torch.randn(20, 2))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.wrappers import MultioutputWrapper
+            >>> from torchmetrics.regression import R2Score
+            >>> metric = MultioutputWrapper(R2Score(), 2)
+            >>> values = [ ]
+            >>> for _ in range(3):
+            ...     values.append(metric(torch.randn(20, 2), torch.randn(20, 2)))
+            >>> fig_, ax_ = metric.plot(values)
+
+        """
+        return self._plot(val, ax)

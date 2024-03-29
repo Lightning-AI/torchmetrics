@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,43 +23,13 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multiclass_confusion_matrix_format,
     _multiclass_confusion_matrix_tensor_validation,
 )
-from torchmetrics.utilities.checks import _input_format_classification
-from torchmetrics.utilities.enums import DataType
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_8
-from torchmetrics.utilities.prints import rank_zero_warn
-
-
-def _binning_with_loop(
-    confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor
-) -> Tuple[Tensor, Tensor, Tensor]:
-    """Compute calibration bins using for loops. Use for pytorch < 1.6.
-
-    Args:
-        confidences: The confidence (i.e. predicted prob) of the top1 prediction.
-        accuracies: 1.0 if the top-1 prediction was correct, 0.0 otherwise.
-        bin_boundaries: Bin boundaries separating the ``linspace`` from 0 to 1.
-
-    Returns:
-        tuple with binned accuracy, binned confidence and binned probabilities
-    """
-    conf_bin = torch.zeros_like(bin_boundaries)
-    acc_bin = torch.zeros_like(bin_boundaries)
-    prop_bin = torch.zeros_like(bin_boundaries)
-    for i, (bin_lower, bin_upper) in enumerate(zip(bin_boundaries[:-1], bin_boundaries[1:])):
-        # Calculated confidence and accuracy in each bin
-        in_bin = confidences.gt(bin_lower.item()) * confidences.le(bin_upper.item())
-        prop_in_bin = in_bin.float().mean()
-        if prop_in_bin.item() > 0:
-            acc_bin[i] = accuracies[in_bin].float().mean()
-            conf_bin[i] = confidences[in_bin].mean()
-            prop_bin[i] = prop_in_bin
-    return acc_bin, conf_bin, prop_bin
+from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
 def _binning_bucketize(
     confidences: Tensor, accuracies: Tensor, bin_boundaries: Tensor
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Compute calibration bins using ``torch.bucketize``. Use for pytorch >= 1.6.
+    """Compute calibration bins using ``torch.bucketize``. Use for ``pytorch >=1.6``.
 
     Args:
         confidences: The confidence (i.e. predicted prob) of the top1 prediction.
@@ -68,13 +38,14 @@ def _binning_bucketize(
 
     Returns:
         tuple with binned accuracy, binned confidence and binned probabilities
+
     """
     accuracies = accuracies.to(dtype=confidences.dtype)
-    acc_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device, dtype=confidences.dtype)
-    conf_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device, dtype=confidences.dtype)
-    count_bin = torch.zeros(len(bin_boundaries) - 1, device=confidences.device, dtype=confidences.dtype)
+    acc_bin = torch.zeros(len(bin_boundaries), device=confidences.device, dtype=confidences.dtype)
+    conf_bin = torch.zeros(len(bin_boundaries), device=confidences.device, dtype=confidences.dtype)
+    count_bin = torch.zeros(len(bin_boundaries), device=confidences.device, dtype=confidences.dtype)
 
-    indices = torch.bucketize(confidences, bin_boundaries) - 1
+    indices = torch.bucketize(confidences, bin_boundaries, right=True) - 1
 
     count_bin.scatter_add_(dim=0, index=indices, src=torch.ones_like(confidences))
 
@@ -95,7 +66,7 @@ def _ce_compute(
     norm: str = "l1",
     debias: bool = False,
 ) -> Tensor:
-    """Computes the calibration error given the provided bin boundaries and norm.
+    """Compute the calibration error given the provided bin boundaries and norm.
 
     Args:
         confidences: The confidence (i.e. predicted prob) of the top1 prediction.
@@ -110,24 +81,22 @@ def _ce_compute(
 
     Returns:
         Tensor: Calibration error scalar.
+
     """
     if isinstance(bin_boundaries, int):
-        bin_boundaries = torch.linspace(0, 1, bin_boundaries + 1, dtype=torch.float, device=confidences.device)
+        bin_boundaries = torch.linspace(0, 1, bin_boundaries + 1, dtype=confidences.dtype, device=confidences.device)
 
     if norm not in {"l1", "l2", "max"}:
-        raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
+        raise ValueError(f"Argument `norm` is expected to be one of 'l1', 'l2', 'max' but got {norm}")
 
     with torch.no_grad():
-        if _TORCH_GREATER_EQUAL_1_8:
-            acc_bin, conf_bin, prop_bin = _binning_bucketize(confidences, accuracies, bin_boundaries)
-        else:
-            acc_bin, conf_bin, prop_bin = _binning_with_loop(confidences, accuracies, bin_boundaries)
+        acc_bin, conf_bin, prop_bin = _binning_bucketize(confidences, accuracies, bin_boundaries)
 
     if norm == "l1":
-        ce = torch.sum(torch.abs(acc_bin - conf_bin) * prop_bin)
-    elif norm == "max":
+        return torch.sum(torch.abs(acc_bin - conf_bin) * prop_bin)
+    if norm == "max":
         ce = torch.max(torch.abs(acc_bin - conf_bin))
-    elif norm == "l2":
+    if norm == "l2":
         ce = torch.sum(torch.pow(acc_bin - conf_bin, 2) * prop_bin)
         # NOTE: debiasing is disabled in the wrapper functions. This implementation differs from that in sklearn.
         if debias:
@@ -135,7 +104,7 @@ def _ce_compute(
             # the equation in Verified Uncertainty Prediction (Kumar et al 2019)/
             debias_bins = (acc_bin * (acc_bin - 1) * prop_bin) / (prop_bin * accuracies.size()[0] - 1)
             ce += torch.sum(torch.nan_to_num(debias_bins))  # replace nans with zeros if nothing appeared in a bin
-        ce = torch.sqrt(ce) if ce > 0 else torch.tensor(0)
+        return torch.sqrt(ce) if ce > 0 else torch.tensor(0)
     return ce
 
 
@@ -164,7 +133,7 @@ def _binary_calibration_error_tensor_validation(
         )
 
 
-def _binary_calibration_error_update(preds: Tensor, target: Tensor) -> Tensor:
+def _binary_calibration_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     confidences, accuracies = preds, target
     return confidences, accuracies
 
@@ -177,10 +146,10 @@ def binary_calibration_error(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""`Computes the Top-label Calibration Error`_ for binary tasks. The expected calibration error can be used to
-    quantify how well a given model is calibrated e.g. how well the predicted output probabilities of the model matches
-    the actual probabilities of the ground truth distribution.
+    r"""`Top-label Calibration Error`_ for binary tasks.
 
+    The expected calibration error can be used to quantify how well a given model is calibrated e.g. how well the
+    predicted output probabilities of the model matches the actual probabilities of the ground truth distribution.
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
     .. math::
@@ -202,7 +171,7 @@ def binary_calibration_error(
       observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
       sigmoid per element.
     - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
-      only contain {0,1} values (except if `ignore_index` is specified).
+      only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the positive class.
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
@@ -226,6 +195,7 @@ def binary_calibration_error(
         tensor(0.2918)
         >>> binary_calibration_error(preds, target, n_bins=2, norm='max')
         tensor(0.3167)
+
     """
     if validate_args:
         _binary_calibration_error_arg_validation(n_bins, norm, ignore_index)
@@ -268,8 +238,8 @@ def _multiclass_calibration_error_tensor_validation(
 def _multiclass_calibration_error_update(
     preds: Tensor,
     target: Tensor,
-) -> Tensor:
-    if not torch.all((0 <= preds) * (preds <= 1)):
+) -> Tuple[Tensor, Tensor]:
+    if not torch.all((preds >= 0) * (preds <= 1)):
         preds = preds.softmax(1)
     confidences, predictions = preds.max(dim=1)
     accuracies = predictions.eq(target)
@@ -285,10 +255,10 @@ def multiclass_calibration_error(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""`Computes the Top-label Calibration Error`_ for multiclass tasks. The expected calibration error can be used to
-    quantify how well a given model is calibrated e.g. how well the predicted output probabilities of the model matches
-    the actual probabilities of the ground truth distribution.
+    r"""`Top-label Calibration Error`_ for multiclass tasks.
 
+    The expected calibration error can be used to quantify how well a given model is calibrated e.g. how well the
+    predicted output probabilities of the model matches the actual probabilities of the ground truth distribution.
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
     .. math::
@@ -317,7 +287,7 @@ def multiclass_calibration_error(
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         n_bins: Number of bins to use when computing the metric.
         norm: Norm used to compare empirical and expected probability bins.
         ignore_index:
@@ -338,6 +308,7 @@ def multiclass_calibration_error(
         tensor(0.2082)
         >>> multiclass_calibration_error(preds, target, num_classes=3, n_bins=3, norm='max')
         tensor(0.2333)
+
     """
     if validate_args:
         _multiclass_calibration_error_arg_validation(num_classes, n_bins, norm, ignore_index)
@@ -347,122 +318,48 @@ def multiclass_calibration_error(
     return _ce_compute(confidences, accuracies, n_bins, norm)
 
 
-def _ce_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Given a predictions and targets tensor, computes the confidences of the top-1 prediction and records their
-    correctness.
-
-    Args:
-        preds:  Input ``softmaxed`` predictions.
-        target: Labels.
-
-    Raises:
-        ValueError: If the dataset shape is not binary, multiclass, or multidimensional-multiclass.
-
-    Returns:
-        tuple with confidences and accuracies
-    """
-    _, _, mode = _input_format_classification(preds, target)
-
-    if mode == DataType.BINARY:
-        if not ((0 <= preds) * (preds <= 1)).all():
-            preds = preds.sigmoid()
-        confidences, accuracies = preds, target
-    elif mode == DataType.MULTICLASS:
-        if not ((0 <= preds) * (preds <= 1)).all():
-            preds = preds.softmax(dim=1)
-        confidences, predictions = preds.max(dim=1)
-        accuracies = predictions.eq(target)
-    elif mode == DataType.MULTIDIM_MULTICLASS:
-        # reshape tensors
-        # for preds, move the class dimension to the final axis and flatten the rest
-        confidences, predictions = torch.transpose(preds, 1, -1).flatten(0, -2).max(dim=1)
-        # for targets, just flatten the target
-        accuracies = predictions.eq(target.flatten())
-    else:
-        raise ValueError(
-            f"Calibration error is not well-defined for data with size {preds.size()} and targets {target.size()}."
-        )
-    # must be cast to float for ddp allgather to work
-    return confidences.float(), accuracies.float()
-
-
 def calibration_error(
     preds: Tensor,
     target: Tensor,
+    task: Literal["binary", "multiclass"],
     n_bins: int = 15,
     norm: Literal["l1", "l2", "max"] = "l1",
-    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
     num_classes: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
+    r"""`Top-label Calibration Error`_.
 
-    `Computes the Top-label Calibration Error`_
-
+    The expected calibration error can be used to quantify how well a given model is calibrated e.g. how well the
+    predicted output probabilities of the model matches the actual probabilities of the ground truth distribution.
     Three different norms are implemented, each corresponding to variations on the calibration error metric.
 
-    L1 norm (Expected Calibration Error)
+    .. math::
+        \text{ECE} = \sum_i^N b_i \|(p_i - c_i)\|, \text{L1 norm (Expected Calibration Error)}
 
     .. math::
-        \text{ECE} = \sum_i^N b_i \|(p_i - c_i)\|
-
-    Infinity norm (Maximum Calibration Error)
+        \text{MCE} =  \max_{i} (p_i - c_i), \text{Infinity norm (Maximum Calibration Error)}
 
     .. math::
-        \text{MCE} =  \max_{i} (p_i - c_i)
+        \text{RMSCE} = \sqrt{\sum_i^N b_i(p_i - c_i)^2}, \text{L2 norm (Root Mean Square Calibration Error)}
 
-    L2 norm (Root Mean Square Calibration Error)
+    Where :math:`p_i` is the top-1 prediction accuracy in bin :math:`i`, :math:`c_i` is the average confidence of
+    predictions in bin :math:`i`, and :math:`b_i` is the fraction of data points in bin :math:`i`. Bins are constructed
+    in an uniform way in the [0,1] range.
 
-    .. math::
-        \text{RMSCE} = \sqrt{\sum_i^N b_i(p_i - c_i)^2}
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'`` or ``'multiclass'``. See the documentation of
+    :func:`~torchmetrics.functional.classification.binary_calibration_error` and
+    :func:`~torchmetrics.functional.classification.multiclass_calibration_error` for the specific details of
+    each argument influence and examples.
 
-    Where :math:`p_i` is the top-1 prediction accuracy in bin :math:`i`,
-    :math:`c_i` is the average confidence of predictions in bin :math:`i`, and
-    :math:`b_i` is the fraction of data points in bin :math:`i`.
-
-    .. note:
-        L2-norm debiasing is not yet supported.
-
-    Args:
-        preds: Model output probabilities.
-        target: Ground-truth target class labels.
-        n_bins: Number of bins to use when computing t.
-        norm: Norm used to compare empirical and expected probability bins.
-            Defaults to "l1", or Expected Calibration Error.
     """
-    if task is not None:
-        assert norm is not None
-        if task == "binary":
-            return binary_calibration_error(preds, target, n_bins, norm, ignore_index, validate_args)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            return multiclass_calibration_error(preds, target, num_classes, n_bins, norm, ignore_index, validate_args)
-        raise ValueError(f"Expected argument `task` to either be `'binary'`, `'multiclass'` but got {task}")
-    else:
-        rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
-            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-            " and the general order of arguments may change, such that this metric will just function as an single"
-            " entrypoint to calling the three specialized versions.",
-            DeprecationWarning,
-        )
-
-    if norm not in ("l1", "l2", "max"):
-        raise ValueError(f"Norm {norm} is not supported. Please select from l1, l2, or max. ")
-
-    if not isinstance(n_bins, int) or n_bins <= 0:
-        raise ValueError(f"Expected argument `n_bins` to be a int larger than 0 but got {n_bins}")
-
-    confidences, accuracies = _ce_update(preds, target)
-
-    bin_boundaries = torch.linspace(0, 1, n_bins + 1, dtype=torch.float, device=preds.device)
-
-    return _ce_compute(confidences, accuracies, bin_boundaries, norm=norm)
+    task = ClassificationTaskNoMultilabel.from_str(task)
+    assert norm is not None  # noqa: S101  # needed for mypy
+    if task == ClassificationTaskNoMultilabel.BINARY:
+        return binary_calibration_error(preds, target, n_bins, norm, ignore_index, validate_args)
+    if task == ClassificationTaskNoMultilabel.MULTICLASS:
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
+        return multiclass_calibration_error(preds, target, num_classes, n_bins, norm, ignore_index, validate_args)
+    raise ValueError(f"Expected argument `task` to either be `'binary'` or `'multiclass'` but got {task}")

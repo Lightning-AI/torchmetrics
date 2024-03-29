@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ from torch import Tensor, tensor
 
 
 def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:
-    """Counting how many times each word appears in a given text with ngram.
+    """Count how many times each word appears in a given text with ngram.
 
     Args:
         ngram_input_list: A list of translated text or reference texts
@@ -32,8 +32,8 @@ def _count_ngram(ngram_input_list: Sequence[str], n_gram: int) -> Counter:
 
     Return:
         ngram_counter: a collections.Counter object of ngram
-    """
 
+    """
     ngram_counter: Counter = Counter()
 
     for i in range(1, n_gram + 1):
@@ -52,6 +52,7 @@ def _tokenize_fn(sentence: str) -> Sequence[str]:
 
     Return:
         List of words
+
     """
     return sentence.split()
 
@@ -66,7 +67,7 @@ def _bleu_score_update(
     n_gram: int = 4,
     tokenizer: Callable[[str], Sequence[str]] = _tokenize_fn,
 ) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute the BLEU score.
+    """Update and returns variables required to compute the BLEU score.
 
     Args:
         preds: An iterable of machine translated corpus
@@ -74,14 +75,16 @@ def _bleu_score_update(
         numerator: Numerator of precision score (true positives)
         denominator: Denominator of precision score (true positives + false positives)
         preds_len: count of words in a candidate prediction
+        target_len: count of words in a reference translation
         target: count of words in a reference translation
         n_gram: gram value ranged 1 to 4
         tokenizer: A function that turns sentence into list of words
+
     """
     target_: Sequence[Sequence[Sequence[str]]] = [[tokenizer(line) if line else [] for line in t] for t in target]
     preds_: Sequence[Sequence[str]] = [tokenizer(line) if line else [] for line in preds]
 
-    for (pred, targets) in zip(preds_, target_):
+    for pred, targets in zip(preds_, target_):
         preds_len += len(pred)
         target_len_list = [len(tgt) for tgt in targets]
         target_len_diff = [abs(len(pred) - x) for x in target_len_list]
@@ -112,7 +115,7 @@ def _bleu_score_compute(
     weights: Sequence[float],
     smooth: bool,
 ) -> Tensor:
-    """Computes the BLEU score.
+    """Compute the BLEU score.
 
     Args:
         preds_len: count of words in a candidate translation
@@ -122,6 +125,7 @@ def _bleu_score_compute(
         n_gram: gram value ranged 1 to 4
         weights: Weights used for unigrams, bigrams, etc. to calculate BLEU score.
         smooth: Whether to apply smoothing
+
     """
     device = numerator.device
     if min(numerator) == 0.0:
@@ -139,9 +143,7 @@ def _bleu_score_compute(
     log_precision_scores = tensor(weights, device=device) * torch.log(precision_scores)
     geometric_mean = torch.exp(torch.sum(log_precision_scores))
     brevity_penalty = tensor(1.0, device=device) if preds_len > target_len else torch.exp(1 - (target_len / preds_len))
-    bleu = brevity_penalty * geometric_mean
-
-    return bleu
+    return brevity_penalty * geometric_mean
 
 
 def bleu_score(
@@ -157,7 +159,7 @@ def bleu_score(
         preds: An iterable of machine translated corpus
         target: An iterable of iterables of reference corpus
         n_gram: Gram value ranged from 1 to 4
-        smooth: Whether to apply smoothing – see [2]
+        smooth: Whether to apply smoothing - see [2]
         weights:
             Weights used for unigrams, bigrams, etc. to calculate BLEU score.
             If not provided, uniform weights are used.
@@ -170,7 +172,7 @@ def bleu_score(
         ValueError: If a length of a list of weights is not ``None`` and not equal to ``n_gram``.
 
     Example:
-        >>> from torchmetrics.functional import bleu_score
+        >>> from torchmetrics.functional.text import bleu_score
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> bleu_score(preds, target)
@@ -182,6 +184,7 @@ def bleu_score(
 
         [2] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
+
     """
     preds_ = [preds] if isinstance(preds, str) else preds
     target_ = [[tgt] if isinstance(tgt, str) else tgt for tgt in target]

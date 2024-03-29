@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, List, Union
+from typing import Any, List, Optional, Sequence, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -21,15 +21,39 @@ from torchmetrics.functional.image.ergas import _ergas_compute, _ergas_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.data import dim_zero_cat
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["ErrorRelativeGlobalDimensionlessSynthesis.plot"]
 
 
 class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
-    """Relative dimensionless global error synthesis (ERGAS) is used to calculate the accuracy of Pan sharpened
-    image considering normalized average error of each band of the result image
-    (ErrorRelativeGlobalDimensionlessSynthesis).
+    r"""Calculate the `Error relative global dimensionless synthesis`_  (ERGAS) metric.
+
+    This metric is used to calculate the accuracy of Pan sharpened image considering normalized average error of each
+    band of the result image. It is defined as:
+
+    .. math::
+        ERGAS = 100 * \frac{h}{l} \\sqrt{\frac{1}{N} \\sum_{k=1}^{N} \frac{RMSE(B_k)^2}{\\mu_k^2}}
+
+    where :math:`h` and :math:`l` denote the spatial resolution (pixel size) of the high and low resolution images,
+    often shorted to the ratio between them :math:`r=h/l`. :math:`N` is the number of spectral bands, :math:`RMSE(B_k)`
+    is the root mean square error of the k-th band between low and high resolution images, and :math:`\\mu_k` is the
+    mean value of the k-th band of the reference image.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``ergas`` (:class:`~torch.Tensor`): if ``reduction!='none'`` returns float scalar tensor with average ERGAS
+      value over sample else returns tensor of shape ``(N,)`` with ERGAS values per sample
 
     Args:
-        ratio: ratio of high resolution to low resolution
+        ratio: ratio of high resolution to low resolution.
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)
@@ -38,34 +62,28 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Return:
-        Tensor with ErrorRelativeGlobalDimensionlessSynthesis score
-
     Example:
         >>> import torch
-        >>> from torchmetrics import ErrorRelativeGlobalDimensionlessSynthesis
+        >>> from torchmetrics.image import ErrorRelativeGlobalDimensionlessSynthesis
         >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
         >>> target = preds * 0.75
         >>> ergas = ErrorRelativeGlobalDimensionlessSynthesis()
         >>> torch.round(ergas(preds, target))
         tensor(154.)
 
-    References:
-        [1] Qian Du; Nicholas H. Younan; Roger King; Vijay P. Shah, "On the Performance Evaluation of
-        Pan-Sharpening Techniques" in IEEE Geoscience and Remote Sensing Letters, vol. 4, no. 4, pp. 518-522,
-        15 October 2007, doi: 10.1109/LGRS.2007.896328.
     """
 
     higher_is_better: bool = False
     is_differentiable: bool = True
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
 
     preds: List[Tensor]
     target: List[Tensor]
 
     def __init__(
         self,
-        ratio: Union[int, float] = 4,
+        ratio: float = 4,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
         **kwargs: Any,
     ) -> None:
@@ -81,19 +99,60 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         self.ratio = ratio
         self.reduction = reduction
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update state with predictions and targets."""
         preds, target = _ergas_update(preds, target)
         self.preds.append(preds)
         self.target.append(target)
 
     def compute(self) -> Tensor:
-        """Computes explained variance over state."""
+        """Compute explained variance over state."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)
         return _ergas_compute(preds, target, self.ratio, self.reduction)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.image import ErrorRelativeGlobalDimensionlessSynthesis
+            >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+            >>> target = preds * 0.75
+            >>> metric = ErrorRelativeGlobalDimensionlessSynthesis()
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.image import ErrorRelativeGlobalDimensionlessSynthesis
+            >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+            >>> target = preds * 0.75
+            >>> metric = ErrorRelativeGlobalDimensionlessSynthesis()
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+
+        """
+        return self._plot(val, ax)

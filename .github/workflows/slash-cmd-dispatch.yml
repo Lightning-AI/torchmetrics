@@ -1,0 +1,30 @@
+name: Slash Command Dispatch
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  slash-command-dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Slash Command Dispatch
+        uses: peter-evans/slash-command-dispatch@v4.0.0
+        with:
+          token: ${{ secrets.PAT_GHOST }}
+          reaction-token: ${{ secrets.PAT_GHOST }}
+          # these commands belo need to be listed in particular workflows under:
+          # on:
+          #   repository_dispatch:
+          #     types: [<CMD>-command, ...]
+          # NOTE: when added new command pls update also help
+          commands: |
+            rebase
+            help
+          # permission field sets the repository permission level required by the user to dispatch commands.
+          # It expects one of the five repository permission levels, or none. From the least to greatest
+          # permission level they are none, read, triage, write, maintain and admin.
+          permission: write
+          # The issue type required for commands. (issue, pull-request, both)
+          issue-type: pull-request
+          reactions: true
+          allow-edits: false

@@ -12,11 +12,10 @@ Multi-Scale SSIM
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.MultiScaleStructuralSimilarityIndexMeasure
-    :noindex:
+.. autoclass:: torchmetrics.image.MultiScaleStructuralSimilarityIndexMeasure
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.multiscale_structural_similarity_index_measure
-    :noindex:
+.. autofunction:: torchmetrics.functional.image.multiscale_structural_similarity_index_measure

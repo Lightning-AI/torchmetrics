@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,588 +11,859 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import contextlib
+import io
 import json
-from collections import namedtuple
+from copy import deepcopy
+from functools import partial
+from itertools import product
 
 import numpy as np
 import pytest
 import torch
-from pycocotools import mask
+from lightning_utilities import apply_to_collection
+from pycocotools.coco import COCO
+from pycocotools.cocoeval import COCOeval
 from torch import IntTensor, Tensor
-
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
-from unittests.detection import _SAMPLE_DETECTION_SEGMENTATION
-from unittests.helpers.testers import MetricTester
-
-Input = namedtuple("Input", ["preds", "target"])
-
-with open(_SAMPLE_DETECTION_SEGMENTATION) as fp:
-    inputs_json = json.load(fp)
-
-_mask_unsqueeze_bool = lambda m: Tensor(mask.decode(m)).unsqueeze(0).bool()
-_masks_stack_bool = lambda ms: Tensor(np.stack([mask.decode(m) for m in ms])).bool()
-
-_inputs_masks = Input(
-    preds=[
-        [
-            dict(masks=_mask_unsqueeze_bool(inputs_json["preds"][0]), scores=Tensor([0.236]), labels=IntTensor([4])),
-            dict(
-                masks=_masks_stack_bool([inputs_json["preds"][1], inputs_json["preds"][2]]),
-                scores=Tensor([0.318, 0.726]),
-                labels=IntTensor([3, 2]),
-            ),  # 73
-        ],
-    ],
-    target=[
-        [
-            dict(masks=_mask_unsqueeze_bool(inputs_json["targets"][0]), labels=IntTensor([4])),  # 42
-            dict(
-                masks=_masks_stack_bool([inputs_json["targets"][1], inputs_json["targets"][2]]),
-                labels=IntTensor([2, 2]),
-            ),  # 73
-        ],
-    ],
+from torchmetrics.utilities.imports import (
+    _FASTER_COCO_EVAL_AVAILABLE,
+    _PYCOCOTOOLS_AVAILABLE,
+    _TORCHVISION_GREATER_EQUAL_0_8,
 )
 
-_inputs = Input(
-    preds=[
-        [
-            dict(
-                boxes=Tensor([[258.15, 41.29, 606.41, 285.07]]),
-                scores=Tensor([0.236]),
-                labels=IntTensor([4]),
-            ),  # coco image id 42
-            dict(
-                boxes=Tensor([[61.00, 22.75, 565.00, 632.42], [12.66, 3.32, 281.26, 275.23]]),
-                scores=Tensor([0.318, 0.726]),
-                labels=IntTensor([3, 2]),
-            ),  # coco image id 73
-        ],
-        [
-            dict(
-                boxes=Tensor(
-                    [
-                        [87.87, 276.25, 384.29, 379.43],
-                        [0.00, 3.66, 142.15, 316.06],
-                        [296.55, 93.96, 314.97, 152.79],
-                        [328.94, 97.05, 342.49, 122.98],
-                        [356.62, 95.47, 372.33, 147.55],
-                        [464.08, 105.09, 495.74, 146.99],
-                        [276.11, 103.84, 291.44, 150.72],
-                    ]
-                ),
-                scores=Tensor([0.546, 0.3, 0.407, 0.611, 0.335, 0.805, 0.953]),
-                labels=IntTensor([4, 1, 0, 0, 0, 0, 0]),
-            ),  # coco image id 74
-            dict(
-                boxes=Tensor([[0.00, 2.87, 601.00, 421.52]]),
-                scores=Tensor([0.699]),
-                labels=IntTensor([5]),
-            ),  # coco image id 133
-        ],
-    ],
-    target=[
-        [
-            dict(
-                boxes=Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
-                labels=IntTensor([4]),
-            ),  # coco image id 42
-            dict(
-                boxes=Tensor(
-                    [
-                        [13.00, 22.75, 548.98, 632.42],
-                        [1.66, 3.32, 270.26, 275.23],
-                    ]
-                ),
-                labels=IntTensor([2, 2]),
-            ),  # coco image id 73
-        ],
-        [
-            dict(
-                boxes=Tensor(
-                    [
-                        [61.87, 276.25, 358.29, 379.43],
-                        [2.75, 3.66, 162.15, 316.06],
-                        [295.55, 93.96, 313.97, 152.79],
-                        [326.94, 97.05, 340.49, 122.98],
-                        [356.62, 95.47, 372.33, 147.55],
-                        [462.08, 105.09, 493.74, 146.99],
-                        [277.11, 103.84, 292.44, 150.72],
-                    ]
-                ),
-                labels=IntTensor([4, 1, 0, 0, 0, 0, 0]),
-            ),  # coco image id 74
-            dict(
-                boxes=Tensor([[13.99, 2.87, 640.00, 421.52]]),
-                labels=IntTensor([5]),
-            ),  # coco image id 133
-        ],
-    ],
-)
+from unittests._helpers.testers import MetricTester
+from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL
 
-# example from this issue https://github.com/Lightning-AI/metrics/issues/943
-_inputs2 = Input(
-    preds=[
-        [
-            dict(
-                boxes=Tensor([[258.0, 41.0, 606.0, 285.0]]),
-                scores=Tensor([0.536]),
-                labels=IntTensor([0]),
+_pytest_condition = not (_PYCOCOTOOLS_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
+
+
+def _skip_if_faster_coco_eval_missing(backend):
+    if backend == "faster_coco_eval" and not _FASTER_COCO_EVAL_AVAILABLE:
+        pytest.skip("test requires that faster_coco_eval is installed")
+
+
+def _generate_coco_inputs(iou_type):
+    """Generates inputs for the MAP metric.
+
+    The inputs are generated from the official COCO results json files:
+    https://github.com/cocodataset/cocoapi/tree/master/results
+    and should therefore correspond directly to the result on the webpage
+
+    """
+    batched_preds, batched_target = MeanAveragePrecision.coco_to_tm(
+        _DETECTION_BBOX if iou_type == "bbox" else _DETECTION_SEGM, _DETECTION_VAL, iou_type
+    )
+
+    # create 10 batches of 10 preds/targets each
+    batched_preds = [batched_preds[10 * i : 10 * (i + 1)] for i in range(10)]
+    batched_target = [batched_target[10 * i : 10 * (i + 1)] for i in range(10)]
+    return batched_preds, batched_target
+
+
+_coco_bbox_input = _generate_coco_inputs("bbox")
+_coco_segm_input = _generate_coco_inputs("segm")
+
+
+def _compare_against_coco_fn(preds, target, iou_type, iou_thresholds=None, rec_thresholds=None, class_metrics=True):
+    """Taken from https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoEvalDemo.ipynb."""
+    with contextlib.redirect_stdout(io.StringIO()):
+        gt = COCO(_DETECTION_VAL)
+        dt = gt.loadRes(_DETECTION_BBOX) if iou_type == "bbox" else gt.loadRes(_DETECTION_SEGM)
+
+        coco_eval = COCOeval(gt, dt, iou_type)
+        if iou_thresholds is not None:
+            coco_eval.params.iouThrs = np.array(iou_thresholds, dtype=np.float64)
+        if rec_thresholds is not None:
+            coco_eval.params.recThrs = np.array(rec_thresholds, dtype=np.float64)
+
+        coco_eval.evaluate()
+        coco_eval.accumulate()
+        coco_eval.summarize()
+    global_stats = deepcopy(coco_eval.stats)
+
+    map_per_class_values = torch.Tensor([-1])
+    mar_100_per_class_values = torch.Tensor([-1])
+    classes = torch.tensor(
+        list(set(torch.arange(91).tolist()) - {0, 12, 19, 26, 29, 30, 45, 66, 68, 69, 71, 76, 83, 87, 89})
+    )
+
+    if class_metrics:
+        map_per_class_list = []
+        mar_100_per_class_list = []
+        for class_id in classes.tolist():
+            coco_eval.params.catIds = [class_id]
+            with contextlib.redirect_stdout(io.StringIO()):
+                coco_eval.evaluate()
+                coco_eval.accumulate()
+                coco_eval.summarize()
+            class_stats = coco_eval.stats
+            map_per_class_list.append(torch.Tensor([class_stats[0]]))
+            mar_100_per_class_list.append(torch.Tensor([class_stats[8]]))
+
+        map_per_class_values = torch.Tensor(map_per_class_list)
+        mar_100_per_class_values = torch.Tensor(mar_100_per_class_list)
+
+    return {
+        "map": Tensor([global_stats[0]]),
+        "map_50": Tensor([global_stats[1]]),
+        "map_75": Tensor([global_stats[2]]),
+        "map_small": Tensor([global_stats[3]]),
+        "map_medium": Tensor([global_stats[4]]),
+        "map_large": Tensor([global_stats[5]]),
+        "mar_1": Tensor([global_stats[6]]),
+        "mar_10": Tensor([global_stats[7]]),
+        "mar_100": Tensor([global_stats[8]]),
+        "mar_small": Tensor([global_stats[9]]),
+        "mar_medium": Tensor([global_stats[10]]),
+        "mar_large": Tensor([global_stats[11]]),
+        "map_per_class": map_per_class_values,
+        "mar_100_per_class": mar_100_per_class_values,
+        "classes": classes,
+    }
+
+
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 and pycocotools is installed")
+@pytest.mark.parametrize("iou_type", ["bbox", "segm"])
+@pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+class TestMAPUsingCOCOReference(MetricTester):
+    """Test map metric on the reference coco data."""
+
+    @pytest.mark.parametrize("iou_thresholds", [None, [0.25, 0.5, 0.75]])
+    @pytest.mark.parametrize("rec_thresholds", [None, [0.25, 0.5, 0.75]])
+    def test_map(self, iou_type, iou_thresholds, rec_thresholds, ddp, backend):
+        """Test modular implementation for correctness."""
+        _skip_if_faster_coco_eval_missing(backend)
+
+        preds, target = _coco_bbox_input if iou_type == "bbox" else _coco_segm_input
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=MeanAveragePrecision,
+            reference_metric=partial(
+                _compare_against_coco_fn,
+                iou_type=iou_type,
+                iou_thresholds=iou_thresholds,
+                rec_thresholds=rec_thresholds,
+                class_metrics=False,
             ),
+            metric_args={
+                "iou_type": iou_type,
+                "iou_thresholds": iou_thresholds,
+                "rec_thresholds": rec_thresholds,
+                "class_metrics": False,
+                "box_format": "xywh",
+                "backend": backend,
+            },
+            check_batch=False,
+            atol=1e-2,
+        )
+
+    def test_map_classwise(self, iou_type, ddp, backend):
+        """Test modular implementation for correctness with classwise=True.
+
+        Needs bigger atol to be stable.
+
+        """
+        _skip_if_faster_coco_eval_missing(backend)
+        preds, target = _coco_bbox_input if iou_type == "bbox" else _coco_segm_input
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=MeanAveragePrecision,
+            reference_metric=partial(_compare_against_coco_fn, iou_type=iou_type, class_metrics=True),
+            metric_args={"box_format": "xywh", "iou_type": iou_type, "class_metrics": True, "backend": backend},
+            check_batch=False,
+            atol=1e-1,
+        )
+
+
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+def test_compare_both_same_time(tmpdir, backend):
+    """Test that the class support evaluating both bbox and segm at the same time."""
+    _skip_if_faster_coco_eval_missing(backend)
+
+    with open(_DETECTION_BBOX) as f:
+        boxes = json.load(f)
+    with open(_DETECTION_SEGM) as f:
+        segmentations = json.load(f)
+    combined = [{**box, **seg} for box, seg in zip(boxes, segmentations)]
+    with open(f"{tmpdir}/combined.json", "w") as f:
+        json.dump(combined, f)
+    batched_preds, batched_target = MeanAveragePrecision.coco_to_tm(
+        f"{tmpdir}/combined.json", _DETECTION_VAL, iou_type=["bbox", "segm"]
+    )
+    batched_preds = [batched_preds[10 * i : 10 * (i + 1)] for i in range(10)]
+    batched_target = [batched_target[10 * i : 10 * (i + 1)] for i in range(10)]
+
+    metric = MeanAveragePrecision(iou_type=["bbox", "segm"], box_format="xywh", backend=backend)
+    for bp, bt in zip(batched_preds, batched_target):
+        metric.update(bp, bt)
+    res = metric.compute()
+
+    res1 = _compare_against_coco_fn([], [], iou_type="bbox", class_metrics=False)
+    res2 = _compare_against_coco_fn([], [], iou_type="segm", class_metrics=False)
+
+    for k, v in res1.items():
+        if k == "classes":
+            continue
+        assert f"bbox_{k}" in res
+        assert torch.allclose(res[f"bbox_{k}"], v, atol=1e-2)
+
+    for k, v in res2.items():
+        if k == "classes":
+            continue
+        assert f"segm_{k}" in res
+        assert torch.allclose(res[f"segm_{k}"], v, atol=1e-2)
+
+
+_inputs = {
+    "preds": [
+        [
+            {
+                "boxes": Tensor([[258.15, 41.29, 606.41, 285.07]]),
+                "scores": Tensor([0.236]),
+                "labels": IntTensor([4]),
+            },  # coco image id 42
+            {
+                "boxes": Tensor([[61.00, 22.75, 565.00, 632.42], [12.66, 3.32, 281.26, 275.23]]),
+                "scores": Tensor([0.318, 0.726]),
+                "labels": IntTensor([3, 2]),
+            },  # coco image id 73
         ],
         [
-            dict(
-                boxes=Tensor([[258.0, 41.0, 606.0, 285.0]]),
-                scores=Tensor([0.536]),
-                labels=IntTensor([0]),
-            )
+            {
+                "boxes": Tensor([
+                    [87.87, 276.25, 384.29, 379.43],
+                    [0.00, 3.66, 142.15, 316.06],
+                    [296.55, 93.96, 314.97, 152.79],
+                    [328.94, 97.05, 342.49, 122.98],
+                    [356.62, 95.47, 372.33, 147.55],
+                    [464.08, 105.09, 495.74, 146.99],
+                    [276.11, 103.84, 291.44, 150.72],
+                ]),
+                "scores": Tensor([0.546, 0.3, 0.407, 0.611, 0.335, 0.805, 0.953]),
+                "labels": IntTensor([4, 1, 0, 0, 0, 0, 0]),
+            },  # coco image id 74
+            {
+                "boxes": Tensor([
+                    [72.92, 45.96, 91.23, 80.57],
+                    [45.17, 45.34, 66.28, 79.83],
+                    [82.28, 47.04, 99.66, 78.50],
+                    [59.96, 46.17, 80.35, 80.48],
+                    [75.29, 23.01, 91.85, 50.85],
+                    [71.14, 1.10, 96.96, 28.33],
+                    [61.34, 55.23, 77.14, 79.57],
+                    [41.17, 45.78, 60.99, 78.48],
+                    [56.18, 44.80, 64.42, 56.25],
+                ]),
+                "scores": Tensor([0.532, 0.204, 0.782, 0.202, 0.883, 0.271, 0.561, 0.204, 0.349]),
+                "labels": IntTensor([49, 49, 49, 49, 49, 49, 49, 49, 49]),
+            },  # coco image id 987 category_id 49
         ],
     ],
-    target=[
+    "target": [
         [
-            dict(
-                boxes=Tensor([[214.0, 41.0, 562.0, 285.0]]),
-                labels=IntTensor([0]),
-            )
+            {
+                "boxes": Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
+                "labels": IntTensor([4]),
+            },  # coco image id 42
+            {
+                "boxes": Tensor([
+                    [13.00, 22.75, 548.98, 632.42],
+                    [1.66, 3.32, 270.26, 275.23],
+                ]),
+                "labels": IntTensor([2, 2]),
+            },  # coco image id 73
         ],
         [
-            dict(
-                boxes=Tensor([]),
-                labels=IntTensor([]),
-            )
+            {
+                "boxes": Tensor([
+                    [61.87, 276.25, 358.29, 379.43],
+                    [2.75, 3.66, 162.15, 316.06],
+                    [295.55, 93.96, 313.97, 152.79],
+                    [326.94, 97.05, 340.49, 122.98],
+                    [356.62, 95.47, 372.33, 147.55],
+                    [462.08, 105.09, 493.74, 146.99],
+                    [277.11, 103.84, 292.44, 150.72],
+                ]),
+                "labels": IntTensor([4, 1, 0, 0, 0, 0, 0]),
+            },  # coco image id 74
+            {
+                "boxes": Tensor([
+                    [72.92, 45.96, 91.23, 80.57],
+                    [50.17, 45.34, 71.28, 79.83],
+                    [81.28, 47.04, 98.66, 78.50],
+                    [63.96, 46.17, 84.35, 80.48],
+                    [75.29, 23.01, 91.85, 50.85],
+                    [56.39, 21.65, 75.66, 45.54],
+                    [73.14, 1.10, 98.96, 28.33],
+                    [62.34, 55.23, 78.14, 79.57],
+                    [44.17, 45.78, 63.99, 78.48],
+                    [58.18, 44.80, 66.42, 56.25],
+                ]),
+                "labels": IntTensor([49, 49, 49, 49, 49, 49, 49, 49, 49, 49]),
+            },  # coco image id 987 category_id 49
         ],
     ],
-)
+}
+
+# example from this issue https://github.com/Lightning-AI/torchmetrics/issues/943
+_inputs2 = {
+    "preds": [
+        [
+            {
+                "boxes": Tensor([[258.0, 41.0, 606.0, 285.0]]),
+                "scores": Tensor([0.536]),
+                "labels": IntTensor([0]),
+            },
+        ],
+        [
+            {
+                "boxes": Tensor([[258.0, 41.0, 606.0, 285.0]]),
+                "scores": Tensor([0.536]),
+                "labels": IntTensor([0]),
+            }
+        ],
+    ],
+    "target": [
+        [
+            {
+                "boxes": Tensor([[214.0, 41.0, 562.0, 285.0]]),
+                "labels": IntTensor([0]),
+            }
+        ],
+        [
+            {
+                "boxes": Tensor([]),
+                "labels": IntTensor([]),
+            }
+        ],
+    ],
+}
 
 # Test empty preds case, to ensure bool inputs are properly casted to uint8
-# From https://github.com/Lightning-AI/metrics/issues/981
-_inputs3 = Input(
-    preds=[
+# From https://github.com/Lightning-AI/torchmetrics/issues/981
+# and https://github.com/Lightning-AI/torchmetrics/issues/1147
+_inputs3 = {
+    "preds": [
         [
-            dict(boxes=Tensor([]), scores=Tensor([]), labels=Tensor([])),
+            {
+                "boxes": Tensor([[258.0, 41.0, 606.0, 285.0]]),
+                "scores": Tensor([0.536]),
+                "labels": IntTensor([0]),
+            },
+        ],
+        [
+            {"boxes": Tensor([]), "scores": Tensor([]), "labels": Tensor([])},
         ],
     ],
-    target=[
+    "target": [
         [
-            dict(
-                boxes=Tensor([[1.0, 2.0, 3.0, 4.0]]),
-                scores=Tensor([0.8]),
-                labels=Tensor([1]),
-            ),
+            {
+                "boxes": Tensor([[214.0, 41.0, 562.0, 285.0]]),
+                "labels": IntTensor([0]),
+            }
         ],
+        [
+            {
+                "boxes": Tensor([[1.0, 2.0, 3.0, 4.0]]),
+                "scores": Tensor([0.8]),  # target does not have scores
+                "labels": IntTensor([1]),
+            },
+        ],
+    ],
+}
+
+
+def _generate_random_segm_input(device, batch_size=2, num_preds_size=10, num_gt_size=10, random_size=True):
+    """Generate random inputs for mAP when iou_type=segm."""
+    preds = []
+    targets = []
+    for _ in range(batch_size):
+        result = {}
+        num_preds = torch.randint(0, num_preds_size, (1,)).item() if random_size else num_preds_size
+        result["scores"] = torch.rand((num_preds,), device=device)
+        result["labels"] = torch.randint(0, 10, (num_preds,), device=device)
+        result["masks"] = torch.randint(0, 2, (num_preds, 10, 10), device=device).bool()
+        preds.append(result)
+        gt = {}
+        num_gt = torch.randint(0, num_gt_size, (1,)).item() if random_size else num_gt_size
+        gt["labels"] = torch.randint(0, 10, (num_gt,), device=device)
+        gt["masks"] = torch.randint(0, 2, (num_gt, 10, 10), device=device).bool()
+        targets.append(gt)
+    return preds, targets
+
+
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
+@pytest.mark.parametrize(
+    "backend",
+    [
+        pytest.param("pycocotools"),
+        pytest.param(
+            "faster_coco_eval",
+            marks=pytest.mark.skipif(
+                not _FASTER_COCO_EVAL_AVAILABLE, reason="test requires that faster_coco_eval is installed"
+            ),
+        ),
     ],
 )
+class TestMapProperties:
+    """Test class collection different tests for different properties parametrized by backend argument."""
 
+    def test_error_on_wrong_init(self, backend):
+        """Test class raises the expected errors."""
+        MeanAveragePrecision(backend=backend)  # no error
 
-def _compare_fn(preds, target) -> dict:
-    """Comparison function for map implementation.
+        with pytest.raises(ValueError, match="Expected argument `class_metrics` to be a boolean"):
+            MeanAveragePrecision(class_metrics=0, backend=backend)
 
-    Official pycocotools results calculated from a subset of https://github.com/cocodataset/cocoapi/tree/master/results
-        All classes
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.706
-        Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.901
-        Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.846
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.689
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.800
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.701
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.592
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.716
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.716
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.767
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.800
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.700
+    def test_empty_preds(self, backend):
+        """Test empty predictions."""
+        metric = MeanAveragePrecision(backend=backend)
 
-        Class 0
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.725
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.780
-
-        Class 1
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.800
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.800
-
-        Class 2
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.454
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.450
-
-        Class 3
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = -1.000
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = -1.000
-
-        Class 4
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.650
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.650
-
-        Class 5
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.900
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.900
-    """
-    return {
-        "map": Tensor([0.706]),
-        "map_50": Tensor([0.901]),
-        "map_75": Tensor([0.846]),
-        "map_small": Tensor([0.689]),
-        "map_medium": Tensor([0.800]),
-        "map_large": Tensor([0.701]),
-        "mar_1": Tensor([0.592]),
-        "mar_10": Tensor([0.716]),
-        "mar_100": Tensor([0.716]),
-        "mar_small": Tensor([0.767]),
-        "mar_medium": Tensor([0.800]),
-        "mar_large": Tensor([0.700]),
-        "map_per_class": Tensor([0.725, 0.800, 0.454, -1.000, 0.650, 0.900]),
-        "mar_100_per_class": Tensor([0.780, 0.800, 0.450, -1.000, 0.650, 0.900]),
-    }
-
-
-def _compare_fn_segm(preds, target) -> dict:
-    """Comparison function for map implementation for instance segmentation.
-
-    Official pycocotools results calculated from a subset of https://github.com/cocodataset/cocoapi/tree/master/results
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.352
-        Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.752
-        Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.252
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
-        Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.352
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.350
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.350
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.350
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = -1.000
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = -1.000
-        Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.350
-    """
-    return {
-        "map": Tensor([0.352]),
-        "map_50": Tensor([0.742]),
-        "map_75": Tensor([0.252]),
-        "map_small": Tensor([-1]),
-        "map_medium": Tensor([-1]),
-        "map_large": Tensor([0.352]),
-        "mar_1": Tensor([0.35]),
-        "mar_10": Tensor([0.35]),
-        "mar_100": Tensor([0.35]),
-        "mar_small": Tensor([-1]),
-        "mar_medium": Tensor([-1]),
-        "mar_large": Tensor([0.35]),
-        "map_per_class": Tensor([0.4039604, -1.0, 0.3]),
-        "mar_100_per_class": Tensor([0.4, -1.0, 0.3]),
-    }
-
-
-_pytest_condition = not (_TORCHVISION_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
-
-
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-@pytest.mark.parametrize("compute_on_cpu", [True, False])
-class TestMAP(MetricTester):
-    """Test the MAP metric for object detection predictions.
-
-    Results are compared to original values from the pycocotools implementation.
-    A subset of the first 10 fake predictions of the official repo is used:
-    https://github.com/cocodataset/cocoapi/blob/master/results/instances_val2014_fakebbox100_results.json
-    """
-
-    atol = 1e-1
-
-    @pytest.mark.parametrize("ddp", [False, True])
-    def test_map_bbox(self, compute_on_cpu, ddp):
-        """Test modular implementation for correctness."""
-        self.run_class_metric_test(
-            ddp=ddp,
-            preds=_inputs.preds,
-            target=_inputs.target,
-            metric_class=MeanAveragePrecision,
-            sk_metric=_compare_fn,
-            dist_sync_on_step=False,
-            check_batch=False,
-            metric_args={"class_metrics": True, "compute_on_cpu": compute_on_cpu},
+        metric.update(
+            [{"boxes": Tensor([]), "scores": Tensor([]), "labels": IntTensor([])}],
+            [{"boxes": Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]), "labels": IntTensor([4])}],
         )
+        metric.compute()
 
-    @pytest.mark.parametrize("ddp", [False])
-    def test_map_segm(self, compute_on_cpu, ddp):
-        """Test modular implementation for correctness."""
+    def test_empty_ground_truths(self, backend):
+        """Test empty ground truths."""
+        metric = MeanAveragePrecision(backend=backend)
 
-        self.run_class_metric_test(
-            ddp=ddp,
-            preds=_inputs_masks.preds,
-            target=_inputs_masks.target,
-            metric_class=MeanAveragePrecision,
-            sk_metric=_compare_fn_segm,
-            dist_sync_on_step=False,
-            check_batch=False,
-            metric_args={"class_metrics": True, "compute_on_cpu": compute_on_cpu, "iou_type": "segm"},
+        metric.update(
+            [
+                {
+                    "boxes": Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]),
+                    "scores": Tensor([0.5]),
+                    "labels": IntTensor([4]),
+                }
+            ],
+            [{"boxes": Tensor([]), "labels": IntTensor([])}],
         )
+        metric.compute()
 
+    def test_empty_ground_truths_xywh(self, backend):
+        """Test empty ground truths in xywh format."""
+        metric = MeanAveragePrecision(box_format="xywh", backend=backend)
 
-# noinspection PyTypeChecker
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-def test_error_on_wrong_init():
-    """Test class raises the expected errors."""
-    MeanAveragePrecision()  # no error
+        metric.update(
+            [
+                {
+                    "boxes": Tensor([[214.1500, 41.2900, 348.2600, 243.7800]]),
+                    "scores": Tensor([0.5]),
+                    "labels": IntTensor([4]),
+                }
+            ],
+            [{"boxes": Tensor([]), "labels": IntTensor([])}],
+        )
+        metric.compute()
 
-    with pytest.raises(ValueError, match="Expected argument `class_metrics` to be a boolean"):
-        MeanAveragePrecision(class_metrics=0)
+    def test_empty_preds_xywh(self, backend):
+        """Test empty predictions in xywh format."""
+        metric = MeanAveragePrecision(box_format="xywh", backend=backend)
 
+        metric.update(
+            [{"boxes": Tensor([]), "scores": Tensor([]), "labels": IntTensor([])}],
+            [{"boxes": Tensor([[214.1500, 41.2900, 348.2600, 243.7800]]), "labels": IntTensor([4])}],
+        )
+        metric.compute()
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-def test_empty_preds():
-    """Test empty predictions."""
-    metric = MeanAveragePrecision()
+    def test_empty_ground_truths_cxcywh(self, backend):
+        """Test empty ground truths in cxcywh format."""
+        metric = MeanAveragePrecision(box_format="cxcywh", backend=backend)
 
-    metric.update(
-        [dict(boxes=Tensor([]), scores=Tensor([]), labels=IntTensor([]))],
-        [dict(boxes=Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]), labels=IntTensor([4]))],
+        metric.update(
+            [
+                {
+                    "boxes": Tensor([[388.2800, 163.1800, 348.2600, 243.7800]]),
+                    "scores": Tensor([0.5]),
+                    "labels": IntTensor([4]),
+                }
+            ],
+            [{"boxes": Tensor([]), "labels": IntTensor([])}],
+        )
+        metric.compute()
+
+    def test_empty_preds_cxcywh(self, backend):
+        """Test empty predictions in cxcywh format."""
+        metric = MeanAveragePrecision(box_format="cxcywh", backend=backend)
+
+        metric.update(
+            [{"boxes": Tensor([]), "scores": Tensor([]), "labels": IntTensor([])}],
+            [{"boxes": Tensor([[388.2800, 163.1800, 348.2600, 243.7800]]), "labels": IntTensor([4])}],
+        )
+        metric.compute()
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires CUDA availability")
+    @pytest.mark.parametrize("inputs", [_inputs, _inputs2, _inputs3])
+    def test_map_gpu(self, backend, inputs):
+        """Test predictions on single gpu."""
+        metric = MeanAveragePrecision(backend=backend)
+        metric = metric.to("cuda")
+        for preds, targets in zip(deepcopy(inputs["preds"]), deepcopy(inputs["target"])):
+            metric.update(
+                apply_to_collection(preds, Tensor, lambda x: x.to("cuda")),
+                apply_to_collection(targets, Tensor, lambda x: x.to("cuda")),
+            )
+        metric.compute()
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires CUDA availability")
+    def test_map_with_custom_thresholds(self, backend):
+        """Test that map works with custom iou thresholds."""
+        metric = MeanAveragePrecision(iou_thresholds=[0.1, 0.2], backend=backend)
+        metric = metric.to("cuda")
+        for preds, targets in zip(deepcopy(_inputs["preds"]), deepcopy(_inputs["target"])):
+            metric.update(
+                apply_to_collection(preds, Tensor, lambda x: x.to("cuda")),
+                apply_to_collection(targets, Tensor, lambda x: x.to("cuda")),
+            )
+        res = metric.compute()
+        assert res["map_50"].item() == -1
+        assert res["map_75"].item() == -1
+
+    def test_empty_metric(self, backend):
+        """Test empty metric."""
+        metric = MeanAveragePrecision(backend=backend)
+        metric.compute()
+
+    def test_missing_pred(self, backend):
+        """One good detection, one false negative.
+
+        Map should be lower than 1. Actually it is 0.5, but the exact value depends on where we are sampling (i.e.
+        recall's values)
+
+        """
+        gts = [
+            {"boxes": Tensor([[10, 20, 15, 25]]), "labels": IntTensor([0])},
+            {"boxes": Tensor([[10, 20, 15, 25]]), "labels": IntTensor([0])},
+        ]
+        preds = [
+            {"boxes": Tensor([[10, 20, 15, 25]]), "scores": Tensor([0.9]), "labels": IntTensor([0])},
+            # Empty prediction
+            {"boxes": Tensor([]), "scores": Tensor([]), "labels": IntTensor([])},
+        ]
+        metric = MeanAveragePrecision(backend=backend)
+        metric.update(preds, gts)
+        result = metric.compute()
+        assert result["map"] < 1, "MAP cannot be 1, as there is a missing prediction."
+
+    def test_missing_gt(self, backend):
+        """The symmetric case of test_missing_pred.
+
+        One good detection, one false positive. Map should be lower than 1. Actually it is 0.5, but the exact value
+        depends on where we are sampling (i.e. recall's values)
+
+        """
+        gts = [
+            {"boxes": Tensor([[10, 20, 15, 25]]), "labels": IntTensor([0])},
+            {"boxes": Tensor([]), "labels": IntTensor([])},
+        ]
+        preds = [
+            {"boxes": Tensor([[10, 20, 15, 25]]), "scores": Tensor([0.9]), "labels": IntTensor([0])},
+            {"boxes": Tensor([[10, 20, 15, 25]]), "scores": Tensor([0.95]), "labels": IntTensor([0])},
+        ]
+
+        metric = MeanAveragePrecision(backend=backend)
+        metric.update(preds, gts)
+        result = metric.compute()
+        assert result["map"] < 1, "MAP cannot be 1, as there is an image with no ground truth, but some predictions."
+
+    def test_segm_iou_empty_gt_mask(self, backend):
+        """Test empty ground truths."""
+        metric = MeanAveragePrecision(iou_type="segm", backend=backend)
+        metric.update(
+            [{"masks": torch.randint(0, 1, (1, 10, 10)).bool(), "scores": Tensor([0.5]), "labels": IntTensor([4])}],
+            [{"masks": Tensor([]), "labels": IntTensor([])}],
+        )
+        metric.compute()
+
+    def test_segm_iou_empty_pred_mask(self, backend):
+        """Test empty predictions."""
+        metric = MeanAveragePrecision(iou_type="segm", backend=backend)
+        metric.update(
+            [{"masks": torch.BoolTensor([]), "scores": Tensor([]), "labels": IntTensor([])}],
+            [{"masks": torch.randint(0, 1, (1, 10, 10)).bool(), "labels": IntTensor([4])}],
+        )
+        metric.compute()
+
+    def test_error_on_wrong_input(self, backend):
+        """Test class input validation."""
+        metric = MeanAveragePrecision(backend=backend)
+
+        metric.update([], [])  # no error
+
+        with pytest.raises(ValueError, match="Expected argument `preds` to be of type Sequence"):
+            metric.update(Tensor(), [])  # type: ignore
+
+        with pytest.raises(ValueError, match="Expected argument `target` to be of type Sequence"):
+            metric.update([], Tensor())  # type: ignore
+
+        with pytest.raises(ValueError, match="Expected argument `preds` and `target` to have the same length"):
+            metric.update([{}], [{}, {}])
+
+        with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `boxes` key"):
+            metric.update(
+                [{"scores": Tensor(), "labels": IntTensor}],
+                [{"boxes": Tensor(), "labels": IntTensor()}],
+            )
+
+        with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `scores` key"):
+            metric.update(
+                [{"boxes": Tensor(), "labels": IntTensor}],
+                [{"boxes": Tensor(), "labels": IntTensor()}],
+            )
+
+        with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `labels` key"):
+            metric.update(
+                [{"boxes": Tensor(), "scores": IntTensor}],
+                [{"boxes": Tensor(), "labels": IntTensor()}],
+            )
+
+        with pytest.raises(ValueError, match="Expected all dicts in `target` to contain the `boxes` key"):
+            metric.update(
+                [{"boxes": Tensor(), "scores": IntTensor, "labels": IntTensor}],
+                [{"labels": IntTensor()}],
+            )
+
+        with pytest.raises(ValueError, match="Expected all dicts in `target` to contain the `labels` key"):
+            metric.update(
+                [{"boxes": Tensor(), "scores": IntTensor, "labels": IntTensor}],
+                [{"boxes": IntTensor()}],
+            )
+
+        with pytest.raises(ValueError, match="Expected all boxes in `preds` to be of type Tensor"):
+            metric.update(
+                [{"boxes": [], "scores": Tensor(), "labels": IntTensor()}],
+                [{"boxes": Tensor(), "labels": IntTensor()}],
+            )
+
+        with pytest.raises(ValueError, match="Expected all scores in `preds` to be of type Tensor"):
+            metric.update(
+                [{"boxes": Tensor(), "scores": [], "labels": IntTensor()}],
+                [{"boxes": Tensor(), "labels": IntTensor()}],
+            )
+
+        with pytest.raises(ValueError, match="Expected all labels in `preds` to be of type Tensor"):
+            metric.update(
+                [{"boxes": Tensor(), "scores": Tensor(), "labels": []}],
+                [{"boxes": Tensor(), "labels": IntTensor()}],
+            )
+
+        with pytest.raises(ValueError, match="Expected all boxes in `target` to be of type Tensor"):
+            metric.update(
+                [{"boxes": Tensor(), "scores": Tensor(), "labels": IntTensor()}],
+                [{"boxes": [], "labels": IntTensor()}],
+            )
+
+        with pytest.raises(ValueError, match="Expected all labels in `target` to be of type Tensor"):
+            metric.update(
+                [{"boxes": Tensor(), "scores": Tensor(), "labels": IntTensor()}],
+                [{"boxes": Tensor(), "labels": []}],
+            )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    def test_device_changing(self, backend):
+        """See issue: https://github.com/Lightning-AI/torchmetrics/issues/1743.
+
+        Checks that the custom apply function of the metric works as expected.
+        """
+        device = "cuda"
+        metric = MeanAveragePrecision(iou_type="segm", backend=backend).to(device)
+
+        for _ in range(2):
+            preds, targets = _generate_random_segm_input(device)
+            metric.update(preds, targets)
+
+        metric = metric.cpu()
+        val = metric.compute()
+        assert isinstance(val, dict)
+
+    @pytest.mark.parametrize(
+        ("box_format", "iou_val_expected", "map_val_expected"),
+        [
+            ("xyxy", 0.25, 1),
+            ("xywh", 0.143, 0.0),
+            ("cxcywh", 0.143, 0.0),
+        ],
     )
-    metric.compute()
+    def test_for_box_format(self, box_format, iou_val_expected, map_val_expected, backend):
+        """Test that only the correct box format lead to a score of 1.
 
+        See issue: https://github.com/Lightning-AI/torchmetrics/issues/1908.
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-def test_empty_ground_truths():
-    """Test empty ground truths."""
-    metric = MeanAveragePrecision()
+        """
+        predictions = [
+            {"boxes": torch.tensor([[0.5, 0.5, 1, 1]]), "scores": torch.tensor([1.0]), "labels": torch.tensor([0])}
+        ]
 
-    metric.update(
-        [dict(boxes=Tensor([[214.1500, 41.2900, 562.4100, 285.0700]]), scores=Tensor([0.5]), labels=IntTensor([4]))],
-        [dict(boxes=Tensor([]), labels=IntTensor([]))],
+        targets = [{"boxes": torch.tensor([[0, 0, 1, 1]]), "labels": torch.tensor([0])}]
+
+        metric = MeanAveragePrecision(
+            box_format=box_format, iou_thresholds=[0.2], extended_summary=True, backend=backend
+        )
+        metric.update(predictions, targets)
+        result = metric.compute()
+        assert result["map"].item() == map_val_expected
+        assert round(float(result["ious"][(0, 0)]), 3) == iou_val_expected
+
+    @pytest.mark.parametrize("iou_type", ["bbox", "segm"])
+    def test_warning_on_many_detections(self, iou_type, backend):
+        """Test that a warning is raised when there are many detections."""
+        if iou_type == "bbox":
+            preds = [
+                {
+                    "boxes": torch.tensor([[0.5, 0.5, 1, 1]]).repeat(101, 1),
+                    "scores": torch.tensor([1.0]).repeat(101),
+                    "labels": torch.tensor([0]).repeat(101),
+                }
+            ]
+            targets = [{"boxes": torch.tensor([[0, 0, 1, 1]]), "labels": torch.tensor([0])}]
+        else:
+            preds, targets = _generate_random_segm_input("cpu", 1, 101, 10, False)
+
+        metric = MeanAveragePrecision(iou_type=iou_type, backend=backend)
+        with pytest.warns(UserWarning, match="Encountered more than 100 detections in a single image.*"):
+            metric.update(preds, targets)
+
+    @pytest.mark.parametrize(
+        ("preds", "target", "expected_iou_len", "iou_keys", "precision_shape", "recall_shape", "scores_shape"),
+        [
+            (
+                [
+                    [
+                        {
+                            "boxes": torch.tensor([[0.5, 0.5, 1, 1]]),
+                            "scores": torch.tensor([1.0]),
+                            "labels": torch.tensor([0]),
+                        }
+                    ]
+                ],
+                [[{"boxes": torch.tensor([[0, 0, 1, 1]]), "labels": torch.tensor([0])}]],
+                1,  # 1 image x 1 class = 1
+                [(0, 0)],
+                (10, 101, 1, 4, 3),
+                (10, 1, 4, 3),
+                (10, 101, 1, 4, 3),
+            ),
+            (
+                _inputs["preds"],
+                _inputs["target"],
+                24,  # 4 images x 6 classes = 24
+                list(product([0, 1, 2, 3], [0, 1, 2, 3, 4, 49])),
+                (10, 101, 6, 4, 3),
+                (10, 6, 4, 3),
+                (10, 101, 6, 4, 3),
+            ),
+        ],
     )
-    metric.compute()
+    def test_for_extended_stats(
+        self, preds, target, expected_iou_len, iou_keys, precision_shape, recall_shape, scores_shape, backend
+    ):
+        """Test that extended stats are computed correctly."""
+        metric = MeanAveragePrecision(extended_summary=True, backend=backend)
+        for p, t in zip(preds, target):
+            metric.update(p, t)
+        result = metric.compute()
 
+        ious = result["ious"]
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-def test_empty_ground_truths_xywh():
-    """Test empty ground truths in xywh format."""
-    metric = MeanAveragePrecision(box_format="xywh")
+        assert isinstance(ious, dict)
+        assert len(ious) == expected_iou_len
+        for key in ious:
+            assert key in iou_keys
 
-    metric.update(
-        [dict(boxes=Tensor([[214.1500, 41.2900, 348.2600, 243.7800]]), scores=Tensor([0.5]), labels=IntTensor([4]))],
-        [dict(boxes=Tensor([]), labels=IntTensor([]))],
-    )
-    metric.compute()
+        precision = result["precision"]
+        assert isinstance(precision, Tensor)
+        assert precision.shape == precision_shape
 
+        recall = result["recall"]
+        assert isinstance(recall, Tensor)
+        assert recall.shape == recall_shape
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-def test_empty_preds_xywh():
-    """Test empty predictions in xywh format."""
-    metric = MeanAveragePrecision(box_format="xywh")
+        scores = result["scores"]
+        assert isinstance(scores, Tensor)
+        assert scores.shape == scores_shape
 
-    metric.update(
-        [dict(boxes=Tensor([]), scores=Tensor([]), labels=IntTensor([]))],
-        [dict(boxes=Tensor([[214.1500, 41.2900, 348.2600, 243.7800]]), labels=IntTensor([4]))],
-    )
-    metric.compute()
+    @pytest.mark.parametrize("class_metrics", [False, True])
+    def test_average_argument(self, class_metrics, backend):
+        """Test that average argument works.
 
+        Calculating macro on inputs that only have one label should be the same as micro. Calculating class metrics
+        should be the same regardless of average argument.
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-def test_empty_ground_truths_cxcywh():
-    """Test empty ground truths in cxcywh format."""
-    metric = MeanAveragePrecision(box_format="cxcywh")
+        """
+        if class_metrics:
+            _preds = _inputs["preds"]
+            _target = _inputs["target"]
+        else:
+            _preds = apply_to_collection(deepcopy(_inputs["preds"]), IntTensor, lambda x: torch.ones_like(x))
+            _target = apply_to_collection(deepcopy(_inputs["target"]), IntTensor, lambda x: torch.ones_like(x))
 
-    metric.update(
-        [dict(boxes=Tensor([[388.2800, 163.1800, 348.2600, 243.7800]]), scores=Tensor([0.5]), labels=IntTensor([4]))],
-        [dict(boxes=Tensor([]), labels=IntTensor([]))],
-    )
-    metric.compute()
+        metric_macro = MeanAveragePrecision(average="macro", class_metrics=class_metrics, backend=backend)
+        metric_macro.update(_preds[0], _target[0])
+        metric_macro.update(_preds[1], _target[1])
+        result_macro = metric_macro.compute()
 
+        metric_micro = MeanAveragePrecision(average="micro", class_metrics=class_metrics, backend=backend)
+        metric_micro.update(_inputs["preds"][0], _inputs["target"][0])
+        metric_micro.update(_inputs["preds"][1], _inputs["target"][1])
+        result_micro = metric_micro.compute()
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-def test_empty_preds_cxcywh():
-    """Test empty predictions in cxcywh format."""
-    metric = MeanAveragePrecision(box_format="cxcywh")
+        if class_metrics:
+            assert torch.allclose(result_macro["map_per_class"], result_micro["map_per_class"])
+            assert torch.allclose(result_macro["mar_100_per_class"], result_micro["mar_100_per_class"])
+        else:
+            for key in result_macro:
+                if key == "classes":
+                    continue
+                assert torch.allclose(result_macro[key], result_micro[key])
 
-    metric.update(
-        [dict(boxes=Tensor([]), scores=Tensor([]), labels=IntTensor([]))],
-        [dict(boxes=Tensor([[388.2800, 163.1800, 348.2600, 243.7800]]), labels=IntTensor([4]))],
-    )
-    metric.compute()
+    def test_many_detection_thresholds(self, backend):
+        """Test how metric behaves when there are many detection thresholds.
 
+        Known to fail with the default pycocotools backend.
+        See issue: https://github.com/Lightning-AI/torchmetrics/issues/1153
 
-_gpu_test_condition = not torch.cuda.is_available()
+        """
+        preds = [
+            {
+                "boxes": torch.tensor([[258.0, 41.0, 606.0, 285.0]]),
+                "scores": torch.tensor([0.536]),
+                "labels": torch.tensor([0]),
+            }
+        ]
+        target = [
+            {
+                "boxes": torch.tensor([[214.0, 41.0, 562.0, 285.0]]),
+                "labels": torch.tensor([0]),
+            }
+        ]
+        metric = MeanAveragePrecision(max_detection_thresholds=[1, 10, 1000], backend=backend)
+        res = metric(preds, target)
 
+        if backend == "pycocotools":
+            assert round(res["map"].item(), 5) != 0.6
+        else:
+            assert round(res["map"].item(), 5) == 0.6
 
-def _move_to_gpu(input):
-    for x in input:
-        for key in x.keys():
-            if torch.is_tensor(x[key]):
-                x[key] = x[key].to("cuda")
-    return input
+        assert "mar_1" in res
+        assert "mar_10" in res
+        assert "mar_1000" in res
 
+    @pytest.mark.parametrize("max_detection_thresholds", [[1, 10], [1, 10, 50, 100]])
+    def test_with_more_and_less_detection_thresholds(self, max_detection_thresholds, backend):
+        """Test how metric is working when list of max detection thresholds is not 3.
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-@pytest.mark.skipif(_gpu_test_condition, reason="test requires CUDA availability")
-@pytest.mark.parametrize("inputs", [_inputs, _inputs2, _inputs3])
-def test_map_gpu(inputs):
-    """Test predictions on single gpu."""
-    metric = MeanAveragePrecision()
-    metric = metric.to("cuda")
-    for preds, targets in zip(inputs.preds, inputs.target):
-        metric.update(_move_to_gpu(preds), _move_to_gpu(targets))
-    metric.compute()
+        This is a known limitation of the pycocotools where values are hardcoded to expect at least 3 elements
+        https://github.com/ppwwyyxx/cocoapi/blob/master/PythonAPI/pycocotools/cocoeval.py#L461
 
-
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-@pytest.mark.skipif(_gpu_test_condition, reason="test requires CUDA availability")
-def test_map_with_custom_thresholds():
-    """Test that map works with custom iou thresholds."""
-    metric = MeanAveragePrecision(iou_thresholds=[0.1, 0.2])
-    metric = metric.to("cuda")
-    for preds, targets in zip(_inputs.preds, _inputs.target):
-        metric.update(_move_to_gpu(preds), _move_to_gpu(targets))
-    res = metric.compute()
-    assert res["map_50"].item() == -1
-    assert res["map_75"].item() == -1
-
-
-@pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
-def test_empty_metric():
-    """Test empty metric."""
-    metric = MeanAveragePrecision()
-    metric.compute()
-
-
-@pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
-def test_missing_pred():
-    """One good detection, one false negative.
-
-    Map should be lower than 1. Actually it is 0.5, but the exact value depends on where we are sampling (i.e. recall's
-    values)
-    """
-    gts = [
-        dict(boxes=Tensor([[10, 20, 15, 25]]), labels=IntTensor([0])),
-        dict(boxes=Tensor([[10, 20, 15, 25]]), labels=IntTensor([0])),
-    ]
-    preds = [
-        dict(boxes=Tensor([[10, 20, 15, 25]]), scores=Tensor([0.9]), labels=IntTensor([0])),
-        # Empty prediction
-        dict(boxes=Tensor([]), scores=Tensor([]), labels=IntTensor([])),
-    ]
-    metric = MeanAveragePrecision()
-    metric.update(preds, gts)
-    result = metric.compute()
-    assert result["map"] < 1, "MAP cannot be 1, as there is a missing prediction."
-
-
-@pytest.mark.skipif(_pytest_condition, reason="test requires that pycocotools and torchvision=>0.8.0 is installed")
-def test_missing_gt():
-    """The symmetric case of test_missing_pred.
-
-    One good detection, one false positive. Map should be lower than 1. Actually it is 0.5, but the exact value depends
-    on where we are sampling (i.e. recall's values)
-    """
-    gts = [
-        dict(boxes=Tensor([[10, 20, 15, 25]]), labels=IntTensor([0])),
-        dict(boxes=Tensor([]), labels=IntTensor([])),
-    ]
-    preds = [
-        dict(boxes=Tensor([[10, 20, 15, 25]]), scores=Tensor([0.9]), labels=IntTensor([0])),
-        dict(boxes=Tensor([[10, 20, 15, 25]]), scores=Tensor([0.95]), labels=IntTensor([0])),
-    ]
-
-    metric = MeanAveragePrecision()
-    metric.update(preds, gts)
-    result = metric.compute()
-    assert result["map"] < 1, "MAP cannot be 1, as there is an image with no ground truth, but some predictions."
-
-
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-def test_segm_iou_empty_gt_mask():
-    """Test empty ground truths."""
-    metric = MeanAveragePrecision(iou_type="segm")
-
-    metric.update(
-        [dict(masks=torch.randint(0, 1, (1, 10, 10)).bool(), scores=Tensor([0.5]), labels=IntTensor([4]))],
-        [dict(masks=Tensor([]), labels=IntTensor([]))],
-    )
-
-    metric.compute()
-
-
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-def test_segm_iou_empty_pred_mask():
-    """Test empty predictions."""
-    metric = MeanAveragePrecision(iou_type="segm")
-
-    metric.update(
-        [dict(masks=torch.BoolTensor([]), scores=Tensor([]), labels=IntTensor([]))],
-        [dict(masks=torch.randint(0, 1, (1, 10, 10)).bool(), labels=IntTensor([4]))],
-    )
-
-    metric.compute()
-
-
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
-def test_error_on_wrong_input():
-    """Test class input validation."""
-    metric = MeanAveragePrecision()
-
-    metric.update([], [])  # no error
-
-    with pytest.raises(ValueError, match="Expected argument `preds` to be of type Sequence"):
-        metric.update(Tensor(), [])  # type: ignore
-
-    with pytest.raises(ValueError, match="Expected argument `target` to be of type Sequence"):
-        metric.update([], Tensor())  # type: ignore
-
-    with pytest.raises(ValueError, match="Expected argument `preds` and `target` to have the same length"):
-        metric.update([{}], [{}, {}])
-
-    with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `boxes` key"):
-        metric.update(
-            [dict(scores=Tensor(), labels=IntTensor)],
-            [dict(boxes=Tensor(), labels=IntTensor())],
-        )
-
-    with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `scores` key"):
-        metric.update(
-            [dict(boxes=Tensor(), labels=IntTensor)],
-            [dict(boxes=Tensor(), labels=IntTensor())],
-        )
-
-    with pytest.raises(ValueError, match="Expected all dicts in `preds` to contain the `labels` key"):
-        metric.update(
-            [dict(boxes=Tensor(), scores=IntTensor)],
-            [dict(boxes=Tensor(), labels=IntTensor())],
-        )
-
-    with pytest.raises(ValueError, match="Expected all dicts in `target` to contain the `boxes` key"):
-        metric.update(
-            [dict(boxes=Tensor(), scores=IntTensor, labels=IntTensor)],
-            [dict(labels=IntTensor())],
-        )
-
-    with pytest.raises(ValueError, match="Expected all dicts in `target` to contain the `labels` key"):
-        metric.update(
-            [dict(boxes=Tensor(), scores=IntTensor, labels=IntTensor)],
-            [dict(boxes=IntTensor())],
-        )
-
-    with pytest.raises(ValueError, match="Expected all boxes in `preds` to be of type Tensor"):
-        metric.update(
-            [dict(boxes=[], scores=Tensor(), labels=IntTensor())],
-            [dict(boxes=Tensor(), labels=IntTensor())],
-        )
-
-    with pytest.raises(ValueError, match="Expected all scores in `preds` to be of type Tensor"):
-        metric.update(
-            [dict(boxes=Tensor(), scores=[], labels=IntTensor())],
-            [dict(boxes=Tensor(), labels=IntTensor())],
-        )
-
-    with pytest.raises(ValueError, match="Expected all labels in `preds` to be of type Tensor"):
-        metric.update(
-            [dict(boxes=Tensor(), scores=Tensor(), labels=[])],
-            [dict(boxes=Tensor(), labels=IntTensor())],
-        )
-
-    with pytest.raises(ValueError, match="Expected all boxes in `target` to be of type Tensor"):
-        metric.update(
-            [dict(boxes=Tensor(), scores=Tensor(), labels=IntTensor())],
-            [dict(boxes=[], labels=IntTensor())],
-        )
-
-    with pytest.raises(ValueError, match="Expected all labels in `target` to be of type Tensor"):
-        metric.update(
-            [dict(boxes=Tensor(), scores=Tensor(), labels=IntTensor())],
-            [dict(boxes=Tensor(), labels=[])],
-        )
+        """
+        with pytest.raises(
+            ValueError, match="When providing a list of max detection thresholds it should have length 3.*"
+        ):
+            MeanAveragePrecision(max_detection_thresholds=max_detection_thresholds, backend=backend)

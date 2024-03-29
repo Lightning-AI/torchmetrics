@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,23 +19,29 @@ import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import accuracy_score as sk_accuracy
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
+from torchmetrics.classification.accuracy import Accuracy, BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy
+from torchmetrics.functional.classification.accuracy import (
+    accuracy,
+    binary_accuracy,
+    multiclass_accuracy,
+    multilabel_accuracy,
+)
+from torchmetrics.metric import Metric
 
-from torchmetrics.classification.accuracy import BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy
-from torchmetrics.functional.classification.accuracy import binary_accuracy, multiclass_accuracy, multilabel_accuracy
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from unittests import NUM_CLASSES, THRESHOLD
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.classification._inputs import _binary_cases, _input_binary, _multiclass_cases, _multilabel_cases
 
 seed_all(42)
 
 
-def _sk_accuracy(target, preds):
+def _reference_sklearn_accuracy(target, preds):
     score = sk_accuracy(target, preds)
     return score if not np.isnan(score) else 0.0
 
 
-def _sk_accuracy_binary(preds, target, ignore_index, multidim_average):
+def _reference_sklearn_accuracy_binary(preds, target, ignore_index, multidim_average):
     if multidim_average == "global":
         preds = preds.view(-1).numpy()
         target = target.view(-1).numpy()
@@ -44,30 +50,51 @@ def _sk_accuracy_binary(preds, target, ignore_index, multidim_average):
         target = target.numpy()
 
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
 
     if multidim_average == "global":
         target, preds = remove_ignore_index(target, preds, ignore_index)
-        return _sk_accuracy(target, preds)
-    else:
-        res = []
-        for pred, true in zip(preds, target):
-            pred = pred.flatten()
-            true = true.flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
-            res.append(_sk_accuracy(true, pred))
-        return np.stack(res)
+        return _reference_sklearn_accuracy(target, preds)
+
+    res = []
+    for pred, true in zip(preds, target):
+        pred = pred.flatten()
+        true = true.flatten()
+        true, pred = remove_ignore_index(true, pred, ignore_index)
+        res.append(_reference_sklearn_accuracy(true, pred))
+    return np.stack(res)
 
 
-@pytest.mark.parametrize("input", _binary_cases)
+def test_accuracy_functional_raises_invalid_task():
+    """Tests accuracy task enum from functional.accuracy."""
+    preds, target = _input_binary
+    task = "NotValidTask"
+    ignore_index = None
+    multidim_average = "global"
+
+    with pytest.raises(ValueError, match=r"Invalid *"):
+        accuracy(
+            preds,
+            target,
+            threshold=THRESHOLD,
+            task=task,
+            ignore_index=ignore_index,
+            multidim_average=multidim_average,
+        )
+
+
+@pytest.mark.parametrize("inputs", _binary_cases)
 class TestBinaryAccuracy(MetricTester):
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    """Test class for `BinaryAccuracy` metric."""
+
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    @pytest.mark.parametrize("ddp", [False, True])
-    def test_binary_accuracy(self, ddp, input, ignore_index, multidim_average):
-        preds, target = input
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_binary_accuracy(self, ddp, inputs, ignore_index, multidim_average):
+        """Test class implementation of metric."""
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
@@ -80,14 +107,17 @@ class TestBinaryAccuracy(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryAccuracy,
-            sk_metric=partial(_sk_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average),
+            reference_metric=partial(
+                _reference_sklearn_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average
+            ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    def test_binary_accuracy_functional(self, input, ignore_index, multidim_average):
-        preds, target = input
+    def test_binary_accuracy_functional(self, inputs, ignore_index, multidim_average):
+        """Test functional implementation of metric."""
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
@@ -97,7 +127,9 @@ class TestBinaryAccuracy(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_accuracy,
-            sk_metric=partial(_sk_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average),
+            reference_metric=partial(
+                _reference_sklearn_accuracy_binary, ignore_index=ignore_index, multidim_average=multidim_average
+            ),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
@@ -105,8 +137,9 @@ class TestBinaryAccuracy(MetricTester):
             },
         )
 
-    def test_binary_accuracy_differentiability(self, input):
-        preds, target = input
+    def test_binary_accuracy_differentiability(self, inputs):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -116,10 +149,10 @@ class TestBinaryAccuracy(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_accuracy_half_cpu(self, input, dtype):
-        preds, target = input
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
-            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
+    def test_binary_accuracy_half_cpu(self, inputs, dtype):
+        """Test dtype support of the metric on CPU."""
+        preds, target = inputs
+
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -133,8 +166,9 @@ class TestBinaryAccuracy(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_accuracy_half_gpu(self, input, dtype):
-        preds, target = input
+    def test_binary_accuracy_half_gpu(self, inputs, dtype):
+        """Test dtype support of the metric on GPU."""
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -145,7 +179,7 @@ class TestBinaryAccuracy(MetricTester):
         )
 
 
-def _sk_accuracy_multiclass(preds, target, ignore_index, multidim_average, average):
+def _reference_sklearn_accuracy_multiclass(preds, target, ignore_index, multidim_average, average):
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
     if multidim_average == "global":
@@ -153,50 +187,58 @@ def _sk_accuracy_multiclass(preds, target, ignore_index, multidim_average, avera
         target = target.numpy().flatten()
         target, preds = remove_ignore_index(target, preds, ignore_index)
         if average == "micro":
-            return _sk_accuracy(target, preds)
+            return _reference_sklearn_accuracy(target, preds)
         confmat = sk_confusion_matrix(target, preds, labels=list(range(NUM_CLASSES)))
         acc_per_class = confmat.diagonal() / confmat.sum(axis=1)
         acc_per_class[np.isnan(acc_per_class)] = 0.0
         if average == "macro":
+            acc_per_class = acc_per_class[
+                (np.bincount(preds, minlength=NUM_CLASSES) + np.bincount(target, minlength=NUM_CLASSES)) != 0.0
+            ]
             return acc_per_class.mean()
-        elif average == "weighted":
+        if average == "weighted":
             weights = confmat.sum(1)
             return ((weights * acc_per_class) / weights.sum()).sum()
+        return acc_per_class
+
+    preds = preds.numpy()
+    target = target.numpy()
+    res = []
+    for pred, true in zip(preds, target):
+        pred = pred.flatten()
+        true = true.flatten()
+        true, pred = remove_ignore_index(true, pred, ignore_index)
+        if average == "micro":
+            res.append(_reference_sklearn_accuracy(true, pred))
         else:
-            return acc_per_class
-    else:
-        preds = preds.numpy()
-        target = target.numpy()
-        res = []
-        for pred, true in zip(preds, target):
-            pred = pred.flatten()
-            true = true.flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
-            if average == "micro":
-                res.append(_sk_accuracy(true, pred))
+            confmat = sk_confusion_matrix(true, pred, labels=list(range(NUM_CLASSES)))
+            acc_per_class = confmat.diagonal() / confmat.sum(axis=1)
+            acc_per_class[np.isnan(acc_per_class)] = 0.0
+            if average == "macro":
+                acc_per_class = acc_per_class[
+                    (np.bincount(pred, minlength=NUM_CLASSES) + np.bincount(true, minlength=NUM_CLASSES)) != 0.0
+                ]
+                res.append(acc_per_class.mean() if len(acc_per_class) > 0 else 0.0)
+            elif average == "weighted":
+                weights = confmat.sum(1)
+                score = ((weights * acc_per_class) / weights.sum()).sum()
+                res.append(0.0 if np.isnan(score) else score)
             else:
-                confmat = sk_confusion_matrix(true, pred, labels=list(range(NUM_CLASSES)))
-                acc_per_class = confmat.diagonal() / confmat.sum(axis=1)
-                acc_per_class[np.isnan(acc_per_class)] = 0.0
-                if average == "macro":
-                    res.append(acc_per_class.mean())
-                elif average == "weighted":
-                    weights = confmat.sum(1)
-                    score = ((weights * acc_per_class) / weights.sum()).sum()
-                    res.append(0.0 if np.isnan(score) else score)
-                else:
-                    res.append(acc_per_class)
-        return np.stack(res, 0)
+                res.append(acc_per_class)
+    return np.stack(res, 0)
 
 
-@pytest.mark.parametrize("input", _multiclass_cases)
+@pytest.mark.parametrize("inputs", _multiclass_cases)
 class TestMulticlassAccuracy(MetricTester):
+    """Test class for `MulticlassAccuracy` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
-    @pytest.mark.parametrize("ddp", [True, False])
-    def test_multiclass_accuracy(self, ddp, input, ignore_index, multidim_average, average):
-        preds, target = input
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_multiclass_accuracy(self, ddp, inputs, ignore_index, multidim_average, average):
+        """Test class implementation of metric."""
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and target.ndim < 3:
@@ -209,8 +251,8 @@ class TestMulticlassAccuracy(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassAccuracy,
-            sk_metric=partial(
-                _sk_accuracy_multiclass,
+            reference_metric=partial(
+                _reference_sklearn_accuracy_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -226,8 +268,9 @@ class TestMulticlassAccuracy(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
-    def test_multiclass_accuracy_functional(self, input, ignore_index, multidim_average, average):
-        preds, target = input
+    def test_multiclass_accuracy_functional(self, inputs, ignore_index, multidim_average, average):
+        """Test functional implementation of metric."""
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and target.ndim < 3:
@@ -237,8 +280,8 @@ class TestMulticlassAccuracy(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_accuracy,
-            sk_metric=partial(
-                _sk_accuracy_multiclass,
+            reference_metric=partial(
+                _reference_sklearn_accuracy_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -251,8 +294,9 @@ class TestMulticlassAccuracy(MetricTester):
             },
         )
 
-    def test_multiclass_accuracy_differentiability(self, input):
-        preds, target = input
+    def test_multiclass_accuracy_differentiability(self, inputs):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -262,10 +306,10 @@ class TestMulticlassAccuracy(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_accuracy_half_cpu(self, input, dtype):
-        preds, target = input
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
-            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
+    def test_multiclass_accuracy_half_cpu(self, inputs, dtype):
+        """Test dtype support of the metric on CPU."""
+        preds, target = inputs
+
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -279,8 +323,9 @@ class TestMulticlassAccuracy(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_accuracy_half_gpu(self, input, dtype):
-        preds, target = input
+    def test_multiclass_accuracy_half_gpu(self, inputs, dtype):
+        """Test dtype support of the metric on GPU."""
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -294,12 +339,17 @@ class TestMulticlassAccuracy(MetricTester):
 _mc_k_target = torch.tensor([0, 1, 2])
 _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
 
+_mc_k_targets2 = torch.tensor([0, 0, 2])
+_mc_k_preds2 = torch.tensor([[0.9, 0.1, 0.0], [0.9, 0.1, 0.0], [0.9, 0.1, 0.0]])
+
 
 @pytest.mark.parametrize(
-    "k, preds, target, average, expected",
+    ("k", "preds", "target", "average", "expected"),
     [
         (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor(2 / 3)),
         (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor(3 / 3)),
+        (1, _mc_k_preds2, _mc_k_targets2, "macro", torch.tensor(1 / 2)),
+        (2, _mc_k_preds2, _mc_k_targets2, "macro", torch.tensor(1 / 2)),
     ],
 )
 def test_top_k(k, preds, target, average, expected):
@@ -310,11 +360,11 @@ def test_top_k(k, preds, target, average, expected):
     assert torch.isclose(multiclass_accuracy(preds, target, top_k=k, average=average, num_classes=3), expected)
 
 
-def _sk_accuracy_multilabel(preds, target, ignore_index, multidim_average, average):
+def _reference_sklearn_accuracy_multilabel(preds, target, ignore_index, multidim_average, average):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
     preds = preds.reshape(*preds.shape[:2], -1)
@@ -325,67 +375,72 @@ def _sk_accuracy_multilabel(preds, target, ignore_index, multidim_average, avera
             preds = preds.flatten()
             target = target.flatten()
             target, preds = remove_ignore_index(target, preds, ignore_index)
-            return _sk_accuracy(target, preds)
+            return _reference_sklearn_accuracy(target, preds)
 
         accuracy, weights = [], []
         for i in range(preds.shape[1]):
             pred, true = preds[:, i].flatten(), target[:, i].flatten()
             true, pred = remove_ignore_index(true, pred, ignore_index)
             confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
-            accuracy.append(_sk_accuracy(true, pred))
+            accuracy.append(_reference_sklearn_accuracy(true, pred))
             weights.append(confmat[1, 1] + confmat[1, 0])
         res = np.stack(accuracy, axis=0)
 
         if average == "macro":
             return res.mean(0)
-        elif average == "weighted":
+        if average == "weighted":
             weights = np.stack(weights, 0).astype(float)
             weights_norm = weights.sum(-1, keepdims=True)
             weights_norm[weights_norm == 0] = 1.0
             return ((weights * res) / weights_norm).sum(-1)
-        elif average is None or average == "none":
+        if average is None or average == "none":
             return res
-    else:
-        accuracy, weights = [], []
-        for i in range(preds.shape[0]):
-            if average == "micro":
-                pred, true = preds[i].flatten(), target[i].flatten()
-                true, pred = remove_ignore_index(true, pred, ignore_index)
-                accuracy.append(_sk_accuracy(true, pred))
-                confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
-                weights.append(confmat[1, 1] + confmat[1, 0])
-            else:
-                scores, w = [], []
-                for j in range(preds.shape[1]):
-                    pred, true = preds[i, j], target[i, j]
-                    true, pred = remove_ignore_index(true, pred, ignore_index)
-                    scores.append(_sk_accuracy(true, pred))
-                    confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
-                    w.append(confmat[1, 1] + confmat[1, 0])
-                accuracy.append(np.stack(scores))
-                weights.append(np.stack(w))
+        return None
+
+    accuracy, weights = [], []
+    for i in range(preds.shape[0]):
         if average == "micro":
-            return np.array(accuracy)
-        res = np.stack(accuracy, 0)
-        if average == "macro":
-            return res.mean(-1)
-        elif average == "weighted":
-            weights = np.stack(weights, 0).astype(float)
-            weights_norm = weights.sum(-1, keepdims=True)
-            weights_norm[weights_norm == 0] = 1.0
-            return ((weights * res) / weights_norm).sum(-1)
-        elif average is None or average == "none":
-            return res
+            pred, true = preds[i].flatten(), target[i].flatten()
+            true, pred = remove_ignore_index(true, pred, ignore_index)
+            accuracy.append(_reference_sklearn_accuracy(true, pred))
+            confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
+            weights.append(confmat[1, 1] + confmat[1, 0])
+        else:
+            scores, w = [], []
+            for j in range(preds.shape[1]):
+                pred, true = preds[i, j], target[i, j]
+                true, pred = remove_ignore_index(true, pred, ignore_index)
+                scores.append(_reference_sklearn_accuracy(true, pred))
+                confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
+                w.append(confmat[1, 1] + confmat[1, 0])
+            accuracy.append(np.stack(scores))
+            weights.append(np.stack(w))
+    if average == "micro":
+        return np.array(accuracy)
+    res = np.stack(accuracy, 0)
+    if average == "macro":
+        return res.mean(-1)
+    if average == "weighted":
+        weights = np.stack(weights, 0).astype(float)
+        weights_norm = weights.sum(-1, keepdims=True)
+        weights_norm[weights_norm == 0] = 1.0
+        return ((weights * res) / weights_norm).sum(-1)
+    if average is None or average == "none":
+        return res
+    return None
 
 
-@pytest.mark.parametrize("input", _multilabel_cases)
+@pytest.mark.parametrize("inputs", _multilabel_cases)
 class TestMultilabelAccuracy(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    """Test class for `MultilabelAccuracy` metric."""
+
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
-    def test_multilabel_accuracy(self, ddp, input, ignore_index, multidim_average, average):
-        preds, target = input
+    def test_multilabel_accuracy(self, ddp, inputs, ignore_index, multidim_average, average):
+        """Test class implementation of metric."""
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 4:
@@ -398,8 +453,8 @@ class TestMultilabelAccuracy(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelAccuracy,
-            sk_metric=partial(
-                _sk_accuracy_multilabel,
+            reference_metric=partial(
+                _reference_sklearn_accuracy_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -413,11 +468,12 @@ class TestMultilabelAccuracy(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
-    def test_multilabel_accuracy_functional(self, input, ignore_index, multidim_average, average):
-        preds, target = input
+    def test_multilabel_accuracy_functional(self, inputs, ignore_index, multidim_average, average):
+        """Test functional implementation of metric."""
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 4:
@@ -427,8 +483,8 @@ class TestMultilabelAccuracy(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_accuracy,
-            sk_metric=partial(
-                _sk_accuracy_multilabel,
+            reference_metric=partial(
+                _reference_sklearn_accuracy_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -442,8 +498,9 @@ class TestMultilabelAccuracy(MetricTester):
             },
         )
 
-    def test_multilabel_accuracy_differentiability(self, input):
-        preds, target = input
+    def test_multilabel_accuracy_differentiability(self, inputs):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -453,10 +510,10 @@ class TestMultilabelAccuracy(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_accuracy_half_cpu(self, input, dtype):
-        preds, target = input
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
-            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
+    def test_multilabel_accuracy_half_cpu(self, inputs, dtype):
+        """Test dtype support of the metric on CPU."""
+        preds, target = inputs
+
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -470,8 +527,9 @@ class TestMultilabelAccuracy(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_accuracy_half_gpu(self, input, dtype):
-        preds, target = input
+    def test_multilabel_accuracy_half_gpu(self, inputs, dtype):
+        """Test dtype support of the metric on GPU."""
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -480,3 +538,39 @@ class TestMultilabelAccuracy(MetricTester):
             metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
             dtype=dtype,
         )
+
+
+def test_corner_cases():
+    """Issue: https://github.com/Lightning-AI/torchmetrics/issues/1691."""
+    # simulate the output of a perfect predictor (i.e. preds == target)
+    target = torch.tensor([0, 1, 2, 0, 1, 2])
+    preds = target
+
+    metric = MulticlassAccuracy(num_classes=3, average="none", ignore_index=0)
+    res = metric(preds, target)
+    assert torch.allclose(res, torch.tensor([0.0, 1.0, 1.0]))
+
+    metric = MulticlassAccuracy(num_classes=3, average="macro", ignore_index=0)
+    res = metric(preds, target)
+    assert res == 1.0
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryAccuracy, {"task": "binary"}),
+        (MulticlassAccuracy, {"task": "multiclass", "num_classes": 3}),
+        (MultilabelAccuracy, {"task": "multilabel", "num_labels": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=Accuracy):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,80 +11,81 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 
 import pytest
 import torch
 from sklearn.metrics import explained_variance_score
-
 from torchmetrics.functional import explained_variance
 from torchmetrics.regression import ExplainedVariance
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
-from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
-num_targets = 5
+NUM_TARGETS = 5
 
-Input = namedtuple("Input", ["preds", "target"])
 
-_single_target_inputs = Input(
+_single_target_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE),
 )
 
-_multi_target_inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
+_multi_target_inputs = _Input(
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_TARGETS),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_TARGETS),
 )
 
 
-def _single_target_sk_metric(preds, target, sk_fn=explained_variance_score):
+def _single_target_ref_metric(preds, target, sk_fn=explained_variance_score):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
     return sk_fn(sk_target, sk_preds)
 
 
-def _multi_target_sk_metric(preds, target, sk_fn=explained_variance_score):
-    sk_preds = preds.view(-1, num_targets).numpy()
-    sk_target = target.view(-1, num_targets).numpy()
+def _multi_target_ref_metric(preds, target, sk_fn=explained_variance_score):
+    sk_preds = preds.view(-1, NUM_TARGETS).numpy()
+    sk_target = target.view(-1, NUM_TARGETS).numpy()
     return sk_fn(sk_target, sk_preds)
 
 
 @pytest.mark.parametrize("multioutput", ["raw_values", "uniform_average", "variance_weighted"])
 @pytest.mark.parametrize(
-    "preds, target, sk_metric",
+    "preds, target, ref_metric",
     [
-        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_sk_metric),
-        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_sk_metric),
+        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_ref_metric),
+        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_ref_metric),
     ],
 )
 class TestExplainedVariance(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_explained_variance(self, multioutput, preds, target, sk_metric, ddp, dist_sync_on_step):
+    """Test class for `ExplainedVariance` metric."""
+
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_explained_variance(self, multioutput, preds, target, ref_metric, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             ExplainedVariance,
-            partial(sk_metric, sk_fn=partial(explained_variance_score, multioutput=multioutput)),
-            dist_sync_on_step,
-            metric_args=dict(multioutput=multioutput),
+            partial(ref_metric, sk_fn=partial(explained_variance_score, multioutput=multioutput)),
+            metric_args={"multioutput": multioutput},
         )
 
-    def test_explained_variance_functional(self, multioutput, preds, target, sk_metric):
+    def test_explained_variance_functional(self, multioutput, preds, target, ref_metric):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
             explained_variance,
-            partial(sk_metric, sk_fn=partial(explained_variance_score, multioutput=multioutput)),
-            metric_args=dict(multioutput=multioutput),
+            partial(ref_metric, sk_fn=partial(explained_variance_score, multioutput=multioutput)),
+            metric_args={"multioutput": multioutput},
         )
 
-    def test_explained_variance_differentiability(self, multioutput, preds, target, sk_metric):
+    def test_explained_variance_differentiability(self, multioutput, preds, target, ref_metric):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -93,18 +94,18 @@ class TestExplainedVariance(MetricTester):
             metric_args={"multioutput": multioutput},
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
-    )
-    def test_explained_variance_half_cpu(self, multioutput, preds, target, sk_metric):
+    def test_explained_variance_half_cpu(self, multioutput, preds, target, ref_metric):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(preds, target, ExplainedVariance, explained_variance)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_explained_variance_half_gpu(self, multioutput, preds, target, sk_metric):
+    def test_explained_variance_half_gpu(self, multioutput, preds, target, ref_metric):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(preds, target, ExplainedVariance, explained_variance)
 
 
 def test_error_on_different_shape(metric_class=ExplainedVariance):
+    """Test that error is raised on different shapes of input."""
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))

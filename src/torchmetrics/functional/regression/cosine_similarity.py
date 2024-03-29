@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,14 +23,19 @@ def _cosine_similarity_update(
     preds: Tensor,
     target: Tensor,
 ) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute Cosine Similarity. Checks for same shape of input tensors.
+    """Update and returns variables required to compute Cosine Similarity. Checks for same shape of input tensors.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-    """
 
+    """
     _check_same_shape(preds, target)
+    if preds.ndim != 2:
+        raise ValueError(
+            "Expected input to cosine similarity to be 2D tensors of shape `[N,D]` where `N` is the number of samples"
+            f" and `D` is the number of dimensions, but got tensor of shape {preds.shape}"
+        )
     preds = preds.float()
     target = target.float()
 
@@ -38,7 +43,7 @@ def _cosine_similarity_update(
 
 
 def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: Optional[str] = "sum") -> Tensor:
-    """Computes Cosine Similarity.
+    """Compute Cosine Similarity.
 
     Args:
         preds: Predicted tensor
@@ -52,8 +57,8 @@ def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: Optiona
         >>> preds, target = _cosine_similarity_update(preds, target)
         >>> _cosine_similarity_compute(preds, target, 'none')
         tensor([ 1.0000, -1.0000])
-    """
 
+    """
     dot_product = (preds * target).sum(dim=-1)
     preds_norm = preds.norm(dim=-1)
     target_norm = target.norm(dim=-1)
@@ -64,12 +69,11 @@ def _cosine_similarity_compute(preds: Tensor, target: Tensor, reduction: Optiona
         "none": lambda x: x,
         None: lambda x: x,
     }
-    return reduction_mapping[reduction](similarity)
+    return reduction_mapping[reduction](similarity)  # type: ignore[operator]
 
 
 def cosine_similarity(preds: Tensor, target: Tensor, reduction: Optional[str] = "sum") -> Tensor:
-    r"""
-    Computes the `Cosine Similarity`_ between targets and predictions:
+    r"""Compute the `Cosine Similarity`_.
 
     .. math::
         cos_{sim}(x,y) = \frac{x \cdot y}{||x|| \cdot ||y||} =

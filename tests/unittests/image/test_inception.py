@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,24 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import pickle
+from contextlib import nullcontext as does_not_raise
 
 import pytest
 import torch
 from torch.nn import Module
 from torch.utils.data import Dataset
-
 from torchmetrics.image.inception import InceptionScore
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 torch.manual_seed(42)
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 def test_no_train():
     """Assert that metric never leaves evaluation mode."""
 
     class MyModel(Module):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.metric = InceptionScore()
 
@@ -44,7 +44,7 @@ def test_no_train():
     ), "InceptionScore metric was changed to training mode which should not happen"
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 def test_is_pickle():
     """Assert that we can initialize the metric and pickle it."""
     metric = InceptionScore()
@@ -79,8 +79,9 @@ def test_is_raises_errors_and_warnings():
         InceptionScore(feature=[1, 2])
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 def test_is_update_compute():
+    """Test that inception score works as expected."""
     metric = InceptionScore()
 
     for _ in range(2):
@@ -93,21 +94,21 @@ def test_is_update_compute():
 
 
 class _ImgDataset(Dataset):
-    def __init__(self, imgs):
+    def __init__(self, imgs) -> None:
         self.imgs = imgs
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx) -> torch.Tensor:
         return self.imgs[idx]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.imgs.shape[0]
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 @pytest.mark.parametrize("compute_on_cpu", [True, False])
 def test_compare_is(tmpdir, compute_on_cpu):
-    """check that the hole pipeline give the same result as torch-fidelity."""
+    """Check that the hole pipeline give the same result as torch-fidelity."""
     from torch_fidelity import calculate_metrics
 
     metric = InceptionScore(splits=1, compute_on_cpu=compute_on_cpu).cuda()
@@ -126,3 +127,19 @@ def test_compare_is(tmpdir, compute_on_cpu):
     tm_mean, _ = metric.compute()
 
     assert torch.allclose(tm_mean.cpu(), torch.tensor([torch_fid["inception_score_mean"]]), atol=1e-3)
+
+
+def test_normalize_arg_true():
+    """Test that normalize argument works as expected."""
+    img = torch.rand(2, 3, 299, 299)
+    metric = InceptionScore(normalize=True)
+    with does_not_raise():
+        metric.update(img)
+
+
+def test_normalize_arg_false():
+    """Test that normalize argument works as expected."""
+    img = torch.rand(2, 3, 299, 299)
+    metric = InceptionScore(normalize=False)
+    with pytest.raises(ValueError, match="Expecting image as torch.Tensor with dtype=torch.uint8"):
+        metric.update(img)

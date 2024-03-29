@@ -12,11 +12,10 @@ Peak Signal-to-Noise Ratio (PSNR)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.PeakSignalNoiseRatio
-    :noindex:
+.. autoclass:: torchmetrics.image.PeakSignalNoiseRatio
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.peak_signal_noise_ratio
-    :noindex:
+.. autofunction:: torchmetrics.functional.image.peak_signal_noise_ratio

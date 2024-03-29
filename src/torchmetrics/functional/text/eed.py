@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -98,8 +98,9 @@ from torchmetrics.functional.text.helper import _validate_inputs
 
 
 def _distance_between_words(preds_word: str, target_word: str) -> int:
-    """Distance measure used for substitutions/identity operation. Code adapted from
-    https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
+    """Distance measure used for substitutions/identity operation.
+
+    Code adapted from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
 
     Args:
         preds_word: hypothesis word string
@@ -107,6 +108,7 @@ def _distance_between_words(preds_word: str, target_word: str) -> int:
 
     Return:
         0 for match, 1 for no match
+
     """
     return int(preds_word != target_word)
 
@@ -119,7 +121,7 @@ def _eed_function(
     deletion: float = 0.2,
     insertion: float = 1.0,
 ) -> float:
-    """Computes extended edit distance score for two lists of strings: hyp and ref.
+    """Compute extended edit distance score for two lists of strings: hyp and ref.
 
     Code adapted from: https://github.com/rwth-i6/ExtendedEditDistance/blob/master/EED.py.
 
@@ -136,15 +138,14 @@ def _eed_function(
     """
     number_of_visits = [-1] * (len(hyp) + 1)
 
-    # row[i] stores cost of cheapest path from (0,0) to (i,l) in CDER aligment grid.
+    # row[i] stores cost of cheapest path from (0,0) to (i,l) in CDER alignment grid.
     row = [1.0] * (len(hyp) + 1)
 
     row[0] = 0.0  # CDER initialisation 0,0 = 0.0, rest 1.0
     next_row = [inf] * (len(hyp) + 1)
 
     for w in range(1, len(ref) + 1):
-        for i in range(0, len(hyp) + 1):
-
+        for i in range(len(hyp) + 1):
             if i > 0:
                 next_row[i] = min(
                     next_row[i - 1] + deletion,
@@ -171,10 +172,13 @@ def _eed_function(
 
 
 def _preprocess_en(sentence: str) -> str:
-    """Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py.
+    """Preprocess english sentences.
+
+    Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py.
 
     Raises:
         ValueError: If input sentence is not of a type `str`.
+
     """
     if not isinstance(sentence, str):
         raise ValueError(f"Only strings allowed during preprocessing step, found {type(sentence)} instead")
@@ -209,46 +213,46 @@ def _preprocess_en(sentence: str) -> str:
         sentence = sentence.replace(pattern, replacement)
 
     # add space to beginning and end of string
-    sentence = " " + sentence + " "
-
-    return sentence
+    return " " + sentence + " "
 
 
 def _preprocess_ja(sentence: str) -> str:
-    """Copied from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py.
+    """Preprocess japanese sentences.
+
+    Copy from https://github.com/rwth-i6/ExtendedEditDistance/blob/master/util.py.
 
     Raises:
         ValueError: If input sentence is not of a type `str`.
+
     """
     if not isinstance(sentence, str):
         raise ValueError(f"Only strings allowed during preprocessing step, found {type(sentence)} instead")
 
     sentence = sentence.rstrip()  # trailing space, tab, newline
     # characters which look identical actually are identical
-    sentence = unicodedata.normalize("NFKC", sentence)
-    return sentence
+    return unicodedata.normalize("NFKC", sentence)
 
 
 def _eed_compute(sentence_level_scores: List[Tensor]) -> Tensor:
-    """Final step in extended edit distance.
+    """Reduction for extended edit distance.
 
     Args:
         sentence_level_scores: list of sentence-level scores as floats
 
     Return:
         average of scores as a tensor
+
     """
     if len(sentence_level_scores) == 0:
         return tensor(0.0)
 
-    average = sum(sentence_level_scores) / tensor(len(sentence_level_scores))
-    return average
+    return sum(sentence_level_scores) / tensor(len(sentence_level_scores))
 
 
 def _preprocess_sentences(
     preds: Union[str, Sequence[str]],
     target: Sequence[Union[str, Sequence[str]]],
-    language: Union[Literal["en"], Literal["ja"]],
+    language: Literal["en", "ja"],
 ) -> Tuple[Union[str, Sequence[str]], Sequence[Union[str, Sequence[str]]]]:
     """Preprocess strings according to language requirements.
 
@@ -264,9 +268,10 @@ def _preprocess_sentences(
         ValueError: If a different language than ``'en'`` or ``'ja'`` is used
         ValueError: If length of target not equal to length of preds
         ValueError: If objects in reference and hypothesis corpus are not strings
+
     """
     # sanity checks
-    target, preds = _validate_inputs(hypothesis_corpus=preds, reference_corpus=target)
+    target, preds = _validate_inputs(hypothesis_corpus=preds, ref_corpus=target)
 
     # preprocess string
     if language == "en":
@@ -302,6 +307,7 @@ def _compute_sentence_statistics(
 
     Return:
         best_score: best (lowest) sentence-level score as a Tensor
+
     """
     best_score = inf
 
@@ -337,6 +343,7 @@ def _eed_update(
 
     Return:
         individual sentence scores as a list of Tensors
+
     """
     preds, target = _preprocess_sentences(preds, target, language)
 
@@ -364,8 +371,9 @@ def extended_edit_distance(
     deletion: float = 0.2,
     insertion: float = 1.0,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Computes extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings. The
-    metric utilises the Levenshtein distance and extends it by adding a jump operation.
+    """Compute extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings.
+
+    The metric utilises the Levenshtein distance and extends it by adding a jump operation.
 
     Args:
         preds: An iterable of hypothesis corpus.
@@ -381,7 +389,7 @@ def extended_edit_distance(
         Extended edit distance score as a tensor
 
     Example:
-        >>> from torchmetrics.functional import extended_edit_distance
+        >>> from torchmetrics.functional.text import extended_edit_distance
         >>> preds = ["this is the prediction", "here is an other sample"]
         >>> target = ["this is the reference", "here is another one"]
         >>> extended_edit_distance(preds=preds, target=target)
@@ -390,6 +398,7 @@ def extended_edit_distance(
     References:
         [1] P. Stanchev, W. Wang, and H. Ney, “EED: Extended Edit Distance Measure for Machine Translation”,
         submitted to WMT 2019. `ExtendedEditDistance`_
+
     """
     # input validation for parameters
     for param_name, param in zip(["alpha", "rho", "deletion", "insertion"], [alpha, rho, deletion, insertion]):

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ from torch import Tensor
 def _check_input(
     x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
 ) -> Tuple[Tensor, Tensor, bool]:
-    """Check that input has the right dimensionality and sets the ``zero_diagonal`` argument if user has not
-    provided import module.
+    """Check that input has the right dimensionality and sets the ``zero_diagonal`` argument if user has not set it.
 
     Args:
         x: tensor of shape ``[N,d]``
         y: if provided, a tensor of shape ``[M,d]``
         zero_diagonal: determines if the diagonal of the distance matrix should be set to zero
+
     """
     if x.ndim != 2:
         raise ValueError(f"Expected argument `x` to be a 2D tensor of shape `[N, d]` but got {x.shape}")
@@ -44,11 +44,12 @@ def _check_input(
 
 
 def _reduce_distance_matrix(distmat: Tensor, reduction: Optional[str] = None) -> Tensor:
-    """Final reduction of distance matrix.
+    """Reduction of distance matrix.
 
     Args:
         distmat: a ``[N,M]`` matrix
         reduction: string determining how to reduce along last dimension
+
     """
     if reduction == "mean":
         return distmat.mean(dim=-1)

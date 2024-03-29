@@ -12,31 +12,26 @@ Matthews Correlation Coefficient
 Module Interface
 ________________
 
-MatthewsCorrCoef
-^^^^^^^^^^^^^^^^
-
 .. autoclass:: torchmetrics.MatthewsCorrCoef
-    :noindex:
+    :exclude-members: update, compute
+    :special-members: __new__
 
 BinaryMatthewsCorrCoef
 ^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinaryMatthewsCorrCoef
-    :noindex:
     :exclude-members: update, compute
 
 MulticlassMatthewsCorrCoef
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassMatthewsCorrCoef
-    :noindex:
     :exclude-members: update, compute
 
 MultilabelMatthewsCorrCoef
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MultilabelMatthewsCorrCoef
-    :noindex:
     :exclude-members: update, compute
 
 
@@ -47,22 +42,18 @@ matthews_corrcoef
 ^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.matthews_corrcoef
-    :noindex:
 
 binary_matthews_corrcoef
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.classification.binary_matthews_corrcoef
-    :noindex:
 
 multiclass_matthews_corrcoef
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.classification.multiclass_matthews_corrcoef
-    :noindex:
 
 multilabel_matthews_corrcoef
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.classification.multilabel_matthews_corrcoef
-    :noindex:

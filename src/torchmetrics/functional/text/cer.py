@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ def _cer_update(
     Returns:
         Number of edit operations to get from the reference to the prediction, summed over all samples
         Number of character overall references
+
     """
     if isinstance(preds, str):
         preds = [preds]
@@ -57,13 +58,15 @@ def _cer_compute(errors: Tensor, total: Tensor) -> Tensor:
 
     Returns:
         Character error rate score
+
     """
     return errors / total
 
 
 def char_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
-    """character error rate is a common metric of the performance of an automatic speech recognition system. This
-    value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better
+    """Compute Character Error Rate used for performance of an automatic speech recognition system.
+
+    This value indicates the percentage of characters that were incorrectly predicted. The lower the value, the better
     the performance of the ASR system with a CER of 0 being a perfect score.
 
     Args:
@@ -78,6 +81,7 @@ def char_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]])
         >>> target = ["this is the reference", "there is another one"]
         >>> char_error_rate(preds=preds, target=target)
         tensor(0.3415)
+
     """
     errors, total = _cer_update(preds, target)
     return _cer_compute(errors, total)

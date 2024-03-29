@@ -12,5 +12,5 @@ Maximum
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.MaxMetric
-    :noindex:
+.. autoclass:: torchmetrics.aggregation.MaxMetric
+    :exclude-members: update, compute

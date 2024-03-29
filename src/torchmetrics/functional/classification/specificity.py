@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Optional
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -30,12 +29,9 @@ from torchmetrics.functional.classification.stat_scores import (
     _multilabel_stat_scores_format,
     _multilabel_stat_scores_tensor_validation,
     _multilabel_stat_scores_update,
-    _reduce_stat_scores,
-    _stat_scores_update,
 )
-from torchmetrics.utilities.compute import _safe_divide
-from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
-from torchmetrics.utilities.prints import rank_zero_warn
+from torchmetrics.utilities.compute import _adjust_weights_safe_divide, _safe_divide
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _specificity_reduce(
@@ -45,22 +41,17 @@ def _specificity_reduce(
     fn: Tensor,
     average: Optional[Literal["binary", "micro", "macro", "weighted", "none"]],
     multidim_average: Literal["global", "samplewise"] = "global",
+    multilabel: bool = False,
 ) -> Tensor:
     if average == "binary":
         return _safe_divide(tn, tn + fp)
-    elif average == "micro":
+    if average == "micro":
         tn = tn.sum(dim=0 if multidim_average == "global" else 1)
         fp = fp.sum(dim=0 if multidim_average == "global" else 1)
         return _safe_divide(tn, tn + fp)
-    else:
-        specificity_score = _safe_divide(tn, tn + fp)
-        if average is None or average == "none":
-            return specificity_score
-        if average == "weighted":
-            weights = tp + fn
-        else:
-            weights = torch.ones_like(specificity_score)
-        return _safe_divide(weights * specificity_score, weights.sum(-1, keepdim=True)).sum(-1)
+
+    specificity_score = _safe_divide(tn, tn + fp)
+    return _adjust_weights_safe_divide(specificity_score, average, multilabel, tp, fp, fn)
 
 
 def binary_specificity(
@@ -71,7 +62,7 @@ def binary_specificity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Specificity`_ for binary tasks:
+    r"""Compute `Specificity`_ for binary tasks.
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
@@ -81,12 +72,9 @@ def binary_specificity(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
-
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
 
     Args:
         preds: Tensor with predictions
@@ -109,30 +97,28 @@ def binary_specificity(
         is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value per sample.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import binary_specificity
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0, 0, 1, 1, 0, 1])
         >>> binary_specificity(preds, target)
         tensor(0.6667)
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import binary_specificity
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> binary_specificity(preds, target)
         tensor(0.6667)
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import binary_specificity
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> binary_specificity(preds, target, multidim_average='samplewise')
         tensor([0.0000, 0.3333])
+
     """
     if validate_args:
         _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
@@ -152,7 +138,7 @@ def multiclass_specificity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Specificity`_ for multiclass tasks:
+    r"""Compute `Specificity`_ for multiclass tasks.
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
@@ -166,20 +152,17 @@ def multiclass_specificity(
       an int tensor.
     - ``target`` (int tensor): ``(N, ...)``
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
-
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
@@ -210,9 +193,10 @@ def multiclass_specificity(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multiclass_specificity
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([2, 1, 0, 1])
         >>> multiclass_specificity(preds, target, num_classes=3)
         tensor(0.8889)
         >>> multiclass_specificity(preds, target, num_classes=3, average=None)
@@ -220,13 +204,11 @@ def multiclass_specificity(
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multiclass_specificity
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58],
-        ...   [0.22, 0.61, 0.17],
-        ...   [0.71, 0.09, 0.20],
-        ...   [0.05, 0.82, 0.13],
-        ... ])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([[0.16, 0.26, 0.58],
+        ...                 [0.22, 0.61, 0.17],
+        ...                 [0.71, 0.09, 0.20],
+        ...                 [0.05, 0.82, 0.13]])
         >>> multiclass_specificity(preds, target, num_classes=3)
         tensor(0.8889)
         >>> multiclass_specificity(preds, target, num_classes=3, average=None)
@@ -234,19 +216,22 @@ def multiclass_specificity(
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import multiclass_specificity
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_specificity(preds, target, num_classes=3, multidim_average='samplewise')
         tensor([0.7500, 0.6556])
         >>> multiclass_specificity(preds, target, num_classes=3, multidim_average='samplewise', average=None)
         tensor([[0.7500, 0.7500, 0.7500],
                 [0.8000, 0.6667, 0.5000]])
+
     """
     if validate_args:
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
     preds, target = _multiclass_stat_scores_format(preds, target, top_k)
-    tp, fp, tn, fn = _multiclass_stat_scores_update(preds, target, num_classes, top_k, multidim_average, ignore_index)
+    tp, fp, tn, fn = _multiclass_stat_scores_update(
+        preds, target, num_classes, top_k, average, multidim_average, ignore_index
+    )
     return _specificity_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average)
 
 
@@ -260,7 +245,7 @@ def multilabel_specificity(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Computes `Specificity`_ for multilabel tasks
+    r"""Compute `Specificity`_ for multilabel tasks.
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
@@ -270,25 +255,22 @@ def multilabel_specificity(
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
-
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
 
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -316,9 +298,10 @@ def multilabel_specificity(
           - If ``average=None/'none'``, the shape will be ``(N, C)``
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multilabel_specificity
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_specificity(preds, target, num_labels=3)
         tensor(0.6667)
         >>> multilabel_specificity(preds, target, num_labels=3, average=None)
@@ -326,8 +309,8 @@ def multilabel_specificity(
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multilabel_specificity
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_specificity(preds, target, num_labels=3)
         tensor(0.6667)
         >>> multilabel_specificity(preds, target, num_labels=3, average=None)
@@ -335,248 +318,77 @@ def multilabel_specificity(
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import multilabel_specificity
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> multilabel_specificity(preds, target, num_labels=3, multidim_average='samplewise')
         tensor([0.0000, 0.3333])
         >>> multilabel_specificity(preds, target, num_labels=3, multidim_average='samplewise', average=None)
         tensor([[0., 0., 0.],
                 [0., 0., 1.]])
+
     """
     if validate_args:
         _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
         _multilabel_stat_scores_tensor_validation(preds, target, num_labels, multidim_average, ignore_index)
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
-    return _specificity_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average)
-
-
-def _specificity_compute(
-    tp: Tensor,
-    fp: Tensor,
-    tn: Tensor,
-    fn: Tensor,
-    average: Optional[str],
-    mdmc_average: Optional[str],
-) -> Tensor:
-    """Computes specificity from the stat scores: true positives, false positives, true negatives, false negatives.
-
-    Args:
-        tp: True positives
-        fp: False positives
-        tn: True negatives
-        fn: False negatives
-        average: Defines the reduction that is applied
-        mdmc_average: Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
-            ``average`` parameter)
-
-    Example:
-        >>> from torchmetrics.functional.classification.stat_scores import _stat_scores_update
-        >>> preds  = torch.tensor([2, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
-        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='macro', num_classes=3)
-        >>> _specificity_compute(tp, fp, tn, fn, average='macro', mdmc_average=None)
-        tensor(0.6111)
-        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='micro')
-        >>> _specificity_compute(tp, fp, tn, fn, average='micro', mdmc_average=None)
-        tensor(0.6250)
-    """
-
-    numerator = tn.clone()
-    denominator = tn + fp
-    if average == AverageMethod.NONE and mdmc_average != MDMCAverageMethod.SAMPLEWISE:
-        # a class is not present if there exists no TPs, no FPs, and no FNs
-        meaningless_indeces = torch.nonzero((tp | fn | fp) == 0).cpu()
-        numerator[meaningless_indeces, ...] = -1
-        denominator[meaningless_indeces, ...] = -1
-    return _reduce_stat_scores(
-        numerator=numerator,
-        denominator=denominator,
-        weights=None if average != AverageMethod.WEIGHTED else denominator,
-        average=average,
-        mdmc_average=mdmc_average,
-    )
+    return _specificity_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True)
 
 
 def specificity(
     preds: Tensor,
     target: Tensor,
-    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
-    mdmc_average: Optional[str] = None,
-    ignore_index: Optional[int] = None,
-    num_classes: Optional[int] = None,
+    task: Literal["binary", "multiclass", "multilabel"],
     threshold: float = 0.5,
-    top_k: Optional[int] = None,
-    multiclass: Optional[bool] = None,
-    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+    top_k: Optional[int] = 1,
+    ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
-
-    Computes `Specificity`_
+    r"""Compute `Specificity`_.
 
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
     Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and
-    false positives respecitively. With the use of ``top_k`` parameter, this metric can
-    generalize to Specificity@K.
+    false positives respecitively.
 
-    The reduction method (how the specificity scores are aggregated) is controlled by the
-    ``average`` parameter, and additionally by the ``mdmc_average`` parameter in the
-    multi-dimensional multi-class case. Accepts all inputs listed in :ref:`pages/classification:input types`.
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`~torchmetrics.functional.classification.binary_specificity`,
+    :func:`~torchmetrics.functional.classification.multiclass_specificity` and
+    :func:`~torchmetrics.functional.classification.multilabel_specificity` for the specific
+    details of each argument influence and examples.
 
-    Args:
-        preds: Predictions from model (probabilities, or labels)
-        target: Ground truth values
-        average:
-            Defines the reduction that is applied. Should be one of the following:
-
-            - ``'micro'`` [default]: Calculate the metric globally, across all samples and classes.
-            - ``'macro'``: Calculate the metric for each class separately, and average the
-              metrics across classes (with equal weights for each class).
-            - ``'weighted'``: Calculate the metric for each class separately, and average the
-              metrics across classes, weighting each class by its support (``tn + fp``).
-            - ``'none'`` or ``None``: Calculate the metric for each class separately, and return
-              the metric for every class.
-            - ``'samples'``: Calculate the metric for each sample, and average the metrics
-              across samples (with equal weights for each sample).
-
-            .. note:: What is considered a sample in the multi-dimensional multi-class case
-                depends on the value of ``mdmc_average``.
-
-            .. note:: If ``'none'`` and a given class doesn't occur in the ``preds`` or ``target``,
-                the value for the class will be ``nan``.
-
-        mdmc_average:
-            Defines how averaging is done for multi-dimensional multi-class inputs (on top of the
-            ``average`` parameter). Should be one of the following:
-
-            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional multi-class.
-
-            - ``'samplewise'``: In this case, the statistics are computed separately for each
-              sample on the ``N`` axis, and then averaged over samples.
-              The computation for each sample is done by treating the flattened extra axes ``...``
-              (see :ref:`pages/classification:input types`) as the ``N`` dimension within the sample,
-              and computing the metric for the sample based on that.
-
-            - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs
-              (see :ref:`pages/classification:input types`)
-              are flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
-              were ``(N_X, C)``. From here on the ``average`` parameter applies as usual.
-
-        ignore_index:
-            Integer specifying a target class to ignore. If given, this class index does not contribute
-            to the returned score, regardless of reduction method. If an index is ignored, and ``average=None``
-            or ``'none'``, the score for the ignored class will be returned as ``nan``.
-        num_classes:
-            Number of classes. Necessary for ``'macro'``, ``'weighted'`` and ``None`` average methods.
-        threshold:
-            Threshold probability value for transforming probability predictions to binary
-            (0,1) predictions, in the case of binary or multi-label inputs
-        top_k:
-            Number of highest probability entries for each sample to convert to 1s - relevant
-            only for inputs with probability predictions. If this parameter is set for multi-label
-            inputs, it will take precedence over ``threshold``. For (multi-dim) multi-class inputs,
-            this parameter defaults to 1.
-
-            Should be left unset (``None``) for inputs with label predictions.
-        multiclass:
-            Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be. See the parameter's
-            :ref:`documentation section <pages/classification:using the multiclass parameter>`
-            for a more detailed explanation and examples.
-
-    Return:
-        The shape of the returned tensor depends on the ``average`` parameter
-
-        - If ``average in ['micro', 'macro', 'weighted', 'samples']``, a one-element tensor will be returned
-        - If ``average in ['none', None]``, the shape will be ``(C,)``, where ``C`` stands  for the number
-          of classes
-
-    Raises:
-        ValueError:
-            If ``average`` is not one of ``"micro"``, ``"macro"``, ``"weighted"``, ``"samples"``, ``"none"`` or ``None``
-        ValueError:
-            If ``mdmc_average`` is not one of ``None``, ``"samplewise"``, ``"global"``.
-        ValueError:
-            If ``average`` is set but ``num_classes`` is not provided.
-        ValueError:
-            If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
-
-    Example:
-        >>> from torchmetrics.functional import specificity
-        >>> preds  = torch.tensor([2, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
-        >>> specificity(preds, target, average='macro', num_classes=3)
+    LegacyExample:
+        >>> from torch import tensor
+        >>> preds  = tensor([2, 0, 2, 1])
+        >>> target = tensor([1, 1, 2, 0])
+        >>> specificity(preds, target, task="multiclass", average='macro', num_classes=3)
         tensor(0.6111)
-        >>> specificity(preds, target, average='micro')
+        >>> specificity(preds, target, task="multiclass", average='micro', num_classes=3)
         tensor(0.6250)
+
     """
-    if task is not None:
-        assert multidim_average is not None
-        if task == "binary":
-            return binary_specificity(preds, target, threshold, multidim_average, ignore_index, validate_args)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            assert isinstance(top_k, int)
-            return multiclass_specificity(
-                preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
-            )
-        if task == "multilabel":
-            assert isinstance(num_labels, int)
-            return multilabel_specificity(
-                preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
-            )
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+    task = ClassificationTask.from_str(task)
+    assert multidim_average is not None  # noqa: S101  # needed for mypy
+    if task == ClassificationTask.BINARY:
+        return binary_specificity(preds, target, threshold, multidim_average, ignore_index, validate_args)
+    if task == ClassificationTask.MULTICLASS:
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
+        if not isinstance(top_k, int):
+            raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
+        return multiclass_specificity(
+            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
-    else:
-        rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
-            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-            " and the general order of arguments may change, such that this metric will just function as an single"
-            " entrypoint to calling the three specialized versions.",
-            DeprecationWarning,
+    if task == ClassificationTask.MULTILABEL:
+        if not isinstance(num_labels, int):
+            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
+        return multilabel_specificity(
+            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    allowed_average = ("micro", "macro", "weighted", "samples", "none", None)
-    if average not in allowed_average:
-        raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
-
-    allowed_mdmc_average = (None, "samplewise", "global")
-    if mdmc_average not in allowed_mdmc_average:
-        raise ValueError(f"The `mdmc_average` has to be one of {allowed_mdmc_average}, got {mdmc_average}.")
-
-    if average in ["macro", "weighted", "none", None] and (not num_classes or num_classes < 1):
-        raise ValueError(f"When you set `average` as {average}, you have to provide the number of classes.")
-
-    if num_classes and ignore_index is not None and (not 0 <= ignore_index < num_classes or num_classes == 1):
-        raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
-
-    reduce = "macro" if average in ["weighted", "none", None] else average
-    tp, fp, tn, fn = _stat_scores_update(
-        preds,
-        target,
-        reduce=reduce,
-        mdmc_reduce=mdmc_average,
-        threshold=threshold,
-        num_classes=num_classes,
-        top_k=top_k,
-        multiclass=multiclass,
-        ignore_index=ignore_index,
-    )
-
-    return _specificity_compute(tp, fp, tn, fn, average, mdmc_average)
+    raise ValueError(f"Not handled value: {task}")

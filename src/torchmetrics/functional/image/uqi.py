@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,27 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Sequence, Tuple, Union
+from typing import Optional, Sequence, Tuple
 
 import torch
-from torch import Tensor
-from torch.nn import functional as F
+from torch import Tensor, nn
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.helper import _gaussian_kernel_2d
+from torchmetrics.functional.image.utils import _gaussian_kernel_2d
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
 
 def _uqi_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Updates and returns variables required to compute Universal Image Quality Index. Checks for same shape and
-    type of the input tensors.
+    """Update and returns variables required to compute Universal Image Quality Index.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-    """
 
+    """
     if preds.dtype != target.dtype:
         raise TypeError(
             "Expected `preds` and `target` to have the same data type."
@@ -52,10 +50,8 @@ def _uqi_compute(
     kernel_size: Sequence[int] = (11, 11),
     sigma: Sequence[float] = (1.5, 1.5),
     reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
-    data_range: Optional[float] = None,
-    return_contrast_sensitivity: bool = False,
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Computes Universal Image Quality Index.
+) -> Tensor:
+    """Compute Universal Image Quality Index.
 
     Args:
         preds: estimated image
@@ -68,14 +64,13 @@ def _uqi_compute(
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
 
-        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
-
     Example:
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> preds, target = _uqi_update(preds, target)
         >>> _uqi_compute(preds, target)
         tensor(0.9216)
+
     """
     if len(kernel_size) != 2 or len(sigma) != 2:
         raise ValueError(
@@ -89,9 +84,6 @@ def _uqi_compute(
     if any(y <= 0 for y in sigma):
         raise ValueError(f"Expected `sigma` to have positive number. Got {sigma}.")
 
-    if data_range is None:
-        data_range = max(preds.max() - preds.min(), target.max() - target.min())
-
     device = preds.device
     channel = preds.size(1)
     dtype = preds.dtype
@@ -99,25 +91,26 @@ def _uqi_compute(
     pad_h = (kernel_size[0] - 1) // 2
     pad_w = (kernel_size[1] - 1) // 2
 
-    preds = F.pad(preds, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
-    target = F.pad(target, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
+    preds = nn.functional.pad(preds, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
+    target = nn.functional.pad(target, (pad_h, pad_h, pad_w, pad_w), mode="reflect")
 
     input_list = torch.cat((preds, target, preds * preds, target * target, preds * target))  # (5 * B, C, H, W)
-    outputs = F.conv2d(input_list, kernel, groups=channel)
+    outputs = nn.functional.conv2d(input_list, kernel, groups=channel)
     output_list = outputs.split(preds.shape[0])
 
     mu_pred_sq = output_list[0].pow(2)
     mu_target_sq = output_list[1].pow(2)
     mu_pred_target = output_list[0] * output_list[1]
 
-    sigma_pred_sq = output_list[2] - mu_pred_sq
-    sigma_target_sq = output_list[3] - mu_target_sq
+    # Calculate the variance of the predicted and target images, should be non-negative
+    sigma_pred_sq = torch.clamp(output_list[2] - mu_pred_sq, min=0.0)
+    sigma_target_sq = torch.clamp(output_list[3] - mu_target_sq, min=0.0)
     sigma_pred_target = output_list[4] - mu_pred_target
 
     upper = 2 * sigma_pred_target
     lower = sigma_pred_sq + sigma_target_sq
-
-    uqi_idx = ((2 * mu_pred_target) * upper) / ((mu_pred_sq + mu_target_sq) * lower)
+    eps = torch.finfo(sigma_pred_sq.dtype).eps
+    uqi_idx = ((2 * mu_pred_target) * upper) / ((mu_pred_sq + mu_target_sq) * lower + eps)
     uqi_idx = uqi_idx[..., pad_h:-pad_h, pad_w:-pad_w]
 
     return reduce(uqi_idx, reduction)
@@ -129,7 +122,6 @@ def universal_image_quality_index(
     kernel_size: Sequence[int] = (11, 11),
     sigma: Sequence[float] = (1.5, 1.5),
     reduction: Optional[Literal["elementwise_mean", "sum", "none"]] = "elementwise_mean",
-    data_range: Optional[float] = None,
 ) -> Tensor:
     """Universal Image Quality Index.
 
@@ -143,8 +135,6 @@ def universal_image_quality_index(
             - ``'elementwise_mean'``: takes the mean (default)
             - ``'sum'``: takes the sum
             - ``'none'`` or ``None``: no reduction will be applied
-
-        data_range: Range of the image. If ``None``, it is determined from the image (max - min)
 
     Return:
         Tensor with UniversalImageQualityIndex score
@@ -162,7 +152,7 @@ def universal_image_quality_index(
             If one of the elements of ``sigma`` is not a ``positive number``.
 
     Example:
-        >>> from torchmetrics.functional import universal_image_quality_index
+        >>> from torchmetrics.functional.image import universal_image_quality_index
         >>> preds = torch.rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> universal_image_quality_index(preds, target)
@@ -175,6 +165,7 @@ def universal_image_quality_index(
         [2] Zhou Wang, A. C. Bovik, H. R. Sheikh and E. P. Simoncelli, "Image quality assessment: from error visibility
         to structural similarity," in IEEE Transactions on Image Processing, vol. 13, no. 4, pp. 600-612, April 2004,
         doi: 10.1109/TIP.2003.819861.
+
     """
     preds, target = _uqi_update(preds, target)
-    return _uqi_compute(preds, target, kernel_size, sigma, reduction, data_range)
+    return _uqi_compute(preds, target, kernel_size, sigma, reduction)

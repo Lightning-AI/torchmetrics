@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,12 +18,6 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _MULTIPROCESSING_AVAILABLE, _PESQ_AVAILABLE
 
-if _PESQ_AVAILABLE:
-    import pesq as pesq_backend
-else:
-    pesq_backend = None
-
-
 __doctest_requires__ = {("perceptual_evaluation_speech_quality",): ["pesq"]}
 
 
@@ -35,10 +29,14 @@ def perceptual_evaluation_speech_quality(
     keep_same_device: bool = False,
     n_processes: int = 1,
 ) -> Tensor:
-    r"""PESQ (Perceptual Evaluation of Speech Quality)
+    r"""Calculate `Perceptual Evaluation of Speech Quality`_ (PESQ).
 
-    This is a wrapper for the ``pesq`` package [1]. Note that input will be moved to `cpu`
-    to perform the metric calculation.
+    It's a recognized industry standard for audio quality that takes into considerations characteristics such as: audio
+    sharpness, call volume, background noise, clipping, audio interference etc. PESQ returns a score between -0.5 and
+    4.5 with the higher scores indicating a better quality.
+
+    This metric is a wrapper for the `pesq package`_. Note that input will be moved to `cpu` to perform the metric
+    calculation.
 
     .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install
         torchmetrics[audio]`` or ``pip install pesq``. Note that ``pesq`` will compile with your currently
@@ -46,44 +44,46 @@ def perceptual_evaluation_speech_quality(
         most likely have to reinstall ``pesq``.
 
     Args:
-        preds: shape ``[...,time]``
-        target: shape ``[...,time]``
+        preds: float tensor with shape ``(...,time)``
+        target: float tensor with shape ``(...,time)``
         fs: sampling frequency, should be 16000 or 8000 (Hz)
         mode: ``'wb'`` (wide-band) or ``'nb'`` (narrow-band)
         keep_same_device: whether to move the pesq value to the device of preds
-        n_processes: integer specifiying the number of processes to run in parallel for the metric calculation.
+        n_processes: integer specifying the number of processes to run in parallel for the metric calculation.
             Only applies to batches of data and if ``multiprocessing`` package is installed.
 
     Returns:
-        pesq value of shape [...]
+        Float tensor with shape ``(...,)`` of PESQ values per sample
 
     Raises:
         ModuleNotFoundError:
-            If ``peqs`` package is not installed
+            If ``pesq`` package is not installed
         ValueError:
             If ``fs`` is not either  ``8000`` or ``16000``
         ValueError:
             If ``mode`` is not either ``"wb"`` or ``"nb"``
+        RuntimeError:
+            If ``preds`` and ``target`` do not have the same shape
 
     Example:
+        >>> from torch import randn
         >>> from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
-        >>> import torch
         >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn(8000)
-        >>> target = torch.randn(8000)
+        >>> preds = randn(8000)
+        >>> target = randn(8000)
         >>> perceptual_evaluation_speech_quality(preds, target, 8000, 'nb')
         tensor(2.2076)
         >>> perceptual_evaluation_speech_quality(preds, target, 16000, 'wb')
         tensor(1.7359)
 
-    References:
-        [1] https://github.com/ludlows/python-pesq
     """
     if not _PESQ_AVAILABLE:
         raise ModuleNotFoundError(
             "PESQ metric requires that pesq is installed."
             " Either install as `pip install torchmetrics[audio]` or `pip install pesq`."
         )
+    import pesq as pesq_backend
+
     if fs not in (8000, 16000):
         raise ValueError(f"Expected argument `fs` to either be 8000 or 16000 but got {fs}")
     if mode not in ("wb", "nb"):
@@ -108,6 +108,6 @@ def perceptual_evaluation_speech_quality(
         pesq_val = pesq_val.reshape(preds.shape[:-1])
 
     if keep_same_device:
-        pesq_val = pesq_val.to(preds.device)
+        return pesq_val.to(preds.device)
 
     return pesq_val

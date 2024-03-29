@@ -12,5 +12,4 @@ Bootstrapper
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.BootStrapper
-    :noindex:
+.. autoclass:: torchmetrics.wrappers.BootStrapper

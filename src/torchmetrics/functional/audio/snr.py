@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,22 +20,25 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
-    r"""Signal-to-noise ratio (SNR_):
+    r"""Calculate `Signal-to-noise ratio`_ (SNR_) meric for evaluating quality of audio.
 
     .. math::
         \text{SNR} = \frac{P_{signal}}{P_{noise}}
 
-    where  :math:`P` denotes the power of each signal. The SNR metric compares the level
-    of the desired signal to the level of background noise. Therefore, a high value of
-    SNR means that the audio is clear.
+    where  :math:`P` denotes the power of each signal. The SNR metric compares the level of the desired signal to
+    the level of background noise. Therefore, a high value of SNR means that the audio is clear.
 
     Args:
-        preds: shape ``[...,time]``
-        target: shape ``[...,time]``
+        preds: float tensor with shape ``(...,time)``
+        target: float tensor with shape ``(...,time)``
         zero_mean: if to zero mean target and preds or not
 
     Returns:
-        snr value of shape [...]
+        Float tensor with shape ``(...,)`` of SNR values per sample
+
+    Raises:
+        RuntimeError:
+            If ``preds`` and ``target`` does not have the same shape
 
     Example:
         >>> from torchmetrics.functional.audio import signal_noise_ratio
@@ -43,10 +46,6 @@ def signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -
         >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
         >>> signal_noise_ratio(preds, target)
         tensor(16.1805)
-
-    References:
-        [1] Le Roux, Jonathan, et al. "SDR half-baked or well done." IEEE International Conference on Acoustics, Speech
-        and Signal Processing (ICASSP) 2019.
 
     """
     _check_same_shape(preds, target)
@@ -59,20 +58,22 @@ def signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -
     noise = target - preds
 
     snr_value = (torch.sum(target**2, dim=-1) + eps) / (torch.sum(noise**2, dim=-1) + eps)
-    snr_value = 10 * torch.log10(snr_value)
-
-    return snr_value
+    return 10 * torch.log10(snr_value)
 
 
 def scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor) -> Tensor:
-    """Scale-invariant signal-to-noise ratio (SI-SNR).
+    """`Scale-invariant signal-to-noise ratio`_ (SI-SNR).
 
     Args:
-        preds: shape ``[...,time]``
-        target: shape ``[...,time]``
+        preds: float tensor with shape ``(...,time)``
+        target: float tensor with shape ``(...,time)``
 
     Returns:
-        si-snr value of shape [...]
+         Float tensor with shape ``(...,)`` of SI-SNR values per sample
+
+    Raises:
+        RuntimeError:
+            If ``preds`` and ``target`` does not have the same shape
 
     Example:
         >>> import torch
@@ -82,9 +83,50 @@ def scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor) -> Tensor:
         >>> scale_invariant_signal_noise_ratio(preds, target)
         tensor(15.0918)
 
-    References:
-        [1] Y. Luo and N. Mesgarani, "TaSNet: Time-Domain Audio Separation Network for Real-Time, Single-Channel Speech
-        Separation," 2018 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), 2018, pp.
-        696-700, doi: 10.1109/ICASSP.2018.8462116.
     """
     return scale_invariant_signal_distortion_ratio(preds=preds, target=target, zero_mean=True)
+
+
+def complex_scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor, zero_mean: bool = False) -> Tensor:
+    """`Complex scale-invariant signal-to-noise ratio`_ (C-SI-SNR).
+
+    Args:
+        preds: real float tensor with shape ``(...,frequency,time,2)`` or complex float tensor with
+            shape ``(..., frequency,time)``
+        target: real float tensor with shape ``(...,frequency,time,2)`` or complex float tensor with
+            shape ``(..., frequency,time)``
+        zero_mean: When set to True, the mean of all signals is subtracted prior to computation of the metrics
+
+    Returns:
+         Float tensor with shape ``(...,)`` of C-SI-SNR values per sample
+
+    Raises:
+        RuntimeError:
+            If ``preds`` is not the shape (...,frequency,time,2) (after being converted to real if it is complex).
+            If ``preds`` and ``target`` does not have the same shape.
+
+    Example:
+        >>> import torch
+        >>> from torchmetrics.functional.audio import complex_scale_invariant_signal_noise_ratio
+        >>> g = torch.manual_seed(1)
+        >>> preds = torch.randn((1,257,100,2))
+        >>> target = torch.randn((1,257,100,2))
+        >>> complex_scale_invariant_signal_noise_ratio(preds, target)
+        tensor([-63.4849])
+
+    """
+    if preds.is_complex():
+        preds = torch.view_as_real(preds)
+    if target.is_complex():
+        target = torch.view_as_real(target)
+
+    if (preds.ndim < 3 or preds.shape[-1] != 2) or (target.ndim < 3 or target.shape[-1] != 2):
+        raise RuntimeError(
+            "Predictions and targets are expected to have the shape (..., frequency, time, 2),"
+            " but got {preds.shape} and {target.shape}."
+        )
+
+    preds = preds.reshape(*preds.shape[:-3], -1)
+    target = target.reshape(*target.shape[:-3], -1)
+
+    return scale_invariant_signal_distortion_ratio(preds=preds, target=target, zero_mean=zero_mean)

@@ -13,10 +13,9 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.MeanSquaredLogError
-    :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.mean_squared_log_error
-    :noindex:

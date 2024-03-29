@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,12 +23,13 @@ from torchmetrics.utilities.compute import _safe_matmul
 def _pairwise_linear_similarity_update(
     x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
-    """Calculates the pairwise linear similarity matrix.
+    """Calculate the pairwise linear similarity matrix.
 
     Args:
         x: tensor of shape ``[N,d]``
         y: tensor of shape ``[M,d]``
         zero_diagonal: determines if the diagonal of the distance matrix should be set to zero
+
     """
     x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
 
@@ -44,8 +45,7 @@ def pairwise_linear_similarity(
     reduction: Literal["mean", "sum", "none", None] = None,
     zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
-    r"""
-    Calculates pairwise linear similarity:
+    r"""Calculate pairwise linear similarity.
 
     .. math::
         s_{lin}(x,y) = <x,y> = \sum_{d=1}^D x_d \cdot y_d
@@ -67,7 +67,7 @@ def pairwise_linear_similarity(
 
     Example:
         >>> import torch
-        >>> from torchmetrics.functional import pairwise_linear_similarity
+        >>> from torchmetrics.functional.pairwise import pairwise_linear_similarity
         >>> x = torch.tensor([[2, 3], [3, 5], [5, 8]], dtype=torch.float32)
         >>> y = torch.tensor([[1, 0], [2, 1]], dtype=torch.float32)
         >>> pairwise_linear_similarity(x, y)

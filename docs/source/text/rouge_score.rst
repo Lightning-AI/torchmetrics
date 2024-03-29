@@ -13,10 +13,9 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.text.rouge.ROUGEScore
-    :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.text.rouge.rouge_score
-    :noindex:

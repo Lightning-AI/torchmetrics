@@ -1,7 +1,9 @@
 .. customcarditem::
-   :header: Label Ranking Average Precision
+   :header: Label Ranking Loss
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/tabular_classification.svg
    :tags: Classification
+
+.. include:: ../links.rst
 
 ##################
 Label Ranking Loss
@@ -10,18 +12,10 @@ Label Ranking Loss
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.LabelRankingLoss
-    :noindex:
-
-
 .. autoclass:: torchmetrics.classification.MultilabelRankingLoss
-    :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.label_ranking_loss
-    :noindex:
-
 .. autofunction:: torchmetrics.functional.classification.multilabel_ranking_loss
-    :noindex:

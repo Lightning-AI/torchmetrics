@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from collections import defaultdict
+from itertools import chain
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
@@ -50,8 +51,7 @@ def _prepare_n_grams_dicts(
 ) -> Tuple[
     Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor]
 ]:
-    """Prepare dictionaries dictionaries with default zero values for total reference, hypothesis and matching
-    character and word n-grams.
+    """Prepare dictionaries with default zero values for total ref, hypothesis and matching character and word n-grams.
 
     Args:
         n_char_order: A character n-gram order.
@@ -60,6 +60,7 @@ def _prepare_n_grams_dicts(
     Return:
         Dictionaries with default zero values for total reference, hypothesis and matching character and word
         n-grams.
+
     """
     total_preds_char_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_char_order)}
     total_preds_word_n_grams: Dict[int, Tensor] = {n + 1: tensor(0.0) for n in range(n_word_order)}
@@ -87,21 +88,25 @@ def _get_characters(sentence: str, whitespace: bool) -> List[str]:
 
     Return:
         A list of separated characters.
+
     """
     if whitespace:
         return list(sentence)
     return list(sentence.strip().replace(" ", ""))
 
 
-def _separate_word_and_punctiation(word: str) -> List[str]:
-    """
-    Separates out punctuations from beginning and end of words for chrF. Adapted from https://github.com/m-popovic/chrF
-    and https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
+def _separate_word_and_punctuation(word: str) -> List[str]:
+    """Separates out punctuations from beginning and end of words for chrF.
+
+    Adapted from https://github.com/m-popovic/chrF and
+    https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
+
     Args:
         word: An input word to be separated from a punctuation if present.
 
     Return:
         A list of a single word or a separated word and punctuation.
+
     """
     if len(word) == 1:
         return [word]
@@ -113,7 +118,7 @@ def _separate_word_and_punctiation(word: str) -> List[str]:
     return [word]
 
 
-def _get_words_and_punctiation(sentence: str) -> List[str]:
+def _get_words_and_punctuation(sentence: str) -> List[str]:
     """Separates out punctuations from beginning and end of words for chrF for all words in the sentence.
 
     Args:
@@ -121,18 +126,21 @@ def _get_words_and_punctiation(sentence: str) -> List[str]:
 
     Return:
         An aggregated list of separated words and punctuations.
+
     """
-    return sum((_separate_word_and_punctiation(word) for word in sentence.strip().split()), [])
+    return list(chain.from_iterable(_separate_word_and_punctuation(word) for word in sentence.strip().split()))
 
 
 def _ngram_counts(char_or_word_list: List[str], n_gram_order: int) -> Dict[int, Dict[Tuple[str, ...], Tensor]]:
-    """
+    """Calculate n-gram counts.
+
     Args:
         char_or_word_list: A list of characters of words
         n_gram_order: The largest number of n-gram.
 
     Return:
         A dictionary of dictionaries with a counts of given n-grams.
+
     """
     ngrams: Dict[int, Dict[Tuple[str, ...], Tensor]] = defaultdict(lambda: defaultdict(lambda: tensor(0.0)))
     for n in range(1, n_gram_order + 1):
@@ -149,7 +157,8 @@ def _get_n_grams_counts_and_total_ngrams(
     Dict[int, Tensor],
     Dict[int, Tensor],
 ]:
-    """
+    """Get n-grams and total n-grams.
+
     Args:
         sentence: An input sentence
         n_char_order: A character n-gram order.
@@ -162,6 +171,7 @@ def _get_n_grams_counts_and_total_ngrams(
         word_n_grams_counts: A dictionary of dictionaries with sentence word n-grams.
         total_char_n_grams: A dictionary containing a total number of sentence character n-grams.
         total_word_n_grams: A dictionary containing a total number of sentence word n-grams.
+
     """
 
     def _char_and_word_ngrams_counts(
@@ -171,7 +181,7 @@ def _get_n_grams_counts_and_total_ngrams(
         if lowercase:
             sentence = sentence.lower()
         char_n_grams_counts = _ngram_counts(_get_characters(sentence, whitespace), n_char_order)
-        word_n_grams_counts = _ngram_counts(_get_words_and_punctiation(sentence), n_word_order)
+        word_n_grams_counts = _ngram_counts(_get_words_and_punctuation(sentence), n_word_order)
         return char_n_grams_counts, word_n_grams_counts
 
     def _get_total_ngrams(n_grams_counts: Dict[int, Dict[Tuple[str, ...], Tensor]]) -> Dict[int, Tensor]:
@@ -197,11 +207,12 @@ def _get_ngram_matches(
     """Get a number of n-gram matches between reference and hypothesis n-grams.
 
     Args:
-        hyp_n_grams_counts:
-        ref_n_grams_counts:
+        hyp_n_grams_counts: n-grams counts for hypothesis
+        ref_n_grams_counts: n-grams counts for reference
 
     Return:
         matching_n_grams
+
     """
     matching_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
     for n in hyp_n_grams_counts:
@@ -223,6 +234,7 @@ def _sum_over_dicts(total_n_grams: Dict[int, Tensor], n_grams: Dict[int, Tensor]
 
     Return:
         A dictionary containing a total corpus-level number of n-grams.
+
     """
     for n in n_grams:
         total_n_grams[n] += n_grams[n]
@@ -257,7 +269,8 @@ def _calculate_fscore(
         beta: A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
 
     Return:
-        A chrF/chrF++ score. This function is universal both for sentence-level and corpus-level calucation.
+        A chrF/chrF++ score. This function is universal both for sentence-level and corpus-level calculation.
+
     """
 
     def _get_n_gram_fscore(
@@ -282,16 +295,15 @@ def _calculate_fscore(
     char_n_gram_f_score = _get_n_gram_fscore(matching_char_n_grams, ref_char_n_grams, hyp_char_n_grams, beta)
     word_n_gram_f_score = _get_n_gram_fscore(matching_word_n_grams, ref_word_n_grams, hyp_word_n_grams, beta)
 
-    f_score = (sum(char_n_gram_f_score.values()) + sum(word_n_gram_f_score.values())) / tensor(n_order)  # type: ignore
-    return f_score
+    return (sum(char_n_gram_f_score.values()) + sum(word_n_gram_f_score.values())) / tensor(n_order)
 
 
 def _calculate_sentence_level_chrf_score(
     targets: List[str],
     pred_char_n_grams_counts: Dict[int, Dict[Tuple[str, ...], Tensor]],
     pred_word_n_grams_counts: Dict[int, Dict[Tuple[str, ...], Tensor]],
-    preds_char_n_grams: Dict[int, Tensor],
-    preds_word_n_grams: Dict[int, Tensor],
+    pred_char_n_grams: Dict[int, Tensor],
+    pred_word_n_grams: Dict[int, Tensor],
     n_char_order: int,
     n_word_order: int,
     n_order: float,
@@ -306,8 +318,8 @@ def _calculate_sentence_level_chrf_score(
 
     Args:
         targets: An iterable of references.
-        preds_char_n_grams_counts: A dictionary of dictionaries with hypothesis character n-grams.
-        preds_word_n_grams_counts: A dictionary of dictionaries with hypothesis word n-grams.
+        pred_char_n_grams_counts: A dictionary of dictionaries with hypothesis character n-grams.
+        pred_word_n_grams_counts: A dictionary of dictionaries with hypothesis word n-grams.
         pred_char_n_grams: A total number of hypothesis character n-grams.
         pred_word_n_grams: A total number of hypothesis word n-grams.
         n_char_order: A character n-gram order.
@@ -327,8 +339,8 @@ def _calculate_sentence_level_chrf_score(
             A total number of matching word n-grams between the best matching reference and hypothesis.
         target_char_n_grams: A total number of reference character n-grams.
         target_word_n_grams: A total number of reference word n-grams.
-    """
 
+    """
     best_f_score = tensor(0.0)
     best_matching_char_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
     best_matching_word_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
@@ -348,8 +360,8 @@ def _calculate_sentence_level_chrf_score(
         f_score = _calculate_fscore(
             matching_char_n_grams,
             matching_word_n_grams,
-            preds_char_n_grams,
-            preds_word_n_grams,
+            pred_char_n_grams,
+            pred_word_n_grams,
             target_char_n_grams,
             target_word_n_grams,
             n_order,
@@ -397,7 +409,8 @@ def _chrf_score_update(
     Dict[int, Tensor],
     Optional[List[Tensor]],
 ]:
-    """
+    """Update function for chrf score.
+
     Args:
         preds: An iterable of hypothesis corpus.
         target: An iterable of iterables of reference corpus.
@@ -429,10 +442,11 @@ def _chrf_score_update(
     Raises:
         ValueError:
             If length of ``preds`` and ``target`` differs.
+
     """
     target_corpus, preds = _validate_inputs(target, preds)
 
-    for (pred, targets) in zip(preds, target_corpus):
+    for pred, targets in zip(preds, target_corpus):
         (
             pred_char_n_grams_counts,
             pred_word_n_grams_counts,
@@ -506,8 +520,9 @@ def _chrf_score_compute(
 
     Return:
         A corpus-level chrF/chrF++ score.
+
     """
-    chrf_f_score = _calculate_fscore(
+    return _calculate_fscore(
         total_matching_char_n_grams,
         total_matching_word_n_grams,
         total_preds_char_n_grams,
@@ -517,7 +532,6 @@ def _chrf_score_compute(
         n_order,
         beta,
     )
-    return chrf_f_score
 
 
 def chrf_score(
@@ -530,9 +544,10 @@ def chrf_score(
     whitespace: bool = False,
     return_sentence_level_score: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Calculate `chrF score`_  of machine translated text with one or more references. This implementation
-    supports both chrF score computation introduced in [1] and chrF++ score introduced in `chrF++ score`_. This
-    implementation follows the implmenetaions from https://github.com/m-popovic/chrF and
+    """Calculate `chrF score`_  of machine translated text with one or more references.
+
+    This implementation supports both chrF score computation introduced in [1] and chrF++ score introduced in
+    `chrF++ score`_. This implementation follows the implementations from https://github.com/m-popovic/chrF and
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
     Args:
@@ -545,7 +560,7 @@ def chrf_score(
             metric is equivalent to the original chrF.
         beta:
             A parameter determining an importance of recall w.r.t. precision. If `beta=1`, their importance is equal.
-        lowercase: An indication whether to enable case-insesitivity.
+        lowercase: An indication whether to enable case-insensitivity.
         whitespace: An indication whether to keep whitespaces during character n-gram extraction.
         return_sentence_level_score: An indication whether a sentence-level chrF/chrF++ score to be returned.
 
@@ -562,7 +577,7 @@ def chrf_score(
             If ``beta`` is smaller than 0.
 
     Example:
-        >>> from torchmetrics.functional import chrf_score
+        >>> from torchmetrics.functional.text import chrf_score
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> chrf_score(preds, target)
@@ -572,6 +587,7 @@ def chrf_score(
         [1] chrF: character n-gram F-score for automatic MT evaluation by Maja Popović `chrF score`_
 
         [2] chrF++: words helping character n-grams by Maja Popović `chrF++ score`_
+
     """
     if not isinstance(n_char_order, int) or n_char_order < 1:
         raise ValueError("Expected argument `n_char_order` to be an integer greater than or equal to 1.")

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 from typing import Callable, Tuple
 
@@ -20,42 +19,46 @@ import pytest
 import torch
 from scipy.optimize import linear_sum_assignment
 from torch import Tensor
-
 from torchmetrics.audio import PermutationInvariantTraining
-from torchmetrics.functional import (
+from torchmetrics.functional.audio import (
     permutation_invariant_training,
     scale_invariant_signal_distortion_ratio,
     signal_noise_ratio,
 )
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
-from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from torchmetrics.functional.audio.pit import (
+    _find_best_perm_by_exhaustive_method,
+    _find_best_perm_by_linear_sum_assignment,
+)
+
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
+from unittests.audio import _average_metric_wrapper
 
 seed_all(42)
 
-TIME = 10
+TIME_FRAME = 10
 
-Input = namedtuple("Input", ["preds", "target"])
 
 # three speaker examples to test _find_best_perm_by_linear_sum_assignment
-inputs1 = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 3, TIME),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 3, TIME),
+inputs1 = _Input(
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 3, TIME_FRAME),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 3, TIME_FRAME),
 )
 # two speaker examples to test _find_best_perm_by_exhuastive_method
-inputs2 = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, TIME),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, TIME),
+inputs2 = _Input(
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, TIME_FRAME),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 2, TIME_FRAME),
 )
 
 
-def naive_implementation_pit_scipy(
+def _reference_scipy_pit(
     preds: Tensor,
     target: Tensor,
     metric_func: Callable,
     eval_func: str,
 ) -> Tuple[Tensor, Tensor]:
-    """A naive implementation of `Permutation Invariant Training` based on Scipy.
+    """Naive implementation of `Permutation Invariant Training` based on Scipy.
 
     Args:
         preds: predictions, shape[batch, spk, time]
@@ -64,10 +67,9 @@ def naive_implementation_pit_scipy(
         eval_func: min or max
 
     Returns:
-        best_metric:
-            shape [batch]
-        best_perm:
-            shape [batch, spk]
+        best_metric: shape [batch]
+        best_perm: shape [batch, spk]
+
     """
     batch_size, spk_num = target.shape[0:2]
     metric_mtx = torch.empty((batch_size, spk_num, spk_num), device=target.device)
@@ -75,7 +77,6 @@ def naive_implementation_pit_scipy(
         for e in range(spk_num):
             metric_mtx[:, t, e] = metric_func(preds[:, e, ...], target[:, t, ...])
 
-    # pit_r = PermutationInvariantTraining(metric_func, eval_func)(preds, target)
     metric_mtx = metric_mtx.detach().cpu().numpy()
     best_metrics = []
     best_perms = []
@@ -86,91 +87,125 @@ def naive_implementation_pit_scipy(
     return torch.from_numpy(np.stack(best_metrics)), torch.from_numpy(np.stack(best_perms))
 
 
-def _average_metric(preds: Tensor, target: Tensor, metric_func: Callable) -> Tensor:
-    """average the metric values.
-
-    Args:
-        preds: predictions, shape[batch, spk, time]
-        target: targets, shape[batch, spk, time]
-        metric_func: a function which return best_metric and best_perm
-
-    Returns:
-        the average of best_metric
-    """
-    return metric_func(preds, target)[0].mean()
+def _reference_scipy_pit_snr(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+    return _reference_scipy_pit(
+        preds=preds,
+        target=target,
+        metric_func=signal_noise_ratio,
+        eval_func="max",
+    )
 
 
-snr_pit_scipy = partial(naive_implementation_pit_scipy, metric_func=signal_noise_ratio, eval_func="max")
-si_sdr_pit_scipy = partial(
-    naive_implementation_pit_scipy, metric_func=scale_invariant_signal_distortion_ratio, eval_func="max"
-)
+def _reference_scipy_pit_si_sdr(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+    return _reference_scipy_pit(
+        preds=preds,
+        target=target,
+        metric_func=scale_invariant_signal_distortion_ratio,
+        eval_func="max",
+    )
 
 
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, metric_func, eval_func",
+    "preds, target, ref_metric, metric_func, mode, eval_func",
     [
-        (inputs1.preds, inputs1.target, snr_pit_scipy, signal_noise_ratio, "max"),
-        (inputs1.preds, inputs1.target, si_sdr_pit_scipy, scale_invariant_signal_distortion_ratio, "max"),
-        (inputs2.preds, inputs2.target, snr_pit_scipy, signal_noise_ratio, "max"),
-        (inputs2.preds, inputs2.target, si_sdr_pit_scipy, scale_invariant_signal_distortion_ratio, "max"),
+        (inputs1.preds, inputs1.target, _reference_scipy_pit_snr, signal_noise_ratio, "speaker-wise", "max"),
+        (
+            inputs1.preds,
+            inputs1.target,
+            _reference_scipy_pit_si_sdr,
+            scale_invariant_signal_distortion_ratio,
+            "speaker-wise",
+            "max",
+        ),
+        (inputs2.preds, inputs2.target, _reference_scipy_pit_snr, signal_noise_ratio, "speaker-wise", "max"),
+        (
+            inputs2.preds,
+            inputs2.target,
+            _reference_scipy_pit_si_sdr,
+            scale_invariant_signal_distortion_ratio,
+            "speaker-wise",
+            "max",
+        ),
+        (inputs1.preds, inputs1.target, _reference_scipy_pit_snr, signal_noise_ratio, "permutation-wise", "max"),
+        (
+            inputs1.preds,
+            inputs1.target,
+            _reference_scipy_pit_si_sdr,
+            scale_invariant_signal_distortion_ratio,
+            "permutation-wise",
+            "max",
+        ),
+        (inputs2.preds, inputs2.target, _reference_scipy_pit_snr, signal_noise_ratio, "permutation-wise", "max"),
+        (
+            inputs2.preds,
+            inputs2.target,
+            _reference_scipy_pit_si_sdr,
+            scale_invariant_signal_distortion_ratio,
+            "permutation-wise",
+            "max",
+        ),
     ],
 )
 class TestPIT(MetricTester):
+    """Test class for `PermutationInvariantTraining` metric."""
+
     atol = 1e-2
 
-    @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_pit(self, preds, target, sk_metric, metric_func, eval_func, ddp, dist_sync_on_step):
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_pit(self, preds, target, ref_metric, metric_func, mode, eval_func, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             PermutationInvariantTraining,
-            sk_metric=partial(_average_metric, metric_func=sk_metric),
-            dist_sync_on_step=dist_sync_on_step,
-            metric_args=dict(metric_func=metric_func, eval_func=eval_func),
+            reference_metric=partial(_average_metric_wrapper, metric_func=ref_metric, res_index=0),
+            metric_args={"metric_func": metric_func, "mode": mode, "eval_func": eval_func},
         )
 
-    def test_pit_functional(self, preds, target, sk_metric, metric_func, eval_func):
+    def test_pit_functional(self, preds, target, ref_metric, metric_func, mode, eval_func):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=permutation_invariant_training,
-            sk_metric=sk_metric,
-            metric_args=dict(metric_func=metric_func, eval_func=eval_func),
+            reference_metric=ref_metric,
+            metric_args={"metric_func": metric_func, "mode": mode, "eval_func": eval_func},
         )
 
-    def test_pit_differentiability(self, preds, target, sk_metric, metric_func, eval_func):
-        def pit_diff(preds, target, metric_func, eval_func):
-            return permutation_invariant_training(preds, target, metric_func, eval_func)[0]
+    def test_pit_differentiability(self, preds, target, ref_metric, metric_func, mode, eval_func):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+
+        def pit_diff(preds, target, metric_func, mode, eval_func):
+            return permutation_invariant_training(preds, target, metric_func, mode, eval_func)[0]
 
         self.run_differentiability_test(
             preds=preds,
             target=target,
             metric_module=PermutationInvariantTraining,
             metric_functional=pit_diff,
-            metric_args={"metric_func": metric_func, "eval_func": eval_func},
+            metric_args={"metric_func": metric_func, "mode": mode, "eval_func": eval_func},
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
-    )
-    def test_pit_half_cpu(self, preds, target, sk_metric, metric_func, eval_func):
+    def test_pit_half_cpu(self, preds, target, ref_metric, metric_func, mode, eval_func):
+        """Test dtype support of the metric on CPU."""
         pytest.xfail("PIT metric does not support cpu + half precision")
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_pit_half_gpu(self, preds, target, sk_metric, metric_func, eval_func):
+    def test_pit_half_gpu(self, preds, target, ref_metric, metric_func, mode, eval_func):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
             metric_module=PermutationInvariantTraining,
             metric_functional=partial(permutation_invariant_training, metric_func=metric_func, eval_func=eval_func),
-            metric_args={"metric_func": metric_func, "eval_func": eval_func},
+            metric_args={"metric_func": metric_func, "mode": mode, "eval_func": eval_func},
         )
 
 
 def test_error_on_different_shape() -> None:
-    metric = PermutationInvariantTraining(signal_noise_ratio, "max")
+    """Test that error is raised on different shapes of input."""
+    metric = PermutationInvariantTraining(signal_noise_ratio)
     with pytest.raises(
         RuntimeError,
         match="Predictions and targets are expected to have the same shape at the batch and speaker dimensions",
@@ -179,23 +214,28 @@ def test_error_on_different_shape() -> None:
 
 
 def test_error_on_wrong_eval_func() -> None:
-    metric = PermutationInvariantTraining(signal_noise_ratio, "xxx")
+    """Test that error is raised on wrong `eval_func` argument."""
+    metric = PermutationInvariantTraining(signal_noise_ratio, eval_func="xxx")
     with pytest.raises(ValueError, match='eval_func can only be "max" or "min"'):
         metric(torch.randn(3, 3, 10), torch.randn(3, 3, 10))
 
 
+def test_error_on_wrong_mode() -> None:
+    """Test that error is raised on wrong `mode` argument."""
+    metric = PermutationInvariantTraining(signal_noise_ratio, mode="xxx")
+    with pytest.raises(ValueError, match='mode can only be "speaker-wise" or "permutation-wise"*'):
+        metric(torch.randn(3, 3, 10), torch.randn(3, 3, 10))
+
+
 def test_error_on_wrong_shape() -> None:
-    metric = PermutationInvariantTraining(signal_noise_ratio, "max")
+    """Test that error is raised on wrong input shape."""
+    metric = PermutationInvariantTraining(signal_noise_ratio)
     with pytest.raises(ValueError, match="Inputs must be of shape *"):
         metric(torch.randn(3), torch.randn(3))
 
 
 def test_consistency_of_two_implementations() -> None:
-    from torchmetrics.functional.audio.pit import (
-        _find_best_perm_by_exhaustive_method,
-        _find_best_perm_by_linear_sum_assignment,
-    )
-
+    """Test that both backend functions for computing metric (depending on torch version) returns the same result."""
     shapes_test = [(5, 2, 2), (4, 3, 3), (4, 4, 4), (3, 5, 5)]
     for shp in shapes_test:
         metric_mtx = torch.randn(size=shp)

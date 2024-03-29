@@ -6,16 +6,25 @@ FROM mcr.microsoft.com/vscode/devcontainers/python:${VARIANT}
 
 # [Choice] Node.js version: none, lts/*, 16, 14, 12, 10
 ARG NODE_VERSION="none"
-RUN if [ "${NODE_VERSION}" != "none" ]; then su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
+RUN if [ "${NODE_VERSION}" != "none" ]; then \
+      su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; \
+    fi
 
 COPY requirements/ /tmp/pip-tmp/requirements/
-COPY requirements.txt /tmp/pip-tmp/
-RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-tmp/requirements/devel.txt -r /tmp/pip-tmp/requirements/docs.txt \
-    && rm -rf /tmp/pip-tmp
+RUN \
+    pip3 install awscli && \
+    aws s3 sync --no-sign-request s3://sphinx-packages/ dist/  && \
+    # trying to resolve pesq installation issue
+    pip3 install -q "numpy<1.24" && \
+    pip3 --disable-pip-version-check --no-cache-dir install \
+      -r /tmp/pip-tmp/requirements/_devel.txt \
+      -r /tmp/pip-tmp/requirements/_docs.txt \
+      --find-links="https://download.pytorch.org/whl/cpu/torch_stable.html" \
+      --find-links="dist/" && \
+    rm -rf /tmp/pip-tmp
 
 # [Optional] If your pip requirements rarely change, uncomment this section to add them to the image.
-# COPY requirements.txt /tmp/pip-tmp/
-# RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-tmp/requirements.txt \
+# RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-tmp/requirements/base.txt \
 #    && rm -rf /tmp/pip-tmp
 
 # [Optional] Uncomment this section to install additional OS packages.

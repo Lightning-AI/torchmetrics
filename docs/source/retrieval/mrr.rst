@@ -12,11 +12,10 @@ Retrieval Mean Reciprocal Rank (MRR)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.RetrievalMRR
-    :noindex:
+.. autoclass:: torchmetrics.retrieval.RetrievalMRR
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.retrieval_reciprocal_rank
-    :noindex:
+.. autofunction:: torchmetrics.functional.retrieval.retrieval_reciprocal_rank

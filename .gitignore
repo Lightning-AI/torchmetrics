@@ -25,6 +25,7 @@ share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+_pip-wheels/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -39,9 +40,8 @@ pip-delete-this-directory.txt
 # Unit test / coverage reports
 tests/_data/
 data.zip
+tests/_cache-references/
 htmlcov/
-.tox/
-.nox/
 .coverage
 .coverage.*
 .cache
@@ -61,6 +61,7 @@ docs/_build/
 docs/source/api/
 docs/source/generated/
 docs/source/*.md
+docs/source/_static/fetched-s3-assets
 
 # PyBuilder
 target/
@@ -123,3 +124,6 @@ lightning_logs
 *.gz
 .DS_Store
 .*_submit.py
+
+# Ruff
+.ruff_cache/

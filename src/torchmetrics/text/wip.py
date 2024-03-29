@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,25 +11,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from typing import Any, List, Union
+from typing import Any, List, Optional, Sequence, Union
 
 from torch import Tensor, tensor
 
 from torchmetrics.functional.text.wip import _wip_compute, _wip_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["WordInfoPreserved.plot"]
 
 
 class WordInfoPreserved(Metric):
-    r"""Word Information Preserved (WIP_) is a metric of the performance of an automatic speech
-    recognition system. This value indicates the percentage of words that were correctly predicted between
-    a set of ground-truth sentences and a set of hypothesis sentences.
-    The higher the value, the better the performance of the ASR system with a WordInfoPreserved of 0
-    being a perfect score.
-    Word Information Preserved rate can then be computed as:
+    r"""Word Information Preserved (`WIP`_) is a metric of the performance of an automatic speech recognition system.
+
+    This value indicates the percentage of words that were correctly predicted between a set of ground-
+    truth sentences and a set of hypothesis sentences. The higher the value, the better the performance of the ASR
+    system with a WordInfoPreserved of 1 being a perfect score. Word Information Preserved rate can then be
+    computed as:
 
     .. math::
-        wip = \frac{C}{N} + \frac{C}{P}
+        wip = \frac{C}{N} * \frac{C}{P}
 
     where:
 
@@ -37,21 +41,33 @@ class WordInfoPreserved(Metric):
         - :math:`N` is the number of words in the reference
         - :math:`P` is the number of words in the prediction
 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~List`): Transcription(s) to score as a string or list of strings
+    - ``target`` (:class:`~List`): Reference(s) for each speech input as a string or list of strings
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``wip`` (:class:`~torch.Tensor`): A tensor with the Word Information Preserved score
+
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-
     Examples:
-        >>> from torchmetrics import WordInfoPreserved
+        >>> from torchmetrics.text import WordInfoPreserved
         >>> preds = ["this is the prediction", "there is an other sample"]
         >>> target = ["this is the reference", "there is another one"]
-        >>> metric = WordInfoPreserved()
-        >>> metric(preds, target)
+        >>> wip = WordInfoPreserved()
+        >>> wip(preds, target)
         tensor(0.3472)
+
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = False
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     errors: Tensor
     preds_total: Tensor
@@ -60,28 +76,63 @@ class WordInfoPreserved(Metric):
     def __init__(
         self,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         self.add_state("errors", tensor(0.0), dist_reduce_fx="sum")
         self.add_state("target_total", tensor(0.0), dist_reduce_fx="sum")
         self.add_state("preds_total", tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:  # type: ignore
-        """Store predictions/references for computing word Information Preserved scores.
-
-        Args:
-            preds: Transcription(s) to score as a string or list of strings
-            target: Reference(s) for each speech input as a string or list of strings
-        """
+    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:
+        """Update state with predictions and targets."""
         errors, target_total, preds_total = _wip_update(preds, target)
         self.errors += errors
         self.target_total += target_total
         self.preds_total += preds_total
 
     def compute(self) -> Tensor:
-        """Calculate the word Information Preserved.
+        """Calculate the Word Information Preserved."""
+        return _wip_compute(self.errors, self.target_total, self.preds_total)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
-            word Information Preserved score
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torchmetrics.text import WordInfoPreserved
+            >>> metric = WordInfoPreserved()
+            >>> preds = ["this is the prediction", "there is an other sample"]
+            >>> target = ["this is the reference", "there is another one"]
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.text import WordInfoPreserved
+            >>> metric = WordInfoPreserved()
+            >>> preds = ["this is the prediction", "there is an other sample"]
+            >>> target = ["this is the reference", "there is another one"]
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+
         """
-        return _wip_compute(self.errors, self.target_total, self.preds_total)
+        return self._plot(val, ax)

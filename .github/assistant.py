@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,16 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import glob
-import json
 import logging
 import os
 import re
 import sys
-import traceback
 from typing import List, Optional, Tuple, Union
 
 import fire
-import requests
+from packaging.version import parse
+from pkg_resources import parse_requirements
 
 _REQUEST_TIMEOUT = 10
 _PATH_ROOT = os.path.dirname(os.path.dirname(__file__))
@@ -30,25 +29,15 @@ LUT_PYTHON_TORCH = {
     "3.8": "1.4",
     "3.9": "1.7.1",
     "3.10": "1.11",
+    "3.11": "1.13",
 }
 _path = lambda *ds: os.path.join(_PATH_ROOT, *ds)
-REQUIREMENTS_FILES = tuple(glob.glob(_path("requirements", "*.txt")) + [_path("requirements.txt")])
-
-
-def request_url(url: str, auth_token: Optional[str] = None) -> Optional[dict]:
-    """General request with checking if request limit was reached."""
-    auth_header = {"Authorization": f"token {auth_token}"} if auth_token else {}
-    try:
-        req = requests.get(url, headers=auth_header, timeout=_REQUEST_TIMEOUT)
-    except requests.exceptions.Timeout:
-        traceback.print_exc()
-        return None
-    if req.status_code == 403:
-        return None
-    return json.loads(req.content.decode(req.encoding))
+REQUIREMENTS_FILES = (*glob.glob(_path("requirements", "*.txt")), _path("requirements.txt"))
 
 
 class AssistantCLI:
+    """CLI assistant for local CI."""
+
     @staticmethod
     def prune_packages(req_file: str, *pkgs: str) -> None:
         """Prune packages from requirement file."""
@@ -63,16 +52,25 @@ class AssistantCLI:
             fp.writelines(lines)
 
     @staticmethod
-    def set_min_torch_by_python(fpath: str = "requirements.txt") -> None:
-        """Set minimal torch version according to Python actual version."""
+    def set_min_torch_by_python(fpath: str = "requirements/base.txt") -> None:
+        """Set minimal torch version according to Python actual version.
+
+        >>> AssistantCLI.set_min_torch_by_python("../requirements/base.txt")
+
+        """
         py_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
         if py_ver not in LUT_PYTHON_TORCH:
             return
         with open(fpath) as fp:
-            req = fp.read()
-        req = re.sub(r"torch>=[\d\.]+", f"torch>={LUT_PYTHON_TORCH[py_ver]}", req)
+            reqs = parse_requirements(fp.readlines())
+        pkg_ver = next(p for p in reqs if p.name == "torch")
+        pt_ver = min([parse(v[1]) for v in pkg_ver.specs])
+        pt_ver = max(parse(LUT_PYTHON_TORCH[py_ver]), pt_ver)
+        with open(fpath) as fp:
+            requires = fp.read()
+        requires = re.sub(r"torch>=[\d\.]+", f"torch>={pt_ver}", requires)
         with open(fpath, "w", encoding="utf-8") as fp:
-            fp.write(req)
+            fp.write(requires)
 
     @staticmethod
     def replace_min_requirements(fpath: str) -> None:
@@ -86,8 +84,10 @@ class AssistantCLI:
 
     @staticmethod
     def set_oldest_versions(req_files: List[str] = REQUIREMENTS_FILES) -> None:
+        """Set the oldest version for requirements."""
         AssistantCLI.set_min_torch_by_python()
         for fpath in req_files:
+            logging.info(f"processing req: `{fpath}`")
             AssistantCLI.replace_min_requirements(fpath)
 
     @staticmethod
@@ -98,15 +98,13 @@ class AssistantCLI:
         general_sub_pkgs: Tuple[str] = _PKG_WIDE_SUBPACKAGES,
     ) -> Union[str, List[str]]:
         """Determine what domains were changed in particular PR."""
+        import github
+
         if not pr:
             return "unittests"
-        url = f"https://api.github.com/repos/Lightning-AI/metrics/pulls/{pr}/files"
-        logging.debug(url)
-        data = request_url(url, auth_token)
-        if not data:
-            logging.debug("WARNING: No data was received -> test everything.")
-            return "unittests"
-        files = [d["filename"] for d in data]
+        gh = github.Github()
+        pr = gh.get_repo("Lightning-AI/torchmetrics").get_pull(pr)
+        files = [f.filename for f in pr.get_files()]
 
         # filter out all integrations as they run in separate suit
         files = [fn for fn in files if not fn.startswith("tests/integrations")]
@@ -127,7 +125,7 @@ class AssistantCLI:
             return "unittests"
 
         # parse domains
-        def _crop_path(fname: str, paths: List[str]):
+        def _crop_path(fname: str, paths: List[str]) -> str:
             for p in paths:
                 fname = fname.replace(p, "")
             return fname
@@ -145,7 +143,8 @@ class AssistantCLI:
             return list(tm_modules)
         tm_modules = [f"unittests/{md}" for md in set(tm_modules)]
         not_exists = [p for p in tm_modules if os.path.exists(p)]
-        assert not not_exists, f"Missing following paths: {not_exists}"
+        if not_exists:
+            raise ValueError(f"Missing following paths: {not_exists}")
         return " ".join(tm_modules)
 
 

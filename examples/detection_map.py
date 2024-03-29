@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,13 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""An example of how to the predictions and target should be defined for the MAP object detection metric To run:
-
-python detection_map.py.
-"""
+"""An example of how the predictions and target should be defined for the MAP object detection metric."""
 
 from torch import BoolTensor, IntTensor, Tensor
-
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 # Preds should be a list of elements, where each element is a dict
@@ -30,22 +26,22 @@ mask_pred = [
     [0, 0, 0, 0, 0],
 ]
 preds = [
-    dict(
+    {
         # The boxes keyword should contain an [N,4] tensor,
         # where N is the number of detected boxes with boxes of the format
         # [xmin, ymin, xmax, ymax] in absolute image coordinates
-        boxes=Tensor([[258.0, 41.0, 606.0, 285.0]]),
+        "boxes": Tensor([[258.0, 41.0, 606.0, 285.0]]),
         # The scores keyword should contain an [N,] tensor where
         # each element is confidence score between 0 and 1
-        scores=Tensor([0.536]),
+        "scores": Tensor([0.536]),
         # The labels keyword should contain an [N,] tensor
         # with integers of the predicted classes
-        labels=IntTensor([0]),
+        "labels": IntTensor([0]),
         # The masks keyword should contain an [N,H,W] tensor,
         # where H and W are the image height and width, respectively,
         # with boolean masks. This is only required when iou_type is `segm`.
-        masks=BoolTensor([mask_pred]),
-    )
+        "masks": BoolTensor([mask_pred]),
+    }
 ]
 
 # Target should be a list of elements, where each element is a dict
@@ -60,11 +56,11 @@ mask_tgt = [
     [0, 0, 0, 0, 0],
 ]
 target = [
-    dict(
-        boxes=Tensor([[214.0, 41.0, 562.0, 285.0]]),
-        labels=IntTensor([0]),
-        masks=BoolTensor([mask_tgt]),
-    )
+    {
+        "boxes": Tensor([[214.0, 41.0, 562.0, 285.0]]),
+        "labels": IntTensor([0]),
+        "masks": BoolTensor([mask_tgt]),
+    }
 ]
 
 if __name__ == "__main__":

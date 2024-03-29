@@ -12,11 +12,10 @@ Retrieval Normalized DCG
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.RetrievalNormalizedDCG
-    :noindex:
+.. autoclass:: torchmetrics.retrieval.RetrievalNormalizedDCG
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.retrieval_normalized_dcg
-    :noindex:
+.. autofunction:: torchmetrics.functional.retrieval.retrieval_normalized_dcg

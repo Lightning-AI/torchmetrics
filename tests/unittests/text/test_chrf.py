@@ -1,20 +1,29 @@
+# Copyright The Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from functools import partial
 from typing import Sequence
 
 import pytest
 from torch import Tensor, tensor
-
 from torchmetrics.functional.text.chrf import chrf_score
 from torchmetrics.text.chrf import CHRFScore
-from torchmetrics.utilities.imports import _SACREBLEU_AVAILABLE
-from unittests.text.helpers import TextTester
-from unittests.text.inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 
-if _SACREBLEU_AVAILABLE:
-    from sacrebleu.metrics import CHRF
+from unittests.text._helpers import TextTester
+from unittests.text._inputs import _inputs_multiple_references, _inputs_single_sentence_multiple_references
 
 
-def sacrebleu_chrf_fn(
+def _reference_sacrebleu_chrf(
     preds: Sequence[str],
     targets: Sequence[Sequence[str]],
     char_order: int,
@@ -22,6 +31,11 @@ def sacrebleu_chrf_fn(
     lowercase: bool,
     whitespace: bool,
 ) -> Tensor:
+    try:
+        from sacrebleu import CHRF
+    except ImportError:
+        pytest.skip("test requires sacrebleu package to be installed")
+
     sacrebleu_chrf = CHRF(
         char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace, eps_smoothing=True
     )
@@ -44,15 +58,14 @@ def sacrebleu_chrf_fn(
 )
 @pytest.mark.parametrize(
     ["preds", "targets"],
-    [(_inputs_multiple_references.preds, _inputs_multiple_references.targets)],
+    [(_inputs_multiple_references.preds, _inputs_multiple_references.target)],
 )
-@pytest.mark.skipif(not _SACREBLEU_AVAILABLE, reason="test requires sacrebleu")
 class TestCHRFScore(TextTester):
-    @pytest.mark.parametrize("ddp", [False, True])
-    @pytest.mark.parametrize("dist_sync_on_step", [False, True])
-    def test_chrf_score_class(
-        self, ddp, dist_sync_on_step, preds, targets, char_order, word_order, lowercase, whitespace
-    ):
+    """Test class for `CHRFScore` metric."""
+
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_chrf_score_class(self, ddp, preds, targets, char_order, word_order, lowercase, whitespace):
+        """Test class implementation of metric."""
         metric_args = {
             "n_char_order": char_order,
             "n_word_order": word_order,
@@ -60,7 +73,11 @@ class TestCHRFScore(TextTester):
             "whitespace": whitespace,
         }
         nltk_metric = partial(
-            sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
+            _reference_sacrebleu_chrf,
+            char_order=char_order,
+            word_order=word_order,
+            lowercase=lowercase,
+            whitespace=whitespace,
         )
 
         self.run_class_metric_test(
@@ -68,12 +85,12 @@ class TestCHRFScore(TextTester):
             preds=preds,
             targets=targets,
             metric_class=CHRFScore,
-            sk_metric=nltk_metric,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=nltk_metric,
             metric_args=metric_args,
         )
 
     def test_chrf_score_functional(self, preds, targets, char_order, word_order, lowercase, whitespace):
+        """Test functional implementation of metric."""
         metric_args = {
             "n_char_order": char_order,
             "n_word_order": word_order,
@@ -81,18 +98,23 @@ class TestCHRFScore(TextTester):
             "whitespace": whitespace,
         }
         nltk_metric = partial(
-            sacrebleu_chrf_fn, char_order=char_order, word_order=word_order, lowercase=lowercase, whitespace=whitespace
+            _reference_sacrebleu_chrf,
+            char_order=char_order,
+            word_order=word_order,
+            lowercase=lowercase,
+            whitespace=whitespace,
         )
 
         self.run_functional_metric_test(
             preds,
             targets,
             metric_functional=chrf_score,
-            sk_metric=nltk_metric,
+            reference_metric=nltk_metric,
             metric_args=metric_args,
         )
 
     def test_chrf_score_differentiability(self, preds, targets, char_order, word_order, lowercase, whitespace):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {
             "n_char_order": char_order,
             "n_word_order": word_order,
@@ -110,12 +132,14 @@ class TestCHRFScore(TextTester):
 
 
 def test_chrf_empty_functional():
+    """Test that eed returns 0 when no input is provided."""
     preds = []
     targets = [[]]
     assert chrf_score(preds, targets) == tensor(0.0)
 
 
 def test_chrf_empty_class():
+    """Test that eed returns 0 when no input is provided."""
     chrf = CHRFScore()
     preds = []
     targets = [[]]
@@ -123,15 +147,17 @@ def test_chrf_empty_class():
 
 
 def test_chrf_return_sentence_level_score_functional():
+    """Test that chrf can return sentence level scores."""
     preds = _inputs_single_sentence_multiple_references.preds
-    targets = _inputs_single_sentence_multiple_references.targets
+    targets = _inputs_single_sentence_multiple_references.target
     _, chrf_sentence_score = chrf_score(preds, targets, return_sentence_level_score=True)
     isinstance(chrf_sentence_score, Tensor)
 
 
 def test_chrf_return_sentence_level_class():
+    """Test that chrf can return sentence level scores."""
     chrf = CHRFScore(return_sentence_level_score=True)
     preds = _inputs_single_sentence_multiple_references.preds
-    targets = _inputs_single_sentence_multiple_references.targets
+    targets = _inputs_single_sentence_multiple_references.target
     _, chrf_sentence_score = chrf(preds, targets)
     isinstance(chrf_sentence_score, Tensor)

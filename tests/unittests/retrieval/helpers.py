@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,48 +12,70 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Callable, Dict, List, Tuple, Type, Union
+from itertools import chain
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 import numpy as np
 import pytest
 import torch
 from numpy import array
 from torch import Tensor, tensor
+from typing_extensions import Literal
 
-from unittests.helpers import seed_all
-from unittests.helpers.testers import Metric, MetricTester
-from unittests.retrieval.inputs import _input_retrieval_scores as _irs
-from unittests.retrieval.inputs import _input_retrieval_scores_all_target as _irs_all
-from unittests.retrieval.inputs import _input_retrieval_scores_empty as _irs_empty
-from unittests.retrieval.inputs import _input_retrieval_scores_extra as _irs_extra
-from unittests.retrieval.inputs import _input_retrieval_scores_float_target as _irs_float_tgt
-from unittests.retrieval.inputs import _input_retrieval_scores_for_adaptive_k as _irs_adpt_k
-from unittests.retrieval.inputs import _input_retrieval_scores_int_target as _irs_int_tgt
-from unittests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes as _irs_mis_sz
-from unittests.retrieval.inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_mis_sz_fn
-from unittests.retrieval.inputs import _input_retrieval_scores_no_target as _irs_no_tgt
-from unittests.retrieval.inputs import _input_retrieval_scores_with_ignore_index as _irs_ii
-from unittests.retrieval.inputs import _input_retrieval_scores_wrong_targets as _irs_bad_tgt
+from unittests._helpers import seed_all
+from unittests._helpers.testers import Metric, MetricTester
+from unittests.retrieval._inputs import _input_retrieval_scores as _irs
+from unittests.retrieval._inputs import _input_retrieval_scores_all_target as _irs_all
+from unittests.retrieval._inputs import _input_retrieval_scores_empty as _irs_empty
+from unittests.retrieval._inputs import _input_retrieval_scores_extra as _irs_extra
+from unittests.retrieval._inputs import _input_retrieval_scores_float_target as _irs_float_tgt
+from unittests.retrieval._inputs import _input_retrieval_scores_for_adaptive_k as _irs_adpt_k
+from unittests.retrieval._inputs import _input_retrieval_scores_int_target as _irs_int_tgt
+from unittests.retrieval._inputs import _input_retrieval_scores_mismatching_sizes as _irs_bad_sz
+from unittests.retrieval._inputs import _input_retrieval_scores_mismatching_sizes_func as _irs_bad_sz_fn
+from unittests.retrieval._inputs import _input_retrieval_scores_no_target as _irs_no_tgt
+from unittests.retrieval._inputs import _input_retrieval_scores_with_ignore_index as _irs_ii
+from unittests.retrieval._inputs import _input_retrieval_scores_wrong_targets as _irs_bad_tgt
 
 seed_all(42)
 
 # a version of get_group_indexes that depends on NumPy is here to avoid this dependency for the full library
 
 
+def _retrieval_aggregate(
+    values: Tensor,
+    aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
+    dim: Optional[int] = None,
+) -> Tensor:
+    """Aggregate the final retrieval values into a single value."""
+    if aggregation == "mean":
+        return values.mean() if dim is None else values.mean(dim=dim)
+    if aggregation == "median":
+        return values.median() if dim is None else values.median(dim=dim).values
+    if aggregation == "min":
+        return values.min() if dim is None else values.min(dim=dim).values
+    if aggregation == "max":
+        return values.max() if dim is None else values.max(dim=dim).values
+    return aggregation(values, dim=dim)
+
+
 def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, np.ndarray]]:
-    """Given an integer `torch.Tensor` or `np.ndarray` `indexes`, return a `torch.Tensor` or `np.ndarray` of
-    indexes for each different value in `indexes`.
+    """Extract group indexes.
+
+    Given an integer :class:`~torch.Tensor` or `np.ndarray` `indexes`, return a :class:`~torch.Tensor` or
+    `np.ndarray` of indexes for each different value in `indexes`.
 
     Args:
-        indexes: a `torch.Tensor` or `np.ndarray` of integers
+        indexes: a :class:`~torch.Tensor` or `np.ndarray` of integers
 
     Return:
-        A list of integer `torch.Tensor`s or `np.ndarray`s
+        A list of integer :class:`~torch.Tensor`s or `np.ndarray`s
 
     Example:
         >>> indexes = torch.tensor([0, 0, 0, 1, 1, 1, 1])
         >>> get_group_indexes(indexes)
         [tensor([0, 1, 2]), tensor([3, 4, 5, 6])]
+
     """
     structure, dtype = (tensor, torch.long) if isinstance(indexes, Tensor) else (np.array, np.int64)
 
@@ -68,18 +90,22 @@ def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, 
     return [structure(x, dtype=dtype) for x in res.values()]
 
 
+def _custom_aggregate_fn(val: Tensor, dim=None) -> Tensor:
+    return (val**2).mean() if dim is None else (val**2).mean(dim=dim)
+
+
 def _compute_sklearn_metric(
     preds: Union[Tensor, array],
     target: Union[Tensor, array],
-    indexes: np.ndarray = None,
-    metric: Callable = None,
+    indexes: Optional[np.ndarray] = None,
+    metric: Optional[Callable] = None,
     empty_target_action: str = "skip",
-    ignore_index: int = None,
+    ignore_index: Optional[int] = None,
     reverse: bool = False,
-    **kwargs,
+    aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
+    **kwargs: Any,
 ) -> Tensor:
     """Compute metric with multiple iterations over every query predictions set."""
-
     if indexes is None:
         indexes = np.full_like(preds, fill_value=0, dtype=np.int64)
     if isinstance(indexes, Tensor):
@@ -117,8 +143,11 @@ def _compute_sklearn_metric(
             res = metric(trg, pds, **kwargs)
             sk_results.append(res)
 
+    sk_results = np.array(sk_results)
+    sk_results[np.isnan(sk_results)] = 0.0  # this is needed with old versions of sklearn
+
     if len(sk_results) > 0:
-        return np.mean(sk_results)
+        return _retrieval_aggregate(torch.from_numpy(sk_results), aggregation=aggregation).numpy()
     return np.array(0.0)
 
 
@@ -126,14 +155,14 @@ def _concat_tests(*tests: Tuple[Dict]) -> Dict:
     """Concat tests composed by a string and a list of arguments."""
     assert len(tests), "`_concat_tests` expects at least an argument"
     assert all(tests[0]["argnames"] == x["argnames"] for x in tests[1:]), "the header must be the same for all tests"
-    return dict(argnames=tests[0]["argnames"], argvalues=sum((x["argvalues"] for x in tests), []))
+    return {"argnames": tests[0]["argnames"], "argvalues": list(chain.from_iterable(x["argvalues"] for x in tests))}
 
 
-_errors_test_functional_metric_parameters_default = dict(
-    argnames="preds,target,message,metric_args",
-    argvalues=[
+_errors_test_functional_metric_parameters_default = {
+    "argnames": "preds,target,message,metric_args",
+    "argvalues": [
         # check input shapes are consistent (func)
-        (_irs_mis_sz_fn.preds, _irs_mis_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
+        (_irs_bad_sz_fn.preds, _irs_bad_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
         # check input tensors are not empty
         (_irs_empty.preds, _irs_empty.target, "`preds` and `target` must be non-empty and non-scalar tensors", {}),
         # check on input dtypes
@@ -141,75 +170,75 @@ _errors_test_functional_metric_parameters_default = dict(
         # check targets are between 0 and 1
         (_irs_bad_tgt.preds, _irs_bad_tgt.target, "`target` must contain `binary` values", {}),
     ],
-)
+}
 
-_errors_test_functional_metric_parameters_with_nonbinary = dict(
-    argnames="preds,target,message,metric_args",
-    argvalues=[
+_errors_test_functional_metric_parameters_with_nonbinary = {
+    "argnames": "preds,target,message,metric_args",
+    "argvalues": [
         # check input shapes are consistent (func)
-        (_irs_mis_sz_fn.preds, _irs_mis_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
+        (_irs_bad_sz_fn.preds, _irs_bad_sz_fn.target, "`preds` and `target` must be of the same shape", {}),
         # check input tensors are not empty
         (_irs_empty.preds, _irs_empty.target, "`preds` and `target` must be non-empty and non-scalar tensors", {}),
         # check on input dtypes
         (_irs.preds.bool(), _irs.target, "`preds` must be a tensor of floats", {}),
     ],
-)
+}
 
-_errors_test_functional_metric_parameters_k = dict(
-    argnames="preds,target,message,metric_args",
-    argvalues=[
-        (_irs.preds, _irs.target, "`k` has to be a positive integer or None", dict(k=-10)),
-        (_irs.preds, _irs.target, "`k` has to be a positive integer or None", dict(k=4.0)),
+_errors_test_functional_metric_parameters_k = {
+    "argnames": "preds,target,message,metric_args",
+    "argvalues": [
+        (_irs.preds, _irs.target, "`top_k` has to be a positive integer or None", {"top_k": -10}),
+        (_irs.preds, _irs.target, "`top_k` has to be a positive integer or None", {"top_k": 4.0}),
     ],
-)
+}
 
-_errors_test_functional_metric_parameters_adaptive_k = dict(
-    argnames="preds,target,message,metric_args",
-    argvalues=[
-        (_irs.preds, _irs.target, "`adaptive_k` has to be a boolean", dict(adaptive_k=10)),
-        (_irs.preds, _irs.target, "`adaptive_k` has to be a boolean", dict(adaptive_k=None)),
+_errors_test_functional_metric_parameters_adaptive_k = {
+    "argnames": "preds,target,message,metric_args",
+    "argvalues": [
+        (_irs.preds, _irs.target, "`adaptive_k` has to be a boolean", {"adaptive_k": 10}),
+        (_irs.preds, _irs.target, "`adaptive_k` has to be a boolean", {"adaptive_k": None}),
     ],
-)
+}
 
-_errors_test_class_metric_parameters_no_pos_target = dict(
-    argnames="indexes,preds,target,message,metric_args",
-    argvalues=[
+_errors_test_class_metric_parameters_no_pos_target = {
+    "argnames": "indexes,preds,target,message,metric_args",
+    "argvalues": [
         # check when error when there are no positive targets
         (
             _irs_no_tgt.indexes,
             _irs_no_tgt.preds,
             _irs_no_tgt.target,
             "`compute` method was provided with a query with no positive target.",
-            dict(empty_target_action="error"),
+            {"empty_target_action": "error"},
         ),
     ],
-)
+}
 
-_errors_test_class_metric_parameters_no_neg_target = dict(
-    argnames="indexes,preds,target,message,metric_args",
-    argvalues=[
+_errors_test_class_metric_parameters_no_neg_target = {
+    "argnames": "indexes,preds,target,message,metric_args",
+    "argvalues": [
         # check when error when there are no negative targets
         (
             _irs_all.indexes,
             _irs_all.preds,
             _irs_all.target,
             "`compute` method was provided with a query with no negative target.",
-            dict(empty_target_action="error"),
+            {"empty_target_action": "error"},
         ),
     ],
-)
+}
 
-_errors_test_class_metric_parameters_with_nonbinary = dict(
-    argnames="indexes,preds,target,message,metric_args",
-    argvalues=[
-        (None, _irs.preds, _irs.target, "`indexes` cannot be None", dict(empty_target_action="error")),
+_errors_test_class_metric_parameters_with_nonbinary = {
+    "argnames": "indexes,preds,target,message,metric_args",
+    "argvalues": [
+        (None, _irs.preds, _irs.target, "`indexes` cannot be None", {"empty_target_action": "error"}),
         # check when input arguments are invalid
         (
             _irs.indexes,
             _irs.preds,
             _irs.target,
             "`empty_target_action` received a wrong value `casual_argument`.",
-            dict(empty_target_action="casual_argument"),
+            {"empty_target_action": "casual_argument"},
         ),
         # check ignore_index is valid
         (
@@ -217,15 +246,15 @@ _errors_test_class_metric_parameters_with_nonbinary = dict(
             _irs.preds,
             _irs.target,
             "Argument `ignore_index` must be an integer or None.",
-            dict(ignore_index=-100.0),
+            {"ignore_index": -100.0},
         ),
         # check input shapes are consistent
         (
-            _irs_mis_sz.indexes,
-            _irs_mis_sz.preds,
-            _irs_mis_sz.target,
+            _irs_bad_sz.indexes,
+            _irs_bad_sz.preds,
+            _irs_bad_sz.target,
             "`indexes`, `preds` and `target` must be of the same shape",
-            dict(empty_target_action="skip"),
+            {"empty_target_action": "skip"},
         ),
         # check input tensors are not empty
         (
@@ -233,7 +262,7 @@ _errors_test_class_metric_parameters_with_nonbinary = dict(
             _irs_empty.preds,
             _irs_empty.target,
             "`indexes`, `preds` and `target` must be non-empty and non-scalar tensors",
-            dict(empty_target_action="skip"),
+            {"empty_target_action": "skip"},
         ),
         # check on input dtypes
         (
@@ -241,29 +270,29 @@ _errors_test_class_metric_parameters_with_nonbinary = dict(
             _irs.preds,
             _irs.target,
             "`indexes` must be a tensor of long integers",
-            dict(empty_target_action="skip"),
+            {"empty_target_action": "skip"},
         ),
         (
             _irs.indexes,
             _irs.preds.bool(),
             _irs.target,
             "`preds` must be a tensor of floats",
-            dict(empty_target_action="skip"),
+            {"empty_target_action": "skip"},
         ),
     ],
-)
+}
 
-_errors_test_class_metric_parameters_default = dict(
-    argnames="indexes,preds,target,message,metric_args",
-    argvalues=[
-        (None, _irs.preds, _irs.target, "`indexes` cannot be None", dict(empty_target_action="error")),
+_errors_test_class_metric_parameters_default = {
+    "argnames": "indexes,preds,target,message,metric_args",
+    "argvalues": [
+        (None, _irs.preds, _irs.target, "`indexes` cannot be None", {"empty_target_action": "error"}),
         # check when input arguments are invalid
         (
             _irs.indexes,
             _irs.preds,
             _irs.target,
             "`empty_target_action` received a wrong value `casual_argument`.",
-            dict(empty_target_action="casual_argument"),
+            {"empty_target_action": "casual_argument"},
         ),
         # check ignore_index is valid
         (
@@ -271,15 +300,15 @@ _errors_test_class_metric_parameters_default = dict(
             _irs.preds,
             _irs.target,
             "Argument `ignore_index` must be an integer or None.",
-            dict(ignore_index=-100.0),
+            {"ignore_index": -100.0},
         ),
         # check input shapes are consistent
         (
-            _irs_mis_sz.indexes,
-            _irs_mis_sz.preds,
-            _irs_mis_sz.target,
+            _irs_bad_sz.indexes,
+            _irs_bad_sz.preds,
+            _irs_bad_sz.target,
             "`indexes`, `preds` and `target` must be of the same shape",
-            dict(empty_target_action="skip"),
+            {"empty_target_action": "skip"},
         ),
         # check input tensors are not empty
         (
@@ -287,7 +316,7 @@ _errors_test_class_metric_parameters_default = dict(
             _irs_empty.preds,
             _irs_empty.target,
             "`indexes`, `preds` and `target` must be non-empty and non-scalar tensors",
-            dict(empty_target_action="skip"),
+            {"empty_target_action": "skip"},
         ),
         # check on input dtypes
         (
@@ -295,81 +324,81 @@ _errors_test_class_metric_parameters_default = dict(
             _irs.preds,
             _irs.target,
             "`indexes` must be a tensor of long integers",
-            dict(empty_target_action="skip"),
+            {"empty_target_action": "skip"},
         ),
         (
             _irs.indexes,
             _irs.preds.bool(),
             _irs.target,
             "`preds` must be a tensor of floats",
-            dict(empty_target_action="skip"),
+            {"empty_target_action": "skip"},
         ),
     ],
-)
+}
 
-_errors_test_class_metric_parameters_k = dict(
-    argnames="indexes,preds,target,message,metric_args",
-    argvalues=[
-        (_irs.index, _irs.preds, _irs.target, "`k` has to be a positive integer or None", dict(k=-10)),
-        (_irs.index, _irs.preds, _irs.target, "`k` has to be a positive integer or None", dict(k=4.0)),
+_errors_test_class_metric_parameters_k = {
+    "argnames": "indexes,preds,target,message,metric_args",
+    "argvalues": [
+        (_irs.index, _irs.preds, _irs.target, "`top_k` has to be a positive integer or None", {"top_k": -10}),
+        (_irs.index, _irs.preds, _irs.target, "`top_k` has to be a positive integer or None", {"top_k": 4.0}),
     ],
-)
+}
 
-_errors_test_class_metric_parameters_adaptive_k = dict(
-    argnames="indexes,preds,target,message,metric_args",
-    argvalues=[
-        (_irs.index, _irs.preds, _irs.target, "`adaptive_k` has to be a boolean", dict(adaptive_k=10)),
-        (_irs.index, _irs.preds, _irs.target, "`adaptive_k` has to be a boolean", dict(adaptive_k=None)),
+_errors_test_class_metric_parameters_adaptive_k = {
+    "argnames": "indexes,preds,target,message,metric_args",
+    "argvalues": [
+        (_irs.index, _irs.preds, _irs.target, "`adaptive_k` has to be a boolean", {"adaptive_k": 10}),
+        (_irs.index, _irs.preds, _irs.target, "`adaptive_k` has to be a boolean", {"adaptive_k": None}),
     ],
-)
+}
 
-_default_metric_class_input_arguments = dict(
-    argnames="indexes,preds,target",
-    argvalues=[
+_default_metric_class_input_arguments = {
+    "argnames": "indexes,preds,target",
+    "argvalues": [
         (_irs.indexes, _irs.preds, _irs.target),
         (_irs_extra.indexes, _irs_extra.preds, _irs_extra.target),
         (_irs_no_tgt.indexes, _irs_no_tgt.preds, _irs_no_tgt.target),
         (_irs_adpt_k.indexes, _irs_adpt_k.preds, _irs_adpt_k.target),
     ],
-)
+}
 
-_default_metric_class_input_arguments_ignore_index = dict(
-    argnames="indexes,preds,target",
-    argvalues=[
+_default_metric_class_input_arguments_ignore_index = {
+    "argnames": "indexes,preds,target",
+    "argvalues": [
         (_irs_ii.indexes, _irs_ii.preds, _irs_ii.target),
     ],
-)
+}
 
-_default_metric_class_input_arguments_with_non_binary_target = dict(
-    argnames="indexes,preds,target",
-    argvalues=[
+_default_metric_class_input_arguments_with_non_binary_target = {
+    "argnames": "indexes,preds,target",
+    "argvalues": [
         (_irs.indexes, _irs.preds, _irs.target),
         (_irs_extra.indexes, _irs_extra.preds, _irs_extra.target),
         (_irs_no_tgt.indexes, _irs_no_tgt.preds, _irs_no_tgt.target),
         (_irs_int_tgt.indexes, _irs_int_tgt.preds, _irs_int_tgt.target),
         (_irs_float_tgt.indexes, _irs_float_tgt.preds, _irs_float_tgt.target),
     ],
-)
+}
 
-_default_metric_functional_input_arguments = dict(
-    argnames="preds,target",
-    argvalues=[
+_default_metric_functional_input_arguments = {
+    "argnames": "preds,target",
+    "argvalues": [
         (_irs.preds, _irs.target),
         (_irs_extra.preds, _irs_extra.target),
         (_irs_no_tgt.preds, _irs_no_tgt.target),
     ],
-)
+}
 
-_default_metric_functional_input_arguments_with_non_binary_target = dict(
-    argnames="preds,target",
-    argvalues=[
+_default_metric_functional_input_arguments_with_non_binary_target = {
+    "argnames": "preds,target",
+    "argvalues": [
         (_irs.preds, _irs.target),
         (_irs_extra.preds, _irs_extra.target),
         (_irs_no_tgt.preds, _irs_no_tgt.target),
         (_irs_int_tgt.preds, _irs_int_tgt.target),
         (_irs_float_tgt.preds, _irs_float_tgt.target),
     ],
-)
+}
 
 
 def _errors_test_class_metric(
@@ -378,11 +407,11 @@ def _errors_test_class_metric(
     target: Tensor,
     metric_class: Metric,
     message: str = "",
-    metric_args: dict = None,
+    metric_args: Optional[dict] = None,
     exception_type: Type[Exception] = ValueError,
-    kwargs_update: dict = None,
+    kwargs_update: Optional[dict] = None,
 ):
-    """Utility function doing checks about types, parameters and errors.
+    """Check types, parameters and errors.
 
     Args:
         indexes: torch tensor with indexes
@@ -394,10 +423,11 @@ def _errors_test_class_metric(
         exception_type: callable function that is used for comparison
         kwargs_update: Additional keyword arguments that will be passed with indexes, preds and
             target when running update on the metric.
+
     """
     metric_args = metric_args or {}
     kwargs_update = kwargs_update or {}
-    with pytest.raises(exception_type, match=message):
+    with pytest.raises(exception_type, match=message):  # noqa: PT012
         metric = metric_class(**metric_args)
         metric(preds, target, indexes=indexes, **kwargs_update)
 
@@ -408,9 +438,9 @@ def _errors_test_functional_metric(
     metric_functional: Metric,
     message: str = "",
     exception_type: Type[Exception] = ValueError,
-    kwargs_update: dict = None,
+    kwargs_update: Optional[dict] = None,
 ):
-    """Utility function doing checks about types, parameters and errors.
+    """Check types, parameters and errors.
 
     Args:
         preds: torch tensor with predictions
@@ -420,6 +450,7 @@ def _errors_test_functional_metric(
         exception_type: callable function that is used for comparison
         kwargs_update: Additional keyword arguments that will be passed with indexes, preds and
             target when running update on the metric.
+
     """
     kwargs_update = kwargs_update or {}
     with pytest.raises(exception_type, match=message):
@@ -427,6 +458,8 @@ def _errors_test_functional_metric(
 
 
 class RetrievalMetricTester(MetricTester):
+    """General tester class for retrieval metrics."""
+
     atol: float = 1e-6
 
     def run_class_metric_test(
@@ -436,23 +469,22 @@ class RetrievalMetricTester(MetricTester):
         preds: Tensor,
         target: Tensor,
         metric_class: Metric,
-        sk_metric: Callable,
-        dist_sync_on_step: bool,
+        reference_metric: Callable,
         metric_args: dict,
         reverse: bool = False,
     ):
-        _sk_metric_adapted = partial(_compute_sklearn_metric, metric=sk_metric, reverse=reverse, **metric_args)
+        """Test class implementation of metric."""
+        _ref_metric_adapted = partial(_compute_sklearn_metric, metric=reference_metric, reverse=reverse, **metric_args)
 
         super().run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=metric_class,
-            sk_metric=_sk_metric_adapted,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=_ref_metric_adapted,
             metric_args=metric_args,
             fragment_kwargs=True,
-            indexes=indexes,  # every additional argument will be passed to metric_class and _sk_metric_adapted
+            indexes=indexes,  # every additional argument will be passed to metric_class and _ref_metric_adapted
         )
 
     def run_functional_metric_test(
@@ -460,18 +492,19 @@ class RetrievalMetricTester(MetricTester):
         preds: Tensor,
         target: Tensor,
         metric_functional: Callable,
-        sk_metric: Callable,
+        reference_metric: Callable,
         metric_args: dict,
         reverse: bool = False,
-        **kwargs,
+        **kwargs: Any,
     ):
-        _sk_metric_adapted = partial(_compute_sklearn_metric, metric=sk_metric, reverse=reverse, **metric_args)
+        """Test functional implementation of metric."""
+        _ref_metric_adapted = partial(_compute_sklearn_metric, metric=reference_metric, reverse=reverse, **metric_args)
 
         super().run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=metric_functional,
-            sk_metric=_sk_metric_adapted,
+            reference_metric=_ref_metric_adapted,
             metric_args=metric_args,
             fragment_kwargs=True,
             **kwargs,
@@ -485,6 +518,8 @@ class RetrievalMetricTester(MetricTester):
         metric_module: Metric,
         metric_functional: Callable,
     ):
+        """Test dtype support of the metric on CPU."""
+
         def metric_functional_ignore_indexes(preds, target, indexes, empty_target_action):
             return metric_functional(preds, target)
 
@@ -494,7 +529,7 @@ class RetrievalMetricTester(MetricTester):
             metric_module=metric_module,
             metric_functional=metric_functional_ignore_indexes,
             metric_args={"empty_target_action": "neg"},
-            indexes=indexes,  # every additional argument will be passed to the retrieval metric and _sk_metric_adapted
+            indexes=indexes,  # every additional argument will be passed to the retrieval metric and _ref_metric_adapted
         )
 
     def run_precision_test_gpu(
@@ -505,6 +540,7 @@ class RetrievalMetricTester(MetricTester):
         metric_module: Metric,
         metric_functional: Callable,
     ):
+        """Test dtype support of the metric on GPU."""
         if not torch.cuda.is_available():
             pytest.skip("Test requires GPU")
 
@@ -517,7 +553,7 @@ class RetrievalMetricTester(MetricTester):
             metric_module=metric_module,
             metric_functional=metric_functional_ignore_indexes,
             metric_args={"empty_target_action": "neg"},
-            indexes=indexes,  # every additional argument will be passed to retrieval metric and _sk_metric_adapted
+            indexes=indexes,  # every additional argument will be passed to retrieval metric and _ref_metric_adapted
         )
 
     @staticmethod
@@ -527,10 +563,11 @@ class RetrievalMetricTester(MetricTester):
         target: Tensor,
         metric_class: Metric,
         message: str = "",
-        metric_args: dict = None,
+        metric_args: Optional[dict] = None,
         exception_type: Type[Exception] = ValueError,
-        kwargs_update: dict = None,
-    ):
+        kwargs_update: Optional[dict] = None,
+    ) -> None:
+        """Test that specific errors are raised for incorrect input."""
         _errors_test_class_metric(
             indexes=indexes,
             preds=preds,
@@ -549,8 +586,9 @@ class RetrievalMetricTester(MetricTester):
         metric_functional: Callable,
         message: str = "",
         exception_type: Type[Exception] = ValueError,
-        kwargs_update: dict = None,
-    ):
+        kwargs_update: Optional[dict] = None,
+    ) -> None:
+        """Test that specific errors are raised for incorrect input."""
         _errors_test_functional_metric(
             preds=preds,
             target=target,

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 """An example of how to use ROUGEScore with a user's defined/own normalizer and tokenizer.
 
 To run: python rouge_score-own_normalizer_and_tokenizer.py
+
 """
 
 import re
@@ -27,13 +28,16 @@ class UserNormalizer:
     """The `UserNormalizer` class is required to normalize a non-alphabet language text input.
 
     The user's defined normalizer is expected to return string that are fed into the tokenizer.
+
     """
 
     def __init__(self) -> None:
         self.pattern = r"[^a-z0-9]+"
 
     def __call__(self, text: str) -> str:
-        """The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
+        """Call method to normalize user input.
+
+        The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
         should obey the input/output arguments structure described below.
 
         Args:
@@ -41,22 +45,24 @@ class UserNormalizer:
 
         Return:
             Normalized python string object
-        """
-        output_text = re.sub(self.pattern, " ", text.lower())
 
-        return output_text
+        """
+        return re.sub(self.pattern, " ", text.lower())
 
 
 class UserTokenizer:
     """The `UserNormalizer` class is required to tokenize a non-alphabet language text input.
 
     The user's defined tokenizer is expected to return ``Sequence[str]`` that are fed into the rouge score.
+
     """
 
     pattern = r"\s+"
 
     def __call__(self, text: str) -> Sequence[str]:
-        """The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
+        """Call method to tokenize user input.
+
+        The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
         should obey the input/output arguments structure described below.
 
         Args:
@@ -64,10 +70,9 @@ class UserTokenizer:
 
         Return:
             Tokenized sentence
-        """
-        output_tokens = re.split(self.pattern, text)
 
-        return output_tokens
+        """
+        return re.split(self.pattern, text)
 
 
 _PREDS = ["hello", "hello world", "world world world"]

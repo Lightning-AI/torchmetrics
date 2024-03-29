@@ -16,10 +16,13 @@ Steps to reproduce the behavior...
 
 <!-- If you have a code sample, error messages, stack traces, please provide it here as well -->
 
-#### Code sample
+<details>
+  <summary>Code sample</summary>
 
 <!-- Ideally attach a minimal code sample to reproduce the decried issue.
 Minimal means having the shortest code but still preserving the bug. -->
+
+</details>
 
 ### Expected behavior
 

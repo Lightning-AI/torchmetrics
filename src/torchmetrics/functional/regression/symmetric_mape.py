@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Tuple, Union
 
 import torch
 from torch import Tensor
@@ -24,16 +24,16 @@ def _symmetric_mean_absolute_percentage_error_update(
     target: Tensor,
     epsilon: float = 1.17e-06,
 ) -> Tuple[Tensor, int]:
-    """Updates and returns variables required to compute Symmetric Mean Absolute Percentage Error.
+    """Update and returns variables required to compute Symmetric Mean Absolute Percentage Error.
 
-    Checks for same shape of input tensors.
+    Check for same shape of input tensors.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
         epsilon: Avoids ``ZeroDivisionError``.
-    """
 
+    """
     _check_same_shape(preds, target)
 
     abs_diff = torch.abs(preds - target)
@@ -46,8 +46,8 @@ def _symmetric_mean_absolute_percentage_error_update(
     return sum_abs_per_error, num_obs
 
 
-def _symmetric_mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor, num_obs: int) -> Tensor:
-    """Computes Symmetric Mean Absolute Percentage Error.
+def _symmetric_mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor, num_obs: Union[int, Tensor]) -> Tensor:
+    """Compute Symmetric Mean Absolute Percentage Error.
 
     Args:
         sum_abs_per_error: Sum of values of symmetric absolute percentage errors over all observations
@@ -60,14 +60,13 @@ def _symmetric_mean_absolute_percentage_error_compute(sum_abs_per_error: Tensor,
         >>> sum_abs_per_error, num_obs = _symmetric_mean_absolute_percentage_error_update(preds, target)
         >>> _symmetric_mean_absolute_percentage_error_compute(sum_abs_per_error, num_obs)
         tensor(0.2290)
-    """
 
+    """
     return sum_abs_per_error / num_obs
 
 
 def symmetric_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
-    r"""
-    Computes symmetric mean absolute percentage error (SMAPE_):
+    r"""Compute symmetric mean absolute percentage error (SMAPE_).
 
     .. math:: \text{SMAPE} = \frac{2}{n}\sum_1^n\frac{|   y_i - \hat{y_i} |}{max(| y_i | + | \hat{y_i} |, \epsilon)}
 
@@ -81,7 +80,7 @@ def symmetric_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> T
         Tensor with SMAPE.
 
     Example:
-        >>> from torchmetrics.functional import symmetric_mean_absolute_percentage_error
+        >>> from torchmetrics.functional.regression import symmetric_mean_absolute_percentage_error
         >>> target = torch.tensor([1, 10, 1e6])
         >>> preds = torch.tensor([0.9, 15, 1.2e6])
         >>> symmetric_mean_absolute_percentage_error(preds, target)
@@ -92,9 +91,7 @@ def symmetric_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> T
         preds,
         target,
     )
-    mean_ape = _symmetric_mean_absolute_percentage_error_compute(
+    return _symmetric_mean_absolute_percentage_error_compute(
         sum_abs_per_error,
         num_obs,
     )
-
-    return mean_ape

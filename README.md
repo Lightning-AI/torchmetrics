@@ -10,7 +10,7 @@ ______________________________________________________________________
   <a href="#what-is-torchmetrics">What is Torchmetrics</a> •
   <a href="#implementing-your-own-module-metric">Implementing a metric</a> •
   <a href="#build-in-metrics">Built-in metrics</a> •
-  <a href="https://torchmetrics.readthedocs.io/en/stable/">Docs</a> •
+  <a href="https://lightning.ai/docs/torchmetrics/stable/">Docs</a> •
   <a href="#community">Community</a> •
   <a href="#license">License</a>
 </p>
@@ -19,21 +19,20 @@ ______________________________________________________________________
 
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/torchmetrics)](https://pypi.org/project/torchmetrics/)
 [![PyPI Status](https://badge.fury.io/py/torchmetrics.svg)](https://badge.fury.io/py/torchmetrics)
-[![PyPI Status](https://pepy.tech/badge/torchmetrics)](https://pepy.tech/project/torchmetrics)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/torchmetrics)
+](https://pepy.tech/project/torchmetrics)
 [![Conda](https://img.shields.io/conda/v/conda-forge/torchmetrics?label=conda&color=success)](https://anaconda.org/conda-forge/torchmetrics)
-![Conda](https://img.shields.io/conda/dn/conda-forge/torchmetrics)
-[![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/Lightning-AI/metrics/blob/master/LICENSE)
+[![license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/Lightning-AI/torchmetrics/blob/master/LICENSE)
 
-[![CI testing - complete](https://github.com/Lightning-AI/metrics/actions/workflows/ci_test-full.yml/badge.svg?event=push)](https://github.com/Lightning-AI/metrics/actions/workflows/ci_test-full.yml)
-[![PyTorch & Conda](https://github.com/Lightning-AI/metrics/actions/workflows/ci_test-conda.yml/badge.svg?branch=master&event=push)](https://github.com/Lightning-AI/metrics/actions/workflows/ci_test-conda.yml)
-[![Build Status](https://dev.azure.com/Lightning-AI/Metrics/_apis/build/status/Lightning-AI.metrics?branchName=master)](https://dev.azure.com/Lightning-AI/Metrics/_build/latest?definitionId=3&branchName=master)
-[![codecov](https://codecov.io/gh/Lightning-AI/metrics/branch/master/graph/badge.svg?token=NER6LPI3HS)](https://codecov.io/gh/Lightning-AI/metrics)
+[![CI testing | CPU](https://github.com/Lightning-AI/torchmetrics/actions/workflows/ci-tests.yml/badge.svg?event=push)](https://github.com/Lightning-AI/torchmetrics/actions/workflows/ci-tests.yml)
+[![Build Status](https://dev.azure.com/Lightning-AI/Metrics/_apis/build/status%2FTM.unittests?branchName=master)](https://dev.azure.com/Lightning-AI/Metrics/_build/latest?definitionId=54&branchName=master)
+[![codecov](https://codecov.io/gh/Lightning-AI/torchmetrics/branch/master/graph/badge.svg?token=NER6LPI3HS)](https://codecov.io/gh/Lightning-AI/torchmetrics)
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Lightning-AI/torchmetrics/master.svg)](https://results.pre-commit.ci/latest/github/Lightning-AI/torchmetrics/master)
 
-[![Slack](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://www.pytorchlightning.ai/community)
 [![Documentation Status](https://readthedocs.org/projects/torchmetrics/badge/?version=latest)](https://torchmetrics.readthedocs.io/en/latest/?badge=latest)
+[![Discord](https://img.shields.io/discord/1077906959069626439?style=plastic)](https://discord.gg/VptPCZkGNa)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5844769.svg)](https://doi.org/10.5281/zenodo.5844769)
 [![JOSS status](https://joss.theoj.org/papers/561d9bb59b400158bc8204e2639dca43/status.svg)](https://joss.theoj.org/papers/561d9bb59b400158bc8204e2639dca43)
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/Lightning-AI/metrics/master.svg)](https://results.pre-commit.ci/latest/github/Lightning-AI/metrics/master)
 
 ______________________________________________________________________
 
@@ -60,13 +59,13 @@ Pip from source
 
 ```bash
 # with git
-pip install git+https://github.com/Lightning-AI/metrics.git@release/latest
+pip install git+https://github.com/Lightning-AI/torchmetrics.git@release/stable
 ```
 
 Pip from archive
 
 ```bash
-pip install https://github.com/Lightning-AI/metrics/archive/refs/heads/release/latest.zip
+pip install https://github.com/Lightning-AI/torchmetrics/archive/refs/heads/release/stable.zip
 ```
 
 Extra dependencies for specialized metrics:
@@ -81,7 +80,7 @@ pip install torchmetrics[all]  # install all of the above
 Install latest developer version
 
 ```bash
-pip install https://github.com/Lightning-AI/metrics/archive/master.zip
+pip install https://github.com/Lightning-AI/torchmetrics/archive/master.zip
 ```
 
 </details>
@@ -90,7 +89,7 @@ ______________________________________________________________________
 
 ## What is TorchMetrics
 
-TorchMetrics is a collection of 80+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
+TorchMetrics is a collection of 100+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
 - A standardized interface to increase reproducibility
 - Reduces boilerplate
@@ -98,7 +97,7 @@ TorchMetrics is a collection of 80+ PyTorch metrics implementations and an easy-
 - Metrics optimized for distributed-training
 - Automatic synchronization between multiple devices
 
-You can use TorchMetrics with any PyTorch model or with [PyTorch Lightning](https://pytorch-lightning.readthedocs.io/en/stable/) to enjoy additional features such as:
+You can use TorchMetrics with any PyTorch model or with [PyTorch Lightning](https://lightning.ai/docs/pytorch/stable/) to enjoy additional features such as:
 
 - Module metrics are automatically placed on the correct device.
 - Native support for logging metrics in Lightning to reduce even more boilerplate.
@@ -107,7 +106,7 @@ You can use TorchMetrics with any PyTorch model or with [PyTorch Lightning](http
 
 ### Module metrics
 
-The [module-based metrics](https://pytorchlightning.github.io/metrics/references/modules.html) contain internal metric states (similar to the parameters of the PyTorch module) that automate accumulation and synchronization across devices!
+The [module-based metrics](https://lightning.ai/docs/torchmetrics/stable/references/metric.html) contain internal metric states (similar to the parameters of the PyTorch module) that automate accumulation and synchronization across devices!
 
 - Automatic accumulation over multiple batches
 - Automatic synchronization between multiple devices
@@ -124,7 +123,7 @@ import torch
 import torchmetrics
 
 # initialize metric
-metric = torchmetrics.Accuracy()
+metric = torchmetrics.classification.Accuracy(task="multiclass", num_classes=5)
 
 # move the metric to device you want computations to take place
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -170,7 +169,7 @@ def metric_ddp(rank, world_size):
     dist.init_process_group("gloo", rank=rank, world_size=world_size)
 
     # initialize model
-    metric = torchmetrics.Accuracy()
+    metric = torchmetrics.classification.Accuracy(task="multiclass", num_classes=5)
 
     # define a model and append your metric to it
     # this allows metric states to be placed on correct accelerators when
@@ -185,7 +184,6 @@ def metric_ddp(rank, world_size):
     n_epochs = 5
     # this shows iteration over multiple training epochs
     for n in range(n_epochs):
-
         # this will be replaced by a DataLoader with a DistributedSampler
         n_batches = 10
         for i in range(n_batches):
@@ -203,7 +201,7 @@ def metric_ddp(rank, world_size):
         acc = metric.compute()
         print(f"Accuracy on all data: {acc}, accelerator rank: {rank}")
 
-        # Reseting internal state such that metric ready for new data
+        # Resetting internal state such that metric ready for new data
         metric.reset()
 
     # cleanup
@@ -220,7 +218,7 @@ if __name__ == "__main__":
 ### Implementing your own Module metric
 
 Implementing your own metric is as easy as subclassing an [`torch.nn.Module`](https://pytorch.org/docs/stable/generated/torch.nn.Module.html). Simply, subclass `torchmetrics.Metric`
-and implement the following methods:
+and just implement the `update` and `compute` methods:
 
 ```python
 import torch
@@ -229,6 +227,7 @@ from torchmetrics import Metric
 
 class MyAccuracy(Metric):
     def __init__(self):
+        # remember to call super
         super().__init__()
         # call `self.add_state`for every internal state that is needed for the metrics computations
         # dist_reduce_fx indicates the function that should be used to reduce
@@ -236,22 +235,29 @@ class MyAccuracy(Metric):
         self.add_state("correct", default=torch.tensor(0), dist_reduce_fx="sum")
         self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor):
-        # update metric states
-        preds, target = self._input_format(preds, target)
+    def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:
+        # extract predicted class index for computing accuracy
+        preds = preds.argmax(dim=-1)
         assert preds.shape == target.shape
-
+        # update metric states
         self.correct += torch.sum(preds == target)
         self.total += target.numel()
 
-    def compute(self):
+    def compute(self) -> torch.Tensor:
         # compute final result
         return self.correct.float() / self.total
+
+
+my_metric = MyAccuracy()
+preds = torch.randn(10, 5).softmax(dim=-1)
+target = torch.randint(5, (10,))
+
+print(my_metric(preds, target))
 ```
 
 ### Functional metrics
 
-Similar to [`torch.nn`](https://pytorch.org/docs/stable/nn.html), most metrics have both a [module-based](https://torchmetrics.readthedocs.io/en/latest/references/modules.html) and a [functional](https://torchmetrics.readthedocs.io/en/latest/references/functional.html) version.
+Similar to [`torch.nn`](https://pytorch.org/docs/stable/nn.html), most metrics have both a [module-based](https://lightning.ai/docs/torchmetrics/stable/references/metric.html) and functional version.
 The functional versions are simple python functions that as input take [torch.tensors](https://pytorch.org/docs/stable/tensors.html) and return the corresponding metric as a [torch.tensor](https://pytorch.org/docs/stable/tensors.html).
 
 ```python
@@ -264,12 +270,15 @@ import torchmetrics
 preds = torch.randn(10, 5).softmax(dim=-1)
 target = torch.randint(5, (10,))
 
-acc = torchmetrics.functional.accuracy(preds, target)
+acc = torchmetrics.functional.classification.multiclass_accuracy(
+    preds, target, num_classes=5
+)
 ```
 
 ### Covered domains and example metrics
 
-We currently have implemented metrics within the following domains:
+In total TorchMetrics contains [100+ metrics](https://lightning.ai/docs/torchmetrics/stable/all-metrics.html), which
+covers the following domains:
 
 - Audio
 - Classification
@@ -277,10 +286,56 @@ We currently have implemented metrics within the following domains:
 - Segmentation
 - Information Retrieval
 - Image
+- Multimodal (Image-Text)
+- Nominal
 - Regression
 - Text
 
-In total TorchMetrics contains [80+ metrics](https://torchmetrics.readthedocs.io/en/stable/all-metrics.html)!
+Each domain may require some additional dependencies which can be installed with `pip install torchmetrics[audio]`,
+`pip install torchmetrics['image']` etc.
+
+### Additional features
+
+#### Plotting
+
+Visualization of metrics can be important to help understand what is going on with your machine learning algorithms.
+Torchmetrics have built-in plotting support (install dependencies with `pip install torchmetrics[visual]`) for nearly
+all modular metrics through the `.plot` method. Simply call the method to get a simple visualization of any metric!
+
+```python
+import torch
+from torchmetrics.classification import MulticlassAccuracy, MulticlassConfusionMatrix
+
+num_classes = 3
+
+# this will generate two distributions that comes more similar as iterations increase
+w = torch.randn(num_classes)
+target = lambda it: torch.multinomial((it * w).softmax(dim=-1), 100, replacement=True)
+preds = lambda it: torch.multinomial((it * w).softmax(dim=-1), 100, replacement=True)
+
+acc = MulticlassAccuracy(num_classes=num_classes, average="micro")
+acc_per_class = MulticlassAccuracy(num_classes=num_classes, average=None)
+confmat = MulticlassConfusionMatrix(num_classes=num_classes)
+
+# plot single value
+for i in range(5):
+    acc_per_class.update(preds(i), target(i))
+    confmat.update(preds(i), target(i))
+fig1, ax1 = acc_per_class.plot()
+fig2, ax2 = confmat.plot()
+
+# plot multiple values
+values = []
+for i in range(10):
+    values.append(acc(preds(i), target(i)))
+fig3, ax3 = acc.plot(values)
+```
+
+<p align="center">
+  <img src="docs/source/_static/images/plot_example.png" width="1000">
+</p>
+
+For examples of plotting different metrics try running [this example file](examples/plotting.py).
 
 ## Contribute!
 
@@ -288,18 +343,18 @@ The lightning + TorchMetrics team is hard at work adding even more metrics.
 But we're looking for incredible contributors like you to submit new metrics
 and improve existing ones!
 
-Join our [Slack](https://www.pytorchlightning.ai/community) to get help become a contributor!
+Join our [Discord](https://discord.com/invite/tfXFetEZxv) to get help with becoming a contributor!
 
 ## Community
 
-For help or questions, join our huge community on [Slack](https://www.pytorchlightning.ai/community)!
+For help or questions, join our huge community on [Discord](https://discord.com/invite/tfXFetEZxv)!
 
 ## Citation
 
 We’re excited to continue the strong legacy of open source software and have been inspired
 over the years by Caffe, Theano, Keras, PyTorch, torchbearer, ignite, sklearn and fast.ai.
 
-If you want to cite this framework feel free to use GitHub's built-in citation option to generate a bibtex or APA-Style citation based on [this file](https://github.com/Lightning-AI/metrics/blob/master/CITATION.cff) (but only if you loved it 😊).
+If you want to cite this framework feel free to use GitHub's built-in citation option to generate a bibtex or APA-Style citation based on [this file](https://github.com/Lightning-AI/torchmetrics/blob/master/CITATION.cff) (but only if you loved it 😊).
 
 ## License
 

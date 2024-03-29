@@ -12,5 +12,4 @@ Multi-output Wrapper
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.MultioutputWrapper
-    :noindex:
+.. autoclass:: torchmetrics.wrappers.MultioutputWrapper

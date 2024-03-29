@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ from torch import Tensor
 
 
 def _image_gradients_validate(img: Tensor) -> None:
-    """Validates whether img is a 4D torch Tensor."""
-
+    """Validate whether img is a 4D torch Tensor."""
     if not isinstance(img, Tensor):
         raise TypeError(f"The `img` expects a value of <Tensor> type but got {type(img)}")
     if img.ndim != 4:
@@ -27,8 +26,7 @@ def _image_gradients_validate(img: Tensor) -> None:
 
 
 def _compute_image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
-    """Computes image gradients (dy/dx) for a given image."""
-
+    """Compute image gradients (dy/dx) for a given image."""
     batch_size, channels, height, width = img.shape
 
     dy = img[..., 1:, :] - img[..., :-1, :]
@@ -46,7 +44,7 @@ def _compute_image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
 
 
 def image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
-    """Computes `Gradient Computation of Image`_ of a given image using finite difference.
+    """Compute `Gradient Computation of Image`_ of a given image using finite difference.
 
     Args:
         img: An ``(N, C, H, W)`` input tensor where ``C`` is the number of image channels
@@ -56,12 +54,12 @@ def image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
 
     Raises:
         TypeError:
-            If ``img`` is not of the type ``torch.Tensor``.
+            If ``img`` is not of the type :class:`~torch.Tensor`.
         RuntimeError:
             If ``img`` is not a 4D tensor.
 
     Example:
-        >>> from torchmetrics.functional import image_gradients
+        >>> from torchmetrics.functional.image import image_gradients
         >>> image = torch.arange(0, 1*1*5*5, dtype=torch.float32)
         >>> image = torch.reshape(image, (1, 1, 5, 5))
         >>> dy, dx = image_gradients(image)
@@ -75,6 +73,7 @@ def image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
     .. note:: The implementation follows the 1-step finite difference method as followed
            by the TF implementation. The values are organized such that the gradient of
            [I(x+1, y)-[I(x, y)]] are at the (x, y) location
+
     """
     _image_gradients_validate(img)
 

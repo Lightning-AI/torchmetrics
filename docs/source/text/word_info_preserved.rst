@@ -12,11 +12,10 @@ Word Info. Preserved
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.WordInfoPreserved
-    :noindex:
+.. autoclass:: torchmetrics.text.WordInfoPreserved
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.word_information_preserved
-    :noindex:
+.. autofunction:: torchmetrics.functional.text.word_information_preserved

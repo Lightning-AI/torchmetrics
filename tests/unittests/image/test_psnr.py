@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,26 +12,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import namedtuple
 from functools import partial
 
 import numpy as np
 import pytest
 import torch
 from skimage.metrics import peak_signal_noise_ratio as skimage_peak_signal_noise_ratio
-
 from torchmetrics.functional import peak_signal_noise_ratio
 from torchmetrics.image import PeakSignalNoiseRatio
-from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
+
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
 _input_size = (NUM_BATCHES, BATCH_SIZE, 32, 32)
 _inputs = [
-    Input(
+    _Input(
         preds=torch.randint(n_cls_pred, _input_size, dtype=torch.float),
         target=torch.randint(n_cls_target, _input_size, dtype=torch.float),
     )
@@ -58,20 +58,22 @@ def _to_sk_peak_signal_noise_ratio_inputs(value, dim):
     return inputs
 
 
-def _sk_psnr(preds, target, data_range, reduction, dim):
+def _reference_skimage_psnr(preds, target, data_range, reduction, dim):
+    if isinstance(data_range, tuple):
+        preds = preds.clamp(min=data_range[0], max=data_range[1])
+        target = target.clamp(min=data_range[0], max=data_range[1])
+        data_range = data_range[1] - data_range[0]
     sk_preds_lists = _to_sk_peak_signal_noise_ratio_inputs(preds, dim=dim)
     sk_target_lists = _to_sk_peak_signal_noise_ratio_inputs(target, dim=dim)
     np_reduce_map = {"elementwise_mean": np.mean, "none": np.array, "sum": np.sum}
-    return np_reduce_map[reduction](
-        [
-            skimage_peak_signal_noise_ratio(sk_target, sk_preds, data_range=data_range)
-            for sk_target, sk_preds in zip(sk_target_lists, sk_preds_lists)
-        ]
-    )
+    return np_reduce_map[reduction]([
+        skimage_peak_signal_noise_ratio(sk_target, sk_preds, data_range=data_range)
+        for sk_target, sk_preds in zip(sk_target_lists, sk_preds_lists)
+    ])
 
 
-def _base_e_sk_psnr(preds, target, data_range, reduction, dim):
-    return _sk_psnr(preds, target, data_range, reduction, dim) * np.log(10)
+def _reference_sklearn_psnr_log(preds, target, data_range, reduction, dim):
+    return _reference_skimage_psnr(preds, target, data_range, reduction, dim) * np.log(10)
 
 
 @pytest.mark.parametrize(
@@ -83,43 +85,50 @@ def _base_e_sk_psnr(preds, target, data_range, reduction, dim):
         (_inputs[2].preds, _inputs[2].target, 5, "elementwise_mean", 1),
         (_inputs[2].preds, _inputs[2].target, 5, "elementwise_mean", (1, 2)),
         (_inputs[2].preds, _inputs[2].target, 5, "sum", (1, 2)),
+        (_inputs[0].preds, _inputs[0].target, (0.0, 1.0), "elementwise_mean", None),
     ],
 )
 @pytest.mark.parametrize(
-    "base, sk_metric",
+    "base, ref_metric",
     [
-        (10.0, _sk_psnr),
-        (2.718281828459045, _base_e_sk_psnr),
+        (10.0, _reference_skimage_psnr),
+        (2.718281828459045, _reference_sklearn_psnr_log),
     ],
 )
 class TestPSNR(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_psnr(self, preds, target, data_range, base, reduction, dim, sk_metric, ddp, dist_sync_on_step):
+    """Test class for `PeakSignalNoiseRatio` metric."""
+
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_psnr(self, preds, target, data_range, base, reduction, dim, ref_metric, ddp):
+        """Test class implementation of metric."""
         _args = {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim}
         self.run_class_metric_test(
             ddp,
             preds,
             target,
-            PeakSignalNoiseRatio,
-            partial(sk_metric, data_range=data_range, reduction=reduction, dim=dim),
+            metric_class=PeakSignalNoiseRatio,
+            reference_metric=partial(ref_metric, data_range=data_range, reduction=reduction, dim=dim),
             metric_args=_args,
-            dist_sync_on_step=dist_sync_on_step,
         )
 
-    def test_psnr_functional(self, preds, target, sk_metric, data_range, base, reduction, dim):
+    def test_psnr_functional(self, preds, target, ref_metric, data_range, base, reduction, dim):
+        """Test functional implementation of metric."""
         _args = {"data_range": data_range, "base": base, "reduction": reduction, "dim": dim}
         self.run_functional_metric_test(
             preds,
             target,
-            peak_signal_noise_ratio,
-            partial(sk_metric, data_range=data_range, reduction=reduction, dim=dim),
+            metric_functional=peak_signal_noise_ratio,
+            reference_metric=partial(ref_metric, data_range=data_range, reduction=reduction, dim=dim),
             metric_args=_args,
         )
 
     # PSNR half + cpu does not work due to missing support in torch.log
-    @pytest.mark.xfail(reason="PSNR metric does not support cpu + half precision")
-    def test_psnr_half_cpu(self, preds, target, data_range, reduction, dim, base, sk_metric):
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_2_1,
+        reason="Pytoch below 2.1 does not support cpu + half precision used in PSNR metric",
+    )
+    def test_psnr_half_cpu(self, preds, target, data_range, reduction, dim, base, ref_metric):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
             preds,
             target,
@@ -129,7 +138,8 @@ class TestPSNR(MetricTester):
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_psnr_half_gpu(self, preds, target, data_range, reduction, dim, base, sk_metric):
+    def test_psnr_half_gpu(self, preds, target, data_range, reduction, dim, base, ref_metric):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds,
             target,
@@ -141,6 +151,7 @@ class TestPSNR(MetricTester):
 
 @pytest.mark.parametrize("reduction", ["none", "sum"])
 def test_reduction_for_dim_none(reduction):
+    """Test that warnings are raised when then reduction parameter is combined with no dim provided arg."""
     match = f"The `reduction={reduction}` will not have any effect when `dim` is None."
     with pytest.warns(UserWarning, match=match):
         PeakSignalNoiseRatio(reduction=reduction, dim=None)
@@ -150,8 +161,9 @@ def test_reduction_for_dim_none(reduction):
 
 
 def test_missing_data_range():
-    with pytest.raises(ValueError):
+    """Check that error is raised if data range is not provided."""
+    with pytest.raises(ValueError, match="The `data_range` must be given when `dim` is not None."):
         PeakSignalNoiseRatio(data_range=None, dim=0)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="The `data_range` must be given when `dim` is not None."):
         peak_signal_noise_ratio(_inputs[0].preds, _inputs[0].target, data_range=None, dim=0)

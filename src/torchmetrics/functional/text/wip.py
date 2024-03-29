@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ def _wip_update(
         Number of edit operations to get from the reference to the prediction, summed over all samples
         Number of words overall references
         Number of words overall prediction
+
     """
     if isinstance(preds, str):
         preds = [preds]
@@ -53,7 +54,7 @@ def _wip_update(
 
 
 def _wip_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> Tensor:
-    """Compute the Word Information Perserved.
+    """Compute the Word Information Preserved.
 
     Args:
         errors: Number of edit operations to get from the reference to the prediction, summed over all samples
@@ -61,16 +62,15 @@ def _wip_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> T
         preds_total: Number of words overall prediction
 
     Returns:
-        Word Information Perserved score
+        Word Information Preserved score
+
     """
     return (errors / target_total) * (errors / preds_total)
 
 
-def word_information_preserved(
-    preds: Union[str, List[str]],
-    target: Union[str, List[str]],
-) -> Tensor:
+def word_information_preserved(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
     """Word Information Preserved rate is a metric of the performance of an automatic speech recognition system.
+
     This value indicates the percentage of characters that were incorrectly predicted. The lower the value, the
     better the performance of the ASR system with a Word Information preserved rate of 0 being a perfect score.
 
@@ -82,11 +82,12 @@ def word_information_preserved(
         Word Information preserved rate
 
     Examples:
-        >>> from torchmetrics.functional import word_information_preserved
+        >>> from torchmetrics.functional.text import word_information_preserved
         >>> preds = ["this is the prediction", "there is an other sample"]
         >>> target = ["this is the reference", "there is another one"]
         >>> word_information_preserved(preds, target)
         tensor(0.3472)
+
     """
     errors, reference_total, prediction_total = _wip_update(preds, target)
     return _wip_compute(errors, reference_total, prediction_total)

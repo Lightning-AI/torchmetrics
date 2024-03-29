@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,18 +37,28 @@
 # MIT License
 # Copyright (c) 2017 - Shujian Huang <huangsj@nju.edu.cn>
 
+import os
 import re
+import tempfile
 from functools import partial
-from typing import Optional, Sequence
+from typing import Any, ClassVar, Dict, Optional, Sequence, Type
 
 import torch
 from torch import Tensor, tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.text.bleu import _bleu_score_compute, _bleu_score_update
-from torchmetrics.utilities.imports import _REGEX_AVAILABLE
+from torchmetrics.utilities.imports import (
+    _IPADIC_AVAILABLE,
+    _MECAB_AVAILABLE,
+    _MECAB_KO_AVAILABLE,
+    _MECAB_KO_DIC_AVAILABLE,
+    _REGEX_AVAILABLE,
+    _SENTENCEPIECE_AVAILABLE,
+)
 
-AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char")
+AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char", "ja-mecab", "ko-mecab", "flores101", "flores200")
+_TokenizersLiteral = Literal["none", "13a", "zh", "intl", "char", "ja-mecab", "ko-mecab", "flores101", "flores200"]
 
 _UCODE_RANGES = (
     ("\u3400", "\u4db5"),  # CJK Unified Ideographs Extension A, release 3.0
@@ -77,10 +87,19 @@ _UCODE_RANGES = (
 )
 
 
+_FLORES_LOCAL_DIR = os.path.join(tempfile.gettempdir(), "torchmetrics-flores")
+# Model paths copied from https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/tokenizers/tokenizer_spm.py.
+_FLORES_MODELS_URL = {
+    "flores101": "https://dl.fbaipublicfiles.com/fairseq/models/flores/sacrebleu_tokenizer_spm.model",
+    "flores200": "https://tinyurl.com/flores200sacrebleuspm",
+}
+
+
 class _SacreBLEUTokenizer:
     """Tokenizer used for SacreBLEU calculation.
 
     Source: https://github.com/mjpost/sacrebleu/tree/master/sacrebleu/tokenizers
+
     """
 
     _REGEX = (
@@ -101,7 +120,7 @@ class _SacreBLEUTokenizer:
         import regex
 
         _INT_REGEX = (
-            # Separate out punctuations preceeded by a non-digit
+            # Separate out punctuations preceded by a non-digit
             (regex.compile(r"(\P{N})(\p{P})"), r"\1 \2 "),
             # Separate out punctuations followed by a non-digit
             (regex.compile(r"(\p{P})(\P{N})"), r" \1 \2"),
@@ -109,15 +128,24 @@ class _SacreBLEUTokenizer:
             (regex.compile(r"(\p{S})"), r" \1 "),
         )
 
-    _TOKENIZE_FN = {
+    _TOKENIZE_FN: ClassVar[dict] = {
         "none": "_tokenize_base",
         "13a": "_tokenize_13a",
         "zh": "_tokenize_zh",
         "intl": "_tokenize_international",
         "char": "_tokenize_char",
+        "ja-mecab": "_tokenize_ja_mecab",
+        "ko-mecab": "_tokenize_ko_mecab",
+        "flores101": "_tokenize_flores_101",
+        "flores200": "_tokenize_flores_200",
     }
 
-    def __init__(self, tokenize: Literal["none", "13a", "zh", "intl", "char"], lowercase: bool = False) -> None:
+    # Keep it as class variable to avoid initializing over and over again
+    sentencepiece_processors: ClassVar[Dict[str, Optional[Any]]] = {"flores101": None, "flores200": None}
+
+    def __init__(self, tokenize: _TokenizersLiteral, lowercase: bool = False) -> None:
+        self._check_tokenizers_validity(tokenize)
+
         self.tokenize_fn = getattr(self, self._TOKENIZE_FN[tokenize])
         self.lowercase = lowercase
 
@@ -127,43 +155,48 @@ class _SacreBLEUTokenizer:
 
     @classmethod
     def tokenize(
-        cls, line: str, tokenize: Literal["none", "13a", "zh", "intl", "char"], lowercase: bool = False
+        cls: Type["_SacreBLEUTokenizer"],
+        line: str,
+        tokenize: _TokenizersLiteral,
+        lowercase: bool = False,
     ) -> Sequence[str]:
+        cls._check_tokenizers_validity(tokenize)
+
         tokenize_fn = getattr(cls, cls._TOKENIZE_FN[tokenize])
         tokenized_line = tokenize_fn(line)
         return cls._lower(tokenized_line, lowercase).split()
 
     @classmethod
-    def _tokenize_regex(cls, line: str) -> str:
-        """Common post-processing tokenizer for `13a` and `zh` tokenizers.
+    def _tokenize_regex(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
+        """Post-processing tokenizer for `13a` and `zh` tokenizers.
 
         Args:
             line: a segment to tokenize
 
         Return:
             the tokenized line
+
         """
-        for (_re, repl) in cls._REGEX:
+        for _re, repl in cls._REGEX:
             line = _re.sub(repl, line)
         # no leading or trailing spaces, single space within words
         return " ".join(line.split())
 
     @staticmethod
     def _is_chinese_char(uchar: str) -> bool:
-        """
+        """Check if character is chinese.
+
         Args:
-            uchar: input char in unicode
+            uchar: input char in unicode.
 
         Return:
             whether the input char is a Chinese character.
+
         """
-        for start, end in _UCODE_RANGES:
-            if start <= uchar <= end:
-                return True
-        return False
+        return any(start <= uchar <= end for start, end in _UCODE_RANGES)
 
     @classmethod
-    def _tokenize_base(cls, line: str) -> str:
+    def _tokenize_base(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Tokenizes an input line with the tokenizer.
 
         Args:
@@ -171,19 +204,20 @@ class _SacreBLEUTokenizer:
 
         Return:
             the tokenized line
+
         """
         return line
 
     @classmethod
-    def _tokenize_13a(cls, line: str) -> str:
-        """Tokenizes an input line using a relatively minimal tokenization that is however equivalent to
-        mteval-v13a, used by WMT.
+    def _tokenize_13a(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
+        """Tokenizes a line using a relatively minimal tokenization that is equivalent to mteval-v13a, used by WMT.
 
         Args:
             line: input sentence
 
         Return:
             tokenized sentence
+
         """
         # language-independent part:
         line = line.replace("<skipped>", "")
@@ -196,22 +230,23 @@ class _SacreBLEUTokenizer:
             line = line.replace("&lt;", "<")
             line = line.replace("&gt;", ">")
 
-        return cls._tokenize_regex(line)
+        return cls._tokenize_regex(f" {line} ")
 
     @classmethod
-    def _tokenize_zh(cls, line: str) -> str:
-        """The tokenization of Chinese text in this script contains two
-        steps: separate each Chinese characters (by utf-8 encoding); tokenize
-        the Chinese part (following the `13a` i.e. mteval tokenizer).
-        Author: Shujian Huang huangsj@nju.edu.cn
+    def _tokenize_zh(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
+        """Tokenization of Chinese text.
+
+        This is done in two steps: separate each Chinese characters (by utf-8 encoding) and afterwards tokenize the
+        Chinese part (following the `13a` i.e. mteval tokenizer).
+        Author: Shujian Huang huangsj@nju.edu.cn.
 
         Args:
             line: input sentence
 
         Return:
             tokenized sentence
-        """
 
+        """
         line = line.strip()
         line_in_chars = ""
 
@@ -226,8 +261,8 @@ class _SacreBLEUTokenizer:
         return cls._tokenize_regex(line_in_chars)
 
     @classmethod
-    def _tokenize_international(cls, line: str) -> str:
-        """Tokenizes a string following the official BLEU implementation.
+    def _tokenize_international(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
+        r"""Tokenizes a string following the official BLEU implementation.
 
         See github.com/moses-smt/mosesdecoder/blob/master/scripts/generic/mteval-v14.pl#L954-L983
 
@@ -251,14 +286,15 @@ class _SacreBLEUTokenizer:
 
         Return:
             The tokenized string.
+
         """
-        for (_re, repl) in cls._INT_REGEX:
+        for _re, repl in cls._INT_REGEX:
             line = _re.sub(repl, line)
 
         return " ".join(line.split())
 
     @classmethod
-    def _tokenize_char(cls, line: str) -> str:
+    def _tokenize_char(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
         """Tokenizes all the characters in the input line.
 
         Args:
@@ -266,8 +302,100 @@ class _SacreBLEUTokenizer:
 
         Return:
             the tokenized line
+
         """
         return " ".join(char for char in line)
+
+    @classmethod
+    def _tokenize_ja_mecab(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
+        """Tokenizes a Japanese string line using MeCab morphological analyzer.
+
+        Args:
+            line: the input string to tokenize.
+
+        Return:
+            The tokenized string.
+
+        """
+        import ipadic
+        import MeCab
+
+        tagger = MeCab.Tagger(ipadic.MECAB_ARGS + " -Owakati")
+
+        line = line.strip()
+        return tagger.parse(line).strip()
+
+    @classmethod
+    def _tokenize_ko_mecab(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
+        """Tokenizes a Korean string line using MeCab-korean morphological analyzer.
+
+        Args:
+            line: the input string to tokenize.
+
+        Return:
+            The tokenized string.
+
+        """
+        import mecab_ko
+        import mecab_ko_dic
+
+        tagger = mecab_ko.Tagger(mecab_ko_dic.MECAB_ARGS + " -Owakati")
+
+        line = line.strip()
+        return tagger.parse(line).strip()
+
+    @classmethod
+    def _tokenize_flores(
+        cls: Type["_SacreBLEUTokenizer"], line: str, tokenize: Literal["flores101", "flores200"]
+    ) -> str:
+        """Tokenizes a string line using sentencepiece tokenizer.
+
+        Args:
+            line: the input string to tokenize.
+            tokenize: Tokenization technique to be used.
+
+        Return:
+            The tokenized string.
+
+        """
+        import sentencepiece
+
+        if cls.sentencepiece_processors[tokenize] is None:
+            cls.sentencepiece_processors[tokenize] = sentencepiece.SentencePieceProcessor()
+
+            file_path = os.path.join(_FLORES_LOCAL_DIR, _FLORES_MODELS_URL[tokenize].split("/")[-1])
+            if not os.path.exists(file_path):
+                cls.download_flores_file(tokenize)
+
+            cls.sentencepiece_processors[tokenize].Load(file_path)  # type: ignore[union-attr]
+
+        return " ".join(cls.sentencepiece_processors[tokenize].EncodeAsPieces(line))  # type: ignore[union-attr]
+
+    @classmethod
+    def _tokenize_flores_101(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
+        """Tokenizes a string line using sentencepiece tokenizer according to `FLORES-101`_ dataset.
+
+        Args:
+            line: the input string to tokenize.
+
+        Return:
+            The tokenized string.
+
+        """
+        return cls._tokenize_flores(line, "flores101")
+
+    @classmethod
+    def _tokenize_flores_200(cls: Type["_SacreBLEUTokenizer"], line: str) -> str:
+        """Tokenizes a string line using sentencepiece tokenizer according to `FLORES-200`_ dataset.
+
+        Args:
+            line: the input string to tokenize.
+
+        Return:
+            The tokenized string.
+
+        """
+        return cls._tokenize_flores(line, "flores200")
 
     @staticmethod
     def _lower(line: str, lowercase: bool) -> str:
@@ -275,26 +403,78 @@ class _SacreBLEUTokenizer:
             return line.lower()
         return line
 
+    @classmethod
+    def _check_tokenizers_validity(cls: Type["_SacreBLEUTokenizer"], tokenize: _TokenizersLiteral) -> None:
+        """Check if a supported tokenizer is chosen.
+
+        Also check all dependencies of a given tokenizers are installed.
+
+        """
+        if tokenize not in cls._TOKENIZE_FN:
+            raise ValueError(f"Unsupported tokenizer selected. Please, choose one of {list(cls._TOKENIZE_FN.keys())}")
+
+        if tokenize == "intl" and not _REGEX_AVAILABLE:
+            raise ModuleNotFoundError(
+                "`'intl'` tokenization requires that `regex` is installed."
+                " Use `pip install regex` or `pip install torchmetrics[text]`."
+            )
+
+        if tokenize == "ja-mecab" and not (_MECAB_AVAILABLE and _IPADIC_AVAILABLE):
+            raise ModuleNotFoundError(
+                "`'ja-mecab'` tokenization requires that `MeCab` and `ipadic` are installed."
+                " Use `pip install mecab-python3 ipadic` or `pip install torchmetrics[text]`."
+            )
+
+        if tokenize == "ko-mecab" and not (_MECAB_KO_AVAILABLE and _MECAB_KO_DIC_AVAILABLE):
+            raise ModuleNotFoundError(
+                "`'ko-mecab'` tokenization requires that `mecab_ko` and `mecab_ko_dic` are installed."
+                " Use `pip install mecab_ko mecab_ko_dic` or `pip install torchmetrics[text]`."
+            )
+
+        if "flores" in tokenize and not _SENTENCEPIECE_AVAILABLE:
+            raise ModuleNotFoundError(
+                "`'flores101' and 'flores200'` tokenizations require that `sentencepiece` is installed."
+                " Use `pip install sentencepiece` or `pip install torchmetrics[text]`."
+            )
+
+    @staticmethod
+    def download_flores_file(model_name: Literal["flores101", "flores200"]) -> None:
+        """Download necessary files for `flores` tokenization via `sentencepiece`."""
+        import ssl
+        import urllib.request
+
+        os.makedirs(_FLORES_LOCAL_DIR, exist_ok=True)
+
+        model_url = _FLORES_MODELS_URL[model_name]
+        file_path = os.path.join(_FLORES_LOCAL_DIR, model_url.split("/")[-1])
+
+        try:
+            with open(file_path, "wb") as out_file, urllib.request.urlopen(model_url) as remote_file:
+                out_file.write(remote_file.read())
+        except ssl.SSLError as e:
+            raise OSError(f"Failed to download {model_name} model.") from e
+
 
 def sacre_bleu_score(
     preds: Sequence[str],
     target: Sequence[Sequence[str]],
     n_gram: int = 4,
     smooth: bool = False,
-    tokenize: Literal["none", "13a", "zh", "intl", "char"] = "13a",
+    tokenize: _TokenizersLiteral = "13a",
     lowercase: bool = False,
     weights: Optional[Sequence[float]] = None,
 ) -> Tensor:
-    """Calculate `BLEU score`_ [1] of machine translated text with one or more references. This implementation
-    follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
+    """Calculate `BLEU score`_ [1] of machine translated text with one or more references.
+
+    This implementation follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
 
     Args:
         preds: An iterable of machine translated corpus
         target: An iterable of iterables of reference corpus
         n_gram: Gram value ranged from 1 to 4
-        smooth: Whether to apply smoothing – see [2]
-        tokenize: Tokenization technique to be used.
-            Supported tokenization: ['none', '13a', 'zh', 'intl', 'char']
+        smooth: Whether to apply smoothing - see [2]
+        tokenize: Tokenization technique to be used. Choose between ``'none'``, ``'13a'``, ``'zh'``, ``'intl'``,
+            ``'char'``, ``'ja-mecab'``, ``'ko-mecab'``, ``'flores101'`` and ``'flores200'``.
         lowercase: If ``True``, BLEU score over lowercased text is calculated.
         weights:
             Weights used for unigrams, bigrams, etc. to calculate BLEU score.
@@ -308,7 +488,7 @@ def sacre_bleu_score(
         ValueError: If a length of a list of weights is not ``None`` and not equal to ``n_gram``.
 
     Example:
-        >>> from torchmetrics.functional import sacre_bleu_score
+        >>> from torchmetrics.functional.text import sacre_bleu_score
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
         >>> sacre_bleu_score(preds, target)
@@ -322,22 +502,10 @@ def sacre_bleu_score(
 
         [3] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
         and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
+
     """
-
-    if tokenize not in AVAILABLE_TOKENIZERS:
-        raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
-
-    if tokenize not in _SacreBLEUTokenizer._TOKENIZE_FN.keys():
-        raise ValueError(
-            f"Unsupported tokenizer selected. Please, choose one of {list(_SacreBLEUTokenizer._TOKENIZE_FN.keys())}"
-        )
     if len(preds) != len(target):
         raise ValueError(f"Corpus has different size {len(preds)} != {len(target)}")
-    if tokenize == "intl" and not _REGEX_AVAILABLE:
-        raise ModuleNotFoundError(
-            "`'intl'` tokenization requires that `regex` is installed."
-            " Use `pip install regex` or `pip install torchmetrics[text]`."
-        )
 
     if weights is not None and len(weights) != n_gram:
         raise ValueError(f"List of weights has different weights than `n_gram`: {len(weights)} != {n_gram}")

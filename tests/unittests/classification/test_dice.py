@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,31 +15,31 @@ from functools import partial
 from typing import Optional
 
 import pytest
-from scipy.spatial.distance import dice as _sc_dice
+from scipy.spatial.distance import dice as sc_dice
 from torch import Tensor, tensor
-
-from torchmetrics import Dice
-from torchmetrics.functional import dice, dice_score
+from torchmetrics.classification import Dice
+from torchmetrics.functional import dice
 from torchmetrics.functional.classification.stat_scores import _del_column
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
-from unittests.classification.inputs import _input_binary, _input_binary_logits, _input_binary_prob
-from unittests.classification.inputs import _input_multiclass as _input_mcls
-from unittests.classification.inputs import _input_multiclass_logits as _input_mcls_logits
-from unittests.classification.inputs import _input_multiclass_prob as _input_mcls_prob
-from unittests.classification.inputs import _input_multiclass_with_missing_class as _input_miss_class
-from unittests.classification.inputs import _input_multilabel as _input_mlb
-from unittests.classification.inputs import _input_multilabel_logits as _input_mlb_logits
-from unittests.classification.inputs import _input_multilabel_multidim as _input_mlmd
-from unittests.classification.inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
-from unittests.classification.inputs import _input_multilabel_prob as _input_mlb_prob
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
+from unittests.classification._inputs import _input_binary, _input_binary_logits, _input_binary_prob
+from unittests.classification._inputs import _input_multiclass as _input_mcls
+from unittests.classification._inputs import _input_multiclass_logits as _input_mcls_logits
+from unittests.classification._inputs import _input_multiclass_prob as _input_mcls_prob
+from unittests.classification._inputs import _input_multiclass_with_missing_class as _input_miss_class
+from unittests.classification._inputs import _input_multilabel as _input_mlb
+from unittests.classification._inputs import _input_multilabel_logits as _input_mlb_logits
+from unittests.classification._inputs import _input_multilabel_multidim as _input_mlmd
+from unittests.classification._inputs import _input_multilabel_multidim_prob as _input_mlmd_prob
+from unittests.classification._inputs import _input_multilabel_prob as _input_mlb_prob
 
 seed_all(42)
 
 
-def _sk_dice(
+def _reference_scipy_dice(
     preds: Tensor,
     target: Tensor,
     ignore_index: Optional[int] = None,
@@ -51,8 +51,10 @@ def _sk_dice(
         target: target tensor
         ignore_index:
             Integer specifying a target class to ignore. Recommend set to index of background class.
+
     Return:
         Float dice score
+
     """
     sk_preds, sk_target, mode = _input_format_classification(preds, target)
 
@@ -62,25 +64,11 @@ def _sk_dice(
 
     sk_preds, sk_target = sk_preds.numpy(), sk_target.numpy()
 
-    return 1 - _sc_dice(sk_preds.reshape(-1), sk_target.reshape(-1))
+    return 1 - sc_dice(sk_preds.reshape(-1), sk_target.reshape(-1))
 
 
 @pytest.mark.parametrize(
-    ["pred", "target", "expected"],
-    [
-        ([[0, 0], [1, 1]], [[0, 0], [1, 1]], 1.0),
-        ([[1, 1], [0, 0]], [[0, 0], [1, 1]], 0.0),
-        ([[1, 1], [1, 1]], [[1, 1], [0, 0]], 2 / 3),
-        ([[1, 1], [0, 0]], [[1, 1], [0, 0]], 1.0),
-    ],
-)
-def test_dice_score(pred, target, expected):
-    score = dice_score(tensor(pred), tensor(target))
-    assert score == expected
-
-
-@pytest.mark.parametrize(
-    ["pred", "target", "expected"],
+    ("pred", "target", "expected"),
     [
         ([[0, 0], [1, 1]], [[0, 0], [1, 1]], 1.0),
         ([[1, 1], [0, 0]], [[0, 0], [1, 1]], 0.0),
@@ -89,6 +77,7 @@ def test_dice_score(pred, target, expected):
     ],
 )
 def test_dice(pred, target, expected):
+    """Test that implementation returns the correct result."""
     score = dice(tensor(pred), tensor(target), ignore_index=0)
     assert score == expected
 
@@ -103,25 +92,27 @@ def test_dice(pred, target, expected):
 )
 @pytest.mark.parametrize("ignore_index", [None])
 class TestDiceBinary(MetricTester):
+    """Test class for `Dice` metric inf binary setting."""
+
     @pytest.mark.parametrize("ddp", [False])
-    @pytest.mark.parametrize("dist_sync_on_step", [False])
-    def test_dice_class(self, ddp, dist_sync_on_step, preds, target, ignore_index):
+    def test_dice_class(self, ddp, preds, target, ignore_index):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=Dice,
-            sk_metric=partial(_sk_dice, ignore_index=ignore_index),
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=partial(_reference_scipy_dice, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )
 
     def test_dice_fn(self, preds, target, ignore_index):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
             metric_functional=dice,
-            sk_metric=partial(_sk_dice, ignore_index=ignore_index),
+            reference_metric=partial(_reference_scipy_dice, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )
 
@@ -142,24 +133,26 @@ class TestDiceBinary(MetricTester):
 )
 @pytest.mark.parametrize("ignore_index", [None, 0])
 class TestDiceMulti(MetricTester):
+    """Test class for `Dice` metric in multi-class setting.."""
+
     @pytest.mark.parametrize("ddp", [False])
-    @pytest.mark.parametrize("dist_sync_on_step", [False])
-    def test_dice_class(self, ddp, dist_sync_on_step, preds, target, ignore_index):
+    def test_dice_class(self, ddp, preds, target, ignore_index):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=Dice,
-            sk_metric=partial(_sk_dice, ignore_index=ignore_index),
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=partial(_reference_scipy_dice, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )
 
     def test_dice_fn(self, preds, target, ignore_index):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
             metric_functional=dice,
-            sk_metric=partial(_sk_dice, ignore_index=ignore_index),
+            reference_metric=partial(_reference_scipy_dice, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )

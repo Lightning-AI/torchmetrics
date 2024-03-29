@@ -1,0 +1,51 @@
+import os
+from functools import wraps
+from typing import Any, Callable, Optional
+
+import pytest
+
+ALLOW_SKIP_IF_OUT_OF_MEMORY = os.getenv("ALLOW_SKIP_IF_OUT_OF_MEMORY", "0") == "1"
+ALLOW_SKIP_IF_BAD_CONNECTION = os.getenv("ALLOW_SKIP_IF_BAD_CONNECTION", "0") == "1"
+
+
+def skip_on_running_out_of_memory(reason: str = "Skipping test as it ran out of memory."):
+    """Handle tests that sometimes runs out of memory, by simply skipping them."""
+
+    def test_decorator(function: Callable, *args: Any, **kwargs: Any) -> Optional[Callable]:
+        @wraps(function)
+        def run_test(*args: Any, **kwargs: Any) -> Optional[Any]:
+            try:
+                return function(*args, **kwargs)
+            except RuntimeError as ex:
+                if "DefaultCPUAllocator: not enough memory:" not in str(ex):
+                    raise ex
+                if ALLOW_SKIP_IF_OUT_OF_MEMORY:
+                    pytest.skip(reason)
+
+        return run_test
+
+    return test_decorator
+
+
+def skip_on_connection_issues(reason: str = "Unable to load checkpoints from HuggingFace `transformers`."):
+    """Handle download related tests if they fail due to connection issues.
+
+    The tests run normally if no connection issue arises, and they're marked as skipped otherwise.
+
+    """
+    _error_msg_starts = ["We couldn't connect to", "Connection error", "Can't load", "`nltk` resource `punkt` is"]
+
+    def test_decorator(function: Callable, *args: Any, **kwargs: Any) -> Optional[Callable]:
+        @wraps(function)
+        def run_test(*args: Any, **kwargs: Any) -> Optional[Any]:
+            try:
+                return function(*args, **kwargs)
+            except (OSError, ValueError) as ex:
+                if all(msg_start not in str(ex) for msg_start in _error_msg_starts):
+                    raise ex
+                if ALLOW_SKIP_IF_BAD_CONNECTION:
+                    pytest.skip(reason)
+
+        return run_test
+
+    return test_decorator

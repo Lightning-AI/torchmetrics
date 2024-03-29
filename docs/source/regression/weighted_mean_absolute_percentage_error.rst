@@ -13,10 +13,9 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.WeightedMeanAbsolutePercentageError
-    :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.weighted_mean_absolute_percentage_error
-    :noindex:

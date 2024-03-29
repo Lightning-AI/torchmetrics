@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,23 +11,41 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.text.bleu import BLEUScore  # noqa: F401
-from torchmetrics.text.cer import CharErrorRate  # noqa: F401
-from torchmetrics.text.chrf import CHRFScore  # noqa: F401
-from torchmetrics.text.eed import ExtendedEditDistance  # noqa: F401
-from torchmetrics.text.mer import MatchErrorRate  # noqa: F401
-from torchmetrics.text.perplexity import Perplexity  # noqa: F401
-from torchmetrics.text.sacre_bleu import SacreBLEUScore  # noqa: F401
-from torchmetrics.text.squad import SQuAD  # noqa: F401
-from torchmetrics.text.ter import TranslationEditRate  # noqa: F401
-from torchmetrics.text.wer import WordErrorRate  # noqa: F401
-from torchmetrics.text.wil import WordInfoLost  # noqa: F401
-from torchmetrics.text.wip import WordInfoPreserved  # noqa: F401
-from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _TRANSFORMERS_AVAILABLE
+from torchmetrics.text.bleu import BLEUScore
+from torchmetrics.text.cer import CharErrorRate
+from torchmetrics.text.chrf import CHRFScore
+from torchmetrics.text.edit import EditDistance
+from torchmetrics.text.eed import ExtendedEditDistance
+from torchmetrics.text.mer import MatchErrorRate
+from torchmetrics.text.perplexity import Perplexity
+from torchmetrics.text.rouge import ROUGEScore
+from torchmetrics.text.sacre_bleu import SacreBLEUScore
+from torchmetrics.text.squad import SQuAD
+from torchmetrics.text.ter import TranslationEditRate
+from torchmetrics.text.wer import WordErrorRate
+from torchmetrics.text.wil import WordInfoLost
+from torchmetrics.text.wip import WordInfoPreserved
+from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
-if _TRANSFORMERS_AVAILABLE:
-    from torchmetrics.text.bert import BERTScore  # noqa: F401
-    from torchmetrics.text.infolm import InfoLM  # noqa: F401
+__all__ = [
+    "BLEUScore",
+    "CharErrorRate",
+    "CHRFScore",
+    "EditDistance",
+    "ExtendedEditDistance",
+    "MatchErrorRate",
+    "Perplexity",
+    "ROUGEScore",
+    "SacreBLEUScore",
+    "SQuAD",
+    "TranslationEditRate",
+    "WordErrorRate",
+    "WordInfoLost",
+    "WordInfoPreserved",
+]
 
-if _NLTK_AVAILABLE:
-    from torchmetrics.text.rouge import ROUGEScore  # noqa: F401
+if _TRANSFORMERS_GREATER_EQUAL_4_4:
+    from torchmetrics.text.bert import BERTScore
+    from torchmetrics.text.infolm import InfoLM
+
+    __all__ += ["BERTScore", "InfoLM"]

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,20 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from functools import partial
-from typing import Callable, Tuple, Union
+from typing import Callable, Optional, Tuple, Union
 
 import numpy as np
 import pytest
 import torch
 from numpy import array
 from torch import Tensor, tensor
+from torchmetrics.retrieval import RetrievalPrecisionRecallCurve
+from torchmetrics.retrieval.base import _retrieval_aggregate
+from typing_extensions import Literal
 
-from torchmetrics import RetrievalPrecisionRecallCurve
-from unittests.helpers import seed_all
-from unittests.helpers.testers import Metric, MetricTester
-from unittests.retrieval.helpers import _default_metric_class_input_arguments, get_group_indexes
+from unittests._helpers import seed_all
+from unittests._helpers.testers import Metric, MetricTester
+from unittests.retrieval.helpers import _custom_aggregate_fn, _default_metric_class_input_arguments, get_group_indexes
 from unittests.retrieval.test_precision import _precision_at_k
 from unittests.retrieval.test_recall import _recall_at_k
 
@@ -34,12 +35,13 @@ seed_all(42)
 def _compute_precision_recall_curve(
     preds: Union[Tensor, array],
     target: Union[Tensor, array],
-    indexes: Union[Tensor, array] = None,
-    max_k: int = None,
+    indexes: Optional[Union[Tensor, array]] = None,
+    max_k: Optional[int] = None,
     adaptive_k: bool = False,
-    ignore_index: int = None,
+    ignore_index: Optional[int] = None,
     empty_target_action: str = "skip",
     reverse: bool = False,
+    aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Compute metric with multiple iterations over every query predictions set.
 
@@ -48,6 +50,7 @@ def _compute_precision_recall_curve(
 
     A good explanation can be found here:
     `<https://nlp.stanford.edu/IR-book/pdf/08eval.pdf>_`. (part 8.4)
+
     """
     recalls, precisions = [], []
 
@@ -96,8 +99,8 @@ def _compute_precision_recall_curve(
 
         else:
             for k in top_k:
-                r.append(_recall_at_k(trg, prd, k=k.item()))
-                p.append(_precision_at_k(trg, prd, k=k.item(), adaptive_k=adaptive_k))
+                r.append(_recall_at_k(trg, prd, top_k=k.item()))
+                p.append(_precision_at_k(trg, prd, top_k=k.item(), adaptive_k=adaptive_k))
 
             recalls.append(r)
             precisions.append(p)
@@ -105,13 +108,15 @@ def _compute_precision_recall_curve(
     if not recalls:
         return torch.zeros(max_k), torch.zeros(max_k), top_k
 
-    recalls = tensor(recalls).mean(dim=0)
-    precisions = tensor(precisions).mean(dim=0)
+    recalls = _retrieval_aggregate(tensor(recalls), aggregation=aggregation, dim=0)
+    precisions = _retrieval_aggregate(tensor(precisions), aggregation=aggregation, dim=0)
 
     return precisions, recalls, top_k
 
 
 class RetrievalPrecisionRecallCurveTester(MetricTester):
+    """Tester class for `RetrievalPrecisionRecallCurveTester` metric."""
+
     def run_class_metric_test(
         self,
         ddp: bool,
@@ -119,34 +124,36 @@ class RetrievalPrecisionRecallCurveTester(MetricTester):
         preds: Tensor,
         target: Tensor,
         metric_class: Metric,
-        sk_metric: Callable,
-        dist_sync_on_step: bool,
+        reference_metric: Callable,
         metric_args: dict,
         reverse: bool = False,
+        aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
     ):
-        _sk_metric_adapted = partial(sk_metric, reverse=reverse, **metric_args)
+        """Test class implementation of metric."""
+        _ref_metric_adapted = partial(reference_metric, reverse=reverse, **metric_args)
 
         super().run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=metric_class,
-            sk_metric=_sk_metric_adapted,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=_ref_metric_adapted,
             metric_args=metric_args,
             fragment_kwargs=True,
-            indexes=indexes,  # every additional argument will be passed to metric_class and _sk_metric_adapted
+            indexes=indexes,  # every additional argument will be passed to metric_class and _ref_metric_adapted
         )
 
 
 @pytest.mark.parametrize("ddp", [False])
-@pytest.mark.parametrize("dist_sync_on_step", [False])
 @pytest.mark.parametrize("empty_target_action", ["neg", "skip", "pos"])
 @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
 @pytest.mark.parametrize("max_k", [None, 1, 2, 5, 10])
 @pytest.mark.parametrize("adaptive_k", [False, True])
+@pytest.mark.parametrize("aggregation", ["mean", "median", "max", "min", _custom_aggregate_fn])
 @pytest.mark.parametrize(**_default_metric_class_input_arguments)
 class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
+    """Test class for `RetrievalPrecisionRecallCurveTester` metric."""
+
     atol = 0.02
 
     def test_class_metric(
@@ -155,18 +162,20 @@ class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
         preds,
         target,
         ddp,
-        dist_sync_on_step,
         empty_target_action,
         ignore_index,
         max_k,
         adaptive_k,
+        aggregation,
     ):
-        metric_args = dict(
-            max_k=max_k,
-            adaptive_k=adaptive_k,
-            empty_target_action=empty_target_action,
-            ignore_index=ignore_index,
-        )
+        """Test class implementation of metric."""
+        metric_args = {
+            "max_k": max_k,
+            "adaptive_k": adaptive_k,
+            "empty_target_action": empty_target_action,
+            "ignore_index": ignore_index,
+            "aggregation": aggregation,
+        }
 
         self.run_class_metric_test(
             ddp=ddp,
@@ -174,7 +183,6 @@ class TestRetrievalPrecisionRecallCurve(RetrievalPrecisionRecallCurveTester):
             preds=preds,
             target=target,
             metric_class=RetrievalPrecisionRecallCurve,
-            sk_metric=_compute_precision_recall_curve,
-            dist_sync_on_step=dist_sync_on_step,
+            reference_metric=_compute_precision_recall_curve,
             metric_args=metric_args,
         )

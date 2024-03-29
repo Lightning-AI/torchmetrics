@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Tuple, Union
 
 import torch
 from torch import Tensor
@@ -20,40 +20,39 @@ from torchmetrics.utilities.checks import _check_same_shape
 
 
 def _mean_squared_log_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
-    """Returns variables required to compute Mean Squared Log Error. Checks for same shape of tensors.
+    """Return variables required to compute Mean Squared Log Error. Checks for same shape of tensors.
 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
-    """
 
+    """
     _check_same_shape(preds, target)
     sum_squared_log_error = torch.sum(torch.pow(torch.log1p(preds) - torch.log1p(target), 2))
-    n_obs = target.numel()
-    return sum_squared_log_error, n_obs
+    return sum_squared_log_error, target.numel()
 
 
-def _mean_squared_log_error_compute(sum_squared_log_error: Tensor, n_obs: int) -> Tensor:
-    """Computes Mean Squared Log Error.
+def _mean_squared_log_error_compute(sum_squared_log_error: Tensor, num_obs: Union[int, Tensor]) -> Tensor:
+    """Compute Mean Squared Log Error.
 
     Args:
         sum_squared_log_error:
             Sum of square of log errors over all observations ``(log error = log(target) - log(prediction))``
-        n_obs: Number of predictions or observations
+        num_obs: Number of predictions or observations
 
     Example:
         >>> preds = torch.tensor([0., 1, 2, 3])
         >>> target = torch.tensor([0., 1, 2, 2])
-        >>> sum_squared_log_error, n_obs = _mean_squared_log_error_update(preds, target)
-        >>> _mean_squared_log_error_compute(sum_squared_log_error, n_obs)
+        >>> sum_squared_log_error, num_obs = _mean_squared_log_error_update(preds, target)
+        >>> _mean_squared_log_error_compute(sum_squared_log_error, num_obs)
         tensor(0.0207)
-    """
 
-    return sum_squared_log_error / n_obs
+    """
+    return sum_squared_log_error / num_obs
 
 
 def mean_squared_log_error(preds: Tensor, target: Tensor) -> Tensor:
-    """Computes mean squared log error.
+    """Compute mean squared log error.
 
     Args:
         preds: estimated labels
@@ -63,7 +62,7 @@ def mean_squared_log_error(preds: Tensor, target: Tensor) -> Tensor:
         Tensor with RMSLE
 
     Example:
-        >>> from torchmetrics.functional import mean_squared_log_error
+        >>> from torchmetrics.functional.regression import mean_squared_log_error
         >>> x = torch.tensor([0., 1, 2, 3])
         >>> y = torch.tensor([0., 1, 2, 2])
         >>> mean_squared_log_error(x, y)
@@ -71,6 +70,7 @@ def mean_squared_log_error(preds: Tensor, target: Tensor) -> Tensor:
 
     .. note::
         Half precision is only support on GPU for this metric
+
     """
-    sum_squared_log_error, n_obs = _mean_squared_log_error_update(preds, target)
-    return _mean_squared_log_error_compute(sum_squared_log_error, n_obs)
+    sum_squared_log_error, num_obs = _mean_squared_log_error_update(preds, target)
+    return _mean_squared_log_error_compute(sum_squared_log_error, num_obs)

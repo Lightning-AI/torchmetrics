@@ -10,7 +10,7 @@ Welcome to TorchMetrics
    <div class="row" style='font-size: 14px'>
       <div class='col-md-12'>
 
-TorchMetrics is a collection of 80+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
+TorchMetrics is a collection of 100+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
 * A standardized interface to increase reproducibility
 * Reduces Boilerplate
@@ -19,7 +19,7 @@ TorchMetrics is a collection of 80+ PyTorch metrics implementations and an easy-
 * Automatic accumulation over batches
 * Automatic synchronization between multiple devices
 
-You can use TorchMetrics in any PyTorch model, or within `PyTorch Lightning <https://pytorch-lightning.readthedocs.io/en/stable/>`_ to enjoy the following additional benefits:
+You can use TorchMetrics in any PyTorch model, or within `PyTorch Lightning <https://lightning.ai/docs/pytorch/stable/>`_ to enjoy the following additional benefits:
 
 * Your data will always be placed on the same device as your metrics
 * You can log :class:`~torchmetrics.Metric` objects directly in Lightning to reduce even more boilerplate
@@ -130,10 +130,17 @@ Or directly from conda
    pages/quickstart
    all-metrics
    pages/overview
+   pages/plotting
    pages/implement
    pages/lightning
-   pages/classification
-   pages/retrieval
+
+.. toctree::
+   :maxdepth: 2
+   :name: aggregation
+   :caption: Aggregation
+   :glob:
+
+   aggregation/*
 
 .. toctree::
    :maxdepth: 2
@@ -153,11 +160,11 @@ Or directly from conda
 
 .. toctree::
    :maxdepth: 2
-   :name: image
-   :caption: Image
+   :name: clustering
+   :caption: Clustering
    :glob:
 
-   image/*
+   clustering/*
 
 .. toctree::
    :maxdepth: 2
@@ -166,6 +173,30 @@ Or directly from conda
    :glob:
 
    detection/*
+
+.. toctree::
+   :maxdepth: 2
+   :name: image
+   :caption: Image
+   :glob:
+
+   image/*
+
+.. toctree::
+   :maxdepth: 2
+   :name: multimodal
+   :caption: Multimodal
+   :glob:
+
+   multimodal/*
+
+.. toctree::
+   :maxdepth: 2
+   :name: nominal
+   :caption: Nominal
+   :glob:
+
+   nominal/*
 
 .. toctree::
    :maxdepth: 2
@@ -206,14 +237,6 @@ Or directly from conda
    :glob:
 
    text/*
-
-.. toctree::
-   :maxdepth: 2
-   :name: aggregation
-   :caption: Aggregation
-   :glob:
-
-   aggregation/*
 
 .. toctree::
    :maxdepth: 2

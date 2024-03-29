@@ -12,5 +12,5 @@ Concatenation
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.CatMetric
-    :noindex:
+.. autoclass:: torchmetrics.aggregation.CatMetric
+    :exclude-members: update, compute

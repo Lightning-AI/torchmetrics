@@ -12,11 +12,10 @@ ChrF Score
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.CHRFScore
-    :noindex:
+.. autoclass:: torchmetrics.text.CHRFScore
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.chrf_score
-    :noindex:
+.. autofunction:: torchmetrics.functional.text.chrf_score

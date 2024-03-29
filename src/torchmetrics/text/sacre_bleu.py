@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,36 +17,47 @@
 # Authors: torchtext authors and @sluks
 # Date: 2020-07-18
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, Union
 
-from typing_extensions import Literal
+from torch import Tensor
 
 from torchmetrics.functional.text.bleu import _bleu_score_update
-from torchmetrics.functional.text.sacre_bleu import _SacreBLEUTokenizer
+from torchmetrics.functional.text.sacre_bleu import _SacreBLEUTokenizer, _TokenizersLiteral
 from torchmetrics.text.bleu import BLEUScore
-from torchmetrics.utilities.imports import _REGEX_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-AVAILABLE_TOKENIZERS = ("none", "13a", "zh", "intl", "char")
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["SacreBLEUScore.plot"]
 
 
 class SacreBLEUScore(BLEUScore):
-    """Calculate `BLEU score`_ [1] of machine translated text with one or more references. This implementation
-    follows the behaviour of SacreBLEU [2] implementation from https://github.com/mjpost/sacrebleu.
+    """Calculate `BLEU score`_ of machine translated text with one or more references.
 
-    The SacreBLEU implementation differs from the NLTK BLEU implementation in tokenization techniques.
+    This implementation follows the behaviour of `SacreBLEU`_. The SacreBLEU implementation differs from the NLTK BLEU
+    implementation in tokenization techniques.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~Sequence`): An iterable of machine translated corpus
+    - ``target`` (:class:`~Sequence`): An iterable of iterables of reference corpus
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``sacre_bleu`` (:class:`~torch.Tensor`): A tensor with the SacreBLEU Score
 
     Args:
         n_gram: Gram value ranged from 1 to 4
-        smooth: Whether to apply smoothing, see [2]
-        tokenize: Tokenization technique to be used.
-            Supported tokenization: ``['none', '13a', 'zh', 'intl', 'char']``
+        smooth: Whether to apply smoothing, see `SacreBLEU`_
+        tokenize: Tokenization technique to be used. Choose between ``'none'``, ``'13a'``, ``'zh'``, ``'intl'``,
+            ``'char'``, ``'ja-mecab'``, ``'ko-mecab'``, ``'flores101'`` and ``'flores200'``.
         lowercase:  If ``True``, BLEU score over lowercased text is calculated.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
         weights:
             Weights used for unigrams, bigrams, etc. to calculate BLEU score.
             If not provided, uniform weights are used.
 
-     Raises:
+    Raises:
         ValueError:
             If ``tokenize`` not one of 'none', '13a', 'zh', 'intl' or 'char'
         ValueError:
@@ -56,54 +67,40 @@ class SacreBLEUScore(BLEUScore):
 
 
     Example:
-        >>> from torchmetrics import SacreBLEUScore
+        >>> from torchmetrics.text import SacreBLEUScore
         >>> preds = ['the cat is on the mat']
         >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
-        >>> metric = SacreBLEUScore()
-        >>> metric(preds, target)
+        >>> sacre_bleu = SacreBLEUScore()
+        >>> sacre_bleu(preds, target)
         tensor(0.7598)
 
-    References:
-        [1] BLEU: a Method for Automatic Evaluation of Machine Translation by Papineni,
-        Kishore, Salim Roukos, Todd Ward, and Wei-Jing Zhu `BLEU`_
+    Additional References:
 
-        [2] A Call for Clarity in Reporting BLEU Scores by Matt Post.
+        - Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
+          and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
 
-        [3] Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence
-        and Skip-Bigram Statistics by Chin-Yew Lin and Franz Josef Och `Machine Translation Evolution`_
     """
 
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = True
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
 
     def __init__(
         self,
         n_gram: int = 4,
         smooth: bool = False,
-        tokenize: Literal["none", "13a", "zh", "intl", "char"] = "13a",
+        tokenize: _TokenizersLiteral = "13a",
         lowercase: bool = False,
         weights: Optional[Sequence[float]] = None,
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(n_gram=n_gram, smooth=smooth, weights=weights, **kwargs)
-        if tokenize not in AVAILABLE_TOKENIZERS:
-            raise ValueError(f"Argument `tokenize` expected to be one of {AVAILABLE_TOKENIZERS} but got {tokenize}.")
-
-        if tokenize == "intl" and not _REGEX_AVAILABLE:
-            raise ModuleNotFoundError(
-                "`'intl'` tokenization requires that `regex` is installed."
-                " Use `pip install regex` or `pip install torchmetrics[text]`."
-            )
         self.tokenizer = _SacreBLEUTokenizer(tokenize, lowercase)
 
-    def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:  # type: ignore
-        """Compute Precision Scores.
-
-        Args:
-            preds: An iterable of machine translated corpus
-            target: An iterable of iterables of reference corpus
-        """
+    def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:
+        """Update state with predictions and targets."""
         self.preds_len, self.target_len = _bleu_score_update(
             preds,
             target,
@@ -114,3 +111,47 @@ class SacreBLEUScore(BLEUScore):
             self.n_gram,
             self.tokenizer,
         )
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torchmetrics.text import SacreBLEUScore
+            >>> metric = SacreBLEUScore()
+            >>> preds = ['the cat is on the mat']
+            >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.text import SacreBLEUScore
+            >>> metric = SacreBLEUScore()
+            >>> preds = ['the cat is on the mat']
+            >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
+
+        """
+        return self._plot(val, ax)

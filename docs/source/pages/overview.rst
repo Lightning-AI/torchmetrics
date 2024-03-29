@@ -1,7 +1,7 @@
 .. testsetup:: *
 
     import torch
-    from pytorch_lightning.core.lightning import LightningModule
+    from lightning.pytorch import LightningModule
 
 ##################
 Structure Overview
@@ -24,10 +24,10 @@ This metrics API is independent of PyTorch Lightning. Metrics can directly be us
 
 .. code-block:: python
 
-    from torchmetrics.classification import Accuracy
+    from torchmetrics.classification import BinaryAccuracy
 
-    train_accuracy = Accuracy()
-    valid_accuracy = Accuracy()
+    train_accuracy = BinaryAccuracy()
+    valid_accuracy = BinaryAccuracy()
 
     for epoch in range(epochs):
         for x, y in train_data:
@@ -84,20 +84,20 @@ be moved to the same device as the input of the metric:
 
 .. code-block:: python
 
-    from torchmetrics import Accuracy
+    from torchmetrics.classification import BinaryAccuracy
 
     target = torch.tensor([1, 1, 0, 0], device=torch.device("cuda", 0))
     preds = torch.tensor([0, 1, 0, 0], device=torch.device("cuda", 0))
 
     # Metric states are always initialized on cpu, and needs to be moved to
     # the correct device
-    confmat = Accuracy(num_classes=2).to(torch.device("cuda", 0))
+    confmat = BinaryAccuracy().to(torch.device("cuda", 0))
     out = confmat(preds, target)
     print(out.device) # cuda:0
 
 However, when **properly defined** inside a :class:`~torch.nn.Module` or
-:class:`~pytorch_lightning.core.lightning.LightningModule` the metric will be automatically moved
-to the same device as the module when using ``.to(device)``.  Being
+`LightningModule <https://lightning.ai/docs/pytorch/stable/common/lightning_module.html>`_ the metric will
+be automatically moved to the same device as the module when using ``.to(device)``.  Being
 **properly defined** means that the metric is correctly identified as a child module of the
 model (check ``.children()`` attribute of the model). Therefore, metrics cannot be placed
 in native python ``list`` and ``dict``, as they will not be correctly identified
@@ -107,16 +107,17 @@ the native `MetricCollection`_ module can also be used to wrap multiple metrics.
 
 .. testcode::
 
-    from torchmetrics import Accuracy, MetricCollection
+    from torchmetrics import MetricCollection
+    from torchmetrics.classification import BinaryAccuracy
 
     class MyModule(torch.nn.Module):
         def __init__(self):
             ...
             # valid ways metrics will be identified as child modules
-            self.metric1 = Accuracy()
-            self.metric2 = nn.ModuleList(Accuracy())
-            self.metric3 = nn.ModuleDict({'accuracy': Accuracy()})
-            self.metric4 = MetricCollection([Accuracy()]) # torchmetrics build-in collection class
+            self.metric1 = BinaryAccuracy()
+            self.metric2 = nn.ModuleList(BinaryAccuracy())
+            self.metric3 = nn.ModuleDict({'accuracy': BinaryAccuracy()})
+            self.metric4 = MetricCollection([BinaryAccuracy()]) # torchmetrics built-in collection class
 
         def forward(self, batch):
             data, target = batch
@@ -129,34 +130,104 @@ the native `MetricCollection`_ module can also be used to wrap multiple metrics.
 
 You can always check which device the metric is located on using the `.device` property.
 
-Metrics in Dataparallel (DP) mode
-=================================
+*****************************
+Metrics and memory management
+*****************************
 
-When using metrics in `Dataparallel (DP) <https://pytorch.org/docs/stable/generated/torch.nn.DataParallel.html#torch.nn.DataParallel>`_
-mode, one should be aware DP will both create and clean-up replicas of Metric objects during a single forward pass.
-This has the consequence, that the metric state of the replicas will as default be destroyed before we can sync
-them. It is therefore recommended, when using metrics in DP mode, to initialize them with ``dist_sync_on_step=True``
-such that metric states are synchonized between the main process and the replicas before they are destroyed.
+As stated before, metrics have states and those states take up a certain amount of memory depending on the metric.
+In general metrics can be divided into two categories when we talk about memory management:
 
-Addtionally, if metrics are used together with a `LightningModule` the metric update/logging should be done
-in the ``<mode>_step_end`` method (where ``<mode>`` is either ``training``, ``validation`` or ``test``), else
-it will lead to wrong accumulation. In practice do the following:
+* Metrics with tensor states: These metrics only have states that are instances of :class:`~torch.Tensor`. When these
+  kind of metrics are updated the values of those tensors are updated. Importantly the size of the tensors is
+  **constant** meaning that regardless of how much data is passed to the metric, its memory footprint will not change.
+
+* Metrics with list states: These metrics have at least one state that is a list, which gets tensors appended as the
+  metric is updated. Importantly the size of the list is therefore **not constant** and will grow. The growth depends
+  on the particular metric (some metrics only need to store a single value per sample, some much more).
+
+You can always check the current metric state by accessing the `.metric_state` property, and checking if any of the
+states are lists.
 
 .. testcode::
 
-    def training_step(self, batch, batch_idx):
-        data, target = batch
-        preds = self(data)
-        ...
-        return {'loss': loss, 'preds': preds, 'target': target}
+    import torch
+    from torchmetrics.regression import SpearmanCorrCoef
 
-    def training_step_end(self, outputs):
-        #update and log
-        self.metric(outputs['preds'], outputs['target'])
-        self.log('metric', self.metric)
+    gen = torch.manual_seed(42)
+    metric = SpearmanCorrCoef()
+    metric(torch.rand(2,), torch.rand(2,))
+    print(metric.metric_state)
+    metric(torch.rand(2,), torch.rand(2,))
+    print(metric.metric_state)
 
+.. testoutput::
+    :options: +NORMALIZE_WHITESPACE
+
+    {'preds': [tensor([0.8823, 0.9150])], 'target': [tensor([0.3829, 0.9593])]}
+    {'preds': [tensor([0.8823, 0.9150]), tensor([0.3904, 0.6009])], 'target': [tensor([0.3829, 0.9593]), tensor([0.2566, 0.7936])]}
+
+In general we have a few recommendations for memory management:
+
+* When done with a metric, we always recommend calling the `reset` method. The reason for this being that the python
+  garbage collector can struggle to totally clean the metric states if this is not done. In the worst case, this can
+  lead to a memory leak if multiple instances of the same metric for different purposes are created in the same script.
+
+* Better to always try to reuse the same instance of a metric instead of initializing a new one. Calling the `reset` method
+  returns the metric to its initial state, and can therefore be used to reuse the same instance. However, we still
+  highly recommend to use **different** instances from training, validation and testing.
+
+* If only the results on a batch level are needed e.g no aggregation or alternatively if you have a small dataset that
+  fits into iteration of evaluation, we can recommend using the functional API instead as it does not keep an internal
+  state and memory is therefore freed after each call.
+
+See :ref:`Metric kwargs` for different advanced settings for controlling the memory footprint of metrics.
+
+**************************
+Saving and loading metrics
+**************************
+
+Because metrics are essentially just a subclass of :class:`torch.nn.Module`, saving and loading metrics works in the
+same as any other `nn.Module`, with a key difference. Similar to `nn.Module` it is also recommended to save the state
+dict instead of the actual metric e.g.:
+
+.. code-block:: python
+
+    # Instead of this
+    torch.save(metric, "metric.pt")
+    # do this
+    torch.save(metric.state_dict(), "metric.pt")
+
+The key difference is that metric states are not automatically a part of the state dict. This is to make sure that
+torchmetrics is backward compatible with models that did not use the specific metrics when they were created. This
+behavior can be overwritten by using the `metric.persistent` method, which will mark all metric states to also be saved
+when `.state_dict` is called. Alternatively, for custom metrics, you can set the `persistent` argument when initializing
+the state in the `self.add_state` method.
+
+Therefore a correct example for saving and loading a metric would be:
+
+.. code-block:: python
+
+    import torch
+    from torchmetrics.classification import MulticlassAccuracy
+
+    metric = MulticlassAccuracy(num_classes=5).to("cuda")
+    metric.persistent(True)
+    metric.update(torch.randint(5, (100,)).cuda(), torch.randint(5, (100,)).cuda())
+    torch.save(metric.state_dict(), "metric.pth")
+
+    metric2 = MulticlassAccuracy(num_classes=5).to("cpu")
+    metric2.load_state_dict(torch.load("metric.pth", map_location="cpu"))
+
+    # These will match, but be on different devices
+    print(metric.metric_state)
+    print(metric2.metric_state)
+
+In the example, we also account for the initial metric state that is being saved on a different device than the
+metric it is being loaded into by using the `map_location` argument.
+
+***********************************************
 Metrics in Distributed Data Parallel (DDP) mode
-===============================================
+***********************************************
 
 When using metrics in `Distributed Data Parallel (DDP) <https://pytorch.org/docs/stable/generated/torch.nn.parallel.DistributedDataParallel.html>`_
 mode, one should be aware that DDP will add additional samples to your dataset if the size of your dataset is
@@ -176,8 +247,8 @@ Most metrics in our collection can be used with 16-bit precision (``torch.half``
 the following limitations:
 
 * In general ``pytorch`` had better support for 16-bit precision much earlier on GPU than CPU. Therefore, we
-  recommend that anyone that want to use metrics with half precision on CPU, upgrade to atleast pytorch v1.6
-  where support for operations such as addition, subtraction, multiplication ect. was added.
+  recommend that anyone that want to use metrics with half precision on CPU, upgrade to at least pytorch v1.6
+  where support for operations such as addition, subtraction, multiplication etc. was added.
 * Some metrics does not work at all in half precision on CPU. We have explicitly stated this in their docstring,
   but they are also listed below:
 
@@ -187,9 +258,9 @@ the following limitations:
 
 You can always check the precision/dtype of the metric by checking the `.dtype` property.
 
-******************
-Metric Arithmetics
-******************
+*****************
+Metric Arithmetic
+*****************
 
 Metrics support most of python built-in operators for arithmetic, logic and bitwise operations.
 
@@ -206,7 +277,7 @@ overhead that is not necessary. It can now be done with:
 ``new_metric.update(*args, **kwargs)`` now calls update of ``first_metric`` and ``second_metric``. It forwards
 all positional arguments but forwards only the keyword arguments that are available in respective metric's update
 declaration. Similarly ``new_metric.compute()`` now calls compute of ``first_metric`` and ``second_metric`` and
-adds the results up. It is important to note that all implemented operations always returns a new metric object. This means
+adds the results up. It is important to note that all implemented operations always return a new metric object. This means
 that the line ``first_metric == second_metric`` will not return a bool indicating if ``first_metric`` and ``second_metric``
 is the same metric, but will return a new metric that checks if the ``first_metric.compute() == second_metric.compute()``.
 
@@ -254,33 +325,38 @@ Example:
 
 .. testcode::
 
-    from torchmetrics import MetricCollection, Accuracy, Precision, Recall
+    from torchmetrics import MetricCollection
+    from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall
     target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
     preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
     metric_collection = MetricCollection([
-        Accuracy(),
-        Precision(num_classes=3, average='macro'),
-        Recall(num_classes=3, average='macro')
+        MulticlassAccuracy(num_classes=3, average="micro"),
+        MulticlassPrecision(num_classes=3, average="macro"),
+        MulticlassRecall(num_classes=3, average="macro")
     ])
     print(metric_collection(preds, target))
 
 .. testoutput::
     :options: +NORMALIZE_WHITESPACE
 
-    {'Accuracy': tensor(0.1250),
-     'Precision': tensor(0.0667),
-     'Recall': tensor(0.1111)}
+    {'MulticlassAccuracy': tensor(0.1250),
+     'MulticlassPrecision': tensor(0.0667),
+     'MulticlassRecall': tensor(0.1111)}
 
 Similarly it can also reduce the amount of code required to log multiple metrics
-inside your LightningModule
+inside your LightningModule. In most cases we just have to replace ``self.log`` with ``self.log_dict``.
 
 .. testcode::
 
-    from torchmetrics import Accuracy, MetricCollection, Precision, Recall
+    from torchmetrics import MetricCollection
+    from torchmetrics.classification import MulticlassAccuracy, MulticlassPrecision, MulticlassRecall
 
     class MyModule(LightningModule):
-        def __init__(self):
-            metrics = MetricCollection([Accuracy(), Precision(), Recall()])
+        def __init__(self, num_classes: int):
+            super().__init__()
+            metrics = MetricCollection([
+                MulticlassAccuracy(num_classes), MulticlassPrecision(num_classes), MulticlassRecall(num_classes)
+            ])
             self.train_metrics = metrics.clone(prefix='train_')
             self.valid_metrics = metrics.clone(prefix='val_')
 
@@ -295,10 +371,15 @@ inside your LightningModule
         def validation_step(self, batch, batch_idx):
             logits = self(x)
             # ...
-            output = self.valid_metrics(logits, y)
+            self.valid_metrics.update(logits, y)
+
+        def on_validation_epoch_end(self):
             # use log_dict instead of log
             # metrics are logged with keys: val_Accuracy, val_Precision and val_Recall
+            output = self.valid_metrics.compute()
             self.log_dict(output)
+            # remember to reset metrics at the end of the epoch
+            self.valid_metrics.reset()
 
 .. note::
 
@@ -308,18 +389,73 @@ inside your LightningModule
 
 An additional advantage of using the ``MetricCollection`` object is that it will
 automatically try to reduce the computations needed by finding groups of metrics
-that share the same underlying metric state. If such a group of metrics is found only one
-of them is actually updated and the updated state will be broadcasted to the rest
-of the metrics within the group. In the example above, this will lead to a 2x-3x lower computational
-cost compared to disabling this feature. However, this speedup comes with a fixed cost upfront, where
-the state-groups have to be determined after the first update. This overhead can be significantly higher then gains speed-up for very
-a low number of steps (approx. up to 100) but still leads to an overall speedup for everything beyond that.
-In case the groups are known beforehand, these can also be set manually to avoid this extra cost of the
-dynamic search. See the *compute_groups* argument in the class docs below for more information on this topic.
+that share the same underlying metric state. If such a group of metrics is found
+only one of them is actually updated and the updated state will be broadcasted to
+the rest of the metrics within the group. In the example above, this will lead to
+a 2-3x lower computational cost compared to disabling this feature in the case of
+the validation metrics where only ``update`` is called (this feature does not work
+in combination with ``forward``). However, this speedup comes with a fixed cost upfront,
+where the state-groups have to be determined after the first update. In case the groups
+are known beforehand, these can also be set manually to avoid this extra cost of the
+dynamic search. See the *compute_groups* argument in the class docs below for more
+information on this topic.
 
 .. autoclass:: torchmetrics.MetricCollection
-    :noindex:
+    :exclude-members: update, compute, forward
 
+***************
+Metric wrappers
+***************
+
+In some cases it is beneficial to transform the output of one metric in some way or add additional logic. For this we
+have implemented a few *Wrapper* metrics. Wrapper metrics always take another :class:`~torchmetrics.Metric` or (
+:class:`~torchmetrics.MetricCollection`) as input and wraps it in some way. A good example of this is the
+:class:`~torchmetrics.wrappers.ClasswiseWrapper` that allows for easy altering the output of certain classification
+metrics to also include label information.
+
+.. testcode::
+
+    from torchmetrics.classification import MulticlassAccuracy
+    from torchmetrics.wrappers import ClasswiseWrapper
+    # creating metrics
+    base_metric = MulticlassAccuracy(num_classes=3, average=None)
+    wrapped_metric = ClasswiseWrapper(base_metric, labels=["cat", "dog", "fish"])
+    # sample prediction and GT
+    target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
+    preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
+    # showing the metric results
+    print(base_metric(preds, target))  # this returns a simple tensor without label info
+    print(wrapped_metric(preds, target))  # this returns a dict with label info
+
+.. testoutput::
+    :options: +NORMALIZE_WHITESPACE
+
+    tensor([0.0000, 0.0000, 0.3333])
+    {'multiclassaccuracy_cat': tensor(0.),
+     'multiclassaccuracy_dog': tensor(0.),
+     'multiclassaccuracy_fish': tensor(0.3333)}
+
+Another good example of wrappers is the :class:`~torchmetrics.wrappers.BootStrapper` that allows for easy bootstrapping
+of metrics e.g. computation of confidence intervals by resampling of input data.
+
+.. testcode::
+
+    from torchmetrics.classification import MulticlassAccuracy
+    from torchmetrics.wrappers import BootStrapper
+    # creating metrics
+    wrapped_metric = BootStrapper(MulticlassAccuracy(num_classes=3))
+    # sample prediction and GT
+    target = torch.tensor([0, 2, 0, 2, 0, 1, 0, 2])
+    preds = torch.tensor([2, 1, 2, 0, 1, 2, 2, 2])
+    # showing the metric results
+    print(wrapped_metric(preds, target))  # this returns a dict with label info
+
+.. testoutput::
+    :options: +NORMALIZE_WHITESPACE
+
+    {'mean': tensor(0.1476), 'std': tensor(0.0613)}
+
+You can see all implemented wrappers under the wrapper section of the API docs.
 
 ****************************
 Module vs Functional Metrics
@@ -345,7 +481,7 @@ if a metric is differentiable or not.
 However, note that the cached state is detached from the computational
 graph and cannot be back-propagated. Not doing this would mean storing the computational
 graph for each update call, which can lead to out-of-memory errors.
-In practise this means that:
+In practice this means that:
 
 .. code-block:: python
 
@@ -368,7 +504,7 @@ property that can be used to determine this:
 .. code-block:: python
 
     # returns True because accuracy is optimal when it is maximized
-    torchmetrics.Accuracy.higher_is_better
+    torchmetrics.classification.Accuracy.higher_is_better
 
     # returns False because the mean squared error is optimal when it is minimized
     torchmetrics.MeanSquaredError.higher_is_better
@@ -385,13 +521,22 @@ that will alter how metric states are stored and synced.
 If you are running metrics on GPU and are encountering that you are running out of GPU VRAM then the following
 argument can help:
 
-- ``compute_on_cpu`` will automatically move the metric states to cpu after calling ``update``, making sure that
+- ``compute_on_cpu``: will automatically move the metric states to cpu after calling ``update``, making sure that
   GPU memory is not filling up. The consequence will be that the ``compute`` method will be called on CPU instead
   of GPU. Only applies to metric states that are lists.
+
+- ``compute_with_cache``: This argument indicates if the result after calling the ``compute`` method should be cached.
+  By default this is ``True`` meaning that repeated calls to ``compute`` (with no change to the metric state in between)
+  does not recompute the metric but just returns the cache. By setting it to ``False`` the metric will be recomputed
+  every time ``compute`` is called, but it can also help clean up a bit of memory.
 
 If you are running in a distributed environment, TorchMetrics will automatically take care of the distributed
 synchronization for you. However, the following three keyword arguments can be given to any metric class for
 further control over the distributed aggregation:
+
+- ``sync_on_compute``: This argument is an ``bool`` that indicates if the metrics should automatically sync between
+  devices whenever the ``compute`` method is called. By default this is ``True``, but by setting this to ``False``
+  you can manually control when the synchronization happens.
 
 - ``dist_sync_on_step``: This argument is ``bool`` that indicates if the metric should synchronize between
   different devices every time ``forward`` is called. Setting this to ``True`` is in general not recommended

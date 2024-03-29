@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _binary_confusion_matrix_format,
     _binary_confusion_matrix_tensor_validation,
     _binary_confusion_matrix_update,
-    _confusion_matrix_update,
     _multiclass_confusion_matrix_arg_validation,
     _multiclass_confusion_matrix_format,
     _multiclass_confusion_matrix_tensor_validation,
@@ -32,14 +31,25 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multilabel_confusion_matrix_tensor_validation,
     _multilabel_confusion_matrix_update,
 )
-from torchmetrics.utilities.prints import rank_zero_warn
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
-    """Reduce an un-normalized confusion matrix of shape (n_classes, n_classes) into the matthews corrcoef
-    score."""
+    """Reduce an un-normalized confusion matrix of shape (n_classes, n_classes) into the matthews corrcoef score.
+
+    See: https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-019-6413-7 for more info.
+
+    """
     # convert multilabel into binary
     confmat = confmat.sum(0) if confmat.ndim == 3 else confmat
+
+    if confmat.numel() == 4:  # binary case
+        tn, fp, fn, tp = confmat.reshape(-1)
+        if tp + tn != 0 and fp + fn == 0:
+            return torch.tensor(1.0, dtype=confmat.dtype, device=confmat.device)
+
+        if tp + tn == 0 and fp + fn != 0:
+            return torch.tensor(-1.0, dtype=confmat.dtype, device=confmat.device)
 
     tk = confmat.sum(dim=-1).float()
     pk = confmat.sum(dim=-2).float()
@@ -50,11 +60,22 @@ def _matthews_corrcoef_reduce(confmat: Tensor) -> Tensor:
     cov_ypyp = s**2 - sum(pk * pk)
     cov_ytyt = s**2 - sum(tk * tk)
 
+    numerator = cov_ytyp
     denom = cov_ypyp * cov_ytyt
-    if denom == 0:
+
+    if denom == 0 and confmat.numel() == 4:
+        if tp == 0 or tn == 0:
+            a = tp + tn
+
+        if fp == 0 or fn == 0:
+            b = fp + fn
+
+        eps = torch.tensor(torch.finfo(torch.float32).eps, dtype=torch.float32, device=confmat.device)
+        numerator = torch.sqrt(eps) * (a - b)
+        denom = (tp + fp + eps) * (tp + fn + eps) * (tn + fp + eps) * (tn + fn + eps)
+    elif denom == 0:
         return torch.tensor(0, dtype=confmat.dtype, device=confmat.device)
-    else:
-        return cov_ytyp / torch.sqrt(denom)
+    return numerator / torch.sqrt(denom)
 
 
 def binary_matthews_corrcoef(
@@ -64,44 +85,41 @@ def binary_matthews_corrcoef(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Matthews correlation coefficient`_ for binary tasks. This metric measures
-    the general correlation or quality of a classification.
+    r"""Calculate `Matthews correlation coefficient`_ for binary tasks.
+
+    This metric measures the general correlation or quality of a classification.
 
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
-        normalize: Normalization mode for confusion matrix. Choose from:
-
-            - ``None`` or ``'none'``: no normalization (default)
-            - ``'true'``: normalization over the targets (most commonly used)
-            - ``'pred'``: normalization over the predictions
-            - ``'all'``: normalization over the whole matrix
-
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import binary_matthews_corrcoef
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
+        >>> target = tensor([1, 1, 0, 0])
+        >>> preds = tensor([0, 1, 0, 0])
         >>> binary_matthews_corrcoef(preds, target)
         tensor(0.5774)
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import binary_matthews_corrcoef
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0.35, 0.85, 0.48, 0.01])
+        >>> target = tensor([1, 1, 0, 0])
+        >>> preds = tensor([0.35, 0.85, 0.48, 0.01])
         >>> binary_matthews_corrcoef(preds, target)
         tensor(0.5774)
 
@@ -121,8 +139,9 @@ def multiclass_matthews_corrcoef(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Matthews correlation coefficient`_ for multiclass tasks. This metric measures
-    the general correlation or quality of a classification.
+    r"""Calculate `Matthews correlation coefficient`_ for multiclass tasks.
+
+    This metric measures the general correlation or quality of a classification.
 
     Accepts the following input tensors:
 
@@ -134,36 +153,30 @@ def multiclass_matthews_corrcoef(
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
-        num_classes: Integer specifing the number of classes
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        num_classes: Integer specifying the number of classes
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
-        normalize: Normalization mode for confusion matrix. Choose from:
-
-            - ``None`` or ``'none'``: no normalization (default)
-            - ``'true'``: normalization over the targets (most commonly used)
-            - ``'pred'``: normalization over the predictions
-            - ``'all'``: normalization over the whole matrix
-
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (pred is integer tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multiclass_matthews_corrcoef
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([2, 1, 0, 1])
         >>> multiclass_matthews_corrcoef(preds, target, num_classes=3)
         tensor(0.7000)
 
     Example (pred is float tensor):
         >>> from torchmetrics.functional.classification import multiclass_matthews_corrcoef
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58],
-        ...   [0.22, 0.61, 0.17],
-        ...   [0.71, 0.09, 0.20],
-        ...   [0.05, 0.82, 0.13],
-        ... ])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([[0.16, 0.26, 0.58],
+        ...                 [0.22, 0.61, 0.17],
+        ...                 [0.71, 0.09, 0.20],
+        ...                 [0.05, 0.82, 0.13]])
         >>> multiclass_matthews_corrcoef(preds, target, num_classes=3)
         tensor(0.7000)
 
@@ -184,45 +197,41 @@ def multilabel_matthews_corrcoef(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Calculates `Matthews correlation coefficient`_ for multilabel tasks. This metric measures
-    the general correlation or quality of a classification.
+    r"""Calculate `Matthews correlation coefficient`_ for multilabel tasks.
+
+    This metric measures the general correlation or quality of a classification.
 
     Accepts the following input tensors:
 
-    - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
-      we convert to int tensor with thresholding using the value in ``threshold``.
-    - ``target`` (int tensor): ``(N, C, ...)``
+        - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
+          [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
+          we convert to int tensor with thresholding using the value in ``threshold``.
+        - ``target`` (int tensor): ``(N, C, ...)``
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
     Args:
-        num_classes: Integer specifing the number of labels
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
-        normalize: Normalization mode for confusion matrix. Choose from:
-
-            - ``None`` or ``'none'``: no normalization (default)
-            - ``'true'``: normalization over the targets (most commonly used)
-            - ``'pred'``: normalization over the predictions
-            - ``'all'``: normalization over the whole matrix
-
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multilabel_matthews_corrcoef
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_matthews_corrcoef(preds, target, num_labels=3)
         tensor(0.3333)
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multilabel_matthews_corrcoef
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_matthews_corrcoef(preds, target, num_labels=3)
         tensor(0.3333)
 
@@ -235,103 +244,44 @@ def multilabel_matthews_corrcoef(
     return _matthews_corrcoef_reduce(confmat)
 
 
-_matthews_corrcoef_update = _confusion_matrix_update
-
-
-def _matthews_corrcoef_compute(confmat: Tensor) -> Tensor:
-    """Computes Matthews correlation coefficient.
-
-    Args:
-        confmat: Confusion matrix
-
-    Example:
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> confmat = _matthews_corrcoef_update(preds, target, num_classes=2)
-        >>> _matthews_corrcoef_compute(confmat)
-        tensor(0.5774)
-    """
-
-    tk = confmat.sum(dim=1).float()
-    pk = confmat.sum(dim=0).float()
-    c = torch.trace(confmat).float()
-    s = confmat.sum().float()
-
-    cov_ytyp = c * s - sum(tk * pk)
-    cov_ypyp = s**2 - sum(pk * pk)
-    cov_ytyt = s**2 - sum(tk * tk)
-
-    if cov_ypyp * cov_ytyt == 0:
-        return torch.tensor(0, dtype=confmat.dtype, device=confmat.device)
-    else:
-        return cov_ytyp / torch.sqrt(cov_ytyt * cov_ypyp)
-
-
 def matthews_corrcoef(
     preds: Tensor,
     target: Tensor,
-    num_classes: int,
+    task: Literal["binary", "multiclass", "multilabel"],
     threshold: float = 0.5,
-    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
+    r"""Calculate `Matthews correlation coefficient`_ .
 
-    Calculates `Matthews correlation coefficient`_ that measures
-    the general correlation or quality of a classification. In the binary case it
-    is defined as:
+    This metric measures the general correlation or quality of a classification.
 
-    .. math::
-        MCC = \frac{TP*TN - FP*FN}{\sqrt{(TP+FP)*(TP+FN)*(TN+FP)*(TN+FN)}}
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`~torchmetrics.functional.classification.binary_matthews_corrcoef`,
+    :func:`~torchmetrics.functional.classification.multiclass_matthews_corrcoef` and
+    :func:`~torchmetrics.functional.classification.multilabel_matthews_corrcoef` for
+    the specific details of each argument influence and examples.
 
-    where TP, TN, FP and FN are respectively the true postitives, true negatives,
-    false positives and false negatives. Also works in the case of multi-label or
-    multi-class input.
-
-    Args:
-        preds: (float or long tensor), Either a ``(N, ...)`` tensor with labels or
-            ``(N, C, ...)`` where C is the number of classes, tensor with labels/probabilities
-        target: ``target`` (long tensor), tensor with shape ``(N, ...)`` with ground true labels
-        num_classes: Number of classes in the dataset.
-        threshold:
-            Threshold value for binary or multi-label probabilities.
-
-    Example:
-        >>> from torchmetrics.functional import matthews_corrcoef
-        >>> target = torch.tensor([1, 1, 0, 0])
-        >>> preds = torch.tensor([0, 1, 0, 0])
-        >>> matthews_corrcoef(preds, target, num_classes=2)
+    Legacy Example:
+        >>> from torch import tensor
+        >>> target = tensor([1, 1, 0, 0])
+        >>> preds = tensor([0, 1, 0, 0])
+        >>> matthews_corrcoef(preds, target, task="multiclass", num_classes=2)
         tensor(0.5774)
 
     """
-    if task is not None:
-        if task == "binary":
-            return binary_matthews_corrcoef(preds, target, threshold, ignore_index, validate_args)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            return multiclass_matthews_corrcoef(preds, target, num_classes, ignore_index, validate_args)
-        if task == "multilabel":
-            assert isinstance(num_labels, int)
-            return multilabel_matthews_corrcoef(preds, target, num_labels, threshold, ignore_index, validate_args)
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
-        )
-    else:
-        rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
-            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-            " and the general order of arguments may change, such that this metric will just function as an single"
-            " entrypoint to calling the three specialized versions.",
-            DeprecationWarning,
-        )
-    confmat = _matthews_corrcoef_update(preds, target, num_classes, threshold)
-    return _matthews_corrcoef_compute(confmat)
+    task = ClassificationTask.from_str(task)
+    if task == ClassificationTask.BINARY:
+        return binary_matthews_corrcoef(preds, target, threshold, ignore_index, validate_args)
+    if task == ClassificationTask.MULTICLASS:
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
+        return multiclass_matthews_corrcoef(preds, target, num_classes, ignore_index, validate_args)
+    if task == ClassificationTask.MULTILABEL:
+        if not isinstance(num_labels, int):
+            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
+        return multilabel_matthews_corrcoef(preds, target, num_labels, threshold, ignore_index, validate_args)
+    raise ValueError(f"Not handled value: {task}")

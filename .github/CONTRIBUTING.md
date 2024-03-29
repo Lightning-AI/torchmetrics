@@ -40,7 +40,7 @@ help you or finish it with you :\]_
 
 1. Add/update the relevant tests!
 
-- [This PR](https://github.com/Lightning-AI/metrics/pull/98) is a good example for adding a new metric
+- [This PR](https://github.com/Lightning-AI/torchmetrics/pull/98) is a good example for adding a new metric
 
 ### Test cases:
 
@@ -134,7 +134,7 @@ When you send a PR the continuous integration will run tests and build the docs.
 To setup a local development environment, install both local and test dependencies:
 
 ```bash
-python -m pip install -r requirements/test.txt
+python -m pip install -r requirements/_tests.txt
 python -m pip install pre-commit
 ```
 

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,36 +11,54 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any
+from typing import Any, Optional, Sequence, Union
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.mae import _mean_absolute_error_compute, _mean_absolute_error_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["MeanAbsoluteError.plot"]
 
 
 class MeanAbsoluteError(Metric):
-    r"""`Computes Mean Absolute Error`_ (MAE):
+    r"""`Compute Mean Absolute Error`_ (MAE).
 
     .. math:: \text{MAE} = \frac{1}{N}\sum_i^N | y_i - \hat{y_i} |
 
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~torch.Tensor`): Predictions from model
+    - ``target`` (:class:`~torch.Tensor`): Ground truth values
+
+    As output of ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``mean_absolute_error`` (:class:`~torch.Tensor`): A tensor with the mean absolute error over the state
+
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torchmetrics import MeanAbsoluteError
-        >>> target = torch.tensor([3.0, -0.5, 2.0, 7.0])
-        >>> preds = torch.tensor([2.5, 0.0, 2.0, 8.0])
+        >>> from torch import tensor
+        >>> from torchmetrics.regression import MeanAbsoluteError
+        >>> target = tensor([3.0, -0.5, 2.0, 7.0])
+        >>> preds = tensor([2.5, 0.0, 2.0, 8.0])
         >>> mean_absolute_error = MeanAbsoluteError()
         >>> mean_absolute_error(preds, target)
         tensor(0.5000)
+
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False
+    plot_lower_bound: float = 0.0
+
     sum_abs_error: Tensor
     total: Tensor
 
@@ -53,18 +71,55 @@ class MeanAbsoluteError(Metric):
         self.add_state("sum_abs_error", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
-        sum_abs_error, n_obs = _mean_absolute_error_update(preds, target)
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update state with predictions and targets."""
+        sum_abs_error, num_obs = _mean_absolute_error_update(preds, target)
 
         self.sum_abs_error += sum_abs_error
-        self.total += n_obs
+        self.total += num_obs
 
     def compute(self) -> Tensor:
-        """Computes mean absolute error over state."""
+        """Compute mean absolute error over state."""
         return _mean_absolute_error_compute(self.sum_abs_error, self.total)
+
+    def plot(
+        self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
+    ) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn
+            >>> # Example plotting a single value
+            >>> from torchmetrics.regression import MeanAbsoluteError
+            >>> metric = MeanAbsoluteError()
+            >>> metric.update(randn(10,), randn(10,))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> from torch import randn
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.regression import MeanAbsoluteError
+            >>> metric = MeanAbsoluteError()
+            >>> values = []
+            >>> for _ in range(10):
+            ...     values.append(metric(randn(10,), randn(10,)))
+            >>> fig, ax = metric.plot(values)
+
+        """
+        return self._plot(val, ax)

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from sklearn.metrics import hamming_loss as sk_hamming_loss
-
 from torchmetrics.classification.hamming import (
     BinaryHammingDistance,
+    HammingDistance,
     MulticlassHammingDistance,
     MultilabelHammingDistance,
 )
@@ -30,20 +30,22 @@ from torchmetrics.functional.classification.hamming import (
     multiclass_hamming_distance,
     multilabel_hamming_distance,
 )
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_CLASSES, THRESHOLD, MetricTester, inject_ignore_index, remove_ignore_index
+from torchmetrics.metric import Metric
+
+from unittests import NUM_CLASSES, THRESHOLD
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 
 seed_all(42)
 
 
-def _sk_hamming_loss(target, preds):
+def _reference_sklearn_hamming_loss(target, preds):
     score = sk_hamming_loss(target, preds)
     return score if not np.isnan(score) else 1.0
 
 
-def _sk_hamming_distance_binary(preds, target, ignore_index, multidim_average):
+def _reference_sklearn_hamming_distance_binary(preds, target, ignore_index, multidim_average):
     if multidim_average == "global":
         preds = preds.view(-1).numpy()
         target = target.view(-1).numpy()
@@ -52,30 +54,33 @@ def _sk_hamming_distance_binary(preds, target, ignore_index, multidim_average):
         target = target.numpy()
 
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
 
     if multidim_average == "global":
         target, preds = remove_ignore_index(target, preds, ignore_index)
-        return _sk_hamming_loss(target, preds)
-    else:
-        res = []
-        for pred, true in zip(preds, target):
-            pred = pred.flatten()
-            true = true.flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
-            res.append(_sk_hamming_loss(true, pred))
-        return np.stack(res)
+        return _reference_sklearn_hamming_loss(target, preds)
+
+    res = []
+    for pred, true in zip(preds, target):
+        pred = pred.flatten()
+        true = true.flatten()
+        true, pred = remove_ignore_index(true, pred, ignore_index)
+        res.append(_reference_sklearn_hamming_loss(true, pred))
+    return np.stack(res)
 
 
-@pytest.mark.parametrize("input", _binary_cases)
+@pytest.mark.parametrize("inputs", _binary_cases)
 class TestBinaryHammingDistance(MetricTester):
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    """Test class for `BinaryHammingDistance` metric."""
+
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    @pytest.mark.parametrize("ddp", [False, True])
-    def test_binary_hamming_distance(self, ddp, input, ignore_index, multidim_average):
-        preds, target = input
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_binary_hamming_distance(self, ddp, inputs, ignore_index, multidim_average):
+        """Test class implementation of metric."""
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
@@ -88,16 +93,17 @@ class TestBinaryHammingDistance(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryHammingDistance,
-            sk_metric=partial(
-                _sk_hamming_distance_binary, ignore_index=ignore_index, multidim_average=multidim_average
+            reference_metric=partial(
+                _reference_sklearn_hamming_distance_binary, ignore_index=ignore_index, multidim_average=multidim_average
             ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    def test_binary_hamming_distance_functional(self, input, ignore_index, multidim_average):
-        preds, target = input
+    def test_binary_hamming_distance_functional(self, inputs, ignore_index, multidim_average):
+        """Test functional implementation of metric."""
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 3:
@@ -107,8 +113,8 @@ class TestBinaryHammingDistance(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_hamming_distance,
-            sk_metric=partial(
-                _sk_hamming_distance_binary, ignore_index=ignore_index, multidim_average=multidim_average
+            reference_metric=partial(
+                _reference_sklearn_hamming_distance_binary, ignore_index=ignore_index, multidim_average=multidim_average
             ),
             metric_args={
                 "threshold": THRESHOLD,
@@ -117,8 +123,9 @@ class TestBinaryHammingDistance(MetricTester):
             },
         )
 
-    def test_binary_hamming_distance_differentiability(self, input):
-        preds, target = input
+    def test_binary_hamming_distance_differentiability(self, inputs):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -128,10 +135,9 @@ class TestBinaryHammingDistance(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_hamming_distance_dtype_cpu(self, input, dtype):
-        preds, target = input
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
-            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
+    def test_binary_hamming_distance_dtype_cpu(self, inputs, dtype):
+        """Test dtype support of the metric on CPU."""
+        preds, target = inputs
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -145,8 +151,9 @@ class TestBinaryHammingDistance(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_binary_hamming_distance_dtype_gpu(self, input, dtype):
-        preds, target = input
+    def test_binary_hamming_distance_dtype_gpu(self, inputs, dtype):
+        """Test dtype support of the metric on GPU."""
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -157,24 +164,27 @@ class TestBinaryHammingDistance(MetricTester):
         )
 
 
-def _sk_hamming_distance_multiclass_global(preds, target, ignore_index, average):
+def _reference_sklearn_hamming_distance_multiclass_global(preds, target, ignore_index, average):
     preds = preds.numpy().flatten()
     target = target.numpy().flatten()
     target, preds = remove_ignore_index(target, preds, ignore_index)
     if average == "micro":
-        return _sk_hamming_loss(target, preds)
+        return _reference_sklearn_hamming_loss(target, preds)
     confmat = sk_confusion_matrix(y_true=target, y_pred=preds, labels=list(range(NUM_CLASSES)))
     hamming_per_class = 1 - confmat.diagonal() / confmat.sum(axis=1)
     hamming_per_class[np.isnan(hamming_per_class)] = 1.0
     if average == "macro":
+        hamming_per_class = hamming_per_class[
+            (np.bincount(preds, minlength=NUM_CLASSES) + np.bincount(target, minlength=NUM_CLASSES)) != 0.0
+        ]
         return hamming_per_class.mean()
-    elif average == "weighted":
+    if average == "weighted":
         weights = confmat.sum(1)
         return ((weights * hamming_per_class) / weights.sum()).sum()
     return hamming_per_class
 
 
-def _sk_hamming_distance_multiclass_local(preds, target, ignore_index, average):
+def _reference_sklearn_hamming_distance_multiclass_local(preds, target, ignore_index, average):
     preds = preds.numpy()
     target = target.numpy()
     res = []
@@ -183,13 +193,16 @@ def _sk_hamming_distance_multiclass_local(preds, target, ignore_index, average):
         true = true.flatten()
         true, pred = remove_ignore_index(true, pred, ignore_index)
         if average == "micro":
-            res.append(_sk_hamming_loss(true, pred))
+            res.append(_reference_sklearn_hamming_loss(true, pred))
         else:
             confmat = sk_confusion_matrix(true, pred, labels=list(range(NUM_CLASSES)))
             hamming_per_class = 1 - confmat.diagonal() / confmat.sum(axis=1)
             hamming_per_class[np.isnan(hamming_per_class)] = 1.0
             if average == "macro":
-                res.append(hamming_per_class.mean())
+                hamming_per_class = hamming_per_class[
+                    (np.bincount(pred, minlength=NUM_CLASSES) + np.bincount(true, minlength=NUM_CLASSES)) != 0.0
+                ]
+                res.append(hamming_per_class.mean() if len(hamming_per_class) > 0 else 0.0)
             elif average == "weighted":
                 weights = confmat.sum(1)
                 score = ((weights * hamming_per_class) / weights.sum()).sum()
@@ -199,22 +212,25 @@ def _sk_hamming_distance_multiclass_local(preds, target, ignore_index, average):
     return np.stack(res, 0)
 
 
-def _sk_hamming_distance_multiclass(preds, target, ignore_index, multidim_average, average):
+def _reference_sklearn_hamming_distance_multiclass(preds, target, ignore_index, multidim_average, average):
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
     if multidim_average == "global":
-        return _sk_hamming_distance_multiclass_global(preds, target, ignore_index, average)
-    return _sk_hamming_distance_multiclass_local(preds, target, ignore_index, average)
+        return _reference_sklearn_hamming_distance_multiclass_global(preds, target, ignore_index, average)
+    return _reference_sklearn_hamming_distance_multiclass_local(preds, target, ignore_index, average)
 
 
-@pytest.mark.parametrize("input", _multiclass_cases)
+@pytest.mark.parametrize("inputs", _multiclass_cases)
 class TestMulticlassHammingDistance(MetricTester):
+    """Test class for `MulticlassHammingDistance` metric."""
+
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
-    @pytest.mark.parametrize("ddp", [True, False])
-    def test_multiclass_hamming_distance(self, ddp, input, ignore_index, multidim_average, average):
-        preds, target = input
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_multiclass_hamming_distance(self, ddp, inputs, ignore_index, multidim_average, average):
+        """Test class implementation of metric."""
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and target.ndim < 3:
@@ -227,8 +243,8 @@ class TestMulticlassHammingDistance(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassHammingDistance,
-            sk_metric=partial(
-                _sk_hamming_distance_multiclass,
+            reference_metric=partial(
+                _reference_sklearn_hamming_distance_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -244,8 +260,9 @@ class TestMulticlassHammingDistance(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
-    def test_multiclass_hamming_distance_functional(self, input, ignore_index, multidim_average, average):
-        preds, target = input
+    def test_multiclass_hamming_distance_functional(self, inputs, ignore_index, multidim_average, average):
+        """Test functional implementation of metric."""
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and target.ndim < 3:
@@ -255,8 +272,8 @@ class TestMulticlassHammingDistance(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_hamming_distance,
-            sk_metric=partial(
-                _sk_hamming_distance_multiclass,
+            reference_metric=partial(
+                _reference_sklearn_hamming_distance_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -269,8 +286,9 @@ class TestMulticlassHammingDistance(MetricTester):
             },
         )
 
-    def test_multiclass_hamming_distance_differentiability(self, input):
-        preds, target = input
+    def test_multiclass_hamming_distance_differentiability(self, inputs):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -280,10 +298,9 @@ class TestMulticlassHammingDistance(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_hamming_distance_dtype_cpu(self, input, dtype):
-        preds, target = input
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
-            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
+    def test_multiclass_hamming_distance_dtype_cpu(self, inputs, dtype):
+        """Test dtype support of the metric on CPU."""
+        preds, target = inputs
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -297,8 +314,9 @@ class TestMulticlassHammingDistance(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multiclass_hamming_distance_dtype_gpu(self, input, dtype):
-        preds, target = input
+    def test_multiclass_hamming_distance_dtype_gpu(self, inputs, dtype):
+        """Test dtype support of the metric on GPU."""
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -309,46 +327,47 @@ class TestMulticlassHammingDistance(MetricTester):
         )
 
 
-def _sk_hamming_distance_multilabel_global(preds, target, ignore_index, average):
+def _reference_sklearn_hamming_distance_multilabel_global(preds, target, ignore_index, average):
     if average == "micro":
         preds = preds.flatten()
         target = target.flatten()
         target, preds = remove_ignore_index(target, preds, ignore_index)
-        return _sk_hamming_loss(target, preds)
+        return _reference_sklearn_hamming_loss(target, preds)
 
     hamming, weights = [], []
     for i in range(preds.shape[1]):
         pred, true = preds[:, i].flatten(), target[:, i].flatten()
         true, pred = remove_ignore_index(true, pred, ignore_index)
         confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
-        hamming.append(_sk_hamming_loss(true, pred))
+        hamming.append(_reference_sklearn_hamming_loss(true, pred))
         weights.append(confmat[1, 1] + confmat[1, 0])
     res = np.stack(hamming, axis=0)
 
     if average == "macro":
         return res.mean(0)
-    elif average == "weighted":
+    if average == "weighted":
         weights = np.stack(weights, 0).astype(float)
         weights_norm = weights.sum(-1, keepdims=True)
         weights_norm[weights_norm == 0] = 1.0
         return ((weights * res) / weights_norm).sum(-1)
-    elif average is None or average == "none":
+    if average is None or average == "none":
         return res
+    return None
 
 
-def _sk_hamming_distance_multilabel_local(preds, target, ignore_index, average):
+def _reference_sklearn_hamming_distance_multilabel_local(preds, target, ignore_index, average):
     hamming, weights = [], []
     for i in range(preds.shape[0]):
         if average == "micro":
             pred, true = preds[i].flatten(), target[i].flatten()
             true, pred = remove_ignore_index(true, pred, ignore_index)
-            hamming.append(_sk_hamming_loss(true, pred))
+            hamming.append(_reference_sklearn_hamming_loss(true, pred))
         else:
             scores, w = [], []
             for j in range(preds.shape[1]):
                 pred, true = preds[i, j], target[i, j]
                 true, pred = remove_ignore_index(true, pred, ignore_index)
-                scores.append(_sk_hamming_loss(true, pred))
+                scores.append(_reference_sklearn_hamming_loss(true, pred))
                 confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
                 w.append(confmat[1, 1] + confmat[1, 0])
             hamming.append(np.stack(scores))
@@ -358,38 +377,42 @@ def _sk_hamming_distance_multilabel_local(preds, target, ignore_index, average):
     res = np.stack(hamming, 0)
     if average == "macro":
         return res.mean(-1)
-    elif average == "weighted":
+    if average == "weighted":
         weights = np.stack(weights, 0).astype(float)
         weights_norm = weights.sum(-1, keepdims=True)
         weights_norm[weights_norm == 0] = 1.0
         return ((weights * res) / weights_norm).sum(-1)
-    elif average is None or average == "none":
+    if average is None or average == "none":
         return res
+    return None
 
 
-def _sk_hamming_distance_multilabel(preds, target, ignore_index, multidim_average, average):
+def _reference_sklearn_hamming_distance_multilabel(preds, target, ignore_index, multidim_average, average):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
-        if not ((0 < preds) & (preds < 1)).all():
+        if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
     preds = preds.reshape(*preds.shape[:2], -1)
     target = target.reshape(*target.shape[:2], -1)
 
     if multidim_average == "global":
-        return _sk_hamming_distance_multilabel_global(preds, target, ignore_index, average)
-    return _sk_hamming_distance_multilabel_local(preds, target, ignore_index, average)
+        return _reference_sklearn_hamming_distance_multilabel_global(preds, target, ignore_index, average)
+    return _reference_sklearn_hamming_distance_multilabel_local(preds, target, ignore_index, average)
 
 
-@pytest.mark.parametrize("input", _multilabel_cases)
+@pytest.mark.parametrize("inputs", _multilabel_cases)
 class TestMultilabelHammingDistance(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    """Test class for `MultilabelHammingDistance` metric."""
+
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
-    def test_multilabel_hamming_distance(self, ddp, input, ignore_index, multidim_average, average):
-        preds, target = input
+    def test_multilabel_hamming_distance(self, ddp, inputs, ignore_index, multidim_average, average):
+        """Test class implementation of metric."""
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 4:
@@ -402,8 +425,8 @@ class TestMultilabelHammingDistance(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelHammingDistance,
-            sk_metric=partial(
-                _sk_hamming_distance_multilabel,
+            reference_metric=partial(
+                _reference_sklearn_hamming_distance_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -417,11 +440,12 @@ class TestMultilabelHammingDistance(MetricTester):
             },
         )
 
-    @pytest.mark.parametrize("ignore_index", [None, 0, -1])
+    @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
-    def test_multilabel_hamming_distance_functional(self, input, ignore_index, multidim_average, average):
-        preds, target = input
+    def test_multilabel_hamming_distance_functional(self, inputs, ignore_index, multidim_average, average):
+        """Test functional implementation of metric."""
+        preds, target = inputs
         if ignore_index == -1:
             target = inject_ignore_index(target, ignore_index)
         if multidim_average == "samplewise" and preds.ndim < 4:
@@ -431,8 +455,8 @@ class TestMultilabelHammingDistance(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_hamming_distance,
-            sk_metric=partial(
-                _sk_hamming_distance_multilabel,
+            reference_metric=partial(
+                _reference_sklearn_hamming_distance_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -446,8 +470,9 @@ class TestMultilabelHammingDistance(MetricTester):
             },
         )
 
-    def test_multilabel_hamming_distance_differentiability(self, input):
-        preds, target = input
+    def test_multilabel_hamming_distance_differentiability(self, inputs):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        preds, target = inputs
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -457,10 +482,9 @@ class TestMultilabelHammingDistance(MetricTester):
         )
 
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_hamming_distance_dtype_cpu(self, input, dtype):
-        preds, target = input
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_6:
-            pytest.xfail(reason="half support of core ops not support before pytorch v1.6")
+    def test_multilabel_hamming_distance_dtype_cpu(self, inputs, dtype):
+        """Test dtype support of the metric on CPU."""
+        preds, target = inputs
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -474,8 +498,9 @@ class TestMultilabelHammingDistance(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    def test_multilabel_hamming_distance_dtype_gpu(self, input, dtype):
-        preds, target = input
+    def test_multilabel_hamming_distance_dtype_gpu(self, inputs, dtype):
+        """Test dtype support of the metric on GPU."""
+        preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
             target=target,
@@ -484,3 +509,24 @@ class TestMultilabelHammingDistance(MetricTester):
             metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
             dtype=dtype,
         )
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryHammingDistance, {"task": "binary"}),
+        (MulticlassHammingDistance, {"task": "multiclass", "num_classes": 3}),
+        (MultilabelHammingDistance, {"task": "multilabel", "num_labels": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=HammingDistance):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)

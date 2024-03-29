@@ -1,7 +1,8 @@
 cff-version: 1.2.0
 message: "If you want to cite the framework, feel free to use this (but only if you loved it 😊)"
 title: "TorchMetrics - Measuring Reproducibility in PyTorch"
-abstract: "A main problem with reproducing machine learning publications is the variance of metric implementations across papers.
+abstract:
+  "A main problem with reproducing machine learning publications is the variance of metric implementations across papers.
   A lack of standardization leads to different behavior in mech- anisms such as checkpointing, learning rate schedulers or early stopping, that will influence the reported results.
   For example, a complex metric such as Fréchet inception distance (FID) for synthetic image quality evaluation will differ based on the specific interpolation method used.
   There have been a few attempts at tackling the reproducibility issues.
@@ -31,7 +32,7 @@ authors:
 doi: 10.21105/joss.04101
 license: "Apache-2.0"
 url: "https://www.pytorchlightning.ai"
-repository-code: "https://github.com/Lightning-AI/metrics"
+repository-code: "https://github.com/Lightning-AI/torchmetrics"
 date-released: 2022-02-11
 keywords:
   - machine learning

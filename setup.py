@@ -5,35 +5,110 @@ import re
 from functools import partial
 from importlib.util import module_from_spec, spec_from_file_location
 from itertools import chain
-from typing import List, Tuple
+from pathlib import Path
+from typing import Any, Iterable, Iterator, List, Optional, Tuple, Union
 
+from pkg_resources import Requirement, yield_lines
 from setuptools import find_packages, setup
 
 _PATH_ROOT = os.path.realpath(os.path.dirname(__file__))
 _PATH_SOURCE = os.path.join(_PATH_ROOT, "src")
 _PATH_REQUIRE = os.path.join(_PATH_ROOT, "requirements")
+_FREEZE_REQUIREMENTS = os.environ.get("FREEZE_REQUIREMENTS", "0").lower() in ("1", "true")
 
 
-def _load_requirements(path_dir: str, file_name: str = "requirements.txt", comment_char: str = "#") -> List[str]:
+class _RequirementWithComment(Requirement):
+    strict_string = "# strict"
+
+    def __init__(self, *args: Any, comment: str = "", pip_argument: Optional[str] = None, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.comment = comment
+        if pip_argument is not None and not pip_argument:
+            raise ValueError("Expected `pip_argument` to either be `None` or an str, but got an empty string")
+        self.pip_argument = pip_argument
+        self.strict = self.strict_string in comment.lower()
+
+    def adjust(self, unfreeze: bool) -> str:
+        """Remove version restrictions unless they are strict.
+
+        >>> _RequirementWithComment("arrow<=1.2.2,>=1.2.0", comment="# anything").adjust(False)
+        'arrow<=1.2.2,>=1.2.0'
+        >>> _RequirementWithComment("arrow<=1.2.2,>=1.2.0", comment="# strict").adjust(False)
+        'arrow<=1.2.2,>=1.2.0  # strict'
+        >>> _RequirementWithComment("arrow<=1.2.2,>=1.2.0", comment="# my name").adjust(True)
+        'arrow>=1.2.0'
+        >>> _RequirementWithComment("arrow>=1.2.0, <=1.2.2", comment="# strict").adjust(True)
+        'arrow<=1.2.2,>=1.2.0  # strict'
+        >>> _RequirementWithComment("arrow").adjust(True)
+        'arrow'
+
+        """
+        out = str(self)
+        if self.strict:
+            return f"{out}  {self.strict_string}"
+        if unfreeze:
+            for operator, version in self.specs:
+                if operator in ("<", "<="):
+                    # drop upper bound
+                    return out.replace(f"{operator}{version},", "")
+        return out
+
+
+def _parse_requirements(strs: Union[str, Iterable[str]]) -> Iterator[_RequirementWithComment]:
+    r"""Adapted from `pkg_resources.parse_requirements` to include comments.
+
+    >>> txt = ['# ignored', '', 'this # is an', '--piparg', 'example', 'foo # strict', 'thing', '-r different/file.txt']
+    >>> [r.adjust('none') for r in _parse_requirements(txt)]
+    ['this', 'example', 'foo  # strict', 'thing']
+    >>> txt = '\\n'.join(txt)
+    >>> [r.adjust('none') for r in _parse_requirements(txt)]
+    ['this', 'example', 'foo  # strict', 'thing']
+
+    """
+    lines = yield_lines(strs)
+    pip_argument = None
+    for line in lines:
+        # Drop comments -- a hash without a space may be in a URL.
+        if " #" in line:
+            comment_pos = line.find(" #")
+            line, comment = line[:comment_pos], line[comment_pos:]
+        else:
+            comment = ""
+        # If there is a line continuation, drop it, and append the next line.
+        if line.endswith("\\"):
+            line = line[:-2].strip()
+            try:
+                line += next(lines)
+            except StopIteration:
+                return
+        if "@" in line or re.search("https?://", line):
+            # skip lines with links like `pesq @ git+https://github.com/ludlows/python-pesq`
+            continue
+        # If there's a pip argument, save it
+        if line.startswith("--"):
+            pip_argument = line
+            continue
+        if line.startswith("-r "):
+            # linked requirement files are unsupported
+            continue
+        yield _RequirementWithComment(line, comment=comment, pip_argument=pip_argument)
+        pip_argument = None
+
+
+def _load_requirements(
+    path_dir: str, file_name: str = "base.txt", unfreeze: bool = not _FREEZE_REQUIREMENTS
+) -> List[str]:
     """Load requirements from a file.
 
-    >>> _load_requirements(_PATH_ROOT)
+    >>> _load_requirements(_PATH_REQUIRE)
     ['numpy...', 'torch..."]
+
     """
-    with open(os.path.join(path_dir, file_name)) as file:
-        lines = [ln.strip() for ln in file.readlines()]
-    reqs = []
-    for ln in lines:
-        # filer all comments
-        if comment_char in ln:
-            char_idx = min(ln.index(ch) for ch in comment_char)
-            ln = ln[:char_idx].strip()
-        # skip directly installed dependencies
-        if ln.startswith("http") or ln.startswith("git") or ln.startswith("-r") or "@" in ln:
-            continue
-        if ln:  # if requirement is not empty
-            reqs.append(ln)
-    return reqs
+    path = Path(path_dir) / file_name
+    if not path.exists():
+        raise ValueError("Path {path} not found for input dir {path_dir} and filename {file_name}.")
+    text = path.read_text()
+    return [req.adjust(unfreeze) for req in _parse_requirements(text)]
 
 
 def _load_readme_description(path_dir: str, homepage: str, version: str) -> str:
@@ -41,6 +116,7 @@ def _load_readme_description(path_dir: str, homepage: str, version: str) -> str:
 
     >>> _load_readme_description(_PATH_ROOT, "",  "")
     '<div align="center">...'
+
     """
     path_readme = os.path.join(path_dir, "README.md")
     with open(path_readme, encoding="utf-8") as fp:
@@ -66,12 +142,10 @@ def _load_readme_description(path_dir: str, homepage: str, version: str) -> str:
     skip_begin = r"<!-- following section will be skipped from PyPI description -->"
     skip_end = r"<!-- end skipping PyPI description -->"
     # todo: wrap content as commented description
-    text = re.sub(rf"{skip_begin}.+?{skip_end}", "<!--  -->", text, flags=re.IGNORECASE + re.DOTALL)
-
-    return text
+    return re.sub(rf"{skip_begin}.+?{skip_end}", "<!--  -->", text, flags=re.IGNORECASE + re.DOTALL)
 
 
-def _load_py_module(fname, pkg="torchmetrics"):
+def _load_py_module(fname: str, pkg: str = "torchmetrics"):
     spec = spec_from_file_location(os.path.join(pkg, fname), os.path.join(_PATH_SOURCE, pkg, fname))
     py = module_from_spec(spec)
     spec.loader.exec_module(py)
@@ -84,28 +158,39 @@ LONG_DESCRIPTION = _load_readme_description(
     homepage=ABOUT.__homepage__,
     version=f"v{ABOUT.__version__}",
 )
-BASE_REQUIREMENTS = _load_requirements(path_dir=_PATH_ROOT, file_name="requirements.txt")
+BASE_REQUIREMENTS = _load_requirements(path_dir=_PATH_REQUIRE, file_name="base.txt")
 
 
-def _prepare_extras(skip_files: Tuple[str] = ("devel.txt",)):
+def _prepare_extras(skip_pattern: str = "^_", skip_files: Tuple[str] = ("base.txt",)) -> dict:
+    """Preparing extras for the package listing requirements.
+
+    Args:
+        skip_pattern: ignore files with this pattern, by default all files starting with _
+        skip_files: ignore some additional files, by default base requirements
+
+    Note, particular domain test requirement are aggregated in single "_tests" extra (which is not accessible).
+
+    """
     # find all extra requirements
     _load_req = partial(_load_requirements, path_dir=_PATH_REQUIRE)
     found_req_files = sorted(os.path.basename(p) for p in glob.glob(os.path.join(_PATH_REQUIRE, "*.txt")))
     # filter unwanted files
+    found_req_files = [n for n in found_req_files if not re.match(skip_pattern, n)]
     found_req_files = [n for n in found_req_files if n not in skip_files]
     found_req_names = [os.path.splitext(req)[0] for req in found_req_files]
     # define basic and extra extras
-    extras_req = {
-        name: _load_req(file_name=fname) for name, fname in zip(found_req_names, found_req_files) if "_test" not in name
-    }
+    extras_req = {"_tests": []}
     for name, fname in zip(found_req_names, found_req_files):
-        if "_test" in name:
-            extras_req["test"] += _load_req(file_name=fname)
+        if name.endswith("_test"):
+            extras_req["_tests"] += _load_req(file_name=fname)
+        else:
+            extras_req[name] = _load_req(file_name=fname)
     # filter the uniques
     extras_req = {n: list(set(req)) for n, req in extras_req.items()}
     # create an 'all' keyword that install all possible dependencies
-    extras_req["all"] = list(chain([pkgs for k, pkgs in extras_req.items() if k not in ("test", "docs")]))
-    return extras_req
+    extras_req["all"] = list(chain([pkgs for k, pkgs in extras_req.items() if k not in ("_test", "_tests")]))
+    extras_req["dev"] = extras_req["all"] + extras_req["_tests"]
+    return {k: v for k, v in extras_req.items() if not k.startswith("_")}
 
 
 # https://packaging.python.org/discussions/install-requires-vs-requirements /
@@ -130,7 +215,7 @@ if __name__ == "__main__":
         include_package_data=True,
         zip_safe=False,
         keywords=["deep learning", "machine learning", "pytorch", "metrics", "AI"],
-        python_requires=">=3.7",
+        python_requires=">=3.8",
         setup_requires=[],
         install_requires=BASE_REQUIREMENTS,
         extras_require=_prepare_extras(),
@@ -156,9 +241,9 @@ if __name__ == "__main__":
             # Specify the Python versions you support here. In particular, ensure
             # that you indicate whether you support Python 2, Python 3 or both.
             "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3.9",
             "Programming Language :: Python :: 3.10",
+            "Programming Language :: Python :: 3.11",
         ],
     )

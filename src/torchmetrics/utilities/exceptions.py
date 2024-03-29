@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,3 +15,7 @@
 
 class TorchMetricsUserError(Exception):
     """Error used to inform users of a wrong combination of Metric API calls."""
+
+
+class TorchMetricsUserWarning(Warning):
+    """Error used to inform users of specific warnings due to the torchmetrics API."""

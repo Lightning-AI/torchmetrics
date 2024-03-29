@@ -12,5 +12,5 @@ Sum
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.SumMetric
-    :noindex:
+.. autoclass:: torchmetrics.aggregation.SumMetric
+    :exclude-members: update, compute

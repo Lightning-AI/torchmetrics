@@ -12,5 +12,4 @@ Image Gradients
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.image_gradients
-    :noindex:
+.. autofunction:: torchmetrics.functional.image.image_gradients

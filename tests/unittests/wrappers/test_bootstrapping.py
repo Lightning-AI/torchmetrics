@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,18 +13,19 @@
 # limitations under the License.
 import operator
 from functools import partial
+from typing import Any
 
 import numpy as np
 import pytest
 import torch
+from lightning_utilities import apply_to_collection
 from sklearn.metrics import mean_squared_error, precision_score, recall_score
 from torch import Tensor
-
-from torchmetrics import MeanSquaredError, Precision, Recall
-from torchmetrics.utilities import apply_to_collection
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7
+from torchmetrics.classification import MulticlassF1Score, MulticlassPrecision, MulticlassRecall
+from torchmetrics.regression import MeanSquaredError
 from torchmetrics.wrappers.bootstrapping import BootStrapper, _bootstrap_sampler
-from unittests.helpers import seed_all
+
+from unittests._helpers import seed_all
 
 seed_all(42)
 
@@ -33,10 +34,15 @@ _target = torch.randint(10, (10, 32))
 
 
 class TestBootStrapper(BootStrapper):
-    """For testing purpose, we subclass the bootstrapper class so we can get the exact permutation the class is
-    creating."""
+    """Subclass of Bootstrapper class.
 
-    def update(self, *args) -> None:
+    For testing purpose, we subclass the bootstrapper class so we can get the exact permutation the class is creating.
+    This is necessary such that the reference we are comparing to returns the exact same result for a given permutation.
+
+    """
+
+    def update(self, *args: Any) -> None:
+        """Update input where the permutation is also saved."""
         self.out = []
         for idx in range(self.num_bootstraps):
             size = len(args[0])
@@ -58,7 +64,7 @@ def _sample_checker(old_samples, new_samples, op: operator, threshold: int):
 
 @pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
 def test_bootstrap_sampler(sampling_strategy):
-    """make sure that the bootstrap sampler works as intended."""
+    """Make sure that the bootstrap sampler works as intended."""
     old_samples = torch.randn(20, 2)
 
     # make sure that the new samples are only made up of old samples
@@ -71,27 +77,26 @@ def test_bootstrap_sampler(sampling_strategy):
     assert found_one, "resampling did not work because no samples were sampled twice"
 
     found_zero = _sample_checker(old_samples, new_samples, operator.ne, 0)
-    assert found_zero, "resampling did not work because all samples were atleast sampled once"
+    assert found_zero, "resampling did not work because all samples were at least sampled once"
 
 
 @pytest.mark.parametrize("device", ["cpu", "cuda"])
 @pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
 @pytest.mark.parametrize(
-    "metric, sk_metric",
+    ("metric", "ref_metric"),
     [
-        [Precision(average="micro"), partial(precision_score, average="micro")],
-        [Recall(average="micro"), partial(recall_score, average="micro")],
-        [MeanSquaredError(), mean_squared_error],
+        (MulticlassPrecision(num_classes=10, average="micro"), partial(precision_score, average="micro")),
+        (MulticlassRecall(num_classes=10, average="micro"), partial(recall_score, average="micro")),
+        (MeanSquaredError(), mean_squared_error),
     ],
 )
-def test_bootstrap(device, sampling_strategy, metric, sk_metric):
+def test_bootstrap(device, sampling_strategy, metric, ref_metric):
     """Test that the different bootstraps gets updated as we expected and that the compute method works."""
     if device == "cuda" and not torch.cuda.is_available():
         pytest.skip("Test with device='cuda' requires gpu")
 
     _kwargs = {"base_metric": metric, "mean": True, "std": True, "raw": True, "sampling_strategy": sampling_strategy}
-    if _TORCH_GREATER_EQUAL_1_7:
-        _kwargs.update(dict(quantile=torch.tensor([0.05, 0.95], device=device)))
+    _kwargs.update({"quantile": torch.tensor([0.05, 0.95], device=device)})
 
     bootstrapper = TestBootStrapper(**_kwargs)
     bootstrapper.to(device)
@@ -103,21 +108,35 @@ def test_bootstrap(device, sampling_strategy, metric, sk_metric):
         bootstrapper.update(p, t)
 
         for i, o in enumerate(bootstrapper.out):
-
             collected_preds[i].append(o[0])
             collected_target[i].append(o[1])
 
     collected_preds = [torch.cat(cp).cpu() for cp in collected_preds]
     collected_target = [torch.cat(ct).cpu() for ct in collected_target]
 
-    sk_scores = [sk_metric(ct, cp) for ct, cp in zip(collected_target, collected_preds)]
+    sk_scores = [ref_metric(ct, cp) for ct, cp in zip(collected_target, collected_preds)]
 
     output = bootstrapper.compute()
-    # quantile only avaible for pytorch v1.7 and forward
-    if _TORCH_GREATER_EQUAL_1_7:
-        assert np.allclose(output["quantile"][0].cpu(), np.quantile(sk_scores, 0.05))
-        assert np.allclose(output["quantile"][1].cpu(), np.quantile(sk_scores, 0.95))
+    assert np.allclose(output["quantile"][0].cpu(), np.quantile(sk_scores, 0.05))
+    assert np.allclose(output["quantile"][1].cpu(), np.quantile(sk_scores, 0.95))
 
     assert np.allclose(output["mean"].cpu(), np.mean(sk_scores))
     assert np.allclose(output["std"].cpu(), np.std(sk_scores, ddof=1))
     assert np.allclose(output["raw"].cpu(), sk_scores)
+
+
+@pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
+def test_low_sample_amount(sampling_strategy):
+    """Test that the metric works with very little data.
+
+    In this case it is very likely that no samples from a current batch should be included in one of the bootstraps,
+    but this should still not crash the metric.
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2048
+
+    """
+    preds = torch.randn(3, 3).softmax(dim=-1)
+    target = torch.LongTensor([0, 0, 0])
+    bootstrap_f1 = BootStrapper(
+        MulticlassF1Score(num_classes=3, average=None), num_bootstraps=20, sampling_strategy=sampling_strategy
+    )
+    assert bootstrap_f1(preds, target)  # does not work

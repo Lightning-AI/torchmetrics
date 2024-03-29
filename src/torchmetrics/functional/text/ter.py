@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@
 
 import re
 from functools import lru_cache
-from typing import Dict, Iterator, List, Optional, Sequence, Tuple, Union
+from typing import Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union
 
 from torch import Tensor, tensor
 
@@ -60,8 +60,9 @@ class _TercomTokenizer:
     See src/ter/core/Normalizer.java in https://github.com/jhclark/tercom Note that Python doesn't support named Unicode
     blocks so the mapping for relevant blocks was taken from here: https://unicode-table.com/en/blocks/
 
-    This implementation follows the implemenation from
+    This implementation follows the implementation from
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/tokenizers/tokenizer_ter.py.
+
     """
 
     _ASIAN_PUNCTUATION = r"([\u3001\u3002\u3008-\u3011\u3014-\u301f\uff61-\uff65\u30fb])"
@@ -79,15 +80,16 @@ class _TercomTokenizer:
         Args:
             normalize: An indication whether a general tokenization to be applied.
             no_punctuation: An indication whteher a punctuation to be removed from the sentences.
-            lowercase: An indication whether to enable case-insesitivity.
+            lowercase: An indication whether to enable case-insensitivity.
             asian_support: An indication whether asian characters to be processed.
+
         """
         self.normalize = normalize
         self.no_punctuation = no_punctuation
         self.lowercase = lowercase
         self.asian_support = asian_support
 
-    @lru_cache(maxsize=2**16)
+    @lru_cache(maxsize=2**16)  # noqa: B019
     def __call__(self, sentence: str) -> str:
         """Apply a different tokenization techniques according.
 
@@ -96,6 +98,7 @@ class _TercomTokenizer:
 
         Return:
             A tokenized and pre-processed sentence.
+
         """
         if not sentence:
             return ""
@@ -131,7 +134,7 @@ class _TercomTokenizer:
             (r"&gt;", ">"),
             # tokenize punctuation
             (r"([{-~[-` -&(-+:-@/])", r" \1 "),
-            # handle possesives
+            # handle possessive
             (r"'s ", r" 's "),
             (r"'s$", r" 's"),
             # tokenize period and comma unless preceded by a digit
@@ -147,7 +150,7 @@ class _TercomTokenizer:
         return sentence
 
     @classmethod
-    def _normalize_asian(cls, sentence: str) -> str:
+    def _normalize_asian(cls: Type["_TercomTokenizer"], sentence: str) -> str:
         """Split Chinese chars and Japanese kanji down to character level."""
         # 4E00—9FFF CJK Unified Ideographs
         # 3400—4DBF CJK Unified Ideographs Extension A
@@ -171,8 +174,7 @@ class _TercomTokenizer:
         sentence = re.sub(r"(^|^[\u31f0-\u31ff])([\u31f0-\u31ff]+)(?=$|^[\u31f0-\u31ff])", r"\1 \2 ", sentence)
 
         sentence = re.sub(cls._ASIAN_PUNCTUATION, r" \1 ", sentence)
-        sentence = re.sub(cls._FULL_WIDTH_PUNCTUATION, r" \1 ", sentence)
-        return sentence
+        return re.sub(cls._FULL_WIDTH_PUNCTUATION, r" \1 ", sentence)
 
     @staticmethod
     def _remove_punct(sentence: str) -> str:
@@ -180,11 +182,10 @@ class _TercomTokenizer:
         return re.sub(r"[\.,\?:;!\"\(\)]", "", sentence)
 
     @classmethod
-    def _remove_asian_punct(cls, sentence: str) -> str:
+    def _remove_asian_punct(cls: Type["_TercomTokenizer"], sentence: str) -> str:
         """Remove asian punctuation from an input sentence string."""
         sentence = re.sub(cls._ASIAN_PUNCTUATION, r"", sentence)
-        sentence = re.sub(cls._FULL_WIDTH_PUNCTUATION, r"", sentence)
-        return sentence
+        return re.sub(cls._FULL_WIDTH_PUNCTUATION, r"", sentence)
 
 
 def _preprocess_sentence(sentence: str, tokenizer: _TercomTokenizer) -> str:
@@ -196,12 +197,13 @@ def _preprocess_sentence(sentence: str, tokenizer: _TercomTokenizer) -> str:
 
     Return:
         The pre-processed output sentence string.
+
     """
     return tokenizer(sentence.rstrip())
 
 
 def _find_shifted_pairs(pred_words: List[str], target_words: List[str]) -> Iterator[Tuple[int, int, int]]:
-    """Find matching word sub-sequences in two lists of words. Ignores sub-sequences starting at the same position.
+    """Find matching word sub-sequences in two lists of words. Ignores sub- sequences starting at the same position.
 
     Args:
         pred_words: A list of a tokenized hypothesis sentence.
@@ -217,6 +219,7 @@ def _find_shifted_pairs(pred_words: List[str], target_words: List[str]) -> Itera
             A list of reference start indices.
         length:
             A length of a word span to be considered.
+
     """
     for pred_start in range(len(pred_words)):
         for target_start in range(len(target_words)):
@@ -246,8 +249,7 @@ def _handle_corner_cases_during_shifting(
     target_start: int,
     length: int,
 ) -> bool:
-    """A helper function which returns ``True`` if any of corner cases has been met. Otherwise, ``False`` is
-    returned.
+    """Return ``True`` if any of corner cases has been met. Otherwise, ``False`` is returned.
 
     Args:
         alignments: A dictionary mapping aligned positions between a reference and a hypothesis.
@@ -259,6 +261,7 @@ def _handle_corner_cases_during_shifting(
 
     Return:
         An indication whether any of conrner cases has been met.
+
     """
     # don't do the shift unless both the hypothesis was wrong and the
     # reference doesn't match hypothesis at the target position
@@ -286,6 +289,7 @@ def _perform_shift(words: List[str], start: int, length: int, target: int) -> Li
 
     Return:
         A list of shifted words.
+
     """
 
     def _shift_word_before_previous_position(words: List[str], start: int, target: int, length: int) -> List[str]:
@@ -314,12 +318,13 @@ def _shift_words(
     cached_edit_distance: _LevenshteinEditDistance,
     checked_candidates: int,
 ) -> Tuple[int, List[str], int]:
-    """Attempt to shift words to match a hypothesis with a reference. It returns the lowest number of required
-    edits between a hypothesis and a provided reference, a list of shifted words and number of checked candidates.
+    """Attempt to shift words to match a hypothesis with a reference.
 
-    Note that the filtering of possible shifts and shift selection are heavily based on somewhat arbitrary heuristics.
-    The code here follows as closely as possible the logic in Tercom, not always justifying the particular design
-    choices. (The paragraph copied from https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/lib_ter.py)
+    It returns the lowest number of required edits between a hypothesis and a provided reference, a list of shifted
+    words and number of checked candidates. Note that the filtering of possible shifts and shift selection are heavily
+    based on somewhat arbitrary heuristics. The code here follows as closely as possible the logic in Tercom, not
+    always justifying the particular design choices.
+    The paragraph copied from https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/lib_ter.py.
 
     Args:
         pred_words: A list of tokenized hypothesis sentence.
@@ -334,6 +339,7 @@ def _shift_words(
             A list of shifted words in hypothesis sentences.
         checked_candidates:
             A number of checked hypothesis candidates to match a provided reference.
+
     """
     edit_distance, inverted_trace = cached_edit_distance(pred_words)
     trace = _flip_trace(inverted_trace)
@@ -396,6 +402,7 @@ def _translation_edit_rate(pred_words: List[str], target_words: List[str]) -> Te
 
     Return:
         A number of required edits to match hypothesis and reference sentences.
+
     """
     if len(target_words) == 0:
         return tensor(0.0)
@@ -433,6 +440,7 @@ def _compute_sentence_statistics(pred_words: List[str], target_words: List[List[
             The best (lowest) number of required edits to match hypothesis and reference sentences.
         avg_tgt_len:
             Average length of tokenized reference sentences.
+
     """
     tgt_lengths = tensor(0.0)
     best_num_edits = tensor(2e16)
@@ -456,14 +464,13 @@ def _compute_ter_score_from_statistics(num_edits: Tensor, tgt_length: Tensor) ->
 
     Return:
         A corpus-level TER score or 1 if reference_length == 0.
+
     """
     if tgt_length > 0 and num_edits > 0:
-        score = num_edits / tgt_length
-    elif tgt_length == 0 and num_edits > 0:
-        score = tensor(1.0)
-    else:
-        score = tensor(0.0)
-    return score
+        return num_edits / tgt_length
+    if tgt_length == 0 and num_edits > 0:
+        return tensor(1.0)
+    return tensor(0.0)
 
 
 def _ter_update(
@@ -479,9 +486,10 @@ def _ter_update(
     Args:
         preds: An iterable of hypothesis corpus.
         target: An iterable of iterables of reference corpus.
-        tokenizer:
+        tokenizer: An instance of ``_TercomTokenizer`` handling a sentence tokenization.
         total_num_edits: A total number of required edits to match hypothesis and reference sentences.
         total_tgt_length: A total average length of reference sentences.
+        sentence_ter: A list of sentence-level TER values
 
     Return:
         total_num_edits:
@@ -494,10 +502,11 @@ def _ter_update(
     Raises:
         ValueError:
             If length of ``preds`` and ``target`` differs.
+
     """
     target, preds = _validate_inputs(target, preds)
 
-    for (pred, tgt) in zip(preds, target):
+    for pred, tgt in zip(preds, target):
         tgt_words_: List[List[str]] = [_preprocess_sentence(_tgt, tokenizer).split() for _tgt in tgt]
         pred_words_: List[str] = _preprocess_sentence(pred, tokenizer).split()
         num_edits, tgt_length = _compute_sentence_statistics(pred_words_, tgt_words_)
@@ -510,12 +519,14 @@ def _ter_update(
 
 def _ter_compute(total_num_edits: Tensor, total_tgt_length: Tensor) -> Tensor:
     """Compute TER based on pre-computed a total number of edits and a total average reference length.
+
     Args:
         total_num_edits: A total number of required edits to match hypothesis and reference sentences.
         total_tgt_length: A total average length of reference sentences.
 
     Return:
         A corpus-level TER score.
+
     """
     return _compute_ter_score_from_statistics(total_num_edits, total_tgt_length)
 
@@ -529,9 +540,10 @@ def translation_edit_rate(
     asian_support: bool = False,
     return_sentence_level_score: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, List[Tensor]]]:
-    """Calculate Translation edit rate (`TER`_)  of machine translated text with one or more references. This
-    implementation follows the implmenetaions from
-    https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py. The `sacrebleu` implmenetation is a
+    """Calculate Translation edit rate (`TER`_)  of machine translated text with one or more references.
+
+    This implementation follows the implementations from
+    https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/ter.py. The `sacrebleu` implementation is a
     near-exact reimplementation of the Tercom algorithm, produces identical results on all "sane" outputs.
 
     Args:
@@ -539,7 +551,7 @@ def translation_edit_rate(
         target: An iterable of iterables of reference corpus.
         normalize: An indication whether a general tokenization to be applied.
         no_punctuation: An indication whteher a punctuation to be removed from the sentences.
-        lowercase: An indication whether to enable case-insesitivity.
+        lowercase: An indication whether to enable case-insensitivity.
         asian_support: An indication whether asian characters to be processed.
         return_sentence_level_score: An indication whether a sentence-level TER to be returned.
 
@@ -556,6 +568,7 @@ def translation_edit_rate(
     References:
         [1] A Study of Translation Edit Rate with Targeted Human Annotation
         by Mathew Snover, Bonnie Dorr, Richard Schwartz, Linnea Micciulla and John Makhoul `TER`_
+
     """
     if not isinstance(normalize, bool):
         raise ValueError(f"Expected argument `normalize` to be of type boolean but got {normalize}.")

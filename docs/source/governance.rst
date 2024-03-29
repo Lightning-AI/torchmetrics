@@ -17,16 +17,17 @@ Leads
 
 Core Maintainers
 ----------------
-- Luca Di Liello (`lucadiliello <https://github.com/lucadiliello>`_)
 - Daniel Stancl (`stancld <https://github.com/stancld>`_)
-- Maxim Grechkin (`maximsch2 <https://github.com/maximsch2>`_)
+- Luca Di Liello (`lucadiliello <https://github.com/lucadiliello>`_)
 - Changsheng Quan (`quancs <https://github.com/quancs>`_)
+- Shion Matsumoto (`matsumotosan <https://github.com/matsumotosan>`_)
 
 
 Alumni
 ------
 - Ananya Harsh Jha (`ananyahjha93 <https://github.com/ananyahjha93>`_)
 - Teddy Koker (`teddykoker <https://github.com/teddykoker>`_)
+- Maxim Grechkin (`maximsch2 <https://github.com/maximsch2>`_)
 
 
 Releases
@@ -47,7 +48,7 @@ and start tracking the development. It is possible that priorities change over t
 
 Commits to the project are exclusively to be added by pull requests on GitHub and anyone in the community is welcome to review them.
 However, reviews submitted by
-`code owners <https://github.com/Lightning-AI/metrics/blob/master/.github/CODEOWNERS>`_
+`code owners <https://github.com/Lightning-AI/torchmetrics/blob/master/.github/CODEOWNERS>`_
 have higher weight and it is necessary to get the approval of code owners before a pull request can be merged.
 Additional requirements may apply case by case.
 

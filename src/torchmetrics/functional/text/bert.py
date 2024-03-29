@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,7 @@
 # limitations under the License.
 import csv
 import urllib
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
-from warnings import warn
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -30,16 +29,25 @@ from torchmetrics.functional.text.helper_embedding_metric import (
     _output_data_collator,
     _process_attention_mask_for_special_tokens,
 )
-from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_AVAILABLE
-
-if _TRANSFORMERS_AVAILABLE:
-    from transformers import AutoModel, AutoTokenizer
-else:
-    __doctest_skip__ = ["bert_score"]
-
+from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
+from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
 
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL = "roberta-large"
+
+if _TRANSFORMERS_GREATER_EQUAL_4_4:
+    from transformers import AutoModel, AutoTokenizer
+
+    def _download_model_for_bert_score() -> None:
+        """Download intensive operations."""
+        AutoTokenizer.from_pretrained(_DEFAULT_MODEL, resume_download=True)
+        AutoModel.from_pretrained(_DEFAULT_MODEL, resume_download=True)
+
+    if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_model_for_bert_score):
+        __doctest_skip__ = ["bert_score"]
+else:
+    __doctest_skip__ = ["bert_score"]
 
 
 def _get_embeddings_and_idf_scale(
@@ -51,9 +59,10 @@ def _get_embeddings_and_idf_scale(
     all_layers: bool = False,
     idf: bool = False,
     verbose: bool = False,
-    user_forward_fn: Callable[[Module, Dict[str, Tensor]], Tensor] = None,
+    user_forward_fn: Optional[Callable[[Module, Dict[str, Tensor]], Tensor]] = None,
 ) -> Tuple[Tensor, Tensor]:
     """Calculate sentence embeddings and the inverse-document-frequency scaling factor.
+
     Args:
         dataloader: dataloader instance.
         target_len: A length of the longest sequence in the data. Used for padding the model output.
@@ -66,11 +75,11 @@ def _get_embeddings_and_idf_scale(
         user_forward_fn:
             A user's own forward function used in a combination with ``user_model``. This function must
             take ``user_model`` and a python dictionary of containing ``"input_ids"`` and ``"attention_mask"``
-            represented by ``torch.Tensor`` as an input and return the model's output represented by the single
-            ``torch.Tensor``.
+            represented by :class:`~torch.Tensor` as an input and return the model's output represented by the single
+            :class:`~torch.Tensor`.
 
     Return:
-        A tuple of ``torch.Tensor``s containing the model's embeddings and the normalized tokens IDF.
+        A tuple of :class:`~torch.Tensor`s containing the model's embeddings and the normalized tokens IDF.
         When ``idf = False``, tokens IDF is not calculated, and a matrix of mean weights is returned instead.
         For a single sentence, ``mean_weight = 1/seq_len``, where ``seq_len`` is a sum over the corresponding
         ``attention_mask``.
@@ -78,6 +87,7 @@ def _get_embeddings_and_idf_scale(
     Raises:
         ValueError:
             If ``all_layers = True`` and a model, which is not from the ``transformers`` package, is used.
+
     """
     embeddings_list: List[Tensor] = []
     idf_scale_list: List[Tensor] = []
@@ -122,13 +132,12 @@ def _get_embeddings_and_idf_scale(
 
 
 def _get_scaled_precision_or_recall(cos_sim: Tensor, metric: str, idf_scale: Tensor) -> Tensor:
-    """Helper function that calculates precision or recall, transpose it and scale it with idf_scale factor."""
+    """Calculate precision or recall, transpose it and scale it with idf_scale factor."""
     dim = 3 if metric == "precision" else 2
     res = cos_sim.max(dim=dim).values
     res = torch.einsum("bls, bs -> bls", res, idf_scale).sum(-1)
     # We transpose the results and squeeze if possible to match the format of the original BERTScore implementation
-    res = res.transpose(0, 1).squeeze()
-    return res
+    return res.transpose(0, 1).squeeze()
 
 
 def _get_precision_recall_f1(
@@ -144,6 +153,7 @@ def _get_precision_recall_f1(
 
     Return:
         Tensors containing precision, recall and F1 score, respectively.
+
     """
     # Dimensions: b = batch_size, l = num_layers, p = predictions_seq_len, r = references_seq_len, d = bert_dim
     cos_sim = torch.einsum("blpd, blrd -> blpr", preds_embeddings, target_embeddings)
@@ -158,36 +168,35 @@ def _get_precision_recall_f1(
 
 
 def _get_hash(model_name_or_path: Optional[str] = None, num_layers: Optional[int] = None, idf: bool = False) -> str:
-    """Compute `BERT_score`_ (copied and adjusted)"""
-    msg = f"{model_name_or_path}_L{num_layers}{'_idf' if idf else '_no-idf'}"
-    return msg
+    """Compute `BERT_score`_ (copied and adjusted)."""
+    return f"{model_name_or_path}_L{num_layers}{'_idf' if idf else '_no-idf'}"
 
 
 def _read_csv_from_local_file(baseline_path: str) -> Tensor:
-    """Helper function which reads baseline the csv file from the local file.
+    """Read baseline from csv file from the local file.
 
     This method implemented to avoid `pandas` dependency.
+
     """
     with open(baseline_path) as fname:
         csv_file = csv.reader(fname)
         baseline_list = [[float(item) for item in row] for idx, row in enumerate(csv_file) if idx > 0]
-    baseline = torch.tensor(baseline_list)[:, 1:]
-    return baseline
+    return torch.tensor(baseline_list)[:, 1:]
 
 
 def _read_csv_from_url(baseline_url: str) -> Tensor:
-    """Helper function which reads the baseline csv file from URL.
+    """Read baseline from csv file from URL.
 
     This method is implemented to avoid `pandas` dependency.
+
     """
-    with urllib.request.urlopen(baseline_url) as http_request:  # type: ignore
+    with urllib.request.urlopen(baseline_url) as http_request:
         baseline_list = [
             [float(item) for item in row.strip().decode("utf-8").split(",")]
             for idx, row in enumerate(http_request)
             if idx > 0
         ]
-        baseline = torch.tensor(baseline_list)[:, 1:]
-    return baseline
+        return torch.tensor(baseline_list)[:, 1:]
 
 
 def _load_baseline(
@@ -203,12 +212,12 @@ def _load_baseline(
         baseline = _read_csv_from_url(baseline_url)
     # Read default baseline from the original `bert-score` package https://github.com/Tiiiger/bert_score
     elif lang and model_name_or_path:
-        _URL_BASE = "https://raw.githubusercontent.com/Tiiiger/bert_score/master/bert_score/rescale_baseline"
-        baseline_url = f"{_URL_BASE}/{lang}/{model_name_or_path}.tsv"
+        url_base = "https://raw.githubusercontent.com/Tiiiger/bert_score/master/bert_score/rescale_baseline"
+        baseline_url = f"{url_base}/{lang}/{model_name_or_path}.tsv"
         baseline = _read_csv_from_url(baseline_url)
     else:
-        baseline = None
-        warn("Baseline was not successfully loaded. No baseline is going to be used.")
+        rank_zero_warn("Baseline was not successfully loaded. No baseline is going to be used.")
+        return None
 
     return baseline
 
@@ -232,34 +241,34 @@ def _rescale_metrics_with_baseline(
 
 
 def bert_score(
-    preds: Union[List[str], Dict[str, Tensor]],
-    target: Union[List[str], Dict[str, Tensor]],
+    preds: Union[str, Sequence[str], Dict[str, Tensor]],
+    target: Union[str, Sequence[str], Dict[str, Tensor]],
     model_name_or_path: Optional[str] = None,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
     model: Optional[Module] = None,
     user_tokenizer: Any = None,
-    user_forward_fn: Callable[[Module, Dict[str, Tensor]], Tensor] = None,
+    user_forward_fn: Optional[Callable[[Module, Dict[str, Tensor]], Tensor]] = None,
     verbose: bool = False,
     idf: bool = False,
     device: Optional[Union[str, torch.device]] = None,
     max_length: int = 512,
     batch_size: int = 64,
-    num_threads: int = 4,
+    num_threads: int = 0,
     return_hash: bool = False,
     lang: str = "en",
     rescale_with_baseline: bool = False,
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
-) -> Dict[str, Union[List[float], str]]:
-    """`Bert_score Evaluating Text Generation`_ leverages the pre-trained contextual embeddings from BERT and
-    matches words in candidate and reference sentences by cosine similarity.
+) -> Dict[str, Union[Tensor, List[float], str]]:
+    """`Bert_score Evaluating Text Generation`_ for text similirity matching.
 
-    It has been shown to correlate with human judgment on sentence-level and system-level evaluation.
-    Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for evaluating different
-    language generation tasks.
+    This metric leverages the pre-trained contextual embeddings from BERT and matches words in candidate and reference
+    sentences by cosine similarity. It has been shown to correlate with human judgment on sentence-level and
+    system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for
+    evaluating different language generation tasks.
 
-    This implemenation follows the original implementation from `BERT_score`_.
+    This implementation follows the original implementation from `BERT_score`_.
 
     Args:
         preds: Either an iterable of predicted sentences or a ``Dict[input_ids, attention_mask]``.
@@ -273,15 +282,15 @@ def bert_score(
         user_tokenizer:
             A user's own tokenizer used with the own model. This must be an instance with the ``__call__`` method.
             This method must take an iterable of sentences (``List[str]``) and must return a python dictionary
-            containing ``"input_ids"`` and ``"attention_mask"`` represented by ``torch.Tensor``.
-            It is up to the user's model of whether ``"input_ids"`` is a ``torch.Tensor`` of input ids or embedding
-            vectors. his tokenizer must prepend an equivalent of ``[CLS]`` token and append an equivalent of ``[SEP]``
-            token as `transformers` tokenizer does.
+            containing ``"input_ids"`` and ``"attention_mask"`` represented by :class:`~torch.Tensor`.
+            It is up to the user's model of whether ``"input_ids"`` is a :class:`~torch.Tensor` of input ids
+            or embedding vectors. his tokenizer must prepend an equivalent of ``[CLS]`` token and append an equivalent
+            of ``[SEP]`` token as `transformers` tokenizer does.
         user_forward_fn:
             A user's own forward function used in a combination with ``user_model``.
             This function must take ``user_model`` and a python dictionary of containing ``"input_ids"``
-            and ``"attention_mask"`` represented by ``torch.Tensor`` as an input and return the model's output
-            represented by the single ``torch.Tensor``.
+            and ``"attention_mask"`` represented by :class:`~torch.Tensor` as an input and return the model's output
+            represented by the single :class:`~torch.Tensor`.
         verbose: An indication of whether a progress bar to be displayed during the embeddings' calculation.
         idf: An indication of whether normalization using inverse document frequencies should be used.
         device: A device to be used for calculation.
@@ -315,17 +324,20 @@ def bert_score(
             If invalid input is provided.
 
     Example:
+        >>> from pprint import pprint
         >>> from torchmetrics.functional.text.bert import bert_score
         >>> preds = ["hello there", "general kenobi"]
         >>> target = ["hello there", "master kenobi"]
-        >>> score = bert_score(preds, target)
-        >>> from pprint import pprint
-        >>> rounded_score = {k: [round(v, 3) for v in vv] for k, vv in score.items()}
-        >>> pprint(rounded_score)
-        {'f1': [1.0, 0.996], 'precision': [1.0, 0.996], 'recall': [1.0, 0.996]}
+        >>> pprint(bert_score(preds, target))
+        {'f1': tensor([1.0000, 0.9961]), 'precision': tensor([1.0000, 0.9961]), 'recall': tensor([1.0000, 0.9961])}
+
     """
     if len(preds) != len(target):
         raise ValueError("Number of predicted and reference sententes must be the same!")
+    if not isinstance(preds, (str, list, dict)):  # dict for BERTScore class compute call
+        preds = list(preds)
+    if not isinstance(target, (str, list, dict)):  # dict for BERTScore class compute call
+        target = list(target)
 
     if verbose and (not _TQDM_AVAILABLE):
         raise ModuleNotFoundError(
@@ -333,13 +345,13 @@ def bert_score(
         )
 
     if model is None:
-        if not _TRANSFORMERS_AVAILABLE:
+        if not _TRANSFORMERS_GREATER_EQUAL_4_4:
             raise ModuleNotFoundError(
                 "`bert_score` metric with default models requires `transformers` package be installed."
-                " Either install with `pip install transformers>=4.0` or `pip install torchmetrics[text]`."
+                " Either install with `pip install transformers>=4.4` or `pip install torchmetrics[text]`."
             )
         if model_name_or_path is None:
-            warn(
+            rank_zero_warn(
                 "The argument `model_name_or_path` was not specified while it is required when default"
                 " `transformers` model are used."
                 f"It is, therefore, used the default recommended model - {_DEFAULT_MODEL}."
@@ -352,13 +364,13 @@ def bert_score(
     model.to(device)
 
     try:
-        if num_layers and num_layers > model.config.num_hidden_layers:  # type: ignore
+        if num_layers and num_layers > model.config.num_hidden_layers:
             raise ValueError(
-                f"num_layers={num_layers} is forbidden for {model_name_or_path}. "  # type: ignore
-                f"Please use num_layers <= {model.config.num_hidden_layers}"  # type: ignore
+                f"num_layers={num_layers} is forbidden for {model_name_or_path}."
+                f" Please use num_layers <= {model.config.num_hidden_layers}"
             )
     except AttributeError:
-        warn("It was not possible to retrieve the parameter `num_layers` from the model specification.")
+        rank_zero_warn("It was not possible to retrieve the parameter `num_layers` from the model specification.")
 
     _are_empty_lists = all(isinstance(text, list) and len(text) == 0 for text in (preds, target))
     _are_valid_lists = all(
@@ -368,8 +380,8 @@ def bert_score(
         isinstance(text, dict) and isinstance(text["input_ids"], Tensor) for text in (preds, target)
     )
     if _are_empty_lists:
-        warn("Predictions and references are empty.")
-        output_dict: Dict[str, Union[List[float], str]] = {
+        rank_zero_warn("Predictions and references are empty.")
+        output_dict: Dict[str, Union[Tensor, List[float], str]] = {
             "precision": [0.0],
             "recall": [0.0],
             "f1": [0.0],
@@ -410,6 +422,15 @@ def bert_score(
     precision, recall, f1_score = _get_precision_recall_f1(
         preds_embeddings, target_embeddings, preds_idf_scale, target_idf_scale
     )
+    # Sort predictions
+    if len(precision.shape) == 1:  # i.e. when all_layers = False
+        precision = precision[preds_loader.dataset.sorting_indices]
+        recall = recall[preds_loader.dataset.sorting_indices]
+        f1_score = f1_score[preds_loader.dataset.sorting_indices]
+    elif len(precision.shape) == 2:  # i.e. when all_layers = True
+        precision = precision[:, preds_loader.dataset.sorting_indices]
+        recall = recall[:, preds_loader.dataset.sorting_indices]
+        f1_score = f1_score[:, preds_loader.dataset.sorting_indices]
 
     if baseline is not None:
         precision, recall, f1_score = _rescale_metrics_with_baseline(
@@ -417,9 +438,9 @@ def bert_score(
         )
 
     output_dict = {
-        "precision": precision.tolist(),
-        "recall": recall.tolist(),
-        "f1": f1_score.tolist(),
+        "precision": precision,
+        "recall": recall,
+        "f1": f1_score,
     }
     if return_hash:
         output_dict.update({"hash": _get_hash(model_name_or_path, num_layers, idf)})

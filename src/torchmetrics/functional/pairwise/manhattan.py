@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,12 +22,13 @@ from torchmetrics.functional.pairwise.helpers import _check_input, _reduce_dista
 def _pairwise_manhattan_distance_update(
     x: Tensor, y: Optional[Tensor] = None, zero_diagonal: Optional[bool] = None
 ) -> Tensor:
-    """Calculates the pairwise manhattan similarity matrix.
+    """Calculate the pairwise manhattan similarity matrix.
 
     Args:
         x: tensor of shape ``[N,d]``
         y: if provided, a tensor of shape ``[M,d]``
         zero_diagonal: determines if the diagonal of the distance matrix should be set to zero
+
     """
     x, y, zero_diagonal = _check_input(x, y, zero_diagonal)
 
@@ -43,8 +44,7 @@ def pairwise_manhattan_distance(
     reduction: Literal["mean", "sum", "none", None] = None,
     zero_diagonal: Optional[bool] = None,
 ) -> Tensor:
-    r"""
-    Calculates pairwise manhattan distance:
+    r"""Calculate pairwise manhattan distance.
 
     .. math::
         d_{man}(x,y) = ||x-y||_1 = \sum_{d=1}^D |x_d - y_d|
@@ -66,7 +66,7 @@ def pairwise_manhattan_distance(
 
     Example:
         >>> import torch
-        >>> from torchmetrics.functional import pairwise_manhattan_distance
+        >>> from torchmetrics.functional.pairwise import pairwise_manhattan_distance
         >>> x = torch.tensor([[2, 3], [3, 5], [5, 8]], dtype=torch.float32)
         >>> y = torch.tensor([[1, 0], [2, 1]], dtype=torch.float32)
         >>> pairwise_manhattan_distance(x, y)

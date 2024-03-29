@@ -1,4 +1,4 @@
-.. Do not move this page, it has to be in the top level to work properly
+.. this page is referring other pages with `customcarditem`; bypass hierarchy is patch with redirect
 
 All TorchMetrics
 ================

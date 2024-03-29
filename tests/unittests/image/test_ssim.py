@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,23 +11,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 
 import numpy as np
 import pytest
 import torch
+from pytorch_msssim import ssim
 from skimage.metrics import structural_similarity
 from torch import Tensor
-
 from torchmetrics.functional import structural_similarity_index_measure
 from torchmetrics.image import StructuralSimilarityIndexMeasure
-from unittests.helpers import seed_all
-from unittests.helpers.testers import NUM_BATCHES, MetricTester
+
+from unittests import NUM_BATCHES, _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
 BATCH_SIZE = 2  # custom batch size to prevent memory issues in CI
 _inputs = []
@@ -39,21 +39,21 @@ for size, channel, coef, dtype in [
 ]:
     preds2d = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
     _inputs.append(
-        Input(
+        _Input(
             preds=preds2d,
             target=preds2d * coef,
         )
     )
     preds3d = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, size, dtype=dtype)
     _inputs.append(
-        Input(
+        _Input(
             preds=preds3d,
             target=preds3d * coef,
         )
     )
 
 
-def _sk_ssim(
+def _reference_skimage_ssim(
     preds,
     target,
     data_range,
@@ -63,6 +63,10 @@ def _sk_ssim(
     gaussian_weights=True,
     reduction_arg="elementwise_mean",
 ):
+    if isinstance(data_range, tuple):
+        preds = preds.clamp(min=data_range[0], max=data_range[1])
+        target = target.clamp(min=data_range[0], max=data_range[1])
+        data_range = data_range[1] - data_range[0]
     if len(preds.shape) == 4:
         c, h, w = preds.shape[-3:]
         sk_preds = preds.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
@@ -85,30 +89,44 @@ def _sk_ssim(
                 sigma=sigma,
                 use_sample_covariance=False,
                 full=return_ssim_image,
+                channel_axis=-1,
             )
             results[i] = torch.from_numpy(np.asarray(res)).type(preds.dtype)
         return results if reduction_arg != "sum" else results.sum()
-    else:
-        fullimages = torch.zeros(target.shape, dtype=target.dtype)
-        for i in range(sk_preds.shape[0]):
-            res, fullimage = structural_similarity(
-                sk_target[i],
-                sk_preds[i],
-                data_range=data_range,
-                multichannel=True,
-                gaussian_weights=gaussian_weights,
-                win_size=kernel_size,
-                sigma=sigma,
-                use_sample_covariance=False,
-                full=return_ssim_image,
-            )
-            results[i] = torch.from_numpy(res).type(preds.dtype)
-            fullimage = torch.from_numpy(fullimage).type(preds.dtype)
-            if len(preds.shape) == 4:
-                fullimages[i] = fullimage.permute(2, 0, 1)
-            elif len(preds.shape) == 5:
-                fullimages[i] = fullimage.permute(3, 0, 1, 2)
-        return results, fullimages
+
+    fullimages = torch.zeros(target.shape, dtype=target.dtype)
+    for i in range(sk_preds.shape[0]):
+        res, fullimage = structural_similarity(
+            sk_target[i],
+            sk_preds[i],
+            data_range=data_range,
+            multichannel=True,
+            gaussian_weights=gaussian_weights,
+            win_size=kernel_size,
+            sigma=sigma,
+            use_sample_covariance=False,
+            full=return_ssim_image,
+        )
+        results[i] = torch.from_numpy(res).type(preds.dtype)
+        fullimage = torch.from_numpy(fullimage).type(preds.dtype)
+        if len(preds.shape) == 4:
+            fullimages[i] = fullimage.permute(2, 0, 1)
+        elif len(preds.shape) == 5:
+            fullimages[i] = fullimage.permute(3, 0, 1, 2)
+    return results, fullimages
+
+
+def _reference_msssim_ssim(
+    preds,
+    target,
+    data_range,
+    sigma,
+    kernel_size=11,
+    reduction_arg="elementwise_mean",
+):
+    results = ssim(target, preds, data_range=data_range, win_size=kernel_size, win_sigma=sigma, size_average=False)
+
+    return results if reduction_arg != "sum" else results.sum()
 
 
 @pytest.mark.parametrize(
@@ -117,123 +135,177 @@ def _sk_ssim(
 )
 @pytest.mark.parametrize("sigma", [1.5, 0.5])
 class TestSSIM(MetricTester):
+    """Test class for `StructuralSimilarityIndexMeasure` metric."""
+
     atol = 6e-3
 
-    @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_ssim(self, preds, target, sigma, ddp, dist_sync_on_step):
+    @pytest.mark.parametrize("data_range", [1.0, (0.1, 1.0)])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_ssim_sk(self, preds, target, sigma, data_range, ddp):
+        """Test class implementation of metricvs skimage."""
         self.run_class_metric_test(
             ddp,
             preds,
             target,
-            StructuralSimilarityIndexMeasure,
-            partial(_sk_ssim, data_range=1.0, sigma=sigma, kernel_size=None),
+            metric_class=StructuralSimilarityIndexMeasure,
+            reference_metric=partial(_reference_skimage_ssim, data_range=data_range, sigma=sigma, kernel_size=None),
+            metric_args={
+                "data_range": data_range,
+                "sigma": sigma,
+            },
+        )
+
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_ssim_pt(self, preds, target, sigma, ddp):
+        """Test class implementation of metric vs pytorch_msssim."""
+        self.run_class_metric_test(
+            ddp,
+            preds,
+            target,
+            metric_class=StructuralSimilarityIndexMeasure,
+            reference_metric=partial(_reference_msssim_ssim, data_range=1.0, sigma=sigma),
             metric_args={
                 "data_range": 1.0,
                 "sigma": sigma,
             },
-            dist_sync_on_step=dist_sync_on_step,
         )
 
-    @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_ssim_without_gaussian_kernel(self, preds, target, sigma, ddp, dist_sync_on_step):
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_ssim_without_gaussian_kernel(self, preds, target, sigma, ddp):
+        """Test class implementation of metric with gaussian kernel."""
         self.run_class_metric_test(
             ddp,
             preds,
             target,
-            StructuralSimilarityIndexMeasure,
-            partial(_sk_ssim, data_range=1.0, sigma=sigma, kernel_size=None),
+            metric_class=StructuralSimilarityIndexMeasure,
+            reference_metric=partial(_reference_skimage_ssim, data_range=1.0, sigma=sigma, kernel_size=None),
             metric_args={
                 "gaussian_kernel": False,
                 "data_range": 1.0,
                 "sigma": sigma,
             },
-            dist_sync_on_step=dist_sync_on_step,
         )
 
     @pytest.mark.parametrize("reduction_arg", ["sum", "elementwise_mean", None])
-    def test_ssim_functional(self, preds, target, sigma, reduction_arg):
+    def test_ssim_functional_sk(self, preds, target, sigma, reduction_arg):
+        """Test functional implementation of metric vs skimage."""
         self.run_functional_metric_test(
             preds,
             target,
-            structural_similarity_index_measure,
-            partial(_sk_ssim, data_range=1.0, sigma=sigma, kernel_size=None, reduction_arg=reduction_arg),
+            metric_functional=structural_similarity_index_measure,
+            reference_metric=partial(
+                _reference_skimage_ssim, data_range=1.0, sigma=sigma, kernel_size=None, reduction_arg=reduction_arg
+            ),
             metric_args={"data_range": 1.0, "sigma": sigma, "reduction": reduction_arg},
         )
 
+    @pytest.mark.parametrize("reduction_arg", ["sum", "elementwise_mean", None])
+    def test_ssim_functional_pt(self, preds, target, sigma, reduction_arg):
+        """Test functional implementation of metric vs pytorch_msssim."""
+        self.run_functional_metric_test(
+            preds,
+            target,
+            metric_functional=structural_similarity_index_measure,
+            reference_metric=partial(_reference_msssim_ssim, data_range=1.0, sigma=sigma, reduction_arg=reduction_arg),
+            metric_args={"data_range": 1.0, "sigma": sigma, "reduction": reduction_arg},
+        )
+
+    # todo, shall be resolved with PT 2.2
     # SSIM half + cpu does not work due to missing support in torch.log
-    @pytest.mark.xfail(reason="SSIM metric does not support cpu + half precision")
+    @pytest.mark.xfail(reason="SSIM metric does not support cpu + half precision", strict=False)
     def test_ssim_half_cpu(self, preds, target, sigma):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
             preds, target, StructuralSimilarityIndexMeasure, structural_similarity_index_measure, {"data_range": 1.0}
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_ssim_half_gpu(self, preds, target, sigma):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds, target, StructuralSimilarityIndexMeasure, structural_similarity_index_measure, {"data_range": 1.0}
         )
 
 
 @pytest.mark.parametrize(
-    ["pred", "target", "kernel", "sigma"],
+    ("pred", "target", "kernel", "sigma", "match"),
     [
-        ([1, 1, 16, 16], [1, 1, 16, 16], [11, 11], [1.5]),  # len(kernel), len(sigma)
-        ([1, 16, 16], [1, 16, 16], [11, 11], [1.5, 1.5]),  # len(shape)
-        ([1, 1, 16, 16], [1, 1, 16, 16], [11], [1.5, 1.5]),  # len(kernel), len(sigma)
-        ([1, 1, 16, 16], [1, 1, 16, 16], [11], [1.5]),  # len(kernel), len(sigma)
-        ([1, 1, 16, 16], [1, 1, 16, 16], [11, 0], [1.5, 1.5]),  # invalid kernel input
-        ([1, 1, 16, 16], [1, 1, 16, 16], [11, 10], [1.5, 1.5]),  # invalid kernel input
-        ([1, 1, 16, 16], [1, 1, 16, 16], [11, -11], [1.5, 1.5]),  # invalid kernel input
-        ([1, 1, 16, 16], [1, 1, 16, 16], [11, 11], [1.5, 0]),  # invalid sigma input
-        ([1, 1, 16, 16], [1, 1, 16, 16], [11, 0], [1.5, -1.5]),  # invalid sigma input
+        (
+            [1, 1, 16, 16],
+            [1, 1, 16, 16],
+            [11, 11],
+            [1.5],
+            "`kernel_size` has dimension 2, but expected to be two less that target dimensionality.*",
+        ),
+        (
+            [1, 16, 16],
+            [1, 16, 16],
+            [11, 11],
+            [1.5, 1.5],
+            "Expected `preds` and `target` to have BxCxHxW or BxCxDxHxW shape.*",
+        ),
+        (
+            [1, 1, 16, 16],
+            [1, 1, 16, 16],
+            [11],
+            [1.5, 1.5],
+            "`kernel_size` has dimension 1, but expected to be two less that target dimensionality.*",
+        ),
+        (
+            [1, 1, 16, 16],
+            [1, 1, 16, 16],
+            [11],
+            [1.5],
+            "`kernel_size` has dimension 1, but expected to be two less that target dimensionality.*",
+        ),
+        ([1, 1, 16, 16], [1, 1, 16, 16], [11, 0], [1.5, 1.5], "Expected `kernel_size` to have odd positive number.*"),
+        ([1, 1, 16, 16], [1, 1, 16, 16], [11, 10], [1.5, 1.5], "Expected `kernel_size` to have odd positive number.*"),
+        ([1, 1, 16, 16], [1, 1, 16, 16], [11, -11], [1.5, 1.5], "Expected `kernel_size` to have odd positive number.*"),
+        ([1, 1, 16, 16], [1, 1, 16, 16], [11, 11], [1.5, 0], "Expected `sigma` to have positive number.*"),
+        ([1, 1, 16, 16], [1, 1, 16, 16], [11, 11], [1.5, -1.5], "Expected `sigma` to have positive number.*"),
     ],
 )
-def test_ssim_invalid_inputs(pred, target, kernel, sigma):
-    pred_t = torch.rand(pred, dtype=torch.float32)
-    target_t = torch.rand(target, dtype=torch.float64)
-    with pytest.raises(TypeError):
-        structural_similarity_index_measure(pred_t, target_t)
+def test_ssim_invalid_inputs(pred, target, kernel, sigma, match):
+    """Test for invalid input.
 
+    Checks that that an value errors are raised if input sizes are different, kernel length and sigma does not match
+    size or invalid values are provided.
+
+    """
     pred = torch.rand(pred)
     target = torch.rand(target)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         structural_similarity_index_measure(pred, target, kernel_size=kernel, sigma=sigma)
 
 
 def test_ssim_unequal_kernel_size():
-    """Test the case where kernel_size[0] != kernel_size[1]"""
-    preds = torch.tensor(
+    """Test the case where kernel_size[0] != kernel_size[1]."""
+    preds = torch.tensor([
         [
             [
-                [
-                    [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
-                    [1.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0],
-                    [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-                    [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
-                    [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0],
-                    [0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0],
-                    [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
-                ]
+                [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
+                [1.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0],
+                [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
             ]
         ]
-    )
-    target = torch.tensor(
+    ])
+    target = torch.tensor([
         [
             [
-                [
-                    [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
-                    [0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0],
-                    [1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0],
-                    [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0],
-                    [1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0],
-                    [0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0],
-                    [0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0],
-                ]
+                [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
+                [0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0],
+                [1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0],
+                [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0],
+                [1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0],
+                [0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0],
             ]
         ]
-    )
+    ])
     # kernel order matters
     assert torch.isclose(
         structural_similarity_index_measure(preds, target, gaussian_kernel=True, sigma=(0.25, 0.5)),
@@ -255,10 +327,11 @@ def test_ssim_unequal_kernel_size():
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    ("preds", "target"),
     [(i.preds, i.target) for i in _inputs],
 )
 def test_full_image_output(preds, target):
+    """Test that if full output should be returned, then its shape matches the input."""
     out = structural_similarity_index_measure(preds[0], target[0])
     assert isinstance(out, Tensor)
     assert out.numel() == 1

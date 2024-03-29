@@ -13,10 +13,9 @@ Module Interface
 ________________
 
 .. autoclass:: torchmetrics.SymmetricMeanAbsolutePercentageError
-    :noindex:
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
 .. autofunction:: torchmetrics.functional.symmetric_mean_absolute_percentage_error
-    :noindex:

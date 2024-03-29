@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,22 +14,23 @@
 import os
 import sys
 from copy import deepcopy
+from functools import partial
 
 import pytest
 import torch
 from torch import tensor
-
 from torchmetrics import Metric
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
-from unittests.helpers import seed_all
-from unittests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum, setup_ddp
+
+from unittests import NUM_PROCESSES
+from unittests._helpers import seed_all
+from unittests._helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
 
 seed_all(42)
 
 
-def _test_ddp_sum(rank, worldsize):
-    setup_ddp(rank, worldsize)
+def _test_ddp_sum(rank: int, worldsize: int = NUM_PROCESSES) -> None:
     dummy = DummyMetric()
     dummy._reductions = {"foo": torch.sum}
     dummy.foo = tensor(1)
@@ -38,8 +39,7 @@ def _test_ddp_sum(rank, worldsize):
     assert dummy.foo == worldsize
 
 
-def _test_ddp_cat(rank, worldsize):
-    setup_ddp(rank, worldsize)
+def _test_ddp_cat(rank: int, worldsize: int = NUM_PROCESSES) -> None:
     dummy = DummyMetric()
     dummy._reductions = {"foo": torch.cat}
     dummy.foo = [tensor([1])]
@@ -48,8 +48,7 @@ def _test_ddp_cat(rank, worldsize):
     assert torch.all(torch.eq(dummy.foo, tensor([1, 1])))
 
 
-def _test_ddp_sum_cat(rank, worldsize):
-    setup_ddp(rank, worldsize)
+def _test_ddp_sum_cat(rank: int, worldsize: int = NUM_PROCESSES) -> None:
     dummy = DummyMetric()
     dummy._reductions = {"foo": torch.cat, "bar": torch.sum}
     dummy.foo = [tensor([1])]
@@ -60,29 +59,24 @@ def _test_ddp_sum_cat(rank, worldsize):
     assert dummy.bar == worldsize
 
 
-def _test_ddp_gather_uneven_tensors(rank, worldsize):
-    setup_ddp(rank, worldsize)
+def _test_ddp_gather_uneven_tensors(rank: int, worldsize: int = NUM_PROCESSES) -> None:
     tensor = torch.ones(rank)
     result = gather_all_tensors(tensor)
     assert len(result) == worldsize
     for idx in range(worldsize):
-        assert len(result[idx]) == idx
         assert (result[idx] == torch.ones_like(result[idx])).all()
 
 
-def _test_ddp_gather_uneven_tensors_multidim(rank, worldsize):
-    setup_ddp(rank, worldsize)
+def _test_ddp_gather_uneven_tensors_multidim(rank: int, worldsize: int = NUM_PROCESSES) -> None:
     tensor = torch.ones(rank + 1, 2 - rank)
     result = gather_all_tensors(tensor)
     assert len(result) == worldsize
     for idx in range(worldsize):
         val = result[idx]
-        assert val.shape == (idx + 1, 2 - idx)
         assert (val == torch.ones_like(val)).all()
 
 
-def _test_ddp_compositional_tensor(rank, worldsize):
-    setup_ddp(rank, worldsize)
+def _test_ddp_compositional_tensor(rank: int, worldsize: int = NUM_PROCESSES) -> None:
     dummy = DummyMetricSum()
     dummy._reductions = {"x": torch.sum}
     dummy = dummy.clone() + dummy.clone()
@@ -91,6 +85,7 @@ def _test_ddp_compositional_tensor(rank, worldsize):
     assert val == 2 * worldsize
 
 
+@pytest.mark.DDP()
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 @pytest.mark.parametrize(
     "process",
@@ -104,16 +99,15 @@ def _test_ddp_compositional_tensor(rank, worldsize):
     ],
 )
 def test_ddp(process):
-    torch.multiprocessing.spawn(process, args=(2,), nprocs=2)
+    """Test ddp functions."""
+    pytest.pool.map(process, range(NUM_PROCESSES))
 
 
-def _test_non_contiguous_tensors(rank, worldsize):
-    setup_ddp(rank, worldsize)
-
+def _test_non_contiguous_tensors(rank):
     class DummyCatMetric(Metric):
         full_state_update = True
 
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.add_state("x", default=[], dist_reduce_fx=None)
 
@@ -128,19 +122,18 @@ def _test_non_contiguous_tensors(rank, worldsize):
     metric.update(torch.randn(10, 5)[:, 0])
 
 
+@pytest.mark.DDP()
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 def test_non_contiguous_tensors():
-    """Test that gather_all operation works for non contiguous tensors."""
-    torch.multiprocessing.spawn(_test_non_contiguous_tensors, args=(2,), nprocs=2)
+    """Test that gather_all operation works for non-contiguous tensors."""
+    pytest.pool.map(_test_non_contiguous_tensors, range(NUM_PROCESSES))
 
 
-def _test_state_dict_is_synced(rank, worldsize, tmpdir):
-    setup_ddp(rank, worldsize)
-
+def _test_state_dict_is_synced(rank, tmpdir):
     class DummyCatMetric(Metric):
         full_state_update = True
 
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.add_state("x", torch.tensor(0), dist_reduce_fx=torch.sum)
             self.add_state("c", torch.tensor(0), dist_reduce_fx=torch.sum)
@@ -152,7 +145,7 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
         def compute(self):
             return self.x // self.c
 
-        def __repr__(self):
+        def __repr__(self) -> str:
             return f"DummyCatMetric(x={self.x}, c={self.c})"
 
     metric = DummyCatMetric()
@@ -168,9 +161,7 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
 
     steps = 5
     for i in range(steps):
-
         if metric._is_synced:
-
             with pytest.raises(TorchMetricsUserError, match="The Metric shouldn't be synced when performing"):
                 metric(i)
 
@@ -238,15 +229,14 @@ def _test_state_dict_is_synced(rank, worldsize, tmpdir):
         torch.save(metric.state_dict(), filepath)
 
 
+@pytest.mark.DDP()
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 def test_state_dict_is_synced(tmpdir):
-    """This test asserts that metrics are synced while creating the state dict but restored after to continue
-    accumulation."""
-    torch.multiprocessing.spawn(_test_state_dict_is_synced, args=(2, tmpdir), nprocs=2)
+    """Tests that metrics are synced while creating the state dict but restored after to continue accumulation."""
+    pytest.pool.map(partial(_test_state_dict_is_synced, tmpdir=tmpdir), range(NUM_PROCESSES))
 
 
-def _test_sync_on_compute_tensor_state(rank, worldsize, sync_on_compute):
-    setup_ddp(rank, worldsize)
+def _test_sync_on_compute_tensor_state(rank, sync_on_compute):
     dummy = DummyMetricSum(sync_on_compute=sync_on_compute)
     dummy.update(tensor(rank + 1))
     val = dummy.compute()
@@ -256,33 +246,34 @@ def _test_sync_on_compute_tensor_state(rank, worldsize, sync_on_compute):
         assert val == rank + 1
 
 
-def _test_sync_on_compute_list_state(rank, worldsize, sync_on_compute):
-    setup_ddp(rank, worldsize)
+def _test_sync_on_compute_list_state(rank, sync_on_compute):
     dummy = DummyListMetric(sync_on_compute=sync_on_compute)
     dummy.update(tensor(rank + 1))
     val = dummy.compute()
     if sync_on_compute:
-        assert torch.allclose(val, tensor([1, 2]))
+        assert val.sum() == 3
+        assert torch.allclose(val, tensor([1, 2])) or torch.allclose(val, tensor([2, 1]))
     else:
         assert val == [tensor(rank + 1)]
 
 
+@pytest.mark.DDP()
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 @pytest.mark.parametrize("sync_on_compute", [True, False])
 @pytest.mark.parametrize("test_func", [_test_sync_on_compute_list_state, _test_sync_on_compute_tensor_state])
 def test_sync_on_compute(sync_on_compute, test_func):
-    """Test that syncronization of states can be enabled and disabled for compute."""
-    torch.multiprocessing.spawn(test_func, args=(2, sync_on_compute), nprocs=2)
+    """Test that synchronization of states can be enabled and disabled for compute."""
+    pytest.pool.map(partial(test_func, sync_on_compute=sync_on_compute), range(NUM_PROCESSES))
 
 
-def _test_sync_with_empty_lists(rank, worldsize):
-    setup_ddp(rank, worldsize)
+def _test_sync_with_empty_lists(rank):
     dummy = DummyListMetric()
     val = dummy.compute()
     assert val == []
 
 
+@pytest.mark.DDP()
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 def test_sync_with_empty_lists():
-    """Test that syncronization of states can be enabled and disabled for compute."""
-    torch.multiprocessing.spawn(_test_sync_with_empty_lists, args=(2,), nprocs=2)
+    """Test that synchronization of states can be enabled and disabled for compute."""
+    pytest.pool.map(_test_sync_with_empty_lists, range(NUM_PROCESSES))

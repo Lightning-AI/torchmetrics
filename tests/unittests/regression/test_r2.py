@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,100 +11,98 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 
 import pytest
 import torch
 from sklearn.metrics import r2_score as sk_r2score
-
 from torchmetrics.functional import r2_score
 from torchmetrics.regression import R2Score
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_6
-from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
-num_targets = 5
+NUM_TARGETS = 5
 
-Input = namedtuple("Input", ["preds", "target"])
 
-_single_target_inputs = Input(
+_single_target_inputs = _Input(
     preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
     target=torch.rand(NUM_BATCHES, BATCH_SIZE),
 )
 
-_multi_target_inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
+_multi_target_inputs = _Input(
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_TARGETS),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_TARGETS),
 )
 
 
-def _single_target_sk_metric(preds, target, adjusted, multioutput):
+def _single_target_ref_wrapper(preds, target, adjusted, multioutput):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
     r2_score = sk_r2score(sk_target, sk_preds, multioutput=multioutput)
     if adjusted != 0:
-        r2_score = 1 - (1 - r2_score) * (sk_preds.shape[0] - 1) / (sk_preds.shape[0] - adjusted - 1)
+        return 1 - (1 - r2_score) * (sk_preds.shape[0] - 1) / (sk_preds.shape[0] - adjusted - 1)
     return r2_score
 
 
-def _multi_target_sk_metric(preds, target, adjusted, multioutput):
-    sk_preds = preds.view(-1, num_targets).numpy()
-    sk_target = target.view(-1, num_targets).numpy()
+def _multi_target_ref_wrapper(preds, target, adjusted, multioutput):
+    sk_preds = preds.view(-1, NUM_TARGETS).numpy()
+    sk_target = target.view(-1, NUM_TARGETS).numpy()
     r2_score = sk_r2score(sk_target, sk_preds, multioutput=multioutput)
     if adjusted != 0:
-        r2_score = 1 - (1 - r2_score) * (sk_preds.shape[0] - 1) / (sk_preds.shape[0] - adjusted - 1)
+        return 1 - (1 - r2_score) * (sk_preds.shape[0] - 1) / (sk_preds.shape[0] - adjusted - 1)
     return r2_score
 
 
 @pytest.mark.parametrize("adjusted", [0, 5, 10])
 @pytest.mark.parametrize("multioutput", ["raw_values", "uniform_average", "variance_weighted"])
 @pytest.mark.parametrize(
-    "preds, target, sk_metric, num_outputs",
+    "preds, target, ref_metric, num_outputs",
     [
-        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_sk_metric, 1),
-        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_sk_metric, num_targets),
+        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_ref_wrapper, 1),
+        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_ref_wrapper, NUM_TARGETS),
     ],
 )
 class TestR2Score(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_r2(self, adjusted, multioutput, preds, target, sk_metric, num_outputs, ddp, dist_sync_on_step):
+    """Test class for `R2Score` metric."""
+
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_r2(self, adjusted, multioutput, preds, target, ref_metric, num_outputs, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             R2Score,
-            partial(sk_metric, adjusted=adjusted, multioutput=multioutput),
-            dist_sync_on_step,
-            metric_args=dict(adjusted=adjusted, multioutput=multioutput, num_outputs=num_outputs),
+            partial(ref_metric, adjusted=adjusted, multioutput=multioutput),
+            metric_args={"adjusted": adjusted, "multioutput": multioutput, "num_outputs": num_outputs},
         )
 
-    def test_r2_functional(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
-        # todo: `num_outputs` is unused
+    def test_r2_functional(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
             r2_score,
-            partial(sk_metric, adjusted=adjusted, multioutput=multioutput),
-            metric_args=dict(adjusted=adjusted, multioutput=multioutput),
+            partial(ref_metric, adjusted=adjusted, multioutput=multioutput),
+            metric_args={"adjusted": adjusted, "multioutput": multioutput},
         )
 
-    def test_r2_differentiability(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
+    def test_r2_differentiability(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             target=target,
             metric_module=partial(R2Score, num_outputs=num_outputs),
             metric_functional=r2_score,
-            metric_args=dict(adjusted=adjusted, multioutput=multioutput),
+            metric_args={"adjusted": adjusted, "multioutput": multioutput},
         )
 
-    @pytest.mark.skipif(
-        not _TORCH_GREATER_EQUAL_1_6, reason="half support of core operations on not support before pytorch v1.6"
-    )
-    def test_r2_half_cpu(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
+    def test_r2_half_cpu(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
             preds,
             target,
@@ -114,7 +112,8 @@ class TestR2Score(MetricTester):
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_r2_half_gpu(self, adjusted, multioutput, preds, target, sk_metric, num_outputs):
+    def test_r2_half_gpu(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds,
             target,
@@ -125,21 +124,24 @@ class TestR2Score(MetricTester):
 
 
 def test_error_on_different_shape(metric_class=R2Score):
+    """Test that error is raised on different shapes of input."""
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
 
 
 def test_error_on_multidim_tensors(metric_class=R2Score):
+    """Test that error is raised if a larger than 2D tensor is given as input."""
     metric = metric_class()
     with pytest.raises(
         ValueError,
-        match=r"Expected both prediction and target to be 1D or 2D tensors," r" but received tensors with dimension .",
+        match=r"Expected both prediction and target to be 1D or 2D tensors, but received tensors with dimension .",
     ):
         metric(torch.randn(10, 20, 5), torch.randn(10, 20, 5))
 
 
 def test_error_on_too_few_samples(metric_class=R2Score):
+    """Test that error is raised if too few samples are provided."""
     metric = metric_class()
     with pytest.raises(ValueError, match="Needs at least two samples to calculate r2 score."):
         metric(torch.randn(1), torch.randn(1))
@@ -152,13 +154,22 @@ def test_error_on_too_few_samples(metric_class=R2Score):
 
 
 def test_warning_on_too_large_adjusted(metric_class=R2Score):
+    """Test that warning is raised if adjusted argument is set to more than or equal to the number of datapoints."""
     metric = metric_class(adjusted=10)
 
     with pytest.warns(
         UserWarning,
-        match="More independent regressions than data points in" " adjusted r2 score. Falls back to standard r2 score.",
+        match="More independent regressions than data points in adjusted r2 score. Falls back to standard r2 score.",
     ):
         metric(torch.randn(10), torch.randn(10))
 
-    with pytest.warns(UserWarning, match="Division by zero in adjusted r2 score. Falls back to" " standard r2 score."):
+    with pytest.warns(UserWarning, match="Division by zero in adjusted r2 score. Falls back to standard r2 score."):
         metric(torch.randn(11), torch.randn(11))
+
+
+def test_constant_target():
+    """Check for a near constant target that a value of 0 is returned."""
+    y_true = torch.tensor([-5.1608, -5.1609, -5.1608, -5.1608, -5.1608, -5.1608])
+    y_pred = torch.tensor([-3.9865, -5.4648, -5.0238, -4.3899, -5.6672, -4.7336])
+    score = r2_score(preds=y_pred, target=y_true)
+    assert score == 0

@@ -1,49 +1,53 @@
+# Copyright The Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from copy import deepcopy
 from functools import partial
+from typing import Any
 
 import pytest
 import torch
 from torch import Tensor
-
-from torchmetrics import Accuracy, ConfusionMatrix, MeanSquaredError
+from torchmetrics.classification import BinaryAccuracy, BinaryConfusionMatrix, MulticlassAccuracy
+from torchmetrics.regression import MeanSquaredError
 from torchmetrics.wrappers import MinMaxMetric
-from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, MetricTester
+
+from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
 
 class TestingMinMaxMetric(MinMaxMetric):
-    """wrap metric to fit testing framework."""
+    """Wrap metric to fit testing framework."""
 
     def compute(self):
-        """instead of returning dict, return as list."""
+        """Instead of returning dict, return as list."""
         output_dict = super().compute()
         return [output_dict["raw"], output_dict["min"], output_dict["max"]]
 
-    def forward(self, *args, **kwargs):
+    def forward(self, *args: Any, **kwargs: Any):
+        """Compute output for batch."""
         self.update(*args, **kwargs)
         return self.compute()
 
 
-def compare_fn(preds, target, base_fn):
-    """comparing function for minmax wrapper."""
+def _compare_fn(preds, target, base_fn):
+    """Comparison function for minmax wrapper."""
     v_min, v_max = 1e6, -1e6  # pick some very large numbers for comparing
     for i in range(NUM_BATCHES):
         val = base_fn(preds[: (i + 1) * BATCH_SIZE], target[: (i + 1) * BATCH_SIZE]).cpu().numpy()
-        v_min = v_min if v_min < val else val
-        v_max = v_max if v_max > val else val
-    raw = base_fn(preds, target)
-    return [raw.cpu().numpy(), v_min, v_max]
-
-
-def compare_fn_ddp(preds, target, base_fn):
-    v_min, v_max = 1e6, -1e6  # pick some very large numbers for comparing
-    for i, j in zip(range(0, NUM_BATCHES, 2), range(1, NUM_BATCHES, 2)):
-        p = torch.cat([preds[i * BATCH_SIZE : (i + 1) * BATCH_SIZE], preds[j * BATCH_SIZE : (j + 1) * BATCH_SIZE]])
-        t = torch.cat([target[i * BATCH_SIZE : (i + 1) * BATCH_SIZE], target[j * BATCH_SIZE : (j + 1) * BATCH_SIZE]])
-        base_fn.update(p, t)
-        val = base_fn.compute().cpu().numpy()
         v_min = v_min if v_min < val else val
         v_max = v_max if v_max > val else val
     raw = base_fn(preds, target)
@@ -56,7 +60,7 @@ def compare_fn_ddp(preds, target, base_fn):
         (
             torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES).softmax(dim=-1),
             torch.randint(NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE)),
-            Accuracy(num_classes=NUM_CLASSES),
+            MulticlassAccuracy(num_classes=NUM_CLASSES),
         ),
         (torch.randn(NUM_BATCHES, BATCH_SIZE), torch.randn(NUM_BATCHES, BATCH_SIZE), MeanSquaredError()),
     ],
@@ -66,24 +70,22 @@ class TestMinMaxWrapper(MetricTester):
 
     atol = 1e-6
 
-    # TODO: fix ddp=True case, difference in how compare function works and wrapper metric
-    @pytest.mark.parametrize("ddp", [False])
-    def test_minmax_wrapper(self, preds, target, base_metric, ddp):
+    def test_minmax_wrapper(self, preds, target, base_metric):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
-            ddp,
-            preds,
-            target,
-            TestingMinMaxMetric,
-            partial(compare_fn_ddp if ddp else compare_fn, base_fn=deepcopy(base_metric)),
-            dist_sync_on_step=False,
-            metric_args=dict(base_metric=base_metric),
+            ddp=False,
+            preds=preds,
+            target=target,
+            metric_class=TestingMinMaxMetric,
+            reference_metric=partial(_compare_fn, base_fn=deepcopy(base_metric)),
+            metric_args={"base_metric": base_metric},
             check_batch=False,
             check_scriptable=False,
         )
 
 
 @pytest.mark.parametrize(
-    "preds, labels, raws, maxs, mins",
+    ("preds", "labels", "raws", "maxs", "mins"),
     [
         (
             ([[0.9, 0.1], [0.2, 0.8]], [[0.1, 0.9], [0.2, 0.8]], [[0.1, 0.9], [0.8, 0.2]]),
@@ -95,8 +97,8 @@ class TestMinMaxWrapper(MetricTester):
     ],
 )
 def test_basic_example(preds, labels, raws, maxs, mins) -> None:
-    """tests that both min and max versions of MinMaxMetric operate correctly after calling compute."""
-    acc = Accuracy()
+    """Tests that both min and max versions of MinMaxMetric operate correctly after calling compute."""
+    acc = BinaryAccuracy()
     min_max_acc = MinMaxMetric(acc)
     labels = Tensor(labels).long()
 
@@ -110,14 +112,14 @@ def test_basic_example(preds, labels, raws, maxs, mins) -> None:
 
 
 def test_no_base_metric() -> None:
-    """tests that ValueError is raised when no base_metric is passed."""
+    """Tests that ValueError is raised when no base_metric is passed."""
     with pytest.raises(ValueError, match=r"Expected base metric to be an instance .*"):
         MinMaxMetric([])
 
 
 def test_no_scalar_compute() -> None:
-    """tests that an assertion error is thrown if the wrapped basemetric gives a non-scalar on compute."""
-    min_max_nsm = MinMaxMetric(ConfusionMatrix(num_classes=2))
+    """Tests that an assertion error is thrown if the wrapped basemetric gives a non-scalar on compute."""
+    min_max_nsm = MinMaxMetric(BinaryConfusionMatrix())
 
-    with pytest.raises(RuntimeError, match=r"Returned value from base metric should be a scalar .*"):
+    with pytest.raises(RuntimeError, match=r"Returned value from base metric should be a float.*"):
         min_max_nsm.compute()

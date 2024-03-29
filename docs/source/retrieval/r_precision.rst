@@ -12,11 +12,10 @@ Retrieval R-Precision
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.RetrievalRPrecision
-    :noindex:
+.. autoclass:: torchmetrics.retrieval.RetrievalRPrecision
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.retrieval_r_precision
-    :noindex:
+.. autofunction:: torchmetrics.functional.retrieval.retrieval_r_precision

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,16 +14,15 @@
 """An example of how to use BERTScore with a user's defined/own model and tokenizer.
 
 To run: python bert_score-own_model.py
+
 """
 
 from pprint import pprint
 from typing import Dict, List, Union
 
 import torch
-import torch.nn as nn
-from torch import Tensor
+from torch import Tensor, nn
 from torch.nn import Module
-
 from torchmetrics.text.bert import BERTScore
 
 _NUM_LAYERS = 2
@@ -33,17 +32,17 @@ _MAX_LEN = 6
 
 
 class UserTokenizer:
-    """The `UserTokenizer` class is required to be defined when a non-default model (i.e. not one from
-    `transformers`) is used.
+    """The `UserTokenizer` class is required to be defined when a non-default model is used.
 
     The user's defined tokenizer is expected to return either token IDs or token embeddings that are fed into the model.
     The tokenizer vocabulary should contain some special tokens, such as a `<pad>` token so that a tokenization will run
     successfully in batches.
+
     """
 
-    CLS_TOKEN = "<cls>"
-    SEP_TOKEN = "<sep>"
-    PAD_TOKEN = "<pad>"
+    CLS_TOKEN = "<cls>"  # noqa: S105
+    SEP_TOKEN = "<sep>"  # noqa: S105
+    PAD_TOKEN = "<pad>"  # noqa: S105
 
     def __init__(self) -> None:
         self.word2vec = {
@@ -55,7 +54,9 @@ class UserTokenizer:
         }
 
     def __call__(self, sentences: Union[str, List[str]], max_len: int = _MAX_LEN) -> Dict[str, Tensor]:
-        """The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
+        """Call method to tokenize user input.
+
+        The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
         should obey the input/output arguments structure described below.
 
         Args:
@@ -66,6 +67,7 @@ class UserTokenizer:
 
         Return:
             Python dictionary containing the keys `input_ids` and `attention_mask` with corresponding values.
+
         """
         output_dict: Dict[str, Tensor] = {}
         if isinstance(sentences, str):
@@ -77,15 +79,13 @@ class UserTokenizer:
             sentence.lower().split()[:max_len] + [self.PAD_TOKEN] * (max_len - len(sentence.lower().split()))
             for sentence in sentences
         ]
-        output_dict["input_ids"] = torch.cat(
-            [torch.cat([self.word2vec[word] for word in sentence]).unsqueeze(0) for sentence in tokenized_sentences]
-        )
-        output_dict["attention_mask"] = torch.cat(
-            [
-                torch.tensor([1 if word != self.PAD_TOKEN else 0 for word in sentence]).unsqueeze(0)
-                for sentence in tokenized_sentences
-            ]
-        ).long()
+        output_dict["input_ids"] = torch.cat([
+            torch.cat([self.word2vec[word] for word in sentence]).unsqueeze(0) for sentence in tokenized_sentences
+        ])
+        output_dict["attention_mask"] = torch.cat([
+            torch.tensor([1 if word != self.PAD_TOKEN else 0 for word in sentence]).unsqueeze(0)
+            for sentence in tokenized_sentences
+        ]).long()
 
         return output_dict
 
@@ -93,8 +93,7 @@ class UserTokenizer:
 def get_user_model_encoder(num_layers: int = _NUM_LAYERS, d_model: int = _MODEL_DIM, nhead: int = _NHEAD) -> Module:
     """Initialize the Transformer encoder."""
     encoder_layer = nn.TransformerEncoderLayer(d_model=d_model, nhead=nhead)
-    transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
-    return transformer_encoder
+    return nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
 
 
 def user_forward_fn(model: Module, batch: Dict[str, Tensor]) -> Tensor:
@@ -104,11 +103,12 @@ def user_forward_fn(model: Module, batch: Dict[str, Tensor]) -> Tensor:
     input/output argument structure described below.
 
     Args:
-        model:
-        batch:
+        model: a torch.nn.module that implements a forward pass
+        batch: a batch of inputs to pass through the model
 
     Return:
         The model output.
+
     """
     return model(batch["input_ids"])
 

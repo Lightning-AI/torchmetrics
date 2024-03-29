@@ -12,11 +12,10 @@ Sacre BLEU Score
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.SacreBLEUScore
-    :noindex:
+.. autoclass:: torchmetrics.text.SacreBLEUScore
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.sacre_bleu_score
-    :noindex:
+.. autofunction:: torchmetrics.functional.text.sacre_bleu_score

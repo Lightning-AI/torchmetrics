@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,36 +11,50 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
+
+import numpy as np
 import pytest
 import torch
 from torch import tensor
-
-from torchmetrics import MeanSquaredError, PearsonCorrCoef
+from torchmetrics.regression import MeanSquaredError, PearsonCorrCoef
 from torchmetrics.utilities import check_forward_full_state_property, rank_zero_debug, rank_zero_info, rank_zero_warn
 from torchmetrics.utilities.checks import _allclose_recursive
-from torchmetrics.utilities.data import _bincount, _flatten, _flatten_dict, to_categorical, to_onehot
+from torchmetrics.utilities.data import (
+    _bincount,
+    _cumsum,
+    _flatten,
+    _flatten_dict,
+    select_topk,
+    to_categorical,
+    to_onehot,
+)
 from torchmetrics.utilities.distributed import class_reduce, reduce
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_7
+from torchmetrics.utilities.exceptions import TorchMetricsUserWarning
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_13, _TORCH_GREATER_EQUAL_2_2
 
 
 def test_prints():
+    """Test that the different rank zero only functions works as expected."""
     rank_zero_debug("DEBUG")
     rank_zero_info("INFO")
     rank_zero_warn("WARN")
 
 
 def test_reduce():
+    """Test that reduction function works as expected and also raises error on wrong input."""
     start_tensor = torch.rand(50, 40, 30)
 
     assert torch.allclose(reduce(start_tensor, "elementwise_mean"), torch.mean(start_tensor))
     assert torch.allclose(reduce(start_tensor, "sum"), torch.sum(start_tensor))
     assert torch.allclose(reduce(start_tensor, "none"), start_tensor)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Reduction parameter unknown."):
         reduce(start_tensor, "error_reduction")
 
 
 def test_class_reduce():
+    """Test that class reduce function works as expected."""
     num = torch.randint(1, 10, (100,)).float()
     denom = torch.randint(10, 20, (100,)).float()
     weights = torch.randint(1, 100, (100,)).float()
@@ -54,13 +68,12 @@ def test_class_reduce():
 
 
 def test_onehot():
+    """Test that casting to onehot works as expected."""
     test_tensor = tensor([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
-    expected = torch.stack(
-        [
-            torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
-            torch.cat([torch.zeros((5, 5), dtype=int), torch.eye(5, dtype=int)]),
-        ]
-    )
+    expected = torch.stack([
+        torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
+        torch.cat([torch.zeros((5, 5), dtype=int), torch.eye(5, dtype=int)]),
+    ])
 
     assert test_tensor.shape == (2, 5)
     assert expected.shape == (2, 10, 5)
@@ -78,12 +91,11 @@ def test_onehot():
 
 
 def test_to_categorical():
-    test_tensor = torch.stack(
-        [
-            torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
-            torch.cat([torch.zeros((5, 5), dtype=int), torch.eye(5, dtype=int)]),
-        ]
-    ).to(torch.float)
+    """Test that casting to categorical works as expected."""
+    test_tensor = torch.stack([
+        torch.cat([torch.eye(5, dtype=int), torch.zeros((5, 5), dtype=int)]),
+        torch.cat([torch.zeros((5, 5), dtype=int), torch.eye(5, dtype=int)]),
+    ]).to(torch.float)
 
     expected = tensor([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
     assert expected.shape == (2, 5)
@@ -105,20 +117,17 @@ def test_flatten_list():
 def test_flatten_dict():
     """Check that _flatten_dict utility function works as expected."""
     inp = {"a": {"b": 1, "c": 2}, "d": 3}
-    out = _flatten_dict(inp)
-    assert out == {"b": 1, "c": 2, "d": 3}
+    out_dict, out_dup = _flatten_dict(inp)
+    assert out_dict == {"b": 1, "c": 2, "d": 3}
+    assert out_dup is False
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires gpu")
-def test_bincount():
-    """test that bincount works in deterministic setting on GPU."""
-    torch.use_deterministic_algorithms(True)
-
+def test_bincount(use_deterministic_algorithms):
+    """Test that bincount works in deterministic setting on GPU."""
     x = torch.randint(10, size=(100,))
     # uses custom implementation
     res1 = _bincount(x, minlength=10)
-
-    torch.use_deterministic_algorithms(False)
 
     # uses torch.bincount
     res2 = _bincount(x, minlength=10)
@@ -131,12 +140,12 @@ def test_bincount():
     assert torch.allclose(res1, res3)
 
 
-@pytest.mark.parametrize("metric_class, expected", [(MeanSquaredError, False), (PearsonCorrCoef, True)])
+@pytest.mark.parametrize(("metric_class", "expected"), [(MeanSquaredError, False), (PearsonCorrCoef, True)])
 def test_check_full_state_update_fn(capsys, metric_class, expected):
     """Test that the check function works as it should."""
     check_forward_full_state_property(
         metric_class=metric_class,
-        input_args=dict(preds=torch.randn(1000), target=torch.randn(1000)),
+        input_args={"preds": torch.randn(1000), "target": torch.randn(1000)},
         num_update_to_compare=[10000],
         reps=5,
     )
@@ -145,7 +154,7 @@ def test_check_full_state_update_fn(capsys, metric_class, expected):
 
 
 @pytest.mark.parametrize(
-    "input, expected",
+    ("inputs", "expected"),
     [
         ((torch.ones(2), torch.ones(2)), True),
         ((torch.rand(2), torch.rand(2)), False),
@@ -155,17 +164,76 @@ def test_check_full_state_update_fn(capsys, metric_class, expected):
         (({f"{i}": torch.rand(2) for i in range(2)}, {f"{i}": torch.rand(2) for i in range(2)}), False),
     ],
 )
-def test_recursive_allclose(input, expected):
-    res = _allclose_recursive(*input)
+def test_recursive_allclose(inputs, expected):
+    """Test the recursive allclose works as expected."""
+    res = _allclose_recursive(*inputs)
     assert res == expected
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_7, reason="test requires access to `torch.movedim`")
-@pytest.mark.parametrize("dim1, dim2", [(1, 3), (1, -1)])
-def test_movedim(dim1, dim2):
-    x = torch.randn(5, 4, 3, 2, 1)
-    res1 = torch.movedim(x, dim1, dim2)
-    if dim2 >= 0:
-        dim2 += 1
-    res2 = x.unsqueeze(dim2).transpose(dim2, dim1).squeeze(dim1)
-    assert torch.allclose(res1, res2)
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU")
+@pytest.mark.xfail(sys.platform == "win32", reason="test will only fail on non-windows systems")
+@pytest.mark.skipif(
+    not _TORCH_GREATER_EQUAL_1_13, reason="earlier versions was silently non-deterministic, even in deterministic mode"
+)
+def test_cumsum_still_not_supported(use_deterministic_algorithms):
+    """Make sure that cumsum on gpu and deterministic mode still fails.
+
+    If this test begins to pass, it means newer Pytorch versions support this and we can drop internal support.
+
+    """
+    with pytest.raises(RuntimeError, match="cumsum_cuda_kernel does not have a deterministic implementation.*"):
+        torch.arange(10).float().cuda().cumsum(0)
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU")
+def test_custom_cumsum(use_deterministic_algorithms):
+    """Test custom cumsum implementation."""
+    x = torch.arange(100).float().cuda()
+    if sys.platform != "win32":
+        with pytest.warns(
+            TorchMetricsUserWarning, match="You are trying to use a metric in deterministic mode on GPU that.*"
+        ):
+            res = _cumsum(x, dim=0).cpu()
+    else:
+        res = _cumsum(x, dim=0).cpu()
+    res2 = np.cumsum(x.cpu(), axis=0)
+    assert torch.allclose(res, res2)
+
+
+def _reference_topk(x, dim, k):
+    x = x.cpu().numpy()
+    one_hot = np.zeros((x.shape[0], x.shape[1]), dtype=int)
+    if dim == 1:
+        for i in range(x.shape[0]):
+            one_hot[i, np.argsort(x[i, :], kind="stable")[::-1][:k]] = 1
+        return one_hot
+    for i in range(x.shape[1]):
+        one_hot[np.argsort(x[:, i], kind="stable")[::-1][:k], i] = 1
+    return one_hot
+
+
+@pytest.mark.parametrize("dtype", [torch.half, torch.float, torch.double])
+@pytest.mark.parametrize("k", [3, 5])
+@pytest.mark.parametrize("dim", [0, 1])
+def test_custom_topk(dtype, k, dim):
+    """Test custom topk implementation."""
+    if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_13:
+        pytest.skip("half precision topk not supported in Pytorch < 1.13")
+    x = torch.randn(100, 10, dtype=dtype)
+    top_k = select_topk(x, dim=dim, topk=k)
+    assert top_k.shape == (100, 10)
+    assert top_k.dtype == torch.int
+    ref = _reference_topk(x, dim=dim, k=k)
+    assert torch.allclose(top_k, torch.from_numpy(ref).to(torch.int))
+
+
+@pytest.mark.skipif(_TORCH_GREATER_EQUAL_2_2, reason="Top-k does not support cpu + half precision")
+def test_half_precision_top_k_cpu_raises_error():
+    """Test that half precision topk raises error on cpu.
+
+    If this begins to fail, it means newer Pytorch versions support this, and we can drop internal support.
+
+    """
+    x = torch.randn(100, 10, dtype=torch.half)
+    with pytest.raises(RuntimeError, match="\"topk_cpu\" not implemented for 'Half'"):
+        torch.topk(x, k=3, dim=1)

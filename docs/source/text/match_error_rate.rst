@@ -12,11 +12,10 @@ Match Error Rate
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.MatchErrorRate
-    :noindex:
+.. autoclass:: torchmetrics.text.MatchErrorRate
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.match_error_rate
-    :noindex:
+.. autofunction:: torchmetrics.functional.text.match_error_rate

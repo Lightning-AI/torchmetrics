@@ -5,27 +5,27 @@
 # the repo. Unless a later match takes precedence,
 # @global-owner1 and @global-owner2 will be requested for
 # review when someone opens a pull request.
-* @borda @SkafteNicki @justusschock @ananyahjha93 @tchaton @ethanwharris @SeanNaren
+* @SkafteNicki @borda @justusschock @stancld
 
 # owners
-/.github/CODEOWNERS   @williamFalcon
+/.github/CODEOWNERS   @williamFalcon @lantiga
 # main
-/README.md            @borda @SkafteNicki @edenlightning
+/README.md            @borda @SkafteNicki @lantiga
 # installation
-/setup.py             @borda @SkafteNicki @ethanwharris
+/setup.py             @borda @SkafteNicki @justusschock
 
 # Base API
-/src/torchmetrics/metric.py        @SkafteNicki @justusschock @borda @tchaton
+/src/torchmetrics/metric.py        @SkafteNicki @justusschock @borda @lantiga
 /src/torchmetrics/collections.py   @SkafteNicki @justusschock @borda
 
 # CI/CD
-/.github/workflows/   @borda @ethanwharris
+/.github/workflows/   @borda @justusschock @ethanwharris
 # configs in root
-/*.yml                @borda @ethanwharris
+/*.yml                @borda @justusschock @ethanwharris
 
 # Docs
-/docs/                          @edenlightning @SkafteNicki @borda
-/.github/*.md                   @edenlightning @SkafteNicki @borda
-/.github/ISSUE_TEMPLATE/*.md    @edenlightning @borda @SkafteNicki
-/docs/source/conf.py            @borda @awaelchli @ethanwharris
+/docs/                          @lantiga @SkafteNicki @borda
+/.github/*.md                   @lantiga @SkafteNicki @borda
+/.github/ISSUE_TEMPLATE/*.md    @lantiga @borda @SkafteNicki
+/docs/source/conf.py            @borda @awaelchli @justusschock
 /docs/paper_JOSS/               @SkafteNicki @borda @justusschock @williamFalcon

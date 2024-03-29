@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,21 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 
 import pytest
 import torch
-
+from torch import Tensor
+from torch.nn import functional as F  # noqa: N812
 from torchmetrics.functional.image.sam import spectral_angle_mapper
 from torchmetrics.image.sam import SpectralAngleMapper
-from unittests.helpers import seed_all
-from unittests.helpers.reference_metrics import _sk_sam
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
+
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
-Input = namedtuple("Input", ["preds", "target"])
 
 _inputs = []
 for size, channel, dtype in [
@@ -36,7 +37,22 @@ for size, channel, dtype in [
 ]:
     preds = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
     target = torch.rand(NUM_BATCHES, BATCH_SIZE, channel, size, size, dtype=dtype)
-    _inputs.append(Input(preds=preds, target=target))
+    _inputs.append(_Input(preds=preds, target=target))
+
+
+def _reference_sam(preds: Tensor, target: Tensor, reduction: str = "elementwise_mean") -> Tensor:
+    """Baseline implementation of spectral angle mapper."""
+    reduction_options = ("elementwise_mean", "sum", "none")
+    if reduction not in reduction_options:
+        raise ValueError(f"reduction has to be one of {reduction_options}, got: {reduction}.")
+    similarity = F.cosine_similarity(preds, target)
+    sam_score = torch.clamp(similarity, -1, 1).acos()
+    # reduction
+    if reduction == "sum":
+        return torch.sum(sam_score)
+    if reduction == "elementwise_mean":
+        return torch.mean(sam_score)
+    return sam_score
 
 
 @pytest.mark.parametrize("reduction", ["sum", "elementwise_mean"])
@@ -45,31 +61,36 @@ for size, channel, dtype in [
     [(i.preds, i.target) for i in _inputs],
 )
 class TestSpectralAngleMapper(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_sam(self, reduction, preds, target, ddp, dist_sync_on_step):
+    """Test class for `SpectralAngleMapper` metric."""
+
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_sam(self, reduction, preds, target, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
             target,
-            SpectralAngleMapper,
-            partial(_sk_sam, reduction=reduction),
-            dist_sync_on_step,
-            metric_args=dict(reduction=reduction),
+            metric_class=SpectralAngleMapper,
+            reference_metric=partial(_reference_sam, reduction=reduction),
+            metric_args={"reduction": reduction},
         )
 
     def test_sam_functional(self, reduction, preds, target):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
-            spectral_angle_mapper,
-            partial(_sk_sam, reduction=reduction),
-            metric_args=dict(reduction=reduction),
+            metric_functional=spectral_angle_mapper,
+            reference_metric=partial(_reference_sam, reduction=reduction),
+            metric_args={"reduction": reduction},
         )
 
     # SAM half + cpu does not work due to missing support in torch.log
-    @pytest.mark.xfail(reason="SAM metric does not support cpu + half precision")
+    @pytest.mark.skipif(
+        not _TORCH_GREATER_EQUAL_2_1, reason="Pytoch below 2.1 does not support cpu + half precision used in SAM metric"
+    )
     def test_sam_half_cpu(self, reduction, preds, target):
+        """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
             preds,
             target,
@@ -79,28 +100,33 @@ class TestSpectralAngleMapper(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_sam_half_gpu(self, reduction, preds, target):
+        """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(preds, target, SpectralAngleMapper, spectral_angle_mapper)
 
 
 def test_error_on_different_shape(metric_class=SpectralAngleMapper):
+    """Test that error is raised if preds and target have different shape."""
     metric = metric_class()
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape.*"):
         metric(torch.randn([1, 3, 16, 16]), torch.randn([1, 1, 16, 16]))
 
 
 def test_error_on_invalid_shape(metric_class=SpectralAngleMapper):
+    """Test that error is raised if input is not 4D."""
     metric = metric_class()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Expected `preds` and `target` to have BxCxHxW shape.*"):
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16]))
 
 
 def test_error_on_invalid_type(metric_class=SpectralAngleMapper):
+    """Test that error is raised if preds and target have different dtype."""
     metric = metric_class()
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Expected `preds` and `target` to have the same data type.*"):
         metric(torch.randn([3, 16, 16]), torch.randn([3, 16, 16], dtype=torch.float64))
 
 
 def test_error_on_grayscale_image(metric_class=SpectralAngleMapper):
+    """Test that error is raised if number of channels is not larger than 1."""
     metric = metric_class()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Expected channel dimension of `preds` and `target` to be larger than 1.*"):
         metric(torch.randn([16, 1, 16, 16]), torch.randn([16, 1, 16, 16]))

@@ -12,5 +12,4 @@ Min / Max
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.MinMaxMetric
-    :noindex:
+.. autoclass:: torchmetrics.wrappers.MinMaxMetric

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,18 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
-
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_9
 
 
 def _safe_matmul(x: Tensor, y: Tensor) -> Tensor:
     """Safe calculation of matrix multiplication.
 
     If input is float16, will cast to float32 for computation and back again.
+
     """
     if x.dtype == torch.float16 or y.dtype == torch.float16:
         return (x.float() @ y.T.float()).half()
@@ -30,7 +29,7 @@ def _safe_matmul(x: Tensor, y: Tensor) -> Tensor:
 
 
 def _safe_xlogy(x: Tensor, y: Tensor) -> Tensor:
-    """Computes x * log(y). Returns 0 if x=0.
+    """Compute x * log(y). Returns 0 if x=0.
 
     Example:
         >>> import torch
@@ -48,6 +47,7 @@ def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
     """Safe division, by preventing division by zero.
 
     Additionally casts to float if input is not already to secure backwards compatibility.
+
     """
     denom[denom == 0.0] = 1
     num = num if num.is_floating_point() else num.float()
@@ -55,8 +55,22 @@ def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
     return num / denom
 
 
+def _adjust_weights_safe_divide(
+    score: Tensor, average: Optional[str], multilabel: bool, tp: Tensor, fp: Tensor, fn: Tensor, top_k: int = 1
+) -> Tensor:
+    if average is None or average == "none":
+        return score
+    if average == "weighted":
+        weights = tp + fn
+    else:
+        weights = torch.ones_like(score)
+        if not multilabel:
+            weights[tp + fp + fn == 0 if top_k == 1 else tp + fn == 0] = 0.0
+    return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
+
+
 def _auc_format_inputs(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
-    """Checks that auc input is correct."""
+    """Check that auc input is correct."""
     x = x.squeeze() if x.ndim > 1 else x
     y = y.squeeze() if y.ndim > 1 else y
 
@@ -72,19 +86,20 @@ def _auc_format_inputs(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
 
 
 def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float, axis: int = -1) -> Tensor:
-    """Computes area under the curve using the trapezoidal rule.
+    """Compute area under the curve using the trapezoidal rule.
 
     Assumes increasing or decreasing order of `x`.
+
     """
     with torch.no_grad():
-        auc_: Tensor = torch.trapz(y, x, dim=axis) * direction
-    return auc_
+        auc_score: Tensor = torch.trapz(y, x, dim=axis) * direction
+    return auc_score
 
 
 def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
     with torch.no_grad():
         if reorder:
-            x, x_idx = torch.sort(x, stable=True) if _TORCH_GREATER_EQUAL_1_9 else torch.sort(x)
+            x, x_idx = torch.sort(x, stable=True)
             y = y[x_idx]
 
         dx = x[1:] - x[:-1]
@@ -101,7 +116,7 @@ def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
 
 
 def auc(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
-    """Computes Area Under the Curve (AUC) using the trapezoidal rule.
+    """Compute Area Under the Curve (AUC) using the trapezoidal rule.
 
     Args:
         x: x-coordinates, must be either increasing or decreasing
@@ -110,6 +125,33 @@ def auc(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
 
     Return:
         Tensor containing AUC score
+
     """
     x, y = _auc_format_inputs(x, y)
     return _auc_compute(x, y, reorder=reorder)
+
+
+def interp(x: Tensor, xp: Tensor, fp: Tensor) -> Tensor:
+    """One-dimensional linear interpolation for monotonically increasing sample points.
+
+    Returns the one-dimensional piecewise linear interpolant to a function with
+    given discrete data points :math:`(xp, fp)`, evaluated at :math:`x`.
+
+    Adjusted version of this https://github.com/pytorch/pytorch/issues/50334#issuecomment-1000917964
+
+    Args:
+        x: the :math:`x`-coordinates at which to evaluate the interpolated values.
+        xp: the :math:`x`-coordinates of the data points, must be increasing.
+        fp: the :math:`y`-coordinates of the data points, same length as `xp`.
+
+    Returns:
+        the interpolated values, same size as `x`.
+
+    """
+    m = _safe_divide(fp[1:] - fp[:-1], xp[1:] - xp[:-1])
+    b = fp[:-1] - (m * xp[:-1])
+
+    indices = torch.sum(torch.ge(x[:, None], xp[None, :]), 1) - 1
+    indices = torch.clamp(indices, 0, len(m) - 1)
+
+    return m[indices] * x + b[indices]

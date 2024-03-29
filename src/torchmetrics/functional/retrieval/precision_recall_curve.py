@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,16 +14,17 @@
 from typing import Optional, Tuple
 
 import torch
-from torch import Tensor, cumsum, tensor
+from torch import Tensor
 from torch.nn.functional import pad
 
 from torchmetrics.utilities.checks import _check_retrieval_functional_inputs
+from torchmetrics.utilities.data import _cumsum
 
 
 def retrieval_precision_recall_curve(
     preds: Tensor, target: Tensor, max_k: Optional[int] = None, adaptive_k: bool = False
 ) -> Tuple[Tensor, Tensor, Tensor]:
-    """Computes precision-recall pairs for different k (from 1 to `max_k`).
+    """Compute precision-recall pairs for different k (from 1 to `max_k`).
 
     In a ranked retrieval context, appropriate sets of retrieved documents are naturally given by
     the top k retrieved documents.
@@ -46,9 +47,9 @@ def retrieval_precision_recall_curve(
         adaptive_k: adjust `max_k` to `min(max_k, number of documents)` for each query
 
     Returns:
-        tensor with the precision values for each k (at ``k``) from 1 to `max_k`
-        tensor with the recall values for each k (at ``k``) from 1 to `max_k`
-        tensor with all possibles k
+        Tensor with the precision values for each k (at ``top_k``) from 1 to `max_k`
+        Tensor with the recall values for each k (at ``top_k``) from 1 to `max_k`
+        Tensor with all possibles k
 
     Raises:
         ValueError:
@@ -57,6 +58,7 @@ def retrieval_precision_recall_curve(
             If ``adaptive_k`` is not boolean.
 
     Example:
+        >>> from torch import tensor
         >>> from  torchmetrics.functional import retrieval_precision_recall_curve
         >>> preds = tensor([0.2, 0.3, 0.5])
         >>> target = tensor([True, False, True])
@@ -67,6 +69,7 @@ def retrieval_precision_recall_curve(
         tensor([0.5000, 0.5000])
         >>> top_k
         tensor([1, 2])
+
     """
     preds, target = _check_retrieval_functional_inputs(preds, target)
 
@@ -89,7 +92,7 @@ def retrieval_precision_recall_curve(
         return torch.zeros(max_k, device=preds.device), torch.zeros(max_k, device=preds.device), topk
 
     relevant = target[preds.topk(min(max_k, preds.shape[-1]), dim=-1)[1]].float()
-    relevant = cumsum(pad(relevant, (0, max(0, max_k - len(relevant))), "constant", 0.0), dim=0)
+    relevant = _cumsum(pad(relevant, (0, max(0, max_k - len(relevant))), "constant", 0.0), dim=0)
 
     recall = relevant / target.sum()
     precision = relevant / topk

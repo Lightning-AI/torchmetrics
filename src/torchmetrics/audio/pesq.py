@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,64 +11,78 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any
+from typing import Any, Optional, Sequence, Union
 
 from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _PESQ_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PESQ_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 __doctest_requires__ = {"PerceptualEvaluationSpeechQuality": ["pesq"]}
 
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["PerceptualEvaluationSpeechQuality.plot"]
+
 
 class PerceptualEvaluationSpeechQuality(Metric):
-    """Perceptual Evaluation of Speech Quality (PESQ)
+    """Calculate `Perceptual Evaluation of Speech Quality`_ (PESQ).
 
-    This is a wrapper for the pesq package [1]. Note that input will be moved to `cpu`
-    to perform the metric calculation.
+    It's a recognized industry standard for audio quality that takes into considerations characteristics such as:
+    audio sharpness, call volume, background noise, clipping, audio interference etc. PESQ returns a score between
+    -0.5 and 4.5 with the higher scores indicating a better quality.
+
+    This metric is a wrapper for the `pesq package`_. Note that input will be moved to ``cpu`` to perform the metric
+    calculation.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+    - ``target`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``pesq`` (:class:`~torch.Tensor`): float tensor of PESQ value reduced across the batch
 
     .. note:: using this metrics requires you to have ``pesq`` install. Either install as ``pip install
-        torchmetrics[audio]`` or ``pip install pesq``. Note that ``pesq`` will compile with your currently
+        torchmetrics[audio]`` or ``pip install pesq``. ``pesq`` will compile with your currently
         installed version of numpy, meaning that if you upgrade numpy at some point in the future you will
         most likely have to reinstall ``pesq``.
 
-    Forward accepts
-
-    - ``preds``: ``shape [...,time]``
-    - ``target``: ``shape [...,time]``
+    .. note:: the ``forward`` and ``compute`` methods in this class return a single (reduced) PESQ value
+        for a batch. To obtain a PESQ value for each sample, you may use the functional counterpart in
+        :func:`~torchmetrics.functional.audio.pesq.perceptual_evaluation_speech_quality`.
 
     Args:
         fs: sampling frequency, should be 16000 or 8000 (Hz)
         mode: ``'wb'`` (wide-band) or ``'nb'`` (narrow-band)
         keep_same_device: whether to move the pesq value to the device of preds
-        n_processes: integer specifiying the number of processes to run in parallel for the metric calculation.
+        n_processes: integer specifying the number of processes to run in parallel for the metric calculation.
             Only applies to batches of data and if ``multiprocessing`` package is installed.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ModuleNotFoundError:
-            If ``peqs`` package is not installed
+            If ``pesq`` package is not installed
         ValueError:
             If ``fs`` is not either  ``8000`` or ``16000``
         ValueError:
             If ``mode`` is not either ``"wb"`` or ``"nb"``
 
     Example:
-        >>> from torchmetrics.audio.pesq import PerceptualEvaluationSpeechQuality
         >>> import torch
+        >>> from torchmetrics.audio import PerceptualEvaluationSpeechQuality
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
-        >>> nb_pesq = PerceptualEvaluationSpeechQuality(8000, 'nb')
-        >>> nb_pesq(preds, target)
+        >>> pesq = PerceptualEvaluationSpeechQuality(8000, 'nb')
+        >>> pesq(preds, target)
         tensor(2.2076)
         >>> wb_pesq = PerceptualEvaluationSpeechQuality(16000, 'wb')
         >>> wb_pesq(preds, target)
         tensor(1.7359)
 
-    References:
-        [1] https://github.com/ludlows/python-pesq
     """
 
     sum_pesq: Tensor
@@ -76,6 +90,8 @@ class PerceptualEvaluationSpeechQuality(Metric):
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
+    plot_lower_bound: float = -0.5
+    plot_upper_bound: float = 4.5
 
     def __init__(
         self,
@@ -103,13 +119,8 @@ class PerceptualEvaluationSpeechQuality(Metric):
         self.add_state("sum_pesq", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
-    def update(self, preds: Tensor, target: Tensor) -> None:  # type: ignore
-        """Update state with predictions and targets.
-
-        Args:
-            preds: Predictions from model
-            target: Ground truth values
-        """
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update state with predictions and targets."""
         pesq_batch = perceptual_evaluation_speech_quality(
             preds, target, self.fs, self.mode, False, self.n_processes
         ).to(self.sum_pesq.device)
@@ -118,5 +129,45 @@ class PerceptualEvaluationSpeechQuality(Metric):
         self.total += pesq_batch.numel()
 
     def compute(self) -> Tensor:
-        """Computes average PESQ."""
+        """Compute metric."""
         return self.sum_pesq / self.total
+
+    def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.audio import PerceptualEvaluationSpeechQuality
+            >>> metric = PerceptualEvaluationSpeechQuality(8000, 'nb')
+            >>> metric.update(torch.rand(8000), torch.rand(8000))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.audio import PerceptualEvaluationSpeechQuality
+            >>> metric = PerceptualEvaluationSpeechQuality(8000, 'nb')
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(torch.rand(8000), torch.rand(8000)))
+            >>> fig_, ax_ = metric.plot(values)
+
+        """
+        return self._plot(val, ax)

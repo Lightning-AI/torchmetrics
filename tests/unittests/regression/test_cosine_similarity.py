@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,101 +11,91 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections import namedtuple
 from functools import partial
 
 import numpy as np
 import pytest
 import torch
 from sklearn.metrics.pairwise import cosine_similarity as sk_cosine
-
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.regression.cosine_similarity import CosineSimilarity
-from unittests.helpers import seed_all
-from unittests.helpers.testers import BATCH_SIZE, NUM_BATCHES, MetricTester
+
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
-num_targets = 5
+NUM_TARGETS = 5
 
-Input = namedtuple("Input", ["preds", "target"])
 
-_single_target_inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE),
+_single_target_inputs = _Input(
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 1),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 1),
 )
 
-_multi_target_inputs = Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
+_multi_target_inputs = _Input(
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_TARGETS),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_TARGETS),
 )
 
 
-def _multi_target_sk_metric(preds, target, reduction, sk_fn=sk_cosine):
-    sk_preds = preds.view(-1, num_targets).numpy()
-    sk_target = target.view(-1, num_targets).numpy()
-    result_array = sk_fn(sk_target, sk_preds)
+def _reference_sklearn_cosine(preds, target, reduction):
+    sk_preds = preds.numpy()
+    sk_target = target.numpy()
+    result_array = sk_cosine(sk_target, sk_preds)
     col = np.diagonal(result_array)
     col_sum = col.sum()
     if reduction == "sum":
-        to_return = col_sum
-    elif reduction == "mean":
-        mean = col_sum / len(col)
-        to_return = mean
-    else:
-        to_return = col
-    return to_return
-
-
-def _single_target_sk_metric(preds, target, reduction, sk_fn=sk_cosine):
-    sk_preds = preds.view(-1).numpy()
-    sk_target = target.view(-1).numpy()
-    result_array = sk_fn(np.expand_dims(sk_preds, axis=0), np.expand_dims(sk_target, axis=0))
-    col = np.diagonal(result_array)
-    col_sum = col.sum()
-    if reduction == "sum":
-        to_return = col_sum
-    elif reduction == "mean":
-        mean = col_sum / len(col)
-        to_return = mean
-    else:
-        to_return = col
-    return to_return
+        return col_sum
+    if reduction == "mean":
+        return col_sum / len(col)
+    return col
 
 
 @pytest.mark.parametrize("reduction", ["sum", "mean"])
 @pytest.mark.parametrize(
-    "preds, target, sk_metric",
+    "preds, target, ref_metric",
     [
-        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_sk_metric),
-        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_sk_metric),
+        (_single_target_inputs.preds, _single_target_inputs.target, _reference_sklearn_cosine),
+        (_multi_target_inputs.preds, _multi_target_inputs.target, _reference_sklearn_cosine),
     ],
 )
 class TestCosineSimilarity(MetricTester):
-    @pytest.mark.parametrize("ddp", [True, False])
-    @pytest.mark.parametrize("dist_sync_on_step", [True, False])
-    def test_cosine_similarity(self, reduction, preds, target, sk_metric, ddp, dist_sync_on_step):
+    """Test class for `CosineSimilarity` metric."""
+
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_cosine_similarity(self, reduction, preds, target, ref_metric, ddp):
+        """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
             target,
             CosineSimilarity,
-            partial(sk_metric, reduction=reduction),
-            dist_sync_on_step,
-            metric_args=dict(reduction=reduction),
+            partial(ref_metric, reduction=reduction),
+            metric_args={"reduction": reduction},
         )
 
-    def test_cosine_similarity_functional(self, reduction, preds, target, sk_metric):
+    def test_cosine_similarity_functional(self, reduction, preds, target, ref_metric):
+        """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
             target,
             cosine_similarity,
-            partial(sk_metric, reduction=reduction),
-            metric_args=dict(reduction=reduction),
+            partial(ref_metric, reduction=reduction),
+            metric_args={"reduction": reduction},
         )
 
 
 def test_error_on_different_shape(metric_class=CosineSimilarity):
+    """Test that error is raised on different shapes of input."""
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
-        metric(torch.randn(100), torch.randn(50))
+        metric(torch.randn(100, 2), torch.randn(50, 2))
+
+
+def test_error_on_non_2d_input():
+    """Test that error is raised if input is not 2-dimensional."""
+    metric = CosineSimilarity()
+    with pytest.raises(ValueError, match="Expected input to cosine similarity to be 2D tensors of shape.*"):
+        metric(torch.randn(100), torch.randn(100))

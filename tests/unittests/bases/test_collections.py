@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,33 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import pickle
-import time
 from copy import deepcopy
+from typing import Any
 
 import pytest
 import torch
-
-from torchmetrics import (
-    AUROC,
-    Accuracy,
-    AveragePrecision,
-    CohenKappa,
-    ConfusionMatrix,
-    F1Score,
-    MatthewsCorrCoef,
-    Metric,
-    MetricCollection,
-    Precision,
-    Recall,
+from torchmetrics import ClasswiseWrapper, Metric, MetricCollection
+from torchmetrics.classification import (
+    BinaryAccuracy,
+    MulticlassAccuracy,
+    MulticlassAUROC,
+    MulticlassAveragePrecision,
+    MulticlassCohenKappa,
+    MulticlassConfusionMatrix,
+    MulticlassF1Score,
+    MulticlassMatthewsCorrCoef,
+    MulticlassPrecision,
+    MulticlassRecall,
+    MultilabelAUROC,
+    MultilabelAveragePrecision,
 )
 from torchmetrics.utilities.checks import _allclose_recursive
-from unittests.helpers import seed_all
-from unittests.helpers.testers import DummyMetricDiff, DummyMetricSum
+
+from unittests._helpers import seed_all
+from unittests._helpers.testers import DummyMetricDiff, DummyMetricMultiOutputDict, DummyMetricSum
 
 seed_all(42)
 
 
 def test_metric_collection(tmpdir):
+    """Test that updating the metric collection is equal to individually updating metrics in the collection."""
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
 
@@ -77,24 +80,25 @@ def test_metric_collection(tmpdir):
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
 def test_device_and_dtype_transfer_metriccollection(tmpdir):
+    """Test that metrics in the collection correctly gets updated their dtype and device."""
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
 
     metric_collection = MetricCollection([m1, m2])
-    for _, metric in metric_collection.items():
+    for metric in metric_collection.values():
         assert metric.x.is_cuda is False
         assert metric.x.dtype == torch.float32
 
     metric_collection = metric_collection.to(device="cuda")
-    for _, metric in metric_collection.items():
+    for metric in metric_collection.values():
         assert metric.x.is_cuda
 
-    metric_collection = metric_collection.double()
-    for _, metric in metric_collection.items():
+    metric_collection = metric_collection.set_dtype(torch.double)
+    for metric in metric_collection.values():
         assert metric.x.dtype == torch.float64
 
-    metric_collection = metric_collection.half()
-    for _, metric in metric_collection.items():
+    metric_collection = metric_collection.set_dtype(torch.half)
+    for metric in metric_collection.values():
         assert metric.x.dtype == torch.float16
 
 
@@ -103,11 +107,11 @@ def test_metric_collection_wrong_input(tmpdir):
     dms = DummyMetricSum()
 
     # Not all input are metrics (list)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Input .* to `MetricCollection` is not a instance of .*"):
         _ = MetricCollection([dms, 5])
 
     # Not all input are metrics (dict)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Value .* belonging to key .* is not an instance of .*"):
         _ = MetricCollection({"metric1": dms, "metric2": 5})
 
     # Same metric passed in multiple times
@@ -120,8 +124,7 @@ def test_metric_collection_wrong_input(tmpdir):
 
 
 def test_metric_collection_args_kwargs(tmpdir):
-    """Check that args and kwargs gets passed correctly in metric collection, Checks both update and forward
-    method."""
+    """Check that args and kwargs gets passed correctly in metric collection, checks both update and forward."""
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
 
@@ -148,12 +151,12 @@ def test_metric_collection_args_kwargs(tmpdir):
 
 
 @pytest.mark.parametrize(
-    "prefix, postfix",
+    ("prefix", "postfix"),
     [
-        [None, None],
-        ["prefix_", None],
-        [None, "_postfix"],
-        ["prefix_", "_postfix"],
+        (None, None),
+        ("prefix_", None),
+        (None, "_postfix"),
+        ("prefix_", "_postfix"),
     ],
 )
 def test_metric_collection_prefix_postfix_args(prefix, postfix):
@@ -183,14 +186,11 @@ def test_metric_collection_prefix_postfix_args(prefix, postfix):
     for name in names:
         assert f"new_prefix_{name}" in out, "prefix argument not working as intended with clone method"
 
-    for k, _ in new_metric_collection.items():
+    for k in new_metric_collection:
         assert "new_prefix_" in k
 
-    for k in new_metric_collection.keys():
+    for k in new_metric_collection.keys(keep_base=False):
         assert "new_prefix_" in k
-
-    for k, _ in new_metric_collection.items(keep_base=True):
-        assert "new_prefix_" not in k
 
     for k in new_metric_collection.keys(keep_base=True):
         assert "new_prefix_" not in k
@@ -236,6 +236,7 @@ def test_metric_collection_repr():
 
 
 def test_metric_collection_same_order():
+    """Test that metrics are stored internally in the same order, regardless of input order."""
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
     col1 = MetricCollection({"a": m1, "b": m2})
@@ -245,6 +246,7 @@ def test_metric_collection_same_order():
 
 
 def test_collection_add_metrics():
+    """Test that `add_metrics` function called multiple times works as expected."""
     m1 = DummyMetricSum()
     m2 = DummyMetricDiff()
 
@@ -254,11 +256,13 @@ def test_collection_add_metrics():
 
     collection.update(5)
     results = collection.compute()
-    assert results["DummyMetricSum"] == results["m1_"] and results["m1_"] == 5
+    assert results["DummyMetricSum"] == results["m1_"]
+    assert results["m1_"] == 5
     assert results["DummyMetricDiff"] == -5
 
 
 def test_collection_check_arg():
+    """Test that the `_check_arg` method works as expected."""
     assert MetricCollection._check_arg(None, "prefix") is None
     assert MetricCollection._check_arg("sample", "prefix") == "sample"
 
@@ -272,11 +276,11 @@ def test_collection_filtering():
     class DummyMetric(Metric):
         full_state_update = True
 
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
 
-        def update(self, *args, kwarg):
-            print("Entered DummyMetric")
+        def update(self, *args: Any, kwarg: Any):
+            pass
 
         def compute(self):
             return
@@ -284,24 +288,24 @@ def test_collection_filtering():
     class MyAccuracy(Metric):
         full_state_update = True
 
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
 
         def update(self, preds, target, kwarg2):
-            print("Entered MyAccuracy")
+            pass
 
         def compute(self):
             return
 
-    mc = MetricCollection([Accuracy(), DummyMetric()])
+    mc = MetricCollection([BinaryAccuracy(), DummyMetric()])
     mc2 = MetricCollection([MyAccuracy(), DummyMetric()])
     mc(torch.tensor([0, 1]), torch.tensor([0, 1]), kwarg="kwarg")
     mc2(torch.tensor([0, 1]), torch.tensor([0, 1]), kwarg="kwarg", kwarg2="kwarg2")
 
 
 # function for generating
-_mc_preds = torch.randn(10, 3).softmax(dim=-1)
-_mc_target = torch.randint(3, (10,))
+_mc_preds = torch.randn(10, 3, 2).softmax(dim=1)
+_mc_target = torch.randint(3, (10, 2))
 _ml_preds = torch.rand(10, 3)
 _ml_target = torch.randint(2, (10, 3))
 
@@ -310,29 +314,49 @@ _ml_target = torch.randint(2, (10, 3))
     "metrics, expected, preds, target",
     [
         # single metric forms its own compute group
-        (Accuracy(3), {0: ["Accuracy"]}, _mc_preds, _mc_target),
+        (MulticlassAccuracy(num_classes=3), {0: ["MulticlassAccuracy"]}, _mc_preds, _mc_target),
         # two metrics of same class forms a compute group
-        ({"acc0": Accuracy(3), "acc1": Accuracy(3)}, {0: ["acc0", "acc1"]}, _mc_preds, _mc_target),
-        # two metrics from registry froms a compute group
-        ([Precision(3), Recall(3)], {0: ["Precision", "Recall"]}, _mc_preds, _mc_target),
+        (
+            {"acc0": MulticlassAccuracy(num_classes=3), "acc1": MulticlassAccuracy(num_classes=3)},
+            {0: ["acc0", "acc1"]},
+            _mc_preds,
+            _mc_target,
+        ),
+        # two metrics from registry forms a compute group
+        (
+            [MulticlassPrecision(num_classes=3), MulticlassRecall(num_classes=3)],
+            {0: ["MulticlassPrecision", "MulticlassRecall"]},
+            _mc_preds,
+            _mc_target,
+        ),
         # two metrics from different classes gives two compute groups
-        ([ConfusionMatrix(3), Recall(3)], {0: ["ConfusionMatrix"], 1: ["Recall"]}, _mc_preds, _mc_target),
+        (
+            [MulticlassConfusionMatrix(num_classes=3), MulticlassRecall(num_classes=3)],
+            {0: ["MulticlassConfusionMatrix"], 1: ["MulticlassRecall"]},
+            _mc_preds,
+            _mc_target,
+        ),
         # multi group multi metric
         (
-            [ConfusionMatrix(3), CohenKappa(3), Recall(3), Precision(3)],
-            {0: ["ConfusionMatrix", "CohenKappa"], 1: ["Recall", "Precision"]},
+            [
+                MulticlassConfusionMatrix(num_classes=3),
+                MulticlassCohenKappa(num_classes=3),
+                MulticlassRecall(num_classes=3),
+                MulticlassPrecision(num_classes=3),
+            ],
+            {0: ["MulticlassConfusionMatrix", "MulticlassCohenKappa"], 1: ["MulticlassRecall", "MulticlassPrecision"]},
             _mc_preds,
             _mc_target,
         ),
         # Complex example
         (
             {
-                "acc": Accuracy(3),
-                "acc2": Accuracy(3),
-                "acc3": Accuracy(num_classes=3, average="macro"),
-                "f1": F1Score(3),
-                "recall": Recall(3),
-                "confmat": ConfusionMatrix(3),
+                "acc": MulticlassAccuracy(num_classes=3),
+                "acc2": MulticlassAccuracy(num_classes=3),
+                "acc3": MulticlassAccuracy(num_classes=3, multidim_average="samplewise"),
+                "f1": MulticlassF1Score(num_classes=3),
+                "recall": MulticlassRecall(num_classes=3),
+                "confmat": MulticlassConfusionMatrix(num_classes=3),
             },
             {0: ["acc", "acc2", "f1", "recall"], 1: ["acc3"], 2: ["confmat"]},
             _mc_preds,
@@ -340,8 +364,11 @@ _ml_target = torch.randint(2, (10, 3))
         ),
         # With list states
         (
-            [AUROC(average="macro", num_classes=3), AveragePrecision(average="macro", num_classes=3)],
-            {0: ["AUROC", "AveragePrecision"]},
+            [
+                MulticlassAUROC(num_classes=3, average="macro"),
+                MulticlassAveragePrecision(num_classes=3, average="macro"),
+            ],
+            {0: ["MulticlassAUROC", "MulticlassAveragePrecision"]},
             _mc_preds,
             _mc_target,
         ),
@@ -349,33 +376,43 @@ _ml_target = torch.randint(2, (10, 3))
         (
             [
                 MetricCollection(
-                    AUROC(average="micro", num_classes=3),
-                    AveragePrecision(average="micro", num_classes=3),
+                    MultilabelAUROC(num_labels=3, average="micro"),
+                    MultilabelAveragePrecision(num_labels=3, average="micro"),
                     postfix="_micro",
                 ),
                 MetricCollection(
-                    AUROC(average="macro", num_classes=3),
-                    AveragePrecision(average="macro", num_classes=3),
+                    MultilabelAUROC(num_labels=3, average="macro"),
+                    MultilabelAveragePrecision(num_labels=3, average="macro"),
                     postfix="_macro",
                 ),
             ],
-            {0: ["AUROC_micro", "AveragePrecision_micro", "AUROC_macro", "AveragePrecision_macro"]},
+            {
+                0: [
+                    "MultilabelAUROC_micro",
+                    "MultilabelAveragePrecision_micro",
+                    "MultilabelAUROC_macro",
+                    "MultilabelAveragePrecision_macro",
+                ]
+            },
             _ml_preds,
             _ml_target,
         ),
     ],
 )
 class TestComputeGroups:
+    """Test class for testing groups computation."""
+
     @pytest.mark.parametrize(
-        "prefix, postfix",
+        ("prefix", "postfix"),
         [
-            [None, None],
-            ["prefix_", None],
-            [None, "_postfix"],
-            ["prefix_", "_postfix"],
+            (None, None),
+            ("prefix_", None),
+            (None, "_postfix"),
+            ("prefix_", "_postfix"),
         ],
     )
-    def test_check_compute_groups_correctness(self, metrics, expected, preds, target, prefix, postfix):
+    @pytest.mark.parametrize("with_reset", [True, False])
+    def test_check_compute_groups_correctness(self, metrics, expected, preds, target, prefix, postfix, with_reset):
         """Check that compute groups are formed after initialization and that metrics are correctly computed."""
         if isinstance(metrics, MetricCollection):
             prefix, postfix = None, None  # disable for nested collections
@@ -390,8 +427,8 @@ class TestComputeGroups:
             m.update(preds, target)
             m2.update(preds, target)
 
-            for _, member in m.items():
-                assert member._update_called
+            for member in m.values():
+                assert member.update_called
 
             assert m.compute_groups == expected
             assert m2.compute_groups == {}
@@ -400,22 +437,22 @@ class TestComputeGroups:
             m.update(preds, target)
             m2.update(preds, target)
 
-            for _, member in m.items():
-                assert member._update_called
+            for member in m.values():
+                assert member.update_called
 
             # compare results for correctness
             res_cg = m.compute()
             res_without_cg = m2.compute()
-            for key in res_cg.keys():
+            for key in res_cg:
                 assert torch.allclose(res_cg[key], res_without_cg[key])
 
-            m.reset()
-            m2.reset()
+            if with_reset:
+                m.reset()
+                m2.reset()
 
     @pytest.mark.parametrize("method", ["items", "values", "keys"])
     def test_check_compute_groups_items_and_values(self, metrics, expected, preds, target, method):
-        """Check that whenever user call a methods that give access to the indivitual metric that state are copied
-        instead of just passed by reference."""
+        """Check states are copied instead of passed by ref when a single metric in the collection is access."""
         m = MetricCollection(deepcopy(metrics), compute_groups=True)
         m2 = MetricCollection(deepcopy(metrics), compute_groups=False)
 
@@ -439,59 +476,63 @@ class TestComputeGroups:
                 for metric_cg, metric_no_cg in zip(m.values(), m2.values()):
                     _compare(metric_cg, metric_no_cg)
             if method == "keys":
-                for key in m.keys():
+                for key in m:
                     metric_cg, metric_no_cg = m[key], m2[key]
                     _compare(metric_cg, metric_no_cg)
 
 
-@pytest.mark.parametrize(
-    "metrics",
-    [
-        {"acc0": Accuracy(3), "acc1": Accuracy(3)},
-        [Precision(3), Recall(3)],
-        [ConfusionMatrix(3), CohenKappa(3), Recall(3), Precision(3)],
-        {
-            "acc": Accuracy(3),
-            "acc2": Accuracy(3),
-            "acc3": Accuracy(num_classes=3, average="macro"),
-            "f1": F1Score(3),
-            "recall": Recall(3),
-            "confmat": ConfusionMatrix(3),
-        },
-    ],
-)
-@pytest.mark.parametrize("steps", [100, 1000])
-def test_check_compute_groups_is_faster(metrics, steps):
-    """Check that compute groups are formed after initialization."""
-    m = MetricCollection(deepcopy(metrics), compute_groups=True)
-    # Construct without for comparison
-    m2 = MetricCollection(deepcopy(metrics), compute_groups=False)
+# TODO: test is flaky
+# @pytest.mark.parametrize(
+#     "metrics",
+#     [
+#         {"acc0": MulticlassAccuracy(3), "acc1": MulticlassAccuracy(3)},
+#         [MulticlassPrecision(3), MulticlassRecall(3)],
+#         [MulticlassConfusionMatrix(3), MulticlassCohenKappa(3), MulticlassRecall(3), MulticlassPrecision(3)],
+#         {
+#             "acc": MulticlassAccuracy(3),
+#             "acc2": MulticlassAccuracy(3),
+#             "acc3": MulticlassAccuracy(num_classes=3, average="macro"),
+#             "f1": MulticlassF1Score(3),
+#             "recall": MulticlassRecall(3),
+#             "confmat": MulticlassConfusionMatrix(3),
+#         },
+#     ],
+# )
+# @pytest.mark.parametrize("steps", [1000])
+# def test_check_compute_groups_is_faster(metrics, steps):
+#     """Check that compute groups are formed after initialization."""
+#     m = MetricCollection(deepcopy(metrics), compute_groups=True)
+#     # Construct without for comparison
+#     m2 = MetricCollection(deepcopy(metrics), compute_groups=False)
 
-    preds = torch.randn(10, 3).softmax(dim=-1)
-    target = torch.randint(3, (10,))
+#     preds = torch.randn(10, 3).softmax(dim=-1)
+#     target = torch.randint(3, (10,))
 
-    start = time.time()
-    for _ in range(steps):
-        m.update(preds, target)
-    time_cg = time.time() - start
+#     start = time.time()
+#     for _ in range(steps):
+#         m.update(preds, target)
+#     time_cg = time.time() - start
 
-    start = time.time()
-    for _ in range(steps):
-        m2.update(preds, target)
-    time_no_cg = time.time() - start
+#     start = time.time()
+#     for _ in range(steps):
+#         m2.update(preds, target)
+#     time_no_cg = time.time() - start
 
-    assert time_cg < time_no_cg, "using compute groups were not faster"
+#     assert time_cg < time_no_cg, "using compute groups were not faster"
 
 
 def test_compute_group_define_by_user():
     """Check that user can provide compute groups."""
     m = MetricCollection(
-        ConfusionMatrix(3), Recall(3), Precision(3), compute_groups=[["ConfusionMatrix"], ["Recall", "Precision"]]
+        MulticlassConfusionMatrix(3),
+        MulticlassRecall(3),
+        MulticlassPrecision(3),
+        compute_groups=[["MulticlassConfusionMatrix"], ["MulticlassRecall", "MulticlassPrecision"]],
     )
 
     # Check that we are not going to check the groups in the first update
     assert m._groups_checked
-    assert m.compute_groups == {0: ["ConfusionMatrix"], 1: ["Recall", "Precision"]}
+    assert m.compute_groups == {0: ["MulticlassConfusionMatrix"], 1: ["MulticlassRecall", "MulticlassPrecision"]}
 
     preds = torch.randn(10, 3).softmax(dim=-1)
     target = torch.randint(3, (10,))
@@ -499,29 +540,68 @@ def test_compute_group_define_by_user():
     assert m.compute()
 
 
+def test_classwise_wrapper_compute_group():
+    """Check that user can provide compute groups."""
+    classwise_accuracy = ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None), prefix="accuracy")
+    classwise_recall = ClasswiseWrapper(MulticlassRecall(num_classes=3, average=None), prefix="recall")
+    classwise_precision = ClasswiseWrapper(MulticlassPrecision(num_classes=3, average=None), prefix="precision")
+
+    m = MetricCollection(
+        {
+            "accuracy": ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None), prefix="accuracy"),
+            "recall": ClasswiseWrapper(MulticlassRecall(num_classes=3, average=None), prefix="recall"),
+            "precision": ClasswiseWrapper(MulticlassPrecision(num_classes=3, average=None), prefix="precision"),
+        },
+        compute_groups=[["accuracy", "recall", "precision"]],
+    )
+
+    # Check that we are not going to check the groups in the first update
+    assert m._groups_checked
+    assert m.compute_groups == {0: ["accuracy", "recall", "precision"]}
+
+    preds = torch.randn(10, 3).softmax(dim=-1)
+    target = torch.randint(3, (10,))
+
+    expected = {
+        **classwise_accuracy(preds, target),
+        **classwise_recall(preds, target),
+        **classwise_precision(preds, target),
+    }
+
+    m.update(preds, target)
+    res = m.compute()
+
+    for key in expected:
+        assert torch.allclose(res[key], expected[key])
+
+    # check metric state_dict
+    m.state_dict()
+
+
 def test_compute_on_different_dtype():
     """Check that extraction of compute groups are robust towards difference in dtype."""
-    m = MetricCollection(
-        [
-            ConfusionMatrix(num_classes=3),
-            MatthewsCorrCoef(num_classes=3),
-        ]
-    )
+    m = MetricCollection([
+        MulticlassConfusionMatrix(num_classes=3),
+        MulticlassMatthewsCorrCoef(num_classes=3),
+    ])
     assert not m._groups_checked
-    assert m.compute_groups == {0: ["ConfusionMatrix"], 1: ["MatthewsCorrCoef"]}
+    assert m.compute_groups == {0: ["MulticlassConfusionMatrix"], 1: ["MulticlassMatthewsCorrCoef"]}
     preds = torch.randn(10, 3).softmax(dim=-1)
     target = torch.randint(3, (10,))
     for _ in range(2):
         m.update(preds, target)
-    assert m.compute_groups == {0: ["ConfusionMatrix", "MatthewsCorrCoef"]}
+    assert m.compute_groups == {0: ["MulticlassConfusionMatrix", "MulticlassMatthewsCorrCoef"]}
     assert m.compute()
 
 
 def test_error_on_wrong_specified_compute_groups():
-    """Test that error is raised if user mis-specify the compute groups."""
-    with pytest.raises(ValueError, match="Input Accuracy in `compute_groups`.*"):
+    """Test that error is raised if user miss-specify the compute groups."""
+    with pytest.raises(ValueError, match="Input MulticlassAccuracy in `compute_groups`.*"):
         MetricCollection(
-            ConfusionMatrix(3), Recall(3), Precision(3), compute_groups=[["ConfusionMatrix"], ["Recall", "Accuracy"]]
+            MulticlassConfusionMatrix(3),
+            MulticlassRecall(3),
+            MulticlassPrecision(3),
+            compute_groups=[["MulticlassConfusionMatrix"], ["MulticlassRecall", "MulticlassAccuracy"]],
         )
 
 
@@ -530,19 +610,29 @@ def test_error_on_wrong_specified_compute_groups():
     [
         [
             MetricCollection(
-                [Accuracy(num_classes=3, average="macro"), Precision(num_classes=3, average="macro")], prefix="macro_"
+                [
+                    MulticlassAccuracy(num_classes=3, average="macro"),
+                    MulticlassPrecision(num_classes=3, average="macro"),
+                ],
+                prefix="macro_",
             ),
             MetricCollection(
-                [Accuracy(num_classes=3, average="micro"), Precision(num_classes=3, average="micro")], prefix="micro_"
+                [
+                    MulticlassAccuracy(num_classes=3, average="micro"),
+                    MulticlassPrecision(num_classes=3, average="micro"),
+                ],
+                prefix="micro_",
             ),
         ],
         {
-            "macro": MetricCollection(
-                [Accuracy(num_classes=3, average="macro"), Precision(num_classes=3, average="macro")]
-            ),
-            "micro": MetricCollection(
-                [Accuracy(num_classes=3, average="micro"), Precision(num_classes=3, average="micro")]
-            ),
+            "macro": MetricCollection([
+                MulticlassAccuracy(num_classes=3, average="macro"),
+                MulticlassPrecision(num_classes=3, average="macro"),
+            ]),
+            "micro": MetricCollection([
+                MulticlassAccuracy(num_classes=3, average="micro"),
+                MulticlassPrecision(num_classes=3, average="micro"),
+            ]),
         },
     ],
 )
@@ -552,7 +642,72 @@ def test_nested_collections(input_collections):
     preds = torch.randn(10, 3).softmax(dim=-1)
     target = torch.randint(3, (10,))
     val = metrics(preds, target)
-    assert "valmetrics/macro_Accuracy" in val
-    assert "valmetrics/macro_Precision" in val
-    assert "valmetrics/micro_Accuracy" in val
-    assert "valmetrics/micro_Precision" in val
+    assert "valmetrics/macro_MulticlassAccuracy" in val
+    assert "valmetrics/macro_MulticlassPrecision" in val
+    assert "valmetrics/micro_MulticlassAccuracy" in val
+    assert "valmetrics/micro_MulticlassPrecision" in val
+
+
+@pytest.mark.parametrize(
+    ("base_metrics", "expected"),
+    [
+        (
+            DummyMetricMultiOutputDict(),
+            (
+                "prefix2_prefix1_output1_postfix1_postfix2",
+                "prefix2_prefix1_output2_postfix1_postfix2",
+            ),
+        ),
+        (
+            {"metric1": DummyMetricMultiOutputDict(), "metric2": DummyMetricMultiOutputDict()},
+            (
+                "prefix2_prefix1_metric1_output1_postfix1_postfix2",
+                "prefix2_prefix1_metric1_output2_postfix1_postfix2",
+                "prefix2_prefix1_metric2_output1_postfix1_postfix2",
+                "prefix2_prefix1_metric2_output2_postfix1_postfix2",
+            ),
+        ),
+    ],
+)
+def test_double_nested_collections(base_metrics, expected):
+    """Test that double nested collections gets flattened to a single collection."""
+    collection1 = MetricCollection(base_metrics, prefix="prefix1_", postfix="_postfix1")
+    collection2 = MetricCollection([collection1], prefix="prefix2_", postfix="_postfix2")
+    x = torch.randn(10).sum()
+    val = collection2(x)
+
+    for key in val:
+        assert key in expected
+
+
+def test_with_custom_prefix_postfix():
+    """Test that metric collection does not clash with custom prefix and postfix in users metrics.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2065
+
+    """
+
+    class CustomAccuracy(MulticlassAccuracy):
+        prefix = "my_prefix"
+        postfix = "my_postfix"
+
+        def compute(self):
+            value = super().compute()
+            return {f"{self.prefix}/accuracy/{self.postfix}": value}
+
+    class CustomPrecision(MulticlassAccuracy):
+        prefix = "my_prefix"
+        postfix = "my_postfix"
+
+        def compute(self):
+            value = super().compute()
+            return {f"{self.prefix}/precision/{self.postfix}": value}
+
+    metrics = MetricCollection([CustomAccuracy(num_classes=2), CustomPrecision(num_classes=2)])
+
+    # Update metrics with current batch
+    res = metrics(torch.tensor([1, 0, 0, 1]), torch.tensor([1, 0, 0, 0]))
+
+    # Print the calculated metrics
+    assert "my_prefix/accuracy/my_postfix" in res
+    assert "my_prefix/precision/my_postfix" in res

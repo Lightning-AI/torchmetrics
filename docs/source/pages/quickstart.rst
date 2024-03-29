@@ -2,7 +2,7 @@
 Quick Start
 ###########
 
-TorchMetrics is a collection of 80+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
+TorchMetrics is a collection of 100+ PyTorch metrics implementations and an easy-to-use API to create custom metrics. It offers:
 
 * A standardized interface to increase reproducibility
 * Reduces Boilerplate
@@ -11,7 +11,7 @@ TorchMetrics is a collection of 80+ PyTorch metrics implementations and an easy-
 * Automatic accumulation over batches
 * Automatic synchronization between multiple devices
 
-You can use TorchMetrics in any PyTorch model, or within `PyTorch Lightning <https://pytorch-lightning.readthedocs.io/en/stable/>`_ to enjoy additional features:
+You can use TorchMetrics in any PyTorch model, or within `PyTorch Lightning <https://lightning.ai/docs/pytorch/stable/>`_ to enjoy additional features:
 
 * This means that your data will always be placed on the same device as your metrics.
 * Native support for logging metrics in Lightning to reduce even more boilerplate.
@@ -64,12 +64,14 @@ The code-snippet below shows a simple example for calculating the accuracy using
     preds = torch.randn(10, 5).softmax(dim=-1)
     target = torch.randint(5, (10,))
 
-    acc = torchmetrics.functional.accuracy(preds, target)
+    acc = torchmetrics.functional.accuracy(preds, target, task="multiclass", num_classes=5)
 
 Module metrics
 ~~~~~~~~~~~~~~
 
-Nearly all functional metrics have a corresponding class-based metric that calls it a functional counterpart underneath. The class-based metrics are characterized by having one or more internal metrics states (similar to the parameters of the PyTorch module) that allow them to offer additional functionalities:
+Nearly all functional metrics have a corresponding class-based metric that calls it a functional counterpart underneath.
+The class-based metrics are characterized by having one or more internal metrics states (similar to the parameters of
+the PyTorch module) that allow them to offer additional functionalities:
 
 * Accumulation of multiple batches
 * Automatic synchronization between multiple devices
@@ -84,7 +86,7 @@ The code below shows how to use the class-based interface:
     import torchmetrics
 
     # initialize metric
-    metric = torchmetrics.Accuracy()
+    metric = torchmetrics.classification.Accuracy(task="multiclass", num_classes=5)
 
     n_batches = 10
     for i in range(n_batches):
@@ -99,7 +101,7 @@ The code below shows how to use the class-based interface:
     acc = metric.compute()
     print(f"Accuracy on all data: {acc}")
 
-    # Reseting internal state such that metric ready for new data
+    # Resetting internal state such that metric ready for new data
     metric.reset()
 
 .. testoutput::

@@ -1,4 +1,4 @@
-# Copyright The PyTorch Lightning team.
+# Copyright The Lightning team.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,9 +18,8 @@ from torch import Tensor, tensor
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape, _input_format_classification
-from torchmetrics.utilities.data import _bincount, _movedim, select_topk
-from torchmetrics.utilities.enums import AverageMethod, DataType, MDMCAverageMethod
-from torchmetrics.utilities.prints import rank_zero_warn
+from torchmetrics.utilities.data import _bincount, select_topk
+from torchmetrics.utilities.enums import AverageMethod, ClassificationTask, DataType, MDMCAverageMethod
 
 
 def _binary_stat_scores_arg_validation(
@@ -33,6 +32,7 @@ def _binary_stat_scores_arg_validation(
     - ``threshold`` has to be a float in the [0,1] range
     - ``multidim_average`` has to be either "global" or "samplewise"
     - ``ignore_index`` has to be None or int
+
     """
     if not (isinstance(threshold, float) and (0 <= threshold <= 1)):
         raise ValueError(f"Expected argument `threshold` to be a float in the [0,1] range, but got {threshold}.")
@@ -56,7 +56,8 @@ def _binary_stat_scores_tensor_validation(
     - tensors have to be of same shape
     - all values in target tensor that are not ignored have to be in {0, 1}
     - if pred tensor is not floating point, then all values also have to be in {0, 1}
-    - if ``multidim_average`` is set to ``samplewise`` preds tensor needs to be atleast 2 dimensional
+    - if ``multidim_average`` is set to ``samplewise`` preds tensor needs to be at least 2 dimensional
+
     """
     # Check that they have same shape
     _check_same_shape(preds, target)
@@ -70,7 +71,7 @@ def _binary_stat_scores_tensor_validation(
     if check:
         raise RuntimeError(
             f"Detected the following values in `target`: {unique_values} but expected only"
-            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+            f" the following values {[0, 1] if ignore_index is None else [ignore_index]}."
         )
 
     # If preds is label tensor, also check that it only contains [0,1] values
@@ -83,7 +84,7 @@ def _binary_stat_scores_tensor_validation(
             )
 
     if multidim_average != "global" and preds.ndim < 2:
-        raise ValueError("Expected input to be atleast 2D when multidim_average is set to `samplewise`")
+        raise ValueError("Expected input to be at least 2D when multidim_average is set to `samplewise`")
 
 
 def _binary_stat_scores_format(
@@ -97,9 +98,10 @@ def _binary_stat_scores_format(
     - If preds tensor is floating point, applies sigmoid if pred tensor not in [0,1] range
     - If preds tensor is floating point, thresholds afterwards
     - Mask all datapoints that should be ignored with negative values
+
     """
     if preds.is_floating_point():
-        if not torch.all((0 <= preds) * (preds <= 1)):
+        if not torch.all((preds >= 0) * (preds <= 1)):
             # preds is logits, convert with sigmoid
             preds = preds.sigmoid()
         preds = preds > threshold
@@ -120,8 +122,8 @@ def _binary_stat_scores_update(
     target: Tensor,
     multidim_average: Literal["global", "samplewise"] = "global",
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Computes the statistics."""
-    sum_dim = [0, 1] if multidim_average == "global" else 1
+    """Compute the statistics."""
+    sum_dim = [0, 1] if multidim_average == "global" else [1]
     tp = ((target == preds) & (target == 1)).sum(sum_dim).squeeze()
     fn = ((target != preds) & (target == 1)).sum(sum_dim).squeeze()
     fp = ((target != preds) & (target == 0)).sum(sum_dim).squeeze()
@@ -144,19 +146,16 @@ def binary_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes the number of true positives, false positives, true negatives, false negatives and the support
-    for binary tasks. Related to `Type I and Type II errors`_.
+    r"""Compute the true positives, false positives, true negatives, false negatives, support for binary tasks.
+
+    Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, ...)``
-
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
 
     Args:
         preds: Tensor with predictions
@@ -183,31 +182,29 @@ def binary_stat_scores(
         - If ``multidim_average`` is set to ``samplewise``, the shape will be ``(N, 5)``
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import binary_stat_scores
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0, 0, 1, 1, 0, 1])
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0, 0, 1, 1, 0, 1])
         >>> binary_stat_scores(preds, target)
         tensor([2, 1, 2, 1, 3])
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import binary_stat_scores
-        >>> target = torch.tensor([0, 1, 0, 1, 0, 1])
-        >>> preds = torch.tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
+        >>> target = tensor([0, 1, 0, 1, 0, 1])
+        >>> preds = tensor([0.11, 0.22, 0.84, 0.73, 0.33, 0.92])
         >>> binary_stat_scores(preds, target)
         tensor([2, 1, 2, 1, 3])
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import binary_stat_scores
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> binary_stat_scores(preds, target, multidim_average='samplewise')
         tensor([[2, 3, 0, 1, 3],
                 [0, 2, 1, 3, 3]])
+
     """
     if validate_args:
         _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
@@ -231,6 +228,7 @@ def _multiclass_stat_scores_arg_validation(
     - ``average`` has to be "micro" | "macro" | "weighted" | "none"
     - ``multidim_average`` has to be either "global" or "samplewise"
     - ``ignore_index`` has to be None or int
+
     """
     if not isinstance(num_classes, int) or num_classes < 2:
         raise ValueError(f"Expected argument `num_classes` to be an integer larger than 1, but got {num_classes}")
@@ -261,13 +259,14 @@ def _multiclass_stat_scores_tensor_validation(
 ) -> None:
     """Validate tensor input.
 
-    - if target has one more dimension than preds, then all dimensions except for preds.shape[1] should match
+    - if preds has one more dimension than target, then all dimensions except for preds.shape[1] should match
     exactly. preds.shape[1] should have size equal to number of classes
     - if preds and target have same number of dims, then all dimensions should match
-    - if ``multidim_average`` is set to ``samplewise`` preds tensor needs to be atleast 2 dimensional in the
+    - if ``multidim_average`` is set to ``samplewise`` preds tensor needs to be at least 2 dimensional in the
     int case and 3 dimensional in the float case
     - all values in target tensor that are not ignored have to be {0, ..., num_classes - 1}
     - if pred tensor is not floating point, then all values also have to be in {0, ..., num_classes - 1}
+
     """
     if preds.ndim == target.ndim + 1:
         if not preds.is_floating_point():
@@ -285,7 +284,7 @@ def _multiclass_stat_scores_tensor_validation(
         if multidim_average != "global" and preds.ndim < 3:
             raise ValueError(
                 "If `preds` have one dimension more than `target`, the shape of `preds` should "
-                " atleast 3D when multidim_average is set to `samplewise`"
+                " at least 3D when multidim_average is set to `samplewise`"
             )
 
     elif preds.ndim == target.ndim:
@@ -297,7 +296,7 @@ def _multiclass_stat_scores_tensor_validation(
         if multidim_average != "global" and preds.ndim < 2:
             raise ValueError(
                 "When `preds` and `target` have the same shape, the shape of `preds` should "
-                " atleast 2D when multidim_average is set to `samplewise`"
+                " at least 2D when multidim_average is set to `samplewise`"
             )
     else:
         raise ValueError(
@@ -305,24 +304,13 @@ def _multiclass_stat_scores_tensor_validation(
             " and `preds` should be (N, C, ...)."
         )
 
-    num_unique_values = len(torch.unique(target))
-    if ignore_index is None:
-        check = num_unique_values > num_classes
-    else:
-        check = num_unique_values > num_classes + 1
-    if check:
-        raise RuntimeError(
-            "Detected more unique values in `target` than `num_classes`. Expected only "
-            f"{num_classes if ignore_index is None else num_classes + 1} but found"
-            f"{num_unique_values} in `target`."
-        )
-
-    if not preds.is_floating_point():
-        unique_values = torch.unique(preds)
-        if len(unique_values) > num_classes:
+    check_value = num_classes if ignore_index is None else num_classes + 1
+    for t, name in ((target, "target"),) + ((preds, "preds"),) if not preds.is_floating_point() else ():  # noqa: RUF005
+        num_unique_values = len(torch.unique(t))
+        if num_unique_values > check_value:
             raise RuntimeError(
-                "Detected more unique values in `preds` than `num_classes`. Expected only "
-                f"{num_classes} but found {len(unique_values)} in `preds`."
+                f"Detected more unique values in `{name}` than expected. Expected only {check_value} but found"
+                f" {num_unique_values} in `target`."
             )
 
 
@@ -335,14 +323,12 @@ def _multiclass_stat_scores_format(
 
     - Applies argmax if preds have one more dimension than target
     - Flattens additional dimensions
+
     """
     # Apply argmax if we have one more dimension
     if preds.ndim == target.ndim + 1 and top_k == 1:
         preds = preds.argmax(dim=1)
-    if top_k != 1:
-        preds = preds.reshape(*preds.shape[:2], -1)
-    else:
-        preds = preds.reshape(preds.shape[0], -1)
+    preds = preds.reshape(*preds.shape[:2], -1) if top_k != 1 else preds.reshape(preds.shape[0], -1)
     target = target.reshape(target.shape[0], -1)
     return preds, target
 
@@ -352,17 +338,19 @@ def _multiclass_stat_scores_update(
     target: Tensor,
     num_classes: int,
     top_k: int = 1,
+    average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Computes the statistics.
+    """Compute the statistics.
 
     - If ``multidim_average`` is equal to samplewise or ``top_k`` is not 1, we transform both preds and
     target into one hot format.
     - Else we calculate statistics by first calculating the confusion matrix and afterwards deriving the
     statistics from that
     - Remove all datapoints that should be ignored. Depending on if ``ignore_index`` is in the set of labels
-    or outside we have do use different augmentation stategies when one hot encoding.
+    or outside we have do use different augmentation strategies when one hot encoding.
+
     """
     if multidim_average == "samplewise" or top_k != 1:
         ignore_in = 0 <= ignore_index <= num_classes - 1 if ignore_index is not None else None
@@ -370,23 +358,24 @@ def _multiclass_stat_scores_update(
             preds = preds.clone()
             target = target.clone()
             idx = target == ignore_index
-            preds[idx] = num_classes
             target[idx] = num_classes
+            idx = idx.unsqueeze(1).repeat(1, num_classes, 1) if preds.ndim > target.ndim else idx
+            preds[idx] = num_classes
 
         if top_k > 1:
-            preds_oh = _movedim(select_topk(preds, topk=top_k, dim=1), 1, -1)
+            preds_oh = torch.movedim(select_topk(preds, topk=top_k, dim=1), 1, -1)
         else:
             preds_oh = torch.nn.functional.one_hot(
-                preds, num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
+                preds.long(), num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
             )
         target_oh = torch.nn.functional.one_hot(
-            target, num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
+            target.long(), num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
         )
         if ignore_index is not None:
             if 0 <= ignore_index <= num_classes - 1:
                 target_oh[target == ignore_index, :] = -1
             else:
-                preds_oh = preds_oh[..., :-1]
+                preds_oh = preds_oh[..., :-1] if top_k == 1 else preds_oh
                 target_oh = target_oh[..., :-1]
                 target_oh[target == num_classes, :] = -1
         sum_dim = [0, 1] if multidim_average == "global" else [1]
@@ -394,7 +383,17 @@ def _multiclass_stat_scores_update(
         fn = ((target_oh != preds_oh) & (target_oh == 1)).sum(sum_dim)
         fp = ((target_oh != preds_oh) & (target_oh == 0)).sum(sum_dim)
         tn = ((target_oh == preds_oh) & (target_oh == 0)).sum(sum_dim)
-        return tp, fp, tn, fn
+    elif average == "micro":
+        preds = preds.flatten()
+        target = target.flatten()
+        if ignore_index is not None:
+            idx = target != ignore_index
+            preds = preds[idx]
+            target = target[idx]
+        tp = (preds == target).sum()
+        fp = (preds != target).sum()
+        fn = (preds != target).sum()
+        tn = num_classes * preds.numel() - (fp + fn + tp)
     else:
         preds = preds.flatten()
         target = target.flatten()
@@ -402,14 +401,14 @@ def _multiclass_stat_scores_update(
             idx = target != ignore_index
             preds = preds[idx]
             target = target[idx]
-        unique_mapping = (target * num_classes + preds).to(torch.long)
+        unique_mapping = target.to(torch.long) * num_classes + preds.to(torch.long)
         bins = _bincount(unique_mapping, minlength=num_classes**2)
         confmat = bins.reshape(num_classes, num_classes)
         tp = confmat.diag()
         fp = confmat.sum(0) - tp
         fn = confmat.sum(1) - tp
         tn = confmat.sum() - (fp + fn + tp)
-        return tp, fp, tn, fn
+    return tp, fp, tn, fn
 
 
 def _multiclass_stat_scores_compute(
@@ -423,21 +422,22 @@ def _multiclass_stat_scores_compute(
     """Stack statistics and compute support also.
 
     Applies average strategy afterwards.
+
     """
     res = torch.stack([tp, fp, tn, fn, tp + fn], dim=-1)
     sum_dim = 0 if multidim_average == "global" else 1
     if average == "micro":
-        return res.sum(sum_dim)
-    elif average == "macro":
+        return res.sum(sum_dim) if res.ndim > 1 else res
+    if average == "macro":
         return res.float().mean(sum_dim)
-    elif average == "weighted":
+    if average == "weighted":
         weight = tp + fn
         if multidim_average == "global":
             return (res * (weight / weight.sum()).reshape(*weight.shape, 1)).sum(sum_dim)
-        else:
-            return (res * (weight / weight.sum(-1, keepdim=True)).reshape(*weight.shape, 1)).sum(sum_dim)
-    elif average is None or average == "none":
+        return (res * (weight / weight.sum(-1, keepdim=True)).reshape(*weight.shape, 1)).sum(sum_dim)
+    if average is None or average == "none":
         return res
+    return None
 
 
 def multiclass_stat_scores(
@@ -450,9 +450,9 @@ def multiclass_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes the number of true positives, false positives, true negatives, false negatives and the support
-    for multiclass tasks. Related to `Type I and Type II errors`_.
+    r"""Compute the true positives, false positives, true negatives, false negatives and support for multiclass tasks.
+
+    Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
 
@@ -461,20 +461,17 @@ def multiclass_stat_scores(
       an int tensor.
     - ``target`` (int tensor): ``(N, ...)``
 
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
-
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_classes: Integer specifing the number of classes
+        num_classes: Integer specifying the number of classes
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
             Only works when ``preds`` contain probabilities/logits.
@@ -506,9 +503,10 @@ def multiclass_stat_scores(
           - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multiclass_stat_scores
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([2, 1, 0, 1])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([2, 1, 0, 1])
         >>> multiclass_stat_scores(preds, target, num_classes=3, average='micro')
         tensor([3, 1, 7, 1, 4])
         >>> multiclass_stat_scores(preds, target, num_classes=3, average=None)
@@ -518,13 +516,11 @@ def multiclass_stat_scores(
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multiclass_stat_scores
-        >>> target = torch.tensor([2, 1, 0, 0])
-        >>> preds = torch.tensor([
-        ...   [0.16, 0.26, 0.58],
-        ...   [0.22, 0.61, 0.17],
-        ...   [0.71, 0.09, 0.20],
-        ...   [0.05, 0.82, 0.13],
-        ... ])
+        >>> target = tensor([2, 1, 0, 0])
+        >>> preds = tensor([[0.16, 0.26, 0.58],
+        ...                 [0.22, 0.61, 0.17],
+        ...                 [0.71, 0.09, 0.20],
+        ...                 [0.05, 0.82, 0.13]])
         >>> multiclass_stat_scores(preds, target, num_classes=3, average='micro')
         tensor([3, 1, 7, 1, 4])
         >>> multiclass_stat_scores(preds, target, num_classes=3, average=None)
@@ -534,8 +530,8 @@ def multiclass_stat_scores(
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import multiclass_stat_scores
-        >>> target = torch.tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
-        >>> preds = torch.tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
+        >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
+        >>> preds = tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_stat_scores(preds, target, num_classes=3, multidim_average='samplewise', average='micro')
         tensor([[3, 3, 9, 3, 6],
                 [2, 4, 8, 4, 6]])
@@ -546,12 +542,15 @@ def multiclass_stat_scores(
                 [[0, 1, 4, 1, 1],
                  [1, 1, 2, 2, 3],
                  [1, 2, 2, 1, 2]]])
+
     """
     if validate_args:
         _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
     preds, target = _multiclass_stat_scores_format(preds, target, top_k)
-    tp, fp, tn, fn = _multiclass_stat_scores_update(preds, target, num_classes, top_k, multidim_average, ignore_index)
+    tp, fp, tn, fn = _multiclass_stat_scores_update(
+        preds, target, num_classes, top_k, average, multidim_average, ignore_index
+    )
     return _multiclass_stat_scores_compute(tp, fp, tn, fn, average, multidim_average)
 
 
@@ -569,6 +568,7 @@ def _multilabel_stat_scores_arg_validation(
     - ``average`` has to be "micro" | "macro" | "weighted" | "none"
     - ``multidim_average`` has to be either "global" or "samplewise"
     - ``ignore_index`` has to be None or int
+
     """
     if not isinstance(num_labels, int) or num_labels < 2:
         raise ValueError(f"Expected argument `num_labels` to be an integer larger than 1, but got {num_labels}")
@@ -599,7 +599,8 @@ def _multilabel_stat_scores_tensor_validation(
     - the second dimension of both tensors need to be equal to the number of labels
     - all values in target tensor that are not ignored have to be in {0, 1}
     - if pred tensor is not floating point, then all values also have to be in {0, 1}
-    - if ``multidim_average`` is set to ``samplewise`` preds tensor needs to be atleast 3 dimensional
+    - if ``multidim_average`` is set to ``samplewise`` preds tensor needs to be at least 3 dimensional
+
     """
     # Check that they have same shape
     _check_same_shape(preds, target)
@@ -619,7 +620,7 @@ def _multilabel_stat_scores_tensor_validation(
     if check:
         raise RuntimeError(
             f"Detected the following values in `target`: {unique_values} but expected only"
-            f" the following values {[0,1] + [] if ignore_index is None else [ignore_index]}."
+            f" the following values {[0, 1] if ignore_index is None else [ignore_index]}."
         )
 
     # If preds is label tensor, also check that it only contains [0,1] values
@@ -632,7 +633,7 @@ def _multilabel_stat_scores_tensor_validation(
             )
 
     if multidim_average != "global" and preds.ndim < 3:
-        raise ValueError("Expected input to be atleast 3D when multidim_average is set to `samplewise`")
+        raise ValueError("Expected input to be at least 3D when multidim_average is set to `samplewise`")
 
 
 def _multilabel_stat_scores_format(
@@ -643,9 +644,10 @@ def _multilabel_stat_scores_format(
     - If preds tensor is floating point, applies sigmoid if pred tensor not in [0,1] range
     - If preds tensor is floating point, thresholds afterwards
     - Mask all elements that should be ignored with negative numbers for later filtration
+
     """
     if preds.is_floating_point():
-        if not torch.all((0 <= preds) * (preds <= 1)):
+        if not torch.all((preds >= 0) * (preds <= 1)):
             preds = preds.sigmoid()
         preds = preds > threshold
     preds = preds.reshape(*preds.shape[:2], -1)
@@ -662,7 +664,7 @@ def _multilabel_stat_scores_format(
 def _multilabel_stat_scores_update(
     preds: Tensor, target: Tensor, multidim_average: Literal["global", "samplewise"] = "global"
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Computes the statistics."""
+    """Compute the statistics."""
     sum_dim = [0, -1] if multidim_average == "global" else [-1]
     tp = ((target == preds) & (target == 1)).sum(sum_dim).squeeze()
     fn = ((target != preds) & (target == 1)).sum(sum_dim).squeeze()
@@ -682,18 +684,20 @@ def _multilabel_stat_scores_compute(
     """Stack statistics and compute support also.
 
     Applies average strategy afterwards.
+
     """
     res = torch.stack([tp, fp, tn, fn, tp + fn], dim=-1)
     sum_dim = 0 if multidim_average == "global" else 1
     if average == "micro":
         return res.sum(sum_dim)
-    elif average == "macro":
+    if average == "macro":
         return res.float().mean(sum_dim)
-    elif average == "weighted":
+    if average == "weighted":
         w = tp + fn
         return (res * (w / w.sum()).reshape(*w.shape, 1)).sum(sum_dim)
-    elif average is None or average == "none":
+    if average is None or average == "none":
         return res
+    return None
 
 
 def multilabel_stat_scores(
@@ -706,32 +710,29 @@ def multilabel_stat_scores(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    Computes the number of true positives, false positives, true negatives, false negatives and the support
-    for multilabel tasks. Related to `Type I and Type II errors`_.
+    r"""Compute the true positives, false positives, true negatives, false negatives and support for multilabel tasks.
+
+    Related to `Type I and Type II errors`_.
 
     Accepts the following input tensors:
 
     - ``preds`` (int or float tensor): ``(N, C, ...)``. If preds is a floating point tensor with values outside
-      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Addtionally,
+      [0,1] range we consider the input to be logits and will auto apply sigmoid per element. Additionally,
       we convert to int tensor with thresholding using the value in ``threshold``.
     - ``target`` (int tensor): ``(N, C, ...)``
-
-    The influence of the additional dimension ``...`` (if present) will be determined by the `multidim_average`
-    argument.
 
     Args:
         preds: Tensor with predictions
         target: Tensor with true labels
-        num_labels: Integer specifing the number of labels
+        num_labels: Integer specifying the number of labels
         threshold: Threshold for transforming probability to binary (0,1) predictions
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: Calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: Calculates statistic for each label and applies no reduction
+            - ``weighted``: calculates statistics for each label and computes weighted average using their support
+            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -761,9 +762,10 @@ def multilabel_stat_scores(
           - If ``average=None/'none'``, the shape will be ``(N, C, 5)``
 
     Example (preds is int tensor):
+        >>> from torch import tensor
         >>> from torchmetrics.functional.classification import multilabel_stat_scores
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0, 0, 1], [1, 0, 1]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_stat_scores(preds, target, num_labels=3, average='micro')
         tensor([2, 1, 2, 1, 3])
         >>> multilabel_stat_scores(preds, target, num_labels=3, average=None)
@@ -773,8 +775,8 @@ def multilabel_stat_scores(
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multilabel_stat_scores
-        >>> target = torch.tensor([[0, 1, 0], [1, 0, 1]])
-        >>> preds = torch.tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
+        >>> target = tensor([[0, 1, 0], [1, 0, 1]])
+        >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_stat_scores(preds, target, num_labels=3, average='micro')
         tensor([2, 1, 2, 1, 3])
         >>> multilabel_stat_scores(preds, target, num_labels=3, average=None)
@@ -784,13 +786,9 @@ def multilabel_stat_scores(
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import multilabel_stat_scores
-        >>> target = torch.tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
-        >>> preds = torch.tensor(
-        ...     [
-        ...         [[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
-        ...         [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]],
-        ...     ]
-        ... )
+        >>> target = tensor([[[0, 1], [1, 0], [0, 1]], [[1, 1], [0, 0], [1, 0]]])
+        >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
+        ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> multilabel_stat_scores(preds, target, num_labels=3, multidim_average='samplewise', average='micro')
         tensor([[2, 3, 0, 1, 3],
                 [0, 2, 1, 3, 3]])
@@ -832,13 +830,14 @@ def _drop_negative_ignored_indices(
 
     Return:
         Tensors of preds and target without negative ignore target values.
+
     """
     if mode == mode.MULTIDIM_MULTICLASS and preds.dtype == torch.float:
         # In case or multi-dimensional multi-class with logits
-        n_dims = len(preds.shape)
+        num_dims = len(preds.shape)
         num_classes = preds.shape[1]
         # move class dim to last so that we can flatten the additional dimensions into N: [N, C, ...] -> [N, ..., C]
-        preds = preds.transpose(1, n_dims - 1)
+        preds = preds.transpose(1, num_dims - 1)
 
         # flatten: [N, ..., C] -> [N', C]
         preds = preds.reshape(-1, num_classes)
@@ -879,6 +878,7 @@ def _stat_scores(
         - If ``reduce='micro'``, the returned tensors are ``(N,)`` tensors
         - If ``reduce='macro'``, the returned tensors are ``(N,C)`` tensors
         - If ``reduce='samples'``, the returned tensors are ``(N,X)`` tensors
+
     """
     dim: Union[int, List[int]] = 1  # for "samples"
     if reduce == "micro":
@@ -904,18 +904,21 @@ def _stat_scores_update(
     reduce: Optional[str] = "micro",
     mdmc_reduce: Optional[str] = None,
     num_classes: Optional[int] = None,
-    top_k: Optional[int] = None,
+    top_k: Optional[int] = 1,
     threshold: float = 0.5,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
-    mode: DataType = None,
+    mode: Optional[DataType] = None,
 ) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
-    """Updates and returns the number of true positives, false positives, true negatives, false negatives. Raises
-    ValueError if:
+    """Calculate true positives, false positives, true negatives, false negatives.
 
-        - The `ignore_index` is not valid
-        - When `ignore_index` is used with binary data
-        - When inputs are multi-dimensional multi-class, and the ``mdmc_reduce`` parameter is not set
+    Raises:
+        ValueError:
+            The `ignore_index` is not valid
+        ValueError:
+            When `ignore_index` is used with binary data
+        ValueError:
+            When inputs are multi-dimensional multi-class, and the ``mdmc_reduce`` parameter is not set
 
     Args:
         preds: Predicted tensor
@@ -934,8 +937,8 @@ def _stat_scores_update(
             ``reduce='macro'``, the class statistics for the ignored class will all be returned
             as ``-1``.
         mode: Mode of the input tensors
-    """
 
+    """
     _negative_index_dropped = False
 
     if ignore_index is not None and ignore_index < 0 and mode is not None:
@@ -985,8 +988,9 @@ def _stat_scores_update(
 
 
 def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tensor:
-    """Computes the number of true positives, false positives, true negatives, false negatives. Concatenates the
-    input tensors along with the support into one output.
+    """Compute the number of true positives, false positives, true negatives, false negatives.
+
+    Concatenates the input tensors along with the support into one output.
 
     Args:
         tp: True positives
@@ -994,17 +998,6 @@ def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tens
         tn: True negatives
         fn: False negatives
 
-    Example:
-        >>> preds  = torch.tensor([1, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
-        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='macro', num_classes=3)
-        >>> _stat_scores_compute(tp, fp, tn, fn)
-        tensor([[0, 1, 2, 1, 1],
-                [1, 1, 1, 1, 2],
-                [1, 0, 3, 0, 1]])
-        >>> tp, fp, tn, fn = _stat_scores_update(preds, target, reduce='micro')
-        >>> _stat_scores_compute(tp, fp, tn, fn)
-        tensor([2, 2, 6, 2, 4])
     """
     stats = [
         tp.unsqueeze(-1),
@@ -1014,9 +1007,7 @@ def _stat_scores_compute(tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> Tens
         tp.unsqueeze(-1) + fn.unsqueeze(-1),  # support
     ]
     outputs: Tensor = torch.cat(stats, -1)
-    outputs = torch.where(outputs < 0, tensor(-1, device=outputs.device), outputs)
-
-    return outputs
+    return torch.where(outputs < 0, tensor(-1, device=outputs.device), outputs)
 
 
 def _reduce_stat_scores(
@@ -1042,15 +1033,13 @@ def _reduce_stat_scores(
         average: The method to average the scores
         mdmc_average: The method to average the scores if inputs were multi-dimensional multi-class (MDMC)
         zero_division: The value to use for the score if denominator equals zero.
+
     """
     numerator, denominator = numerator.float(), denominator.float()
     zero_div_mask = denominator == 0
     ignore_mask = denominator < 0
 
-    if weights is None:
-        weights = torch.ones_like(denominator)
-    else:
-        weights = weights.float()
+    weights = torch.ones_like(denominator) if weights is None else weights.float()
 
     numerator = torch.where(
         zero_div_mask, tensor(zero_division, dtype=numerator.dtype, device=numerator.device), numerator
@@ -1073,202 +1062,60 @@ def _reduce_stat_scores(
         ignore_mask = ignore_mask.sum(dim=0).bool()
 
     if average in (AverageMethod.NONE, None):
-        scores = torch.where(ignore_mask, tensor(float("nan"), device=scores.device), scores)
-    else:
-        scores = scores.sum()
-
-    return scores
+        return torch.where(ignore_mask, tensor(float("nan"), device=scores.device), scores)
+    return scores.sum()
 
 
 def stat_scores(
     preds: Tensor,
     target: Tensor,
-    reduce: str = "micro",
-    mdmc_reduce: Optional[str] = None,
-    num_classes: Optional[int] = None,
-    top_k: Optional[int] = None,
+    task: Literal["binary", "multiclass", "multilabel"],
     threshold: float = 0.5,
-    multiclass: Optional[bool] = None,
-    ignore_index: Optional[int] = None,
-    task: Optional[Literal["binary", "multiclass", "multilabel"]] = None,
+    num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     multidim_average: Optional[Literal["global", "samplewise"]] = "global",
+    top_k: Optional[int] = 1,
+    ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""
-    .. note::
-        From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification
-        metric. Moving forward we recommend using these versions. This base metric will still work as it did
-        prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required
-        and the general order of arguments may change, such that this metric will just function as an single
-        entrypoint to calling the three specialized versions.
+    r"""Compute the number of true positives, false positives, true negatives, false negatives and the support.
 
+    This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    :func:`~torchmetrics.functional.classification.binary_stat_scores`,
+    :func:`~torchmetrics.functional.classification.multiclass_stat_scores` and
+    :func:`~torchmetrics.functional.classification.multilabel_stat_scores` for the specific
+    details of each argument influence and examples.
 
-    Computes the number of true positives, false positives, true negatives, false negatives.
-    Related to `Type I and Type II errors`_ and the `confusion matrix`_.
-
-    The reduction method (how the statistics are aggregated) is controlled by the
-    ``reduce`` parameter, and additionally by the ``mdmc_reduce`` parameter in the
-    multi-dimensional multi-class case. Accepts all inputs listed in :ref:`pages/classification:input types`.
-
-    Args:
-        preds: Predictions from model (probabilities, logits or labels)
-        target: Ground truth values
-        threshold:
-            Threshold for transforming probability or logit predictions to binary (0,1) predictions, in the case
-            of binary or multi-label inputs. Default value of 0.5 corresponds to input being probabilities.
-        top_k:
-            Number of highest probability or logit score predictions considered to find the correct label,
-            relevant only for (multi-dimensional) multi-class inputs. The
-            default value (``None``) will be interpreted as 1 for these inputs.
-
-            Should be left at default (``None``) for all other types of inputs.
-        reduce:
-            Defines the reduction that is applied. Should be one of the following:
-
-            - ``'micro'`` [default]: Counts the statistics by summing over all [sample, class]
-              combinations (globally). Each statistic is represented by a single integer.
-            - ``'macro'``: Counts the statistics for each class separately (over all samples).
-              Each statistic is represented by a ``(C,)`` tensor. Requires ``num_classes``
-              to be set.
-            - ``'samples'``: Counts the statistics for each sample separately (over all classes).
-              Each statistic is represented by a ``(N, )`` 1d tensor.
-
-            .. note:: What is considered a sample in the multi-dimensional multi-class case
-                depends on the value of ``mdmc_reduce``.
-
-        num_classes:
-            Number of classes. Necessary for (multi-dimensional) multi-class or multi-label data.
-        ignore_index:
-            Specify a class (label) to ignore. If given, this class index does not contribute
-            to the returned score, regardless of reduction method. If an index is ignored, and
-            ``reduce='macro'``, the class statistics for the ignored class will all be returned
-            as ``-1``.
-        mdmc_reduce:
-            Defines how the multi-dimensional multi-class inputs are handeled. Should be
-            one of the following:
-
-            - ``None`` [default]: Should be left unchanged if your data is not multi-dimensional
-              multi-class (see :ref:`pages/classification:input types` for the definition of input types).
-
-            - ``'samplewise'``: In this case, the statistics are computed separately for each
-              sample on the ``N`` axis, and then the outputs are concatenated together. In each
-              sample the extra axes ``...`` are flattened to become the sub-sample axis, and
-              statistics for each sample are computed by treating the sub-sample axis as the
-              ``N`` axis for that sample.
-
-            - ``'global'``: In this case the ``N`` and ``...`` dimensions of the inputs are
-              flattened into a new ``N_X`` sample axis, i.e. the inputs are treated as if they
-              were ``(N_X, C)``. From here on the ``reduce`` parameter applies as usual.
-
-        multiclass:
-            Used only in certain special cases, where you want to treat inputs as a different type
-            than what they appear to be. See the parameter's
-            :ref:`documentation section <pages/classification:using the multiclass parameter>`
-            for a more detailed explanation and examples.
-
-    Return:
-        The metric returns a tensor of shape ``(..., 5)``, where the last dimension corresponds
-        to ``[tp, fp, tn, fn, sup]`` (``sup`` stands for support and equals ``tp + fn``). The
-        shape depends on the ``reduce`` and ``mdmc_reduce`` (in case of multi-dimensional
-        multi-class data) parameters:
-
-        - If the data is not multi-dimensional multi-class, then
-
-          - If ``reduce='micro'``, the shape will be ``(5, )``
-          - If ``reduce='macro'``, the shape will be ``(C, 5)``, where ``C`` stands for the number of classes
-          - If ``reduce='samples'``, the shape will be ``(N, 5)``, where ``N`` stands for
-            the number of samples
-
-        - If the data is multi-dimensional multi-class and ``mdmc_reduce='global'``, then
-
-          - If ``reduce='micro'``, the shape will be ``(5, )``
-          - If ``reduce='macro'``, the shape will be ``(C, 5)``
-          - If ``reduce='samples'``, the shape will be ``(N*X, 5)``, where ``X`` stands for
-            the product of sizes of all "extra" dimensions of the data (i.e. all dimensions
-            except for ``C`` and ``N``)
-
-        - If the data is multi-dimensional multi-class and ``mdmc_reduce='samplewise'``, then
-
-          - If ``reduce='micro'``, the shape will be ``(N, 5)``
-          - If ``reduce='macro'``, the shape will be ``(N, C, 5)``
-          - If ``reduce='samples'``, the shape will be ``(N, X, 5)``
-
-    Raises:
-        ValueError:
-            If ``reduce`` is none of ``"micro"``, ``"macro"`` or ``"samples"``.
-        ValueError:
-            If ``mdmc_reduce`` is none of ``None``, ``"samplewise"``, ``"global"``.
-        ValueError:
-            If ``reduce`` is set to ``"macro"`` and ``num_classes`` is not provided.
-        ValueError:
-            If ``num_classes`` is set and ``ignore_index`` is not in the range ``[0, num_classes)``.
-        ValueError:
-            If ``ignore_index`` is used with ``binary data``.
-        ValueError:
-            If inputs are ``multi-dimensional multi-class`` and ``mdmc_reduce`` is not provided.
-
-    Example:
-        >>> from torchmetrics.functional import stat_scores
-        >>> preds  = torch.tensor([1, 0, 2, 1])
-        >>> target = torch.tensor([1, 1, 2, 0])
-        >>> stat_scores(preds, target, reduce='macro', num_classes=3)
+    Legacy Example:
+        >>> from torch import tensor
+        >>> preds  = tensor([1, 0, 2, 1])
+        >>> target = tensor([1, 1, 2, 0])
+        >>> stat_scores(preds, target, task='multiclass', num_classes=3, average='micro')
+        tensor([2, 2, 6, 2, 4])
+        >>> stat_scores(preds, target, task='multiclass', num_classes=3, average=None)
         tensor([[0, 1, 2, 1, 1],
                 [1, 1, 1, 1, 2],
                 [1, 0, 3, 0, 1]])
-        >>> stat_scores(preds, target, reduce='micro')
-        tensor([2, 2, 6, 2, 4])
 
     """
-    if task is not None:
-        assert multidim_average is not None
-        if task == "binary":
-            return binary_stat_scores(preds, target, threshold, multidim_average, ignore_index, validate_args)
-        if task == "multiclass":
-            assert isinstance(num_classes, int)
-            assert isinstance(top_k, int)
-            return multiclass_stat_scores(
-                preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
-            )
-        if task == "multilabel":
-            assert isinstance(num_labels, int)
-            return multilabel_stat_scores(
-                preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
-            )
-        raise ValueError(
-            f"Expected argument `task` to either be `'binary'`, `'multiclass'` or `'multilabel'` but got {task}"
+    task = ClassificationTask.from_str(task)
+    assert multidim_average is not None  # noqa: S101  # needed for mypy
+    if task == ClassificationTask.BINARY:
+        return binary_stat_scores(preds, target, threshold, multidim_average, ignore_index, validate_args)
+    if task == ClassificationTask.MULTICLASS:
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
+        if not isinstance(top_k, int):
+            raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
+        return multiclass_stat_scores(
+            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
         )
-    else:
-        rank_zero_warn(
-            "From v0.10 an `'binary_*'`, `'multiclass_*', `'multilabel_*'` version now exist of each classification"
-            " metric. Moving forward we recommend using these versions. This base metric will still work as it did"
-            " prior to v0.10 until v0.11. From v0.11 the `task` argument introduced in this metric will be required"
-            " and the general order of arguments may change, such that this metric will just function as an single"
-            " entrypoint to calling the three specialized versions.",
-            DeprecationWarning,
+    if task == ClassificationTask.MULTILABEL:
+        if not isinstance(num_labels, int):
+            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
+        return multilabel_stat_scores(
+            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
         )
-    if reduce not in ["micro", "macro", "samples"]:
-        raise ValueError(f"The `reduce` {reduce} is not valid.")
-
-    if mdmc_reduce not in [None, "samplewise", "global"]:
-        raise ValueError(f"The `mdmc_reduce` {mdmc_reduce} is not valid.")
-
-    if reduce == "macro" and (not num_classes or num_classes < 1):
-        raise ValueError("When you set `reduce` as 'macro', you have to provide the number of classes.")
-
-    if num_classes and ignore_index is not None and (not 0 <= ignore_index < num_classes or num_classes == 1):
-        raise ValueError(f"The `ignore_index` {ignore_index} is not valid for inputs with {num_classes} classes")
-
-    tp, fp, tn, fn = _stat_scores_update(
-        preds,
-        target,
-        reduce=reduce,
-        mdmc_reduce=mdmc_reduce,
-        top_k=top_k,
-        threshold=threshold,
-        num_classes=num_classes,
-        multiclass=multiclass,
-        ignore_index=ignore_index,
-    )
-    return _stat_scores_compute(tp, fp, tn, fn)
+    raise ValueError(f"Unsupported task `{task}`")

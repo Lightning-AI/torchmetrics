@@ -12,10 +12,10 @@ Spectral Distortion Index
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.SpectralDistortionIndex
-    :noindex:
+.. autoclass:: torchmetrics.image.SpectralDistortionIndex
+    :exclude-members: update, compute
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.spectral_distortion_index
+.. autofunction:: torchmetrics.functional.image.spectral_distortion_index
