@@ -91,10 +91,10 @@ class KernelInceptionDistance(Metric):
     flag ``real`` determines if the images should update the statistics of the real distribution or the
     fake distribution.
 
-    Using custom feature extractor is also possible. One can give a torch.nn.Module as `feature` argument. This 
-    custom feature extractor is expected to have output shape of ``(1, num_features)`` This would change the 
+    Using custom feature extractor is also possible. One can give a torch.nn.Module as `feature` argument. This
+    custom feature extractor is expected to have output shape of ``(1, num_features)`` This would change the
     used feature extractor from default (Inception v3) to the given network. ``normalize`` argument won't have any
-    effect and update method expects to have the tensor given to `imgs` argument to be in the correct shape and 
+    effect and update method expects to have the tensor given to `imgs` argument to be in the correct shape and
     type that is compatible to the custom feature extractor.
 
     .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
@@ -248,11 +248,13 @@ class KernelInceptionDistance(Metric):
 
     def update(self, imgs: Tensor, real: bool) -> None:
         """Update the state with extracted features.
-        
+
         Args:
             imgs: Input img tensors to evaluate. If used custom feature extractor please
                 make sure dtype and size is correct for the model.
-            real: Whether given image is real or fake."""
+            real: Whether given image is real or fake.
+
+        """
         imgs = (imgs * 255).byte() if self.normalize and (not self.used_custom_model) else imgs
         features = self.inception(imgs)
 

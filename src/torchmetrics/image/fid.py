@@ -198,13 +198,13 @@ class FrechetInceptionDistance(Metric):
     flag ``real`` determines if the images should update the statistics of the real distribution or the
     fake distribution.
 
-    Using custom feature extractor is also possible. One can give a torch.nn.Module as `feature` argument. This 
-    custom feature extractor is expected to have output shape of ``(1, num_features)`` This would change the 
-    used feature extractor from default (Inception v3) to the given network. In case network doesn't have 
-    ``num_features`` attribute, a random tensor will be given to the network to infer feature dimentionality. 
-    Size of this tensor can be controlled by `input_img_size` argument and type of the tensor can be controlled 
-    with `normalize` argument (True uses float32 tensors and False uses int8 tensors). In this case, update method 
-    expects to have the tensor given to `imgs` argument to be in the correct shape and type that is compatible to 
+    Using custom feature extractor is also possible. One can give a torch.nn.Module as `feature` argument. This
+    custom feature extractor is expected to have output shape of ``(1, num_features)`` This would change the
+    used feature extractor from default (Inception v3) to the given network. In case network doesn't have
+    ``num_features`` attribute, a random tensor will be given to the network to infer feature dimensionality.
+    Size of this tensor can be controlled by `input_img_size` argument and type of the tensor can be controlled
+    with `normalize` argument (True uses float32 tensors and False uses int8 tensors). In this case, update method
+    expects to have the tensor given to `imgs` argument to be in the correct shape and type that is compatible to
     the custom feature extractor.
 
     This metric is known to be unstable in its calculatations, and we recommend for the best results using this metric
@@ -299,7 +299,7 @@ class FrechetInceptionDistance(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        
+
         if not isinstance(normalize, bool):
             raise ValueError("Argument `normalize` expected to be a bool")
         self.normalize = normalize
@@ -349,11 +349,12 @@ class FrechetInceptionDistance(Metric):
 
     def update(self, imgs: Tensor, real: bool) -> None:
         """Update the state with extracted features.
-        
+
         Args:
             imgs: Input img tensors to evaluate. If used custom feature extractor please
                 make sure dtype and size is correct for the model.
             real: Whether given image is real or fake.
+
         """
         imgs = (imgs * 255).byte() if self.normalize and (not self.used_custom_model) else imgs
         features = self.inception(imgs)
