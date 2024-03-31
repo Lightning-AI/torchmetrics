@@ -101,9 +101,17 @@ def test_kid_extra_parameters():
     with pytest.raises(ValueError, match="Argument `coef` expected to be float larger than 0"):
         KernelInceptionDistance(coef=-1)
 
+class DummyFeatureExtractor(Module):
+    def __init__(self):
+        self.flatten = torch.nn.Flatten()
+        self.extractor = torch.nn.Linear(3 * 299 * 299, 64)
+
+    def __call__(self, img):
+        return self.extractor(self.flatten(img))
+
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
-@pytest.mark.parametrize("feature", [64, 192, 768, 2048])
+@pytest.mark.parametrize("feature", [64, 192, 768, 2048, DummyFeatureExtractor()])
 def test_kid_same_input(feature):
     """Test that the metric works."""
     metric = KernelInceptionDistance(feature=feature, subsets=5, subset_size=2)
