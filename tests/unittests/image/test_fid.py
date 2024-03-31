@@ -81,6 +81,7 @@ def test_fid_raises_errors_and_warnings():
 
 class DummyFeatureExtractor(Module):
     def __init__(self):
+        super().__init__()
         self.flatten = torch.nn.Flatten()
         self.extractor = torch.nn.Linear(3 * 299 * 299, 64)
 
