@@ -86,6 +86,7 @@ class DummyFeatureExtractor(Module):
         self.extractor = torch.nn.Linear(3 * 299 * 299, 64)
 
     def __call__(self, img):
+        img = (img / 125.5).float() # Convert int img input to float as Linear layer expects float inputs
         return self.extractor(self.flatten(img))
 
 
