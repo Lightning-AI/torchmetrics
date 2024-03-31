@@ -216,10 +216,14 @@ def _get_ngram_matches(
     """
     matching_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
     for n in hyp_n_grams_counts:
-        matching_n_grams[n] = sum(
-            torch.min(ref_n_grams_counts[n][n_gram], hyp_n_grams_counts[n][n_gram])
-            for n_gram in hyp_n_grams_counts[n]
-        ).detach().clone()
+        matching_n_grams[n] = (
+            sum(
+                torch.min(ref_n_grams_counts[n][n_gram], hyp_n_grams_counts[n][n_gram])
+                for n_gram in hyp_n_grams_counts[n]
+            )
+            .detach()
+            .clone()
+        )
     return matching_n_grams
 
 
