@@ -681,7 +681,7 @@ class Metric(Module, ABC):
             if isinstance(default, Tensor):
                 setattr(self, attr, default.detach().clone().to(current_val.device))
             else:
-                setattr(self, attr, [])
+                getattr(self, attr).clear()  # delete/free list items
 
         # reset internal states
         self._cache = None
