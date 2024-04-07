@@ -124,10 +124,16 @@ def test_reset():
     metric = B()
     assert isinstance(metric.x, list)
     assert len(metric.x) == 0
-    metric.x = tensor(5)
+    metric.x = [tensor(5)]
     metric.reset()
     assert isinstance(metric.x, list)
     assert len(metric.x) == 0
+
+    metric = B()
+    metric.x = [1, 2, 3]
+    reference = metric.x  # prevents garbage collection
+    metric.reset()
+    assert len(reference) == 0  # check list state is freed
 
 
 def test_reset_compute():
