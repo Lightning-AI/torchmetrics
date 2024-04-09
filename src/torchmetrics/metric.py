@@ -238,6 +238,11 @@ class Metric(Module, ABC):
             When passing a custom function to ``dist_reduce_fx``, expect the synchronized metric state to follow
             the format discussed in the above note.
 
+        Note:
+            The values inserted into a list state are deleted whenever :meth:`~Metric.reset` is called. This allows
+            device memory to be automatically reallocated, but may produce unexpected effects when referencing list
+            states. To retain such values after `~Metric.reset` is called, you must first copy them to another object
+
         Raises:
             ValueError:
                 If ``default`` is not a ``tensor`` or an ``empty list``.
