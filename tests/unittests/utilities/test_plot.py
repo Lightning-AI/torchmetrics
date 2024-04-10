@@ -239,7 +239,7 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             partial(PearsonsContingencyCoefficient, num_classes=5),
             _nominal_input,
             _nominal_input,
-            id="pearson contigency coef",
+            id="pearson contingency coef",
         ),
         pytest.param(partial(TheilsU, num_classes=5), _nominal_input, _nominal_input, id="theils U"),
         pytest.param(partial(TschuprowsT, num_classes=5), _nominal_input, _nominal_input, id="tschuprows T"),
