@@ -24,8 +24,9 @@ from torchmetrics.text.rouge import ROUGEScore
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
 from typing_extensions import Literal
 
-from unittests.text.helpers import TextTester, skip_on_connection_issues
-from unittests.text.inputs import _Input, _inputs_multiple_references, _inputs_single_sentence_single_reference
+from unittests._helpers import skip_on_connection_issues
+from unittests.text._helpers import TextTester
+from unittests.text._inputs import _Input, _inputs_multiple_references, _inputs_single_sentence_single_reference
 
 if _ROUGE_SCORE_AVAILABLE:
     from rouge_score.rouge_scorer import RougeScorer
@@ -42,7 +43,7 @@ _target = "A trainer said her and Moschetto, 54s or weapons say . \nAuthorities 
 _inputs_summarization = _Input(preds=_preds, target=_target)
 
 
-def _compute_rouge_score(
+def _reference_rouge_score(
     preds: Union[str, Sequence[str]],
     target: Union[str, Sequence[Union[str, Sequence[str]]]],
     use_stemmer: bool,
@@ -90,7 +91,7 @@ def _compute_rouge_score(
     return torch.tensor(rs_result, dtype=torch.float)
 
 
-@pytest.mark.skipif(not _NLTK_AVAILABLE, reason="test requires nltk")
+@pytest.mark.skipif(not _NLTK_AVAILABLE, reason="metric requires nltk")
 @pytest.mark.parametrize(
     ["pl_rouge_metric_key", "use_stemmer"],
     [
@@ -118,14 +119,18 @@ def _compute_rouge_score(
 class TestROUGEScore(TextTester):
     """Test class for `ROUGEScore` metric."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @skip_on_connection_issues(reason="could not download nltk relevant data")
     def test_rouge_score_class(self, ddp, preds, targets, pl_rouge_metric_key, use_stemmer, accumulate):
         """Test class implementation of metric."""
         metric_args = {"use_stemmer": use_stemmer, "accumulate": accumulate}
         rouge_level, metric = pl_rouge_metric_key.split("_")
         rouge_metric = partial(
-            _compute_rouge_score, use_stemmer=use_stemmer, rouge_level=rouge_level, metric=metric, accumulate=accumulate
+            _reference_rouge_score,
+            use_stemmer=use_stemmer,
+            rouge_level=rouge_level,
+            metric=metric,
+            accumulate=accumulate,
         )
         self.run_class_metric_test(
             ddp=ddp,
@@ -144,7 +149,11 @@ class TestROUGEScore(TextTester):
 
         rouge_level, metric = pl_rouge_metric_key.split("_")
         rouge_metric = partial(
-            _compute_rouge_score, use_stemmer=use_stemmer, rouge_level=rouge_level, metric=metric, accumulate=accumulate
+            _reference_rouge_score,
+            use_stemmer=use_stemmer,
+            rouge_level=rouge_level,
+            metric=metric,
+            accumulate=accumulate,
         )
         self.run_functional_metric_test(
             preds,
@@ -207,7 +216,7 @@ def test_rouge_metric_normalizer_tokenizer(pl_rouge_metric_key):
     tokenizer: Callable[[str], Sequence[str]] = lambda text: re.split(r"\s+", text)
 
     rouge_level, metric = pl_rouge_metric_key.split("_")
-    original_score = _compute_rouge_score(
+    original_score = _reference_rouge_score(
         preds=_inputs_single_sentence_single_reference.preds,
         target=_inputs_single_sentence_single_reference.target,
         rouge_level=rouge_level,
@@ -244,7 +253,7 @@ def test_rouge_metric_normalizer_tokenizer(pl_rouge_metric_key):
 def test_rouge_lsum_score(pl_rouge_metric_key, use_stemmer):
     """Specific tests to verify the correctness of Rouge-L and Rouge-LSum metric."""
     rouge_level, metric = pl_rouge_metric_key.split("_")
-    original_score = _compute_rouge_score(
+    original_score = _reference_rouge_score(
         preds=_inputs_summarization.preds,
         target=_inputs_summarization.target,
         rouge_level=rouge_level,

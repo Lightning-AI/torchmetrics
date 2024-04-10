@@ -24,8 +24,8 @@ from torchmetrics.regression.kendall import KendallRankCorrCoef
 from torchmetrics.utilities.imports import _SCIPY_GREATER_EQUAL_1_8, _TORCH_LOWER_2_0
 
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -47,7 +47,7 @@ _multi_inputs3 = _Input(
 )
 
 
-def _scipy_kendall(preds, target, alternative, variant):
+def _reference_scipy_kendall(preds, target, alternative, variant):
     metric_args = {}
     if _SCIPY_GREATER_EQUAL_1_8:
         metric_args = {"alternative": alternative or "two-sided"}  # scipy cannot accept `None`
@@ -89,12 +89,12 @@ class TestKendallRankCorrCoef(MetricTester):
         sys.platform == "darwin" and not _TORCH_LOWER_2_0,
         reason="Tests are not working on mac for newer version of PyTorch.",
     )
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_kendall_rank_corrcoef(self, preds, target, alternative, variant, ddp):
         """Test class implementation of metric."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
         t_test = bool(alternative is not None)
-        _sk_kendall_tau = partial(_scipy_kendall, alternative=alternative, variant=variant)
+        _sk_kendall_tau = partial(_reference_scipy_kendall, alternative=alternative, variant=variant)
         alternative = _adjust_alternative_to_scipy(alternative)
 
         self.run_class_metric_test(
@@ -111,7 +111,7 @@ class TestKendallRankCorrCoef(MetricTester):
         t_test = bool(alternative is not None)
         alternative = _adjust_alternative_to_scipy(alternative)
         metric_args = {"t_test": t_test, "alternative": alternative, "variant": variant}
-        _sk_kendall_tau = partial(_scipy_kendall, alternative=alternative, variant=variant)
+        _sk_kendall_tau = partial(_reference_scipy_kendall, alternative=alternative, variant=variant)
         self.run_functional_metric_test(preds, target, kendall_rank_corrcoef, _sk_kendall_tau, metric_args=metric_args)
 
     def test_kendall_rank_corrcoef_differentiability(self, preds, target, alternative, variant):

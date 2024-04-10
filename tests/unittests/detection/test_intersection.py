@@ -35,7 +35,7 @@ if _TORCHVISION_GREATER_EQUAL_0_13:
 else:
     tv_iou, tv_ciou, tv_diou, tv_giou = ..., ..., ..., ...
 
-from unittests.helpers.testers import MetricTester
+from unittests._helpers.testers import MetricTester
 
 
 def _tv_wrapper(preds, target, base_fn, aggregate=True, iou_threshold=None):
@@ -76,24 +76,20 @@ def _tv_wrapper_class(preds, target, base_fn, respect_labels, iou_threshold, cla
 
 
 _preds_fn = (
-    torch.tensor(
-        [
-            [296.55, 93.96, 314.97, 152.79],
-            [328.94, 97.05, 342.49, 122.98],
-            [356.62, 95.47, 372.33, 147.55],
-        ]
-    )
+    torch.tensor([
+        [296.55, 93.96, 314.97, 152.79],
+        [328.94, 97.05, 342.49, 122.98],
+        [356.62, 95.47, 372.33, 147.55],
+    ])
     .unsqueeze(0)
     .repeat(4, 1, 1)
 )
 _target_fn = (
-    torch.tensor(
-        [
-            [300.00, 100.00, 315.00, 150.00],
-            [330.00, 100.00, 350.00, 125.00],
-            [350.00, 100.00, 375.00, 150.00],
-        ]
-    )
+    torch.tensor([
+        [300.00, 100.00, 315.00, 150.00],
+        [330.00, 100.00, 350.00, 125.00],
+        [350.00, 100.00, 375.00, 150.00],
+    ])
     .unsqueeze(0)
     .repeat(4, 1, 1)
 )
@@ -198,7 +194,7 @@ class TestIntersectionMetrics(MetricTester):
     @pytest.mark.parametrize("respect_labels", [True, False])
     @pytest.mark.parametrize("iou_threshold", [None, 0.5, 0.7, 0.9])
     @pytest.mark.parametrize("class_metrics", [True, False])
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_intersection_class(
         self,
         class_metric,

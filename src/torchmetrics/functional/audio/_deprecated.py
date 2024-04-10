@@ -15,7 +15,7 @@ def _permutation_invariant_training(
     metric_func: Callable,
     mode: Literal["speaker-wise", "permutation-wise"] = "speaker-wise",
     eval_func: Literal["max", "min"] = "max",
-    **kwargs: Any
+    **kwargs: Any,
 ) -> Tuple[Tensor, Tensor]:
     """Wrapper for deprecated import.
 

@@ -22,8 +22,8 @@ from torchmetrics.image.sam import SpectralAngleMapper
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -40,11 +40,7 @@ for size, channel, dtype in [
     _inputs.append(_Input(preds=preds, target=target))
 
 
-def _baseline_sam(
-    preds: Tensor,
-    target: Tensor,
-    reduction: str = "elementwise_mean",
-) -> Tensor:
+def _reference_sam(preds: Tensor, target: Tensor, reduction: str = "elementwise_mean") -> Tensor:
     """Baseline implementation of spectral angle mapper."""
     reduction_options = ("elementwise_mean", "sum", "none")
     if reduction not in reduction_options:
@@ -67,15 +63,15 @@ def _baseline_sam(
 class TestSpectralAngleMapper(MetricTester):
     """Test class for `SpectralAngleMapper` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_sam(self, reduction, preds, target, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
             target,
-            SpectralAngleMapper,
-            partial(_baseline_sam, reduction=reduction),
+            metric_class=SpectralAngleMapper,
+            reference_metric=partial(_reference_sam, reduction=reduction),
             metric_args={"reduction": reduction},
         )
 
@@ -84,8 +80,8 @@ class TestSpectralAngleMapper(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            spectral_angle_mapper,
-            partial(_baseline_sam, reduction=reduction),
+            metric_functional=spectral_angle_mapper,
+            reference_metric=partial(_reference_sam, reduction=reduction),
             metric_args={"reduction": reduction},
         )
 

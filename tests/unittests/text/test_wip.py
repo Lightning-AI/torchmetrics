@@ -14,20 +14,22 @@
 from typing import List, Union
 
 import pytest
-from jiwer import wip
 from torchmetrics.functional.text.wip import word_information_preserved
 from torchmetrics.text.wip import WordInfoPreserved
-from torchmetrics.utilities.imports import _JIWER_AVAILABLE
 
-from unittests.text.helpers import TextTester
-from unittests.text.inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
+from unittests.text._helpers import TextTester
+from unittests.text._inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 
 
-def _compute_wip_metric_jiwer(preds: Union[str, List[str]], target: Union[str, List[str]]):
+def _reference_jiwer_wip(preds: Union[str, List[str]], target: Union[str, List[str]]):
+    try:
+        from jiwer import wip
+    except ImportError:
+        pytest.skip("test requires jiwer package to be installed")
+
     return wip(target, preds)
 
 
-@pytest.mark.skipif(not _JIWER_AVAILABLE, reason="test requires jiwer")
 @pytest.mark.parametrize(
     ["preds", "targets"],
     [
@@ -38,7 +40,7 @@ def _compute_wip_metric_jiwer(preds: Union[str, List[str]], target: Union[str, L
 class TestWordInfoPreserved(TextTester):
     """Test class for `WordInfoPreserved` metric."""
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_wip_class(self, ddp, preds, targets):
         """Test class implementation of metric."""
         self.run_class_metric_test(
@@ -46,7 +48,7 @@ class TestWordInfoPreserved(TextTester):
             preds=preds,
             targets=targets,
             metric_class=WordInfoPreserved,
-            reference_metric=_compute_wip_metric_jiwer,
+            reference_metric=_reference_jiwer_wip,
         )
 
     def test_wip_functional(self, preds, targets):
@@ -55,7 +57,7 @@ class TestWordInfoPreserved(TextTester):
             preds,
             targets,
             metric_functional=word_information_preserved,
-            reference_metric=_compute_wip_metric_jiwer,
+            reference_metric=_reference_jiwer_wip,
         )
 
     def test_wip_differentiability(self, preds, targets):

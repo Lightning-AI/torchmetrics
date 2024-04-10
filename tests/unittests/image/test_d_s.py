@@ -26,8 +26,8 @@ from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.d_s import SpatialDistortionIndex
 
 from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -73,7 +73,7 @@ for size, channel, norm_order, r, window_size, pan_lr_exists, dtype in [
     )
 
 
-def _baseline_d_s(
+def _reference_d_s(
     preds: np.ndarray,
     ms: np.ndarray,
     pan: np.ndarray,
@@ -87,12 +87,10 @@ def _baseline_d_s(
         try:
             pan_degraded = uniform_filter(pan, size=window_size, axes=[1, 2])
         except TypeError:
-            pan_degraded = np.array(
-                [
-                    [uniform_filter(pan[i, ..., j], size=window_size) for j in range(pan.shape[-1])]
-                    for i in range(len(pan))
-                ]
-            ).transpose((0, 2, 3, 1))
+            pan_degraded = np.array([
+                [uniform_filter(pan[i, ..., j], size=window_size) for j in range(pan.shape[-1])]
+                for i in range(len(pan))
+            ]).transpose((0, 2, 3, 1))
         pan_degraded = np.array([resize(img, ms.shape[1:3], anti_aliasing=False) for img in pan_degraded])
 
     length = preds.shape[-1]
@@ -127,7 +125,7 @@ def _np_d_s(preds, target, pan=None, pan_lr=None, norm_order=1, window_size=7):
         np_pan = pan.permute(0, 2, 3, 1).cpu().numpy()
         np_pan_lr = pan_lr.permute(0, 2, 3, 1).cpu().numpy() if pan_lr is not None else None
 
-    return _baseline_d_s(
+    return _reference_d_s(
         np_preds,
         np_ms,
         np_pan,
@@ -138,9 +136,9 @@ def _np_d_s(preds, target, pan=None, pan_lr=None, norm_order=1, window_size=7):
 
 
 def _invoke_spatial_distortion_index(preds, target, ms, pan, pan_lr, norm_order, window_size):
-    ms = target["ms"] if "ms" in target else ms
-    pan = target["pan"] if "pan" in target else pan
-    pan_lr = target["pan_lr"] if "pan_lr" in target else pan_lr
+    ms = target.get("ms", ms)
+    pan = target.get("pan", pan)
+    pan_lr = target.get("pan_lr", pan_lr)
     return spatial_distortion_index(preds, ms, pan, pan_lr, norm_order, window_size)
 
 
@@ -153,7 +151,7 @@ class TestSpatialDistortionIndex(MetricTester):
 
     atol = 3e-6
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_d_s(self, preds, target, ms, pan, pan_lr, norm_order, window_size, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(

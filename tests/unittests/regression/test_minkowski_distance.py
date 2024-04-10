@@ -8,12 +8,12 @@ from torchmetrics.regression import MinkowskiDistance
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
 
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
-num_targets = 5
+NUM_TARGETS = 5
 
 
 _single_target_inputs = _Input(
@@ -22,18 +22,18 @@ _single_target_inputs = _Input(
 )
 
 _multi_target_inputs = _Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_TARGETS),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_TARGETS),
 )
 
 
-def _sk_metric_single_target(preds, target, p):
+def _reference_scipy_metric_single_target(preds, target, p):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
     return scipy_minkowski(sk_preds, sk_target, p=p)
 
 
-def _sk_metric_multi_target(preds, target, p):
+def _reference_scipy_metric_multi_target(preds, target, p):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
     return scipy_minkowski(sk_preds, sk_target, p=p)
@@ -42,15 +42,15 @@ def _sk_metric_multi_target(preds, target, p):
 @pytest.mark.parametrize(
     "preds, target, ref_metric",
     [
-        (_single_target_inputs.preds, _single_target_inputs.target, _sk_metric_single_target),
-        (_multi_target_inputs.preds, _multi_target_inputs.target, _sk_metric_multi_target),
+        (_single_target_inputs.preds, _single_target_inputs.target, _reference_scipy_metric_single_target),
+        (_multi_target_inputs.preds, _multi_target_inputs.target, _reference_scipy_metric_multi_target),
     ],
 )
 @pytest.mark.parametrize("p", [1, 2, 4, 1.5])
 class TestMinkowskiDistance(MetricTester):
     """Test class for `MinkowskiDistance` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("dist_sync_on_step", [True, False])
     def test_minkowski_distance_class(self, preds, target, ref_metric, p, ddp, dist_sync_on_step):
         """Test class implementation of metric."""

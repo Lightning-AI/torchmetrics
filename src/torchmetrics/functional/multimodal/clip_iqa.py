@@ -28,11 +28,11 @@ if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_GREATER_EQUAL_4_10:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
 
-    def _download_clip() -> None:
-        _CLIPModel.from_pretrained("openai/clip-vit-base-patch16")
-        _CLIPProcessor.from_pretrained("openai/clip-vit-base-patch16")
+    def _download_clip_for_iqa_metric() -> None:
+        _CLIPModel.from_pretrained("openai/clip-vit-base-patch16", resume_download=True)
+        _CLIPProcessor.from_pretrained("openai/clip-vit-base-patch16", resume_download=True)
 
-    if not _try_proceed_with_timeout(_download_clip):
+    if not _try_proceed_with_timeout(_download_clip_for_iqa_metric):
         __doctest_skip__ = ["clip_image_quality_assessment"]
 else:
     __doctest_skip__ = ["clip_image_quality_assessment"]
@@ -67,7 +67,7 @@ def _get_clip_iqa_model_and_processor(
         "openai/clip-vit-base-patch32",
         "openai/clip-vit-large-patch14-336",
         "openai/clip-vit-large-patch14",
-    ]
+    ],
 ) -> Tuple["_CLIPModel", "_CLIPProcessor"]:
     """Extract the CLIP model and processor from the model name or path."""
     from transformers import CLIPProcessor as _CLIPProcessor

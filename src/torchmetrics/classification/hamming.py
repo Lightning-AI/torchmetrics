@@ -508,9 +508,11 @@ class HammingDistance(_ClassificationTaskWrapper):
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None  # noqa: S101  # needed for mypy
-        kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
-        )
+        kwargs.update({
+            "multidim_average": multidim_average,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+        })
         if task == ClassificationTask.BINARY:
             return BinaryHammingDistance(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:

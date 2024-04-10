@@ -43,11 +43,11 @@ if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_GREATER_EQUAL_4_10:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
 
-    def _download_clip() -> None:
-        _CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
-        _CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
+    def _download_clip_iqa_metric() -> None:
+        _CLIPModel.from_pretrained("openai/clip-vit-large-patch14", resume_download=True)
+        _CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14", resume_download=True)
 
-    if not _try_proceed_with_timeout(_download_clip):
+    if not _try_proceed_with_timeout(_download_clip_iqa_metric):
         __doctest_skip__ = ["CLIPImageQualityAssessment", "CLIPImageQualityAssessment.plot"]
 else:
     __doctest_skip__ = ["CLIPImageQualityAssessment", "CLIPImageQualityAssessment.plot"]
@@ -181,7 +181,7 @@ class CLIPImageQualityAssessment(Metric):
         ] = "clip_iqa",
         data_range: float = 1.0,
         prompts: Tuple[Union[str, Tuple[str, str]]] = ("quality",),
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         if not (isinstance(data_range, (int, float)) and data_range > 0):

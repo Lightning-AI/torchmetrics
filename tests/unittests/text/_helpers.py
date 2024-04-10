@@ -13,7 +13,7 @@
 # limitations under the License.
 import pickle
 import sys
-from functools import partial, wraps
+from functools import partial
 from typing import Any, Callable, Dict, Optional, Sequence, Union
 
 import numpy as np
@@ -22,29 +22,36 @@ import torch
 from torch import Tensor
 from torchmetrics import Metric
 
-from unittests import NUM_PROCESSES
-from unittests.helpers.testers import MetricTester, _assert_allclose, _assert_requires_grad, _assert_tensor
+from unittests import NUM_PROCESSES, _reference_cachier
+from unittests._helpers import seed_all
+from unittests._helpers.testers import (
+    MetricTester,
+    _assert_allclose,
+    _assert_requires_grad,
+    _assert_tensor,
+    _select_rand_best_device,
+)
 
 TEXT_METRIC_INPUT = Union[Sequence[str], Sequence[Sequence[str]], Sequence[Sequence[Sequence[str]]]]
 NUM_BATCHES = 2
 
 
 def _assert_all_close_regardless_of_order(
-    pl_result: Any, sk_result: Any, atol: float = 1e-8, key: Optional[str] = None
+    pl_result: Any, ref_result: Any, atol: float = 1e-8, key: Optional[str] = None
 ) -> None:
     """Recursively asserting that two results are within a certain tolerance regardless of the order."""
     # single output compare
     if isinstance(pl_result, Tensor):
-        assert np.allclose(pl_result.detach().cpu().numpy().mean(-1), sk_result.mean(-1), atol=atol, equal_nan=True)
+        assert np.allclose(pl_result.detach().cpu().numpy().mean(-1), ref_result.mean(-1), atol=atol, equal_nan=True)
     # multi output compare
     elif isinstance(pl_result, Sequence):
-        for pl_res, sk_res in zip(pl_result, sk_result):
-            _assert_allclose(pl_res, sk_res, atol=atol)
+        for pl_res, ref_res in zip(pl_result, ref_result):
+            _assert_allclose(pl_res, ref_res, atol=atol)
     elif isinstance(pl_result, Dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
         assert np.allclose(
-            pl_result[key].detach().cpu().numpy().mean(-1), sk_result.mean(-1), atol=atol, equal_nan=True
+            pl_result[key].detach().cpu().numpy().mean(-1), ref_result.mean(-1), atol=atol, equal_nan=True
         )
     else:
         raise ValueError("Unknown format for comparison")
@@ -56,7 +63,7 @@ def _class_test(
     preds: TEXT_METRIC_INPUT,
     targets: TEXT_METRIC_INPUT,
     metric_class: Metric,
-    ref_metric: Callable,
+    reference_metric: Callable,
     dist_sync_on_step: bool,
     metric_args: Optional[dict] = None,
     check_dist_sync_on_step: bool = True,
@@ -77,7 +84,7 @@ def _class_test(
         preds: Sequence of predicted tokens or predicted sentences
         targets: Sequence of target tokens or target sentences
         metric_class: metric class that should be tested
-        ref_metric: callable function that is used for comparison
+        reference_metric: callable function that is used for comparison
         dist_sync_on_step: bool, if true will synchronize metric state across
             processes at each ``forward()``
         metric_args: dict with additional arguments used for class initialization
@@ -87,10 +94,10 @@ def _class_test(
             calculated across devices for each batch (and not just at the end)
         atol: absolute tolerance used for comparison of results
         device: determine which device to run on, either 'cuda' or 'cpu'
-        fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
+        fragment_kwargs: whether tensors in kwargs should be divided as ``preds`` and ``targets`` among processes
         check_scriptable: bool indicating if metric should also be tested if it can be scripted
-        key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output against
-            the ref_metric.
+        key: The key passed onto the ``_assert_allclose`` to compare the respective metric from the Dict output against
+            the ``reference_metric``.
         ignore_order: Ignore order of prediction across processes when DDP is used.
         kwargs_update: Additional keyword arguments that will be passed with preds and
             targets when running update on the metric.
@@ -130,22 +137,22 @@ def _class_test(
                 for k, v in (kwargs_update if fragment_kwargs else batch_kwargs_update).items()
             }
 
-            sk_batch_result = ref_metric(ddp_preds, ddp_targets, **ddp_kwargs_upd)
+            ref_batch_result = _reference_cachier(reference_metric)(ddp_preds, ddp_targets, **ddp_kwargs_upd)
             if ignore_order:
-                _assert_all_close_regardless_of_order(batch_result, sk_batch_result, atol=atol, key=key)
+                _assert_all_close_regardless_of_order(batch_result, ref_batch_result, atol=atol, key=key)
             else:
-                _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
+                _assert_allclose(batch_result, ref_batch_result, atol=atol, key=key)
 
         elif check_batch and not metric.dist_sync_on_step:
             batch_kwargs_update = {
                 k: v.cpu() if isinstance(v, Tensor) else v
                 for k, v in (batch_kwargs_update if fragment_kwargs else kwargs_update).items()
             }
-            sk_batch_result = ref_metric(preds[i], targets[i], **batch_kwargs_update)
+            ref_batch_result = _reference_cachier(reference_metric)(preds[i], targets[i], **batch_kwargs_update)
             if ignore_order:
-                _assert_all_close_regardless_of_order(batch_result, sk_batch_result, atol=atol, key=key)
+                _assert_all_close_regardless_of_order(batch_result, ref_batch_result, atol=atol, key=key)
             else:
-                _assert_allclose(batch_result, sk_batch_result, atol=atol, key=key)
+                _assert_allclose(batch_result, ref_batch_result, atol=atol, key=key)
 
     # check that metrics are hashable
     assert hash(metric)
@@ -164,19 +171,19 @@ def _class_test(
         k: torch.cat([v[i] for i in range(NUM_BATCHES)]).cpu() if isinstance(v, Tensor) else v
         for k, v in kwargs_update.items()
     }
-    sk_result = ref_metric(total_preds, total_targets, **total_kwargs_update)
+    ref_result = _reference_cachier(reference_metric)(total_preds, total_targets, **total_kwargs_update)
     # assert after aggregation
     if ignore_order:
-        _assert_all_close_regardless_of_order(result, sk_result, atol=atol, key=key)
+        _assert_all_close_regardless_of_order(result, ref_result, atol=atol, key=key)
     else:
-        _assert_allclose(result, sk_result, atol=atol, key=key)
+        _assert_allclose(result, ref_result, atol=atol, key=key)
 
 
 def _functional_test(
     preds: TEXT_METRIC_INPUT,
     targets: TEXT_METRIC_INPUT,
     metric_functional: Callable,
-    ref_metric: Callable,
+    reference_metric: Callable,
     metric_args: Optional[dict] = None,
     atol: float = 1e-8,
     device: str = "cpu",
@@ -190,22 +197,19 @@ def _functional_test(
         preds: torch tensor with predictions
         targets: torch tensor with targets
         metric_functional: metric functional that should be tested
-        ref_metric: callable function that is used for comparison
+        reference_metric: callable function that is used for comparison
         metric_args: dict with additional arguments used for class initialization
         atol: absolute tolerance used for comparison of results
         device: determine which device to run on, either 'cuda' or 'cpu'
-        fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
-        key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output against
-            the ref_metric.
+        fragment_kwargs: whether tensors in kwargs should be divided as ``preds`` and ``targets`` among processes
+        key: The key passed onto the ``_assert_allclose`` to compare the respective metric from the Dict output against
+            the ``reference_metric``.
         kwargs_update: Additional keyword arguments that will be passed with preds and
             targets when running update on the metric.
 
     """
-    if not metric_args:
-        metric_args = {}
-
+    metric_args = metric_args or {}
     metric = partial(metric_functional, **metric_args)
-
     # Move to device
     kwargs_update = {k: v.to(device) if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
@@ -217,10 +221,10 @@ def _functional_test(
             k: v.cpu() if isinstance(v, Tensor) else v
             for k, v in (extra_kwargs if fragment_kwargs else kwargs_update).items()
         }
-        sk_result = ref_metric(preds[i], targets[i], **extra_kwargs)
+        ref_result = _reference_cachier(reference_metric)(preds[i], targets[i], **extra_kwargs)
 
         # assert its the same
-        _assert_allclose(tm_result, sk_result, atol=atol, key=key)
+        _assert_allclose(tm_result, ref_result, atol=atol, key=key)
 
 
 def _assert_half_support(
@@ -282,23 +286,23 @@ class TextTester(MetricTester):
             metric_functional: metric class that should be tested
             reference_metric: callable function that is used for comparison
             metric_args: dict with additional arguments used for class initialization
-            fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
-            key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
-                against the ref_metric.
+            fragment_kwargs: whether tensors in kwargs should be divided as ``preds`` and ``targets`` among processes
+            key: The key passed onto the ``_assert_allclose`` to compare the respective metric from the Dict output
+                against the ``reference_metric``.
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
 
         """
-        device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
+        seed_all(42)
 
         _functional_test(
             preds=preds,
             targets=targets,
             metric_functional=metric_functional,
-            ref_metric=reference_metric,
+            reference_metric=reference_metric,
             metric_args=metric_args,
             atol=self.atol,
-            device=device,
+            device=_select_rand_best_device(),
             fragment_kwargs=fragment_kwargs,
             key=key,
             **kwargs_update,
@@ -336,62 +340,41 @@ class TextTester(MetricTester):
                 calculated per batch per device (and not just at the end)
             check_batch: bool, if true will check if the metric is also correctly
                 calculated across devices for each batch (and not just at the end)
-            fragment_kwargs: whether tensors in kwargs should be divided as `preds` and `targets` among processes
+            fragment_kwargs: whether tensors in kwargs should be divided as ``preds`` and ``targets`` among processes
             check_scriptable: bool indicating if metric should also be tested if it can be scripted
-            key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
-                against the ref_metric.
+            key: The key passed onto the ``_assert_allclose`` to compare the respective metric from the Dict output
+                against the ``reference_metric``.
             ignore_order: Ignore order of prediction across processes when DDP is used.
             kwargs_update: Additional keyword arguments that will be passed with preds and
                 targets when running update on the metric.
 
         """
-        if not metric_args:
-            metric_args = {}
+        seed_all(42)
+        common_kwargs = {
+            "preds": preds,
+            "targets": targets,
+            "metric_class": metric_class,
+            "reference_metric": reference_metric,
+            "metric_args": metric_args or {},
+            "atol": self.atol,
+            "device": _select_rand_best_device(),
+            "dist_sync_on_step": dist_sync_on_step,
+            "check_dist_sync_on_step": check_dist_sync_on_step,
+            "check_batch": check_batch,
+            "fragment_kwargs": fragment_kwargs,
+            "check_scriptable": check_scriptable,
+            "ignore_order": ignore_order,
+            "key": key,
+        }
         if ddp:
             if sys.platform == "win32":
                 pytest.skip("DDP not supported on windows")
-
             pytest.pool.starmap(
-                partial(
-                    _class_test,
-                    preds=preds,
-                    targets=targets,
-                    metric_class=metric_class,
-                    ref_metric=reference_metric,
-                    dist_sync_on_step=dist_sync_on_step,
-                    metric_args=metric_args,
-                    check_dist_sync_on_step=check_dist_sync_on_step,
-                    check_batch=check_batch,
-                    atol=self.atol,
-                    fragment_kwargs=fragment_kwargs,
-                    check_scriptable=check_scriptable,
-                    key=key,
-                    ignore_order=ignore_order,
-                    **kwargs_update,
-                ),
+                partial(_class_test, **common_kwargs, **kwargs_update),
                 [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)],
             )
         else:
-            device = "cuda" if (torch.cuda.is_available() and torch.cuda.device_count() > 0) else "cpu"
-
-            _class_test(
-                rank=0,
-                worldsize=1,
-                preds=preds,
-                targets=targets,
-                metric_class=metric_class,
-                ref_metric=reference_metric,
-                dist_sync_on_step=dist_sync_on_step,
-                metric_args=metric_args,
-                check_dist_sync_on_step=check_dist_sync_on_step,
-                check_batch=check_batch,
-                atol=self.atol,
-                device=device,
-                fragment_kwargs=fragment_kwargs,
-                check_scriptable=check_scriptable,
-                key=key,
-                **kwargs_update,
-            )
+            _class_test(rank=0, worldsize=1, **common_kwargs, **kwargs_update)
 
     @staticmethod
     def run_precision_test_cpu(
@@ -462,8 +445,8 @@ class TextTester(MetricTester):
             metric_module: the metric module to test
             metric_functional: the functional metric version to test
             metric_args: dict with additional arguments used for class initialization
-            key: The key passed onto the `_assert_allclose` to compare the respective metric from the Dict output
-                against the ref_metric.
+            key: The key passed onto the ``_assert_allclose`` to compare the respective metric from the Dict output
+                against the ``reference_metric``.
 
         """
         metric_args = metric_args or {}
@@ -477,26 +460,3 @@ class TextTester(MetricTester):
         if metric.is_differentiable:
             # check for numerical correctness
             assert torch.autograd.gradcheck(partial(metric_functional, **metric_args), (preds[0], targets[0]))
-
-
-def skip_on_connection_issues(reason: str = "Unable to load checkpoints from HuggingFace `transformers`."):
-    """Handle download related tests if they fail due to connection issues.
-
-    The tests run normally if no connection issue arises, and they're marked as skipped otherwise.
-
-    """
-    _error_msg_starts = ["We couldn't connect to", "Connection error", "Can't load", "`nltk` resource `punkt` is"]
-
-    def test_decorator(function: Callable, *args: Any, **kwargs: Any) -> Optional[Callable]:
-        @wraps(function)
-        def run_test(*args: Any, **kwargs: Any) -> Optional[Any]:
-            try:
-                return function(*args, **kwargs)
-            except (OSError, ValueError) as ex:
-                if all(msg_start not in str(ex) for msg_start in _error_msg_starts):
-                    raise ex
-                pytest.skip(reason)
-
-        return run_test
-
-    return test_decorator

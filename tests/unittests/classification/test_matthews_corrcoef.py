@@ -32,14 +32,14 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 
 seed_all(42)
 
 
-def _sklearn_matthews_corrcoef_binary(preds, target, ignore_index=None):
+def _reference_sklearn_matthews_corrcoef_binary(preds, target, ignore_index=None):
     preds = preds.view(-1).numpy()
     target = target.view(-1).numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -55,7 +55,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
     """Test class for `BinaryMatthewsCorrCoef` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_matthews_corrcoef(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -66,7 +66,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryMatthewsCorrCoef,
-            reference_metric=partial(_sklearn_matthews_corrcoef_binary, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_matthews_corrcoef_binary, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
@@ -83,7 +83,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_matthews_corrcoef,
-            reference_metric=partial(_sklearn_matthews_corrcoef_binary, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_matthews_corrcoef_binary, ignore_index=ignore_index),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
@@ -131,7 +131,7 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
         )
 
 
-def _sklearn_matthews_corrcoef_multiclass(preds, target, ignore_index=None):
+def _reference_sklearn_matthews_corrcoef_multiclass(preds, target, ignore_index=None):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -147,7 +147,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
     """Test class for `MulticlassMatthewsCorrCoef` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_matthews_corrcoef(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -158,7 +158,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassMatthewsCorrCoef,
-            reference_metric=partial(_sklearn_matthews_corrcoef_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_matthews_corrcoef_multiclass, ignore_index=ignore_index),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -175,7 +175,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_matthews_corrcoef,
-            reference_metric=partial(_sklearn_matthews_corrcoef_multiclass, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_matthews_corrcoef_multiclass, ignore_index=ignore_index),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -221,7 +221,7 @@ class TestMulticlassMatthewsCorrCoef(MetricTester):
         )
 
 
-def _sklearn_matthews_corrcoef_multilabel(preds, target, ignore_index=None):
+def _reference_sklearn_matthews_corrcoef_multilabel(preds, target, ignore_index=None):
     preds = preds.view(-1).numpy()
     target = target.view(-1).numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -237,7 +237,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
     """Test class for `MultilabelMatthewsCorrCoef` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multilabel_matthews_corrcoef(self, inputs, ddp, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -248,7 +248,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelMatthewsCorrCoef,
-            reference_metric=partial(_sklearn_matthews_corrcoef_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_matthews_corrcoef_multilabel, ignore_index=ignore_index),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,
@@ -265,7 +265,7 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_matthews_corrcoef,
-            reference_metric=partial(_sklearn_matthews_corrcoef_multilabel, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_matthews_corrcoef_multilabel, ignore_index=ignore_index),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,

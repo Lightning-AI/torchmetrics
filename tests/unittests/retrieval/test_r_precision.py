@@ -20,7 +20,7 @@ from torchmetrics.functional.retrieval.r_precision import retrieval_r_precision
 from torchmetrics.retrieval.r_precision import RetrievalRPrecision
 from typing_extensions import Literal
 
-from unittests.helpers import seed_all
+from unittests._helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,
     _concat_tests,
@@ -56,7 +56,7 @@ def _r_precision(target: np.ndarray, preds: np.ndarray):
 class TestRPrecision(RetrievalMetricTester):
     """Test class for `RetrievalRPrecision` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize("ignore_index", [None, 1])  # avoid setting 0, otherwise test with all 0 targets will fail
     @pytest.mark.parametrize("aggregation", ["mean", "median", "max", "min", _custom_aggregate_fn])
@@ -88,7 +88,7 @@ class TestRPrecision(RetrievalMetricTester):
             metric_args=metric_args,
         )
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("empty_target_action", ["skip", "neg", "pos"])
     @pytest.mark.parametrize(**_default_metric_class_input_arguments_ignore_index)
     def test_class_metric_ignore_index(

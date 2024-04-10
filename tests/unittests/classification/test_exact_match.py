@@ -22,14 +22,14 @@ from torchmetrics.functional.classification.exact_match import multiclass_exact_
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
-from unittests.classification.inputs import _multiclass_cases, _multilabel_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index
+from unittests.classification._inputs import _multiclass_cases, _multilabel_cases
 
 seed_all(42)
 
 
-def _baseline_exact_match_multiclass(preds, target, ignore_index, multidim_average):
+def _reference_exact_match_multiclass(preds, target, ignore_index, multidim_average):
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
     preds = preds.numpy()
@@ -51,7 +51,7 @@ class TestMulticlassExactMatch(MetricTester):
 
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_exact_match(self, ddp, inputs, ignore_index, multidim_average):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -68,7 +68,7 @@ class TestMulticlassExactMatch(MetricTester):
             target=target,
             metric_class=MulticlassExactMatch,
             reference_metric=partial(
-                _baseline_exact_match_multiclass,
+                _reference_exact_match_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
             ),
@@ -94,7 +94,7 @@ class TestMulticlassExactMatch(MetricTester):
             target=target,
             metric_functional=multiclass_exact_match,
             reference_metric=partial(
-                _baseline_exact_match_multiclass,
+                _reference_exact_match_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
             ),
@@ -147,7 +147,7 @@ class TestMulticlassExactMatch(MetricTester):
         )
 
 
-def _baseline_exact_match_multilabel(preds, target, ignore_index, multidim_average):
+def _reference_exact_match_multilabel(preds, target, ignore_index, multidim_average):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -176,7 +176,7 @@ def _baseline_exact_match_multilabel(preds, target, ignore_index, multidim_avera
 class TestMultilabelExactMatch(MetricTester):
     """Test class for `MultilabelExactMatch` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     def test_multilabel_exact_match(self, ddp, inputs, ignore_index, multidim_average):
@@ -195,7 +195,7 @@ class TestMultilabelExactMatch(MetricTester):
             target=target,
             metric_class=MultilabelExactMatch,
             reference_metric=partial(
-                _baseline_exact_match_multilabel,
+                _reference_exact_match_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
             ),
@@ -222,7 +222,7 @@ class TestMultilabelExactMatch(MetricTester):
             target=target,
             metric_functional=multilabel_exact_match,
             reference_metric=partial(
-                _baseline_exact_match_multilabel,
+                _reference_exact_match_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
             ),

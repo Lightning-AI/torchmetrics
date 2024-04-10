@@ -4,6 +4,10 @@ name: PyPI Release
 on: # Trigger the workflow on push or pull request, but only for the master branch
   push:
     branches: [master, "release/*"]
+  pull_request:
+    branches: [master, "release/*"]
+    paths:
+      - ".github/workflows/publish-pkg.yml"
   release:
     types: [published]
 
@@ -14,7 +18,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: 3.8
 
@@ -32,13 +36,13 @@ jobs:
           name: pypi-packages-${{ github.sha }}
           path: dist
 
-  upload-package:
+  release-upload:
     needs: build-package
     if: startsWith(github.event.ref, 'refs/tags') || github.event_name == 'release'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: pypi-packages-${{ github.sha }}
           path: dist
@@ -50,34 +54,47 @@ jobs:
           files: "dist/*"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-  publish-package:
+  publish-pypi-test:
     needs: build-package
     if: startsWith(github.event.ref, 'refs/tags') || github.event_name == 'release'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: pypi-packages-${{ github.sha }}
           path: dist
       - run: ls -lh dist/
-
       # We do this, since failures on test.pypi aren't that bad
       - name: Publish to Test PyPI
-        uses: pypa/gh-action-pypi-publish@v1.8.11
+        uses: pypa/gh-action-pypi-publish@v1.8.14
         with:
           user: __token__
           password: ${{ secrets.test_pypi_password }}
           repository_url: https://test.pypi.org/legacy/
           verbose: true
 
-      - name: Delay releasing
-        uses: juliangruber/sleep-action@v1
+  publish-delayed:
+    needs: publish-pypi-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: juliangruber/sleep-action@v2
         with:
           time: 5m
 
+  publish-pypi-main:
+    needs: [build-package, publish-delayed]
+    if: startsWith(github.event.ref, 'refs/tags') || github.event_name == 'release'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: pypi-packages-${{ github.sha }}
+          path: dist
+      - run: ls -lh dist/
       - name: Publish distribution 📦 to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.8.11
+        uses: pypa/gh-action-pypi-publish@v1.8.14
         with:
           user: __token__
           password: ${{ secrets.pypi_password }}

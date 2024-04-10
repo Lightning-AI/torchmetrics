@@ -128,9 +128,12 @@ class MeanAveragePrecision(Metric):
         - map_small: (:class:`~torch.Tensor`), mean average precision for small objects
         - map_medium:(:class:`~torch.Tensor`), mean average precision for medium objects
         - map_large: (:class:`~torch.Tensor`), mean average precision for large objects
-        - mar_1: (:class:`~torch.Tensor`), mean average recall for 1 detection per image
-        - mar_10: (:class:`~torch.Tensor`), mean average recall for 10 detections per image
-        - mar_100: (:class:`~torch.Tensor`), mean average recall for 100 detections per image
+        - mar_{mdt[0]}: (:class:`~torch.Tensor`), mean average recall for `max_detection_thresholds[0]` (default 1)
+          detection per image
+        - mar_{mdt[1]}: (:class:`~torch.Tensor`), mean average recall for `max_detection_thresholds[1]` (default 10)
+          detection per image
+        - mar_{mdt[1]}: (:class:`~torch.Tensor`), mean average recall for `max_detection_thresholds[2]` (default 100)
+          detection per image
         - mar_small: (:class:`~torch.Tensor`), mean average recall for small objects
         - mar_medium: (:class:`~torch.Tensor`), mean average recall for medium objects
         - mar_large: (:class:`~torch.Tensor`), mean average recall for large objects
@@ -140,8 +143,8 @@ class MeanAveragePrecision(Metric):
           IoU=0.75
         - map_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled), mean average precision per
           observed class
-        - mar_100_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled), mean average recall for 100
-          detections per image per observed class
+        - mar_{mdt[2]}_per_class: (:class:`~torch.Tensor`) (-1 if class metrics are disabled), mean average recall for
+          `max_detection_thresholds[2]` (default 100) detections per image per observed class
         - classes (:class:`~torch.Tensor`), list of all observed classes
 
     For an example on how to use this metric check the `torchmetrics mAP example`_.
@@ -184,8 +187,7 @@ class MeanAveragePrecision(Metric):
             with step ``0.01``. Else provide a list of floats.
         max_detection_thresholds:
             Thresholds on max detections per image. If set to `None` will use thresholds ``[1, 10, 100]``.
-            Else, please provide a list of ints. If the `pycocotools` backend is used then the list needs to have
-            length 3. If this is a problem, shift to `faster_coco_eval` which supports more detection thresholds.
+            Else, please provide a list of ints of length 3, which is the only supported length by both backends.
         class_metrics:
             Option to enable per-class metrics for mAP and mAR_100. Has a performance impact that scales linearly with
             the number of classes in the dataset.
@@ -327,6 +329,7 @@ class MeanAveragePrecision(Metric):
          'mar_small': tensor(0.2000)}
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = True
@@ -410,10 +413,10 @@ class MeanAveragePrecision(Metric):
                 f"Expected argument `max_detection_thresholds` to either be `None` or a list of ints"
                 f" but got {max_detection_thresholds}"
             )
-        if max_detection_thresholds is not None and backend == "pycocotools" and len(max_detection_thresholds) != 3:
+        if max_detection_thresholds is not None and len(max_detection_thresholds) != 3:
             raise ValueError(
-                "When using `pycocotools` backend the number of max detection thresholds should be 3 else"
-                f" it will not work correctly with the backend. Got value {len(max_detection_thresholds)}."
+                "When providing a list of max detection thresholds it should have length 3."
+                " Got value {len(max_detection_thresholds)}"
             )
         max_det_thr, _ = torch.sort(torch.tensor(max_detection_thresholds or [1, 10, 100], dtype=torch.int))
         self.max_detection_thresholds = max_det_thr.tolist()
@@ -486,14 +489,14 @@ class MeanAveragePrecision(Metric):
                 If any score is not type float and of length 1
 
         """
-        _input_validator(preds, target, iou_type=self.iou_type)
+        _input_validator(preds, target, iou_type=self.iou_type)  # type: ignore[arg-type]
 
         for item in preds:
             bbox_detection, mask_detection = self._get_safe_item_values(item, warn=self.warn_on_many_detections)
             if bbox_detection is not None:
                 self.detection_box.append(bbox_detection)
             if mask_detection is not None:
-                self.detection_mask.append(mask_detection)
+                self.detection_mask.append(mask_detection)  # type: ignore[arg-type]
             self.detection_labels.append(item["labels"])
             self.detection_scores.append(item["scores"])
 
@@ -502,7 +505,7 @@ class MeanAveragePrecision(Metric):
             if bbox_groundtruth is not None:
                 self.groundtruth_box.append(bbox_groundtruth)
             if mask_groundtruth is not None:
-                self.groundtruth_mask.append(mask_groundtruth)
+                self.groundtruth_mask.append(mask_groundtruth)  # type: ignore[arg-type]
             self.groundtruth_labels.append(item["labels"])
             self.groundtruth_crowds.append(item.get("iscrowd", torch.zeros_like(item["labels"])))
             self.groundtruth_area.append(item.get("area", torch.zeros_like(item["labels"])))
@@ -521,7 +524,7 @@ class MeanAveragePrecision(Metric):
                     for anno in coco_preds.dataset["annotations"]:
                         anno["area"] = anno[f"area_{i_type}"]
 
-                coco_eval = self.cocoeval(coco_target, coco_preds, iouType=i_type)
+                coco_eval = self.cocoeval(coco_target, coco_preds, iouType=i_type)  # type: ignore[operator]
                 coco_eval.params.iouThrs = np.array(self.iou_thresholds, dtype=np.float64)
                 coco_eval.params.recThrs = np.array(self.rec_thresholds, dtype=np.float64)
                 coco_eval.params.maxDets = self.max_detection_thresholds
@@ -550,13 +553,13 @@ class MeanAveragePrecision(Metric):
                         # since micro averaging have all the data in one class, we need to reinitialize the coco_eval
                         # object in macro mode to get the per class stats
                         coco_preds, coco_target = self._get_coco_datasets(average="macro")
-                        coco_eval = self.cocoeval(coco_target, coco_preds, iouType=i_type)
+                        coco_eval = self.cocoeval(coco_target, coco_preds, iouType=i_type)  # type: ignore[operator]
                         coco_eval.params.iouThrs = np.array(self.iou_thresholds, dtype=np.float64)
                         coco_eval.params.recThrs = np.array(self.rec_thresholds, dtype=np.float64)
                         coco_eval.params.maxDets = self.max_detection_thresholds
 
                     map_per_class_list = []
-                    mar_100_per_class_list = []
+                    mar_per_class_list = []
                     for class_id in self._get_classes():
                         coco_eval.params.catIds = [class_id]
                         with contextlib.redirect_stdout(io.StringIO()):
@@ -566,18 +569,18 @@ class MeanAveragePrecision(Metric):
                             class_stats = coco_eval.stats
 
                         map_per_class_list.append(torch.tensor([class_stats[0]]))
-                        mar_100_per_class_list.append(torch.tensor([class_stats[8]]))
+                        mar_per_class_list.append(torch.tensor([class_stats[8]]))
 
                     map_per_class_values = torch.tensor(map_per_class_list, dtype=torch.float32)
-                    mar_100_per_class_values = torch.tensor(mar_100_per_class_list, dtype=torch.float32)
+                    mar_per_class_values = torch.tensor(mar_per_class_list, dtype=torch.float32)
                 else:
                     map_per_class_values = torch.tensor([-1], dtype=torch.float32)
-                    mar_100_per_class_values = torch.tensor([-1], dtype=torch.float32)
+                    mar_per_class_values = torch.tensor([-1], dtype=torch.float32)
                 prefix = "" if len(self.iou_type) == 1 else f"{i_type}_"
                 result_dict.update(
                     {
                         f"{prefix}map_per_class": map_per_class_values,
-                        f"{prefix}mar_100_per_class": mar_100_per_class_values,
+                        f"{prefix}mar_{self.max_detection_thresholds[-1]}_per_class": mar_per_class_values,
                     },
                 )
         result_dict.update({"classes": torch.tensor(self._get_classes(), dtype=torch.int32)})
@@ -594,7 +597,7 @@ class MeanAveragePrecision(Metric):
             groundtruth_labels = self.groundtruth_labels
             detection_labels = self.detection_labels
 
-        coco_target, coco_preds = self.coco(), self.coco()
+        coco_target, coco_preds = self.coco(), self.coco()  # type: ignore[operator]
 
         coco_target.dataset = self._get_coco_format(
             labels=groundtruth_labels,
@@ -616,9 +619,9 @@ class MeanAveragePrecision(Metric):
 
         return coco_preds, coco_target
 
-    @staticmethod
-    def _coco_stats_to_tensor_dict(stats: List[float], prefix: str) -> Dict[str, Tensor]:
+    def _coco_stats_to_tensor_dict(self, stats: List[float], prefix: str) -> Dict[str, Tensor]:
         """Converts the output of COCOeval.stats to a dict of tensors."""
+        mdt = self.max_detection_thresholds
         return {
             f"{prefix}map": torch.tensor([stats[0]], dtype=torch.float32),
             f"{prefix}map_50": torch.tensor([stats[1]], dtype=torch.float32),
@@ -626,9 +629,9 @@ class MeanAveragePrecision(Metric):
             f"{prefix}map_small": torch.tensor([stats[3]], dtype=torch.float32),
             f"{prefix}map_medium": torch.tensor([stats[4]], dtype=torch.float32),
             f"{prefix}map_large": torch.tensor([stats[5]], dtype=torch.float32),
-            f"{prefix}mar_1": torch.tensor([stats[6]], dtype=torch.float32),
-            f"{prefix}mar_10": torch.tensor([stats[7]], dtype=torch.float32),
-            f"{prefix}mar_100": torch.tensor([stats[8]], dtype=torch.float32),
+            f"{prefix}mar_{mdt[0]}": torch.tensor([stats[6]], dtype=torch.float32),
+            f"{prefix}mar_{mdt[1]}": torch.tensor([stats[7]], dtype=torch.float32),
+            f"{prefix}mar_{mdt[2]}": torch.tensor([stats[8]], dtype=torch.float32),
             f"{prefix}mar_small": torch.tensor([stats[9]], dtype=torch.float32),
             f"{prefix}mar_medium": torch.tensor([stats[10]], dtype=torch.float32),
             f"{prefix}mar_large": torch.tensor([stats[11]], dtype=torch.float32),
@@ -668,17 +671,17 @@ class MeanAveragePrecision(Metric):
             ... )  # doctest: +SKIP
 
         """
-        iou_type = _validate_iou_type_arg(iou_type)
+        iou_type = _validate_iou_type_arg(iou_type)  # type: ignore[arg-type]
         coco, _, _ = _load_backend_tools(backend)
 
         with contextlib.redirect_stdout(io.StringIO()):
-            gt = coco(coco_target)
+            gt = coco(coco_target)  # type: ignore[operator]
             dt = gt.loadRes(coco_preds)
 
         gt_dataset = gt.dataset["annotations"]
         dt_dataset = dt.dataset["annotations"]
 
-        target = {}
+        target: dict = {}
         for t in gt_dataset:
             if t["image_id"] not in target:
                 target[t["image_id"]] = {
@@ -699,7 +702,7 @@ class MeanAveragePrecision(Metric):
             target[t["image_id"]]["iscrowd"].append(t["iscrowd"])
             target[t["image_id"]]["area"].append(t["area"])
 
-        preds = {}
+        preds: dict = {}
         for p in dt_dataset:
             if p["image_id"] not in preds:
                 preds[p["image_id"]] = {"scores": [], "labels": []}
@@ -817,18 +820,18 @@ class MeanAveragePrecision(Metric):
             boxes = _fix_empty_tensors(item["boxes"])
             if boxes.numel() > 0:
                 boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xywh")
-            output[0] = boxes
+            output[0] = boxes  # type: ignore[call-overload]
         if "segm" in self.iou_type:
             masks = []
             for i in item["masks"].cpu().numpy():
                 rle = self.mask_utils.encode(np.asfortranarray(i))
                 masks.append((tuple(rle["size"]), rle["counts"]))
-            output[1] = tuple(masks)
+            output[1] = tuple(masks)  # type: ignore[call-overload]
         if (output[0] is not None and len(output[0]) > self.max_detection_thresholds[-1]) or (
             output[1] is not None and len(output[1]) > self.max_detection_thresholds[-1]
         ):
             _warning_on_too_many_detections(self.max_detection_thresholds[-1])
-        return output
+        return output  # type: ignore[return-value]
 
     def _get_classes(self) -> List:
         """Return a list of unique classes found in ground truth and detection data."""
@@ -863,11 +866,11 @@ class MeanAveragePrecision(Metric):
                 image_masks = masks[image_id]
                 if len(image_masks) == 0 and boxes is None:
                     continue
-            image_labels = image_labels.cpu().tolist()
+            image_labels = image_labels.cpu().tolist()  # type: ignore[assignment]
 
             images.append({"id": image_id})
             if "segm" in self.iou_type and len(image_masks) > 0:
-                images[-1]["height"], images[-1]["width"] = image_masks[0][0][0], image_masks[0][0][1]
+                images[-1]["height"], images[-1]["width"] = image_masks[0][0][0], image_masks[0][0][1]  # type: ignore[assignment]
 
             for k, image_label in enumerate(image_labels):
                 if boxes is not None:
@@ -889,7 +892,7 @@ class MeanAveragePrecision(Metric):
 
                 area_stat_box = None
                 area_stat_mask = None
-                if area is not None and area[image_id][k].cpu().tolist() > 0:
+                if area is not None and area[image_id][k].cpu().tolist() > 0:  # type: ignore[operator]
                     area_stat = area[image_id][k].cpu().tolist()
                 else:
                     area_stat = (
@@ -1008,11 +1011,11 @@ class MeanAveragePrecision(Metric):
         to gather the list of tuples and then convert it back to a list of tuples.
 
         """
-        super()._sync_dist(dist_sync_fn=dist_sync_fn, process_group=process_group)
+        super()._sync_dist(dist_sync_fn=dist_sync_fn, process_group=process_group)  # type: ignore[arg-type]
 
         if "segm" in self.iou_type:
-            self.detection_mask = self._gather_tuple_list(self.detection_mask, process_group)
-            self.groundtruth_mask = self._gather_tuple_list(self.groundtruth_mask, process_group)
+            self.detection_mask = self._gather_tuple_list(self.detection_mask, process_group)  # type: ignore[arg-type]
+            self.groundtruth_mask = self._gather_tuple_list(self.groundtruth_mask, process_group)  # type: ignore[arg-type]
 
     @staticmethod
     def _gather_tuple_list(list_to_gather: List[Tuple], process_group: Optional[Any] = None) -> List[Any]:
@@ -1032,7 +1035,7 @@ class MeanAveragePrecision(Metric):
         list_gathered = [None for _ in range(world_size)]
         dist.all_gather_object(list_gathered, list_to_gather, group=process_group)
 
-        return [list_gathered[rank][idx] for idx in range(len(list_gathered[0])) for rank in range(world_size)]
+        return [list_gathered[rank][idx] for idx in range(len(list_gathered[0])) for rank in range(world_size)]  # type: ignore[arg-type,index]
 
 
 def _warning_on_too_many_detections(limit: int) -> None:

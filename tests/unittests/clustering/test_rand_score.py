@@ -17,9 +17,9 @@ from sklearn.metrics import rand_score as sklearn_rand_score
 from torchmetrics.clustering.rand_score import RandScore
 from torchmetrics.functional.clustering.rand_score import rand_score
 
-from unittests.clustering.inputs import _float_inputs_extrinsic, _single_target_extrinsic1, _single_target_extrinsic2
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
+from unittests.clustering._inputs import _float_inputs_extrinsic, _single_target_extrinsic1, _single_target_extrinsic2
 
 seed_all(42)
 
@@ -36,7 +36,7 @@ class TestRandScore(MetricTester):
 
     atol = 1e-5
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_rand_score(self, preds, target, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(

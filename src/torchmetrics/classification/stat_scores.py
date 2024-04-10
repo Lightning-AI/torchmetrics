@@ -69,10 +69,10 @@ class _AbstractStatScores(Metric):
     def _update_state(self, tp: Tensor, fp: Tensor, tn: Tensor, fn: Tensor) -> None:
         """Update states depending on multidim_average argument."""
         if self.multidim_average == "samplewise":
-            self.tp.append(tp)
-            self.fp.append(fp)
-            self.tn.append(tn)
-            self.fn.append(fn)
+            self.tp.append(tp)  # type: ignore[union-attr]
+            self.fp.append(fp)  # type: ignore[union-attr]
+            self.tn.append(tn)  # type: ignore[union-attr]
+            self.fn.append(fn)  # type: ignore[union-attr]
         else:
             self.tp += tp
             self.fp += fp
@@ -156,6 +156,7 @@ class BinaryStatScores(_AbstractStatScores):
                 [0, 2, 1, 3, 3]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -297,6 +298,7 @@ class MulticlassStatScores(_AbstractStatScores):
                  [1, 2, 2, 1, 2]]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -444,6 +446,7 @@ class MultilabelStatScores(_AbstractStatScores):
                  [0, 0, 1, 1, 1]]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -512,7 +515,7 @@ class StatScores(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls: Type["StatScores"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
@@ -528,9 +531,11 @@ class StatScores(_ClassificationTaskWrapper):
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None  # noqa: S101  # needed for mypy
-        kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
-        )
+        kwargs.update({
+            "multidim_average": multidim_average,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+        })
         if task == ClassificationTask.BINARY:
             return BinaryStatScores(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:

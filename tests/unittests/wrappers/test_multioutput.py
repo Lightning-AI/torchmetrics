@@ -25,8 +25,8 @@ from torchmetrics.regression import R2Score
 from torchmetrics.wrappers.multioutput import MultioutputWrapper
 
 from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, _Input
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -114,7 +114,7 @@ def _multi_target_sk_accuracy(preds, target, num_outputs):
 class TestMultioutputWrapper(MetricTester):
     """Test the MultioutputWrapper class with regression and classification inner metrics."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multioutput_wrapper(self, base_metric_class, compare_metric, preds, target, num_outputs, ddp):
         """Test correctness of implementation.
 

@@ -20,8 +20,8 @@ from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.regression.pearson import PearsonCorrCoef, _final_aggregation
 
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -48,7 +48,7 @@ _multi_target_inputs2 = _Input(
 )
 
 
-def _scipy_pearson(preds, target):
+def _reference_scipy_pearson(preds, target):
     if preds.ndim == 2:
         return [pearsonr(t.numpy(), p.numpy())[0] for t, p in zip(target.T, preds.T)]
     return pearsonr(target.numpy(), preds.numpy())[0]
@@ -69,7 +69,7 @@ class TestPearsonCorrCoef(MetricTester):
     atol = 1e-3
 
     @pytest.mark.parametrize("compute_on_cpu", [True, False])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_pearson_corrcoef(self, preds, target, compute_on_cpu, ddp):
         """Test class implementation of metric."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
@@ -78,14 +78,14 @@ class TestPearsonCorrCoef(MetricTester):
             preds=preds,
             target=target,
             metric_class=PearsonCorrCoef,
-            reference_metric=_scipy_pearson,
+            reference_metric=_reference_scipy_pearson,
             metric_args={"num_outputs": num_outputs, "compute_on_cpu": compute_on_cpu},
         )
 
     def test_pearson_corrcoef_functional(self, preds, target):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
-            preds=preds, target=target, metric_functional=pearson_corrcoef, reference_metric=_scipy_pearson
+            preds=preds, target=target, metric_functional=pearson_corrcoef, reference_metric=_reference_scipy_pearson
         )
 
     def test_pearson_corrcoef_differentiability(self, preds, target):

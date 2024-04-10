@@ -17,7 +17,7 @@ import torch
 from torch import Tensor, nn
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.helper import _gaussian_kernel_2d
+from torchmetrics.functional.image.utils import _gaussian_kernel_2d
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
@@ -102,8 +102,9 @@ def _uqi_compute(
     mu_target_sq = output_list[1].pow(2)
     mu_pred_target = output_list[0] * output_list[1]
 
-    sigma_pred_sq = output_list[2] - mu_pred_sq
-    sigma_target_sq = output_list[3] - mu_target_sq
+    # Calculate the variance of the predicted and target images, should be non-negative
+    sigma_pred_sq = torch.clamp(output_list[2] - mu_pred_sq, min=0.0)
+    sigma_target_sq = torch.clamp(output_list[3] - mu_target_sq, min=0.0)
     sigma_pred_target = output_list[4] - mu_pred_target
 
     upper = 2 * sigma_pred_target

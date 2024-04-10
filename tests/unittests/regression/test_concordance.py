@@ -22,8 +22,8 @@ from torchmetrics.regression.concordance import ConcordanceCorrCoef
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -49,7 +49,7 @@ _multi_target_inputs2 = _Input(
 )
 
 
-def _scipy_concordance(preds, target):
+def _reference_scipy_concordance(preds, target):
     preds, target = preds.numpy(), target.numpy()
     if preds.ndim == 2:
         mean_pred = np.mean(preds, axis=0)
@@ -80,7 +80,7 @@ class TestConcordanceCorrCoef(MetricTester):
 
     atol = 1e-3
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_concordance_corrcoef(self, preds, target, ddp):
         """Test class implementation of metric."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
@@ -89,13 +89,13 @@ class TestConcordanceCorrCoef(MetricTester):
             preds,
             target,
             ConcordanceCorrCoef,
-            _scipy_concordance,
+            _reference_scipy_concordance,
             metric_args={"num_outputs": num_outputs},
         )
 
     def test_concordance_corrcoef_functional(self, preds, target):
         """Test functional implementation of metric."""
-        self.run_functional_metric_test(preds, target, concordance_corrcoef, _scipy_concordance)
+        self.run_functional_metric_test(preds, target, concordance_corrcoef, _reference_scipy_concordance)
 
     def test_concordance_corrcoef_differentiability(self, preds, target):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""

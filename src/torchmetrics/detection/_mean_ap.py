@@ -298,6 +298,7 @@ class MeanAveragePrecision(Metric):
          'mar_small': tensor(-1.)}
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = True
@@ -365,18 +366,18 @@ class MeanAveragePrecision(Metric):
 
     def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:
         """Update state with predictions and targets."""
-        _input_validator(preds, target, iou_type=self.iou_type)
+        _input_validator(preds, target, iou_type=self.iou_type)  # type: ignore[arg-type]
 
         for item in preds:
             detections = self._get_safe_item_values(item)
 
-            self.detections.append(detections)
+            self.detections.append(detections)  # type: ignore[arg-type]
             self.detection_labels.append(item["labels"])
             self.detection_scores.append(item["scores"])
 
         for item in target:
             groundtruths = self._get_safe_item_values(item)
-            self.groundtruths.append(groundtruths)
+            self.groundtruths.append(groundtruths)  # type: ignore[arg-type]
             self.groundtruth_labels.append(item["labels"])
 
     def _move_list_states_to_cpu(self) -> None:
@@ -639,13 +640,13 @@ class MeanAveragePrecision(Metric):
                 Id of current detection.
 
         """
-        previously_matched = gt_matches[idx_iou]
+        previously_matched = gt_matches[idx_iou]  # type: ignore[index]
         # Remove previously matched or ignored gts
         remove_mask = previously_matched | gt_ignore
         gt_ious = ious[idx_det] * ~remove_mask
         match_idx = gt_ious.argmax().item()
-        if gt_ious[match_idx] > thr:
-            return match_idx
+        if gt_ious[match_idx] > thr:  # type: ignore[index]
+            return match_idx  # type: ignore[return-value]
         return -1
 
     def _summarize(
@@ -712,7 +713,7 @@ class MeanAveragePrecision(Metric):
         }
 
         eval_imgs = [
-            self._evaluate_image(img_id, class_id, area, max_detections, ious)
+            self._evaluate_image(img_id, class_id, area, max_detections, ious)  # type: ignore[arg-type]
             for class_id in class_ids
             for area in area_ranges
             for img_id in img_ids
@@ -749,7 +750,7 @@ class MeanAveragePrecision(Metric):
                         num_bbox_areas=num_bbox_areas,
                     )
 
-        return precision, recall
+        return precision, recall  # type: ignore[return-value]
 
     def _summarize_results(self, precisions: Tensor, recalls: Tensor) -> Tuple[MAPMetricResults, MARMetricResults]:
         """Summarizes the precision and recall values to calculate mAP/mAR.
@@ -819,8 +820,8 @@ class MeanAveragePrecision(Metric):
         inds = torch.argsort(det_scores.to(dtype), descending=True)
         det_scores_sorted = det_scores[inds]
 
-        det_matches = torch.cat([e["dtMatches"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]
-        det_ignore = torch.cat([e["dtIgnore"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]
+        det_matches = torch.cat([e["dtMatches"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]  # type: ignore[call-overload]
+        det_ignore = torch.cat([e["dtIgnore"][:, :max_det] for e in img_eval_cls_bbox], axis=1)[:, inds]  # type: ignore[call-overload]
         gt_ignore = torch.cat([e["gtIgnore"] for e in img_eval_cls_bbox])
         npig = torch.count_nonzero(gt_ignore == False)  # noqa: E712
         if npig == 0:
@@ -848,9 +849,9 @@ class MeanAveragePrecision(Metric):
 
             inds = torch.searchsorted(rc, rec_thresholds.to(rc.device), right=False)
             num_inds = inds.argmax() if inds.max() >= tp_len else num_rec_thrs
-            inds = inds[:num_inds]
-            prec[:num_inds] = pr[inds]
-            score[:num_inds] = det_scores_sorted[inds]
+            inds = inds[:num_inds]  # type: ignore[misc]
+            prec[:num_inds] = pr[inds]  # type: ignore[misc]
+            score[:num_inds] = det_scores_sorted[inds]  # type: ignore[misc]
             precision[idx, :, idx_cls, idx_bbox_area, idx_max_det_thrs] = prec
             scores[idx, :, idx_cls, idx_bbox_area, idx_max_det_thrs] = score
 
@@ -860,7 +861,7 @@ class MeanAveragePrecision(Metric):
         """Compute metric."""
         classes = self._get_classes()
         precisions, recalls = self._calculate(classes)
-        map_val, mar_val = self._summarize_results(precisions, recalls)
+        map_val, mar_val = self._summarize_results(precisions, recalls)  # type: ignore[arg-type]
 
         # if class mode is enabled, evaluate metrics per class
         map_per_class_values: Tensor = torch.tensor([-1.0])
@@ -887,7 +888,7 @@ class MeanAveragePrecision(Metric):
         metrics.classes = torch.tensor(classes, dtype=torch.int)
         return metrics
 
-    def _apply(self, fn: Callable) -> torch.nn.Module:
+    def _apply(self, fn: Callable) -> torch.nn.Module:  # type: ignore[override]
         """Custom apply function.
 
         Excludes the detections and groundtruths from the casting when the iou_type is set to `segm` as the state is
@@ -907,14 +908,16 @@ class MeanAveragePrecision(Metric):
         to gather the list of tuples and then convert it back to a list of tuples.
 
         """
-        super()._sync_dist(dist_sync_fn=dist_sync_fn, process_group=process_group)
+        super()._sync_dist(dist_sync_fn=dist_sync_fn, process_group=process_group)  # type: ignore[arg-type]
 
         if self.iou_type == "segm":
-            self.detections = self._gather_tuple_list(self.detections, process_group)
-            self.groundtruths = self._gather_tuple_list(self.groundtruths, process_group)
+            self.detections = self._gather_tuple_list(self.detections, process_group)  # type: ignore[arg-type]
+            self.groundtruths = self._gather_tuple_list(self.groundtruths, process_group)  # type: ignore[arg-type]
 
     @staticmethod
-    def _gather_tuple_list(list_to_gather: List[Tuple], process_group: Optional[Any] = None) -> List[Any]:
+    def _gather_tuple_list(
+        list_to_gather: List[Union[tuple, Tensor]], process_group: Optional[Any] = None
+    ) -> List[Any]:
         """Gather a list of tuples over multiple devices."""
         world_size = dist.get_world_size(group=process_group)
         dist.barrier(group=process_group)
@@ -922,7 +925,7 @@ class MeanAveragePrecision(Metric):
         list_gathered = [None for _ in range(world_size)]
         dist.all_gather_object(list_gathered, list_to_gather, group=process_group)
 
-        return [list_gathered[rank][idx] for idx in range(len(list_gathered[0])) for rank in range(world_size)]
+        return [list_gathered[rank][idx] for idx in range(len(list_gathered[0])) for rank in range(world_size)]  # type: ignore[arg-type,index]
 
     def plot(
         self, val: Optional[Union[Dict[str, Tensor], Sequence[Dict[str, Tensor]]]] = None, ax: Optional[_AX_TYPE] = None

@@ -94,6 +94,7 @@ class BinarySpecificity(BinaryStatScores):
         tensor([0.0000, 0.3333])
 
     """
+
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
@@ -244,6 +245,7 @@ class MulticlassSpecificity(MulticlassStatScores):
                 [0.8000, 0.6667, 0.5000]])
 
     """
+
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Class"
@@ -390,6 +392,7 @@ class MultilabelSpecificity(MultilabelStatScores):
                 [0., 0., 1.]])
 
     """
+
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Label"
@@ -450,7 +453,7 @@ class Specificity(_ClassificationTaskWrapper):
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
     Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
-    respectively. The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0`. If this case is
+    respectively. The metric is only proper defined when :math:`\text{TN} + \text{FP} \neq 0`. If this case is
     encountered for any class/label, the metric for that class/label will be set to 0 and the overall metric may
     therefore be affected in turn.
 
@@ -489,9 +492,11 @@ class Specificity(_ClassificationTaskWrapper):
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None  # noqa: S101  # needed for mypy
-        kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
-        )
+        kwargs.update({
+            "multidim_average": multidim_average,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+        })
         if task == ClassificationTask.BINARY:
             return BinarySpecificity(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:

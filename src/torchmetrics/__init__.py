@@ -1,4 +1,5 @@
-"""Root package info."""
+r"""Root package info."""
+
 import logging as __logging
 import os
 
@@ -59,6 +60,7 @@ from torchmetrics.classification import (  # noqa: E402
     PrecisionRecallCurve,
     Recall,
     RecallAtFixedPrecision,
+    SensitivityAtSpecificity,
     Specificity,
     SpecificityAtSensitivity,
     StatScores,
@@ -95,6 +97,7 @@ from torchmetrics.nominal import (  # noqa: E402
 from torchmetrics.regression import (  # noqa: E402
     ConcordanceCorrCoef,
     CosineSimilarity,
+    CriticalSuccessIndex,
     ExplainedVariance,
     KendallRankCorrCoef,
     KLDivergence,
@@ -164,6 +167,7 @@ __all__ = [
     "ConfusionMatrix",
     "CosineSimilarity",
     "CramersV",
+    "CriticalSuccessIndex",
     "Dice",
     "TweedieDevianceScore",
     "ErrorRelativeGlobalDimensionlessSynthesis",
@@ -233,6 +237,7 @@ __all__ = [
     "SpearmanCorrCoef",
     "Specificity",
     "SpecificityAtSensitivity",
+    "SensitivityAtSpecificity",
     "SpectralAngleMapper",
     "SpectralDistortionIndex",
     "SQuAD",

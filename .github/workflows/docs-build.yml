@@ -24,6 +24,7 @@ env:
   TOKENIZERS_PARALLELISM: false
   SPHINX_MOCK_REQUIREMENTS: 0
   SPHINX_FETCH_ASSETS: 0
+  SPHINX_PIN_RELEASE_VERSIONS: 1
 
 jobs:
   docs-make:
@@ -36,7 +37,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.9"
 
@@ -96,7 +97,7 @@ jobs:
     env:
       GCP_TARGET: "gs://lightning-docs-metrics"
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: docs-html-${{ github.sha }}
           path: docs/build/

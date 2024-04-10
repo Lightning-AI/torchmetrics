@@ -11,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.image.csi import CriticalSuccessIndex
 from torchmetrics.image.d_lambda import SpectralDistortionIndex
 from torchmetrics.image.d_s import SpatialDistortionIndex
 from torchmetrics.image.ergas import ErrorRelativeGlobalDimensionlessSynthesis
 from torchmetrics.image.mifid import MemorizationInformedFrechetInceptionDistance
 from torchmetrics.image.psnr import PeakSignalNoiseRatio
 from torchmetrics.image.psnrb import PeakSignalNoiseRatioWithBlockedEffect
+from torchmetrics.image.qnr import QualityWithNoReference
 from torchmetrics.image.rase import RelativeAverageSpectralError
 from torchmetrics.image.rmse_sw import RootMeanSquaredErrorUsingSlidingWindow
 from torchmetrics.image.sam import SpectralAngleMapper
@@ -46,8 +46,8 @@ __all__ = [
     "UniversalImageQualityIndex",
     "VisualInformationFidelity",
     "TotalVariation",
-    "CriticalSuccessIndex",
     "SpatialCorrelationCoefficient",
+    "QualityWithNoReference",
 ]
 
 if _TORCH_FIDELITY_AVAILABLE:

@@ -33,9 +33,9 @@ from torchmetrics.functional.classification.specificity import (
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index
+from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 
 seed_all(42)
 
@@ -50,7 +50,7 @@ def _calc_specificity(tn, fp):
     return tn / denom
 
 
-def _baseline_specificity_binary(preds, target, ignore_index, multidim_average):
+def _reference_specificity_binary(preds, target, ignore_index, multidim_average):
     if multidim_average == "global":
         preds = preds.view(-1).numpy()
         target = target.view(-1).numpy()
@@ -90,7 +90,7 @@ class TestBinarySpecificity(MetricTester):
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_specificity(self, ddp, inputs, ignore_index, multidim_average):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -107,7 +107,7 @@ class TestBinarySpecificity(MetricTester):
             target=target,
             metric_class=BinarySpecificity,
             reference_metric=partial(
-                _baseline_specificity_binary, ignore_index=ignore_index, multidim_average=multidim_average
+                _reference_specificity_binary, ignore_index=ignore_index, multidim_average=multidim_average
             ),
             metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
         )
@@ -127,7 +127,7 @@ class TestBinarySpecificity(MetricTester):
             target=target,
             metric_functional=binary_specificity,
             reference_metric=partial(
-                _baseline_specificity_binary, ignore_index=ignore_index, multidim_average=multidim_average
+                _reference_specificity_binary, ignore_index=ignore_index, multidim_average=multidim_average
             ),
             metric_args={
                 "threshold": THRESHOLD,
@@ -177,7 +177,7 @@ class TestBinarySpecificity(MetricTester):
         )
 
 
-def _baseline_specificity_multiclass_global(preds, target, ignore_index, average):
+def _reference_specificity_multiclass_global(preds, target, ignore_index, average):
     preds = preds.numpy().flatten()
     target = target.numpy().flatten()
 
@@ -206,7 +206,7 @@ def _baseline_specificity_multiclass_global(preds, target, ignore_index, average
     return None
 
 
-def _baseline_specificity_multiclass_local(preds, target, ignore_index, average):
+def _reference_specificity_multiclass_local(preds, target, ignore_index, average):
     preds = preds.numpy()
     target = target.numpy()
 
@@ -239,12 +239,12 @@ def _baseline_specificity_multiclass_local(preds, target, ignore_index, average)
     return np.stack(res, 0)
 
 
-def _baseline_specificity_multiclass(preds, target, ignore_index, multidim_average, average):
+def _reference_specificity_multiclass(preds, target, ignore_index, multidim_average, average):
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
     if multidim_average == "global":
-        return _baseline_specificity_multiclass_global(preds, target, ignore_index, average)
-    return _baseline_specificity_multiclass_local(preds, target, ignore_index, average)
+        return _reference_specificity_multiclass_global(preds, target, ignore_index, average)
+    return _reference_specificity_multiclass_local(preds, target, ignore_index, average)
 
 
 @pytest.mark.parametrize("inputs", _multiclass_cases)
@@ -254,7 +254,7 @@ class TestMulticlassSpecificity(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_specificity(self, ddp, inputs, ignore_index, multidim_average, average):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -271,7 +271,7 @@ class TestMulticlassSpecificity(MetricTester):
             target=target,
             metric_class=MulticlassSpecificity,
             reference_metric=partial(
-                _baseline_specificity_multiclass,
+                _reference_specificity_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -300,7 +300,7 @@ class TestMulticlassSpecificity(MetricTester):
             target=target,
             metric_functional=multiclass_specificity,
             reference_metric=partial(
-                _baseline_specificity_multiclass,
+                _reference_specificity_multiclass,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -374,7 +374,7 @@ def test_top_k(k: int, preds: Tensor, target: Tensor, average: str, expected_spe
     assert torch.equal(multiclass_specificity(preds, target, top_k=k, average=average, num_classes=3), expected_spec)
 
 
-def _baseline_specificity_multilabel_global(preds, target, ignore_index, average):
+def _reference_specificity_multilabel_global(preds, target, ignore_index, average):
     tns, fps = [], []
     for i in range(preds.shape[1]):
         p, t = preds[:, i].flatten(), target[:, i].flatten()
@@ -402,7 +402,7 @@ def _baseline_specificity_multilabel_global(preds, target, ignore_index, average
     return None
 
 
-def _baseline_specificity_multilabel_local(preds, target, ignore_index, average):
+def _reference_specificity_multilabel_local(preds, target, ignore_index, average):
     specificity = []
     for i in range(preds.shape[0]):
         tns, fps = [], []
@@ -435,7 +435,7 @@ def _baseline_specificity_multilabel_local(preds, target, ignore_index, average)
     return None
 
 
-def _baseline_specificity_multilabel(preds, target, ignore_index, multidim_average, average):
+def _reference_specificity_multilabel(preds, target, ignore_index, multidim_average, average):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -445,15 +445,15 @@ def _baseline_specificity_multilabel(preds, target, ignore_index, multidim_avera
     preds = preds.reshape(*preds.shape[:2], -1)
     target = target.reshape(*target.shape[:2], -1)
     if multidim_average == "global":
-        return _baseline_specificity_multilabel_global(preds, target, ignore_index, average)
-    return _baseline_specificity_multilabel_local(preds, target, ignore_index, average)
+        return _reference_specificity_multilabel_global(preds, target, ignore_index, average)
+    return _reference_specificity_multilabel_local(preds, target, ignore_index, average)
 
 
 @pytest.mark.parametrize("inputs", _multilabel_cases)
 class TestMultilabelSpecificity(MetricTester):
     """Test class for `MultilabelSpecificity` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", None])
@@ -473,7 +473,7 @@ class TestMultilabelSpecificity(MetricTester):
             target=target,
             metric_class=MultilabelSpecificity,
             reference_metric=partial(
-                _baseline_specificity_multilabel,
+                _reference_specificity_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
@@ -503,7 +503,7 @@ class TestMultilabelSpecificity(MetricTester):
             target=target,
             metric_functional=multilabel_specificity,
             reference_metric=partial(
-                _baseline_specificity_multilabel,
+                _reference_specificity_multilabel,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,

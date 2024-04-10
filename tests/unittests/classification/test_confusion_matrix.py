@@ -32,14 +32,14 @@ from torchmetrics.functional.classification.confusion_matrix import (
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 
 seed_all(42)
 
 
-def _sklearn_confusion_matrix_binary(preds, target, normalize=None, ignore_index=None):
+def _reference_sklearn_confusion_matrix_binary(preds, target, normalize=None, ignore_index=None):
     preds = preds.view(-1).numpy()
     target = target.view(-1).numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -56,7 +56,7 @@ class TestBinaryConfusionMatrix(MetricTester):
 
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_binary_confusion_matrix(self, inputs, ddp, normalize, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -67,7 +67,9 @@ class TestBinaryConfusionMatrix(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryConfusionMatrix,
-            reference_metric=partial(_sklearn_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index),
+            reference_metric=partial(
+                _reference_sklearn_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index
+            ),
             metric_args={
                 "threshold": THRESHOLD,
                 "normalize": normalize,
@@ -86,7 +88,9 @@ class TestBinaryConfusionMatrix(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_confusion_matrix,
-            reference_metric=partial(_sklearn_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index),
+            reference_metric=partial(
+                _reference_sklearn_confusion_matrix_binary, normalize=normalize, ignore_index=ignore_index
+            ),
             metric_args={
                 "threshold": THRESHOLD,
                 "normalize": normalize,
@@ -136,7 +140,7 @@ class TestBinaryConfusionMatrix(MetricTester):
         )
 
 
-def _sklearn_confusion_matrix_multiclass(preds, target, normalize=None, ignore_index=None):
+def _reference_sklearn_confusion_matrix_multiclass(preds, target, normalize=None, ignore_index=None):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -153,7 +157,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
 
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multiclass_confusion_matrix(self, inputs, ddp, normalize, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -165,7 +169,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
             target=target,
             metric_class=MulticlassConfusionMatrix,
             reference_metric=partial(
-                _sklearn_confusion_matrix_multiclass, normalize=normalize, ignore_index=ignore_index
+                _reference_sklearn_confusion_matrix_multiclass, normalize=normalize, ignore_index=ignore_index
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,
@@ -186,7 +190,7 @@ class TestMulticlassConfusionMatrix(MetricTester):
             target=target,
             metric_functional=multiclass_confusion_matrix,
             reference_metric=partial(
-                _sklearn_confusion_matrix_multiclass, normalize=normalize, ignore_index=ignore_index
+                _reference_sklearn_confusion_matrix_multiclass, normalize=normalize, ignore_index=ignore_index
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,
@@ -235,6 +239,41 @@ class TestMulticlassConfusionMatrix(MetricTester):
         )
 
 
+@pytest.mark.parametrize(
+    ("preds", "target", "ignore_index", "error_message"),
+    [
+        (
+            torch.randint(NUM_CLASSES + 1, (100,)),
+            torch.randint(NUM_CLASSES, (100,)),
+            None,
+            f"Detected more unique values in `preds` than expected. Expected only {NUM_CLASSES}.*",
+        ),
+        (
+            torch.randint(NUM_CLASSES, (100,)),
+            torch.randint(NUM_CLASSES + 1, (100,)),
+            None,
+            f"Detected more unique values in `target` than expected. Expected only {NUM_CLASSES}.*",
+        ),
+        (
+            torch.randint(NUM_CLASSES + 2, (100,)),
+            torch.randint(NUM_CLASSES, (100,)),
+            1,
+            f"Detected more unique values in `preds` than expected. Expected only {NUM_CLASSES + 1}.*",
+        ),
+        (
+            torch.randint(NUM_CLASSES, (100,)),
+            torch.randint(NUM_CLASSES + 2, (100,)),
+            1,
+            f"Detected more unique values in `target` than expected. Expected only {NUM_CLASSES + 1}.*",
+        ),
+    ],
+)
+def test_raises_error_on_too_many_classes(preds, target, ignore_index, error_message):
+    """Test that an error is raised if the number of classes in preds or target is larger than expected."""
+    with pytest.raises(RuntimeError, match=error_message):
+        multiclass_confusion_matrix(preds, target, num_classes=NUM_CLASSES, ignore_index=ignore_index)
+
+
 def test_multiclass_overflow():
     """Test that multiclass computations does not overflow even on byte inputs."""
     preds = torch.randint(20, (100,)).byte()
@@ -247,7 +286,7 @@ def test_multiclass_overflow():
     assert torch.allclose(res, torch.tensor(compare))
 
 
-def _sklearn_confusion_matrix_multilabel(preds, target, normalize=None, ignore_index=None):
+def _reference_sklearn_confusion_matrix_multilabel(preds, target, normalize=None, ignore_index=None):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -270,7 +309,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
 
     @pytest.mark.parametrize("normalize", ["true", "pred", "all", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_multilabel_confusion_matrix(self, inputs, ddp, normalize, ignore_index):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -282,7 +321,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
             target=target,
             metric_class=MultilabelConfusionMatrix,
             reference_metric=partial(
-                _sklearn_confusion_matrix_multilabel, normalize=normalize, ignore_index=ignore_index
+                _reference_sklearn_confusion_matrix_multilabel, normalize=normalize, ignore_index=ignore_index
             ),
             metric_args={
                 "num_labels": NUM_CLASSES,
@@ -303,7 +342,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
             target=target,
             metric_functional=multilabel_confusion_matrix,
             reference_metric=partial(
-                _sklearn_confusion_matrix_multilabel, normalize=normalize, ignore_index=ignore_index
+                _reference_sklearn_confusion_matrix_multilabel, normalize=normalize, ignore_index=ignore_index
             ),
             metric_args={
                 "num_labels": NUM_CLASSES,

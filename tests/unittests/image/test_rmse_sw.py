@@ -22,7 +22,7 @@ from torchmetrics.functional import root_mean_squared_error_using_sliding_window
 from torchmetrics.image import RootMeanSquaredErrorUsingSlidingWindow
 
 from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers.testers import MetricTester
+from unittests._helpers.testers import MetricTester
 
 
 class _InputWindowSized(NamedTuple):
@@ -43,7 +43,7 @@ for size, channel, window_size, dtype in [
     _inputs.append(_InputWindowSized(preds=preds, target=target, window_size=window_size))
 
 
-def _sewar_rmse_sw(preds, target, window_size):
+def _reference_sewar_rmse_sw(preds, target, window_size):
     rmse_mean = torch.tensor(0.0, dtype=preds.dtype)
 
     preds = preds.permute(0, 2, 3, 1).numpy()
@@ -62,15 +62,15 @@ class TestRootMeanSquareErrorWithSlidingWindow(MetricTester):
 
     atol = 1e-2
 
-    @pytest.mark.parametrize("ddp", [False, True])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_rmse_sw(self, preds, target, window_size, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
             preds,
             target,
-            RootMeanSquaredErrorUsingSlidingWindow,
-            partial(_sewar_rmse_sw, window_size=window_size),
+            metric_class=RootMeanSquaredErrorUsingSlidingWindow,
+            reference_metric=partial(_reference_sewar_rmse_sw, window_size=window_size),
             metric_args={"window_size": window_size},
         )
 
@@ -79,7 +79,7 @@ class TestRootMeanSquareErrorWithSlidingWindow(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            root_mean_squared_error_using_sliding_window,
-            partial(_sewar_rmse_sw, window_size=window_size),
+            metric_functional=root_mean_squared_error_using_sliding_window,
+            reference_metric=partial(_reference_sewar_rmse_sw, window_size=window_size),
             metric_args={"window_size": window_size},
         )

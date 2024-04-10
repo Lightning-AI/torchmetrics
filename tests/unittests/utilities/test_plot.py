@@ -51,7 +51,6 @@ from torchmetrics.classification import (
     BinaryPrecision,
     BinaryPrecisionRecallCurve,
     BinaryRecall,
-    BinaryRecallAtFixedPrecision,
     BinaryROC,
     BinarySpecificity,
     Dice,
@@ -71,7 +70,6 @@ from torchmetrics.classification import (
     MulticlassPrecision,
     MulticlassPrecisionRecallCurve,
     MulticlassRecall,
-    MulticlassRecallAtFixedPrecision,
     MulticlassROC,
     MulticlassSpecificity,
     MultilabelAveragePrecision,
@@ -88,7 +86,6 @@ from torchmetrics.classification import (
     MultilabelRankingAveragePrecision,
     MultilabelRankingLoss,
     MultilabelRecall,
-    MultilabelRecallAtFixedPrecision,
     MultilabelROC,
     MultilabelSpecificity,
 )
@@ -172,6 +169,7 @@ from torchmetrics.text import (
     WordInfoPreserved,
 )
 from torchmetrics.utilities.imports import (
+    _TORCH_GREATER_EQUAL_1_12,
     _TORCHAUDIO_GREATER_EQUAL_0_10,
 )
 from torchmetrics.utilities.plot import _get_col_row_split
@@ -344,6 +342,9 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             _panoptic_input,
             _panoptic_input,
             id="panoptic quality",
+            marks=pytest.mark.skipif(
+                not _TORCH_GREATER_EQUAL_1_12, reason="Panoptic Quality metric requires PyTorch 1.12 or later"
+            ),
         ),
         pytest.param(BinaryAveragePrecision, _rand_input, _binary_randint_input, id="binary average precision"),
         pytest.param(
@@ -389,24 +390,6 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             _multilabel_rand_input,
             _multilabel_randint_input,
             id="multilabel specificity",
-        ),
-        pytest.param(
-            partial(BinaryRecallAtFixedPrecision, min_precision=0.5),
-            _rand_input,
-            _binary_randint_input,
-            id="binary recall at fixed precision",
-        ),
-        pytest.param(
-            partial(MulticlassRecallAtFixedPrecision, num_classes=3, min_precision=0.5),
-            _multiclass_randn_input,
-            _multiclass_randint_input,
-            id="multiclass recall at fixed precision",
-        ),
-        pytest.param(
-            partial(MultilabelRecallAtFixedPrecision, num_labels=3, min_precision=0.5),
-            _multilabel_rand_input,
-            _multilabel_randint_input,
-            id="multilabel recall at fixed precision",
         ),
         pytest.param(
             partial(MultilabelCoverageError, num_labels=3),
@@ -855,12 +838,17 @@ def test_confusion_matrix_plotter(metric_class, preds, target, labels, use_label
 
 @pytest.mark.parametrize("together", [True, False])
 @pytest.mark.parametrize("num_vals", [1, 2])
-def test_plot_method_collection(together, num_vals):
+@pytest.mark.parametrize(
+    ("prefix", "postfix"), [(None, None), ("prefix", None), (None, "postfix"), ("prefix", "postfix")]
+)
+def test_plot_method_collection(together, num_vals, prefix, postfix):
     """Test the plot method of metric collection."""
     m_collection = MetricCollection(
         BinaryAccuracy(),
         BinaryPrecision(),
         BinaryRecall(),
+        prefix=prefix,
+        postfix=postfix,
     )
     if num_vals == 1:
         m_collection.update(torch.randint(0, 2, size=(10,)), torch.randint(0, 2, size=(10,)))

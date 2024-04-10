@@ -21,8 +21,8 @@ from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance
 from torchmetrics.regression.tweedie_deviance import TweedieDevianceScore
 
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -43,7 +43,7 @@ _multi_target_inputs = _Input(
 )
 
 
-def _sklearn_deviance(preds: Tensor, targets: Tensor, power: float):
+def _reference_sklearn_deviance(preds: Tensor, targets: Tensor, power: float):
     sk_preds = preds.view(-1).numpy()
     sk_target = targets.view(-1).numpy()
     return mean_tweedie_deviance(sk_target, sk_preds, power=power)
@@ -61,7 +61,7 @@ def _sklearn_deviance(preds: Tensor, targets: Tensor, power: float):
 class TestDevianceScore(MetricTester):
     """Test class for `TweedieDevianceScore` metric."""
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_deviance_scores_class(self, ddp, preds, target, power):
         """Test class implementation of metric."""
         self.run_class_metric_test(
@@ -69,7 +69,7 @@ class TestDevianceScore(MetricTester):
             preds,
             target,
             TweedieDevianceScore,
-            partial(_sklearn_deviance, power=power),
+            partial(_reference_sklearn_deviance, power=power),
             metric_args={"power": power},
         )
 
@@ -79,7 +79,7 @@ class TestDevianceScore(MetricTester):
             preds,
             target,
             tweedie_deviance_score,
-            partial(_sklearn_deviance, power=power),
+            partial(_reference_sklearn_deviance, power=power),
             metric_args={"power": power},
         )
 

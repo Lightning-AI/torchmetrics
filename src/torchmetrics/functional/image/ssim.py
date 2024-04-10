@@ -18,7 +18,7 @@ from torch import Tensor
 from torch.nn import functional as F  # noqa: N812
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.helper import _gaussian_kernel_2d, _gaussian_kernel_3d, _reflection_pad_3d
+from torchmetrics.functional.image.utils import _gaussian_kernel_2d, _gaussian_kernel_3d, _reflection_pad_3d
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
@@ -110,14 +110,14 @@ def _ssim_update(
         raise ValueError(f"Expected `sigma` to have positive number. Got {sigma}.")
 
     if data_range is None:
-        data_range = max(preds.max() - preds.min(), target.max() - target.min())
+        data_range = max(preds.max() - preds.min(), target.max() - target.min())  # type: ignore[call-overload]
     elif isinstance(data_range, tuple):
         preds = torch.clamp(preds, min=data_range[0], max=data_range[1])
         target = torch.clamp(target, min=data_range[0], max=data_range[1])
         data_range = data_range[1] - data_range[0]
 
-    c1 = pow(k1 * data_range, 2)
-    c2 = pow(k2 * data_range, 2)
+    c1 = pow(k1 * data_range, 2)  # type: ignore[operator]
+    c2 = pow(k2 * data_range, 2)  # type: ignore[operator]
     device = preds.device
 
     channel = preds.size(1)
@@ -154,8 +154,9 @@ def _ssim_update(
     mu_target_sq = output_list[1].pow(2)
     mu_pred_target = output_list[0] * output_list[1]
 
-    sigma_pred_sq = output_list[2] - mu_pred_sq
-    sigma_target_sq = output_list[3] - mu_target_sq
+    # Calculate the variance of the predicted and target images, should be non-negative
+    sigma_pred_sq = torch.clamp(output_list[2] - mu_pred_sq, min=0.0)
+    sigma_target_sq = torch.clamp(output_list[3] - mu_target_sq, min=0.0)
     sigma_pred_target = output_list[4] - mu_pred_target
 
     upper = 2 * sigma_pred_target.to(dtype) + c2
@@ -420,7 +421,7 @@ def _multiscale_ssim_update(
 
     betas = torch.tensor(betas, device=mcs_stack.device).view(-1, 1)
     mcs_weighted = mcs_stack**betas
-    return torch.prod(mcs_weighted, axis=0)
+    return torch.prod(mcs_weighted, axis=0)  # type: ignore[call-overload]
 
 
 def _multiscale_ssim_compute(

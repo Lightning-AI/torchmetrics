@@ -24,8 +24,8 @@ from torchmetrics.regression.kl_divergence import KLDivergence
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -67,7 +67,7 @@ class TestKLDivergence(MetricTester):
 
     atol = 1e-6
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_kldivergence(self, reduction, p, q, log_prob, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
