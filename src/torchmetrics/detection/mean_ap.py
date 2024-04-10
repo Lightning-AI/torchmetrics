@@ -418,8 +418,8 @@ class MeanAveragePrecision(Metric):
                 "When providing a list of max detection thresholds it should have length 3."
                 " Got value {len(max_detection_thresholds)}"
             )
-        max_det_thr, _ = torch.sort(torch.tensor(max_detection_thresholds or [1, 10, 100], dtype=torch.int))
-        self.max_detection_thresholds = max_det_thr.tolist()
+        max_det_threshold, _ = torch.sort(torch.tensor(max_detection_thresholds or [1, 10, 100], dtype=torch.int))
+        self.max_detection_thresholds = max_det_threshold.tolist()
 
         if not isinstance(class_metrics, bool):
             raise ValueError("Expected argument `class_metrics` to be a boolean")
