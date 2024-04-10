@@ -2,7 +2,7 @@
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
 scikit-image >=0.19.0, <=0.21.0
-kornia >=0.6.7, <0.7.2
+kornia >=0.6.7, <0.8.0
 pytorch-msssim ==1.0.0
 sewar >=0.4.4, <=0.4.6
 numpy <1.25.0

@@ -453,7 +453,7 @@ class Specificity(_ClassificationTaskWrapper):
     .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
     Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
-    respectively. The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0`. If this case is
+    respectively. The metric is only proper defined when :math:`\text{TN} + \text{FP} \neq 0`. If this case is
     encountered for any class/label, the metric for that class/label will be set to 0 and the overall metric may
     therefore be affected in turn.
 

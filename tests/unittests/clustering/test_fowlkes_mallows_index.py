@@ -16,9 +16,9 @@ from sklearn.metrics import fowlkes_mallows_score as sklearn_fowlkes_mallows_sco
 from torchmetrics.clustering import FowlkesMallowsIndex
 from torchmetrics.functional.clustering import fowlkes_mallows_index
 
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 from unittests.clustering._inputs import _single_target_extrinsic1, _single_target_extrinsic2
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 

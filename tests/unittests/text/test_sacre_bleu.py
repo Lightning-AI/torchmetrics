@@ -20,8 +20,8 @@ from torch import Tensor, tensor
 from torchmetrics.functional.text.sacre_bleu import AVAILABLE_TOKENIZERS, _TokenizersLiteral, sacre_bleu_score
 from torchmetrics.text.sacre_bleu import SacreBLEUScore
 
+from unittests.text._helpers import TextTester
 from unittests.text._inputs import _inputs_multiple_references
-from unittests.text.helpers import TextTester
 
 
 def _reference_sacre_bleu(

@@ -96,8 +96,8 @@ def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float, axis: int
 
     """
     with torch.no_grad():
-        auc_: Tensor = torch.trapz(y, x, dim=axis) * direction
-    return auc_
+        auc_score: Tensor = torch.trapz(y, x, dim=axis) * direction
+    return auc_score
 
 
 def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:

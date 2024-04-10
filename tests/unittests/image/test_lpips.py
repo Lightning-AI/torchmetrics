@@ -21,8 +21,8 @@ from torchmetrics.functional.image.lpips import learned_perceptual_image_patch_s
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 

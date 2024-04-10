@@ -20,8 +20,8 @@ from torch import tensor
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.text.bleu import BLEUScore
 
+from unittests.text._helpers import TextTester
 from unittests.text._inputs import _inputs_multiple_references
-from unittests.text.helpers import TextTester
 
 # https://www.nltk.org/api/nltk.translate.html?highlight=bleu%20score#nltk.translate.bleu_score.SmoothingFunction
 smooth_func = SmoothingFunction().method2
