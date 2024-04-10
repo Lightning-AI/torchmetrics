@@ -42,12 +42,12 @@ from torchmetrics.regression import (
 from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError
 
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
-num_targets = 5
+NUM_TARGETS = 5
 
 
 _single_target_inputs = _Input(
@@ -56,12 +56,12 @@ _single_target_inputs = _Input(
 )
 
 _multi_target_inputs = _Input(
-    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
-    target=torch.rand(NUM_BATCHES, BATCH_SIZE, num_targets),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_TARGETS),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, NUM_TARGETS),
 )
 
 
-def _baseline_symmetric_mape(
+def _reference_symmetric_mape(
     y_true: np.ndarray,
     y_pred: np.ndarray,
     sample_weight: Optional[np.ndarray] = None,
@@ -114,11 +114,11 @@ def _baseline_symmetric_mape(
     return np.average(output_errors, weights=multioutput)
 
 
-def _sk_weighted_mean_abs_percentage_error(target, preds):
+def _reference_weighted_mean_abs_percentage_error(target, preds):
     return np.sum(np.abs(target - preds)) / np.sum(np.abs(target))
 
 
-def _single_target_ref_metric(preds, target, sk_fn, metric_args):
+def _single_target_ref_wrapper(preds, target, sk_fn, metric_args):
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
 
@@ -127,9 +127,9 @@ def _single_target_ref_metric(preds, target, sk_fn, metric_args):
     return math.sqrt(res) if (metric_args and not metric_args["squared"]) else res
 
 
-def _multi_target_ref_metric(preds, target, sk_fn, metric_args):
-    sk_preds = preds.view(-1, num_targets).numpy()
-    sk_target = target.view(-1, num_targets).numpy()
+def _multi_target_ref_wrapper(preds, target, sk_fn, metric_args):
+    sk_preds = preds.view(-1, NUM_TARGETS).numpy()
+    sk_target = target.view(-1, NUM_TARGETS).numpy()
     sk_kwargs = {"multioutput": "raw_values"} if metric_args and "num_outputs" in metric_args else {}
     res = sk_fn(sk_target, sk_preds, **sk_kwargs)
     return math.sqrt(res) if (metric_args and not metric_args["squared"]) else res
@@ -138,8 +138,8 @@ def _multi_target_ref_metric(preds, target, sk_fn, metric_args):
 @pytest.mark.parametrize(
     "preds, target, ref_metric",
     [
-        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_ref_metric),
-        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_ref_metric),
+        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_ref_wrapper),
+        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_ref_wrapper),
     ],
 )
 @pytest.mark.parametrize(
@@ -147,20 +147,20 @@ def _multi_target_ref_metric(preds, target, sk_fn, metric_args):
     [
         (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": True}),
         (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": False}),
-        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": True, "num_outputs": num_targets}),
+        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": True, "num_outputs": NUM_TARGETS}),
         (MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error, {}),
         (MeanAbsolutePercentageError, mean_absolute_percentage_error, sk_mean_abs_percentage_error, {}),
         (
             SymmetricMeanAbsolutePercentageError,
             symmetric_mean_absolute_percentage_error,
-            _baseline_symmetric_mape,
+            _reference_symmetric_mape,
             {},
         ),
         (MeanSquaredLogError, mean_squared_log_error, sk_mean_squared_log_error, {}),
         (
             WeightedMeanAbsolutePercentageError,
             weighted_mean_absolute_percentage_error,
-            _sk_weighted_mean_abs_percentage_error,
+            _reference_weighted_mean_abs_percentage_error,
             {},
         ),
     ],

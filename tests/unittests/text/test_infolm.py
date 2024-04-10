@@ -19,9 +19,9 @@ from torchmetrics.functional.text.infolm import infolm
 from torchmetrics.text.infolm import InfoLM
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
-from unittests.helpers import skip_on_connection_issues
-from unittests.text.helpers import TextTester
-from unittests.text.inputs import HYPOTHESIS_A, HYPOTHESIS_C, _inputs_single_reference
+from unittests._helpers import skip_on_connection_issues
+from unittests.text._helpers import TextTester
+from unittests.text._inputs import HYPOTHESIS_A, HYPOTHESIS_C, _inputs_single_reference
 
 # Small bert model with 2 layers, 2 attention heads and hidden dim of 128
 MODEL_NAME = "google/bert_uncased_L-2_H-128_A-2"
@@ -36,10 +36,10 @@ def _reference_infolm_score(preds, target, model_name, information_measure, idf,
     https://github.com/stancld/infolm-docker.
 
     """
-    if model_name != "google/bert_uncased_L-2_H-128_A-2":
+    allowed_model = "google/bert_uncased_L-2_H-128_A-2"
+    if model_name != allowed_model:
         raise ValueError(
-            "`model_name` is expected to be 'google/bert_uncased_L-2_H-128_A-2' as this model was used for the result "
-            "generation."
+            f"`model_name` is expected to be '{allowed_model}' as this model was used for the result generation."
         )
     precomputed_result = {
         "kl_divergence": torch.tensor([-3.2250, -0.1784, -0.1784, -2.2182]),

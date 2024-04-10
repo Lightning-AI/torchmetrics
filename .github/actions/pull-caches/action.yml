@@ -23,7 +23,7 @@ runs:
   using: "composite"
   steps:
     - name: install assistant's deps
-      run: pip install -q fire requests packaging wget
+      run: pip install -q packaging fire wget
       shell: bash
 
     - name: Set PyTorch version
@@ -82,6 +82,8 @@ runs:
       shell: bash
 
     - name: Cache References
+      # do not use this cache for dispatch and crone, to enable rebuild caches if needed
+      if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
       continue-on-error: true
       uses: actions/cache/restore@v3
       with:
@@ -90,5 +92,8 @@ runs:
 
     - name: Restored References
       continue-on-error: true
-      run: ls -lh tests/_cache-references/
+      working-directory: tests/
+      run: |
+        mkdir -p _cache-references
+        ls -lh _cache-references/
       shell: bash

@@ -57,7 +57,7 @@ pull_request_rules:
       - "#check-failure<5"
     actions:
       label:
-        add: ["0:] Ready-To-Go"]
+        add: ["ready"]
 
   - name: Not ready yet
     conditions:
@@ -69,7 +69,7 @@ pull_request_rules:
           - "#check-failure>=5"
     actions:
       label:
-        remove: ["0:] Ready-To-Go"]
+        remove: ["ready"]
 
   - name: add core reviewer
     conditions:

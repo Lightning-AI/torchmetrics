@@ -22,11 +22,11 @@ While TorchMetrics was built to be used with native PyTorch, using TorchMetrics 
 * Modular metrics are automatically placed on the correct device when properly defined inside a LightningModule.
   This means that your data will always be placed on the same device as your metrics. No need to call ``.to(device)`` anymore!
 * Native support for logging metrics in Lightning using
-  `self.log <https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_ inside
+  `self.log <https://lightning.ai/docs/pytorch/stable/extensions/logging.html#logging-from-a-lightningmodule>`_ inside
   your LightningModule.
 * The ``.reset()`` method of the metric will automatically be called at the end of an epoch.
 
-The example below shows how to use a metric in your `LightningModule <https://pytorch-lightning.readthedocs.io/en/stable/common/lightning_module.html>`_:
+The example below shows how to use a metric in your `LightningModule <https://lightning.ai/docs/pytorch/stable/common/lightning_module.html>`_:
 
 .. testcode:: python
 
@@ -64,7 +64,7 @@ Logging TorchMetrics
 
 Logging metrics can be done in two ways: either logging the metric object directly or the computed metric values.
 When :class:`~torchmetrics.Metric` objects, which return a scalar tensor are logged directly in Lightning using the
-LightningModule `self.log <https://pytorch-lightning.readthedocs.io/en/stable/extensions/logging.html#logging-from-a-lightningmodule>`_
+LightningModule `self.log <https://lightning.ai/docs/pytorch/stable/extensions/logging.html#logging-from-a-lightningmodule>`_
 method, Lightning will log the metric based on ``on_step`` and ``on_epoch`` flags present in ``self.log(...)``. If
 ``on_epoch`` is True, the logger automatically logs the end of epoch metric value by calling ``.compute()``.
 

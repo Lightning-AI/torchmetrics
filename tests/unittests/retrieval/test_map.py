@@ -21,7 +21,7 @@ from torchmetrics.functional.retrieval.average_precision import retrieval_averag
 from torchmetrics.retrieval.average_precision import RetrievalMAP
 from typing_extensions import Literal
 
-from unittests.helpers import seed_all
+from unittests._helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,
     _concat_tests,

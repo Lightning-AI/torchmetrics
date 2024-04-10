@@ -20,8 +20,8 @@ from torchmetrics.functional.text.perplexity import perplexity
 from torchmetrics.text.perplexity import Perplexity
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_2
 
-from unittests.helpers.testers import MetricTester
-from unittests.text.inputs import (
+from unittests._helpers.testers import MetricTester
+from unittests.text._inputs import (
     MASK_INDEX,
     _logits_inputs_fp32,
     _logits_inputs_fp32_with_mask,
