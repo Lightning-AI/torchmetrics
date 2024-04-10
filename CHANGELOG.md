@@ -108,7 +108,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Change default state of `SpectralAngleMapper` and `UniversalImageQualityIndex` to be tensors ([#2089](https://github.com/Lightning-AI/torchmetrics/pull/2089))
-- Use `arange` and repeat for deterministic bincount ([#2184](https://github.com/Lightning-AI/torchmetrics/pull/2184))
+- Use `torch` range func and repeat for deterministic bincount ([#2184](https://github.com/Lightning-AI/torchmetrics/pull/2184))
 
 ### Removed
 

@@ -177,7 +177,7 @@ class BinaryFairness(_AbstractGroupStatScores):
 
     Args:
         num_groups: The number of groups.
-        task: The task to compute. Can be either ``demographic_parity`` or ``equal_oppotunity`` or ``all``.
+        task: The task to compute. Can be either ``demographic_parity`` or ``equal_opportunity`` or ``all``.
         threshold: Threshold for transforming probability to binary {0,1} predictions.
         ignore_index: Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
