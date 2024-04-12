@@ -10,7 +10,7 @@ Mean Intersection over Union (mIoU)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.segmentation.MeanIOU
+.. autoclass:: torchmetrics.segmentation.MeanIoU
     :exclude-members: update, compute
 
 Functional Interface

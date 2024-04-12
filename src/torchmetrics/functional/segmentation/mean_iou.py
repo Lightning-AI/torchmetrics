@@ -16,222 +16,66 @@ from typing import Dict, List, Optional, Sequence, Tuple
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities.checks import _check_same_shape
+from torchmetrics.utilities.compute import _safe_divide
+from torchmetrics.functional.segmentation.utils import _ignore_background
 
-
-def _input_validator(preds: Sequence[Tensor], target: Sequence[Tensor]) -> None:
-    """Ensure the correct input format of `preds` and `targets`"""
-    if not isinstance(preds, Sequence):
-        raise ValueError("Expected argument `preds` to be of type Sequence")
-    if not isinstance(target, Sequence):
-        raise ValueError("Expected argument `target` to be of type Sequence")
-    if len(preds) != len(target):
-        raise ValueError("Expected argument `preds` and `target` to have the same length")
-    for prediction, ground_truth in zip(preds, target):
-        _check_same_shape(prediction, ground_truth)
-
-
-def intersect_and_union(pred_label, label, num_classes, ignore_index, label_map=dict(), reduce_zero_label=False):
-    """Calculate Intersection and Union.
-
-    Args:
-        pred_label (torch.Tensor):
-            Prediction segmentation map.
-        label (torch.Tensor):
-            Ground truth segmentation map.
-        num_classes (int):
-            Number of categories.
-        ignore_index (int):
-            Index that will be ignored in evaluation.
-        label_map (dict):
-            Mapping old labels to new labels. The parameter will work only when label is str. Default: dict().
-        reduce_zero_label (bool):
-            Whether ignore zero label. The parameter will work only when label is str. Default: False.
-
-    Returns:
-        torch.Tensor:
-            The intersection of prediction and ground truth histogram on all classes.
-        torch.Tensor:
-            The union of prediction and ground truth histogram on all classes.
-        torch.Tensor:
-            The prediction histogram on all classes.
-        torch.Tensor:
-            The ground truth histogram on all classes.
-
-    """
-    if label_map is not None:
-        label_copy = label.clone()
-        for old_id, new_id in label_map.items():
-            label[label_copy == old_id] = new_id
-
-    if reduce_zero_label:
-        label[label == 0] = 255
-        label = label - 1
-        label[label == 254] = 255
-
-    mask = label != ignore_index
-    pred_label = pred_label[mask]
-    label = label[mask]
-
-    intersect = pred_label[pred_label == label]
-    area_intersect = torch.histc(intersect.float(), bins=(num_classes), min=0, max=num_classes - 1)
-    area_pred_label = torch.histc(pred_label.float(), bins=(num_classes), min=0, max=num_classes - 1)
-    area_label = torch.histc(label.float(), bins=(num_classes), min=0, max=num_classes - 1)
-    area_union = area_pred_label + area_label - area_intersect
-
-    return area_intersect, area_union, area_pred_label, area_label
-
-
-def total_intersect_and_union(preds, target, num_classes, ignore_index, label_map=dict(), reduce_zero_label=False):
-    """Calculate Total Intersection and Union.
-
-    Args:
-        preds (list[torch.Tensor]):
-            List of prediction segmentation maps.
-        target (list[torch.Tensor]):
-            List of ground truth segmentation maps.
-        num_classes (int):
-            Number of categories.
-        ignore_index (int):
-            Index that will be ignored in evaluation.
-        label_map (dict):
-            Mapping old labels to new labels. Default: dict().
-        reduce_zero_label (bool):
-            Whether ignore zero label. Default: False.
-
-    Returns:
-        torch.Tensor:
-            The intersection of prediction and ground truth histogram on all classes.
-        torch.Tensor:
-            The union of prediction and ground truth histogram on all classes.
-        torch.Tensor:
-            The prediction histogram on all classes.
-        torch.Tensor:
-            The ground truth histogram on all classes.
-
-    """
-    total_area_intersect = torch.zeros((num_classes,), dtype=torch.float64)
-    total_area_union = torch.zeros((num_classes,), dtype=torch.float64)
-    total_area_pred_label = torch.zeros((num_classes,), dtype=torch.float64)
-    total_area_label = torch.zeros((num_classes,), dtype=torch.float64)
-
-    for result, gt_seg_map in zip(preds, target):
-        area_intersect, area_union, area_pred_label, area_label = intersect_and_union(
-            result, gt_seg_map, num_classes, ignore_index, label_map, reduce_zero_label
+def _mean_iou_validate_args(
+    num_classes: int,
+    include_background: bool,
+    per_class: bool,
+) -> None:
+    if num_classes <= 0:
+        raise ValueError(
+            f"Expected argument `num_classes` must be a positive integer, but got {num_classes}."
         )
-
-        total_area_intersect += area_intersect
-        total_area_union += area_union
-        total_area_pred_label += area_pred_label
-        total_area_label += area_label
-
-    return total_area_intersect, total_area_union, total_area_pred_label, total_area_label
-
+    if not isinstance(include_background, bool):
+        raise ValueError(
+            f"Expected argument `include_background` must be a boolean, but got {include_background}."
+        )
+    if not isinstance(per_class, bool):
+        raise ValueError(f"Expected argument `per_class` must be a boolean, but got {per_class}.")
 
 def _mean_iou_update(
     preds: Tensor,
     target: Tensor,
-    num_labels: int,
-    ignore_index: bool,
-    nan_to_num: Optional[int] = None,
-    label_map: Optional[Dict[int, int]] = None,
-    reduce_labels: bool = False,
-) -> Tuple[Tensor, int]:
-    """Updates and returns variables required to compute Mean Intersection over Union.
+    num_classes: int,
+    include_background: bool = False,
+):
+    if preds.shape != target.shape:  # assume preds is probabilities with an extra dimension
+        preds = preds.argmax(dim=1)
+    if (preds.bool() != preds).any():  # preds is an index tensor
+        preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
+    if (target.bool() != target).any(): # target is an index tensor
+        target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
 
-    Checks for same shape of each element of the ``preds`` and ``target`` lists.
+    if not include_background:
+        preds, target = _ignore_background(preds, target)
 
-    Args:
-        preds (list[torch.Tensor]):
-            List of prediction segmentation maps.
-        target (list[torch.Tensor]):
-            List of ground truth segmentation maps.
-        num_classes (int):
-            Number of categories.
-        ignore_index (int):
-            Index that will be ignored in evaluation.
-        label_map (dict):
-            Mapping old labels to new labels. Default: dict().
-        reduce_zero_label (bool):
-            Whether ignore zero label. Default: False.
+    reduce_axis = list(range(2, preds.ndim))
+    intersection = torch.sum(preds & target, dim=reduce_axis)
+    target_sum = torch.sum(target, dim=reduce_axis)
+    pred_sum = torch.sum(preds, dim=reduce_axis)
+    union = target_sum + pred_sum - intersection
+    return intersection, union
 
-    """
-    _input_validator(preds, target)
-
-    total_area_intersect, total_area_union, total_area_pred_label, total_area_label = total_intersect_and_union(
-        preds, target, num_labels, ignore_index, label_map, reduce_labels
-    )
-
-    return total_area_intersect, total_area_union, total_area_pred_label, total_area_label
-
-
-def _mean_iou_compute(total_area_intersect, total_area_union, total_area_pred_label, total_area_label) -> Tensor:
-    """Computes Mean Intersection over Union.
-
-    Args:
-        total_area_intersect:
-            ...
-        total_area_union:
-            ...
-        total_area_pred_label:
-            ...
-        total_area_label:
-            ...
-
-    Example:
-        >>> preds = torch.tensor([0., 1, 2, 3])
-        >>> target = torch.tensor([0., 1, 2, 2])
-        >>> total_area_intersect, total_area_union, total_area_pred_label, total_area_label = _mean_iou_update(preds, target)
-        >>> _mean_iou_compute(total_area_intersect, total_area_union, total_area_pred_label, total_area_label)
-        tensor(0.2500)
-
-    """
-    iou = total_area_intersect / total_area_union
-
-    mean_iou = torch.nanmean(iou)
-
-    return mean_iou
-
+def _mean_iou_compute(
+    intersection: Tensor,
+    union: Tensor,
+    per_class: bool = False,
+) -> Tensor:
+    val = _safe_divide(intersection, union)
+    return val if per_class else torch.mean(val, 1)
 
 def mean_iou(
-    preds: List[Tensor],
-    target: List[Tensor],
-    num_labels: int,
-    ignore_index: bool,
-    nan_to_num: Optional[int] = None,
-    label_map: Optional[Dict[int, int]] = None,
-    reduce_labels: bool = False,
+    preds: Tensor,
+    target: Tensor,
+    num_classes: int,
+    include_background: bool = False,
+    per_class: bool = False,
 ) -> Tensor:
-    """Computes Mean Intersection over Union (mIoU).
-
-    Args:
-        preds:
-            estimated labels
-        target:
-            ground truth labels
-        num_labels:
-            number of labels
-        ignore_index:
-            index that will be ignored in evaluation
-        nan_to_num:
-            If specified, NaN values will be replaced by the numbers defined by the user. Default: None.
-        label_map:
-            Mapping old labels to new labels. Default: None.
-        reduce_labels:
-            Whether to ignore the zero label and reduce all labels by one. Default: False.
-
-    Return:
-        Tensor with mIoU.
-
-    Example:
-        >>> from torchmetrics.functional.segmentation import mean_iou
-        >>> preds = [torch.tensor([[2,0],[2,3]])]
-        >>> target = [torch.tensor([[255,255],[2,3]])]
-        >>> mean_iou(preds, target)
-        tensor(0.2500)
-
     """
-    total_area_intersect, total_area_union, total_area_pred_label, total_area_label = _mean_iou_update(
-        preds, target, num_labels, ignore_index, nan_to_num, label_map, reduce_labels
-    )
-    return _mean_iou_compute(total_area_intersect, total_area_union, total_area_pred_label, total_area_label)
+    
+    """
+    intersection, union = _mean_iou_update(preds, target, num_classes, include_background)
+    return _mean_iou_compute(intersection, union, per_class=per_class)
+

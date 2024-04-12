@@ -1,23 +1,84 @@
+# Copyright The Lightning team.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from functools import partial
+
+import pytest
+import torch
+
 import torch
 
 from torchmetrics.functional.segmentation.mean_iou import mean_iou
+from torchmetrics.segmentation.mean_iou import MeanIoU
+from monai.metrics.meaniou import compute_iou
+from unittests._helpers.testers import MetricTester
+from unittests import BATCH_SIZE, NUM_BATCHES, _Input, NUM_CLASSES
 
-# suppose one has 3 different segmentation maps predicted
-predicted_1 = torch.tensor([[1, 2], [3, 4], [5, 255]])
-actual_1 = torch.tensor([[0, 3], [5, 4], [6, 255]])
+_inputs1 = _Input(
+    preds=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 16)), 
+    target=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 16)),
+)
+_inputs2 = _Input(
+    preds=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 32, 32)), 
+    target=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 32, 32)),
+)
+# _inputs3 = _Input(
+#     preds=torch.randn(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 32, 32),
+#     target=torch.randint(0, 5, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 32, 32)),
+# )
 
-predicted_2 = torch.tensor([[2, 7], [9, 2], [3, 6]])
-actual_2 = torch.tensor([[1, 7], [9, 2], [3, 6]])
+def _reference_mean_iou(preds: torch.Tensor, target: torch.Tensor, include_background: bool = True, per_class: bool = True, reduce: bool = True):
+    """Calculate reference metric for `MeanIoU`."""
+    val = compute_iou(preds, target, include_background=include_background)
+    if reduce:
+        return torch.mean(val, 0) if per_class else torch.mean(val)
+    return val
 
-predicted_3 = torch.tensor([[2, 2, 3], [8, 2, 4], [3, 255, 2]])
-actual_3 = torch.tensor([[1, 2, 2], [8, 2, 1], [3, 255, 1]])
 
-predicted = [predicted_1, predicted_2, predicted_3]
-ground_truth = [actual_1, actual_2, actual_3]
-results = mean_iou(preds=predicted, target=ground_truth, num_labels=10, ignore_index=255, reduce_labels=False)
+@pytest.mark.parametrize(
+    "preds, target",
+    [
+        (_inputs1.preds, _inputs1.target),
+        (_inputs2.preds, _inputs2.target),
+        #(_inputs3.preds, _inputs3.target),
+    ],
+)
+@pytest.mark.parametrize("include_background", [True, False])
+class TestMeanIoU(MetricTester):
+    """Test class for `MeanIoU` metric."""
+    atol = 1e-4
 
-print(results)
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    @pytest.mark.parametrize("per_class", [True, False])
+    def test_mean_iou_class(self, preds, target, include_background, per_class, ddp):
+        """Test class implementation of metric."""
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=MeanIoU,
+            reference_metric=partial(_reference_mean_iou, include_background=include_background, per_class=per_class, reduce=True),
+            metric_args={"num_classes": NUM_CLASSES, "include_background": include_background, "per_class": per_class},
+        )
 
-preds = [torch.tensor([[2, 0], [2, 3]])]
-target = [torch.tensor([[255, 255], [2, 3]])]
-print(mean_iou(preds, target, num_labels=4, ignore_index=255, reduce_labels=False))
+    def test_mean_iou_functional(self, preds, target, include_background):
+        """Test functional implementation of metric."""
+        self.run_functional_metric_test(
+            preds=preds,
+            target=target,
+            metric_functional=mean_iou,
+            reference_metric=partial(_reference_mean_iou, include_background=include_background, reduce=False),
+            metric_args={"num_classes": NUM_CLASSES, "include_background": include_background, "per_class": True},
+        )
+
