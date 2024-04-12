@@ -199,7 +199,7 @@ class FrechetInceptionDistance(Metric):
     fake distribution.
 
     Using custom feature extractor is also possible. One can give a torch.nn.Module as `feature` argument. This
-    custom feature extractor is expected to have output shape of ``(1, num_features)`` This would change the
+    custom feature extractor is expected to have output shape of ``(1, num_features)``. This would change the
     used feature extractor from default (Inception v3) to the given network. In case network doesn't have
     ``num_features`` attribute, a random tensor will be given to the network to infer feature dimensionality.
     Size of this tensor can be controlled by ``input_img_size`k` argument and type of the tensor can be controlled
