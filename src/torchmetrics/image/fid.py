@@ -329,7 +329,7 @@ class FrechetInceptionDistance(Metric):
                 if self.normalize:
                     dummy_image = torch.rand(1, *input_img_size, dtype=torch.float32)
                 else:
-                    dummy_image = torch.randint(0, 255, input_img_size, dtype=torch.uint8)
+                    dummy_image = torch.randint(0, 255, (1, *input_img_size), dtype=torch.uint8)
                 num_features = self.inception(dummy_image).shape[-1]
         else:
             raise TypeError("Got unknown input to argument `feature`")
