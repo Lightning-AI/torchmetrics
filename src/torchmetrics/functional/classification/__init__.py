@@ -52,7 +52,6 @@ from torchmetrics.functional.classification.f_beta import (
     multilabel_f1_score,
     multilabel_fbeta_score,
 )
-from torchmetrics.functional.classification.generalized_dice import generalized_dice_score
 from torchmetrics.functional.classification.group_fairness import (
     binary_fairness,
     binary_groups_stat_rates,

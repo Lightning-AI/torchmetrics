@@ -43,7 +43,6 @@ from torchmetrics.classification.f_beta import (
     MultilabelF1Score,
     MultilabelFBetaScore,
 )
-from torchmetrics.classification.generalized_dice import GeneralizedDiceScore
 from torchmetrics.classification.group_fairness import BinaryFairness, BinaryGroupStatRates
 from torchmetrics.classification.hamming import (
     BinaryHammingDistance,
