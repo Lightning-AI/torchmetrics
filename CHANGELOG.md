@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for calculating segmentation quality and recognition quality in `PanopticQuality` metric ([#2381](https://github.com/Lightning-AI/torchmetrics/pull/2381))
 
 
-- Added a new segmentation metric `mean IoU` ([#1236](https://github.com/PyTorchLightning/metrics/pull/1236))
+- Added a new segmentation metric `MeanIoU` ([#1236](https://github.com/PyTorchLightning/metrics/pull/1236))
 
 
 ### Changed
