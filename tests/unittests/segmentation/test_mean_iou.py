@@ -16,30 +16,40 @@ from functools import partial
 
 import pytest
 import torch
-
-import torch
-
+from monai.metrics.meaniou import compute_iou
 from torchmetrics.functional.segmentation.mean_iou import mean_iou
 from torchmetrics.segmentation.mean_iou import MeanIoU
-from monai.metrics.meaniou import compute_iou
+
+from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, _Input
 from unittests._helpers.testers import MetricTester
-from unittests import BATCH_SIZE, NUM_BATCHES, _Input, NUM_CLASSES
 
 _inputs1 = _Input(
-    preds=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 16)), 
+    preds=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 16)),
     target=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 16)),
 )
 _inputs2 = _Input(
-    preds=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 32, 32)), 
+    preds=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 32, 32)),
     target=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 32, 32)),
 )
-# _inputs3 = _Input(
-#     preds=torch.randn(NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 32, 32),
-#     target=torch.randint(0, 5, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 32, 32)),
-# )
+_inputs3 = _Input(
+    preds=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 32, 32)),
+    target=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 32, 32)),
+)
 
-def _reference_mean_iou(preds: torch.Tensor, target: torch.Tensor, include_background: bool = True, per_class: bool = True, reduce: bool = True):
+
+def _reference_mean_iou(
+    preds: torch.Tensor,
+    target: torch.Tensor,
+    include_background: bool = True,
+    per_class: bool = True,
+    reduce: bool = True,
+):
     """Calculate reference metric for `MeanIoU`."""
+    if (preds.bool() != preds).any():  # preds is an index tensor
+        preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
+    if (target.bool() != target).any():  # target is an index tensor
+        target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
+
     val = compute_iou(preds, target, include_background=include_background)
     if reduce:
         return torch.mean(val, 0) if per_class else torch.mean(val)
@@ -51,12 +61,13 @@ def _reference_mean_iou(preds: torch.Tensor, target: torch.Tensor, include_backg
     [
         (_inputs1.preds, _inputs1.target),
         (_inputs2.preds, _inputs2.target),
-        #(_inputs3.preds, _inputs3.target),
+        # (_inputs3.preds, _inputs3.target),
     ],
 )
 @pytest.mark.parametrize("include_background", [True, False])
 class TestMeanIoU(MetricTester):
     """Test class for `MeanIoU` metric."""
+
     atol = 1e-4
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
@@ -68,7 +79,9 @@ class TestMeanIoU(MetricTester):
             preds=preds,
             target=target,
             metric_class=MeanIoU,
-            reference_metric=partial(_reference_mean_iou, include_background=include_background, per_class=per_class, reduce=True),
+            reference_metric=partial(
+                _reference_mean_iou, include_background=include_background, per_class=per_class, reduce=True
+            ),
             metric_args={"num_classes": NUM_CLASSES, "include_background": include_background, "per_class": per_class},
         )
 
@@ -81,4 +94,3 @@ class TestMeanIoU(MetricTester):
             reference_metric=partial(_reference_mean_iou, include_background=include_background, reduce=False),
             metric_args={"num_classes": NUM_CLASSES, "include_background": include_background, "per_class": True},
         )
-
