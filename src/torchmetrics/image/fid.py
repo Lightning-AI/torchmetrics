@@ -202,7 +202,7 @@ class FrechetInceptionDistance(Metric):
     custom feature extractor is expected to have output shape of ``(1, num_features)`` This would change the
     used feature extractor from default (Inception v3) to the given network. In case network doesn't have
     ``num_features`` attribute, a random tensor will be given to the network to infer feature dimensionality.
-    Size of this tensor can be controlled by `input_img_size` argument and type of the tensor can be controlled
+    Size of this tensor can be controlled by ``input_img_size`k` argument and type of the tensor can be controlled
     with `normalize` argument (True uses float32 tensors and False uses int8 tensors). In this case, update method
     expects to have the tensor given to `imgs` argument to be in the correct shape and type that is compatible to
     the custom feature extractor.
