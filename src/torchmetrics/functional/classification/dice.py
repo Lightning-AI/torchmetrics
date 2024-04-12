@@ -19,7 +19,6 @@ from torch import Tensor
 from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
 from torchmetrics.utilities.checks import _input_squeeze
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _dice_compute(
@@ -78,10 +77,6 @@ def dice(
     ignore_index: Optional[int] = None,
 ) -> Tensor:
     r"""Compute `Dice`_.
-
-    .. deprecated:: v0.10
-        The `dice` function was deprecated in v0.10 and will be removed in v0.11. Use `f1score` function instead which
-        is equivalent.
 
     .. math:: \text{Dice} = \frac{\text{2 * TP}}{\text{2 * TP} + \text{FP} + \text{FN}}
 
@@ -179,11 +174,6 @@ def dice(
         tensor(0.2500)
 
     """
-    rank_zero_warn(
-        "The `dice` function was deprecated in v0.10 and will be removed in v0.11. Use `f1score` function instead"
-        " which is equivalent.",
-        DeprecationWarning,
-    )
     allowed_average = ("micro", "macro", "weighted", "samples", "none", None)
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")

@@ -18,11 +18,11 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.classification.dice import _dice_compute
+from torchmetrics.functional.classification.stat_scores import _stat_scores_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
-from torchmetrics.utilities.prints import rank_zero_warn
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["Dice.plot"]
@@ -30,10 +30,6 @@ if not _MATPLOTLIB_AVAILABLE:
 
 class Dice(Metric):
     r"""Compute `Dice`_.
-
-    .. deprecated:: v0.12
-        The `Dice` module was deprecated in v0.12 and will be removed in v0.13. Use `F1Score` module instead which
-        is equivalent.
 
     .. math:: \text{Dice} = \frac{\text{2 * TP}}{\text{2 * TP} + \text{FP} + \text{FN}}
 
@@ -159,14 +155,8 @@ class Dice(Metric):
         multiclass: Optional[bool] = None,
         **kwargs: Any,
     ) -> None:
-        rank_zero_warn(
-            "The `dice` function was deprecated in v0.12 and will be removed in v0.13. Use `f1score` function instead"
-            " which is equivalent.",
-            DeprecationWarning,
-        )
-
-        allowed_average = ("micro", "macro", "weighted", "samples", "none", None)
         super().__init__(**kwargs)
+        allowed_average = ("micro", "macro", "samples", "none", None)
         if average not in allowed_average:
             raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
 

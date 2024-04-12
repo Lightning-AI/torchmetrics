@@ -552,12 +552,10 @@ class MultilabelFBetaScore(MultilabelStatScores):
 
 
 class BinaryF1Score(BinaryFBetaScore):
-    r"""Compute F-1 score (also known as Dice score/similarity) for binary tasks:
+    r"""Compute F-1 score for binary tasks.
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
-
-    F-1 score correspond to equally weighted average of the precision and recall scores.
 
     The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
     where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
@@ -690,12 +688,10 @@ class BinaryF1Score(BinaryFBetaScore):
 
 
 class MulticlassF1Score(MulticlassFBetaScore):
-    r"""Compute F-1 score (also known as Dice score/similarity) for multiclass tasks:
+    r"""Compute F-1 score for multiclass tasks.
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
-
-    F-1 score correspond to equally weighted average of the precision and recall scores.
 
     The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
     where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
@@ -865,12 +861,10 @@ class MulticlassF1Score(MulticlassFBetaScore):
 
 
 class MultilabelF1Score(MultilabelFBetaScore):
-    r"""Compute F-1 score (also known as Dice score/similarity) for multilabel tasks:
+    r"""Compute F-1 score for multilabel tasks.
 
     .. math::
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
-
-    F-1 score correspond to equally weighted average of the precision and recall scores.
 
     The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0 \wedge \text{TP} + \text{FN} \neq 0`
     where :math:`\text{TP}`, :math:`\text{FP}` and :math:`\text{FN}` represent the number of true positives, false
