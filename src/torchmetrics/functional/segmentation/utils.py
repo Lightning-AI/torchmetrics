@@ -23,6 +23,7 @@ from typing_extensions import Literal
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
 
+
 def _ignore_background(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     """Ignore the background class in the computation."""
     preds = preds[:, 1:] if preds.shape[1] > 1 else preds
