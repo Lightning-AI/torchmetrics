@@ -295,7 +295,7 @@ class FrechetInceptionDistance(Metric):
         feature: Union[int, Module] = 2048,
         reset_real_features: bool = True,
         normalize: bool = False,
-        input_img_size: Tuple[int, int, int, int] = (1, 3, 299, 299),
+        input_img_size: Tuple[int, int, int] = (3, 299, 299),
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
