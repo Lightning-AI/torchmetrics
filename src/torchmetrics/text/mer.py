@@ -63,6 +63,7 @@ class MatchErrorRate(Metric):
         tensor(0.4444)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = False
     full_state_update: bool = False

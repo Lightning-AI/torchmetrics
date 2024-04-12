@@ -33,7 +33,7 @@ class WordInfoPreserved(Metric):
     computed as:
 
     .. math::
-        wip = \frac{C}{N} + \frac{C}{P}
+        wip = \frac{C}{N} * \frac{C}{P}
 
     where:
 
@@ -62,6 +62,7 @@ class WordInfoPreserved(Metric):
         tensor(0.3472)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = False
     full_state_update: bool = False

@@ -105,6 +105,7 @@ class BinaryPrecisionAtFixedRecall(BinaryPrecisionRecallCurve):
         (tensor(0.6667), tensor(0.5000))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -245,6 +246,7 @@ class MulticlassPrecisionAtFixedRecall(MulticlassPrecisionRecallCurve):
          tensor([7.5000e-01, 7.5000e-01, 0.0000e+00, 0.0000e+00, 1.0000e+06]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -390,6 +392,7 @@ class MultilabelPrecisionAtFixedRecall(MultilabelPrecisionRecallCurve):
         (tensor([1.0000, 0.6667, 1.0000]), tensor([0.7500, 0.5000, 0.2500]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False

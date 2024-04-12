@@ -53,7 +53,7 @@ class RelativeAverageSpectralError(Metric):
         >>> target = torch.rand(4, 3, 16, 16)
         >>> rase = RelativeAverageSpectralError()
         >>> rase(preds, target)
-        tensor(5114.6641)
+        tensor(5114.66...)
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.

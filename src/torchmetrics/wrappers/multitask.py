@@ -159,7 +159,7 @@ class MultitaskWrapper(WrapperMetric):
                     f"Found a metric of type {type(metric)}"
                 )
 
-    def update(self, task_preds: Dict[str, Tensor], task_targets: Dict[str, Tensor]) -> None:
+    def update(self, task_preds: Dict[str, Any], task_targets: Dict[str, Any]) -> None:
         """Update each task's metric with its corresponding pred and target.
 
         Args:
@@ -217,14 +217,14 @@ class MultitaskWrapper(WrapperMetric):
         multitask_copy = deepcopy(self)
         if prefix is not None:
             prefix = self._check_arg(prefix, "prefix")
-            multitask_copy.task_metrics = nn.ModuleDict(
-                {prefix + key: value for key, value in multitask_copy.task_metrics.items()}
-            )
+            multitask_copy.task_metrics = nn.ModuleDict({
+                prefix + key: value for key, value in multitask_copy.task_metrics.items()
+            })
         if postfix is not None:
             postfix = self._check_arg(postfix, "postfix")
-            multitask_copy.task_metrics = nn.ModuleDict(
-                {key + postfix: value for key, value in multitask_copy.task_metrics.items()}
-            )
+            multitask_copy.task_metrics = nn.ModuleDict({
+                key + postfix: value for key, value in multitask_copy.task_metrics.items()
+            })
         return multitask_copy
 
     def plot(

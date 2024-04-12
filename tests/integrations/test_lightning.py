@@ -31,7 +31,6 @@ from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
 from torchmetrics.wrappers import MultitaskWrapper
 
-from integrations.helpers import no_warning_call
 from integrations.lightning.boring_model import BoringModel
 
 
@@ -249,11 +248,7 @@ def test_metric_lightning_log(tmpdir):
         log_every_n_steps=1,
         logger=logger,
     )
-    with no_warning_call(
-        UserWarning,
-        match="Torchmetrics v0.9 introduced a new argument class property called.*",
-    ):
-        trainer.fit(model)
+    trainer.fit(model)
 
     logged_metrics = logger._experiment.metrics
 
@@ -349,11 +344,7 @@ def test_metric_collection_lightning_log(tmpdir):
         max_epochs=1,
         log_every_n_steps=1,
     )
-    with no_warning_call(
-        UserWarning,
-        match="Torchmetrics v0.9 introduced a new argument class property called.*",
-    ):
-        trainer.fit(model)
+    trainer.fit(model)
 
     logged = trainer.logged_metrics
     assert torch.allclose(tensor(logged["SumMetric_epoch"]), model.sum, atol=2e-4)
@@ -367,12 +358,10 @@ def test_task_wrapper_lightning_logging(tmpdir):
         def __init__(self) -> None:
             super().__init__()
             self.multitask = MultitaskWrapper({"classification": BinaryAccuracy(), "regression": MeanSquaredError()})
-            self.multitask_collection = MultitaskWrapper(
-                {
-                    "classification": MetricCollection([BinaryAccuracy(), BinaryAveragePrecision()]),
-                    "regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
-                }
-            )
+            self.multitask_collection = MultitaskWrapper({
+                "classification": MetricCollection([BinaryAccuracy(), BinaryAveragePrecision()]),
+                "regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
+            })
 
             self.accuracy = BinaryAccuracy()
             self.mse = MeanSquaredError()
@@ -405,11 +394,7 @@ def test_task_wrapper_lightning_logging(tmpdir):
         max_epochs=1,
         log_every_n_steps=1,
     )
-    with no_warning_call(
-        UserWarning,
-        match="Torchmetrics v0.9 introduced a new argument class property called.*",
-    ):
-        trainer.fit(model)
+    trainer.fit(model)
 
     logged = trainer.logged_metrics
     assert torch.allclose(logged["accuracy_step"], logged["classification_step"])

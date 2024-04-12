@@ -29,10 +29,18 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
-    """Calculate `Relative dimensionless global error synthesis`_ (ERGAS).
+    r"""Calculate the `Error relative global dimensionless synthesis`_  (ERGAS) metric.
 
     This metric is used to calculate the accuracy of Pan sharpened image considering normalized average error of each
-    band of the result image.
+    band of the result image. It is defined as:
+
+    .. math::
+        ERGAS = 100 * \frac{h}{l} \\sqrt{\frac{1}{N} \\sum_{k=1}^{N} \frac{RMSE(B_k)^2}{\\mu_k^2}}
+
+    where :math:`h` and :math:`l` denote the spatial resolution (pixel size) of the high and low resolution images,
+    often shorted to the ratio between them :math:`r=h/l`. :math:`N` is the number of spectral bands, :math:`RMSE(B_k)`
+    is the root mean square error of the k-th band between low and high resolution images, and :math:`\\mu_k` is the
+    mean value of the k-th band of the reference image.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -45,7 +53,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
       value over sample else returns tensor of shape ``(N,)`` with ERGAS values per sample
 
     Args:
-        ratio: ratio of high resolution to low resolution
+        ratio: ratio of high resolution to low resolution.
         reduction: a method to reduce metric score over labels.
 
             - ``'elementwise_mean'``: takes the mean (default)

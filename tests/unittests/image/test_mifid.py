@@ -21,8 +21,11 @@ from scipy.linalg import sqrtm
 from torchmetrics.image.mifid import MemorizationInformedFrechetInceptionDistance, NoTrainInceptionV3
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
+from unittests import _reference_cachier
 
-def _compare_mifid(preds, target, cosine_distance_eps: float = 0.1):
+
+@_reference_cachier
+def _reference_mifid(preds, target, cosine_distance_eps: float = 0.1):
     """Reference implementation.
 
     Implementation taken from:
@@ -95,7 +98,7 @@ def _compare_mifid(preds, target, cosine_distance_eps: float = 0.1):
     return fid_private / (distance_private_thresholded + 1e-15)
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 def test_no_train():
     """Assert that metric never leaves evaluation mode."""
 
@@ -136,7 +139,7 @@ def test_mifid_raises_errors_and_warnings():
         _ = MemorizationInformedFrechetInceptionDistance(cosine_distance_eps=1.1)
 
 
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 @pytest.mark.parametrize("feature", [64, 192, 768, 2048])
 def test_fid_same_input(feature):
     """If real and fake are update on the same data the fid score should be 0."""
@@ -154,7 +157,7 @@ def test_fid_same_input(feature):
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test is too slow without gpu")
-@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="test requires torch-fidelity")
+@pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
 @pytest.mark.parametrize("equal_size", [False, True])
 def test_compare_mifid(equal_size):
     """Check that our implementation of MIFID is correct by comparing it to the original implementation."""
@@ -174,7 +177,7 @@ def test_compare_mifid(equal_size):
     for i in range(m // batch_size):
         metric.update(img2[batch_size * i : batch_size * (i + 1)].cuda(), real=False)
 
-    compare_val = _compare_mifid(img1, img2)
+    compare_val = _reference_mifid(img1, img2)
     tm_res = metric.compute()
 
     assert torch.allclose(tm_res.cpu(), torch.tensor(compare_val, dtype=tm_res.dtype), atol=1e-3)

@@ -93,6 +93,7 @@ class BinaryAccuracy(BinaryStatScores):
         tensor([0.3333, 0.1667])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -244,6 +245,7 @@ class MulticlassAccuracy(MulticlassStatScores):
                 [0.0000, 0.3333, 0.5000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -254,7 +256,9 @@ class MulticlassAccuracy(MulticlassStatScores):
     def compute(self) -> Tensor:
         """Compute accuracy based on inputs passed in to ``update`` previously."""
         tp, fp, tn, fn = self._final_state()
-        return _accuracy_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
+        return _accuracy_reduce(
+            tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, top_k=self.top_k
+        )
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -396,6 +400,7 @@ class MultilabelAccuracy(MultilabelStatScores):
                 [0.0000, 0.0000, 0.5000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -499,9 +504,11 @@ class Accuracy(_ClassificationTaskWrapper):
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
 
-        kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
-        )
+        kwargs.update({
+            "multidim_average": multidim_average,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+        })
 
         if task == ClassificationTask.BINARY:
             return BinaryAccuracy(threshold, **kwargs)

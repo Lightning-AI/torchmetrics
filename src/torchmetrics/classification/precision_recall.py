@@ -101,6 +101,7 @@ class BinaryPrecision(BinaryStatScores):
         tensor([0.4000, 0.0000])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -256,6 +257,7 @@ class MulticlassPrecision(MulticlassStatScores):
                 [0.0000, 0.5000, 0.3333]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -267,7 +269,7 @@ class MulticlassPrecision(MulticlassStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
-            "precision", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
+            "precision", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, top_k=self.top_k
         )
 
     def plot(
@@ -409,6 +411,7 @@ class MultilabelPrecision(MultilabelStatScores):
                 [0.0000, 0.0000, 0.0000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -532,6 +535,7 @@ class BinaryRecall(BinaryStatScores):
         tensor([0.6667, 0.0000])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -686,6 +690,7 @@ class MulticlassRecall(MulticlassStatScores):
                 [0.0000, 0.3333, 0.5000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -697,7 +702,7 @@ class MulticlassRecall(MulticlassStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
-            "recall", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
+            "recall", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, top_k=self.top_k
         )
 
     def plot(
@@ -838,6 +843,7 @@ class MultilabelRecall(MultilabelStatScores):
                 [0., 0., 0.]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -924,7 +930,7 @@ class Precision(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls: Type["Precision"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
@@ -939,9 +945,11 @@ class Precision(_ClassificationTaskWrapper):
     ) -> Metric:
         """Initialize task metric."""
         assert multidim_average is not None  # noqa: S101  # needed for mypy
-        kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
-        )
+        kwargs.update({
+            "multidim_average": multidim_average,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+        })
         task = ClassificationTask.from_str(task)
         if task == ClassificationTask.BINARY:
             return BinaryPrecision(threshold, **kwargs)
@@ -987,7 +995,7 @@ class Recall(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls: Type["Recall"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
@@ -1003,9 +1011,11 @@ class Recall(_ClassificationTaskWrapper):
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None  # noqa: S101  # needed for mypy
-        kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
-        )
+        kwargs.update({
+            "multidim_average": multidim_average,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+        })
         if task == ClassificationTask.BINARY:
             return BinaryRecall(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:
@@ -1018,4 +1028,4 @@ class Recall(_ClassificationTaskWrapper):
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelRecall(num_labels, threshold, average, **kwargs)
-        return None
+        return None  # type: ignore[return-value]

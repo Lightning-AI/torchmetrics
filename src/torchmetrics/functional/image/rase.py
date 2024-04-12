@@ -17,8 +17,8 @@ from typing import Tuple
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.image.helper import _uniform_filter
 from torchmetrics.functional.image.rmse_sw import _rmse_sw_compute, _rmse_sw_update
+from torchmetrics.functional.image.utils import _uniform_filter
 
 
 def _rase_update(
@@ -85,7 +85,7 @@ def relative_average_spectral_error(preds: Tensor, target: Tensor, window_size: 
         >>> preds = torch.rand(4, 3, 16, 16)
         >>> target = torch.rand(4, 3, 16, 16)
         >>> relative_average_spectral_error(preds, target)
-        tensor(5114.6641)
+        tensor(5114.66...)
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.

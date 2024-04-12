@@ -405,7 +405,10 @@ def kendall_rank_corrcoef(
         preds, target, [], [], num_outputs=1 if preds.ndim == 1 else preds.shape[-1]
     )
     tau, p_value = _kendall_corrcoef_compute(
-        dim_zero_cat(_preds), dim_zero_cat(_target), _variant, _alternative  # type: ignore[arg-type]  # todo
+        dim_zero_cat(_preds),
+        dim_zero_cat(_target),
+        _variant,  # type: ignore[arg-type]  # todo
+        _alternative,  # type: ignore[arg-type]  # todo
     )
 
     if p_value is not None:

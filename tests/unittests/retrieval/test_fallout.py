@@ -20,7 +20,7 @@ from torchmetrics.functional.retrieval.fall_out import retrieval_fall_out
 from torchmetrics.retrieval.fall_out import RetrievalFallOut
 from typing_extensions import Literal
 
-from unittests.helpers import seed_all
+from unittests._helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,
     _concat_tests,

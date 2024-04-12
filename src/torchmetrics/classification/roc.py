@@ -110,6 +110,7 @@ class BinaryROC(BinaryPrecisionRecallCurve):
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -119,7 +120,7 @@ class BinaryROC(BinaryPrecisionRecallCurve):
     def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
-        return _binary_roc_compute(state, self.thresholds)
+        return _binary_roc_compute(state, self.thresholds)  # type: ignore[arg-type]
 
     def plot(
         self,
@@ -133,7 +134,8 @@ class BinaryROC(BinaryPrecisionRecallCurve):
             curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
                 automatically call `metric.compute` and plot that result.
             score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
-                will automatically compute the score.
+                will automatically compute the score. The score is computed by using the trapezoidal rule to compute the
+                area under the curve.
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
@@ -277,6 +279,7 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -287,7 +290,7 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
     def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
-        return _multiclass_roc_compute(state, self.num_classes, self.thresholds, self.average)
+        return _multiclass_roc_compute(state, self.num_classes, self.thresholds, self.average)  # type: ignore[arg-type]
 
     def plot(
         self,
@@ -301,7 +304,8 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
             curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
                 automatically call `metric.compute` and plot that result.
             score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
-                will automatically compute the score.
+                will automatically compute the score. The score is computed by using the trapezoidal rule to compute the
+                area under the curve.
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
@@ -434,6 +438,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
          tensor([1.0000, 0.7500, 0.5000, 0.2500, 0.0000]))
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = None
     full_state_update: bool = False
@@ -444,7 +449,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
     def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
-        return _multilabel_roc_compute(state, self.num_labels, self.thresholds, self.ignore_index)
+        return _multilabel_roc_compute(state, self.num_labels, self.thresholds, self.ignore_index)  # type: ignore[arg-type]
 
     def plot(
         self,
@@ -458,7 +463,8 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
             curve: the output of either `metric.compute` or `metric.forward`. If no value is provided, will
                 automatically call `metric.compute` and plot that result.
             score: Provide a area-under-the-curve score to be displayed on the plot. If `True` and no curve is provided,
-                will automatically compute the score.
+                will automatically compute the score. The score is computed by using the trapezoidal rule to compute the
+                area under the curve.
             ax: An matplotlib axis object. If provided will add plot to that axis
 
         Returns:
@@ -558,7 +564,7 @@ class ROC(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls: Type["ROC"],
         task: Literal["binary", "multiclass", "multilabel"],
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
