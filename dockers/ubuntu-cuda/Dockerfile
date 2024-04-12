@@ -41,6 +41,7 @@ RUN \
         git \
         wget \
         curl \
+        zip \
         unzip \
         g++ \
         cmake \
