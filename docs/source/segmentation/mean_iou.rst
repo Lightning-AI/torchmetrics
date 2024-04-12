@@ -3,9 +3,9 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/object_detection.svg
    :tags: segmentation
 
-############################
+###################################
 Mean Intersection over Union (mIoU)
-############################
+###################################
 
 Module Interface
 ________________
