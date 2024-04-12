@@ -4,6 +4,7 @@ export FREEZE_REQUIREMENTS=1
 # assume you have installed need packages
 export SPHINX_MOCK_REQUIREMENTS=1
 export SPHINX_FETCH_ASSETS=0
+export SPHINX_PIN_RELEASE_VERSIONS=1
 
 clean:
 	# clean all temp runs
