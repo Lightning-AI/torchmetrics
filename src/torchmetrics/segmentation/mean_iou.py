@@ -11,7 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torch import Tensor
 
-from torchmetrics.functional.segmentation.mean_iou import mean_iou
+from torchmetrics.metric import Metric
 
-__all__ = ["mean_iou"]
+
+class MeanIOU(Metric):
+    """Computes Mean Intersection over Union (mIoU) for semantic segmentation."""
+
+    def __init__(self) -> None:
+        pass
+
+    def update(self, preds: Tensor, target: Tensor) -> None:
+        """Update the state with the new data."""
+
+    def compute(self) -> Tensor:
+        """Update the state with the new data."""
