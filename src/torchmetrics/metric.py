@@ -75,7 +75,7 @@ class Metric(Module, ABC):
             - distributed_available_fn: Function that checks if the distributed backend is available. Defaults to a
               check of ``torch.distributed.is_available()`` and ``torch.distributed.is_initialized()``.
             - sync_on_compute: If metric state should synchronize when ``compute`` is called. Default is ``True``
-            - compute_with_cache: If results from ``compute`` should be cached. Default is ``False``
+            - compute_with_cache: If results from ``compute`` should be cached. Default is ``True``
 
     """
 
