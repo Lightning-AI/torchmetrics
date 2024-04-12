@@ -126,14 +126,7 @@ A few important things to note for this example:
 
 * Calling the ``reset`` method will clear the list state, deleting any values inserted into it. For this reason, care
   must be taken when referencing list states. If you require the values after your metric is reset, you must first
-  copy the attribute to another object:
-
-  .. testcode::
-
-     x = metric.list_state  # referenced (and deleted by reset)
-
-     from deepcopy import copy
-     y = copy(metric.list_state)  # copied (and unchanged by reset)
+  copy the attribute to another object (e.g. using `deepcopy.copy`).
 
 *****************
 Metric attributes
