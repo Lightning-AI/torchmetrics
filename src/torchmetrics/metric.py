@@ -877,7 +877,7 @@ class Metric(Module, ABC):
         return destination
 
     def _copy_state_dict(self) -> dict[str, Tensor | List[Any]]:
-        """Copy the current state values"""
+        """Copy the current state values."""
         cache = {}
         for attr in self._defaults:
             current_value = getattr(self, attr)
@@ -886,8 +886,7 @@ class Metric(Module, ABC):
                 cache[attr] = current_value.detach().clone().to(current_value.device)
             else:
                 cache[attr] = [  # safely copy (non-graph leaf) Tensor elements
-                    _.detach().clone().to(_.device) if isinstance(_, Tensor) else deepcopy(_)
-                    for _ in current_value
+                    _.detach().clone().to(_.device) if isinstance(_, Tensor) else deepcopy(_) for _ in current_value
                 ]
 
         return cache
