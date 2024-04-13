@@ -220,8 +220,7 @@ def _get_ngram_matches(
             (
                 torch.min(ref_n_grams_counts[n][n_gram], hyp_n_grams_counts[n][n_gram])
                 for n_gram in hyp_n_grams_counts[n]
-            )
-            .sum()
+            ).sum()
             .detach()
             .clone()
         )
