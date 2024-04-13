@@ -203,9 +203,9 @@ class FrechetInceptionDistance(Metric):
     used feature extractor from default (Inception v3) to the given network. In case network doesn't have
     ``num_features`` attribute, a random tensor will be given to the network to infer feature dimensionality.
     Size of this tensor can be controlled by ``input_img_size`` argument and type of the tensor can be controlled
-    with ``normalize`` argument (``True`` uses float32 tensors and ``False`` uses int8 tensors). In this case, update method
-    expects to have the tensor given to `imgs` argument to be in the correct shape and type that is compatible to
-    the custom feature extractor.
+    with ``normalize`` argument (``True`` uses float32 tensors and ``False`` uses int8 tensors). In this case, update
+    method expects to have the tensor given to `imgs` argument to be in the correct shape and type that is compatible
+    to the custom feature extractor.
 
     This metric is known to be unstable in its calculatations, and we recommend for the best results using this metric
     that you calculate using `torch.float64` (default is `torch.float32`) which can be set using the `.set_dtype`
@@ -237,13 +237,18 @@ class FrechetInceptionDistance(Metric):
         reset_real_features: Whether to also reset the real features. Since in many cases the real dataset does not
             change, the features can be cached them to avoid recomputing them which is costly. Set this to ``False`` if
             your dataset does not change.
-        normalize: boolean
-            - if default feature extractor is used, controls whether input imgs have values in range [0, 1] or not.
-                - True: if input imgs have values ranged in [0, 1]. They are cast to int8/byte tensors.
-                - False: if input imgs have values ranged in [0, 255]. No casting is done.
-            - if custom feature extractor module is used, controls type of the input img tensors.
-                - True: if input imgs are expected to be in the data type of torch.float32.
-                - False: if input imgs are expected to be in the data type of torch.int8.
+        normalize:
+            Argument for controlling the input image dtype normalization:
+
+            - If default feature extractor is used, controls whether input imgs have values in range [0, 1] or not:
+
+              - True: if input imgs have values ranged in [0, 1]. They are cast to int8/byte tensors.
+              - False: if input imgs have values ranged in [0, 255]. No casting is done.
+
+            - If custom feature extractor module is used, controls type of the input img tensors:
+
+              - True: if input imgs are expected to be in the data type of torch.float32.
+              - False: if input imgs are expected to be in the data type of torch.int8.
         input_img_size: tuple of integers. Indicates input img size to the custom feature extractor network if provided.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
