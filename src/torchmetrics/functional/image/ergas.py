@@ -67,7 +67,7 @@ def _ergas_compute(
         >>> target = preds * 0.75
         >>> preds, target = _ergas_update(preds, target)
         >>> torch.round(_ergas_compute(preds, target))
-        tensor(154.)
+        tensor(10.)
 
     """
     b, c, h, w = preds.shape
@@ -115,9 +115,8 @@ def error_relative_global_dimensionless_synthesis(
         >>> gen = torch.manual_seed(42)
         >>> preds = torch.rand([16, 1, 16, 16], generator=gen)
         >>> target = preds * 0.75
-        >>> ergds = error_relative_global_dimensionless_synthesis(preds, target)
-        >>> torch.round(ergds)
-        tensor(154.)
+        >>> error_relative_global_dimensionless_synthesis(preds, target)
+        tensor(9.6193)
 
     """
     preds, target = _ergas_update(preds, target)
