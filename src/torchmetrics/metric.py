@@ -876,7 +876,7 @@ class Metric(Module, ABC):
             destination[prefix + key] = deepcopy(current_val)
         return destination
 
-    def _copy_state_dict(self) -> dict[str, Tensor | List[Any]]:
+    def _copy_state_dict(self) -> Dict[str, Union[Tensor, List[Any]]]:
         """Copy the current state values"""
         cache = {}
         for attr in self._defaults:
