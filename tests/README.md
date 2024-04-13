@@ -1,0 +1,29 @@
+# Running tests locally
+
+To run the tests locally, you need to have the full development environment set up. This can be setup by running
+the following command in the root directory of the project:
+
+```bash
+pip install .[dev]
+```
+
+Then for windows users, to execute the tests (unit tests and integration tests) run the following command (will only
+run non-DDP tests):
+
+```bash
+pytest tests/
+```
+
+For linux/Mac users you will need to provide the `-m` argument to indicate if `ddp` tests should also be executed:
+
+```bash
+pytest -m DDP tests/  # to run only DDP tests
+pytest -m "not DDP" tests/  # to run all tests except DDP tests
+```
+
+To run only unittests, point the command only to the `tests/unittests` directory. Similarly, to only run a subset of the
+unittests, like all tests related to the regression domain, run the following command:
+
+```bash
+pytest tests/unittests/regression/
+```
