@@ -331,7 +331,7 @@ class Metric(Module, ABC):
         self.compute_on_cpu = False
 
         # save context before switch
-        cache = deepcopy({attr: getattr(self, attr) for attr in self._defaults})
+        cache = self._copy_state_dict()
 
         # call reset, update, compute, on single batch
         self._enable_grad = True  # allow grads for batch computation
@@ -364,7 +364,7 @@ class Metric(Module, ABC):
 
         """
         # store global state and reset to default
-        global_state = deepcopy({attr: getattr(self, attr) for attr in self._defaults})
+        global_state = self._copy_state_dict()
         _update_count = self._update_count
         self.reset()
 
@@ -531,7 +531,7 @@ class Metric(Module, ABC):
             dist_sync_fn = gather_all_tensors
 
         # cache prior to syncing
-        self._cache = deepcopy({attr: getattr(self, attr) for attr in self._defaults})
+        self._cache = self._copy_state_dict()
 
         # sync
         self._sync_dist(dist_sync_fn, process_group=process_group)
@@ -875,6 +875,22 @@ class Metric(Module, ABC):
                     current_val = [cur_v.detach() if isinstance(cur_v, Tensor) else cur_v for cur_v in current_val]
             destination[prefix + key] = deepcopy(current_val)
         return destination
+
+    def _copy_state_dict(self) -> dict[str, Tensor | List[Any]]:
+        """Copy the current state values"""
+        cache = {}
+        for attr in self._defaults:
+            current_value = getattr(self, attr)
+
+            if isinstance(current_value, Tensor):
+                cache[attr] = current_value.detach().clone().to(current_value.device)
+            else:
+                cache[attr] = [  # safely copy (non-graph leaf) Tensor elements
+                    _.detach().clone().to(_.device) if isinstance(_, Tensor) else deepcopy(_)
+                    for _ in current_value
+                ]
+
+        return cache
 
     def _load_from_state_dict(
         self,
