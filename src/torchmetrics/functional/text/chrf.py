@@ -188,7 +188,7 @@ def _get_n_grams_counts_and_total_ngrams(
         """Get total sum of n-grams over n-grams w.r.t n."""
         total_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
         for n in n_grams_counts:
-            total_n_grams[n] = sum(n_grams_counts[n].values()).detach().clone()
+            total_n_grams[n] = n_grams_counts[n].values().sum().detach().clone()
         return total_n_grams
 
     char_n_grams_counts, word_n_grams_counts = _char_and_word_ngrams_counts(
@@ -217,10 +217,11 @@ def _get_ngram_matches(
     matching_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
     for n in hyp_n_grams_counts:
         matching_n_grams[n] = (
-            sum(
+            (
                 torch.min(ref_n_grams_counts[n][n_gram], hyp_n_grams_counts[n][n_gram])
                 for n_gram in hyp_n_grams_counts[n]
             )
+            .sum()
             .detach()
             .clone()
         )
