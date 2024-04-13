@@ -331,7 +331,7 @@ class Metric(Module, ABC):
         self.compute_on_cpu = False
 
         # save context before switch
-        cache = self._save_state_dict()
+        cache = self._copy_state_dict()
 
         # call reset, update, compute, on single batch
         self._enable_grad = True  # allow grads for batch computation
@@ -364,7 +364,7 @@ class Metric(Module, ABC):
 
         """
         # store global state and reset to default
-        global_state = self._save_state_dict()
+        global_state = self._copy_state_dict()
         _update_count = self._update_count
         self.reset()
 
@@ -531,7 +531,7 @@ class Metric(Module, ABC):
             dist_sync_fn = gather_all_tensors
 
         # cache prior to syncing
-        self._cache = self._save_state_dict()
+        self._cache = self._copy_state_dict()
 
         # sync
         self._sync_dist(dist_sync_fn, process_group=process_group)
@@ -876,18 +876,17 @@ class Metric(Module, ABC):
             destination[prefix + key] = deepcopy(current_val)
         return destination
 
-    def _save_state_dict(self) -> Dict[str, Union[Tensor, List[Any]]]:
-        """Save the current state values, retaining references to Tensor values."""
-        # do not .clone() Tensor values, as new objects leak memory
+    def _copy_state_dict(self) -> Dict[str, Union[Tensor, List[Any]]]:
+        """Copy the current state values."""
         cache = {}
         for attr in self._defaults:
             current_value = getattr(self, attr)
 
             if isinstance(current_value, Tensor):
-                cache[attr] = current_value.detach().to(current_value.device)
+                cache[attr] = current_value.detach().clone().to(current_value.device)
             else:
                 cache[attr] = [  # safely copy (non-graph leaf) Tensor elements
-                    _.detach().to(_.device) if isinstance(_, Tensor) else deepcopy(_) for _ in current_value
+                    _.detach().clone().to(_.device) if isinstance(_, Tensor) else deepcopy(_) for _ in current_value
                 ]
 
         return cache
