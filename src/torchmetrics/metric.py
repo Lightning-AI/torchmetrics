@@ -331,7 +331,7 @@ class Metric(Module, ABC):
         self.compute_on_cpu = False
 
         # save context before switch
-        cache = {attr: getattr(self, attr) for attr in self._defaults}
+        cache = deepcopy({attr: getattr(self, attr) for attr in self._defaults})
 
         # call reset, update, compute, on single batch
         self._enable_grad = True  # allow grads for batch computation
@@ -364,7 +364,7 @@ class Metric(Module, ABC):
 
         """
         # store global state and reset to default
-        global_state = {attr: getattr(self, attr) for attr in self._defaults}
+        global_state = deepcopy({attr: getattr(self, attr) for attr in self._defaults})
         _update_count = self._update_count
         self.reset()
 
@@ -531,7 +531,7 @@ class Metric(Module, ABC):
             dist_sync_fn = gather_all_tensors
 
         # cache prior to syncing
-        self._cache = {attr: getattr(self, attr) for attr in self._defaults}
+        self._cache = deepcopy({attr: getattr(self, attr) for attr in self._defaults})
 
         # sync
         self._sync_dist(dist_sync_fn, process_group=process_group)
