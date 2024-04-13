@@ -55,7 +55,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``bck`` (:class:`~torch.Tensor`): A tensor containing cohen kappa score
+    - ``bc_kappa`` (:class:`~torch.Tensor`): A tensor containing cohen kappa score
 
     Args:
         threshold: Threshold for transforming probability to binary (0,1) predictions
