@@ -877,8 +877,7 @@ class Metric(Module, ABC):
         return destination
 
     def _save_state_dict(self) -> Dict[str, Union[Tensor, List[Any]]]:
-        """Save the current state values, retaining references to Tensor values"""
-
+        """Save the current state values, retaining references to Tensor values."""
         # do not .clone() Tensor values, as new objects leak memory
         cache = {}
         for attr in self._defaults:
