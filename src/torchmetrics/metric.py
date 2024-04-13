@@ -878,7 +878,7 @@ class Metric(Module, ABC):
 
     def _copy_state_dict(self) -> Dict[str, Union[Tensor, List[Any]]]:
         """Copy the current state values."""
-        cache = {}
+        cache: Dict[str, Union[Tensor, List[Any]]] = {}
         for attr in self._defaults:
             current_value = getattr(self, attr)
 
