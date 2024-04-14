@@ -4,7 +4,7 @@ To run the tests locally, you need to have the full development environment set 
 the following command in the root directory of the project:
 
 ```bash
-pip install .[dev]
+pip install . -r requirements/_devel.txt
 ```
 
 Then for windows users, to execute the tests (unit tests and integration tests) run the following command (will only
