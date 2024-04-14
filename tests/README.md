@@ -21,7 +21,7 @@ pytest -m DDP tests/  # to run only DDP tests
 pytest -m "not DDP" tests/  # to run all tests except DDP tests
 ```
 
-Alternatively, for systems with `make` installed, simply running `make test` from the root of the project will install 
+Alternatively, for systems with `make` installed, simply running `make test` from the root of the project will install
 all requirements and run the full test suit.
 
 To run only unittests, point the command only to the `tests/unittests` directory. Similarly, to only run a subset of the
