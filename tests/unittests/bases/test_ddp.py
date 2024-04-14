@@ -269,7 +269,7 @@ def test_sync_on_compute(sync_on_compute, test_func):
 def _test_sync_with_empty_lists(rank):
     dummy = DummyListMetric()
     val = dummy.compute()
-    assert val == []
+    assert torch.allclose(val, tensor([]))
 
 
 @pytest.mark.DDP()
@@ -284,7 +284,7 @@ def _test_sync_with_unequal_size_lists(rank):
     dummy = DummyListMetric()
     if rank == 0:
         dummy.update(torch.zeros(2))
-    assert dummy.compute() == tensor([0.0, 0.0])
+    assert torch.all(dummy.compute() == tensor([0.0, 0.0]))
 
 
 @pytest.mark.DDP()
