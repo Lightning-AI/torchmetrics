@@ -827,8 +827,9 @@ class MeanAveragePrecision(Metric):
                 rle = self.mask_utils.encode(np.asfortranarray(i))
                 masks.append((tuple(rle["size"]), rle["counts"]))
             output[1] = tuple(masks)  # type: ignore[call-overload]
-        if (output[0] is not None and len(output[0]) > self.max_detection_thresholds[-1]) or (
-            output[1] is not None and len(output[1]) > self.max_detection_thresholds[-1]
+        if warn and (
+            (output[0] is not None and len(output[0]) > self.max_detection_thresholds[-1])
+            or (output[1] is not None and len(output[1]) > self.max_detection_thresholds[-1])
         ):
             _warning_on_too_many_detections(self.max_detection_thresholds[-1])
         return output  # type: ignore[return-value]
