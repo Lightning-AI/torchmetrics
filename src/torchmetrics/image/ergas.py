@@ -35,7 +35,7 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
     band of the result image. It is defined as:
 
     .. math::
-        ERGAS = 100 * \frac{h}{l} \\sqrt{\frac{1}{N} \\sum_{k=1}^{N} \frac{RMSE(B_k)^2}{\\mu_k^2}}
+        ERGAS = 100 \cdot \frac{h}{l} \cdot \sqrt{\frac{1}{N} \sum_{k=1}^{N} \frac{RMSE(B_k)^2}{\mu_k^2}}
 
     where :math:`h` and :math:`l` denote the spatial resolution (pixel size) of the high and low resolution images,
     often shorted to the ratio between them :math:`r=h/l`. :math:`N` is the number of spectral bands, :math:`RMSE(B_k)`
