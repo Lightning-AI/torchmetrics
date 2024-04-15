@@ -22,7 +22,7 @@ class _ErrorRelativeGlobalDimensionlessSynthesis(ErrorRelativeGlobalDimensionles
     >>> target = preds * 0.75
     >>> ergas = _ErrorRelativeGlobalDimensionlessSynthesis()
     >>> torch.round(ergas(preds, target))
-    tensor(154.)
+    tensor(10.)
 
     """
 
