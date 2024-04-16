@@ -87,6 +87,7 @@ def _test_ddp_compositional_tensor(rank: int, worldsize: int = NUM_PROCESSES) ->
 
 @pytest.mark.DDP()
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@pytest.mark.skipif(not hasattr(pytest, "pool"), reason="DDP pool is not available.")
 @pytest.mark.parametrize(
     "process",
     [
@@ -124,6 +125,7 @@ def _test_non_contiguous_tensors(rank):
 
 @pytest.mark.DDP()
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@pytest.mark.skipif(not hasattr(pytest, "pool"), reason="DDP pool is not available.")
 def test_non_contiguous_tensors():
     """Test that gather_all operation works for non-contiguous tensors."""
     pytest.pool.map(_test_non_contiguous_tensors, range(NUM_PROCESSES))
@@ -231,6 +233,7 @@ def _test_state_dict_is_synced(rank, tmpdir):
 
 @pytest.mark.DDP()
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@pytest.mark.skipif(not hasattr(pytest, "pool"), reason="DDP pool is not available.")
 def test_state_dict_is_synced(tmpdir):
     """Tests that metrics are synced while creating the state dict but restored after to continue accumulation."""
     pytest.pool.map(partial(_test_state_dict_is_synced, tmpdir=tmpdir), range(NUM_PROCESSES))
@@ -259,6 +262,7 @@ def _test_sync_on_compute_list_state(rank, sync_on_compute):
 
 @pytest.mark.DDP()
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@pytest.mark.skipif(not hasattr(pytest, "pool"), reason="DDP pool is not available.")
 @pytest.mark.parametrize("sync_on_compute", [True, False])
 @pytest.mark.parametrize("test_func", [_test_sync_on_compute_list_state, _test_sync_on_compute_tensor_state])
 def test_sync_on_compute(sync_on_compute, test_func):
@@ -274,6 +278,7 @@ def _test_sync_with_empty_lists(rank):
 
 @pytest.mark.DDP()
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@pytest.mark.skipif(not hasattr(pytest, "pool"), reason="DDP pool is not available.")
 def test_sync_with_empty_lists():
     """Test that synchronization of states can be enabled and disabled for compute."""
     pytest.pool.map(_test_sync_with_empty_lists, range(NUM_PROCESSES))

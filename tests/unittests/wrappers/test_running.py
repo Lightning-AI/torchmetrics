@@ -145,6 +145,7 @@ def _test_ddp_running(rank, dist_sync_on_step, expected):
 
 @pytest.mark.DDP()
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@pytest.mark.skipif(not hasattr(pytest, "pool"), reason="DDP pool is not available.")
 @pytest.mark.parametrize(("dist_sync_on_step", "expected"), [(False, 1), (True, 2)])
 def test_ddp_running(dist_sync_on_step, expected):
     """Check that the dist_sync_on_step gets correctly passed to base metric."""

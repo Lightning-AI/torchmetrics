@@ -369,6 +369,8 @@ class TextTester(MetricTester):
         if ddp:
             if sys.platform == "win32":
                 pytest.skip("DDP not supported on windows")
+            if not hasattr(pytest, "pool"):
+                pytest.skip("DDP DDP pool is not available.")
             pytest.pool.starmap(
                 partial(_class_test, **common_kwargs, **kwargs_update),
                 [(rank, NUM_PROCESSES) for rank in range(NUM_PROCESSES)],
