@@ -23,6 +23,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.compute import _safe_divide, interp
 from torchmetrics.utilities.data import _bincount, _cumsum
 from torchmetrics.utilities.enums import ClassificationTask
+from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _binary_clf_curve(
@@ -261,6 +262,8 @@ def _binary_precision_recall_curve_compute(
     original input, then we dynamically compute the binary classification curve.
 
     """
+    # import pdb
+    # pdb.set_trace()
     if isinstance(state, Tensor) and thresholds is not None:
         tps = state[:, 1, 1]
         fps = state[:, 0, 1]
@@ -274,6 +277,12 @@ def _binary_precision_recall_curve_compute(
     fps, tps, thresholds = _binary_clf_curve(state[0], state[1], pos_label=pos_label)
     precision = tps / (tps + fps)
     recall = tps / tps[-1]
+    if (state[1] == 0).all():  # all labels are negative, recall is undefined
+        rank_zero_warn(
+            "No positive samples found in target, recall is undefined. Setting recall to one for all thresholds.",
+            UserWarning,
+        )
+        recall = torch.ones_like(recall)
 
     # need to call reversed explicitly, since including that to slice would
     # introduce negative strides that are not yet supported in pytorch
