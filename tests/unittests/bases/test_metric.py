@@ -124,10 +124,16 @@ def test_reset():
     metric = B()
     assert isinstance(metric.x, list)
     assert len(metric.x) == 0
-    metric.x = tensor(5)
+    metric.x = [tensor(5)]
     metric.reset()
     assert isinstance(metric.x, list)
     assert len(metric.x) == 0
+
+    metric = B()
+    metric.x = [1, 2, 3]
+    reference = metric.x  # prevents garbage collection
+    metric.reset()
+    assert len(reference) == 0  # check list state is freed
 
 
 def test_reset_compute():
@@ -474,16 +480,32 @@ def test_constant_memory_on_repeat_init():
     def mem():
         return torch.cuda.memory_allocated() / 1024**2
 
-    x = torch.randn(10000).cuda()
-
     for i in range(100):
-        m = DummyListMetric(compute_with_cache=False).cuda()
-        m(x)
+        _ = DummyListMetric(compute_with_cache=False).cuda()
         if i == 0:
             after_one_iter = mem()
 
         # allow for 5% flucturation due to measuring
         assert after_one_iter * 1.05 >= mem(), "memory increased too much above base level"
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
+def test_freed_memory_on_reset():
+    """Test that resetting a metric frees all the memory allocated when updating it."""
+
+    def mem():
+        return torch.cuda.memory_allocated() / 1024**2
+
+    m = DummyListMetric().cuda()
+    after_init = mem()
+
+    for _ in range(100):
+        m(x=torch.randn(10000).cuda())
+
+    m.reset()
+
+    # allow for 5% flucturation due to measuring
+    assert after_init * 1.05 >= mem(), "memory increased too much above base level"
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires gpu")
