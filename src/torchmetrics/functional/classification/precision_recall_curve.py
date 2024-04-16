@@ -262,8 +262,6 @@ def _binary_precision_recall_curve_compute(
     original input, then we dynamically compute the binary classification curve.
 
     """
-    # import pdb
-    # pdb.set_trace()
     if isinstance(state, Tensor) and thresholds is not None:
         tps = state[:, 1, 1]
         fps = state[:, 0, 1]
