@@ -499,7 +499,7 @@ def test_freed_memory_on_reset():
     m = DummyListMetric().cuda()
     after_init = mem()
 
-    for i in range(100):
+    for _ in range(100):
         m(x=torch.randn(10000).cuda())
 
     m.reset()
