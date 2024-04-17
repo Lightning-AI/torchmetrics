@@ -80,8 +80,19 @@ def test_fid_raises_errors_and_warnings():
         _ = FrechetInceptionDistance(feature=[1, 2])
 
 
+class _DummyFeatureExtractor(Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.flatten = torch.nn.Flatten()
+        self.extractor = torch.nn.Linear(3 * 299 * 299, 64)
+
+    def __call__(self, img) -> torch.Tensor:
+        img = (img / 125.5).float()  # Convert int img input to float as Linear layer expects float inputs
+        return self.extractor(self.flatten(img))
+
+
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
-@pytest.mark.parametrize("feature", [64, 192, 768, 2048])
+@pytest.mark.parametrize("feature", [64, 192, 768, 2048, _DummyFeatureExtractor()])
 def test_fid_same_input(feature):
     """If real and fake are update on the same data the fid score should be 0."""
     metric = FrechetInceptionDistance(feature=feature)

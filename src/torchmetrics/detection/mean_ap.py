@@ -418,8 +418,8 @@ class MeanAveragePrecision(Metric):
                 "When providing a list of max detection thresholds it should have length 3."
                 " Got value {len(max_detection_thresholds)}"
             )
-        max_det_thr, _ = torch.sort(torch.tensor(max_detection_thresholds or [1, 10, 100], dtype=torch.int))
-        self.max_detection_thresholds = max_det_thr.tolist()
+        max_det_threshold, _ = torch.sort(torch.tensor(max_detection_thresholds or [1, 10, 100], dtype=torch.int))
+        self.max_detection_thresholds = max_det_threshold.tolist()
 
         if not isinstance(class_metrics, bool):
             raise ValueError("Expected argument `class_metrics` to be a boolean")
@@ -827,8 +827,9 @@ class MeanAveragePrecision(Metric):
                 rle = self.mask_utils.encode(np.asfortranarray(i))
                 masks.append((tuple(rle["size"]), rle["counts"]))
             output[1] = tuple(masks)  # type: ignore[call-overload]
-        if (output[0] is not None and len(output[0]) > self.max_detection_thresholds[-1]) or (
-            output[1] is not None and len(output[1]) > self.max_detection_thresholds[-1]
+        if warn and (
+            (output[0] is not None and len(output[0]) > self.max_detection_thresholds[-1])
+            or (output[1] is not None and len(output[1]) > self.max_detection_thresholds[-1])
         ):
             _warning_on_too_many_detections(self.max_detection_thresholds[-1])
         return output  # type: ignore[return-value]
