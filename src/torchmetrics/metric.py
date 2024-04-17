@@ -75,7 +75,7 @@ class Metric(Module, ABC):
             - distributed_available_fn: Function that checks if the distributed backend is available. Defaults to a
               check of ``torch.distributed.is_available()`` and ``torch.distributed.is_initialized()``.
             - sync_on_compute: If metric state should synchronize when ``compute`` is called. Default is ``True``
-            - compute_with_cache: If results from ``compute`` should be cached. Default is ``False``
+            - compute_with_cache: If results from ``compute`` should be cached. Default is ``True``
 
     """
 
@@ -238,6 +238,12 @@ class Metric(Module, ABC):
             When passing a custom function to ``dist_reduce_fx``, expect the synchronized metric state to follow
             the format discussed in the above note.
 
+        Note:
+            The values inserted into a list state are deleted whenever :meth:`~Metric.reset` is called. This allows
+            device memory to be automatically reallocated, but may produce unexpected effects when referencing list
+            states. To retain such values after :meth:`~Metric.reset` is called, you must first copy them to another
+            object.
+
         Raises:
             ValueError:
                 If ``default`` is not a ``tensor`` or an ``empty list``.
@@ -325,7 +331,7 @@ class Metric(Module, ABC):
         self.compute_on_cpu = False
 
         # save context before switch
-        cache = {attr: getattr(self, attr) for attr in self._defaults}
+        cache = self._copy_state_dict()
 
         # call reset, update, compute, on single batch
         self._enable_grad = True  # allow grads for batch computation
@@ -358,7 +364,7 @@ class Metric(Module, ABC):
 
         """
         # store global state and reset to default
-        global_state = {attr: getattr(self, attr) for attr in self._defaults}
+        global_state = self._copy_state_dict()
         _update_count = self._update_count
         self.reset()
 
@@ -525,7 +531,7 @@ class Metric(Module, ABC):
             dist_sync_fn = gather_all_tensors
 
         # cache prior to syncing
-        self._cache = {attr: getattr(self, attr) for attr in self._defaults}
+        self._cache = self._copy_state_dict()
 
         # sync
         self._sync_dist(dist_sync_fn, process_group=process_group)
@@ -681,7 +687,7 @@ class Metric(Module, ABC):
             if isinstance(default, Tensor):
                 setattr(self, attr, default.detach().clone().to(current_val.device))
             else:
-                setattr(self, attr, [])
+                getattr(self, attr).clear()  # delete/free list items
 
         # reset internal states
         self._cache = None
@@ -869,6 +875,21 @@ class Metric(Module, ABC):
                     current_val = [cur_v.detach() if isinstance(cur_v, Tensor) else cur_v for cur_v in current_val]
             destination[prefix + key] = deepcopy(current_val)
         return destination
+
+    def _copy_state_dict(self) -> Dict[str, Union[Tensor, List[Any]]]:
+        """Copy the current state values."""
+        cache: Dict[str, Union[Tensor, List[Any]]] = {}
+        for attr in self._defaults:
+            current_value = getattr(self, attr)
+
+            if isinstance(current_value, Tensor):
+                cache[attr] = current_value.detach().clone().to(current_value.device)
+            else:
+                cache[attr] = [  # safely copy (non-graph leaf) Tensor elements
+                    _.detach().clone().to(_.device) if isinstance(_, Tensor) else deepcopy(_) for _ in current_value
+                ]
+
+        return cache
 
     def _load_from_state_dict(
         self,
