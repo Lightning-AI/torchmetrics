@@ -12,7 +12,7 @@ Let's consider a use case in medical imaging where Spatial Correlation Coefficie
  or assessing the quality of medical imaging data.
 """
 
-#%%
+# %%
 # Installing dependencies
 #
 #     .. code-block:: bash
