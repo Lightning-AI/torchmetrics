@@ -154,7 +154,6 @@ sphinx_gallery_conf = {
     'example_extensions': {'.py'},
     'line_numbers': True,
     'promote_jupyter_magic': True,
-    'compress_images': ('images', 'thumbnails'),
     'matplotlib_animations': True,
     'abort_on_example_error': True,
     # 'only_warn_on_example_error': True
