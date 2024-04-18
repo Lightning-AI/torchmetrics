@@ -130,7 +130,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.githubpages",
-    'sphinx_gallery.gen_gallery',
+    "sphinx_gallery.gen_gallery",
     "sphinx_autodoc_typehints",
     "sphinx_paramlinks",
     "myst_parser",
@@ -147,8 +147,8 @@ plot_html_show_source_link = False
 templates_path = ["_templates"]
 
 sphinx_gallery_conf = {
-     'examples_dirs': os.path.join(_PATH_ROOT, 'examples'),   # path to your example scripts
-     'gallery_dirs': 'gallery',  # path to where to save gallery generated output
+    "examples_dirs": os.path.join(_PATH_ROOT, "examples"),  # path to your example scripts
+    "gallery_dirs": "gallery",  # path to where to save gallery generated output
 }
 
 myst_update_mathjax = False
