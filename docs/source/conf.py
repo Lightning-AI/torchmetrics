@@ -149,14 +149,14 @@ templates_path = ["_templates"]
 sphinx_gallery_conf = {
     "examples_dirs": os.path.join(_PATH_ROOT, "examples"),  # path to your example scripts
     "gallery_dirs": "gallery",  # path to where to save gallery generated output
-    'filename_pattern': '.',
-    'ignore_pattern': r'__init__\.py',
-    'example_extensions': {'.py'},
-    'line_numbers': True,
-    'promote_jupyter_magic': True,
-    'compress_images': ('images', 'thumbnails'),
-    'matplotlib_animations': True,
-    'abort_on_example_error': True,
+    "filename_pattern": ".",
+    "ignore_pattern": r"__init__\.py",
+    "example_extensions": {".py"},
+    "line_numbers": True,
+    "promote_jupyter_magic": True,
+    "compress_images": ("images", "thumbnails"),
+    "matplotlib_animations": True,
+    "abort_on_example_error": True,
     # 'only_warn_on_example_error': True
 }
 
