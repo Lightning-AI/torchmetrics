@@ -157,6 +157,7 @@ sphinx_gallery_conf = {
     "matplotlib_animations": True,
     "abort_on_example_error": True,
     # 'only_warn_on_example_error': True
+    "thumbnail_size": (224, 224),
 }
 
 myst_update_mathjax = False

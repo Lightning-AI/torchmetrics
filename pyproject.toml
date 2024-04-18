@@ -56,6 +56,7 @@ unfixable = ["F401"]
 "setup.py" = ["ANN202", "ANN401"]
 "docs/source/conf.py" = ["A001", "D103"]
 "examples/*" = [
+    "E501",  # Line too long (XXX > 120)
     "D205",  # 1 blank line required between summary line and description
     "D212",  # [*] Multi-line docstring summary should start at the first line
     "D415",  # First line should end with a period, question mark, or exclamation point

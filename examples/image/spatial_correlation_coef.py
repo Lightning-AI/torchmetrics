@@ -2,19 +2,14 @@
 Spatial Correlation Coefficient
 ===============================
 
-The Spatial Correlation Coefficient can be applied to compare the spatial structure of two images,
- which can be valuable in various domains such as medical imaging, remote sensing,
- and quality assessment in manufacturing or design processes.
+The Spatial Correlation Coefficient can be applied to compare the spatial structure of two images, which can be valuable in various domains such as medical imaging, remote sensing, and quality assessment in manufacturing or design processes.
 
-Let's consider a use case in medical imaging where Spatial Correlation Coefficient is used to compare
- the spatial correlation between a reference image and a reconstructed medical scan.
- This can be particularly relevant in evaluating the accuracy of image reconstruction techniques
- or assessing the quality of medical imaging data.
+Let's consider a use case in medical imaging where Spatial Correlation Coefficient is used to compare the spatial correlation between a reference image and a reconstructed medical scan.
+This can be particularly relevant in evaluating the accuracy of image reconstruction techniques or assessing the quality of medical imaging data.
 """
 
 # %%
-# Here's a hypothetical Python example demonstrating the usage of the Spatial Correlation Coefficient
-#  to compare two medical images:
+# Here's a hypothetical Python example demonstrating the usage of the Spatial Correlation Coefficient to compare two medical images:
 
 import matplotlib.pyplot as plt
 import numpy as np

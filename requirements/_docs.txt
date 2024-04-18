@@ -26,6 +26,6 @@ pydantic > 1.0.0, < 3.0.0
 
 # Gallery extra requirements
 # --------------------------
-# todo: untill this hase reolution - https://github.com/sphinx-gallery/sphinx-gallery/issues/1290
+# todo: until this hase reolution - https://github.com/sphinx-gallery/sphinx-gallery/issues/1290
 # Image
-scikit-image >=0.19.0, <=0.21.0
+scikit-image ~=0.21
