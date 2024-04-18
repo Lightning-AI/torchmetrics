@@ -128,14 +128,14 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx.ext.mathjax",
-    "myst_parser",
     "sphinx.ext.autosectionlabel",
-    "nbsphinx",
+    "sphinx.ext.githubpages",
+    'sphinx_gallery.gen_gallery',
     "sphinx_autodoc_typehints",
     "sphinx_paramlinks",
-    "sphinx.ext.githubpages",
-    "lai_sphinx_theme.extensions.lightning",
+    "myst_parser",
     "matplotlib.sphinxext.plot_directive",
+    "lai_sphinx_theme.extensions.lightning",
 ]
 
 # Set that source code from plotting is always included
@@ -146,13 +146,10 @@ plot_html_show_source_link = False
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
-# https://berkeley-stat159-f17.github.io/stat159-f17/lectures/14-sphinx..html#conf.py-(cont.)
-# https://stackoverflow.com/questions/38526888/embed-ipython-notebook-in-sphinx-document
-# I execute the notebooks manually in advance. If notebooks test the code,
-# they should be run at build time.
-nbsphinx_execute = "never"
-nbsphinx_allow_errors = True
-nbsphinx_requirejs_path = ""
+sphinx_gallery_conf = {
+     'examples_dirs': os.path.join(_PATH_ROOT, 'examples'),   # path to your example scripts
+     'gallery_dirs': 'gallery',  # path to where to save gallery generated output
+}
 
 myst_update_mathjax = False
 
@@ -162,7 +159,7 @@ source_suffix = {
     ".rst": "restructuredtext",
     ".txt": "markdown",
     ".md": "markdown",
-    ".ipynb": "nbsphinx",
+    # ".ipynb": "nbsphinx",
 }
 
 # The master toctree document.

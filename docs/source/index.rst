@@ -129,6 +129,7 @@ Or directly from conda
 
    pages/quickstart
    all-metrics
+   gallery/index
    pages/overview
    pages/plotting
    pages/implement
