@@ -13,13 +13,6 @@ Let's consider a use case in medical imaging where Spatial Correlation Coefficie
 """
 
 # %%
-# Installing dependencies
-#
-#     .. code-block:: bash
-#
-#       ! pip install -q "scikit-image"
-
-# %%
 # Here's a hypothetical Python example demonstrating the usage of the Spatial Correlation Coefficient
 #  to compare two medical images:
 
