@@ -1,4 +1,5 @@
-"""Spatial Correlation Coefficient
+"""
+Spatial Correlation Coefficient
 ===============================
 
 The Spatial Correlation Coefficient can be applied to compare the spatial structure of two images,
@@ -12,10 +13,12 @@ Let's consider a use case in medical imaging where Spatial Correlation Coefficie
 """
 
 # %%
-# Here's a hypothetical Python example demonstrating the usage of the Spatial Correlation Coefficient to compare two medical images:
+# Here's a hypothetical Python example demonstrating the usage of the Spatial Correlation Coefficient
+#  to compare two medical images:
 
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
 from skimage.data import shepp_logan_phantom
 from skimage.transform import iradon, radon, rescale
 from torchmetrics.image import SpatialCorrelationCoefficient
