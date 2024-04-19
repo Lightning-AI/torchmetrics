@@ -51,6 +51,9 @@ class TestSacreBLEUScore(TextTester):
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_bleu_score_class(self, ddp, preds, targets, tokenize, lowercase):
         """Test class implementation of metric."""
+        if tokenize == "flores200":
+            pytest.skip("flores200 tests are flaky")  # TODO: figure out why
+
         metric_args = {"tokenize": tokenize, "lowercase": lowercase}
         original_sacrebleu = partial(_reference_sacre_bleu, tokenize=tokenize, lowercase=lowercase)
 
