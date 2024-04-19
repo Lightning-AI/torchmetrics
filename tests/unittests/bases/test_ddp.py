@@ -22,6 +22,7 @@ from torch import tensor
 from torchmetrics import Metric
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import NUM_PROCESSES
 from unittests._helpers import seed_all
@@ -273,6 +274,7 @@ def _test_sync_with_empty_lists(rank):
 
 
 @pytest.mark.DDP()
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_1, reason="test only works on newer torch versions")
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 def test_sync_with_empty_lists():
     """Test that synchronization of states can be enabled and disabled for compute."""
@@ -288,6 +290,7 @@ def _test_sync_with_unequal_size_lists(rank):
 
 
 @pytest.mark.DDP()
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_1, reason="test only works on newer torch versions")
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 def test_sync_with_unequal_size_lists():
     """Test that synchronization of states can be enabled and disabled for compute."""
