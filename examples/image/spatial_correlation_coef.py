@@ -18,17 +18,21 @@ from skimage.data import shepp_logan_phantom
 from skimage.transform import iradon, radon, rescale
 from torchmetrics.image import SpatialCorrelationCoefficient
 
+# %%
 # Create a Shepp-Logan phantom image
 phantom = shepp_logan_phantom()
 phantom = rescale(phantom, scale=512 / 400)  # Rescaling to 512x512
 
+# %%
 # Simulate projection data (sinogram) using Radon transform
 theta = np.linspace(0.0, 180.0, max(phantom.shape), endpoint=False)
 sinogram = radon(phantom, theta=theta)
 
+# %%
 # Perform reconstruction using the inverse Radon transform
 reconstruction = iradon(sinogram, theta=theta, circle=True)
 
+# %%
 # Display the results
 fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(10, 4))
 ax1.set_title("Original")
@@ -39,10 +43,12 @@ ax3.set_title("Reconstruction from sinogram")
 ax3.imshow(reconstruction, cmap=plt.cm.Greys_r)
 fig.tight_layout()
 
+# %%
 # Convert the images to PyTorch tensors
 phantom_tensor = torch.from_numpy(phantom).float().unsqueeze(0).unsqueeze(0)
 reconstructed_tensor = torch.from_numpy(reconstruction).float().unsqueeze(0).unsqueeze(0)
 
+# %%
 # Calculating the Spatial Correlation Coefficient
 scc = SpatialCorrelationCoefficient()
 score = scc(preds=reconstructed_tensor, target=phantom_tensor)
