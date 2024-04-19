@@ -38,7 +38,7 @@ class MeanIoU(Metric):
           the number of samples and ``C`` the number of classes. Alternatively, an integer tensor of shape ``(N, ...)``
           can be provided, where the integer values correspond to the class index. That format will be automatically
           converted to a one-hot tensor.
-         - ``target`` (:class:`~torch.Tensor`): An one-hot boolean tensor of shape ``(N, C, ...)`` with ``N`` being
+        - ``target`` (:class:`~torch.Tensor`): An one-hot boolean tensor of shape ``(N, C, ...)`` with ``N`` being
           the number of samples and ``C`` the number of classes. Alternatively, an integer tensor of shape ``(N, ...)``
           can be provided, where the integer values correspond to the class index. That format will be automatically
           converted to a one-hot tensor.
