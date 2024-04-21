@@ -438,6 +438,9 @@ class Metric(Module, ABC):
             if reduction_fn == dim_zero_cat and isinstance(input_dict[attr], list) and len(input_dict[attr]) > 1:
                 input_dict[attr] = [dim_zero_cat(input_dict[attr])]
 
+        if dist_sync_fn == gather_all_tensors:
+            dist_sync_fn = functools.partial(gather_all_tensors, device=self.device)
+
         output_dict = apply_to_collection(
             input_dict,
             Tensor,

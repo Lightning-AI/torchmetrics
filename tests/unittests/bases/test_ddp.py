@@ -277,3 +277,19 @@ def _test_sync_with_empty_lists(rank):
 def test_sync_with_empty_lists():
     """Test that synchronization of states can be enabled and disabled for compute."""
     pytest.pool.map(_test_sync_with_empty_lists, range(NUM_PROCESSES))
+
+
+def _test_compute_on_cpu_distributed(rank):
+    dummy = DummyListMetric(compute_on_cpu=True).to(f"cuda:{rank}")
+    dummy.update(tensor(rank + 1))
+    val = dummy.compute()
+    assert val == [tensor(rank + 1)]
+
+
+@pytest.mark.DDP()
+@pytest.mark.skipif(torch.cuda.device_count() < 2, reason="Test requires at least 2 GPUs")
+@pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@pytest.mark.skipif(not hasattr(pytest, "pool"), reason="DDP pool not available.")
+def test_compute_on_cpu_distributed_multi_gpu():
+    """Check that compute_on_cpu works with DDP and multiple GPUs."""
+    pytest.pool.map(_test_compute_on_cpu_distributed, range(NUM_PROCESSES))
