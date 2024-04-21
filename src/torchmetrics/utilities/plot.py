@@ -302,7 +302,6 @@ def plot_curve(
         raise ValueError("Expected 2 or 3 elements in curve but got {len(curve)}")
     x, y = curve[:2]
 
-
     _error_on_missing_matplotlib()
     fig, ax = plt.subplots() if ax is None else (None, ax)
 
