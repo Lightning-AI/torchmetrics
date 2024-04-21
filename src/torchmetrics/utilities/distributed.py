@@ -94,7 +94,9 @@ def _simple_gather_all_tensors(result: Tensor, group: Any, world_size: int) -> L
     return gathered_result
 
 
-def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tensor]:
+def gather_all_tensors(
+    result: Tensor, group: Optional[Any] = None, device: Optional[torch.device] = None
+) -> List[Tensor]:
     """Gather all tensors from several ddp processes onto a list that is broadcasted to all processes.
 
     Works on tensors that have the same number of dimensions, but where each dimension may differ. In this case
@@ -103,6 +105,7 @@ def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tens
     Args:
         result: the value to sync
         group: the process group to gather results from. Defaults to all processes (world)
+        device: optional device to move the result tensor to before gathering
 
     Return:
         list with size equal to the process group where element i corresponds to result tensor from process i
@@ -116,6 +119,10 @@ def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tens
 
     world_size = torch.distributed.get_world_size(group)
     torch.distributed.barrier(group=group)
+
+    # make sure this works with CPU tensors
+    if device is not None:
+        result = result.to(device)
 
     # if the tensor is scalar, things are easy
     if result.ndim == 0:
