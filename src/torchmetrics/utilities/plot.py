@@ -324,7 +324,7 @@ def plot_curve(
             if labels is None:
                 label = f"{legend_name}_{i}" if legend_name is not None else str(i)
             else:
-                label = labels[i]
+                label = str(labels[i])
             label += f" AUC={score[i].item():0.3f}" if score is not None else ""
             ax.plot(x_.detach().cpu(), y_.detach().cpu(), linestyle="-", linewidth=2, label=label)
             ax.legend()
