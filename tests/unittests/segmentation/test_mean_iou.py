@@ -61,7 +61,7 @@ def _reference_mean_iou(
     [
         (_inputs1.preds, _inputs1.target),
         (_inputs2.preds, _inputs2.target),
-        # (_inputs3.preds, _inputs3.target),
+        (_inputs3.preds, _inputs3.target),
     ],
 )
 @pytest.mark.parametrize("include_background", [True, False])
