@@ -104,5 +104,6 @@ def mean_iou(
                 [0.3085, 0.3267, 0.3155, 0.3575, 0.3147]])
 
     """
+    _mean_iou_validate_args(num_classes, include_background, per_class)
     intersection, union = _mean_iou_update(preds, target, num_classes, include_background)
     return _mean_iou_compute(intersection, union, per_class=per_class)
