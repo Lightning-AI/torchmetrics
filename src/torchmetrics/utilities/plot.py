@@ -288,6 +288,7 @@ def plot_curve(
         label_names: Tuple containing the names of the x and y axis
         legend_name: Name of the curve to be used in the legend
         name: Custom name to describe the metric
+        labels: Optional labels for the different curves that will be added to the plot
 
     Returns:
         A tuple consisting of the figure and respective ax objects (or array of ax objects) of the generated figure
@@ -321,10 +322,7 @@ def plot_curve(
             )
 
         for i, (x_, y_) in enumerate(zip(x, y)):
-            if labels is None:
-                label = f"{legend_name}_{i}" if legend_name is not None else str(i)
-            else:
-                label = str(labels[i])
+            label = f"{legend_name}_{i}" if legend_name is not None else str(i) if labels is None else str(labels[i])
             label += f" AUC={score[i].item():0.3f}" if score is not None else ""
             ax.plot(x_.detach().cpu(), y_.detach().cpu(), linestyle="-", linewidth=2, label=label)
             ax.legend()
