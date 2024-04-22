@@ -22,6 +22,7 @@ def _generalized_dice_validate_args(
     num_classes: int,
     include_background: bool,
     per_class: bool,
+    weight_type: Literal["square", "simple", "linear"],
 ) -> None:
     """Validate the arguments of the metric."""
     if num_classes <= 0:
@@ -30,6 +31,10 @@ def _generalized_dice_validate_args(
         raise ValueError(f"Expected argument `include_background` must be a boolean, but got {include_background}.")
     if not isinstance(per_class, bool):
         raise ValueError(f"Expected argument `per_class` must be a boolean, but got {per_class}.")
+    if weight_type not in ["square", "simple", "linear"]:
+        raise ValueError(
+            f"Expected argument `weight_type` to be one of 'square', 'simple', 'linear', but got {weight_type}."
+        )
     
 
 def _generalized_dice_update(
@@ -37,14 +42,13 @@ def _generalized_dice_update(
     target: Tensor,
     num_classes: int,
     include_background: bool,
-    per_class: bool,
     weight_type: Literal["square", "simple", "linear"] = "square",
 ) -> Tensor:
     """Update the state with the current prediction and target."""
     _check_same_shape(preds, target)
     if preds.ndim < 3:
-        
-    
+        raise ValueError(f"Expected both `preds` and `target` to have at least 3 dimensions, but got {preds.ndim}.")
+
     if (preds.bool() != preds).any():  # preds is an index tensor
         preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
     if (target.bool() != target).any():  # target is an index tensor
@@ -70,25 +74,34 @@ def _generalized_dice_update(
             f"Expected argument `weight_type` to be one of 'simple', 'linear', 'square', but got {weight_type}."
         )
     
-    infs = torch.isinf(weights)
-    weights[infs] = 0
-    weights = torch.max(weights, 0)
+    w_shape = weights.shape
+    weights_flatten = weights.flatten()
+    infs = torch.isinf(weights_flatten)
+    weights_flatten[infs] = 0
+    w_max = torch.max(weights, 0).values.repeat(w_shape[0],1).T.flatten()
+    weights_flatten[infs] = w_max[infs]
+    weights = weights_flatten.reshape(w_shape)
 
-    numerator = 2.0 * (intersection * weights).sum(dim=1)
-    denominator = (cardinality * weights).sum(dim=1)
+    numerator = 2.0 * intersection * weights
+    denominator = cardinality * weights
     return numerator, denominator
 
-def _generalized_dice_compute(numerator: Tensor, denominator: Tensor) -> Tensor:
+def _generalized_dice_compute(numerator: Tensor, denominator: Tensor, per_class: bool = True) -> Tensor:
     """Compute the generalized dice score."""
-    return _safe_divide(numerator, denominator)
+    if per_class:
+        numerator = torch.sum(numerator, 1)
+        denominator = torch.sum(denominator, 1)
+    val = _safe_divide(numerator, denominator)
+    return val
 
 
 def generalized_dice_score(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
-    include_background: bool = False,
+    include_background: bool = True,
     per_class: bool = False,
+    weight_type: Literal["square", "simple", "linear"] = "square",
 ) -> Tensor:
     """
     Example:
@@ -97,7 +110,9 @@ def generalized_dice_score(
         >>> from torchmetrics.functional.segmentation import generalized_dice_score
         >>> preds = torch.randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
         >>> target = torch.randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 target
+        >>> generalized_dice_score(preds, target, num_classes=5)
+        tensor([0.0000, 0.0000, 0.0000, 0.0000, 0.0000])
     """
-    _generalized_dice_validate_args(num_classes, include_background, per_class)
-    numerator, denominator = _generalized_dice_update(preds, target, num_classes, include_background, per_class)
-    return _generalized_dice_compute(numerator, denominator)
+    _generalized_dice_validate_args(num_classes, include_background, per_class, weight_type)
+    numerator, denominator = _generalized_dice_update(preds, target, num_classes, include_background, weight_type)
+    return _generalized_dice_compute(numerator, denominator, per_class)
