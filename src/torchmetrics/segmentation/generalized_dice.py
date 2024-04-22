@@ -27,8 +27,75 @@ if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["GeneralizedDiceScore.plot"]
 
 
-class GeneralizedDice(Metric):
-    """
+class GeneralizedDiceScore(Metric):
+    """ Compute `Generalized Dice Score`_.
+
+    The metric can be used to evaluate the performance of image segmentation models. The Generalized Dice Score is
+    defined as:
+
+    .. math::
+        GDS = \\frac{2 \\sum_{i=1}^{N} w_i \\sum_{j} t_{ij} p_{ij}}{\\sum_{i=1}^{N} w_i \\sum_{j} t_{ij} + \\sum_{i=1}^{N} w_i \\sum_{j} p_{ij}}
+
+    where :math:`N` is the number of classes, :math:`t_{ij}` is the target tensor, :math:`p_{ij}` is the prediction 
+    tensor, and :math:`w_i` is the weight for class :math:`i`. The weight can be computed in three different ways:
+
+    - `square`: :math:`w_i = 1 / (\\sum_{j} t_{ij})^2`
+    - `simple`: :math:`w_i = 1 / \\sum_{j} t_{ij}`
+    - `linear`: :math:`w_i = 1`
+
+    Note that the generalized dice loss can be computed as one minus the generalized dice score.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+    
+        - ``preds`` (:class:`~torch.Tensor`): An one-hot boolean tensor of shape ``(N, C, ...)`` with ``N`` being
+          the number of samples and ``C`` the number of classes. Alternatively, an integer tensor of shape ``(N, ...)``
+          can be provided, where the integer values correspond to the class index. That format will be automatically
+          converted to a one-hot tensor.
+        - ``target`` (:class:`~torch.Tensor`): An one-hot boolean tensor of shape ``(N, C, ...)`` with ``N`` being
+          the number of samples and ``C`` the number of classes. Alternatively, an integer tensor of shape ``(N, ...)``
+          can be provided, where the integer values correspond to the class index. That format will be automatically
+          converted to a one-hot tensor.
+    
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+    
+        - ``miou`` (:class:`~torch.Tensor`): The mean Intersection over Union (mIoU) score. If ``per_class`` is set to
+          ``True``, the output will be a tensor of shape ``(C,)`` with the IoU score for each class. If ``per_class`` is
+          set to ``False``, the output will be a scalar tensor.
+
+    Args:
+        num_classes: The number of classes in the segmentation problem.
+        include_background: Whether to include the background class in the computation
+        per_class: Whether to compute the IoU for each class separately. If set to ``False``, the metric will
+            compute the mean IoU over all classes.
+        weight_type: The type of weight to apply to each class. Can be one of ``"square"``, ``"simple"``, or 
+            ``"linear"``.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+    
+    Raises:
+        ValueError:
+            If ``num_classes`` is not a positive integer
+        ValueError:
+            If ``include_background`` is not a boolean
+        ValueError:
+            If ``per_class`` is not a boolean
+    
+    Example:
+        >>> import torch
+        >>> _ = torch.manual_seed(0)
+        >>> from torchmetrics.segmentation import GeneralizedDiceScore
+        >>> miou = GeneralizedDiceScore(num_classes=3)
+        >>> preds = torch.randint(0, 2, (10, 3, 128, 128))
+        >>> target = torch.randint(0, 2, (10, 3, 128, 128))
+        >>> miou(preds, target)
+        tensor(0.3318)
+        >>> miou = GeneralizedDiceScore(num_classes=3, per_class=True)
+        >>> miou(preds, target)
+        tensor([0.3322, 0.3303, 0.3329])
+        >>> miou = GeneralizedDiceScore(num_classes=3, per_class=True, include_background=False)
+        >>> miou(preds, target)
+        tensor([0.3303, 0.3329])
+
+
     """
 
     score: Tensor
@@ -68,29 +135,34 @@ class GeneralizedDice(Metric):
     
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
+        
         Args:
             val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
                 If no value is provided, will automatically call `metric.compute` and plot that result.
             ax: An matplotlib axis object. If provided will add plot to that axis
+
         Returns:
             Figure and Axes object
+        
         Raises:
             ModuleNotFoundError:
                 If `matplotlib` is not installed
+
         .. plot::
             :scale: 75
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.audio import PerceptualEvaluationSpeechQuality
-            >>> metric = PerceptualEvaluationSpeechQuality(8000, 'nb')
+            >>> from torchmetrics.segmentation import GeneralizedDiceScore
+            >>> metric = GeneralizedDiceScore(8000, 'nb')
             >>> metric.update(torch.rand(8000), torch.rand(8000))
             >>> fig_, ax_ = metric.plot()
+
         .. plot::
             :scale: 75
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.audio import PerceptualEvaluationSpeechQuality
-            >>> metric = PerceptualEvaluationSpeechQuality(8000, 'nb')
+            >>> from torchmetrics.segmentation import GeneralizedDiceScore
+            >>> metric = GeneralizedDiceScore(8000, 'nb')
             >>> values = [ ]
             >>> for _ in range(10):
             ...     values.append(metric(torch.rand(8000), torch.rand(8000)))

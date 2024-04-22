@@ -42,7 +42,6 @@ def _reference_generalized_dice(
     target: torch.Tensor,
     include_background: bool = True,
     per_class: bool = True,
-    reduce: bool = True,
 ):
     """Calculate reference metric for `MeanIoU`."""
     if (preds.bool() != preds).any():  # preds is an index tensor
@@ -50,10 +49,8 @@ def _reference_generalized_dice(
     if (target.bool() != target).any():  # target is an index tensor
         target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
 
-    val = compute_iou(preds, target, include_background=include_background)
-    if reduce:
-        return torch.mean(val, 0) if per_class else torch.mean(val)
-    return val
+    val = compute_generalized_dice(preds, target, include_background=include_background)
+    return val.mean()
 
 
 @pytest.mark.parametrize(
@@ -78,9 +75,9 @@ class TestMeanIoU(MetricTester):
             ddp=ddp,
             preds=preds,
             target=target,
-            metric_class=MeanIoU,
+            metric_class=GeneralizedDiceScore,
             reference_metric=partial(
-                _reference_mean_iou, include_background=include_background, per_class=per_class, reduce=True
+                _reference_generalized_dice, include_background=include_background, per_class=per_class, reduce=True
             ),
             metric_args={"num_classes": NUM_CLASSES, "include_background": include_background, "per_class": per_class},
         )
@@ -90,7 +87,7 @@ class TestMeanIoU(MetricTester):
         self.run_functional_metric_test(
             preds=preds,
             target=target,
-            metric_functional=mean_iou,
-            reference_metric=partial(_reference_mean_iou, include_background=include_background, reduce=False),
-            metric_args={"num_classes": NUM_CLASSES, "include_background": include_background, "per_class": True},
+            metric_functional=generalized_dice_score,
+            reference_metric=partial(_reference_generalized_dice, include_background=include_background),
+            metric_args={"num_classes": NUM_CLASSES, "include_background": include_background},
         )

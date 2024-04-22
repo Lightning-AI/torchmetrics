@@ -89,8 +89,8 @@ def _generalized_dice_update(
 def _generalized_dice_compute(numerator: Tensor, denominator: Tensor, per_class: bool = True) -> Tensor:
     """Compute the generalized dice score."""
     if per_class:
-        numerator = torch.sum(numerator, 1)
-        denominator = torch.sum(denominator, 1)
+        numerator = torch.sum(numerator, 0)
+        denominator = torch.sum(denominator, 0)
     val = _safe_divide(numerator, denominator)
     return val
 
