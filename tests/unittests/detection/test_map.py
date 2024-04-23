@@ -712,7 +712,8 @@ class TestMapProperties:
         assert round(float(result["ious"][(0, 0)]), 3) == iou_val_expected
 
     @pytest.mark.parametrize("iou_type", ["bbox", "segm"])
-    def test_warning_on_many_detections(self, iou_type, backend):
+    @pytest.mark.parametrize("warn_on_many_detections", [False, True])
+    def test_warning_on_many_detections(self, iou_type, warn_on_many_detections, backend, recwarn):
         """Test that a warning is raised when there are many detections."""
         if iou_type == "bbox":
             preds = [
@@ -727,8 +728,13 @@ class TestMapProperties:
             preds, targets = _generate_random_segm_input("cpu", 1, 101, 10, False)
 
         metric = MeanAveragePrecision(iou_type=iou_type, backend=backend)
-        with pytest.warns(UserWarning, match="Encountered more than 100 detections in a single image.*"):
-            metric.update(preds, targets)
+        metric.warn_on_many_detections = warn_on_many_detections
+
+        if warn_on_many_detections:
+            with pytest.warns(UserWarning, match="Encountered more than 100 detections in a single image.*"):
+                metric.update(preds, targets)
+        else:
+            assert len(recwarn) == 0
 
     @pytest.mark.parametrize(
         ("preds", "target", "expected_iou_len", "iou_keys", "precision_shape", "recall_shape", "scores_shape"),

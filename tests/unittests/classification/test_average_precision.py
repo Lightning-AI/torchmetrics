@@ -143,6 +143,14 @@ class TestBinaryAveragePrecision(MetricTester):
             assert torch.allclose(ap1, ap2)
 
 
+def test_warning_on_no_positives():
+    """Test that a warning is raised when there are no positive samples in the target."""
+    preds = torch.rand(100)
+    target = torch.zeros(100).long()
+    with pytest.warns(UserWarning, match="No positive samples found in target, recall is undefined. Setting recall.*"):
+        binary_average_precision(preds, target)
+
+
 def _reference_sklearn_avg_precision_multiclass(preds, target, average="macro", ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()
