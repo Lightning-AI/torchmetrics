@@ -86,7 +86,7 @@ def _generalized_dice_update(
 
     numerator = 2.0 * intersection * weights
     denominator = cardinality * weights
-    return numerator, denominator
+    return numerator, denominator#type:ignore[return-value]
 
 
 def _generalized_dice_compute(numerator: Tensor, denominator: Tensor, per_class: bool = True) -> Tensor:
