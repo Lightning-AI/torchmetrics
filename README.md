@@ -283,7 +283,6 @@ covers the following domains:
 - Audio
 - Classification
 - Detection
-- Segmentation
 - Information Retrieval
 - Image
 - Multimodal (Image-Text)
