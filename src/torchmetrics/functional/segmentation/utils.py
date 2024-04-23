@@ -25,7 +25,7 @@ from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
 
 
 def _ignore_background(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
-    """Ignore the background class in the computation."""
+    """Ignore the background class in the computation assuming it is the first, index 0."""
     preds = preds[:, 1:] if preds.shape[1] > 1 else preds
     target = target[:, 1:] if target.shape[1] > 1 else target
     return preds, target
