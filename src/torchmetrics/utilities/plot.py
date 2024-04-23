@@ -274,6 +274,7 @@ def plot_curve(
     label_names: Optional[Tuple[str, str]] = None,
     legend_name: Optional[str] = None,
     name: Optional[str] = None,
+    labels: Optional[List[Union[int, str]]] = None,
 ) -> _PLOT_OUT_TYPE:
     """Inspired by: https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/metrics/_plot/roc_curve.py.
 
@@ -287,6 +288,7 @@ def plot_curve(
         label_names: Tuple containing the names of the x and y axis
         legend_name: Name of the curve to be used in the legend
         name: Custom name to describe the metric
+        labels: Optional labels for the different curves that will be added to the plot
 
     Returns:
         A tuple consisting of the figure and respective ax objects (or array of ax objects) of the generated figure
@@ -312,8 +314,15 @@ def plot_curve(
     elif (isinstance(x, list) and isinstance(y, list)) or (
         isinstance(x, Tensor) and isinstance(y, Tensor) and x.ndim == 2 and y.ndim == 2
     ):
+        n_classes = len(x)
+        if labels is not None and len(labels) != n_classes:
+            raise ValueError(
+                "Expected number of elements in arg `labels` to match number of labels in roc curves but "
+                f"got {len(labels)} and {n_classes}"
+            )
+
         for i, (x_, y_) in enumerate(zip(x, y)):
-            label = f"{legend_name}_{i}" if legend_name is not None else str(i)
+            label = f"{legend_name}_{i}" if legend_name is not None else str(i) if labels is None else str(labels[i])
             label += f" AUC={score[i].item():0.3f}" if score is not None else ""
             ax.plot(x_.detach().cpu(), y_.detach().cpu(), linestyle="-", linewidth=2, label=label)
             ax.legend()
