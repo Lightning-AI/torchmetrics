@@ -158,6 +158,7 @@ class GeneralizedDiceScore(Metric):
 
         .. plot::
             :scale: 75
+
             >>> # Example plotting a single value
             >>> import torch
             >>> from torchmetrics.segmentation import GeneralizedDiceScore
@@ -167,6 +168,7 @@ class GeneralizedDiceScore(Metric):
 
         .. plot::
             :scale: 75
+
             >>> # Example plotting multiple values
             >>> import torch
             >>> from torchmetrics.segmentation import GeneralizedDiceScore

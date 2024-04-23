@@ -12,11 +12,11 @@ Generalized Dice Score
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.GeneralizedDiceScore
+.. autoclass:: torchmetrics.segmentation.GeneralizedDiceScore
     :noindex:
 
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.generalized_dice_score
+.. autofunction:: torchmetrics.functional.segmentation.generalized_dice_score
     :noindex:
