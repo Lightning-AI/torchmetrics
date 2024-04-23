@@ -51,6 +51,7 @@ def _reference_mean_iou(
         target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
 
     val = compute_iou(preds, target, include_background=include_background)
+    val[torch.isnan(val)] = 0.0
     if reduce:
         return torch.mean(val, 0) if per_class else torch.mean(val)
     return val
