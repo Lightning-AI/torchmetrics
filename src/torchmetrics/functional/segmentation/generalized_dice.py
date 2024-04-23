@@ -13,10 +13,12 @@
 # limitations under the License.
 import torch
 from torch import Tensor
+from typing_extensions import Literal
+
+from torchmetrics.functional.segmentation.utils import _ignore_background
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.compute import _safe_divide
-from torchmetrics.functional.segmentation.utils import _ignore_background
-from typing_extensions import Literal
+
 
 def _generalized_dice_validate_args(
     num_classes: int,
@@ -35,7 +37,7 @@ def _generalized_dice_validate_args(
         raise ValueError(
             f"Expected argument `weight_type` to be one of 'square', 'simple', 'linear', but got {weight_type}."
         )
-    
+
 
 def _generalized_dice_update(
     preds: Tensor,
@@ -68,17 +70,17 @@ def _generalized_dice_update(
     elif weight_type == "linear":
         weights = torch.ones_like(target_sum)
     elif weight_type == "square":
-        weights = 1.0 / (target_sum ** 2)
+        weights = 1.0 / (target_sum**2)
     else:
         raise ValueError(
             f"Expected argument `weight_type` to be one of 'simple', 'linear', 'square', but got {weight_type}."
         )
-    
+
     w_shape = weights.shape
     weights_flatten = weights.flatten()
     infs = torch.isinf(weights_flatten)
     weights_flatten[infs] = 0
-    w_max = torch.max(weights, 0).values.repeat(w_shape[0],1).T.flatten()
+    w_max = torch.max(weights, 0).values.repeat(w_shape[0], 1).T.flatten()
     weights_flatten[infs] = w_max[infs]
     weights = weights_flatten.reshape(w_shape)
 
@@ -86,13 +88,13 @@ def _generalized_dice_update(
     denominator = cardinality * weights
     return numerator, denominator
 
+
 def _generalized_dice_compute(numerator: Tensor, denominator: Tensor, per_class: bool = True) -> Tensor:
     """Compute the generalized dice score."""
-    if per_class:
-        numerator = torch.sum(numerator, 0)
-        denominator = torch.sum(denominator, 0)
-    val = _safe_divide(numerator, denominator)
-    return val
+    if not per_class:
+        numerator = torch.sum(numerator, 1)
+        denominator = torch.sum(denominator, 1)
+    return _safe_divide(numerator, denominator)
 
 
 def generalized_dice_score(
@@ -103,7 +105,19 @@ def generalized_dice_score(
     per_class: bool = False,
     weight_type: Literal["square", "simple", "linear"] = "square",
 ) -> Tensor:
-    """
+    """Compute the Generalized Dice Score for semantic segmentation.
+
+    Args:
+        preds: Predictions from model
+        target: Ground truth values
+        num_classes: Number of classes
+        include_background: Whether to include the background class in the computation
+        per_class: Whether to compute the IoU for each class separately, else average over all classes
+        weight_type: Type of weight factor to apply to the classes. One of ``"square"``, ``"simple"``, or ``"linear"``
+
+    Returns:
+        The Generalized Dice Score
+
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(42)
@@ -111,8 +125,13 @@ def generalized_dice_score(
         >>> preds = torch.randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
         >>> target = torch.randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 target
         >>> generalized_dice_score(preds, target, num_classes=5)
-        tensor([0.0000, 0.0000, 0.0000, 0.0000, 0.0000])
+        tensor([0.4830, 0.4935, 0.5044, 0.4880])
         >>> generalized_dice_score(preds, target, num_classes=5, per_class=True)
+        tensor([[0.4724, 0.5185, 0.4710, 0.5062, 0.4500],
+                [0.4571, 0.4980, 0.5191, 0.4380, 0.5649],
+                [0.5428, 0.4904, 0.5358, 0.4830, 0.4724],
+                [0.4715, 0.4925, 0.4797, 0.5267, 0.4788]])
+
     """
     _generalized_dice_validate_args(num_classes, include_background, per_class, weight_type)
     numerator, denominator = _generalized_dice_update(preds, target, num_classes, include_background, weight_type)

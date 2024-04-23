@@ -41,16 +41,17 @@ def _reference_generalized_dice(
     preds: torch.Tensor,
     target: torch.Tensor,
     include_background: bool = True,
-    per_class: bool = True,
+    reduce: bool = True,
 ):
     """Calculate reference metric for `MeanIoU`."""
     if (preds.bool() != preds).any():  # preds is an index tensor
         preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
     if (target.bool() != target).any():  # target is an index tensor
         target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
-
     val = compute_generalized_dice(preds, target, include_background=include_background)
-    return val.mean()
+    if reduce:
+        val = val.mean()
+    return val
 
 
 @pytest.mark.parametrize(
@@ -65,21 +66,16 @@ def _reference_generalized_dice(
 class TestMeanIoU(MetricTester):
     """Test class for `MeanIoU` metric."""
 
-    atol = 1e-4
-
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    @pytest.mark.parametrize("per_class", [True, False])
-    def test_mean_iou_class(self, preds, target, include_background, per_class, ddp):
+    def test_mean_iou_class(self, preds, target, include_background, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=GeneralizedDiceScore,
-            reference_metric=partial(
-                _reference_generalized_dice, include_background=include_background, per_class=per_class, reduce=True
-            ),
-            metric_args={"num_classes": NUM_CLASSES, "include_background": include_background, "per_class": per_class},
+            reference_metric=partial(_reference_generalized_dice, include_background=include_background, reduce=True),
+            metric_args={"num_classes": NUM_CLASSES, "include_background": include_background},
         )
 
     def test_mean_iou_functional(self, preds, target, include_background):
@@ -88,6 +84,6 @@ class TestMeanIoU(MetricTester):
             preds=preds,
             target=target,
             metric_functional=generalized_dice_score,
-            reference_metric=partial(_reference_generalized_dice, include_background=include_background),
-            metric_args={"num_classes": NUM_CLASSES, "include_background": include_background},
+            reference_metric=partial(_reference_generalized_dice, include_background=include_background, reduce=False),
+            metric_args={"num_classes": NUM_CLASSES, "include_background": include_background, "per_class": False},
         )

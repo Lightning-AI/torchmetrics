@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Optional, Sequence, Union
-from typing_extensions import Literal
+
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.segmentation.generalized_dice import (
-    _generalized_dice_validate_args, _generalized_dice_compute, _generalized_dice_update
+    _generalized_dice_compute,
+    _generalized_dice_update,
+    _generalized_dice_validate_args,
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
@@ -28,15 +31,16 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class GeneralizedDiceScore(Metric):
-    """ Compute `Generalized Dice Score`_.
+    r"""Compute `Generalized Dice Score`_.
 
     The metric can be used to evaluate the performance of image segmentation models. The Generalized Dice Score is
     defined as:
 
     .. math::
-        GDS = \\frac{2 \\sum_{i=1}^{N} w_i \\sum_{j} t_{ij} p_{ij}}{\\sum_{i=1}^{N} w_i \\sum_{j} t_{ij} + \\sum_{i=1}^{N} w_i \\sum_{j} p_{ij}}
+        GDS = \frac{2 \\sum_{i=1}^{N} w_i \\sum_{j} t_{ij} p_{ij}}{
+            \\sum_{i=1}^{N} w_i \\sum_{j} t_{ij} + \\sum_{i=1}^{N} w_i \\sum_{j} p_{ij}}
 
-    where :math:`N` is the number of classes, :math:`t_{ij}` is the target tensor, :math:`p_{ij}` is the prediction 
+    where :math:`N` is the number of classes, :math:`t_{ij}` is the target tensor, :math:`p_{ij}` is the prediction
     tensor, and :math:`w_i` is the weight for class :math:`i`. The weight can be computed in three different ways:
 
     - `square`: :math:`w_i = 1 / (\\sum_{j} t_{ij})^2`
@@ -46,7 +50,7 @@ class GeneralizedDiceScore(Metric):
     Note that the generalized dice loss can be computed as one minus the generalized dice score.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
-    
+
         - ``preds`` (:class:`~torch.Tensor`): An one-hot boolean tensor of shape ``(N, C, ...)`` with ``N`` being
           the number of samples and ``C`` the number of classes. Alternatively, an integer tensor of shape ``(N, ...)``
           can be provided, where the integer values correspond to the class index. That format will be automatically
@@ -55,22 +59,21 @@ class GeneralizedDiceScore(Metric):
           the number of samples and ``C`` the number of classes. Alternatively, an integer tensor of shape ``(N, ...)``
           can be provided, where the integer values correspond to the class index. That format will be automatically
           converted to a one-hot tensor.
-    
+
     As output to ``forward`` and ``compute`` the metric returns the following output:
-    
-        - ``miou`` (:class:`~torch.Tensor`): The mean Intersection over Union (mIoU) score. If ``per_class`` is set to
-          ``True``, the output will be a tensor of shape ``(C,)`` with the IoU score for each class. If ``per_class`` is
+
+        - ``gds`` (:class:`~torch.Tensor`): The generalized dice score. If ``per_class`` is set to ``True``, the output
+          will be a tensor of shape ``(C,)`` with the generalized dice score for each class. If ``per_class`` is
           set to ``False``, the output will be a scalar tensor.
 
     Args:
         num_classes: The number of classes in the segmentation problem.
         include_background: Whether to include the background class in the computation
-        per_class: Whether to compute the IoU for each class separately. If set to ``False``, the metric will
-            compute the mean IoU over all classes.
-        weight_type: The type of weight to apply to each class. Can be one of ``"square"``, ``"simple"``, or 
+        per_class: Whether to compute the metric for each class separately.
+        weight_type: The type of weight to apply to each class. Can be one of ``"square"``, ``"simple"``, or
             ``"linear"``.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
-    
+
     Raises:
         ValueError:
             If ``num_classes`` is not a positive integer
@@ -78,28 +81,29 @@ class GeneralizedDiceScore(Metric):
             If ``include_background`` is not a boolean
         ValueError:
             If ``per_class`` is not a boolean
-    
+        ValueError:
+            If ``weight_type`` is not one of ``"square"``, ``"simple"``, or ``"linear"``
+
     Example:
         >>> import torch
         >>> _ = torch.manual_seed(0)
         >>> from torchmetrics.segmentation import GeneralizedDiceScore
-        >>> miou = GeneralizedDiceScore(num_classes=3)
+        >>> gds = GeneralizedDiceScore(num_classes=3)
         >>> preds = torch.randint(0, 2, (10, 3, 128, 128))
         >>> target = torch.randint(0, 2, (10, 3, 128, 128))
-        >>> miou(preds, target)
-        tensor(0.3318)
-        >>> miou = GeneralizedDiceScore(num_classes=3, per_class=True)
-        >>> miou(preds, target)
-        tensor([0.3322, 0.3303, 0.3329])
-        >>> miou = GeneralizedDiceScore(num_classes=3, per_class=True, include_background=False)
-        >>> miou(preds, target)
-        tensor([0.3303, 0.3329])
-
+        >>> gds(preds, target)
+        tensor(0.4983)
+        >>> gds = GeneralizedDiceScore(num_classes=3, per_class=True)
+        >>> gds(preds, target)
+        tensor([0.4987, 0.4966, 0.4995])
+        >>> gds = GeneralizedDiceScore(num_classes=3, per_class=True, include_background=False)
+        >>> gds(preds, target)
+        tensor([0.4966, 0.4995])
 
     """
 
     score: Tensor
-    num_batches: Tensor
+    samples: Tensor
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -113,7 +117,7 @@ class GeneralizedDiceScore(Metric):
         per_class: bool = False,
         weight_type: Literal["square", "simple", "linear"] = "square",
         **kwargs: Any,
-    ):
+    ) -> None:
         super().__init__(**kwargs)
         _generalized_dice_validate_args(num_classes, include_background, per_class, weight_type)
         self.num_classes = num_classes
@@ -121,21 +125,25 @@ class GeneralizedDiceScore(Metric):
         self.per_class = per_class
         self.weight_type = weight_type
 
-        self.add_state("score", default=torch.zeros(num_classes if per_class else 1), dist_reduce_fx="mean")
+        num_classes = num_classes - 1 if not include_background else num_classes
+        self.add_state("score", default=torch.zeros(num_classes if per_class else 1), dist_reduce_fx="sum")
+        self.add_state("samples", default=torch.zeros(1), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """ Update the state with new data."""
+        """Update the state with new data."""
         numerator, denominator = _generalized_dice_update(
             preds, target, self.num_classes, self.include_background, self.weight_type
         )
-        self.score += _generalized_dice_compute(numerator, denominator, self.per_class)
+        self.score += _generalized_dice_compute(numerator, denominator, self.per_class).sum(dim=0)
+        self.samples += preds.shape[0]
 
-    def compute(self):
-        return self.score
-    
+    def compute(self) -> Tensor:
+        """Compute the final generalized dice score."""
+        return self.score / self.samples
+
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
-        
+
         Args:
             val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
                 If no value is provided, will automatically call `metric.compute` and plot that result.
@@ -143,7 +151,7 @@ class GeneralizedDiceScore(Metric):
 
         Returns:
             Figure and Axes object
-        
+
         Raises:
             ModuleNotFoundError:
                 If `matplotlib` is not installed
@@ -153,8 +161,8 @@ class GeneralizedDiceScore(Metric):
             >>> # Example plotting a single value
             >>> import torch
             >>> from torchmetrics.segmentation import GeneralizedDiceScore
-            >>> metric = GeneralizedDiceScore(8000, 'nb')
-            >>> metric.update(torch.rand(8000), torch.rand(8000))
+            >>> metric = GeneralizedDiceScore(num_classes=3)
+            >>> metric.update(torch.randint(0, 2, (10, 3, 128, 128)), torch.randint(0, 2, (10, 3, 128, 128)))
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
@@ -162,10 +170,13 @@ class GeneralizedDiceScore(Metric):
             >>> # Example plotting multiple values
             >>> import torch
             >>> from torchmetrics.segmentation import GeneralizedDiceScore
-            >>> metric = GeneralizedDiceScore(8000, 'nb')
+            >>> metric = GeneralizedDiceScore(num_classes=3)
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(torch.rand(8000), torch.rand(8000)))
+            ...     values.append(
+            ...        metric(torch.randint(0, 2, (10, 3, 128, 128)), torch.randint(0, 2, (10, 3, 128, 128)))
+            ...     )
             >>> fig_, ax_ = metric.plot(values)
+
         """
         return self._plot(val, ax)
