@@ -124,6 +124,10 @@ A few important things to note for this example:
   ``dim_zero_cat`` helper function which will standardize the list states to be a single concatenate tensor regardless
   of the mode.
 
+* Calling the ``reset`` method will clear the list state, deleting any values inserted into it. For this reason, care
+  must be taken when referencing list states. If you require the values after your metric is reset, you must first
+  copy the attribute to another object (e.g. using `deepcopy.copy`).
+
 *****************
 Metric attributes
 *****************
