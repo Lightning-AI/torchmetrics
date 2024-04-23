@@ -38,6 +38,7 @@ from torchmetrics.utilities.data import (
 )
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 from torchmetrics.utilities.prints import rank_zero_warn
 
@@ -437,6 +438,15 @@ class Metric(Module, ABC):
             # pre-concatenate metric states that are lists to reduce number of all_gather operations
             if reduction_fn == dim_zero_cat and isinstance(input_dict[attr], list) and len(input_dict[attr]) > 1:
                 input_dict[attr] = [dim_zero_cat(input_dict[attr])]
+
+            # cornor case in distributed settings where a rank have not received any data, create empty to concatenate
+            if (
+                _TORCH_GREATER_EQUAL_2_1
+                and reduction_fn == dim_zero_cat
+                and isinstance(input_dict[attr], list)
+                and len(input_dict[attr]) == 0
+            ):
+                input_dict[attr] = [torch.tensor([], device=self.device, dtype=self.dtype)]
 
         output_dict = apply_to_collection(
             input_dict,

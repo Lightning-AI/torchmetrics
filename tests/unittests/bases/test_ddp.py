@@ -22,6 +22,7 @@ from torch import tensor
 from torchmetrics import Metric
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import NUM_PROCESSES
 from unittests._helpers import seed_all
@@ -269,11 +270,28 @@ def test_sync_on_compute(sync_on_compute, test_func):
 def _test_sync_with_empty_lists(rank):
     dummy = DummyListMetric()
     val = dummy.compute()
-    assert val == []
+    assert torch.allclose(val, tensor([]))
 
 
 @pytest.mark.DDP()
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_1, reason="test only works on newer torch versions")
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 def test_sync_with_empty_lists():
     """Test that synchronization of states can be enabled and disabled for compute."""
     pytest.pool.map(_test_sync_with_empty_lists, range(NUM_PROCESSES))
+
+
+def _test_sync_with_unequal_size_lists(rank):
+    """Test that synchronization of list states work even when some ranks have not received any data yet."""
+    dummy = DummyListMetric()
+    if rank == 0:
+        dummy.update(torch.zeros(2))
+    assert torch.all(dummy.compute() == tensor([0.0, 0.0]))
+
+
+@pytest.mark.DDP()
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_1, reason="test only works on newer torch versions")
+@pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+def test_sync_with_unequal_size_lists():
+    """Test that synchronization of states can be enabled and disabled for compute."""
+    pytest.pool.map(_test_sync_with_unequal_size_lists, range(NUM_PROCESSES))
