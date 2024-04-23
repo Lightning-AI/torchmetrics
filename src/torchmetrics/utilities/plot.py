@@ -28,11 +28,13 @@ if _MATPLOTLIB_AVAILABLE:
 
     _PLOT_OUT_TYPE = Tuple[plt.Figure, Union[matplotlib.axes.Axes, np.ndarray]]
     _AX_TYPE = matplotlib.axes.Axes
+    _CMAP_TYPE = Union[matplotlib.colors.Colormap, str]
 
     style_change = plt.style.context
 else:
     _PLOT_OUT_TYPE = Tuple[object, object]  # type: ignore[misc]
     _AX_TYPE = object
+    _CMAP_TYPE = object  # type: ignore[misc]
 
     from contextlib import contextmanager
 
@@ -201,6 +203,7 @@ def plot_confusion_matrix(
     ax: Optional[_AX_TYPE] = None,
     add_text: bool = True,
     labels: Optional[List[Union[int, str]]] = None,
+    cmap: Optional[_CMAP_TYPE] = None,
 ) -> _PLOT_OUT_TYPE:
     """Plot an confusion matrix.
 
@@ -213,6 +216,8 @@ def plot_confusion_matrix(
         ax: Axis from a figure. If not provided, a new figure and axis will be created
         add_text: if text should be added to each cell with the given value
         labels: labels to add the x- and y-axis
+        cmap: matplotlib colormap to use for the confusion matrix
+            https://matplotlib.org/stable/users/explain/colors/colormaps.html
 
     Returns:
         A tuple consisting of the figure and respective ax objects (or array of ax objects) of the generated figure
@@ -248,7 +253,7 @@ def plot_confusion_matrix(
         ax = axs[i] if rows != 1 and cols != 1 else axs
         if fig_label is not None:
             ax.set_title(f"Label {fig_label[i]}", fontsize=15)
-        ax.imshow(confmat[i].cpu().detach() if confmat.ndim == 3 else confmat.cpu().detach())
+        ax.imshow(confmat[i].cpu().detach() if confmat.ndim == 3 else confmat.cpu().detach(), cmap=cmap)
         if i // cols == rows - 1:  # bottom row only
             ax.set_xlabel("Predicted class", fontsize=15)
         if i % cols == 0:  # leftmost column only
