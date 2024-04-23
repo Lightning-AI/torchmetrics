@@ -159,6 +159,7 @@ __all__ = [
     "confusion_matrix",
     "multiclass_confusion_matrix",
     "multilabel_confusion_matrix",
+    "generalized_dice_score",
     "dice",
     "exact_match",
     "multiclass_exact_match",
