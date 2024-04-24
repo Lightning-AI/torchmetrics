@@ -225,6 +225,14 @@ Or directly from conda
 
 .. toctree::
    :maxdepth: 2
+   :name: segmentation
+   :caption: Segmentation
+   :glob:
+
+   segmentation/*
+
+.. toctree::
+   :maxdepth: 2
    :name: text
    :caption: Text
    :glob:

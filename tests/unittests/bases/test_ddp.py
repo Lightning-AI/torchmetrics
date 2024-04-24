@@ -22,8 +22,9 @@ from torch import tensor
 from torchmetrics import Metric
 from torchmetrics.utilities.distributed import gather_all_tensors
 from torchmetrics.utilities.exceptions import TorchMetricsUserError
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
-from unittests import NUM_PROCESSES
+from unittests import NUM_PROCESSES, USE_PYTEST_POOL
 from unittests._helpers import seed_all
 from unittests._helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
 
@@ -87,6 +88,7 @@ def _test_ddp_compositional_tensor(rank: int, worldsize: int = NUM_PROCESSES) ->
 
 @pytest.mark.DDP()
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@pytest.mark.skipif(not USE_PYTEST_POOL, reason="DDP pool is not available.")
 @pytest.mark.parametrize(
     "process",
     [
@@ -124,6 +126,7 @@ def _test_non_contiguous_tensors(rank):
 
 @pytest.mark.DDP()
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@pytest.mark.skipif(not USE_PYTEST_POOL, reason="DDP pool is not available.")
 def test_non_contiguous_tensors():
     """Test that gather_all operation works for non-contiguous tensors."""
     pytest.pool.map(_test_non_contiguous_tensors, range(NUM_PROCESSES))
@@ -231,6 +234,7 @@ def _test_state_dict_is_synced(rank, tmpdir):
 
 @pytest.mark.DDP()
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@pytest.mark.skipif(not USE_PYTEST_POOL, reason="DDP pool is not available.")
 def test_state_dict_is_synced(tmpdir):
     """Tests that metrics are synced while creating the state dict but restored after to continue accumulation."""
     pytest.pool.map(partial(_test_state_dict_is_synced, tmpdir=tmpdir), range(NUM_PROCESSES))
@@ -259,6 +263,7 @@ def _test_sync_on_compute_list_state(rank, sync_on_compute):
 
 @pytest.mark.DDP()
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@pytest.mark.skipif(not USE_PYTEST_POOL, reason="DDP pool is not available.")
 @pytest.mark.parametrize("sync_on_compute", [True, False])
 @pytest.mark.parametrize("test_func", [_test_sync_on_compute_list_state, _test_sync_on_compute_tensor_state])
 def test_sync_on_compute(sync_on_compute, test_func):
@@ -269,11 +274,29 @@ def test_sync_on_compute(sync_on_compute, test_func):
 def _test_sync_with_empty_lists(rank):
     dummy = DummyListMetric()
     val = dummy.compute()
-    assert val == []
+    assert torch.allclose(val, tensor([]))
 
 
 @pytest.mark.DDP()
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_1, reason="test only works on newer torch versions")
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@pytest.mark.skipif(not USE_PYTEST_POOL, reason="DDP pool is not available.")
 def test_sync_with_empty_lists():
     """Test that synchronization of states can be enabled and disabled for compute."""
     pytest.pool.map(_test_sync_with_empty_lists, range(NUM_PROCESSES))
+
+
+def _test_sync_with_unequal_size_lists(rank):
+    """Test that synchronization of list states work even when some ranks have not received any data yet."""
+    dummy = DummyListMetric()
+    if rank == 0:
+        dummy.update(torch.zeros(2))
+    assert torch.all(dummy.compute() == tensor([0.0, 0.0]))
+
+
+@pytest.mark.DDP()
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_1, reason="test only works on newer torch versions")
+@pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+def test_sync_with_unequal_size_lists():
+    """Test that synchronization of states can be enabled and disabled for compute."""
+    pytest.pool.map(_test_sync_with_unequal_size_lists, range(NUM_PROCESSES))
