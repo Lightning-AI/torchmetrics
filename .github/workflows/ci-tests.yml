@@ -88,7 +88,7 @@ jobs:
         run: |
           echo 'UNITTEST_TIMEOUT=--timeout=75' >> $GITHUB_ENV
           sudo apt update --fix-missing
-          sudo apt install -y ffmpeg dvipng texlive-latex-extra texlive-fonts-recommended cm-super
+          sudo apt install -y ffmpeg
       - name: Setup Windows
         if: ${{ runner.os == 'windows' }}
         run: choco install ffmpeg
