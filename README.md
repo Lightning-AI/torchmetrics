@@ -288,6 +288,7 @@ covers the following domains:
 - Multimodal (Image-Text)
 - Nominal
 - Regression
+- Segmentation
 - Text
 
 Each domain may require some additional dependencies which can be installed with `pip install torchmetrics[audio]`,
