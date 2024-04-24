@@ -62,7 +62,6 @@ jobs:
           pip install . -U -r requirements/_docs.txt \
             --find-links="${PYPI_CACHE}" --find-links="${TORCH_URL}"
       - run: pip list
-
       - name: Full build for deployment
         if: github.event_name != 'pull_request'
         run: echo "SPHINX_FETCH_ASSETS=1" >> $GITHUB_ENV
