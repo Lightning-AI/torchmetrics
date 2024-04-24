@@ -87,7 +87,7 @@ jobs:
         if: ${{ runner.os == 'Linux' }}
         run: |
           echo 'UNITTEST_TIMEOUT=--timeout=75' >> $GITHUB_ENV
-          sudo apt update --fix-missing
+          # sudo apt update --fix-missing
           sudo apt install -y ffmpeg
       - name: Setup Windows
         if: ${{ runner.os == 'windows' }}
