@@ -31,7 +31,7 @@ test: clean env data
 get-sphinx-template:
 	pip install -q awscli
 	aws s3 sync --no-sign-request s3://sphinx-packages/ dist/
-	pip install lai-sphinx-theme -U -f dist/
+	pip install lai-sphinx-theme -q -U -f dist/
 
 docs: clean get-sphinx-template
 	pip install -e . --quiet -r requirements/_docs.txt
