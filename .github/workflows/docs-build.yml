@@ -56,17 +56,12 @@ jobs:
           sudo apt-get install -y \
             texlive-latex-extra texlive-pictures texlive-fonts-recommended dvipng cm-super
 
-      - name: Pull sphinx template
-        run: |
-          pip install awscli
-          aws s3 sync --no-sign-request s3://sphinx-packages/ dist/
-          pip install lai-sphinx-theme -U -f dist/
       - name: Install package & dependencies
         run: |
-          pip --version
+          make get-sphinx-template
           pip install . -U -r requirements/_docs.txt \
-            --find-links="dist/" --find-links="${PYPI_CACHE}" --find-links="${TORCH_URL}"
-          pip list
+            --find-links="${PYPI_CACHE}" --find-links="${TORCH_URL}"
+      - run: pip list
 
       - name: Full build for deployment
         if: github.event_name != 'pull_request'
