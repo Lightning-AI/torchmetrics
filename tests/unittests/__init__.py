@@ -61,5 +61,6 @@ __all__ = [
     "NUM_CLASSES",
     "NUM_PROCESSES",
     "THRESHOLD",
+    "USE_PYTEST_POOL",
     "setup_ddp",
 ]
