@@ -22,7 +22,7 @@ import torch
 from torch import Tensor
 from torchmetrics import Metric
 
-from unittests import NUM_PROCESSES, _reference_cachier
+from unittests import NUM_PROCESSES, USE_PYTEST_POOL, _reference_cachier
 from unittests._helpers import seed_all
 from unittests._helpers.testers import (
     MetricTester,
@@ -369,7 +369,7 @@ class TextTester(MetricTester):
         if ddp:
             if sys.platform == "win32":
                 pytest.skip("DDP not supported on windows")
-            if not hasattr(pytest, "pool"):
+            if not USE_PYTEST_POOL:
                 pytest.skip("DDP pool is not available.")
             pytest.pool.starmap(
                 partial(_class_test, **common_kwargs, **kwargs_update),

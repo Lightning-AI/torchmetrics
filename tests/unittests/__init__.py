@@ -14,6 +14,7 @@ from unittests.conftest import (
     NUM_CLASSES,
     NUM_PROCESSES,
     THRESHOLD,
+    USE_PYTEST_POOL,
     setup_ddp,
 )
 
