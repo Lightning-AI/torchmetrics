@@ -1,4 +1,4 @@
-.PHONY: clean test get-sphinx-template docs env data
+.PHONY: clean test get-sphinx-template docs live-docs env data
 
 export FREEZE_REQUIREMENTS=1
 # assume you have installed need packages
@@ -37,6 +37,10 @@ docs: clean get-sphinx-template
 	pip install -e . --quiet -r requirements/_docs.txt
 	# apt-get install -y texlive-latex-extra dvipng texlive-pictures texlive-fonts-recommended cm-super
 	cd docs && make html --debug --jobs $(nproc) SPHINXOPTS="-W --keep-going"
+
+live-docs: get-sphinx-template
+	pip install -e . --quiet -r requirements/_docs.txt
+	cd docs && make livehtml
 
 env:
 	pip install -e . -U -r requirements/_devel.txt
