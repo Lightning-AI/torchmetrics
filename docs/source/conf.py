@@ -139,6 +139,10 @@ extensions = [
 ]
 if SPHINX_ENABLE_GALLERY:
     extensions.append("sphinx_gallery.gen_gallery")
+else:
+    # write a dummy file as placeholder
+    with open(os.path.join(_PATH_HERE, "gallery", "index.rst"), "w") as fopen:
+        fopen.write("Gallery is disabled")
 
 # Set that source code from plotting is always included
 plot_include_source = True
