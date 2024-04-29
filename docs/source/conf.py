@@ -30,6 +30,7 @@ FOLDER_GENERATED = "generated"
 SPHINX_MOCK_REQUIREMENTS = int(os.environ.get("SPHINX_MOCK_REQUIREMENTS", True))
 SPHINX_FETCH_ASSETS = int(os.environ.get("SPHINX_FETCH_ASSETS", False))
 SPHINX_PIN_RELEASE_VERSIONS = int(os.getenv("SPHINX_PIN_RELEASE_VERSIONS", False))
+SPHINX_ENABLE_GALLERY = int(os.getenv("SPHINX_ENABLE_GALLERY", True))
 
 html_favicon = "_static/images/icon.svg"
 
@@ -130,13 +131,14 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.githubpages",
-    "sphinx_gallery.gen_gallery",
     "sphinx_autodoc_typehints",
     "sphinx_paramlinks",
     "myst_parser",
     "matplotlib.sphinxext.plot_directive",
     "lai_sphinx_theme.extensions.lightning",
 ]
+if SPHINX_ENABLE_GALLERY:
+    extensions.append("sphinx_gallery.gen_gallery")
 
 # Set that source code from plotting is always included
 plot_include_source = True
