@@ -1,5 +1,5 @@
 sphinx ==5.3.0
-myst-parser ==1.0.0
+myst-parser ==3.0.1
 nbsphinx ==0.9.3
 pandoc ==2.3
 docutils ==0.19
