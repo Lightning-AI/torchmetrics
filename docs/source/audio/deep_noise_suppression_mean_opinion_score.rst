@@ -12,7 +12,7 @@ Deep Noise Suppression Mean Opinion Score (DNSMOS)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.audio.pesq.DeepNoiseSuppressionMeanOpinionScore
+.. autoclass:: torchmetrics.audio.dnsmos.DeepNoiseSuppressionMeanOpinionScore
     :exclude-members: update, compute
 
 Functional Interface
