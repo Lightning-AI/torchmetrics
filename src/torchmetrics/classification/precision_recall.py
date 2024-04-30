@@ -269,7 +269,7 @@ class MulticlassPrecision(MulticlassStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
-            "precision", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, top_k=self.top_k
+            "precision", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
         )
 
     def plot(
@@ -702,7 +702,7 @@ class MulticlassRecall(MulticlassStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
-            "recall", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, top_k=self.top_k
+            "recall", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
         )
 
     def plot(

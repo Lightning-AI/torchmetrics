@@ -192,9 +192,7 @@ def _reference_sklearn_accuracy_multiclass(preds, target, ignore_index, multidim
         acc_per_class = confmat.diagonal() / confmat.sum(axis=1)
         acc_per_class[np.isnan(acc_per_class)] = 0.0
         if average == "macro":
-            acc_per_class = acc_per_class[
-                (np.bincount(preds, minlength=NUM_CLASSES) + np.bincount(target, minlength=NUM_CLASSES)) != 0.0
-            ]
+            acc_per_class = acc_per_class[np.bincount(target, minlength=NUM_CLASSES) != 0.0]
             return acc_per_class.mean()
         if average == "weighted":
             weights = confmat.sum(1)
@@ -215,9 +213,7 @@ def _reference_sklearn_accuracy_multiclass(preds, target, ignore_index, multidim
             acc_per_class = confmat.diagonal() / confmat.sum(axis=1)
             acc_per_class[np.isnan(acc_per_class)] = 0.0
             if average == "macro":
-                acc_per_class = acc_per_class[
-                    (np.bincount(pred, minlength=NUM_CLASSES) + np.bincount(true, minlength=NUM_CLASSES)) != 0.0
-                ]
+                acc_per_class = acc_per_class[np.bincount(true, minlength=NUM_CLASSES) != 0.0]
                 res.append(acc_per_class.mean() if len(acc_per_class) > 0 else 0.0)
             elif average == "weighted":
                 weights = confmat.sum(1)
