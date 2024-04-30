@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import Any, Optional, Sequence, Union
+
 import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.dnsmos import deep_noise_suppression_mean_opinion_score
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _LIBROSA_AVAILABLE, _ONNXRUNTIME_AVAILABLE
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.imports import _LIBROSA_AVAILABLE, _MATPLOTLIB_AVAILABLE, _ONNXRUNTIME_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 __doctest_requires__ = {"DeepNoiseSuppressionMeanOpinionScore": ["librosa", "onnxruntime"]}
@@ -30,12 +30,12 @@ if not _MATPLOTLIB_AVAILABLE:
 class DeepNoiseSuppressionMeanOpinionScore(Metric):
     """Calculate `Deep Noise Suppression performance evaluation based on Mean Opinion Score`_ (DNSMOS).
 
-    Human subjective evaluation is the ”gold standard” to evaluate speech quality optimized for human perception. 
+    Human subjective evaluation is the ”gold standard” to evaluate speech quality optimized for human perception.
     Perceptual objective metrics serve as a proxy for subjective scores. The conventional and widely used metrics
     require a reference clean speech signal, which is unavailable in real recordings. The no-reference approaches
-    correlate poorly with human ratings and are not widely adopted in the research community. One of the biggest 
-    use cases of these perceptual objective metrics is to evaluate noise suppression algorithms. DNSMOS generalizes 
-    well in challenging test conditions with a high correlation to human ratings in stack ranking noise suppression 
+    correlate poorly with human ratings and are not widely adopted in the research community. One of the biggest
+    use cases of these perceptual objective metrics is to evaluate noise suppression algorithms. DNSMOS generalizes
+    well in challenging test conditions with a high correlation to human ratings in stack ranking noise suppression
     methods. More details can be found in [DNSMOS paper](https://arxiv.org/pdf/2010.15258.pdf).
 
     As input to ``forward`` and ``update`` the metric accepts the following input
@@ -44,7 +44,7 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
 
     As output of `forward` and `compute` the metric returns the following output
 
-    - ``dnsmos`` (:class:`~torch.Tensor`): float tensor of DNSMOS values reduced across the batch 
+    - ``dnsmos`` (:class:`~torch.Tensor`): float tensor of DNSMOS values reduced across the batch
         with shape ``(..., 4)`` indicating [p808_mos, mos_sig, mos_bak, mos_ovr] in the last dim.
 
     .. note:: using this metric requires you to have ``librosa`` and ``onnxruntime`` installed. Install as
@@ -92,8 +92,10 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
     ) -> None:
         super().__init__(**kwargs)
         if not _LIBROSA_AVAILABLE or not _ONNXRUNTIME_AVAILABLE:
-            raise ModuleNotFoundError("DNSMOS metric requires that librosa and onnxruntime are installed."
-                                      " Install as `pip install librosa onnxruntime-gpu`.")
+            raise ModuleNotFoundError(
+                "DNSMOS metric requires that librosa and onnxruntime are installed."
+                " Install as `pip install librosa onnxruntime-gpu`."
+            )
 
         self.fs = fs
         self.personalized = personalized
@@ -103,7 +105,7 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor) -> None:
-        """Update state with predictions"""
+        """Update state with predictions."""
         metric_batch = deep_noise_suppression_mean_opinion_score(
             preds,
             self.fs,
@@ -157,4 +159,3 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
 
         """
         return self._plot(val, ax)
-
