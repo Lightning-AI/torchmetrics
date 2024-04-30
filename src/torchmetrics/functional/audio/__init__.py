@@ -24,12 +24,12 @@ from torchmetrics.functional.audio.snr import (
 )
 from torchmetrics.utilities.imports import (
     _GAMMATONE_AVAILABLE,
+    _LIBROSA_AVAILABLE,
+    _ONNXRUNTIME_AVAILABLE,
     _PESQ_AVAILABLE,
     _PYSTOI_AVAILABLE,
     _TORCHAUDIO_AVAILABLE,
     _TORCHAUDIO_GREATER_EQUAL_0_10,
-    _LIBROSA_AVAILABLE,
-    _ONNXRUNTIME_AVAILABLE,
 )
 
 __all__ = [
