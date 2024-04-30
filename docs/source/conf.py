@@ -144,7 +144,7 @@ else:
     path_gallery = os.path.join(_PATH_HERE, "gallery")
     os.makedirs(path_gallery, exist_ok=True)
     with open(os.path.join(path_gallery, "index.rst"), "w") as fopen:
-        fopen.write("Gallery is disabled")
+        fopen.write("Gallery is disabled\n===================")
 
 # Set that source code from plotting is always included
 plot_include_source = True
