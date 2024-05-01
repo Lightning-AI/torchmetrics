@@ -87,7 +87,7 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
         self,
         fs: int,
         personalized: bool,
-        device: str = None,
+        device: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)

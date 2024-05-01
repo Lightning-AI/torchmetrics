@@ -154,7 +154,7 @@ def _polyfit_val(mos: np.ndarray, personalized: bool) -> np.ndarray:
     return mos
 
 
-def deep_noise_suppression_mean_opinion_score(x: Tensor, fs: int, personalized: bool, device: str = None) -> Tensor:
+def deep_noise_suppression_mean_opinion_score(x: Tensor, fs: int, personalized: bool, device: Optional[str] = None) -> Tensor:
     """Calculate `Deep Noise Suppression performance evaluation based on Mean Opinion Score`_ (DNSMOS).
 
     Human subjective evaluation is the ”gold standard” to evaluate speech quality optimized for human perception.
@@ -233,12 +233,12 @@ def deep_noise_suppression_mean_opinion_score(x: Tensor, fs: int, personalized: 
 
         oi = {"input_1": input_features}
         p808_oi = {"input_1": p808_input_features}
-        mos = np.concatenate(
+        mos_np = np.concatenate(
             [p808_onnx_sess.run(None, p808_oi)[0], onnx_sess.run(None, oi)[0]], axis=-1, dtype="float64"
         )
-        mos = _polyfit_val(mos, personalized)
+        mos_np = _polyfit_val(mos_np, personalized)
 
-        mos = mos.reshape(shape[:-1] + (4,))
-        moss.append(mos)
+        mos_np = mos_np.reshape(shape[:-1] + (4,))
+        moss.append(mos_np)
     mos = torch.from_numpy(np.mean(np.stack(moss, axis=-1), axis=-1))
     return mos  # [p808_mos, mos_sig, mos_bak, mos_ovr]
