@@ -37,7 +37,7 @@ INPUT_LENGTH = 9.01
 DNSMOS_DIR = "~/.torchmetrics/DNSMOS"
 
 
-def _prepare_DNSMOS(dnsmos_dir: str):
+def _prepare_DNSMOS(dnsmos_dir: str) -> None:
     """Download the DNSMOS files: "DNSMOS/DNSMOS/model_v8.onnx", "DNSMOS/DNSMOS/sig_bak_ovr.onnx", "DNSMOS/pDNSMOS/sig_bak_ovr.onnx"
 
     Args:
@@ -70,7 +70,7 @@ def _prepare_DNSMOS(dnsmos_dir: str):
 def _load_session(
     path: str,
     device: torch.device,
-):
+) -> ort.InferenceSession:
     """Load onnxruntime session.
 
     Args:
@@ -94,7 +94,14 @@ def _load_session(
         return ort.InferenceSession(path, providers=providers, provider_options=provider_options)
 
 
-def _audio_melspec(audio, n_mels=120, frame_size=320, hop_length=160, sr=16000, to_db=True):
+def _audio_melspec(
+    audio: np.ndarray,
+    n_mels: int = 120,
+    frame_size: int = 320,
+    hop_length: int = 160,
+    sr: int = 16000,
+    to_db: bool = True,
+) -> np.ndarray:
     """Calculate the mel-spectrogram of an audio.
 
     Args:
@@ -121,7 +128,7 @@ def _audio_melspec(audio, n_mels=120, frame_size=320, hop_length=160, sr=16000, 
     return mel_spec
 
 
-def _polyfit_val(mos, personalized):
+def _polyfit_val(mos: np.ndarray, personalized: bool) -> np.ndarray:
     """Use polyfit to convert raw mos values to DNSMOS values.
 
     Args:
@@ -147,7 +154,7 @@ def _polyfit_val(mos, personalized):
     return mos
 
 
-def deep_noise_suppression_mean_opinion_score(x: Tensor, fs: int, personalized: bool, device: str = None):
+def deep_noise_suppression_mean_opinion_score(x: Tensor, fs: int, personalized: bool, device: str = None) -> Tensor:
     """Calculate `Deep Noise Suppression performance evaluation based on Mean Opinion Score`_ (DNSMOS).
 
     Human subjective evaluation is the ”gold standard” to evaluate speech quality optimized for human perception.
@@ -211,7 +218,7 @@ def deep_noise_suppression_mean_opinion_score(x: Tensor, fs: int, personalized: 
     moss = []
     hop_len_samples = desired_fs
     for idx in range(num_hops):
-        audio_seg = audio[..., int(idx * hop_len_samples) : int((idx + INPUT_LENGTH) * hop_len_samples)]
+        audio_seg = audio[..., int(idx * hop_len_samples):int((idx + INPUT_LENGTH) * hop_len_samples)]
         if len(audio_seg) < len_samples:
             continue
         shape = audio_seg.shape
