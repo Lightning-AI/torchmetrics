@@ -189,7 +189,7 @@ def deep_noise_suppression_mean_opinion_score(x: Tensor, fs: int, personalized: 
         >>> g = torch.manual_seed(1)
         >>> preds = randn(8000)
         >>> deep_noise_suppression_mean_opinion_score(preds, 8000, False)
-        tensor([2.1230, 1.8015, 1.1571, 1.2253], dtype=torch.float64)
+        tensor([2.2285, 2.1132, 1.3972, 1.3652], dtype=torch.float64)
 
     """
     if not _LIBROSA_AVAILABLE or not _ONNXRUNTIME_AVAILABLE:

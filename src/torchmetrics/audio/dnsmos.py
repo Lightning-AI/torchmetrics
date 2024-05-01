@@ -71,7 +71,7 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
         >>> preds = randn(8000)
         >>> dnsmos = DeepNoiseSuppressionMeanOpinionScore(8000, False)
         >>> dnsmos(preds)
-        tensor([2.1230, 1.8015, 1.1571, 1.2253], dtype=torch.float64)
+        tensor([2.2285, 2.1132, 1.3972, 1.3652], dtype=torch.float64)
 
     """
 
@@ -114,7 +114,7 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
         ).to(self.sum_dnsmos.device)
 
         self.sum_dnsmos += metric_batch.reshape(-1, 4).sum(dim=0)
-        self.total += metric_batch[:-1].numel()
+        self.total += metric_batch.reshape(-1, 4).shape[0]
 
     def compute(self) -> Tensor:
         """Compute metric."""
@@ -154,7 +154,7 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
             >>> metric = DeepNoiseSuppressionMeanOpinionScore(8000, False)
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(torch.rand(8000), torch.rand(8000)))
+            ...     values.append(metric(torch.rand(8000)))
             >>> fig_, ax_ = metric.plot(values)
 
         """
