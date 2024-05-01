@@ -18,7 +18,12 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.dnsmos import deep_noise_suppression_mean_opinion_score
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _LIBROSA_AVAILABLE, _MATPLOTLIB_AVAILABLE, _ONNXRUNTIME_AVAILABLE, _REQUESTS_AVAILABLE
+from torchmetrics.utilities.imports import (
+    _LIBROSA_AVAILABLE,
+    _MATPLOTLIB_AVAILABLE,
+    _ONNXRUNTIME_AVAILABLE,
+    _REQUESTS_AVAILABLE,
+)
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 __doctest_requires__ = {"DeepNoiseSuppressionMeanOpinionScore": ["requests", "librosa", "onnxruntime"]}

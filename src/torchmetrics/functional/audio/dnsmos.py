@@ -24,13 +24,15 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _LIBROSA_AVAILABLE, _ONNXRUNTIME_AVAILABLE, _REQUESTS_AVAILABLE
 
 if _LIBROSA_AVAILABLE and _ONNXRUNTIME_AVAILABLE and _REQUESTS_AVAILABLE:
-    import requests
     import librosa
     import onnxruntime as ort
+    import requests
 else:
     librosa, ort, requests = None, None, None
 
-__doctest_requires__ = {("deep_noise_suppression_mean_opinion_score", "_load_session"): ["requests", "librosa", "onnxruntime"]}
+__doctest_requires__ = {
+    ("deep_noise_suppression_mean_opinion_score", "_load_session"): ["requests", "librosa", "onnxruntime"]
+}
 
 SAMPLING_RATE = 16000
 INPUT_LENGTH = 9.01
@@ -154,7 +156,9 @@ def _polyfit_val(mos: np.ndarray, personalized: bool) -> np.ndarray:
     return mos
 
 
-def deep_noise_suppression_mean_opinion_score(x: Tensor, fs: int, personalized: bool, device: Optional[str] = None) -> Tensor:
+def deep_noise_suppression_mean_opinion_score(
+    x: Tensor, fs: int, personalized: bool, device: Optional[str] = None
+) -> Tensor:
     """Calculate `Deep Noise Suppression performance evaluation based on Mean Opinion Score`_ (DNSMOS).
 
     Human subjective evaluation is the ”gold standard” to evaluate speech quality optimized for human perception.
