@@ -18,10 +18,10 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.audio.dnsmos import deep_noise_suppression_mean_opinion_score
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _LIBROSA_AVAILABLE, _MATPLOTLIB_AVAILABLE, _ONNXRUNTIME_AVAILABLE
+from torchmetrics.utilities.imports import _LIBROSA_AVAILABLE, _MATPLOTLIB_AVAILABLE, _ONNXRUNTIME_AVAILABLE, _REQUESTS_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-__doctest_requires__ = {"DeepNoiseSuppressionMeanOpinionScore": ["librosa", "onnxruntime"]}
+__doctest_requires__ = {"DeepNoiseSuppressionMeanOpinionScore": ["requests", "librosa", "onnxruntime"]}
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["DeepNoiseSuppressionMeanOpinionScore.plot"]
@@ -47,8 +47,8 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
     - ``dnsmos`` (:class:`~torch.Tensor`): float tensor of DNSMOS values reduced across the batch
         with shape ``(..., 4)`` indicating [p808_mos, mos_sig, mos_bak, mos_ovr] in the last dim.
 
-    .. note:: using this metric requires you to have ``librosa`` and ``onnxruntime`` installed. Install as
-        ``pip install librosa onnxruntime-gpu``.
+    .. note:: using this metric requires you to have ``librosa``, ``onnxruntime`` and ``requests`` installed.
+        Install as ``pip install librosa onnxruntime-gpu requests``.
 
     .. note:: the ``forward`` and ``compute`` methods in this class return a reduced DNSMOS value
         for a batch. To obtain the DNSMOS value for each sample, you may use the functional counterpart in
@@ -62,7 +62,7 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
 
     Raises:
         ModuleNotFoundError:
-            If ``librosa`` or ``onnxruntime`` package is not installed
+            If ``librosa``, ``onnxruntime`` or ``requests`` packages are not installed
 
     Example:
         >>> from torch import randn
@@ -91,10 +91,10 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        if not _LIBROSA_AVAILABLE or not _ONNXRUNTIME_AVAILABLE:
+        if not _LIBROSA_AVAILABLE or not _ONNXRUNTIME_AVAILABLE or not _REQUESTS_AVAILABLE:
             raise ModuleNotFoundError(
-                "DNSMOS metric requires that librosa and onnxruntime are installed."
-                " Install as `pip install librosa onnxruntime-gpu`."
+                "DNSMOS metric requires that librosa, onnxruntime and requests are installed."
+                " Install as `pip install librosa onnxruntime-gpu requests`."
             )
 
         self.fs = fs

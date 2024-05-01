@@ -16,21 +16,21 @@ from functools import lru_cache
 from typing import *
 
 import numpy as np
-import requests
 import torch
 from torch import Tensor
 
 from torchmetrics.utilities import rank_zero_info
 from torchmetrics.utilities.checks import _check_same_shape
-from torchmetrics.utilities.imports import _LIBROSA_AVAILABLE, _ONNXRUNTIME_AVAILABLE
+from torchmetrics.utilities.imports import _LIBROSA_AVAILABLE, _ONNXRUNTIME_AVAILABLE, _REQUESTS_AVAILABLE
 
-if _LIBROSA_AVAILABLE and _ONNXRUNTIME_AVAILABLE:
+if _LIBROSA_AVAILABLE and _ONNXRUNTIME_AVAILABLE and _REQUESTS_AVAILABLE:
+    import requests
     import librosa
     import onnxruntime as ort
 else:
-    librosa, ort = None, None
+    librosa, ort, requests = None, None, None
 
-__doctest_requires__ = {("deep_noise_suppression_mean_opinion_score",): ["librosa", "onnxruntime"]}
+__doctest_requires__ = {("deep_noise_suppression_mean_opinion_score", "_load_session"): ["requests", "librosa", "onnxruntime"]}
 
 SAMPLING_RATE = 16000
 INPUT_LENGTH = 9.01
@@ -166,8 +166,8 @@ def deep_noise_suppression_mean_opinion_score(x: Tensor, fs: int, personalized: 
     methods. More details can be found in [DNSMOS paper](https://arxiv.org/pdf/2010.15258.pdf).
 
 
-    .. note:: using this metric requires you to have ``librosa`` and ``onnxruntime`` installed. Install as
-        ``pip install librosa onnxruntime-gpu``.
+    .. note:: using this metric requires you to have ``librosa``, ``onnxruntime`` and ``requests`` installed.
+        Install as ``pip install librosa onnxruntime-gpu requests``.
 
     Args:
         x: [..., time]
@@ -181,7 +181,7 @@ def deep_noise_suppression_mean_opinion_score(x: Tensor, fs: int, personalized: 
 
     Raises:
         ModuleNotFoundError:
-            If ``librosa`` or ``onnxruntime`` package is not installed
+            If ``librosa``, ``onnxruntime`` or ``requests`` packages are not installed
 
     Example:
         >>> from torch import randn
@@ -192,10 +192,10 @@ def deep_noise_suppression_mean_opinion_score(x: Tensor, fs: int, personalized: 
         tensor([2.2285, 2.1132, 1.3972, 1.3652], dtype=torch.float64)
 
     """
-    if not _LIBROSA_AVAILABLE or not _ONNXRUNTIME_AVAILABLE:
+    if not _LIBROSA_AVAILABLE or not _ONNXRUNTIME_AVAILABLE or not _REQUESTS_AVAILABLE:
         raise ModuleNotFoundError(
-            "DNSMOS metric requires that librosa and onnxruntime are installed."
-            " Install as `pip install librosa onnxruntime-gpu`."
+            "DNSMOS metric requires that librosa, onnxruntime and requests are installed."
+            " Install as `pip install librosa onnxruntime-gpu requests`."
         )
 
     device = torch.device(device) if device is not None else x.device
