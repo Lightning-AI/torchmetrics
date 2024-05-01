@@ -7,3 +7,5 @@ speechmetrics @ git+https://github.com/aliutkus/speechmetrics
 fast-bss-eval >=0.1.0, <0.1.5
 torch_complex <=0.4.3  # needed for fast-bss-eval
 srmrpy @ git+https://github.com/jfsantos/SRMRpy
+librosa
+onnxruntime-gpu
