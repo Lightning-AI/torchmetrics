@@ -13,14 +13,13 @@
 # limitations under the License.
 import os
 from functools import lru_cache
-from typing import *
+from typing import Optional
 
 import numpy as np
 import torch
 from torch import Tensor
 
 from torchmetrics.utilities import rank_zero_info
-from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _LIBROSA_AVAILABLE, _ONNXRUNTIME_AVAILABLE, _REQUESTS_AVAILABLE
 
 if _LIBROSA_AVAILABLE and _ONNXRUNTIME_AVAILABLE and _REQUESTS_AVAILABLE:
@@ -30,17 +29,16 @@ if _LIBROSA_AVAILABLE and _ONNXRUNTIME_AVAILABLE and _REQUESTS_AVAILABLE:
 else:
     librosa, ort, requests = None, None, None
 
-__doctest_requires__ = {
-    ("deep_noise_suppression_mean_opinion_score", "_load_session"): ["requests", "librosa", "onnxruntime"]
-}
+__doctest_requires__ = {("deep_noise_suppression_mean_opinion_score", "_load_session"): ["requests", "librosa", "onnxruntime"]}
 
 SAMPLING_RATE = 16000
 INPUT_LENGTH = 9.01
 DNSMOS_DIR = "~/.torchmetrics/DNSMOS"
 
 
-def _prepare_DNSMOS(dnsmos_dir: str) -> None:
-    """Download the DNSMOS files: "DNSMOS/DNSMOS/model_v8.onnx", "DNSMOS/DNSMOS/sig_bak_ovr.onnx", "DNSMOS/pDNSMOS/sig_bak_ovr.onnx"
+def _prepare_dnsmos(dnsmos_dir: str) -> None:
+    """Download the DNSMOS files: "DNSMOS/DNSMOS/model_v8.onnx", "DNSMOS/DNSMOS/sig_bak_ovr.onnx", 
+        "DNSMOS/pDNSMOS/sig_bak_ovr.onnx".
 
     Args:
         dnsmos_dir: a dir to save the downloaded files. Defaults to "~/.torchmetrics".
@@ -58,14 +56,15 @@ def _prepare_DNSMOS(dnsmos_dir: str) -> None:
         if os.path.exists(saveto):
             # try load onnx
             try:
-                sess = ort.InferenceSession(saveto)
+                _ = ort.InferenceSession(saveto)
                 continue  # skip downloading if succeeded
-            except:
-                ...
+            except:  # type:ignore
+                ...  # type:ignore
         urlf = f"{url}/{file}"
         rank_zero_info(f"downloading {urlf} to {saveto}")
         myfile = requests.get(urlf)
-        open(saveto, "wb").write(myfile.content)
+        with open(saveto, "wb") as f:
+            f.write(myfile.content)
 
 
 @lru_cache
@@ -85,12 +84,11 @@ def _load_session(
     """
     path = os.path.expanduser(path)
     if not os.path.exists(path):
-        _prepare_DNSMOS(DNSMOS_DIR)
+        _prepare_dnsmos(DNSMOS_DIR)
 
     if device.type == "cpu":
         return ort.InferenceSession(path)
     else:
-        assert device.type == "cuda", device
         providers = ["CUDAExecutionProvider"]
         provider_options = [{"device_id": device.index}]
         return ort.InferenceSession(path, providers=providers, provider_options=provider_options)
@@ -120,9 +118,7 @@ def _audio_melspec(
     """
     shape = audio.shape
     audio = audio.reshape(-1, shape[-1])
-    mel_spec = librosa.feature.melspectrogram(
-        y=audio, sr=sr, n_fft=frame_size + 1, hop_length=hop_length, n_mels=n_mels
-    )
+    mel_spec = librosa.feature.melspectrogram(y=audio, sr=sr, n_fft=frame_size + 1, hop_length=hop_length, n_mels=n_mels)
     mel_spec = mel_spec.transpose(0, 2, 1)
     mel_spec = mel_spec.reshape(shape[:-1] + mel_spec.shape[1:])
     if to_db:
@@ -156,9 +152,7 @@ def _polyfit_val(mos: np.ndarray, personalized: bool) -> np.ndarray:
     return mos
 
 
-def deep_noise_suppression_mean_opinion_score(
-    x: Tensor, fs: int, personalized: bool, device: Optional[str] = None
-) -> Tensor:
+def deep_noise_suppression_mean_opinion_score(preds: Tensor, fs: int, personalized: bool, device: Optional[str] = None) -> Tensor:
     """Calculate `Deep Noise Suppression performance evaluation based on Mean Opinion Score`_ (DNSMOS).
 
     Human subjective evaluation is the ”gold standard” to evaluate speech quality optimized for human perception.
@@ -197,21 +191,21 @@ def deep_noise_suppression_mean_opinion_score(
 
     """
     if not _LIBROSA_AVAILABLE or not _ONNXRUNTIME_AVAILABLE or not _REQUESTS_AVAILABLE:
-        raise ModuleNotFoundError(
-            "DNSMOS metric requires that librosa, onnxruntime and requests are installed."
-            " Install as `pip install librosa onnxruntime-gpu requests`."
-        )
-
-    device = torch.device(device) if device is not None else x.device
+        raise ModuleNotFoundError("DNSMOS metric requires that librosa, onnxruntime and requests are installed."
+                                  " Install as `pip install librosa onnxruntime-gpu requests`.")
+    if device is not None:
+        device = torch.device(device) # type:ignore
+    else:
+        device = preds.device # type:ignore
 
     onnx_sess = _load_session(f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx", device)
     p808_onnx_sess = _load_session(f"{DNSMOS_DIR}/DNSMOS/model_v8.onnx", device)
 
     desired_fs = SAMPLING_RATE
     if fs != desired_fs:
-        audio = librosa.resample(x.cpu().numpy(), orig_sr=fs, target_sr=desired_fs)
+        audio = librosa.resample(preds.cpu().numpy(), orig_sr=fs, target_sr=desired_fs)
     else:
-        audio = x.cpu().numpy()
+        audio = preds.cpu().numpy()
 
     len_samples = int(INPUT_LENGTH * desired_fs)
     while len(audio) < len_samples:
@@ -222,7 +216,7 @@ def deep_noise_suppression_mean_opinion_score(
     moss = []
     hop_len_samples = desired_fs
     for idx in range(num_hops):
-        audio_seg = audio[..., int(idx * hop_len_samples) : int((idx + INPUT_LENGTH) * hop_len_samples)]
+        audio_seg = audio[..., int(idx * hop_len_samples):int((idx + INPUT_LENGTH) * hop_len_samples)]
         if len(audio_seg) < len_samples:
             continue
         shape = audio_seg.shape
@@ -237,9 +231,7 @@ def deep_noise_suppression_mean_opinion_score(
 
         oi = {"input_1": input_features}
         p808_oi = {"input_1": p808_input_features}
-        mos_np = np.concatenate(
-            [p808_onnx_sess.run(None, p808_oi)[0], onnx_sess.run(None, oi)[0]], axis=-1, dtype="float64"
-        )
+        mos_np = np.concatenate([p808_onnx_sess.run(None, p808_oi)[0], onnx_sess.run(None, oi)[0]], axis=-1, dtype="float64")
         mos_np = _polyfit_val(mos_np, personalized)
 
         mos_np = mos_np.reshape(shape[:-1] + (4,))

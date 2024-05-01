@@ -38,12 +38,12 @@ SAMPLING_RATE = 16000
 INPUT_LENGTH = 9.01
 
 
-class ComputeScore:
+class _ComputeScore:
     def __init__(self, primary_model_path, p808_model_path) -> None:
         self.onnx_sess = ort.InferenceSession(primary_model_path)
         self.p808_onnx_sess = ort.InferenceSession(p808_model_path)
 
-    def audio_melspec(self, audio, n_mels=120, frame_size=320, hop_length=160, sr=16000, to_db=True):
+    def _audio_melspec(self, audio, n_mels=120, frame_size=320, hop_length=160, sr=16000, to_db=True):
         mel_spec = librosa.feature.melspectrogram(
             y=audio, sr=sr, n_fft=frame_size + 1, hop_length=hop_length, n_mels=n_mels
         )
@@ -51,8 +51,8 @@ class ComputeScore:
             mel_spec = (librosa.power_to_db(mel_spec, ref=np.max) + 40) / 40
         return mel_spec.T
 
-    def get_polyfit_val(self, sig, bak, ovr, is_personalized_MOS):
-        if is_personalized_MOS:
+    def _get_polyfit_val(self, sig, bak, ovr, is_personalized):
+        if is_personalized:
             p_ovr = np.poly1d([-0.00533021, 0.005101, 1.18058466, -0.11236046])
             p_sig = np.poly1d([-0.01019296, 0.02751166, 1.19576786, -0.24348726])
             p_bak = np.poly1d([-0.04976499, 0.44276479, -0.1644611, 0.96883132])
@@ -69,7 +69,7 @@ class ComputeScore:
 
     # def __call__(self, fpath, sampling_rate, is_personalized_MOS):
     # aud, input_fs = sf.read(fpath)
-    def __call__(self, aud, input_fs, is_personalized_MOS):
+    def __call__(self, aud, input_fs, is_personalized)->Dict[str,Any]:
         fs = SAMPLING_RATE
         if input_fs != fs:
             audio = librosa.resample(aud, input_fs, fs)
@@ -96,14 +96,14 @@ class ComputeScore:
                 continue
 
             input_features = np.array(audio_seg).astype("float32")[np.newaxis, :]
-            p808_input_features = np.array(self.audio_melspec(audio=audio_seg[:-160])).astype("float32")[
+            p808_input_features = np.array(self._audio_melspec(audio=audio_seg[:-160])).astype("float32")[
                 np.newaxis, :, :
             ]
             oi = {"input_1": input_features}
             p808_oi = {"input_1": p808_input_features}
             p808_mos = self.p808_onnx_sess.run(None, p808_oi)[0][0][0]
             mos_sig_raw, mos_bak_raw, mos_ovr_raw = self.onnx_sess.run(None, oi)[0][0]
-            mos_sig, mos_bak, mos_ovr = self.get_polyfit_val(mos_sig_raw, mos_bak_raw, mos_ovr_raw, is_personalized_MOS)
+            mos_sig, mos_bak, mos_ovr = self._get_polyfit_val(mos_sig_raw, mos_bak_raw, mos_ovr_raw, is_personalized)
             predicted_mos_sig_seg_raw.append(mos_sig_raw)
             predicted_mos_bak_seg_raw.append(mos_bak_raw)
             predicted_mos_ovr_seg_raw.append(mos_ovr_raw)
@@ -143,7 +143,7 @@ def _reference_metric_batch(
     _load_session(f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx", device)
     _load_session(f"{DNSMOS_DIR}/DNSMOS/model_v8.onnx", device)
     # construct ComputeScore
-    cs = ComputeScore(
+    cs = _ComputeScore(
         f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx",
         f"{DNSMOS_DIR}/DNSMOS/model_v8.onnx",
     )
@@ -199,7 +199,7 @@ class TestDNSMOS(MetricTester):
 
     atol = 1e-4
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    # @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_dnsmos(self, preds, fs, personalized, device, ddp):
         """Test class implementation of metric."""
@@ -218,7 +218,7 @@ class TestDNSMOS(MetricTester):
             metric_args={"fs": fs, "personalized": personalized, "device": device},
         )
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    # @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_dnsmos_functional(self, preds, fs, personalized, device):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
