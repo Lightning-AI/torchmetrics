@@ -69,7 +69,7 @@ class _ComputeScore:
 
     # def __call__(self, fpath, sampling_rate, is_personalized_MOS):
     # aud, input_fs = sf.read(fpath)
-    def __call__(self, aud, input_fs, is_personalized)->Dict[str,Any]:
+    def __call__(self, aud, input_fs, is_personalized) -> Dict[str, Any]:
         fs = SAMPLING_RATE
         if input_fs != fs:
             audio = librosa.resample(aud, input_fs, fs)
