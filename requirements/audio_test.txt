@@ -9,3 +9,4 @@ torch_complex <=0.4.3  # needed for fast-bss-eval
 srmrpy @ git+https://github.com/jfsantos/SRMRpy
 librosa
 onnxruntime-gpu
+requests
