@@ -218,7 +218,7 @@ def deep_noise_suppression_mean_opinion_score(x: Tensor, fs: int, personalized: 
     moss = []
     hop_len_samples = desired_fs
     for idx in range(num_hops):
-        audio_seg = audio[..., int(idx * hop_len_samples):int((idx + INPUT_LENGTH) * hop_len_samples)]
+        audio_seg = audio[..., int(idx * hop_len_samples) : int((idx + INPUT_LENGTH) * hop_len_samples)]
         if len(audio_seg) < len_samples:
             continue
         shape = audio_seg.shape

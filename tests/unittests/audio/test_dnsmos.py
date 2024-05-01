@@ -14,38 +14,39 @@
 from functools import partial
 from typing import Any, Dict
 
-import pytest
-import torch
-from torch import Tensor
-from torchmetrics.audio.dnsmos import DeepNoiseSuppressionMeanOpinionScore
-from torchmetrics.functional.audio.dnsmos import (
-    deep_noise_suppression_mean_opinion_score,
-    _load_session,
-    DNSMOS_DIR,
-)
-
-from unittests._helpers import seed_all
-from unittests._helpers.testers import MetricTester
+import librosa
 
 ##########################   the implementation from    ##########################
 #  https://github.com/microsoft/DNS-Challenge/blob/master/DNSMOS/dnsmos_local.py #
 ##################################################################################
 import numpy as np
-import librosa
 import onnxruntime as ort
+import pytest
+import torch
+from torch import Tensor
+from torchmetrics.audio.dnsmos import DeepNoiseSuppressionMeanOpinionScore
+from torchmetrics.functional.audio.dnsmos import (
+    DNSMOS_DIR,
+    _load_session,
+    deep_noise_suppression_mean_opinion_score,
+)
+
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 SAMPLING_RATE = 16000
 INPUT_LENGTH = 9.01
 
 
 class ComputeScore:
-
     def __init__(self, primary_model_path, p808_model_path) -> None:
         self.onnx_sess = ort.InferenceSession(primary_model_path)
         self.p808_onnx_sess = ort.InferenceSession(p808_model_path)
 
     def audio_melspec(self, audio, n_mels=120, frame_size=320, hop_length=160, sr=16000, to_db=True):
-        mel_spec = librosa.feature.melspectrogram(y=audio, sr=sr, n_fft=frame_size + 1, hop_length=hop_length, n_mels=n_mels)
+        mel_spec = librosa.feature.melspectrogram(
+            y=audio, sr=sr, n_fft=frame_size + 1, hop_length=hop_length, n_mels=n_mels
+        )
         if to_db:
             mel_spec = (librosa.power_to_db(mel_spec, ref=np.max) + 40) / 40
         return mel_spec.T
@@ -90,14 +91,16 @@ class ComputeScore:
         predicted_p808_mos = []
 
         for idx in range(num_hops):
-            audio_seg = audio[int(idx * hop_len_samples):int((idx + INPUT_LENGTH) * hop_len_samples)]
+            audio_seg = audio[int(idx * hop_len_samples) : int((idx + INPUT_LENGTH) * hop_len_samples)]
             if len(audio_seg) < len_samples:
                 continue
 
-            input_features = np.array(audio_seg).astype('float32')[np.newaxis, :]
-            p808_input_features = np.array(self.audio_melspec(audio=audio_seg[:-160])).astype('float32')[np.newaxis, :, :]
-            oi = {'input_1': input_features}
-            p808_oi = {'input_1': p808_input_features}
+            input_features = np.array(audio_seg).astype("float32")[np.newaxis, :]
+            p808_input_features = np.array(self.audio_melspec(audio=audio_seg[:-160])).astype("float32")[
+                np.newaxis, :, :
+            ]
+            oi = {"input_1": input_features}
+            p808_oi = {"input_1": p808_input_features}
             p808_mos = self.p808_onnx_sess.run(None, p808_oi)[0][0][0]
             mos_sig_raw, mos_bak_raw, mos_ovr_raw = self.onnx_sess.run(None, oi)[0][0]
             mos_sig, mos_bak, mos_ovr = self.get_polyfit_val(mos_sig_raw, mos_bak_raw, mos_ovr_raw, is_personalized_MOS)
@@ -109,15 +112,15 @@ class ComputeScore:
             predicted_mos_ovr_seg.append(mos_ovr)
             predicted_p808_mos.append(p808_mos)
 
-        clip_dict = {'len_in_sec': actual_audio_len / fs, 'sr': fs}
-        clip_dict['num_hops'] = num_hops
-        clip_dict['OVRL_raw'] = np.mean(predicted_mos_ovr_seg_raw)
-        clip_dict['SIG_raw'] = np.mean(predicted_mos_sig_seg_raw)
-        clip_dict['BAK_raw'] = np.mean(predicted_mos_bak_seg_raw)
-        clip_dict['OVRL'] = np.mean(predicted_mos_ovr_seg)
-        clip_dict['SIG'] = np.mean(predicted_mos_sig_seg)
-        clip_dict['BAK'] = np.mean(predicted_mos_bak_seg)
-        clip_dict['P808_MOS'] = np.mean(predicted_p808_mos)
+        clip_dict = {"len_in_sec": actual_audio_len / fs, "sr": fs}
+        clip_dict["num_hops"] = num_hops
+        clip_dict["OVRL_raw"] = np.mean(predicted_mos_ovr_seg_raw)
+        clip_dict["SIG_raw"] = np.mean(predicted_mos_sig_seg_raw)
+        clip_dict["BAK_raw"] = np.mean(predicted_mos_bak_seg_raw)
+        clip_dict["OVRL"] = np.mean(predicted_mos_ovr_seg)
+        clip_dict["SIG"] = np.mean(predicted_mos_sig_seg)
+        clip_dict["BAK"] = np.mean(predicted_mos_bak_seg)
+        clip_dict["P808_MOS"] = np.mean(predicted_p808_mos)
         return clip_dict
 
 
@@ -126,7 +129,15 @@ class ComputeScore:
 ##########################################################################
 
 
-def _reference_metric_batch(preds: Tensor, target: Tensor, fs: int, personalized: bool, device: str = None, reduce_mean: bool = False, **kwargs: Dict[str, Any]):
+def _reference_metric_batch(
+    preds: Tensor,
+    target: Tensor,
+    fs: int,
+    personalized: bool,
+    device: str = None,
+    reduce_mean: bool = False,
+    **kwargs: Dict[str, Any],
+):
     # shape: preds [BATCH_SIZE, Time]
     # download onnx first
     _load_session(f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx", device)
@@ -145,7 +156,7 @@ def _reference_metric_batch(preds: Tensor, target: Tensor, fs: int, personalized
     score = []
     for b in range(preds.shape[0]):
         val, _ = cs(preds[b, ...], fs=fs, is_personalized_MOS=personalized)
-        score.append([val['P808_MOS'], val['SIG'], val['BAK'], val['OVRL']])
+        score.append([val["P808_MOS"], val["SIG"], val["BAK"], val["OVRL"]])
     score = torch.tensor(score)
     score = score.reshape(*shape[:-1], 4)
     if reduce_mean:
@@ -180,7 +191,7 @@ preds = torch.rand(2, 2, 8000)
         (preds, 8000, True, None),
         (preds, 16000, False, None),
         (preds, 16000, True, None),
-        (preds, 16000, False, 'cuda:0'),
+        (preds, 16000, False, "cuda:0"),
     ],
 )
 class TestDNSMOS(MetricTester):
@@ -204,11 +215,7 @@ class TestDNSMOS(MetricTester):
                 device=device,
                 reduce_mean=True,
             ),
-            metric_args={
-                "fs": fs,
-                "personalized": personalized,
-                "device": device
-            },
+            metric_args={"fs": fs, "personalized": personalized, "device": device},
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
@@ -224,9 +231,5 @@ class TestDNSMOS(MetricTester):
                 device=device,
                 reduce_mean=False,
             ),
-            metric_args={
-                "fs": fs,
-                "personalized": personalized,
-                "device": device
-            },
+            metric_args={"fs": fs, "personalized": personalized, "device": device},
         )
