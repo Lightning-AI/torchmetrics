@@ -29,9 +29,10 @@ if _LIBROSA_AVAILABLE and _ONNXRUNTIME_AVAILABLE and _REQUESTS_AVAILABLE:
     from onnxruntime import InferenceSession
 else:
     librosa, ort, requests = None, None, None
+
     class InferenceSession:
-        def __init__(self, **kwargs):
-            ...
+        def __init__(self, **kwargs): ...
+
 
 __doctest_requires__ = {
     ("deep_noise_suppression_mean_opinion_score", "_load_session"): ["requests", "librosa", "onnxruntime"]
