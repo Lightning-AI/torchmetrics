@@ -43,11 +43,15 @@ def _safe_xlogy(x: Tensor, y: Tensor) -> Tensor:
     return res
 
 
-def _safe_divide(num: Tensor, denom: Tensor, zero_division: float = 0) -> Tensor:
+def _safe_divide(num: Tensor, denom: Tensor, zero_division: float = 0.0) -> Tensor:
     """Safe division, by preventing division by zero.
 
-    Additionally casts to float if input is not already to secure backwards compatibility. Replace the elements divided
-    by zero (denom == 0) with the zero_division.
+    Function will cast to float if input is not already to secure backwards compatibility.
+
+    Args:
+        num: numerator tensor
+        denom: denominator tensor, which may contain zeros
+        zero_division: value to replace elements divided by zero
 
     """
     num = num if num.is_floating_point() else num.float()
