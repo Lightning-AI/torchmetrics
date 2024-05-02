@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import librosa
 
@@ -39,14 +39,13 @@ INPUT_LENGTH = 9.01
 
 
 class _ComputeScore:
+
     def __init__(self, primary_model_path, p808_model_path) -> None:
         self.onnx_sess = ort.InferenceSession(primary_model_path)
         self.p808_onnx_sess = ort.InferenceSession(p808_model_path)
 
     def _audio_melspec(self, audio, n_mels=120, frame_size=320, hop_length=160, sr=16000, to_db=True):
-        mel_spec = librosa.feature.melspectrogram(
-            y=audio, sr=sr, n_fft=frame_size + 1, hop_length=hop_length, n_mels=n_mels
-        )
+        mel_spec = librosa.feature.melspectrogram(y=audio, sr=sr, n_fft=frame_size + 1, hop_length=hop_length, n_mels=n_mels)
         if to_db:
             mel_spec = (librosa.power_to_db(mel_spec, ref=np.max) + 40) / 40
         return mel_spec.T
@@ -71,10 +70,7 @@ class _ComputeScore:
     # aud, input_fs = sf.read(fpath)
     def __call__(self, aud, input_fs, is_personalized) -> Dict[str, Any]:
         fs = SAMPLING_RATE
-        if input_fs != fs:
-            audio = librosa.resample(aud, input_fs, fs)
-        else:
-            audio = aud
+        audio = librosa.resample(aud, input_fs, fs) if input_fs != fs else aud
         actual_audio_len = len(audio)
         len_samples = int(INPUT_LENGTH * fs)
         while len(audio) < len_samples:
@@ -91,14 +87,12 @@ class _ComputeScore:
         predicted_p808_mos = []
 
         for idx in range(num_hops):
-            audio_seg = audio[int(idx * hop_len_samples) : int((idx + INPUT_LENGTH) * hop_len_samples)]
+            audio_seg = audio[int(idx * hop_len_samples):int((idx + INPUT_LENGTH) * hop_len_samples)]
             if len(audio_seg) < len_samples:
                 continue
 
             input_features = np.array(audio_seg).astype("float32")[np.newaxis, :]
-            p808_input_features = np.array(self._audio_melspec(audio=audio_seg[:-160])).astype("float32")[
-                np.newaxis, :, :
-            ]
+            p808_input_features = np.array(self._audio_melspec(audio=audio_seg[:-160])).astype("float32")[np.newaxis, :, :]
             oi = {"input_1": input_features}
             p808_oi = {"input_1": p808_input_features}
             p808_mos = self.p808_onnx_sess.run(None, p808_oi)[0][0][0]
@@ -134,7 +128,7 @@ def _reference_metric_batch(
     target: Tensor,
     fs: int,
     personalized: bool,
-    device: str = None,
+    device: Optional[str] = None,
     reduce_mean: bool = False,
     **kwargs: Dict[str, Any],
 ):
@@ -162,7 +156,7 @@ def _reference_metric_batch(
     if reduce_mean:
         # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
         # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
-        return score.mean()
+        score = score.mean()
     else:
         score = score.reshape(shape[:-1] + (4,))
     return score
@@ -215,7 +209,11 @@ class TestDNSMOS(MetricTester):
                 device=device,
                 reduce_mean=True,
             ),
-            metric_args={"fs": fs, "personalized": personalized, "device": device},
+            metric_args={
+                "fs": fs,
+                "personalized": personalized,
+                "device": device
+            },
         )
 
     # @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
@@ -231,5 +229,9 @@ class TestDNSMOS(MetricTester):
                 device=device,
                 reduce_mean=False,
             ),
-            metric_args={"fs": fs, "personalized": personalized, "device": device},
+            metric_args={
+                "fs": fs,
+                "personalized": personalized,
+                "device": device
+            },
         )
