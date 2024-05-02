@@ -26,8 +26,12 @@ if _LIBROSA_AVAILABLE and _ONNXRUNTIME_AVAILABLE and _REQUESTS_AVAILABLE:
     import librosa
     import onnxruntime as ort
     import requests
+    from onnxruntime import InferenceSession
 else:
     librosa, ort, requests = None, None, None
+    class InferenceSession:
+        def __init__(self, **kwargs):
+            ...
 
 __doctest_requires__ = {
     ("deep_noise_suppression_mean_opinion_score", "_load_session"): ["requests", "librosa", "onnxruntime"]
@@ -58,7 +62,7 @@ def _prepare_dnsmos(dnsmos_dir: str) -> None:
         if os.path.exists(saveto):
             # try load onnx
             try:
-                _ = ort.InferenceSession(saveto)
+                _ = InferenceSession(saveto)
                 continue  # skip downloading if succeeded
             except:  # type:ignore
                 ...  # type:ignore
@@ -73,7 +77,7 @@ def _prepare_dnsmos(dnsmos_dir: str) -> None:
 def _load_session(
     path: str,
     device: torch.device,
-) -> ort.InferenceSession:
+) -> InferenceSession:
     """Load onnxruntime session.
 
     Args:
@@ -89,11 +93,11 @@ def _load_session(
         _prepare_dnsmos(DNSMOS_DIR)
 
     if device.type == "cpu":
-        return ort.InferenceSession(path)
+        return InferenceSession(path)
     else:
         providers = ["CUDAExecutionProvider"]
         provider_options = [{"device_id": device.index}]
-        return ort.InferenceSession(path, providers=providers, provider_options=provider_options)
+        return InferenceSession(path, providers=providers, provider_options=provider_options)
 
 
 def _audio_melspec(
