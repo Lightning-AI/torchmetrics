@@ -178,7 +178,7 @@ preds = torch.rand(2, 2, 8000)
 
 
 @pytest.mark.parametrize(
-    "preds, fs, personalized, device",
+    "preds, fs, personalized",
     [
         (preds, 8000, False),
         (preds, 8000, True),
@@ -231,7 +231,7 @@ class TestDNSMOS(MetricTester):
         )
 
     # @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_dnsmos_functional(self, preds, fs, personalized, device):
+    def test_dnsmos_functional(self, preds, fs, personalized, device="cpu"):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
