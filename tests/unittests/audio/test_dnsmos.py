@@ -11,11 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 from functools import partial
 from typing import Any, Dict, Optional
-import os
-import librosa
 
+import librosa
 import numpy as np
 import onnxruntime as ort
 import pytest
@@ -39,12 +39,15 @@ class _ComputeScore:
     """the implementation from
     https://github.com/microsoft/DNS-Challenge/blob/master/DNSMOS/dnsmos_local.py
     """
+
     def __init__(self, primary_model_path, p808_model_path) -> None:
         self.onnx_sess = ort.InferenceSession(os.path.expanduser(primary_model_path))
         self.p808_onnx_sess = ort.InferenceSession(os.path.expanduser(p808_model_path))
 
     def _audio_melspec(self, audio, n_mels=120, frame_size=320, hop_length=160, sr=16000, to_db=True):
-        mel_spec = librosa.feature.melspectrogram(y=audio, sr=sr, n_fft=frame_size + 1, hop_length=hop_length, n_mels=n_mels)
+        mel_spec = librosa.feature.melspectrogram(
+            y=audio, sr=sr, n_fft=frame_size + 1, hop_length=hop_length, n_mels=n_mels
+        )
         if to_db:
             mel_spec = (librosa.power_to_db(mel_spec, ref=np.max) + 40) / 40
         return mel_spec.T
@@ -69,7 +72,7 @@ class _ComputeScore:
     # aud, input_fs = sf.read(fpath)
     def __call__(self, aud, input_fs, is_personalized) -> Dict[str, Any]:
         fs = SAMPLING_RATE
-        audio = librosa.resample(aud,orig_sr=input_fs, target_sr=fs) if input_fs != fs else aud
+        audio = librosa.resample(aud, orig_sr=input_fs, target_sr=fs) if input_fs != fs else aud
         actual_audio_len = len(audio)
         len_samples = int(INPUT_LENGTH * fs)
         while len(audio) < len_samples:
@@ -86,12 +89,14 @@ class _ComputeScore:
         predicted_p808_mos = []
 
         for idx in range(num_hops):
-            audio_seg = audio[int(idx * hop_len_samples):int((idx + INPUT_LENGTH) * hop_len_samples)]
+            audio_seg = audio[int(idx * hop_len_samples) : int((idx + INPUT_LENGTH) * hop_len_samples)]
             if len(audio_seg) < len_samples:
                 continue
 
             input_features = np.array(audio_seg).astype("float32")[np.newaxis, :]
-            p808_input_features = np.array(self._audio_melspec(audio=audio_seg[:-160])).astype("float32")[np.newaxis, :, :]
+            p808_input_features = np.array(self._audio_melspec(audio=audio_seg[:-160])).astype("float32")[
+                np.newaxis, :, :
+            ]
             oi = {"input_1": input_features}
             p808_oi = {"input_1": p808_input_features}
             p808_mos = self.p808_onnx_sess.run(None, p808_oi)[0][0][0]
@@ -128,8 +133,8 @@ def _reference_metric_batch(
 ):
     # shape: preds [BATCH_SIZE, Time]
     # download onnx first
-    _load_session(f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx", torch.device('cpu'))
-    _load_session(f"{DNSMOS_DIR}/DNSMOS/model_v8.onnx", torch.device('cpu'))
+    _load_session(f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx", torch.device("cpu"))
+    _load_session(f"{DNSMOS_DIR}/DNSMOS/model_v8.onnx", torch.device("cpu"))
     # construct ComputeScore
     cs = _ComputeScore(
         f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx",
@@ -203,11 +208,7 @@ class TestDNSMOS(MetricTester):
                 device=device,
                 reduce_mean=True,
             ),
-            metric_args={
-                "fs": fs,
-                "personalized": personalized,
-                "device": device
-            },
+            metric_args={"fs": fs, "personalized": personalized, "device": device},
         )
 
     # @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
@@ -224,9 +225,5 @@ class TestDNSMOS(MetricTester):
                 device=device,
                 reduce_mean=False,
             ),
-            metric_args={
-                "fs": fs,
-                "personalized": personalized,
-                "device": device
-            },
+            metric_args={"fs": fs, "personalized": personalized, "device": device},
         )
