@@ -36,7 +36,7 @@ INPUT_LENGTH = 9.01
 
 
 class _ComputeScore:
-    """the implementation from
+    """the implementation from\
     https://github.com/microsoft/DNS-Challenge/blob/master/DNSMOS/dnsmos_local.py
     """
 

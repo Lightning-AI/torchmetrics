@@ -46,8 +46,8 @@ DNSMOS_DIR = "~/.torchmetrics/DNSMOS"
 
 
 def _prepare_dnsmos(dnsmos_dir: str) -> None:
-    """Download the DNSMOS files: "DNSMOS/DNSMOS/model_v8.onnx", "DNSMOS/DNSMOS/sig_bak_ovr.onnx",
-        "DNSMOS/pDNSMOS/sig_bak_ovr.onnx".
+    """Download the DNSMOS files. "DNSMOS/DNSMOS/model_v8.onnx", "DNSMOS/DNSMOS/sig_bak_ovr.onnx",\
+         "DNSMOS/pDNSMOS/sig_bak_ovr.onnx".
 
     Args:
         dnsmos_dir: a dir to save the downloaded files. Defaults to "~/.torchmetrics".
@@ -67,7 +67,7 @@ def _prepare_dnsmos(dnsmos_dir: str) -> None:
             try:
                 _ = InferenceSession(saveto)
                 continue  # skip downloading if succeeded
-            except:
+            except Exception as _:
                 os.remove(saveto)
         urlf = f"{url}/{file}"
         rank_zero_info(f"downloading {urlf} to {saveto}")
