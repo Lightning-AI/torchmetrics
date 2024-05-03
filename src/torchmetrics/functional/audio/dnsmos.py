@@ -60,7 +60,7 @@ def _prepare_dnsmos(dnsmos_dir: str) -> None:
 
     # save to or load from ~/torchmetrics/dnsmos/.
     for file in ["DNSMOS/DNSMOS/model_v8.onnx", "DNSMOS/DNSMOS/sig_bak_ovr.onnx", "DNSMOS/pDNSMOS/sig_bak_ovr.onnx"]:
-        saveto = os.path.join(dnsmos_dir, file.replace("DNSMOS/DNSMOS/","DNSMOS/"))
+        saveto = os.path.join(dnsmos_dir, file.replace("DNSMOS/DNSMOS/", "DNSMOS/"))
         os.makedirs(os.path.dirname(saveto), exist_ok=True)
         if os.path.exists(saveto):
             # try load onnx
