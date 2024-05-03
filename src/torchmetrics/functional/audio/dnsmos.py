@@ -50,6 +50,7 @@ def _prepare_dnsmos(dnsmos_dir: str) -> None:
 
     Args:
         dnsmos_dir: a dir to save the downloaded files. Defaults to "~/.torchmetrics".
+
     """
     # https://raw.githubusercontent.com/microsoft/DNS-Challenge/master/DNSMOS/DNSMOS/model_v8.onnx
     # https://raw.githubusercontent.com/microsoft/DNS-Challenge/master/DNSMOS/DNSMOS/sig_bak_ovr.onnx
