@@ -28,9 +28,9 @@ if _LIBROSA_AVAILABLE and _ONNXRUNTIME_AVAILABLE and _REQUESTS_AVAILABLE:
     import requests
     from onnxruntime import InferenceSession
 else:
-    librosa, ort, requests = None, None, None
+    librosa, ort, requests = None, None, None # type:ignore
 
-    class InferenceSession:
+    class InferenceSession: # type:ignore
         """Dummy InferenceSession."""
 
         def __init__(self, **kwargs: Dict[str, Any]) -> None: ...
@@ -210,7 +210,7 @@ def deep_noise_suppression_mean_opinion_score(
             "DNSMOS metric requires that librosa, onnxruntime and requests are installed."
             " Install as `pip install librosa onnxruntime-gpu requests`."
         )
-    device = torch.device(device) if device is not None else preds.device  # type:ignore
+    device = torch.device(device) if device is not None else preds.device
 
     onnx_sess = _load_session(f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx", device)
     p808_onnx_sess = _load_session(f"{DNSMOS_DIR}/DNSMOS/model_v8.onnx", device)
