@@ -477,4 +477,6 @@ linkcheck_ignore = [
     "https://ieeexplore.ieee.org/abstract/document/4317530",
     # Robust parameter estimation with a small bias against heavy contamination
     "https://www.sciencedirect.com/science/article/pii/S0047259X08000456",
+    # chrF++: words helping character n-grams
+    "https://aclanthology.org/W17-4770",
 ]
