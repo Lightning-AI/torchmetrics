@@ -13,7 +13,7 @@
 # limitations under the License.
 import os
 from functools import lru_cache
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 import numpy as np
 import torch
@@ -31,13 +31,14 @@ else:
     librosa, ort, requests = None, None, None
 
     class InferenceSession:
-        """Dummy InferenceSession"""
+        """Dummy InferenceSession."""
 
-        def __init__(self, **kwargs: Dict[str, Any]) -> None:
-            ...
+        def __init__(self, **kwargs: Dict[str, Any]) -> None: ...
 
 
-__doctest_requires__ = {("deep_noise_suppression_mean_opinion_score", "_load_session"): ["requests", "librosa", "onnxruntime"]}
+__doctest_requires__ = {
+    ("deep_noise_suppression_mean_opinion_score", "_load_session"): ["requests", "librosa", "onnxruntime"]
+}
 
 SAMPLING_RATE = 16000
 INPUT_LENGTH = 9.01
@@ -127,7 +128,9 @@ def _audio_melspec(
     """
     shape = audio.shape
     audio = audio.reshape(-1, shape[-1])
-    mel_spec = librosa.feature.melspectrogram(y=audio, sr=sr, n_fft=frame_size + 1, hop_length=hop_length, n_mels=n_mels)
+    mel_spec = librosa.feature.melspectrogram(
+        y=audio, sr=sr, n_fft=frame_size + 1, hop_length=hop_length, n_mels=n_mels
+    )
     mel_spec = mel_spec.transpose(0, 2, 1)
     mel_spec = mel_spec.reshape(shape[:-1] + mel_spec.shape[1:])
     if to_db:
@@ -161,7 +164,9 @@ def _polyfit_val(mos: np.ndarray, personalized: bool) -> np.ndarray:
     return mos
 
 
-def deep_noise_suppression_mean_opinion_score(preds: Tensor, fs: int, personalized: bool, device: Optional[str] = None) -> Tensor:
+def deep_noise_suppression_mean_opinion_score(
+    preds: Tensor, fs: int, personalized: bool, device: Optional[str] = None
+) -> Tensor:
     """Calculate `Deep Noise Suppression performance evaluation based on Mean Opinion Score`_ (DNSMOS).
 
     Human subjective evaluation is the ”gold standard” to evaluate speech quality optimized for human perception.
@@ -200,8 +205,10 @@ def deep_noise_suppression_mean_opinion_score(preds: Tensor, fs: int, personaliz
 
     """
     if not _LIBROSA_AVAILABLE or not _ONNXRUNTIME_AVAILABLE or not _REQUESTS_AVAILABLE:
-        raise ModuleNotFoundError("DNSMOS metric requires that librosa, onnxruntime and requests are installed."
-                                  " Install as `pip install librosa onnxruntime-gpu requests`.")
+        raise ModuleNotFoundError(
+            "DNSMOS metric requires that librosa, onnxruntime and requests are installed."
+            " Install as `pip install librosa onnxruntime-gpu requests`."
+        )
     device = torch.device(device) if device is not None else preds.device  # type:ignore
 
     onnx_sess = _load_session(f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx", device)
@@ -222,7 +229,7 @@ def deep_noise_suppression_mean_opinion_score(preds: Tensor, fs: int, personaliz
     moss = []
     hop_len_samples = desired_fs
     for idx in range(num_hops):
-        audio_seg = audio[..., int(idx * hop_len_samples):int((idx + INPUT_LENGTH) * hop_len_samples)]
+        audio_seg = audio[..., int(idx * hop_len_samples) : int((idx + INPUT_LENGTH) * hop_len_samples)]
         if audio_seg.shape[-1] < len_samples:
             continue
         shape = audio_seg.shape
@@ -237,7 +244,9 @@ def deep_noise_suppression_mean_opinion_score(preds: Tensor, fs: int, personaliz
 
         oi = {"input_1": input_features}
         p808_oi = {"input_1": p808_input_features}
-        mos_np = np.concatenate([p808_onnx_sess.run(None, p808_oi)[0], onnx_sess.run(None, oi)[0]], axis=-1, dtype="float64")
+        mos_np = np.concatenate(
+            [p808_onnx_sess.run(None, p808_oi)[0], onnx_sess.run(None, oi)[0]], axis=-1, dtype="float64"
+        )
         mos_np = _polyfit_val(mos_np, personalized)
 
         mos_np = mos_np.reshape(shape[:-1] + (4,))
