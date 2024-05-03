@@ -28,9 +28,9 @@ if _LIBROSA_AVAILABLE and _ONNXRUNTIME_AVAILABLE and _REQUESTS_AVAILABLE:
     import requests
     from onnxruntime import InferenceSession
 else:
-    librosa, ort, requests = None, None, None # type:ignore
+    librosa, ort, requests = None, None, None  # type:ignore
 
-    class InferenceSession: # type:ignore
+    class InferenceSession:  # type:ignore
         """Dummy InferenceSession."""
 
         def __init__(self, **kwargs: Dict[str, Any]) -> None: ...
