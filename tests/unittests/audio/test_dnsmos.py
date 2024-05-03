@@ -13,12 +13,9 @@
 # limitations under the License.
 from functools import partial
 from typing import Any, Dict, Optional
-
+import os
 import librosa
 
-##########################   the implementation from    ##########################
-#  https://github.com/microsoft/DNS-Challenge/blob/master/DNSMOS/dnsmos_local.py #
-##################################################################################
 import numpy as np
 import onnxruntime as ort
 import pytest
@@ -39,10 +36,12 @@ INPUT_LENGTH = 9.01
 
 
 class _ComputeScore:
-
+    """the implementation from
+    https://github.com/microsoft/DNS-Challenge/blob/master/DNSMOS/dnsmos_local.py
+    """
     def __init__(self, primary_model_path, p808_model_path) -> None:
-        self.onnx_sess = ort.InferenceSession(primary_model_path)
-        self.p808_onnx_sess = ort.InferenceSession(p808_model_path)
+        self.onnx_sess = ort.InferenceSession(os.path.expanduser(primary_model_path))
+        self.p808_onnx_sess = ort.InferenceSession(os.path.expanduser(p808_model_path))
 
     def _audio_melspec(self, audio, n_mels=120, frame_size=320, hop_length=160, sr=16000, to_db=True):
         mel_spec = librosa.feature.melspectrogram(y=audio, sr=sr, n_fft=frame_size + 1, hop_length=hop_length, n_mels=n_mels)
@@ -70,7 +69,7 @@ class _ComputeScore:
     # aud, input_fs = sf.read(fpath)
     def __call__(self, aud, input_fs, is_personalized) -> Dict[str, Any]:
         fs = SAMPLING_RATE
-        audio = librosa.resample(aud, input_fs, fs) if input_fs != fs else aud
+        audio = librosa.resample(aud,orig_sr=input_fs, target_sr=fs) if input_fs != fs else aud
         actual_audio_len = len(audio)
         len_samples = int(INPUT_LENGTH * fs)
         while len(audio) < len_samples:
@@ -118,11 +117,6 @@ class _ComputeScore:
         return clip_dict
 
 
-##########################################################################
-################################# End  ###################################
-##########################################################################
-
-
 def _reference_metric_batch(
     preds: Tensor,
     target: Tensor,
@@ -134,8 +128,8 @@ def _reference_metric_batch(
 ):
     # shape: preds [BATCH_SIZE, Time]
     # download onnx first
-    _load_session(f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx", device)
-    _load_session(f"{DNSMOS_DIR}/DNSMOS/model_v8.onnx", device)
+    _load_session(f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx", torch.device('cpu'))
+    _load_session(f"{DNSMOS_DIR}/DNSMOS/model_v8.onnx", torch.device('cpu'))
     # construct ComputeScore
     cs = _ComputeScore(
         f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx",
@@ -149,15 +143,15 @@ def _reference_metric_batch(
     preds = preds.detach().cpu().numpy()
     score = []
     for b in range(preds.shape[0]):
-        val, _ = cs(preds[b, ...], fs=fs, is_personalized_MOS=personalized)
+        val, _ = cs.__call__(preds[b, ...], fs, personalized)
         score.append([val["P808_MOS"], val["SIG"], val["BAK"], val["OVRL"]])
     score = torch.tensor(score)
-    score = score.reshape(*shape[:-1], 4)
     if reduce_mean:
         # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
         # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
-        score = score.mean()
+        score = score.mean(dim=0)
     else:
+        score = score.reshape(*shape[:-1], 4)
         score = score.reshape(shape[:-1] + (4,))
     return score
 
@@ -225,6 +219,7 @@ class TestDNSMOS(MetricTester):
             metric_functional=_dnsmos_cheat,
             reference_metric=partial(
                 _reference_metric_batch,
+                fs=fs,
                 personalized=personalized,
                 device=device,
                 reduce_mean=False,

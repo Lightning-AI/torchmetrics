@@ -214,7 +214,7 @@ def deep_noise_suppression_mean_opinion_score(preds: Tensor, fs: int, personaliz
         audio = preds.cpu().numpy()
 
     len_samples = int(INPUT_LENGTH * desired_fs)
-    while len(audio) < len_samples:
+    while audio.shape[-1] < len_samples:
         audio = np.concatenate([audio, audio], axis=-1)
 
     num_hops = int(np.floor(audio.shape[-1] / desired_fs) - INPUT_LENGTH) + 1
@@ -223,7 +223,7 @@ def deep_noise_suppression_mean_opinion_score(preds: Tensor, fs: int, personaliz
     hop_len_samples = desired_fs
     for idx in range(num_hops):
         audio_seg = audio[..., int(idx * hop_len_samples):int((idx + INPUT_LENGTH) * hop_len_samples)]
-        if len(audio_seg) < len_samples:
+        if audio_seg.shape[-1] < len_samples:
             continue
         shape = audio_seg.shape
         audio_seg = audio_seg.reshape((-1, shape[-1]))
