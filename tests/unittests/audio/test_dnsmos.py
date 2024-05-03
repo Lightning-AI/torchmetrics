@@ -36,9 +36,7 @@ INPUT_LENGTH = 9.01
 
 
 class _ComputeScore:
-    """the implementation from DNS-Challenge.
-
-    """
+    """The implementation from DNS-Challenge."""
 
     def __init__(self, primary_model_path, p808_model_path) -> None:
         self.onnx_sess = ort.InferenceSession(os.path.expanduser(primary_model_path))
