@@ -135,7 +135,7 @@ def _audio_melspec(
     mel_spec = mel_spec.reshape(shape[:-1] + mel_spec.shape[1:])
     if to_db:
         for b in range(mel_spec.shape[0]):
-            mel_spec[b,...]= (librosa.power_to_db(mel_spec[b], ref=np.max) + 40) / 40
+            mel_spec[b, ...] = (librosa.power_to_db(mel_spec[b], ref=np.max) + 40) / 40
     return mel_spec
 
 

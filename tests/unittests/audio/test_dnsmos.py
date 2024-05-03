@@ -210,7 +210,6 @@ class TestDNSMOS(MetricTester):
             metric_args={"fs": fs, "personalized": personalized, "device": device},
         )
 
-
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_dnsmos_cuda(self, preds, fs, personalized, ddp, device="cuda:0"):
