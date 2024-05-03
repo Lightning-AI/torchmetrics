@@ -143,7 +143,7 @@ def _reference_metric_batch(
     preds = preds.detach().cpu().numpy()
     score = []
     for b in range(preds.shape[0]):
-        val, _ = cs.__call__(preds[b, ...], fs, personalized)
+        val = cs.__call__(preds[b, ...], fs, personalized)
         score.append([val["P808_MOS"], val["SIG"], val["BAK"], val["OVRL"]])
     score = torch.tensor(score)
     if reduce_mean:
