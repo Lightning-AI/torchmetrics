@@ -46,8 +46,7 @@ DNSMOS_DIR = "~/.torchmetrics/DNSMOS"
 
 
 def _prepare_dnsmos(dnsmos_dir: str) -> None:
-    """Download the DNSMOS files. "DNSMOS/DNSMOS/model_v8.onnx", "DNSMOS/DNSMOS/sig_bak_ovr.onnx",\
-         "DNSMOS/pDNSMOS/sig_bak_ovr.onnx".
+    """Download required DNSMOS files.
 
     Args:
         dnsmos_dir: a dir to save the downloaded files. Defaults to "~/.torchmetrics".
