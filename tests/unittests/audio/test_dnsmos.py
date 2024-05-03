@@ -180,11 +180,10 @@ preds = torch.rand(2, 2, 8000)
 @pytest.mark.parametrize(
     "preds, fs, personalized, device",
     [
-        (preds, 8000, False, None),
-        (preds, 8000, True, None),
-        (preds, 16000, False, None),
-        (preds, 16000, True, None),
-        (preds, 16000, False, "cuda:0"),
+        (preds, 8000, False),
+        (preds, 8000, True),
+        (preds, 16000, False),
+        (preds, 16000, True),
     ],
 )
 class TestDNSMOS(MetricTester):
@@ -194,7 +193,27 @@ class TestDNSMOS(MetricTester):
 
     # @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_dnsmos(self, preds, fs, personalized, device, ddp):
+    def test_dnsmos(self, preds, fs, personalized, ddp, device=None):
+        """Test class implementation of metric."""
+        self.run_class_metric_test(
+            ddp,
+            preds=preds,
+            target=preds,
+            metric_class=_DNSMOSCheat,
+            reference_metric=partial(
+                _reference_metric_batch,
+                fs=fs,
+                personalized=personalized,
+                device=device,
+                reduce_mean=True,
+            ),
+            metric_args={"fs": fs, "personalized": personalized, "device": device},
+        )
+
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_dnsmos_cuda(self, preds, fs, personalized, ddp, device="cuda:0"):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
