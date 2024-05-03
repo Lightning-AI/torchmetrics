@@ -238,7 +238,7 @@ def deep_noise_suppression_mean_opinion_score(
         input_features = np.array(audio_seg).astype("float32")
         p808_input_features = np.array(_audio_melspec(audio=audio_seg[..., :-160])).astype("float32")
 
-        if device.type != "cpu" and 'CUDAExecutionProvider' in ort.get_all_providers():
+        if device.type != "cpu" and "CUDAExecutionProvider" in ort.get_all_providers():
             input_features = ort.OrtValue.ortvalue_from_numpy(input_features, device.type, device.index)
             p808_input_features = ort.OrtValue.ortvalue_from_numpy(p808_input_features, device.type, device.index)
 
