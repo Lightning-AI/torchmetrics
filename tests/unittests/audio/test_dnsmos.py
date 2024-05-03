@@ -36,8 +36,8 @@ INPUT_LENGTH = 9.01
 
 
 class _ComputeScore:
-    """the implementation from:\
-        https://github.com/microsoft/DNS-Challenge/blob/master/DNSMOS/dnsmos_local.py
+    """the implementation from DNS-Challenge.
+
     """
 
     def __init__(self, primary_model_path, p808_model_path) -> None:
