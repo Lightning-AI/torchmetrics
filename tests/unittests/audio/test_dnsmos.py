@@ -108,16 +108,15 @@ class _ComputeScore:
             predicted_mos_ovr_seg.append(mos_ovr)
             predicted_p808_mos.append(p808_mos)
 
-        clip_dict = {"len_in_sec": actual_audio_len / fs, "sr": fs}
-        clip_dict["num_hops"] = num_hops
-        clip_dict["OVRL_raw"] = np.mean(predicted_mos_ovr_seg_raw)
-        clip_dict["SIG_raw"] = np.mean(predicted_mos_sig_seg_raw)
-        clip_dict["BAK_raw"] = np.mean(predicted_mos_bak_seg_raw)
-        clip_dict["OVRL"] = np.mean(predicted_mos_ovr_seg)
-        clip_dict["SIG"] = np.mean(predicted_mos_sig_seg)
-        clip_dict["BAK"] = np.mean(predicted_mos_bak_seg)
-        clip_dict["P808_MOS"] = np.mean(predicted_p808_mos)
-        return clip_dict
+        return {"len_in_sec": actual_audio_len / fs, "sr": fs,
+        "num_hops": num_hops,
+        "OVRL_raw": np.mean(predicted_mos_ovr_seg_raw),
+        "SIG_raw": np.mean(predicted_mos_sig_seg_raw),
+        "BAK_raw": np.mean(predicted_mos_bak_seg_raw),
+        "OVRL": np.mean(predicted_mos_ovr_seg),
+        "SIG": np.mean(predicted_mos_sig_seg),
+        "BAK": np.mean(predicted_mos_bak_seg),
+        "P808_MOS": np.mean(predicted_p808_mos)}
 
 
 def _reference_metric_batch(
@@ -152,11 +151,8 @@ def _reference_metric_batch(
     if reduce_mean:
         # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
         # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
-        score = score.mean(dim=0)
-    else:
-        score = score.reshape(*shape[:-1], 4)
-        score = score.reshape(shape[:-1] + (4,))
-    return score
+        return score.mean(dim=0)
+    return score.reshape(*shape[:-1], 4).reshape(shape[:-1] + (4,))
 
 
 def _dnsmos_cheat(preds, target, **kwargs: Dict[str, Any]):
