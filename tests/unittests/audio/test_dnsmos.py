@@ -108,15 +108,18 @@ class _ComputeScore:
             predicted_mos_ovr_seg.append(mos_ovr)
             predicted_p808_mos.append(p808_mos)
 
-        return {"len_in_sec": actual_audio_len / fs, "sr": fs,
-        "num_hops": num_hops,
-        "OVRL_raw": np.mean(predicted_mos_ovr_seg_raw),
-        "SIG_raw": np.mean(predicted_mos_sig_seg_raw),
-        "BAK_raw": np.mean(predicted_mos_bak_seg_raw),
-        "OVRL": np.mean(predicted_mos_ovr_seg),
-        "SIG": np.mean(predicted_mos_sig_seg),
-        "BAK": np.mean(predicted_mos_bak_seg),
-        "P808_MOS": np.mean(predicted_p808_mos)}
+        return {
+            "len_in_sec": actual_audio_len / fs,
+            "sr": fs,
+            "num_hops": num_hops,
+            "OVRL_raw": np.mean(predicted_mos_ovr_seg_raw),
+            "SIG_raw": np.mean(predicted_mos_sig_seg_raw),
+            "BAK_raw": np.mean(predicted_mos_bak_seg_raw),
+            "OVRL": np.mean(predicted_mos_ovr_seg),
+            "SIG": np.mean(predicted_mos_sig_seg),
+            "BAK": np.mean(predicted_mos_bak_seg),
+            "P808_MOS": np.mean(predicted_p808_mos),
+        }
 
 
 def _reference_metric_batch(
