@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
+- Added a new audio metric `DNSMOS` ([#2525](https://github.com/PyTorchLightning/metrics/pull/2525))
 
 
 ### Changed
@@ -44,9 +44,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `pretty-errors` for improving error prints ([#2431](https://github.com/Lightning-AI/torchmetrics/pull/2431))
 - Added support for `torch.float` weighted networks for FID and KID calculations ([#2483](https://github.com/Lightning-AI/torchmetrics/pull/2483))
 - Added `zero_division` argument to selected classification metrics ([#2198](https://github.com/Lightning-AI/torchmetrics/pull/2198))
-
-- Added a new audio metric `DNSMOS` ([#2525](https://github.com/PyTorchLightning/metrics/pull/2525))
-
 
 ### Changed
 
