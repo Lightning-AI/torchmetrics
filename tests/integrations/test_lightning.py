@@ -19,11 +19,9 @@ from torch import tensor
 from torch.nn import Linear
 
 if module_available("lightning"):
-    print("Using lightning")
     from lightning.pytorch import LightningModule, Trainer, seed_everything
     from lightning.pytorch.loggers import CSVLogger
 else:
-    print("Using pytorch_lightning")
     from pytorch_lightning import LightningModule, Trainer, seed_everything
     from pytorch_lightning.loggers import CSVLogger
 
@@ -252,8 +250,8 @@ def test_metric_lightning_log(tmpdir):
             pass
 
     logger = CustomCSVLogger("tmpdir/logs")
-    is_cuda = torch.cuda.is_available()
-    cuda_extra = {"devices": int(is_cuda)} if is_cuda else {}
+    # is_cuda = torch.cuda.is_available()
+    # cuda_extra = {"devices": int(is_cuda)} if is_cuda else {}
     trainer = Trainer(
         default_root_dir=tmpdir,
         limit_train_batches=2,
@@ -261,7 +259,7 @@ def test_metric_lightning_log(tmpdir):
         max_epochs=2,
         log_every_n_steps=1,
         logger=logger,
-        **cuda_extra,
+        # **cuda_extra,
     )
     trainer.fit(model)
 
@@ -351,8 +349,8 @@ def test_metric_collection_lightning_log(tmpdir):
             self.log_dict({f"{k}_epoch": v for k, v in metric_vals.items()})
 
     model = TestModel()
-    is_cuda = torch.cuda.is_available()
-    cuda_extra = {"devices": int(is_cuda)} if is_cuda else {}
+    # is_cuda = torch.cuda.is_available()
+    # cuda_extra = {"devices": int(is_cuda)} if is_cuda else {}
 
     trainer = Trainer(
         default_root_dir=tmpdir,
@@ -360,7 +358,7 @@ def test_metric_collection_lightning_log(tmpdir):
         limit_val_batches=0,
         max_epochs=1,
         log_every_n_steps=1,
-        **cuda_extra,
+        # **cuda_extra,
     )
     trainer.fit(model)
 
