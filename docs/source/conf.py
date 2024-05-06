@@ -30,6 +30,7 @@ FOLDER_GENERATED = "generated"
 SPHINX_MOCK_REQUIREMENTS = int(os.environ.get("SPHINX_MOCK_REQUIREMENTS", True))
 SPHINX_FETCH_ASSETS = int(os.environ.get("SPHINX_FETCH_ASSETS", False))
 SPHINX_PIN_RELEASE_VERSIONS = int(os.getenv("SPHINX_PIN_RELEASE_VERSIONS", False))
+SPHINX_ENABLE_GALLERY = int(os.getenv("SPHINX_ENABLE_GALLERY", True))
 
 html_favicon = "_static/images/icon.svg"
 
@@ -128,15 +129,22 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx.ext.mathjax",
-    "myst_parser",
     "sphinx.ext.autosectionlabel",
-    "nbsphinx",
+    "sphinx.ext.githubpages",
     "sphinx_autodoc_typehints",
     "sphinx_paramlinks",
-    "sphinx.ext.githubpages",
-    "lai_sphinx_theme.extensions.lightning",
+    "myst_parser",
     "matplotlib.sphinxext.plot_directive",
+    "lai_sphinx_theme.extensions.lightning",
 ]
+if SPHINX_ENABLE_GALLERY:
+    extensions.append("sphinx_gallery.gen_gallery")
+else:
+    # write a dummy file as placeholder
+    path_gallery = os.path.join(_PATH_HERE, "gallery")
+    os.makedirs(path_gallery, exist_ok=True)
+    with open(os.path.join(path_gallery, "index.rst"), "w") as fopen:
+        fopen.write("Gallery is disabled\n===================")
 
 # Set that source code from plotting is always included
 plot_include_source = True
@@ -146,13 +154,19 @@ plot_html_show_source_link = False
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
-# https://berkeley-stat159-f17.github.io/stat159-f17/lectures/14-sphinx..html#conf.py-(cont.)
-# https://stackoverflow.com/questions/38526888/embed-ipython-notebook-in-sphinx-document
-# I execute the notebooks manually in advance. If notebooks test the code,
-# they should be run at build time.
-nbsphinx_execute = "never"
-nbsphinx_allow_errors = True
-nbsphinx_requirejs_path = ""
+sphinx_gallery_conf = {
+    "examples_dirs": os.path.join(_PATH_ROOT, "examples"),  # path to your example scripts
+    "gallery_dirs": "gallery",  # path to where to save gallery generated output
+    "filename_pattern": ".",
+    "ignore_pattern": r"__init__\.py",
+    "example_extensions": {".py"},
+    "line_numbers": True,
+    "promote_jupyter_magic": True,
+    "matplotlib_animations": True,
+    "abort_on_example_error": True,
+    # 'only_warn_on_example_error': True
+    "thumbnail_size": (400, 280),
+}
 
 myst_update_mathjax = False
 
@@ -162,7 +176,7 @@ source_suffix = {
     ".rst": "restructuredtext",
     ".txt": "markdown",
     ".md": "markdown",
-    ".ipynb": "nbsphinx",
+    # ".ipynb": "nbsphinx",
 }
 
 # The master toctree document.
@@ -477,4 +491,6 @@ linkcheck_ignore = [
     "https://ieeexplore.ieee.org/abstract/document/4317530",
     # Robust parameter estimation with a small bias against heavy contamination
     "https://www.sciencedirect.com/science/article/pii/S0047259X08000456",
+    # chrF++: words helping character n-grams
+    "https://aclanthology.org/W17-4770",
 ]
