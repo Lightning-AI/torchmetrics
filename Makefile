@@ -1,4 +1,4 @@
-.PHONY: clean test pull-template docs env data
+.PHONY: clean test get-sphinx-template docs env data
 
 export FREEZE_REQUIREMENTS=1
 # assume you have installed need packages
@@ -28,12 +28,13 @@ test: clean env data
 	cd tests && python -m pytest unittests -v --cov=torchmetrics
 	cd tests && python -m coverage report
 
-pull-template:
+get-sphinx-template:
 	pip install -q awscli
 	aws s3 sync --no-sign-request s3://sphinx-packages/ dist/
+	pip install lai-sphinx-theme -q -U -f dist/
 
-docs: clean pull-template
-	pip install -e . --quiet -r requirements/_docs.txt -f dist/
+docs: clean get-sphinx-template
+	pip install -e . --quiet -r requirements/_docs.txt
 	# apt-get install -y texlive-latex-extra dvipng texlive-pictures texlive-fonts-recommended cm-super
 	cd docs && make html --debug --jobs $(nproc) SPHINXOPTS="-W --keep-going"
 
