@@ -96,7 +96,7 @@ def _load_session(
         _prepare_dnsmos(DNSMOS_DIR)
 
     if device.type == "cpu":
-        infs = InferenceSession(path, providers=['CPUExecutionProvider'])
+        infs = InferenceSession(path, providers=["CPUExecutionProvider"])
     else:
         providers = ["CUDAExecutionProvider"]
         provider_options = [{"device_id": device.index}]
