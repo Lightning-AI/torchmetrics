@@ -21,6 +21,7 @@ from torch import Tensor, tensor
 from torchmetrics.functional.text.sacre_bleu import AVAILABLE_TOKENIZERS, _TokenizersLiteral, sacre_bleu_score
 from torchmetrics.text.sacre_bleu import SacreBLEUScore
 
+from unittests._helpers import skip_on_connection_issues
 from unittests.text._helpers import TextTester
 from unittests.text._inputs import _inputs_multiple_references
 
@@ -69,6 +70,7 @@ class TestSacreBLEUScore(TextTester):
             metric_args=metric_args,
         )
 
+    @skip_on_connection_issues(reason="could not download model or tokenizer")
     def test_bleu_score_functional(self, preds, targets, tokenize, lowercase):
         """Test functional implementation of metric."""
         if _should_skip_tokenizer(tokenize):
