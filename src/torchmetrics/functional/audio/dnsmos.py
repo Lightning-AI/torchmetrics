@@ -97,10 +97,13 @@ def _load_session(
 
     if device.type == "cpu":
         infs = InferenceSession(path, providers=["CPUExecutionProvider"])
-    else:
+    elif "CUDAExecutionProvider" in ort.get_all_providers():
         providers = ["CUDAExecutionProvider"]
         provider_options = [{"device_id": device.index}]
         infs = InferenceSession(path, providers=providers, provider_options=provider_options)
+    else:
+        infs = InferenceSession(path, providers=["CPUExecutionProvider"])
+
     return infs
 
 
