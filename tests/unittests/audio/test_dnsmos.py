@@ -30,6 +30,9 @@ from torchmetrics.functional.audio.dnsmos import (
 
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
+from torchmetrics.utilities.imports import _PYTHON_VERSION
+from packaging.version import Version
+_PYTHON_VERSION_LESS_THAN_3_11=Version(_PYTHON_VERSION)<Version("3.11.0")
 
 SAMPLING_RATE = 16000
 INPUT_LENGTH = 9.01
@@ -187,8 +190,7 @@ class TestDNSMOS(MetricTester):
     """Test class for `DeepNoiseSuppressionMeanOpinionScore` metric."""
 
     atol = 1e-4
-
-    # @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.skipif(not _PYTHON_VERSION_LESS_THAN_3_11,reason="test requires python<3.11")
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_dnsmos(self, preds, fs, personalized, ddp, device=None):
         """Test class implementation of metric."""
@@ -207,6 +209,7 @@ class TestDNSMOS(MetricTester):
             metric_args={"fs": fs, "personalized": personalized, "device": device},
         )
 
+    @pytest.mark.skipif(not _PYTHON_VERSION_LESS_THAN_3_11,reason="test requires python<3.11")
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_dnsmos_cuda(self, preds, fs, personalized, ddp, device="cuda:0"):
@@ -226,7 +229,7 @@ class TestDNSMOS(MetricTester):
             metric_args={"fs": fs, "personalized": personalized, "device": device},
         )
 
-    # @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.skipif(not _PYTHON_VERSION_LESS_THAN_3_11,reason="test requires python<3.11")
     def test_dnsmos_functional(self, preds, fs, personalized, device="cpu"):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
