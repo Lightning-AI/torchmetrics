@@ -26,12 +26,15 @@ from torchmetrics.functional.audio.dnsmos import (
     _load_session,
     deep_noise_suppression_mean_opinion_score,
 )
-from torchmetrics.utilities.imports import _PYTHON_VERSION
+from torchmetrics.utilities.imports import (
+    _LIBROSA_AVAILABLE,
+    _ONNXRUNTIME_AVAILABLE,
+    _PYTHON_VERSION,
+    _REQUESTS_AVAILABLE,
+)
 
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
-
-from torchmetrics.utilities.imports import _LIBROSA_AVAILABLE, _ONNXRUNTIME_AVAILABLE, _REQUESTS_AVAILABLE
 
 if _LIBROSA_AVAILABLE and _ONNXRUNTIME_AVAILABLE and _REQUESTS_AVAILABLE:
     import librosa
@@ -42,8 +45,7 @@ else:
     class InferenceSession:  # type:ignore
         """Dummy InferenceSession."""
 
-        def __init__(self, **kwargs: Dict[str, Any]) -> None:
-            ...
+        def __init__(self, **kwargs: Dict[str, Any]) -> None: ...
 
 
 _PYTHON_VERSION_LESS_THAN_3_11 = Version(_PYTHON_VERSION) < Version("3.11.0")
@@ -60,7 +62,9 @@ class _ComputeScore:
         self.p808_onnx_sess = ort.InferenceSession(os.path.expanduser(p808_model_path))
 
     def _audio_melspec(self, audio, n_mels=120, frame_size=320, hop_length=160, sr=16000, to_db=True):
-        mel_spec = librosa.feature.melspectrogram(y=audio, sr=sr, n_fft=frame_size + 1, hop_length=hop_length, n_mels=n_mels)
+        mel_spec = librosa.feature.melspectrogram(
+            y=audio, sr=sr, n_fft=frame_size + 1, hop_length=hop_length, n_mels=n_mels
+        )
         if to_db:
             mel_spec = (librosa.power_to_db(mel_spec, ref=np.max) + 40) / 40
         return mel_spec.T
@@ -102,12 +106,14 @@ class _ComputeScore:
         predicted_p808_mos = []
 
         for idx in range(num_hops):
-            audio_seg = audio[int(idx * hop_len_samples):int((idx + INPUT_LENGTH) * hop_len_samples)]
+            audio_seg = audio[int(idx * hop_len_samples) : int((idx + INPUT_LENGTH) * hop_len_samples)]
             if len(audio_seg) < len_samples:
                 continue
 
             input_features = np.array(audio_seg).astype("float32")[np.newaxis, :]
-            p808_input_features = np.array(self._audio_melspec(audio=audio_seg[:-160])).astype("float32")[np.newaxis, :, :]
+            p808_input_features = np.array(self._audio_melspec(audio=audio_seg[:-160])).astype("float32")[
+                np.newaxis, :, :
+            ]
             oi = {"input_1": input_features}
             p808_oi = {"input_1": p808_input_features}
             p808_mos = self.p808_onnx_sess.run(None, p808_oi)[0][0][0]
@@ -217,11 +223,7 @@ class TestDNSMOS(MetricTester):
                 device=device,
                 reduce_mean=True,
             ),
-            metric_args={
-                "fs": fs,
-                "personalized": personalized,
-                "device": device
-            },
+            metric_args={"fs": fs, "personalized": personalized, "device": device},
         )
 
     @pytest.mark.skipif(not _PYTHON_VERSION_LESS_THAN_3_11, reason="test requires python<3.11")
@@ -241,11 +243,7 @@ class TestDNSMOS(MetricTester):
                 device=device,
                 reduce_mean=True,
             ),
-            metric_args={
-                "fs": fs,
-                "personalized": personalized,
-                "device": device
-            },
+            metric_args={"fs": fs, "personalized": personalized, "device": device},
         )
 
     @pytest.mark.skipif(not _PYTHON_VERSION_LESS_THAN_3_11, reason="test requires python<3.11")
@@ -262,9 +260,5 @@ class TestDNSMOS(MetricTester):
                 device=device,
                 reduce_mean=False,
             ),
-            metric_args={
-                "fs": fs,
-                "personalized": personalized,
-                "device": device
-            },
+            metric_args={"fs": fs, "personalized": personalized, "device": device},
         )
