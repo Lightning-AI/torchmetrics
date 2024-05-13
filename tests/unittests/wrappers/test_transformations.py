@@ -100,7 +100,7 @@ class TestLambdaInputTransformer:
         )
         preds = Tensor(preds).float()
         targets = Tensor(targets).float()
-        preds_transformed = Tensor(preds_transformed).float() if preds_transformed is not None else preds
+        preds_transformed = Tensor(preds_transformed).float()
         targets_transformed = Tensor(targets_transformed).float() if targets_transformed is not None else targets
 
         args = (preds, targets)
