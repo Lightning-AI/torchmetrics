@@ -20,7 +20,7 @@ from torchmetrics.classification import BinaryAccuracy
 from torchmetrics.retrieval import RetrievalMAP
 from torchmetrics.wrappers import BinaryTargetTransformer, LambdaInputTransformer, MetricInputTransformer
 
-from unittests.helpers import seed_all
+from unittests._helpers import seed_all
 
 seed_all(42)
 
