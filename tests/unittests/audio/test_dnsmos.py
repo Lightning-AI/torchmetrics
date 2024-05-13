@@ -48,7 +48,6 @@ else:
         def __init__(self, **kwargs: Dict[str, Any]) -> None: ...
 
 
-
 SAMPLING_RATE = 16000
 INPUT_LENGTH = 9.01
 
