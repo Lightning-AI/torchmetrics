@@ -38,7 +38,7 @@ class MetricInputTransformer(WrapperMetric):
         self.wrapped_metric = wrapped_metric
 
     def transform_pred(self, pred: torch.Tensor) -> torch.Tensor:
-        """Defines transform operations on the prediction data.
+        """Define transform operations on the prediction data.
 
         Overridden by subclasses. Identity by default.
 
@@ -46,7 +46,7 @@ class MetricInputTransformer(WrapperMetric):
         return pred
 
     def transform_target(self, target: torch.Tensor) -> torch.Tensor:
-        """Defines transform operations on the target data.
+        """Define transform operations on the target data.
 
         Overridden by subclasses. Identity by default.
 
@@ -54,24 +54,24 @@ class MetricInputTransformer(WrapperMetric):
         return target
 
     def _wrap_transform(self, *args: torch.Tensor) -> Tuple[torch.Tensor, ...]:
-        """Wraps transformation functions to dispatch args to their individual transform functions."""
+        """Wrap transformation functions to dispatch args to their individual transform functions."""
         if len(args) == 1:
             return (self.transform_pred(args[0]),)
         if len(args) == 2:
             return self.transform_pred(args[0]), self.transform_target(args[1])
         return self.transform_pred(args[0]), self.transform_target(args[1]), *args[2:]
 
-    def update(self, *args: Tuple[torch.Tensor], **kwargs: Dict[str, Any]) -> None:
-        """Wraps the update call of the underlying metric."""
+    def update(self, *args: torch.Tensor, **kwargs: Dict[str, Any]) -> None:
+        """Wrap the update call of the underlying metric."""
         args = self._wrap_transform(*args)
         self.wrapped_metric.update(*args, **kwargs)
 
     def compute(self) -> Any:
-        """Wraps the compute call of the underlying metric."""
+        """Wrap the compute call of the underlying metric."""
         return self.wrapped_metric.compute()
 
     def forward(self, *args: torch.Tensor, **kwargs: Dict[str, Any]) -> Any:
-        """Wraps the forward call of the underlying metric."""
+        """Wrap the forward call of the underlying metric."""
         args = self._wrap_transform(*args)
         return self.wrapped_metric.forward(*args, **kwargs)
 
@@ -118,13 +118,13 @@ class LambdaInputTransformer(MetricInputTransformer):
         super().__init__(wrapped_metric, **kwargs)
         if transform_pred is not None:
             if not callable(transform_pred):
-                raise TypeError(f"Expected transform_pred to be of type `Callable` but received {transform_pred}")
-            self.transform_pred = transform_pred
+                raise TypeError(f"Expected `transform_pred` to be of type `Callable` but received `{transform_pred}`")
+            self.transform_pred = transform_pred  # type: ignore[assignment,method-assign]
 
         if transform_target is not None:
             if not callable(transform_target):
-                raise TypeError(f"Expected transform_target to be of type `Callable` but received {transform_target}")
-            self.transform_target = transform_target
+                raise TypeError(f"Expected `transform_target` to be of type `Callable` but received `{transform_target}`")
+            self.transform_target = transform_target  # type: ignore[assignment,method-assign]
 
 
 class BinaryTargetTransformer(MetricInputTransformer):
@@ -165,7 +165,7 @@ class BinaryTargetTransformer(MetricInputTransformer):
         self.threshold = threshold
 
     def transform_target(self, target: torch.Tensor) -> torch.Tensor:
-        """Casts the target tensor to binary values according to the threshold.
+        """Cast the target tensor to binary values according to the threshold.
 
         Output assumes same type as input.
 
