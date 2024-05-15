@@ -163,7 +163,7 @@ class BinaryTargetTransformer(MetricInputTransformer):
     def __init__(self, wrapped_metric: Union[Metric, MetricCollection], threshold: float = 0, **kwargs: Any) -> None:
         super().__init__(wrapped_metric, **kwargs)
         if not isinstance(threshold, (int, float)):
-            raise TypeError(f"Expected threshold to be of type `int` or `float` but received {threshold}")
+            raise TypeError(f"Expected `threshold` to be of type `int` or `float` but received `{threshold}`")
         self.threshold = threshold
 
     def transform_target(self, target: torch.Tensor) -> torch.Tensor:
