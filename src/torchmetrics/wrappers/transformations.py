@@ -123,7 +123,9 @@ class LambdaInputTransformer(MetricInputTransformer):
 
         if transform_target is not None:
             if not callable(transform_target):
-                raise TypeError(f"Expected `transform_target` to be of type `Callable` but received `{transform_target}`")
+                raise TypeError(
+                    f"Expected `transform_target` to be of type `Callable` but received `{transform_target}`"
+                )
             self.transform_target = transform_target  # type: ignore[assignment,method-assign]
 
 
