@@ -95,8 +95,8 @@ class LambdaInputTransformer(MetricInputTransformer):
 
     Example:
         >>> import torch
-        >>> from torchmetrics.wrappers import LambdaInputTransformer
         >>> from torchmetrics.classification import BinaryAccuracy
+        >>> from torchmetrics.wrappers import LambdaInputTransformer
         >>>
         >>> preds = torch.tensor([0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.7, 0.8, 0.5, 0.4])
         >>> targets = torch.tensor([1,0,0,0,0,1,1,0,0,0])
@@ -146,8 +146,8 @@ class BinaryTargetTransformer(MetricInputTransformer):
 
     Example:
         >>> import torch
-        >>> from torchmetrics.wrappers import BinaryTargetTransformer
         >>> from torchmetrics.retrieval import RetrievalMRR
+        >>> from torchmetrics.wrappers import BinaryTargetTransformer
         >>>
         >>> preds = torch.tensor([0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.7, 0.8, 0.5, 0.4])
         >>> targets = torch.tensor([1,0,0,0,0,2,1,0,0,0])
@@ -160,7 +160,7 @@ class BinaryTargetTransformer(MetricInputTransformer):
 
     """
 
-    def __init__(self, wrapped_metric: Union[Metric, MetricCollection], threshold: float = 0, **kwargs: Any) -> None:
+    def __init__(self, wrapped_metric: Union[Metric, MetricCollection], threshold: Union[int, float] = 0, **kwargs: Any) -> None:
         super().__init__(wrapped_metric, **kwargs)
         if not isinstance(threshold, (int, float)):
             raise TypeError(f"Expected `threshold` to be of type `int` or `float` but received `{threshold}`")
