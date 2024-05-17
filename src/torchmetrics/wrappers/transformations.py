@@ -160,7 +160,9 @@ class BinaryTargetTransformer(MetricInputTransformer):
 
     """
 
-    def __init__(self, wrapped_metric: Union[Metric, MetricCollection], threshold: Union[int, float] = 0, **kwargs: Any) -> None:
+    def __init__(
+        self, wrapped_metric: Union[Metric, MetricCollection], threshold: Union[int, float] = 0, **kwargs: Any
+    ) -> None:
         super().__init__(wrapped_metric, **kwargs)
         if not isinstance(threshold, (int, float)):
             raise TypeError(f"Expected `threshold` to be of type `int` or `float` but received `{threshold}`")
