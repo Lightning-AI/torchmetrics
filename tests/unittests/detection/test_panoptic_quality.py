@@ -67,7 +67,7 @@ _ARGS_1 = {"things": {2}, "stuffs": {3}, "allow_unknown_preds_category": True}
 _ARGS_2 = {"things": {0, 1}, "stuffs": {10, 11}}
 
 
-def _get_class_order_test_input_args(class1, class2, class3) -> (np.ndarray, dict):
+def _get_class_order_test_input_args(class_type, class1, class2, class3) -> (np.ndarray, dict):
     a = [class1, 0]
     b = [class2, 0]
     c = [class3, 0]
@@ -76,7 +76,8 @@ def _get_class_order_test_input_args(class1, class2, class3) -> (np.ndarray, dic
         preds=torch.tensor([a, a, b, b, b, c]).reshape((1, 1, 6, 2)).repeat(2, 1, 1, 1),
         target=torch.tensor([a, a, b, b, c, c]).reshape((1, 1, 6, 2)).repeat(2, 1, 1, 1),
     )
-    _args = {"things": [], "stuffs": [class1, class2, class3], "return_per_class": True}
+    _args = {"things": [], "stuffs": [], "return_per_class": True}
+    _args[class_type]= [class1, class2, class3]
     return _input, _args
 
 
@@ -115,9 +116,12 @@ class TestPanopticQuality(MetricTester):
             (_INPUTS_0, _ARGS_0, _reference_fn_0_0),
             (_INPUTS_0, _ARGS_1, _reference_fn_0_1),
             (_INPUTS_1, _ARGS_2, _reference_fn_1_2),
-            (*_get_class_order_test_input_args(0, 2, 1), _reference_fn_class_order),
-            (*_get_class_order_test_input_args(0, 3, 2), _reference_fn_class_order),
-            (*_get_class_order_test_input_args(0, 10, 2), _reference_fn_class_order),
+            (*_get_class_order_test_input_args("stuffs", 0, 2, 1), _reference_fn_class_order),
+            (*_get_class_order_test_input_args("stuffs", 0, 3, 2), _reference_fn_class_order),
+            (*_get_class_order_test_input_args("stuffs", 0, 10, 2), _reference_fn_class_order),
+            (*_get_class_order_test_input_args("things", 0, 2, 1), _reference_fn_class_order),
+            (*_get_class_order_test_input_args("things", 0, 3, 2), _reference_fn_class_order),
+            (*_get_class_order_test_input_args("things", 0, 10, 2), _reference_fn_class_order),
         ],
     )
     def test_panoptic_quality_class(self, ddp, inputs, args, reference_metric):
