@@ -77,7 +77,7 @@ def _get_class_order_test_input_args(class_type, class1, class2, class3) -> (np.
         target=torch.tensor([a, a, b, b, c, c]).reshape((1, 1, 6, 2)).repeat(2, 1, 1, 1),
     )
     _args = {"things": [], "stuffs": [], "return_per_class": True}
-    _args[class_type]= [class1, class2, class3]
+    _args[class_type] = [class1, class2, class3]
     return _input, _args
 
 
