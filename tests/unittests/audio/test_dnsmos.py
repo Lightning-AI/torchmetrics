@@ -18,7 +18,6 @@ from typing import Any, Dict, Optional
 import numpy as np
 import pytest
 import torch
-from packaging.version import Version
 from torch import Tensor
 from torchmetrics.audio.dnsmos import DeepNoiseSuppressionMeanOpinionScore
 from torchmetrics.functional.audio.dnsmos import (
@@ -29,7 +28,6 @@ from torchmetrics.functional.audio.dnsmos import (
 from torchmetrics.utilities.imports import (
     _LIBROSA_AVAILABLE,
     _ONNXRUNTIME_AVAILABLE,
-    _PYTHON_VERSION,
     _REQUESTS_AVAILABLE,
 )
 
