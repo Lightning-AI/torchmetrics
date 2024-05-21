@@ -62,6 +62,7 @@ class HausdorffDistance(Metric):
         tensor(1.0)
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = True
@@ -74,7 +75,7 @@ class HausdorffDistance(Metric):
         self,
         distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
         spacing: Optional[Union[Tensor, list[float]]] = None,
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         self.distance_metric = distance_metric
