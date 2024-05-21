@@ -4,7 +4,7 @@
 nltk >=3.6, <=3.8.1
 tqdm >=4.41.0, <4.67.0
 regex >=2021.9.24, <=2024.5.10
-transformers >4.4.0, <4.41.0
+transformers >4.4.0, <4.42.0
 mecab-python3 >=1.0.6, <1.1.0
 ipadic >=1.0.0, <1.1.0
 sentencepiece >=0.2.0, <0.3.0
