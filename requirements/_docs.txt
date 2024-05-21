@@ -5,7 +5,7 @@ docutils ==0.19
 sphinxcontrib-fulltoc >=1.0
 sphinxcontrib-mockautodoc
 lai-sphinx-theme  # need to be downloaded from s3://sphinx-packages/
-sphinx-autodoc-typehints ==1.23.0
+sphinx-autodoc-typehints ==2.1.0
 sphinx-paramlinks ==0.6.0
 sphinx-togglebutton ==0.3.2
 sphinx-copybutton ==0.5.2
