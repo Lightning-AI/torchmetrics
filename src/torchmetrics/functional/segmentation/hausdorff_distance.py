@@ -17,7 +17,7 @@ from typing import Literal, Optional, Tuple, Union
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.segmentation.utils import _check_if_binarized, surface_distance
+from torchmetrics.functional.segmentation.utils import check_if_binarized, surface_distance
 from torchmetrics.utilities.checks import _check_same_shape
 
 
@@ -33,8 +33,8 @@ def _hausdorff_distance_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, T
         target: target binarized segmentation map
 
     """
-    _check_if_binarized(preds)
-    _check_if_binarized(target)
+    check_if_binarized(preds)
+    check_if_binarized(target)
     _check_same_shape(preds, target)
     return preds, target
 
