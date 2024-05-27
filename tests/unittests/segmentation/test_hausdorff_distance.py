@@ -17,11 +17,34 @@ from skimage.metrics import hausdorff_distance as skimage_hausdorff_distance
 from torchmetrics.functional.segmentation.hausdorff_distance import hausdorff_distance
 from torchmetrics.segmentation.hausdorff_distance import HausdorffDistance
 
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
-from unittests.segmentation.inputs import _inputs
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
+from unittests.segmentation.inputs import _Input
 
 seed_all(42)
+
+
+preds = torch.tensor(
+    [
+        [[1, 1, 1, 1, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 1, 1, 1, 1]],
+        [[1, 1, 1, 1, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 1, 1, 1, 1]],
+        [[1, 1, 1, 1, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 1, 1, 1, 1]],
+        [[1, 1, 1, 1, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 1, 1, 1, 1]],
+    ],
+    dtype=torch.bool,
+)
+
+target = torch.tensor(
+    [
+        [[1, 1, 1, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 1, 1, 1, 0]],
+        [[1, 1, 1, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 1, 1, 1, 0]],
+        [[1, 1, 1, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 1, 1, 1, 0]],
+        [[1, 1, 1, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 1, 1, 1, 0]],
+    ],
+    dtype=torch.bool,
+)
+
+_inputs = _Input(preds=preds, target=target)
 
 
 @pytest.mark.parametrize(
@@ -40,7 +63,7 @@ class TestHausdorffDistance(MetricTester):
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_hausdorff_distance(self, preds, target, distance_metric, ddp):
+    def test_hausdorff_distance_class(self, preds, target, distance_metric, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
