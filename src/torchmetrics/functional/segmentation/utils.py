@@ -24,7 +24,6 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
 
 
-def _check_if_binarized(x: Tensor) -> None:
 def _ignore_background(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     """Ignore the background class in the computation assuming it is the first, index 0."""
     preds = preds[:, 1:] if preds.shape[1] > 1 else preds
@@ -33,7 +32,7 @@ def _ignore_background(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
 
 
 def check_if_binarized(x: Tensor) -> None:
-    """Check if the input is binarized.
+    """Check if tensor is binarized.
 
     Example:
         >>> from torchmetrics.functional.segmentation.utils import check_if_binarized
