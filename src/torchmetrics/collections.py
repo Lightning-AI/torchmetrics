@@ -206,6 +206,11 @@ class MetricCollection(ModuleDict):
         """
         # Use compute groups if already initialized and checked
         if self._groups_checked:
+            # Delete the cache of all metrics to invalidate the cache and therefore recent compute calls, forcing new
+            # compute calls to recompute
+            for k in self.keys(keep_base=True):
+                mi = getattr(self, k)
+                mi._computed = None
             for cg in self._groups.values():
                 # only update the first member
                 m0 = getattr(self, cg[0])
@@ -304,7 +309,6 @@ class MetricCollection(ModuleDict):
                         # Determine if we just should set a reference or a full copy
                         setattr(mi, state, deepcopy(m0_state) if copy else m0_state)
                     mi._update_count = deepcopy(m0._update_count) if copy else m0._update_count
-                    mi._computed = deepcopy(m0._computed) if copy else m0._computed
         self._state_is_copy = copy
 
     def compute(self) -> Dict[str, Any]:

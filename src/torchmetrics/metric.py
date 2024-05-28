@@ -619,7 +619,7 @@ class Metric(Module, ABC):
 
             # return cached value
             if self._computed is not None:
-                return self._computed
+                return deepcopy(self._computed)
 
             # compute relies on the sync context manager to gather the states across processes and apply reduction
             # if synchronization happened, the current rank accumulated states will be restored to keep
@@ -634,7 +634,8 @@ class Metric(Module, ABC):
             if self.compute_with_cache:
                 self._computed = value
 
-            return value
+            # Return a deep copy to avoid side effects for non-scalar values, e.g. ConfusionMatrix
+            return deepcopy(value)
 
         return wrapped_func
 
