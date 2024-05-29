@@ -209,7 +209,7 @@ class MetricCollection(ModuleDict):
             # Delete the cache of all metrics to invalidate the cache and therefore recent compute calls, forcing new
             # compute calls to recompute
             for k in self.keys(keep_base=True):
-                mi = getattr(self, k)
+                mi = getattr(self, str(k))
                 mi._computed = None
             for cg in self._groups.values():
                 # only update the first member
