@@ -35,12 +35,11 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
     band of the result image. It is defined as:
 
     .. math::
-        ERGAS = 100 \cdot \frac{h}{l} \cdot \sqrt{\frac{1}{N} \sum_{k=1}^{N} \frac{RMSE(B_k)^2}{\mu_k^2}}
+        ERGAS = \frac{100}{r} \cdot \sqrt{\frac{1}{N} \sum_{k=1}^{N} \frac{RMSE(B_k)^2}{\mu_k^2}}
 
-    where :math:`h` and :math:`l` denote the spatial resolution (pixel size) of the high and low resolution images,
-    often shorted to the ratio between them :math:`r=h/l`. :math:`N` is the number of spectral bands, :math:`RMSE(B_k)`
-    is the root mean square error of the k-th band between low and high resolution images, and :math:`\\mu_k` is the
-    mean value of the k-th band of the reference image.
+    where :math:`r=h/l` denote the ratio in spatial resolution (pixel size) between the high and low resolution images.
+    :math:`N` is the number of spectral bands, :math:`RMSE(B_k)` is the root mean square error of the k-th band between
+    low and high resolution images, and :math:`\\mu_k` is the mean value of the k-th band of the reference image.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
