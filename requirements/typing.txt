@@ -1,4 +1,4 @@
-mypy ==1.9.0
+mypy ==1.10.0
 torch ==2.3.0
 
 types-PyYAML

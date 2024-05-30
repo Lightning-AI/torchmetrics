@@ -108,8 +108,8 @@ jobs:
         timeout-minutes: 25
         run: |
           pip --version
-          pip install -e . -U --find-links $PYTORCH_URL -f $PYPI_CACHE
-          pip install -r requirements/_doctest.txt -U -f $PYPI_CACHE
+          pip install -e . -U "setuptools==69.5.1" -r requirements/_doctest.txt \
+            --find-links $PYTORCH_URL -f $PYPI_CACHE
           pip list
 
       - name: DocTests

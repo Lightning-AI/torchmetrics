@@ -62,7 +62,7 @@ jobs:
           # this was updated in `source cashing` by optional oldest
           cat requirements/_integrate.txt
           # to have install pyTorch
-          pip install -e . --find-links=${PYTORCH_URL}
+          pip install -e . "setuptools==69.5.1" --find-links=${PYTORCH_URL}
 
           # adjust version to PT ecosystem based on installed TM
           python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py
