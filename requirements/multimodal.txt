@@ -1,5 +1,5 @@
 # NOTE: the upper bound for the package version is only set for CI stability, and it is dropped while installing this package
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
-transformers >=4.10.0, <4.41.0
+transformers >=4.10.0, <4.42.0
 piq <=0.8.0
