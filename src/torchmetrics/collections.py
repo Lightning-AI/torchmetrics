@@ -187,6 +187,11 @@ class MetricCollection(ModuleDict):
 
         self.add_metrics(metrics, *additional_metrics)
 
+    @property
+    def metric_state(self) -> Dict[str, Dict[str, Any]]:
+        """Get the current state of the metric."""
+        return {k: m.metric_state for k, m in self.items(keep_base=False, copy_state=False)}
+
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """Call forward for each metric sequentially.

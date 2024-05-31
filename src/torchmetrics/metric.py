@@ -619,7 +619,7 @@ class Metric(Module, ABC):
 
             # return cached value
             if self._computed is not None:
-                return deepcopy(self._computed)
+                return self._computed
 
             # compute relies on the sync context manager to gather the states across processes and apply reduction
             # if synchronization happened, the current rank accumulated states will be restored to keep
@@ -630,12 +630,13 @@ class Metric(Module, ABC):
                 should_unsync=self._should_unsync,
             ):
                 value = _squeeze_if_scalar(compute(*args, **kwargs))
+                # clone tensor to avoid in-place operations after compute, altering already computed results
+                value = apply_to_collection(value, Tensor, lambda x: x.clone())
 
             if self.compute_with_cache:
                 self._computed = value
 
-            # Return a deep copy to avoid side effects for non-scalar values, e.g. ConfusionMatrix
-            return deepcopy(value)
+            return value
 
         return wrapped_func
 
