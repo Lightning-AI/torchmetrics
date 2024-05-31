@@ -47,7 +47,6 @@ def _reference_generalized_dice(
     """Calculate reference metric for `MeanIoU`."""
     if input_format == "index":
         preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
-    if input_format == "index":
         target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
     val = compute_generalized_dice(preds, target, include_background=include_background)
     if reduce:

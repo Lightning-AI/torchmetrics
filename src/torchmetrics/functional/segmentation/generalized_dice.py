@@ -57,7 +57,6 @@ def _generalized_dice_update(
 
     if input_format == "index":
         preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
-    if input_format == "index":
         target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
 
     if not include_background:
