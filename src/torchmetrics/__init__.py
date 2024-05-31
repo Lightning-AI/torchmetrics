@@ -14,9 +14,6 @@ _logger.setLevel(__logging.INFO)
 _PACKAGE_ROOT = os.path.dirname(__file__)
 _PROJECT_ROOT = os.path.dirname(_PACKAGE_ROOT)
 
-if package_available("pretty_errors"):
-    import pretty_errors  # noqa: F401
-
 if package_available("PIL"):
     import PIL
 

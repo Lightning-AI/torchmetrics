@@ -37,7 +37,7 @@ from unittests._helpers.testers import MetricTester, inject_ignore_index, remove
 from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 
 
-def _reference_sklearn_jaccard_index_binary(preds, target, ignore_index=None):
+def _reference_sklearn_jaccard_index_binary(preds, target, ignore_index=None, zero_division=0):
     preds = preds.view(-1).numpy()
     target = target.view(-1).numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -45,7 +45,7 @@ def _reference_sklearn_jaccard_index_binary(preds, target, ignore_index=None):
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
     target, preds = remove_ignore_index(target, preds, ignore_index)
-    return sk_jaccard_index(y_true=target, y_pred=preds)
+    return sk_jaccard_index(y_true=target, y_pred=preds, zero_division=zero_division)
 
 
 @pytest.mark.parametrize("inputs", _binary_cases)
@@ -53,8 +53,9 @@ class TestBinaryJaccardIndex(MetricTester):
     """Test class for `BinaryJaccardIndex` metric."""
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("zero_division", [0, 1])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_binary_jaccard_index(self, inputs, ddp, ignore_index):
+    def test_binary_jaccard_index(self, inputs, ddp, ignore_index, zero_division):
         """Test class implementation of metric."""
         preds, target = inputs
         if ignore_index is not None:
@@ -64,15 +65,19 @@ class TestBinaryJaccardIndex(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryJaccardIndex,
-            reference_metric=partial(_reference_sklearn_jaccard_index_binary, ignore_index=ignore_index),
+            reference_metric=partial(
+                _reference_sklearn_jaccard_index_binary, ignore_index=ignore_index, zero_division=zero_division
+            ),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
+                "zero_division": zero_division,
             },
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_binary_jaccard_index_functional(self, inputs, ignore_index):
+    @pytest.mark.parametrize("zero_division", [0, 1])
+    def test_binary_jaccard_index_functional(self, inputs, ignore_index, zero_division):
         """Test functional implementation of metric."""
         preds, target = inputs
         if ignore_index is not None:
@@ -81,11 +86,10 @@ class TestBinaryJaccardIndex(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_jaccard_index,
-            reference_metric=partial(_reference_sklearn_jaccard_index_binary, ignore_index=ignore_index),
-            metric_args={
-                "threshold": THRESHOLD,
-                "ignore_index": ignore_index,
-            },
+            reference_metric=partial(
+                _reference_sklearn_jaccard_index_binary, ignore_index=ignore_index, zero_division=zero_division
+            ),
+            metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "zero_division": zero_division},
         )
 
     def test_binary_jaccard_index_differentiability(self, inputs):
@@ -129,7 +133,7 @@ class TestBinaryJaccardIndex(MetricTester):
         )
 
 
-def _reference_sklearn_jaccard_index_multiclass(preds, target, ignore_index=None, average="macro"):
+def _reference_sklearn_jaccard_index_multiclass(preds, target, ignore_index=None, average="macro", zero_division=0):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -137,13 +141,15 @@ def _reference_sklearn_jaccard_index_multiclass(preds, target, ignore_index=None
     preds = preds.flatten()
     target = target.flatten()
     target, preds = remove_ignore_index(target, preds, ignore_index)
+    if average is None:
+        return sk_jaccard_index(
+            y_true=target, y_pred=preds, average=average, labels=list(range(NUM_CLASSES)), zero_division=zero_division
+        )
     if ignore_index is not None and 0 <= ignore_index < NUM_CLASSES:
         labels = [i for i in range(NUM_CLASSES) if i != ignore_index]
-        res = sk_jaccard_index(y_true=target, y_pred=preds, average=average, labels=labels)
-        return np.insert(res, ignore_index, 0.0) if average is None else res
-    if average is None:
-        return sk_jaccard_index(y_true=target, y_pred=preds, average=average, labels=list(range(NUM_CLASSES)))
-    return sk_jaccard_index(y_true=target, y_pred=preds, average=average)
+        res = sk_jaccard_index(y_true=target, y_pred=preds, average=average, labels=labels, zero_division=zero_division)
+        return np.insert(res, ignore_index, 0) if average is None else res
+    return sk_jaccard_index(y_true=target, y_pred=preds, average=average, zero_division=zero_division)
 
 
 @pytest.mark.parametrize("inputs", _multiclass_cases)
@@ -152,8 +158,9 @@ class TestMulticlassJaccardIndex(MetricTester):
 
     @pytest.mark.parametrize("average", ["macro", "micro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
+    @pytest.mark.parametrize("zero_division", [0, 1])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_multiclass_jaccard_index(self, inputs, ddp, ignore_index, average):
+    def test_multiclass_jaccard_index(self, inputs, ddp, ignore_index, average, zero_division):
         """Test class implementation of metric."""
         preds, target = inputs
         if ignore_index is not None:
@@ -164,18 +171,23 @@ class TestMulticlassJaccardIndex(MetricTester):
             target=target,
             metric_class=MulticlassJaccardIndex,
             reference_metric=partial(
-                _reference_sklearn_jaccard_index_multiclass, ignore_index=ignore_index, average=average
+                _reference_sklearn_jaccard_index_multiclass,
+                ignore_index=ignore_index,
+                average=average,
+                zero_division=zero_division,
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "ignore_index": ignore_index,
                 "average": average,
+                "zero_division": zero_division,
             },
         )
 
     @pytest.mark.parametrize("average", ["macro", "micro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1, 0])
-    def test_multiclass_jaccard_index_functional(self, inputs, ignore_index, average):
+    @pytest.mark.parametrize("zero_division", [0, 1])
+    def test_multiclass_jaccard_index_functional(self, inputs, ignore_index, average, zero_division):
         """Test functional implementation of metric."""
         preds, target = inputs
         if ignore_index is not None:
@@ -185,12 +197,16 @@ class TestMulticlassJaccardIndex(MetricTester):
             target=target,
             metric_functional=multiclass_jaccard_index,
             reference_metric=partial(
-                _reference_sklearn_jaccard_index_multiclass, ignore_index=ignore_index, average=average
+                _reference_sklearn_jaccard_index_multiclass,
+                ignore_index=ignore_index,
+                average=average,
+                zero_division=zero_division,
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,
                 "ignore_index": ignore_index,
                 "average": average,
+                "zero_division": zero_division,
             },
         )
 
@@ -233,7 +249,7 @@ class TestMulticlassJaccardIndex(MetricTester):
         )
 
 
-def _reference_sklearn_jaccard_index_multilabel(preds, target, ignore_index=None, average="macro"):
+def _reference_sklearn_jaccard_index_multilabel(preds, target, ignore_index=None, average="macro", zero_division=0):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -243,16 +259,18 @@ def _reference_sklearn_jaccard_index_multilabel(preds, target, ignore_index=None
     preds = np.moveaxis(preds, 1, -1).reshape((-1, preds.shape[1]))
     target = np.moveaxis(target, 1, -1).reshape((-1, target.shape[1]))
     if ignore_index is None:
-        return sk_jaccard_index(y_true=target, y_pred=preds, average=average)
+        return sk_jaccard_index(y_true=target, y_pred=preds, average=average, zero_division=zero_division)
 
     if average == "micro":
-        return _reference_sklearn_jaccard_index_binary(torch.tensor(preds), torch.tensor(target), ignore_index)
+        return _reference_sklearn_jaccard_index_binary(
+            torch.tensor(preds), torch.tensor(target), ignore_index, zero_division=zero_division
+        )
     scores, weights = [], []
     for i in range(preds.shape[1]):
         pred, true = preds[:, i], target[:, i]
         true, pred = remove_ignore_index(true, pred, ignore_index)
         confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
-        scores.append(sk_jaccard_index(true, pred))
+        scores.append(sk_jaccard_index(true, pred, zero_division=zero_division))
         weights.append(confmat[1, 0] + confmat[1, 1])
     scores = np.stack(scores, axis=0)
     weights = np.stack(weights, axis=0)
@@ -269,8 +287,9 @@ class TestMultilabelJaccardIndex(MetricTester):
 
     @pytest.mark.parametrize("average", ["macro", "micro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
+    @pytest.mark.parametrize("zero_division", [0, 1])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_multilabel_jaccard_index(self, inputs, ddp, ignore_index, average):
+    def test_multilabel_jaccard_index(self, inputs, ddp, ignore_index, average, zero_division):
         """Test class implementation of metric."""
         preds, target = inputs
         if ignore_index is not None:
@@ -281,18 +300,23 @@ class TestMultilabelJaccardIndex(MetricTester):
             target=target,
             metric_class=MultilabelJaccardIndex,
             reference_metric=partial(
-                _reference_sklearn_jaccard_index_multilabel, ignore_index=ignore_index, average=average
+                _reference_sklearn_jaccard_index_multilabel,
+                ignore_index=ignore_index,
+                average=average,
+                zero_division=zero_division,
             ),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,
                 "average": average,
+                "zero_division": zero_division,
             },
         )
 
     @pytest.mark.parametrize("average", ["macro", "micro", "weighted", None])
     @pytest.mark.parametrize("ignore_index", [None, -1])
-    def test_multilabel_jaccard_index_functional(self, inputs, ignore_index, average):
+    @pytest.mark.parametrize("zero_division", [0, 1])
+    def test_multilabel_jaccard_index_functional(self, inputs, ignore_index, average, zero_division):
         """Test functional implementation of metric."""
         preds, target = inputs
         if ignore_index is not None:
@@ -302,12 +326,16 @@ class TestMultilabelJaccardIndex(MetricTester):
             target=target,
             metric_functional=multilabel_jaccard_index,
             reference_metric=partial(
-                _reference_sklearn_jaccard_index_multilabel, ignore_index=ignore_index, average=average
+                _reference_sklearn_jaccard_index_multilabel,
+                ignore_index=ignore_index,
+                average=average,
+                zero_division=zero_division,
             ),
             metric_args={
                 "num_labels": NUM_CLASSES,
                 "ignore_index": ignore_index,
                 "average": average,
+                "zero_division": zero_division,
             },
         )
 
