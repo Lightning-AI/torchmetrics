@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
+from typing import Tuple, Union
 
 import torch
 from torch import Tensor
@@ -46,7 +46,9 @@ def _normalized_root_mean_squared_error_update(
     return sum_squared_error, num_obs, denom
 
 
-def _normalized_root_mean_squared_error_compute(sum_squared_error: Tensor, num_obs: int, denom: Tensor) -> Tensor:
+def _normalized_root_mean_squared_error_compute(
+    sum_squared_error: Tensor, num_obs: Union[int, Tensor], denom: Tensor
+) -> Tensor:
     """Calculates RMSE and normalizes it."""
     rmse = torch.sqrt(sum_squared_error / num_obs)
     return rmse / denom
