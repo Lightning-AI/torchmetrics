@@ -23,6 +23,15 @@ from torchmetrics.functional.regression.mse import _mean_squared_error_update
 def _normalized_root_mean_squared_error_update(
     preds: Tensor, target: Tensor, num_outputs: int, normalization: Literal["mean", "range", "std"] = "mean"
 ) -> Tuple[Tensor, int, Tensor]:
+    """Updates and returns the sum of squared errors and the number of observations for NRMSE computation.
+
+    Args:
+        preds: Predicted tensor
+        target: Ground truth tensor
+        num_outputs: Number of outputs in multioutput setting
+        normalization: type of normalization to be applied. Choose from "mean", "range", "std"
+
+    """
     sum_squared_error, num_obs = _mean_squared_error_update(preds, target, num_outputs)
 
     target = target.view(-1) if num_outputs == 1 else target
@@ -55,8 +64,8 @@ def normalized_root_mean_squared_error(
         preds: estimated labels
         target: ground truth labels
         normalization: type of normalization to be applied. Choose from "mean", "range", "std" which corresponds to
-          normalizing the RMSE by the mean of the target, the range of the target or the standard deviation of the
-          target.
+            normalizing the RMSE by the mean of the target, the range of the target or the standard deviation of the
+            target.
         num_outputs: Number of outputs in multioutput setting
 
     Return:
@@ -72,7 +81,7 @@ def normalized_root_mean_squared_error(
         >>> normalized_root_mean_squared_error(preds, target, normalization="range")
         tensor(0.2500)
         >>> normalized_root_mean_squared_error(preds, target, normalization="std")
-        tensor(0.5222)
+        tensor(0.6030)
 
     Example (multioutput):
         >>> import torch

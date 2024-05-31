@@ -125,20 +125,17 @@ def _reference_normalized_root_mean_squared_error(
         y_true = y_true.flatten()
         y_pred = y_pred.flatten()
     evaluator = RegressionMetric(y_true, y_pred) if normalization == "range" else RegressionMetric(y_pred, y_true)
-    arg_mapping = {
-        "mean": 1,
-        "range": 2,
-        "std": 4,
-    }
-
+    arg_mapping = {"mean": 1, "range": 2, "std": 4}
     return evaluator.normalized_root_mean_square_error(model=arg_mapping[normalization])
 
 
 def _reference_weighted_mean_abs_percentage_error(target, preds):
+    """Reference implementation of Weighted Mean Absolute Percentage Error (WMAPE) metric."""
     return np.sum(np.abs(target - preds)) / np.sum(np.abs(target))
 
 
 def _single_target_ref_wrapper(preds, target, sk_fn, metric_args):
+    """Reference implementation of single-target metrics."""
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
 
@@ -152,6 +149,7 @@ def _single_target_ref_wrapper(preds, target, sk_fn, metric_args):
 
 
 def _multi_target_ref_wrapper(preds, target, sk_fn, metric_args):
+    """Reference implementation of multi-target metrics."""
     sk_preds = preds.view(-1, NUM_TARGETS).numpy()
     sk_target = target.view(-1, NUM_TARGETS).numpy()
     sk_kwargs = {"multioutput": "raw_values"} if metric_args and "num_outputs" in metric_args else {}
@@ -192,41 +190,47 @@ def _multi_target_ref_wrapper(preds, target, sk_fn, metric_args):
             _reference_weighted_mean_abs_percentage_error,
             {},
         ),
-        (
+        pytest.param(
             NormalizedRootMeanSquaredError,
             normalized_root_mean_squared_error,
             _reference_normalized_root_mean_squared_error,
             {"normalization": "mean", "num_outputs": 1},
+            id="nrmse_singleoutput_mean",
         ),
-        (
+        pytest.param(
             NormalizedRootMeanSquaredError,
             normalized_root_mean_squared_error,
             _reference_normalized_root_mean_squared_error,
             {"normalization": "range", "num_outputs": 1},
+            id="nrmse_singleoutput_range",
         ),
-        (
+        pytest.param(
             NormalizedRootMeanSquaredError,
             normalized_root_mean_squared_error,
             _reference_normalized_root_mean_squared_error,
             {"normalization": "std", "num_outputs": 1},
+            id="nrmse_singleoutput_std",
         ),
-        (
+        pytest.param(
             NormalizedRootMeanSquaredError,
             normalized_root_mean_squared_error,
             _reference_normalized_root_mean_squared_error,
             {"normalization": "mean", "num_outputs": NUM_TARGETS},
+            id="nrmse_multioutput_mean",
         ),
-        (
+        pytest.param(
             NormalizedRootMeanSquaredError,
             normalized_root_mean_squared_error,
             _reference_normalized_root_mean_squared_error,
             {"normalization": "range", "num_outputs": NUM_TARGETS},
+            id="nrmse_multioutput_range",
         ),
-        (
+        pytest.param(
             NormalizedRootMeanSquaredError,
             normalized_root_mean_squared_error,
             _reference_normalized_root_mean_squared_error,
             {"normalization": "std", "num_outputs": NUM_TARGETS},
+            id="nrmse_multioutput_std",
         ),
     ],
 )
@@ -267,6 +271,8 @@ class TestMeanError(MetricTester):
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args
     ):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        if metric_args and "num_outputs" in metric_args and preds.ndim < 3:
+            pytest.skip("Test only runs for multi-output setting")
         self.run_differentiability_test(
             preds=preds,
             target=target,

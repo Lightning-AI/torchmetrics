@@ -105,7 +105,7 @@ class NormalizedRootMeanSquaredError(Metric):
         >>> preds = tensor([3.0, 5.0, 2.5, 7.0])
         >>> nrmse = NormalizedRootMeanSquaredError(normalization="mean")
         >>> nrmse(preds, target)
-        tensor(0.4000)
+        tensor(0.1919)
         >>> nrmse = NormalizedRootMeanSquaredError(normalization="range")
         >>> nrmse(preds, target)
 
@@ -122,13 +122,17 @@ class NormalizedRootMeanSquaredError(Metric):
 
     """
 
-    is_differentiable = True
-    higher_is_better = False
-    full_state_update = False
+    is_differentiable: bool = True
+    higher_is_better: bool = False
+    full_state_update: bool = True
     plot_lower_bound: float = 0.0
 
     sum_squared_error: Tensor
     total: Tensor
+    min_val: Tensor
+    max_val: Tensor
+    mean_val: Tensor
+    var_val: Tensor
 
     def __init__(
         self,
@@ -151,9 +155,9 @@ class NormalizedRootMeanSquaredError(Metric):
         self.add_state("sum_squared_error", default=torch.zeros(num_outputs), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
         self.add_state("min_val", default=float("Inf") * torch.ones(self.num_outputs), dist_reduce_fx=None)
-        self.add_state("max_val", default=-float("Inf") * torch.zeros(self.num_outputs), dist_reduce_fx=None)
+        self.add_state("max_val", default=-float("Inf") * torch.ones(self.num_outputs), dist_reduce_fx=None)
         self.add_state("mean_val", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
-        self.add_state("std_val", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
+        self.add_state("var_val", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets.
@@ -163,16 +167,18 @@ class NormalizedRootMeanSquaredError(Metric):
         """
         sum_squared_error, num_obs = _mean_squared_error_update(preds, target, self.num_outputs)
         self.sum_squared_error += sum_squared_error
-        self.total += num_obs
-
-        # Update normalization statistics
         target = target.view(-1) if self.num_outputs == 1 else target
+
+        # Update min and max
         self.min_val = torch.minimum(target.min(dim=0).values, self.min_val)
         self.max_val = torch.maximum(target.max(dim=0).values, self.max_val)
-        new_mean = torch.mean(target, dim=0)
-        self.mean_val = (self.mean_val * (self.total - num_obs) + new_mean * num_obs) / self.total
-        new_std = torch.std(target, correction=0, dim=0)
-        self.std_val = torch.sqrt((self.std_val**2 * (self.total - num_obs) + new_std**2 * num_obs) / self.total)
+
+        # Update mean and variance
+        new_mean = (self.total * self.mean_val + target.sum(dim=0)) / (self.total + num_obs)
+        self.total += num_obs
+        new_var = ((target - new_mean) * (target - self.mean_val)).sum(dim=0)
+        self.mean_val = new_mean
+        self.var_val += new_var
 
     def compute(self) -> Tensor:
         """Computes NRMSE over state.
@@ -182,7 +188,7 @@ class NormalizedRootMeanSquaredError(Metric):
         """
         if (self.num_outputs == 1 and self.mean_val.numel() > 1) or (self.num_outputs > 1 and self.mean_val.ndim > 1):
             denom = _final_aggregation(
-                self.min_val, self.max_val, self.mean_val, self.std_val, self.total, self.normalization
+                self.min_val, self.max_val, self.mean_val, self.var_val, self.total, self.normalization
             )
         else:
             if self.normalization == "mean":
@@ -190,7 +196,7 @@ class NormalizedRootMeanSquaredError(Metric):
             elif self.normalization == "range":
                 denom = self.max_val - self.min_val
             else:
-                denom = self.std_val
+                denom = torch.sqrt(self.var_val / self.total)
         return _normalized_root_mean_squared_error_compute(self.sum_squared_error, self.total, denom)
 
     def plot(
