@@ -40,13 +40,13 @@ _inputs3 = _Input(
 def _reference_generalized_dice(
     preds: torch.Tensor,
     target: torch.Tensor,
+    input_format: str,
     include_background: bool = True,
     reduce: bool = True,
 ):
     """Calculate reference metric for `MeanIoU`."""
-    if (preds.bool() != preds).any():  # preds is an index tensor
+    if input_format == "index":
         preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
-    if (target.bool() != target).any():  # target is an index tensor
         target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
     val = compute_generalized_dice(preds, target, include_background=include_background)
     if reduce:
@@ -55,11 +55,11 @@ def _reference_generalized_dice(
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    "preds, target, input_format",
     [
-        (_inputs1.preds, _inputs1.target),
-        (_inputs2.preds, _inputs2.target),
-        (_inputs3.preds, _inputs3.target),
+        (_inputs1.preds, _inputs1.target, "one-hot"),
+        (_inputs2.preds, _inputs2.target, "one-hot"),
+        (_inputs3.preds, _inputs3.target, "index"),
     ],
 )
 @pytest.mark.parametrize("include_background", [True, False])
@@ -67,23 +67,42 @@ class TestMeanIoU(MetricTester):
     """Test class for `MeanIoU` metric."""
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_mean_iou_class(self, preds, target, include_background, ddp):
+    def test_mean_iou_class(self, preds, target, input_format, include_background, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=GeneralizedDiceScore,
-            reference_metric=partial(_reference_generalized_dice, include_background=include_background, reduce=True),
-            metric_args={"num_classes": NUM_CLASSES, "include_background": include_background},
+            reference_metric=partial(
+                _reference_generalized_dice,
+                input_format=input_format,
+                include_background=include_background,
+                reduce=True,
+            ),
+            metric_args={
+                "num_classes": NUM_CLASSES,
+                "include_background": include_background,
+                "input_format": input_format,
+            },
         )
 
-    def test_mean_iou_functional(self, preds, target, include_background):
+    def test_mean_iou_functional(self, preds, target, input_format, include_background):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=generalized_dice_score,
-            reference_metric=partial(_reference_generalized_dice, include_background=include_background, reduce=False),
-            metric_args={"num_classes": NUM_CLASSES, "include_background": include_background, "per_class": False},
+            reference_metric=partial(
+                _reference_generalized_dice,
+                input_format=input_format,
+                include_background=include_background,
+                reduce=False,
+            ),
+            metric_args={
+                "num_classes": NUM_CLASSES,
+                "include_background": include_background,
+                "per_class": False,
+                "input_format": input_format,
+            },
         )
