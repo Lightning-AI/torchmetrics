@@ -80,12 +80,14 @@ def _prepare_dnsmos(dnsmos_dir: str) -> None:
 def _load_session(
     path: str,
     device: torch.device,
+    num_threads: Optional[int] = None,
 ) -> InferenceSession:
     """Load onnxruntime session.
 
     Args:
         path: the model path
         device: the device used
+        num_threads: the number of threads to use. Defaults to None.
 
     Returns:
         onnxruntime session
@@ -94,15 +96,20 @@ def _load_session(
     path = os.path.expanduser(path)
     if not os.path.exists(path):
         _prepare_dnsmos(DNSMOS_DIR)
-
+    
+    opts = ort.SessionOptions()
+    if num_threads is not None:
+        opts.inter_op_num_threads = num_threads
+        opts.intra_op_num_threads = num_threads
+ 
     if device.type == "cpu":
-        infs = InferenceSession(path, providers=["CPUExecutionProvider"])
+        infs = InferenceSession(path, providers=["CPUExecutionProvider"], sess_options=opts)
     elif "CUDAExecutionProvider" in ort.get_all_providers():
         providers = ["CUDAExecutionProvider", "CPUExecutionProvider"]
         provider_options = [{"device_id": device.index}, {}]
-        infs = InferenceSession(path, providers=providers, provider_options=provider_options)
+        infs = InferenceSession(path, providers=providers, provider_options=provider_options, sess_options=opts)
     else:
-        infs = InferenceSession(path, providers=["CPUExecutionProvider"])
+        infs = InferenceSession(path, providers=["CPUExecutionProvider"], sess_options=opts)
 
     return infs
 
@@ -169,7 +176,7 @@ def _polyfit_val(mos: np.ndarray, personalized: bool) -> np.ndarray:
 
 
 def deep_noise_suppression_mean_opinion_score(
-    preds: Tensor, fs: int, personalized: bool, device: Optional[str] = None
+    preds: Tensor, fs: int, personalized: bool, device: Optional[str] = None, num_threads: Optional[int] = None
 ) -> Tensor:
     """Calculate `Deep Noise Suppression performance evaluation based on Mean Opinion Score`_ (DNSMOS).
 
@@ -191,6 +198,7 @@ def deep_noise_suppression_mean_opinion_score(
         personalized: whether interfering speaker is penalized
         device: the device used for calculating DNSMOS, can be cpu or cuda:n, where n is the index of gpu.
             If None is given, then the device of input is used.
+        num_threads: the number of threads to use for cpu inference. Defaults to None.
 
     Returns:
         Float tensor with shape ``(..., 4)`` of DNSMOS values per sample, i.e. [p808_mos, mos_sig, mos_bak, mos_ovr]
@@ -215,8 +223,8 @@ def deep_noise_suppression_mean_opinion_score(
         )
     device = torch.device(device) if device is not None else preds.device
 
-    onnx_sess = _load_session(f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx", device)
-    p808_onnx_sess = _load_session(f"{DNSMOS_DIR}/DNSMOS/model_v8.onnx", device)
+    onnx_sess = _load_session(f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx", device,num_threads)
+    p808_onnx_sess = _load_session(f"{DNSMOS_DIR}/DNSMOS/model_v8.onnx", device,num_threads)
 
     desired_fs = SAMPLING_RATE
     if fs != desired_fs:

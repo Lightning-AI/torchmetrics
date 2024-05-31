@@ -64,6 +64,7 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
         personalized: whether interfering speaker is penalized
         device: the device used for calculating DNSMOS, can be cpu or cuda:n, where n is the index of gpu.
             If None is given, then the device of input is used.
+        num_threads: number of threads to use for onnxruntime CPU inference.
 
     Raises:
         ModuleNotFoundError:
@@ -93,6 +94,7 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
         fs: int,
         personalized: bool,
         device: Optional[str] = None,
+        num_threads: Optional[int] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -105,6 +107,7 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
         self.fs = fs
         self.personalized = personalized
         self.cal_device = device
+        self.num_threads = num_threads
 
         self.add_state("sum_dnsmos", default=tensor([0, 0, 0, 0], dtype=torch.float64), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
@@ -116,6 +119,7 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
             self.fs,
             self.personalized,
             self.cal_device,
+            self.num_threads,
         ).to(self.sum_dnsmos.device)
 
         self.sum_dnsmos += metric_batch.reshape(-1, 4).sum(dim=0)
