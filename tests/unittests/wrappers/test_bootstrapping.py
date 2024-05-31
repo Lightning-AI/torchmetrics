@@ -124,6 +124,17 @@ def test_bootstrap(device, sampling_strategy, metric, ref_metric):
     assert np.allclose(output["std"].cpu(), np.std(sk_scores, ddof=1))
     assert np.allclose(output["raw"].cpu(), sk_scores)
 
+    # check that resetting works
+    bootstrapper.reset()
+
+    assert bootstrapper.update_count == 0
+    assert all(m.update_count == 0 for m in bootstrapper.metrics)
+    output = bootstrapper.compute()
+    if not isinstance(metric, MeanSquaredError):
+        assert output["mean"] == 0
+        assert output["std"] == 0
+        assert (output["raw"] == torch.zeros(10, device=device)).all()
+
 
 @pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
 def test_low_sample_amount(sampling_strategy):
