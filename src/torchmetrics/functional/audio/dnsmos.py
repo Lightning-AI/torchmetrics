@@ -96,12 +96,12 @@ def _load_session(
     path = os.path.expanduser(path)
     if not os.path.exists(path):
         _prepare_dnsmos(DNSMOS_DIR)
-    
+
     opts = ort.SessionOptions()
     if num_threads is not None:
         opts.inter_op_num_threads = num_threads
         opts.intra_op_num_threads = num_threads
- 
+
     if device.type == "cpu":
         infs = InferenceSession(path, providers=["CPUExecutionProvider"], sess_options=opts)
     elif "CUDAExecutionProvider" in ort.get_all_providers():
@@ -186,7 +186,7 @@ def deep_noise_suppression_mean_opinion_score(
     correlate poorly with human ratings and are not widely adopted in the research community. One of the biggest
     use cases of these perceptual objective metrics is to evaluate noise suppression algorithms. DNSMOS generalizes
     well in challenging test conditions with a high correlation to human ratings in stack ranking noise suppression
-    methods. More details can be found in `DNSMOS paper <https://arxiv.org/abs/2010.15258>`_ and 
+    methods. More details can be found in `DNSMOS paper <https://arxiv.org/abs/2010.15258>`_ and
     `DNSMOS P835 <https://arxiv.org/abs/2110.01763>`_.
 
 
@@ -224,8 +224,8 @@ def deep_noise_suppression_mean_opinion_score(
         )
     device = torch.device(device) if device is not None else preds.device
 
-    onnx_sess = _load_session(f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx", device,num_threads)
-    p808_onnx_sess = _load_session(f"{DNSMOS_DIR}/DNSMOS/model_v8.onnx", device,num_threads)
+    onnx_sess = _load_session(f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx", device, num_threads)
+    p808_onnx_sess = _load_session(f"{DNSMOS_DIR}/DNSMOS/model_v8.onnx", device, num_threads)
 
     desired_fs = SAMPLING_RATE
     if fs != desired_fs:
