@@ -23,8 +23,6 @@ pydantic > 1.0.0, < 3.0.0
 -r image.txt
 -r multimodal.txt
 -r text.txt
--r text_test.txt
--r regression_test.txt
 
 # Gallery extra requirements
 # --------------------------
