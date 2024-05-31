@@ -186,7 +186,8 @@ def deep_noise_suppression_mean_opinion_score(
     correlate poorly with human ratings and are not widely adopted in the research community. One of the biggest
     use cases of these perceptual objective metrics is to evaluate noise suppression algorithms. DNSMOS generalizes
     well in challenging test conditions with a high correlation to human ratings in stack ranking noise suppression
-    methods. More details can be found in `DNSMOS paper <https://arxiv.org/abs/2010.15258>`_.
+    methods. More details can be found in `DNSMOS paper <https://arxiv.org/abs/2010.15258>`_ and 
+    `DNSMOS P835 <https://arxiv.org/abs/2110.01763>`_.
 
 
     .. note:: using this metric requires you to have ``librosa``, ``onnxruntime`` and ``requests`` installed.
