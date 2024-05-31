@@ -11,7 +11,6 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 import glob
-import inspect
 import os
 import re
 import shutil
@@ -20,7 +19,7 @@ from typing import Optional
 
 import lai_sphinx_theme
 import torchmetrics
-from lightning_utilities.docs.formatting import _transform_changelog
+from lightning_utilities.docs.formatting import _linkcode_resolve, _transform_changelog
 
 _PATH_HERE = os.path.abspath(os.path.dirname(__file__))
 _PATH_ROOT = os.path.realpath(os.path.join(_PATH_HERE, "..", ".."))
@@ -44,11 +43,6 @@ author = torchmetrics.__author__
 version = torchmetrics.__version__
 # The full version, including alpha/beta/rc tags
 release = torchmetrics.__version__
-
-# Options for the linkcode extension
-# ----------------------------------
-github_user = "Lightning-AI"
-github_repo = "metrics"
 
 # -- Project documents -------------------------------------------------------
 
@@ -352,55 +346,7 @@ autodoc_mock_imports = MOCK_PACKAGES
 # Resolve function
 # This function is used to populate the (source) links in the API
 def linkcode_resolve(domain, info) -> Optional[str]:  # noqa: ANN001
-    # try to find the file and line number, based on code from numpy:
-    # https://github.com/numpy/numpy/blob/master/doc/source/conf.py#L424
-
-    if domain != "py" or not info["module"]:
-        return None
-
-    obj = _get_obj(info)
-    file_name = _get_file_name(obj)
-
-    if not file_name:
-        return None
-
-    line_str = _get_line_str(obj)
-    version_str = _get_version_str()
-
-    return f"https://github.com/{github_user}/{github_repo}/blob/{version_str}/src/torchmetrics/{file_name}{line_str}"
-
-
-def _get_obj(info: dict) -> object:
-    module_name = info["module"]
-    full_name = info["fullname"]
-    sub_module = sys.modules.get(module_name)
-    obj = sub_module
-    for part in full_name.split("."):
-        obj = getattr(obj, part)
-    # strip decorators, which would resolve to the source of the decorator
-    return inspect.unwrap(obj)
-
-
-def _get_file_name(obj) -> str:  # noqa: ANN001
-    try:
-        file_name = inspect.getsourcefile(obj)
-        file_name = os.path.relpath(file_name, start=os.path.dirname(torchmetrics.__file__))
-    except TypeError:  # This seems to happen when obj is a property
-        file_name = None
-    return file_name
-
-
-def _get_line_str(obj) -> str:  # noqa: ANN001
-    source, line_number = inspect.getsourcelines(obj)
-    return "#L%d-L%d" % (line_number, line_number + len(source) - 1)
-
-
-def _get_version_str() -> str:
-    if any(s in torchmetrics.__version__ for s in ("dev", "rc")):
-        version_str = "master"
-    else:
-        version_str = f"v{torchmetrics.__version__}"
-    return version_str
+    return _linkcode_resolve(domain, info=info, github_user="Lightning-AI", github_repo="torchmetrics")
 
 
 autosummary_generate = True
