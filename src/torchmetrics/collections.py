@@ -187,6 +187,11 @@ class MetricCollection(ModuleDict):
 
         self.add_metrics(metrics, *additional_metrics)
 
+    @property
+    def metric_state(self) -> Dict[str, Dict[str, Any]]:
+        """Get the current state of the metric."""
+        return {k: m.metric_state for k, m in self.items(keep_base=False, copy_state=False)}
+
     @torch.jit.unused
     def forward(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """Call forward for each metric sequentially.
@@ -206,6 +211,11 @@ class MetricCollection(ModuleDict):
         """
         # Use compute groups if already initialized and checked
         if self._groups_checked:
+            # Delete the cache of all metrics to invalidate the cache and therefore recent compute calls, forcing new
+            # compute calls to recompute
+            for k in self.keys(keep_base=True):
+                mi = getattr(self, str(k))
+                mi._computed = None
             for cg in self._groups.values():
                 # only update the first member
                 m0 = getattr(self, cg[0])
@@ -304,7 +314,6 @@ class MetricCollection(ModuleDict):
                         # Determine if we just should set a reference or a full copy
                         setattr(mi, state, deepcopy(m0_state) if copy else m0_state)
                     mi._update_count = deepcopy(m0._update_count) if copy else m0._update_count
-                    mi._computed = deepcopy(m0._computed) if copy else m0._computed
         self._state_is_copy = copy
 
     def compute(self) -> Dict[str, Any]:
