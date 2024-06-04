@@ -24,6 +24,11 @@ if not _TORCHVISION_GREATER_EQUAL_0_8:
 def _giou_update(
     preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float], replacement_val: float = 0
 ) -> torch.Tensor:
+    if preds.ndim != 2 or preds.shape[-1] != 4:
+        raise ValueError(f"Expected preds to be of shape (N, 4) but got {preds.shape}")
+    if target.ndim != 2 or target.shape[-1] != 4:
+        raise ValueError(f"Expected target to be of shape (N, 4) but got {target.shape}")
+
     from torchvision.ops import generalized_box_iou
 
     iou = generalized_box_iou(preds, target)
