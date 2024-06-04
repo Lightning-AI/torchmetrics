@@ -107,6 +107,7 @@ class Metric(Module, ABC):
         # see (https://github.com/pytorch/pytorch/blob/3e6bb5233f9ca2c5aa55d9cda22a7ee85439aa6e/
         # torch/nn/modules/module.py#L227)
         torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
+        # magic patch for `RuntimeError: DataLoader worker (pid(s) 104) exited unexpectedly`
         self._TORCH_GREATER_EQUAL_2_1 = bool(_TORCH_GREATER_EQUAL_2_1)
         self._device = torch.device("cpu")
         self._dtype = torch.get_default_dtype()
