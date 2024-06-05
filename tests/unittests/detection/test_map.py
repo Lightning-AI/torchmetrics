@@ -65,6 +65,58 @@ _coco_bbox_input = _generate_coco_inputs("bbox")
 _coco_segm_input = _generate_coco_inputs("segm")
 
 
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 and pycocotools is installed")
+@pytest.mark.parametrize("iou_type", ["bbox", "segm"])
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+def test_tm_to_coco(tmpdir, iou_type, backend):
+    """Test that the conversion from TM to COCO format works."""
+    preds, target = _coco_bbox_input if iou_type == "bbox" else _coco_segm_input
+    metric = MeanAveragePrecision(iou_type=iou_type, backend=backend, box_format="xywh")
+    for bp, bt in zip(preds, target):
+        metric.update(bp, bt)
+    metric.tm_to_coco(f"{tmpdir}/tm_map_input")
+    preds_2, target_2 = MeanAveragePrecision.coco_to_tm(
+        f"{tmpdir}/tm_map_input_preds.json",
+        f"{tmpdir}/tm_map_input_target.json",
+        iou_type=iou_type,
+        backend=backend,
+    )
+
+    preds = [p for batch in preds for p in batch]
+    target = [t for batch in target for t in batch]
+
+    # make sure that every prediction/target is found in the new prediction/target after saving and loading
+    for sample1 in preds:
+        sample_found = False
+        for sample2 in preds_2:
+            if iou_type == "segm":
+                if sample1["masks"].shape == sample2["masks"].shape and torch.allclose(
+                    sample1["masks"], sample2["masks"]
+                ):
+                    sample_found = True
+            else:
+                if sample1["boxes"].shape == sample2["boxes"].shape and torch.allclose(
+                    sample1["boxes"], sample2["boxes"]
+                ):
+                    sample_found = True
+        assert sample_found, "preds not found"
+
+    for sample1 in target:
+        sample_found = False
+        for sample2 in target_2:
+            if iou_type == "segm":
+                if sample1["masks"].shape == sample2["masks"].shape and torch.allclose(
+                    sample1["masks"], sample2["masks"]
+                ):
+                    sample_found = True
+            else:
+                if sample1["boxes"].shape == sample2["boxes"].shape and torch.allclose(
+                    sample1["boxes"], sample2["boxes"]
+                ):
+                    sample_found = True
+        assert sample_found, "target not found"
+
+
 def _compare_against_coco_fn(preds, target, iou_type, iou_thresholds=None, rec_thresholds=None, class_metrics=True):
     """Taken from https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoEvalDemo.ipynb."""
     with contextlib.redirect_stdout(io.StringIO()):
