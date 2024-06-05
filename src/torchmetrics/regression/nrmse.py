@@ -108,6 +108,7 @@ class NormalizedRootMeanSquaredError(Metric):
         tensor(0.1919)
         >>> nrmse = NormalizedRootMeanSquaredError(normalization="range")
         >>> nrmse(preds, target)
+        tensor(0.1701)
 
     Example::
         Multioutput normalized root mean squared error computation:
