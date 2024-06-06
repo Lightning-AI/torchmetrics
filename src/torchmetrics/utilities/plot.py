@@ -181,8 +181,15 @@ def _get_col_row_split(n: int) -> Tuple[int, int]:
     return ceil(nsq), ceil(nsq)
 
 
-def _get_text_color(patch_color: Tuple[float, float, float]) -> str:  # type: ignore[valid-type]
-    """Get the text color for a given value and colormap, following Wikipedia's recommendations: https://en.wikipedia.org/wiki/Relative_luminance."""
+def _get_text_color(patch_color: Tuple[float, float, float, float]) -> str:
+    """Get the text color for a given value and colormap.
+
+    Following Wikipedia's recommendations: https://en.wikipedia.org/wiki/Relative_luminance.
+
+    Args:
+        patch_color: RGBA color tuple
+
+    """
     # Convert to linear color space
     r, g, b, a = patch_color
     r, g, b = (c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in (r, g, b))
