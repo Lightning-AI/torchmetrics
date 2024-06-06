@@ -181,7 +181,7 @@ def _get_col_row_split(n: int) -> Tuple[int, int]:
     return ceil(nsq), ceil(nsq)
 
 
-def _get_text_color(patch_color: tuple[float, float, float]) -> str:  # type: ignore[valid-type]
+def _get_text_color(patch_color: Tuple[float, float, float]) -> str:  # type: ignore[valid-type]
     """Get the text color for a given value and colormap, following Wikipedia's recommendations: https://en.wikipedia.org/wiki/Relative_luminance."""
     # Convert to linear color space
     r, g, b, a = patch_color
