@@ -55,7 +55,7 @@ print(torch.allclose(perplexity, cross_entropy))
 # Be aware that sequences are often padded to ensure equal length. In such cases, the padding tokens should be ignored when calculating the perplexity. This can be achieved by specifying the `ignore_index` argument in the `Perplexity` metric
 
 tokenizer.pad_token_id = tokenizer.eos_token_id
-sample_input_ids = tokenizer.encode(sample_text, return_tensors="pt", padding='max_length', max_length=20)
+sample_input_ids = tokenizer.encode(sample_text, return_tensors="pt", padding="max_length", max_length=20)
 with torch.no_grad():
     sample_outputs = model(sample_input_ids, labels=sample_input_ids)
 logits = sample_outputs.logits
