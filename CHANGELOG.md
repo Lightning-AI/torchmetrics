@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--
+- Calculate text color of ConfusionMatrix plot based on luminance
 
 
 ### Removed
