@@ -181,6 +181,25 @@ def _get_col_row_split(n: int) -> Tuple[int, int]:
     return ceil(nsq), ceil(nsq)
 
 
+def _get_text_color(patch_color: Tuple[float, float, float, float]) -> str:
+    """Get the text color for a given value and colormap.
+
+    Following Wikipedia's recommendations: https://en.wikipedia.org/wiki/Relative_luminance.
+
+    Args:
+        patch_color: RGBA color tuple
+
+    """
+    # Convert to linear color space
+    r, g, b, a = patch_color
+    r, g, b = (c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in (r, g, b))
+
+    # Get the relative luminance
+    y = 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+    return ".1" if y > 0.4 else "white"
+
+
 def trim_axs(axs: Union[_AX_TYPE, np.ndarray], nb: int) -> Union[np.ndarray, _AX_TYPE]:  # type: ignore[valid-type]
     """Reduce `axs` to `nb` Axes.
 
@@ -253,7 +272,7 @@ def plot_confusion_matrix(
         ax = axs[i] if rows != 1 and cols != 1 else axs
         if fig_label is not None:
             ax.set_title(f"Label {fig_label[i]}", fontsize=15)
-        ax.imshow(confmat[i].cpu().detach() if confmat.ndim == 3 else confmat.cpu().detach(), cmap=cmap)
+        im = ax.imshow(confmat[i].cpu().detach() if confmat.ndim == 3 else confmat.cpu().detach(), cmap=cmap)
         if i // cols == rows - 1:  # bottom row only
             ax.set_xlabel("Predicted class", fontsize=15)
         if i % cols == 0:  # leftmost column only
@@ -266,7 +285,9 @@ def plot_confusion_matrix(
         if add_text:
             for ii, jj in product(range(n_classes), range(n_classes)):
                 val = confmat[i, ii, jj] if confmat.ndim == 3 else confmat[ii, jj]
-                ax.text(jj, ii, str(round(val.item(), 2)), ha="center", va="center", fontsize=15)
+                patch_color = im.cmap(im.norm(val.item()))
+                c = _get_text_color(patch_color)
+                ax.text(jj, ii, str(round(val.item(), 2)), ha="center", va="center", fontsize=15, color=c)
 
     return fig, axs
 
