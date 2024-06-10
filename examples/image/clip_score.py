@@ -57,7 +57,8 @@ for model in models:
 fig, (ax_img, ax_table) = plt.subplots(1, 2, figsize=(10, 5))
 
 
-def update(num):
+def update(num: int) -> tuple:
+    """Update the image and table with the scores for the given model."""
     results = score_results[num]
     scores, image, model = results["scores"], results["image"], results["model"]
 
@@ -78,7 +79,7 @@ def update(num):
         table.add_cell(i + 1, 1, text=f"{score:.2f}", width=1, height=1)
     ax_table.add_table(table)
     ax_table.axis("off")
-    return (ax_img, ax_table)
+    return ax_img, ax_table
 
 
 ani = animation.FuncAnimation(fig, update, frames=len(score_results), interval=3000)
