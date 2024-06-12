@@ -129,11 +129,11 @@ class BootStrapper(WrapperMetric):
 
         """
         args_sizes = apply_to_collection(args, Tensor, len)
-        kwargs_sizes = list(apply_to_collection(kwargs, Tensor, len))
+        kwargs_sizes = apply_to_collection(kwargs, Tensor, len)
         if len(args_sizes) > 0:
             size = args_sizes[0]
         elif len(kwargs_sizes) > 0:
-            size = kwargs_sizes[0]
+            size = next(iter(kwargs_sizes.values()))
         else:
             raise ValueError("None of the input contained tensors, so could not determine the sampling size")
 
@@ -167,6 +167,12 @@ class BootStrapper(WrapperMetric):
     def forward(self, *args: Any, **kwargs: Any) -> Any:
         """Use the original forward method of the base metric class."""
         return super(WrapperMetric, self).forward(*args, **kwargs)
+
+    def reset(self) -> None:
+        """Reset the state of the base metric."""
+        for m in self.metrics:
+            m.reset()
+        super().reset()
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

@@ -53,7 +53,7 @@ def _error_relative_global_dimensionless_synthesis(
     >>> target = preds * 0.75
     >>> ergds = _error_relative_global_dimensionless_synthesis(preds, target)
     >>> torch.round(ergds)
-    tensor(154.)
+    tensor(10.)
 
     """
     _deprecated_root_import_func("error_relative_global_dimensionless_synthesis", "image")
