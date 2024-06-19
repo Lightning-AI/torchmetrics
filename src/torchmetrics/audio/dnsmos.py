@@ -55,7 +55,8 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
         with shape ``(..., 4)`` indicating [p808_mos, mos_sig, mos_bak, mos_ovr] in the last dim.
 
     .. note:: using this metric requires you to have ``librosa``, ``onnxruntime`` and ``requests`` installed.
-        Install as ``pip install torchmetrics['audio']`` or alternatively `pip install librosa onnxruntime-gpu requests` (if you do not have GPU enabled machine install `onnxruntime` instead of `onnxruntime-gpp`)
+        Install as ``pip install torchmetrics['audio']`` or alternatively `pip install librosa onnxruntime-gpu requests`
+        (if you do not have GPU enabled machine install `onnxruntime` instead of `onnxruntime-gpp`)
 
     .. note:: the ``forward`` and ``compute`` methods in this class return a reduced DNSMOS value
         for a batch. To obtain the DNSMOS value for each sample, you may use the functional counterpart in
