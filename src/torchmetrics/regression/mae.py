@@ -63,6 +63,7 @@ class MeanAbsoluteError(Metric):
         >>> mean_squared_error = MeanSquaredError(num_outputs=3)
         >>> mean_squared_error(preds, target)
         tensor([1., 2., 3.])
+
     """
 
     is_differentiable: bool = True
