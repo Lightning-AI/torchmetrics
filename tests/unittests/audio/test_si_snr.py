@@ -35,13 +35,13 @@ inputs = _Input(
 )
 
 
-class SpeechMetricsSISDR:
-    # the code from speechmetrics
+class _SpeechMetricsSISDR:
+    """the code from speechmetrics"""
     def __init__(
         self,
     ): ...
 
-    def test_window(self, audios, rate):
+    def _test_window(self, audios, rate):
         # as provided by @Jonathan-LeRoux and slightly adapted for the case of just one reference
         # and one estimate.
         # see original code here: https://github.com/sigsep/bsseval/issues/3#issuecomment-494995846
@@ -62,7 +62,7 @@ class SpeechMetricsSISDR:
         return {"sisdr": 10 * np.log10((eps + sss) / (eps + snn))}
 
 
-speechmetrics_sisdr = SpeechMetricsSISDR()
+speechmetrics_sisdr = _SpeechMetricsSISDR()
 
 
 def _reference_speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True, reduce_mean: bool = False):
@@ -77,7 +77,7 @@ def _reference_speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bo
     for i in range(preds.shape[0]):
         ms = []
         for j in range(preds.shape[1]):
-            metric = speechmetrics_sisdr.test_window([preds[i, j], target[i, j]], rate=16000)
+            metric = speechmetrics_sisdr._test_window([preds[i, j], target[i, j]], rate=16000)
             ms.append(metric["sisdr"])
         mss.append(ms)
     si_sdr = torch.tensor(mss)
