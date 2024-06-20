@@ -3,7 +3,7 @@
 
 The ROUGE (Recall-Oriented Understudy for Gisting Evaluation) metric used to evaluate the quality of generated text.
 
-A major difference with Perplexity comes from the fact that ROUGE evaluates actual text, whereas Perplexity evalutes logits.
+A major difference with Perplexity comes from the fact that ROUGE evaluates actual text, whereas Perplexity evaluates logits.
 """
 
 # %%
@@ -25,7 +25,9 @@ target_text = "The quick brown fox jumps over the lazy dog."
 # %%
 # Generate a sample text using the GPT-2 model
 
-sample_text = pipe(prompt, max_length=20, do_sample=True, temperature=0.1, pad_token_id=tokenizer.eos_token_id)[0]["generated_text"]
+sample_text = pipe(prompt, max_length=20, do_sample=True, temperature=0.1, pad_token_id=tokenizer.eos_token_id)[0][
+    "generated_text"
+]
 sample_text
 
 # %%
@@ -50,13 +52,15 @@ n_samples = 100  # Note that a real benchmark typically requires more data
 average_scores = []
 
 for temperature in temperatures:
-    sample_text = pipe(prompt, max_length=20, do_sample=True, temperature=temperature, pad_token_id=tokenizer.eos_token_id)[0]["generated_text"]
-    scores = [rouge(preds=[sample_text], target=[target_text])['rouge1_fmeasure'] for _ in range(n_samples)]
+    sample_text = pipe(
+        prompt, max_length=20, do_sample=True, temperature=temperature, pad_token_id=tokenizer.eos_token_id
+    )[0]["generated_text"]
+    scores = [rouge(preds=[sample_text], target=[target_text])["rouge1_fmeasure"] for _ in range(n_samples)]
     average_scores.append(sum(scores) / n_samples)
 
 # Plot the average ROUGE score for each temperature
 plt.plot(temperatures, average_scores)
-plt.xlabel('Generation temperature')
-plt.ylabel('Average 1-gram ROUGE F-Score')
-plt.title('ROUGE for varying temperature settings')
+plt.xlabel("Generation temperature")
+plt.ylabel("Average 1-gram ROUGE F-Score")
+plt.title("ROUGE for varying temperature settings")
 plt.show()
