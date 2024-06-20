@@ -48,18 +48,18 @@ class SpeechMetricsSISDR:
         eps = np.finfo(audios[0].dtype).eps
         reference = audios[1].reshape(audios[1].size, 1)
         estimate = audios[0].reshape(audios[0].size, 1)
-        Rss = np.dot(reference.T, reference)
+        rss = np.dot(reference.T, reference)
 
         # get the scaling factor for clean sources
-        a = (eps + np.dot(reference.T, estimate)) / (Rss + eps)
+        a = (eps + np.dot(reference.T, estimate)) / (rss + eps)
 
         e_true = a * reference
         e_res = estimate - e_true
 
-        Sss = (e_true**2).sum()
-        Snn = (e_res**2).sum()
+        sss = (e_true**2).sum()
+        snn = (e_res**2).sum()
 
-        return {"sisdr": 10 * np.log10((eps + Sss) / (eps + Snn))}
+        return {"sisdr": 10 * np.log10((eps + sss) / (eps + snn))}
 
 
 speechmetrics_sisdr = SpeechMetricsSISDR()
