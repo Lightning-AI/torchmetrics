@@ -13,6 +13,7 @@
 # limitations under the License.
 from functools import partial
 
+import numpy as np
 import pytest
 import torch
 from torch import Tensor
@@ -22,7 +23,6 @@ from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
-import numpy as np
 
 seed_all(42)
 
@@ -37,9 +37,9 @@ inputs = _Input(
 
 class SpeechMetricsSISDR:
     # the code from speechmetrics
-    def __init__(self,):
-        ...
-       
+    def __init__(
+        self,
+    ): ...
 
     def test_window(self, audios, rate):
         # as provided by @Jonathan-LeRoux and slightly adapted for the case of just one reference
@@ -59,9 +59,11 @@ class SpeechMetricsSISDR:
         Sss = (e_true**2).sum()
         Snn = (e_res**2).sum()
 
-        return {'sisdr': 10 * np.log10((eps+ Sss)/(eps + Snn))}
+        return {"sisdr": 10 * np.log10((eps + Sss) / (eps + Snn))}
 
-speechmetrics_sisdr=SpeechMetricsSISDR()
+
+speechmetrics_sisdr = SpeechMetricsSISDR()
+
 
 def _reference_speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool = True, reduce_mean: bool = False):
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
