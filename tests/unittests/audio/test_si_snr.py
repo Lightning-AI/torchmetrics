@@ -36,7 +36,8 @@ inputs = _Input(
 
 
 class _SpeechMetricsSISDR:
-    """the code from speechmetrics"""
+    """The code from speechmetrics."""
+
     def __init__(
         self,
     ): ...
