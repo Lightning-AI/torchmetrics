@@ -335,7 +335,7 @@ fig3, ax3 = acc.plot(values)
   <img src="docs/source/_static/images/plot_example.png" width="1000">
 </p>
 
-For examples of plotting different metrics try running [this example file](examples/plotting.py).
+For examples of plotting different metrics try running [this example file](_samples/plotting.py).
 
 ## Contribute!
 

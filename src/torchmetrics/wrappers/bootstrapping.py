@@ -168,6 +168,12 @@ class BootStrapper(WrapperMetric):
         """Use the original forward method of the base metric class."""
         return super(WrapperMetric, self).forward(*args, **kwargs)
 
+    def reset(self) -> None:
+        """Reset the state of the base metric."""
+        for m in self.metrics:
+            m.reset()
+        super().reset()
+
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:

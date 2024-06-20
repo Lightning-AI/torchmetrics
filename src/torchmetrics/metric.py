@@ -107,7 +107,8 @@ class Metric(Module, ABC):
         # see (https://github.com/pytorch/pytorch/blob/3e6bb5233f9ca2c5aa55d9cda22a7ee85439aa6e/
         # torch/nn/modules/module.py#L227)
         torch._C._log_api_usage_once(f"torchmetrics.metric.{self.__class__.__name__}")
-
+        # magic patch for `RuntimeError: DataLoader worker (pid(s) 104) exited unexpectedly`
+        self._TORCH_GREATER_EQUAL_2_1 = bool(_TORCH_GREATER_EQUAL_2_1)
         self._device = torch.device("cpu")
         self._dtype = torch.get_default_dtype()
 
@@ -441,7 +442,7 @@ class Metric(Module, ABC):
 
             # cornor case in distributed settings where a rank have not received any data, create empty to concatenate
             if (
-                _TORCH_GREATER_EQUAL_2_1
+                self._TORCH_GREATER_EQUAL_2_1
                 and reduction_fn == dim_zero_cat
                 and isinstance(input_dict[attr], list)
                 and len(input_dict[attr]) == 0
@@ -630,6 +631,8 @@ class Metric(Module, ABC):
                 should_unsync=self._should_unsync,
             ):
                 value = _squeeze_if_scalar(compute(*args, **kwargs))
+                # clone tensor to avoid in-place operations after compute, altering already computed results
+                value = apply_to_collection(value, Tensor, lambda x: x.clone())
 
             if self.compute_with_cache:
                 self._computed = value
