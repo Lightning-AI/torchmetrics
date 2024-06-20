@@ -40,7 +40,7 @@ class _SpeechMetricsSISDR:
 
     def __init__(
         self,
-    ): ...
+    ) -> None: ...
 
     def _test_window(self, audios, rate):
         # as provided by @Jonathan-LeRoux and slightly adapted for the case of just one reference
