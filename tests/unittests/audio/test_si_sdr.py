@@ -13,8 +13,8 @@
 # limitations under the License.
 from functools import partial
 
+import numpy as np
 import pytest
-import speechmetrics
 import torch
 from torch import Tensor
 from torchmetrics.audio import ScaleInvariantSignalDistortionRatio
@@ -36,8 +36,36 @@ inputs = _Input(
 )
 
 
+class _SpeechMetricsSISDR:
+    """The code from speechmetrics."""
+
+    def __init__(
+        self,
+    ) -> None: ...
+
+    def _test_window(self, audios, rate):
+        # as provided by @Jonathan-LeRoux and slightly adapted for the case of just one reference
+        # and one estimate.
+        # see original code here: https://github.com/sigsep/bsseval/issues/3#issuecomment-494995846
+        eps = np.finfo(audios[0].dtype).eps
+        reference = audios[1].reshape(audios[1].size, 1)
+        estimate = audios[0].reshape(audios[0].size, 1)
+        rss = np.dot(reference.T, reference)
+
+        # get the scaling factor for clean sources
+        a = (eps + np.dot(reference.T, estimate)) / (rss + eps)
+
+        e_true = a * reference
+        e_res = estimate - e_true
+
+        sss = (e_true**2).sum()
+        snn = (e_res**2).sum()
+
+        return {"sisdr": 10 * np.log10((eps + sss) / (eps + snn))}
+
+
 def _reference_speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bool):
-    speechmetrics_sisdr = speechmetrics.load("sisdr")
+    speechmetrics_sisdr = _SpeechMetricsSISDR()
     # shape: preds [BATCH_SIZE, 1, Time] , target [BATCH_SIZE, 1, Time]
     # or shape: preds [NUM_BATCHES*BATCH_SIZE, 1, Time] , target [NUM_BATCHES*BATCH_SIZE, 1, Time]
     if zero_mean:
@@ -49,8 +77,8 @@ def _reference_speechmetrics_si_sdr(preds: Tensor, target: Tensor, zero_mean: bo
     for i in range(preds.shape[0]):
         ms = []
         for j in range(preds.shape[1]):
-            metric = speechmetrics_sisdr(preds[i, j], target[i, j], rate=16000)
-            ms.append(metric["sisdr"][0])
+            metric = speechmetrics_sisdr._test_window([preds[i, j], target[i, j]], rate=16000)
+            ms.append(metric["sisdr"])
         mss.append(ms)
     return torch.tensor(mss)
 
