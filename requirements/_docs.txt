@@ -11,7 +11,7 @@ sphinx-togglebutton ==0.3.2
 sphinx-copybutton ==0.5.2
 sphinx-gallery ==0.16.0
 
-lightning >=1.8.0, <2.3.0
+lightning >=1.8.0, <2.4.0
 lightning-utilities ==0.11.2
 pydantic > 1.0.0, < 3.0.0
 
