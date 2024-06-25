@@ -9,7 +9,6 @@ A major difference with Perplexity comes from the fact that ROUGE evaluates actu
 # %%
 # Here's a hypothetical Python example demonstrating the usage of perplexity to evaluate a generative language model:
 
-import torch
 from torchmetrics.text import ROUGEScore
 from transformers import AutoTokenizer, pipeline
 
@@ -28,7 +27,7 @@ target_text = "The quick brown fox jumps over the lazy dog."
 sample_text = pipe(prompt, max_length=20, do_sample=True, temperature=0.1, pad_token_id=tokenizer.eos_token_id)[0][
     "generated_text"
 ]
-sample_text
+print(sample_text)
 
 # %%
 # Calculate the ROUGE of the generated text
@@ -44,7 +43,7 @@ rouge(preds=[sample_text], target=[target_text])
 # %%
 # Since ROUGE is a text-based metric, it can be used to benchmark decoding strategies. For example, you can compare temperature settings:
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # noqa: E402
 
 temperatures = [x * 0.1 for x in range(1, 10)]  # Generate temperature values from 0 to 1 with a step of 0.1
 n_samples = 100  # Note that a real benchmark typically requires more data
