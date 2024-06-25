@@ -2,10 +2,10 @@
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
 # this need to be the same as used inside speechmetrics
-pesq @ git+https://github.com/ludlows/python-pesq
+pesq >=0.0.4, <0.0.5
 pystoi >=0.3.0, <0.5.0
 torchaudio >=0.10.0, <2.4.0
-gammatone @ https://github.com/detly/gammatone/archive/master.zip#egg=Gammatone
+gammatone >=1.0.0, <1.1.0
 librosa >=0.9.0, <0.11.0
 onnxruntime-gpu >=1.12.0, <1.19; sys_platform == "linux" and python_version < "3.11"
 onnxruntime >=1.12.0, <1.19; sys_platform != "linux" and python_version < "3.11" # "win" or "darwin"
