@@ -54,8 +54,8 @@ def _fbeta_reduce(
         fp = fp.sum(dim=0 if multidim_average == "global" else 1)
         return _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp, zero_division)
 
-    fbeta_score = _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp, zero_division)
-    return _adjust_weights_safe_divide(fbeta_score, average, multilabel, tp, fp, fn)
+    fbeta_score_value = _safe_divide((1 + beta2) * tp, (1 + beta2) * tp + beta2 * fn + fp, zero_division)
+    return _adjust_weights_safe_divide(fbeta_score_value, average, multilabel, tp, fp, fn)
 
 
 def _binary_fbeta_score_arg_validation(
