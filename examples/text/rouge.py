@@ -1,13 +1,13 @@
 """ROUGE
 ===============================
 
-The ROUGE (Recall-Oriented Understudy for Gisting Evaluation) metric used to evaluate the quality of generated text.
+The ROUGE (Recall-Oriented Understudy for Gisting Evaluation) metric used to evaluate the quality of generated text compared to a reference text. It does so by computing the overlap between two texts, for which a subsequent precision and recall value can be computed. The ROUGE score is often used in the context of generative tasks such as text summarization and machine translation.
 
 A major difference with Perplexity comes from the fact that ROUGE evaluates actual text, whereas Perplexity evaluates logits.
 """
 
 # %%
-# Here's a hypothetical Python example demonstrating the usage of perplexity to evaluate a generative language model:
+# Here's a hypothetical Python example demonstrating the usage of unigram ROUGE F-score to evaluate a generative language model:
 
 from torchmetrics.text import ROUGEScore
 from transformers import AutoTokenizer, pipeline
@@ -60,6 +60,6 @@ for temperature in temperatures:
 # Plot the average ROUGE score for each temperature
 plt.plot(temperatures, average_scores)
 plt.xlabel("Generation temperature")
-plt.ylabel("Average 1-gram ROUGE F-Score")
+plt.ylabel("Average unigram ROUGE F-Score")
 plt.title("ROUGE for varying temperature settings")
 plt.show()
