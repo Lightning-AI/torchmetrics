@@ -96,21 +96,21 @@ def get_user_model_encoder(num_layers: int = _NUM_LAYERS, d_model: int = _MODEL_
     return nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
 
 
-def user_forward_fn(model: Module, batch: Dict[str, Tensor]) -> Tensor:
+def user_forward_fn(model_: Module, batch: Dict[str, Tensor]) -> Tensor:
     """User forward function used for the computation of model embeddings.
 
     This function might be arbitrarily complicated inside. However, to ensure functionality, it should obey the
     input/output argument structure described below.
 
     Args:
-        model: a torch.nn.module that implements a forward pass
+        model_: a torch.nn.module that implements a forward pass
         batch: a batch of inputs to pass through the model
 
     Return:
         The model output.
 
     """
-    return model(batch["input_ids"])
+    return model_(batch["input_ids"])
 
 
 _PREDS = ["hello", "hello world", "world world world"]
