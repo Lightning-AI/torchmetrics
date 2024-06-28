@@ -73,7 +73,7 @@ def _scc_update(preds: Tensor, target: Tensor, hp_filter: Tensor, window_size: i
     return preds, target, hp_filter
 
 
-def _symmetric_reflect_pad_2d(input_img: Tensor, padding: Union[int, Tuple[int, ...]]) -> Tensor:
+def _symmetric_reflect_pad_2d(input_img: Tensor, pad: Union[int, Tuple[int, ...]]) -> Tensor:
     """Applies symmetric padding to the 2D image tensor input using ``reflect`` mode (d c b a | a b c d | d c b a)."""
     if isinstance(padding, int):
         padding = (padding, padding, padding, padding)
