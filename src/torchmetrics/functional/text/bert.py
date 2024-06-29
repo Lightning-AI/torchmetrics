@@ -13,7 +13,9 @@
 # limitations under the License.
 import csv
 import urllib
+import logging
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from contextlib import contextmanager
 
 import torch
 from torch import Tensor
@@ -33,6 +35,17 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
 
+
+@contextmanager
+def ignore_log_warning():
+    logger = logging.getLogger("transformers.modeling_utils")
+    original_level = logger.getEffectiveLevel()
+    try:
+        logger.setLevel(logging.ERROR)
+        yield
+    finally:
+        logger.setLevel(original_level)
+
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL = "roberta-large"
 
@@ -41,8 +54,9 @@ if _TRANSFORMERS_GREATER_EQUAL_4_4:
 
     def _download_model_for_bert_score() -> None:
         """Download intensive operations."""
-        AutoTokenizer.from_pretrained(_DEFAULT_MODEL)
-        AutoModel.from_pretrained(_DEFAULT_MODEL)
+        with ignore_log_warning():
+            AutoTokenizer.from_pretrained(_DEFAULT_MODEL)
+            AutoModel.from_pretrained(_DEFAULT_MODEL)
 
     if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_model_for_bert_score):
         __doctest_skip__ = ["bert_score"]
@@ -356,8 +370,9 @@ def bert_score(
                 " `transformers` model are used."
                 f"It is, therefore, used the default recommended model - {_DEFAULT_MODEL}."
             )
-        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path or _DEFAULT_MODEL)
-        model = AutoModel.from_pretrained(model_name_or_path or _DEFAULT_MODEL)
+        with ignore_log_warning():
+            tokenizer = AutoTokenizer.from_pretrained(model_name_or_path or _DEFAULT_MODEL)
+            model = AutoModel.from_pretrained(model_name_or_path or _DEFAULT_MODEL)
     else:
         tokenizer = user_tokenizer
     model.eval()
