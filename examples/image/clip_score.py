@@ -60,9 +60,9 @@ fig, (ax_img, ax_table) = plt.subplots(1, 2, figsize=(10, 5))
 def update(num: int) -> tuple:
     """Update the image and table with the scores for the given model."""
     results = score_results[num]
-    scores, image, model = results["scores"], results["image"], results["model"]
+    scores, image, model_name = results["scores"], results["image"], results["model"]
 
-    fig.suptitle(f"Model: {model.split('/')[-1]}", fontsize=16, fontweight="bold")
+    fig.suptitle(f"Model: {model_name.split('/')[-1]}", fontsize=16, fontweight="bold")
 
     # Update image
     ax_img.imshow(images[image])
