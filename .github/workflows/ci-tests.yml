@@ -61,7 +61,7 @@ jobs:
           - { os: "windows-2022", python-version: "3.11", pytorch-version: "2.3.0" }
           # Future released version
           - { os: "ubuntu-22.04", python-version: "3.11", pytorch-version: "2.4.0" }
-          - { os: "macOS-13", python-version: "3.11", pytorch-version: "2.4.0" }
+          - { os: "macOS-14", python-version: "3.11", pytorch-version: "2.4.0" }
           - { os: "windows-2022", python-version: "3.11", pytorch-version: "2.4.0" }
     env:
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
