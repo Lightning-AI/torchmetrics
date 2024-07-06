@@ -64,11 +64,11 @@ jobs:
           - { os: "macOS-13", python-version: "3.11", pytorch-version: "2.4.0" }
           - { os: "windows-2022", python-version: "3.11", pytorch-version: "2.4.0" }
     env:
-      PYTORCH_URL: "https://download.pytorch.org/whl/cpu/torch_stable.html"
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
-      PYPI_CACHE: "_ci-cache_PyPI"
+      PYPI_CACHE_DIR: "_ci-cache_PyPI"
       TOKENIZERS_PARALLELISM: false
       TEST_DIRS: ${{ needs.check-diff.outputs.test-dirs }}
+      PIP_EXTRA_INDEX_URL: "--find-links https://download.pytorch.org/whl/cpu/torch_stable.html"
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that macOS jobs take much more than orger OS
@@ -103,17 +103,17 @@ jobs:
         with:
           requires: ${{ matrix.requires }}
           pytorch-version: ${{ matrix.pytorch-version }}
-          pypi-dir: ${{ env.PYPI_CACHE }}
+          pypi-dir: ${{ env.PYPI_CACHE_DIR }}
 
       - name: Switch to PT test URL
         if: ${{ matrix.pytorch-version == '2.4.0' }}
-        run: echo 'PYTORCH_URL=https://download.pytorch.org/whl/test/cpu/torch_test.html' >> $GITHUB_ENV
+        run: echo 'PIP_EXTRA_INDEX_URL=--extra-index-url https://download.pytorch.org/whl/test/cpu/' >> $GITHUB_ENV
       - name: Install pkg
         timeout-minutes: 25
         run: |
           pip --version
           pip install -e . -U "setuptools==69.5.1" -r requirements/_doctest.txt \
-            --find-links $PYTORCH_URL -f $PYPI_CACHE
+            $PIP_EXTRA_INDEX_URL --find-links $PYPI_CACHE_DIR
           pip list
 
       - name: DocTests
@@ -132,7 +132,7 @@ jobs:
               python adjust-torch-versions.py $fpath
           done
           pip install --requirement requirements/_devel.txt -U \
-            --find-links $PYTORCH_URL -f $PYPI_CACHE
+            $PIP_EXTRA_INDEX_URL --find-links $PYPI_CACHE_DIR
           pip list
 
       - name: set special vars for PR
@@ -218,7 +218,7 @@ jobs:
         continue-on-error: true
         uses: ./.github/actions/push-caches
         with:
-          pypi-dir: ${{ env.PYPI_CACHE }}
+          pypi-dir: ${{ env.PYPI_CACHE_DIR }}
 
   testing-guardian:
     runs-on: ubuntu-latest
