@@ -7,5 +7,5 @@ pystoi >=0.3.0, <0.5.0
 torchaudio >=0.10.0, <2.5.0
 gammatone >=1.0.0, <1.1.0
 librosa >=0.9.0, <0.11.0
-onnxruntime-gpu >=1.12.0, <1.19
+onnxruntime-gpu >=1.12.0, <1.19; sys_platform != 'darwin'
 requests >=2.19.0, <2.32.0

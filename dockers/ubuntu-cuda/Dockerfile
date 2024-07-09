@@ -81,8 +81,6 @@ RUN \
     for fpath in `ls requirements/*.txt`; do \
       python ./adjust-torch-versions.py $fpath ${PYTORCH_VERSION}; \
     done && \
-    # trying to resolve onnxruntime installation issue
-    pip install --upgrade pip && \
     # trying to resolve pesq installation issue
     pip install -q "numpy<1.24" && \
     CUDA_VERSION_MM=${CUDA_VERSION%.*} && \
