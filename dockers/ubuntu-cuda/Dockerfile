@@ -89,7 +89,7 @@ RUN \
     CU_VERSION_MM=${CUDA_VERSION_MM//'.'/''} && \
     pip install --no-cache-dir -r requirements/_devel.txt \
       --find-links="https://download.pytorch.org/whl/cu${CU_VERSION_MM}/torch_stable.html" \
-      --find-links="https://download.pytorch.org/whl/test/cu${CU_VERSION_MM}/torch_test.html" && \
+      --extra-index-url="https://download.pytorch.org/whl/test/cu${CU_VERSION_MM}" && \
     rm -rf requirements/
 
 RUN \
