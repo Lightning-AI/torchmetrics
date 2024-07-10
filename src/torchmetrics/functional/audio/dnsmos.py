@@ -192,7 +192,7 @@ def deep_noise_suppression_mean_opinion_score(
 
     .. note:: using this metric requires you to have ``librosa``, ``onnxruntime`` and ``requests`` installed.
         Install as ``pip install torchmetrics['audio']`` or alternatively `pip install librosa onnxruntime-gpu requests`
-        (if you do not have GPU enabled machine install `onnxruntime` instead of `onnxruntime-gpp`)
+        (if you do not have GPU enabled machine install `onnxruntime` instead of `onnxruntime-gpu`)
 
     Args:
         preds: [..., time]
