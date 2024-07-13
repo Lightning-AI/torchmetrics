@@ -63,7 +63,7 @@ def _prepare_dnsmos(dnsmos_dir: str) -> None:
         saveto = os.path.join(dnsmos_dir, file[7:])
         os.makedirs(os.path.dirname(saveto), exist_ok=True)
         if os.path.exists(saveto):
-            # try load onnx
+            # try loading onnx
             try:
                 _ = InferenceSession(saveto)
                 continue  # skip downloading if succeeded
@@ -191,12 +191,12 @@ def deep_noise_suppression_mean_opinion_score(
     use cases of these perceptual objective metrics is to evaluate noise suppression algorithms. DNSMOS generalizes
     well in challenging test conditions with a high correlation to human ratings in stack ranking noise suppression
     methods. More details can be found in `DNSMOS paper <https://arxiv.org/abs/2010.15258>`_ and
-    `DNSMOS P835 <https://arxiv.org/abs/2110.01763>`_.
+    `DNSMOS P.835 paper <https://arxiv.org/abs/2110.01763>`_.
 
 
     .. note:: using this metric requires you to have ``librosa``, ``onnxruntime`` and ``requests`` installed.
-        Install as ``pip install torchmetrics['audio']`` or alternatively `pip install librosa onnxruntime-gpu requests`
-        (if you do not have GPU enabled machine install `onnxruntime` instead of `onnxruntime-gpu`)
+        Install as ``pip install torchmetrics['audio']`` or alternatively ``pip install librosa onnxruntime-gpu requests``
+        (if you do not have GPU enabled machine install ``onnxruntime`` instead of ``onnxruntime-gpu``)
 
     Args:
         preds: [..., time]
@@ -207,7 +207,7 @@ def deep_noise_suppression_mean_opinion_score(
         num_threads: the number of threads to use for cpu inference. Defaults to None.
 
     Returns:
-        Float tensor with shape ``(..., 4)`` of DNSMOS values per sample, i.e. [p808_mos, mos_sig, mos_bak, mos_ovr]
+        Float tensor with shape ``(...,4)`` of DNSMOS values per sample, i.e. [p808_mos, mos_sig, mos_bak, mos_ovr]
 
     Raises:
         ModuleNotFoundError:

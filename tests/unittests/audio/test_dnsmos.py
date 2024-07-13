@@ -81,8 +81,6 @@ class _ComputeScore:
 
         return sig_poly, bak_poly, ovr_poly
 
-    # def __call__(self, fpath, sampling_rate, is_personalized_MOS):
-    # aud, input_fs = sf.read(fpath)
     def __call__(self, aud, input_fs, is_personalized) -> Dict[str, Any]:
         fs = SAMPLING_RATE
         audio = librosa.resample(aud, orig_sr=input_fs, target_sr=fs) if input_fs != fs else aud
@@ -138,15 +136,11 @@ class _ComputeScore:
 
 
 def _reference_metric_batch(
-    preds: Tensor,
-    target: Tensor,
+    preds: Tensor,  # shape:[BATCH_SIZE, Time]
     fs: int,
     personalized: bool,
-    device: Optional[str] = None,
     reduce_mean: bool = False,
-    **kwargs: Dict[str, Any],
 ):
-    # shape: preds [BATCH_SIZE, Time]
     # download onnx first
     _load_session(f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx", torch.device("cpu"))
     _load_session(f"{DNSMOS_DIR}/DNSMOS/model_v8.onnx", torch.device("cpu"))
@@ -158,7 +152,6 @@ def _reference_metric_batch(
 
     shape = preds.shape
     preds = preds.reshape(1, -1) if len(shape) == 1 else preds.reshape(-1, shape[-1])
-    n_batch, time = preds.shape
 
     preds = preds.detach().cpu().numpy()
     score = []
@@ -204,7 +197,7 @@ class TestDNSMOS(MetricTester):
     atol = 5e-3
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_dnsmos(self, preds, fs, personalized, ddp, device=None):
+    def test_dnsmos(self, preds: Tensor, fs: int, personalized: bool, ddp: bool, device=None):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
@@ -223,7 +216,7 @@ class TestDNSMOS(MetricTester):
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_dnsmos_cuda(self, preds, fs, personalized, ddp, device="cuda:0"):
+    def test_dnsmos_cuda(self, preds: Tensor, fs: int, personalized: bool, ddp: bool, device="cuda:0"):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
@@ -240,7 +233,7 @@ class TestDNSMOS(MetricTester):
             metric_args={"fs": fs, "personalized": personalized, "device": device},
         )
 
-    def test_dnsmos_functional(self, preds, fs, personalized, device="cpu"):
+    def test_dnsmos_functional(self, preds: Tensor, fs: int, personalized: bool, device="cpu"):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,

@@ -42,17 +42,17 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
     use cases of these perceptual objective metrics is to evaluate noise suppression algorithms. DNSMOS generalizes
     well in challenging test conditions with a high correlation to human ratings in stack ranking noise suppression
     methods. More details can be found in `DNSMOS paper <https://arxiv.org/abs/2010.15258>`_ and
-    `DNSMOS P835 <https://arxiv.org/abs/2110.01763>`_.
+    `DNSMOS P.835 paper <https://arxiv.org/abs/2110.01763>`_.
 
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
 
-    As output of `forward` and `compute` the metric returns the following output
+    As output of ``forward`` and ``compute`` the metric returns the following output
 
     - ``dnsmos`` (:class:`~torch.Tensor`): float tensor of DNSMOS values reduced across the batch
-        with shape ``(..., 4)`` indicating [p808_mos, mos_sig, mos_bak, mos_ovr] in the last dim.
+        with shape ``(...,4)`` indicating [p808_mos, mos_sig, mos_bak, mos_ovr] in the last dim.
 
     .. note:: using this metric requires you to have ``librosa``, ``onnxruntime`` and ``requests`` installed.
         Install as ``pip install torchmetrics['audio']`` or alternatively `pip install librosa onnxruntime-gpu requests`
@@ -136,16 +136,16 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
         """Plot a single or multiple values from the metric.
 
         Args:
-            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
-                If no value is provided, will automatically call `metric.compute` and plot that result.
-            ax: An matplotlib axis object. If provided will add plot to that axis
+            val: Either a single result from calling ``metric.forward`` or ``metric.compute`` or a list of these results.
+                If no value is provided, will automatically call ``metric.compute`` and plot that result.
+            ax: A matplotlib axis object. If provided will add plot to that axis
 
         Returns:
             Figure and Axes object
 
         Raises:
             ModuleNotFoundError:
-                If `matplotlib` is not installed
+                If ``matplotlib`` is not installed
 
         .. plot::
             :scale: 75
