@@ -48,6 +48,7 @@ else:
 
 SAMPLING_RATE = 16000
 INPUT_LENGTH = 9.01
+seed_all(42)
 
 
 class _ComputeScore:
@@ -177,7 +178,6 @@ class _DNSMOSCheat(DeepNoiseSuppressionMeanOpinionScore):
         super().update(preds=preds)
 
 
-seed_all(42)
 
 preds = torch.rand(2, 2, 8000)
 
