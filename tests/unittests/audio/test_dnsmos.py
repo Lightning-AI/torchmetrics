@@ -137,10 +137,13 @@ class _ComputeScore:
 
 
 def _reference_metric_batch(
-    preds: Tensor,  # shape:[BATCH_SIZE, Time]
+    preds: Tensor, # shape:[BATCH_SIZE, Time]
+    target: Tensor, # for tester
     fs: int,
     personalized: bool,
+    device: Optional[str] = None, # for tester
     reduce_mean: bool = False,
+    **kwargs: Dict[str, Any], # for tester
 ):
     # download onnx first
     _load_session(f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx", torch.device("cpu"))
