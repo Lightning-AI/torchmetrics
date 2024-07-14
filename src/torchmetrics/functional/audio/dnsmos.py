@@ -264,7 +264,7 @@ def deep_noise_suppression_mean_opinion_score(
                 input_features = ort.OrtValue.ortvalue_from_numpy(input_features, device.type, device.index)
                 p808_input_features = ort.OrtValue.ortvalue_from_numpy(p808_input_features, device.type, device.index)
             except Exception as e:
-                print("available providers:",ort.get_available_providers())
+                print("available providers:", ort.get_available_providers())
                 raise e
 
         oi = {"input_1": input_features}
