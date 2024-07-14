@@ -260,8 +260,12 @@ def deep_noise_suppression_mean_opinion_score(
             "CUDAExecutionProvider" in ort.get_available_providers()
             or "CoreMLExecutionProvider" in ort.get_available_providers()
         ):
-            input_features = ort.OrtValue.ortvalue_from_numpy(input_features, device.type, device.index)
-            p808_input_features = ort.OrtValue.ortvalue_from_numpy(p808_input_features, device.type, device.index)
+            try:
+                input_features = ort.OrtValue.ortvalue_from_numpy(input_features, device.type, device.index)
+                p808_input_features = ort.OrtValue.ortvalue_from_numpy(p808_input_features, device.type, device.index)
+            except Exception as e:
+                print("available providers:",ort.get_available_providers())
+                raise e
 
         oi = {"input_1": input_features}
         p808_oi = {"input_1": p808_input_features}
