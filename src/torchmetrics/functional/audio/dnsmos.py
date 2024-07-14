@@ -19,7 +19,7 @@ import numpy as np
 import torch
 from torch import Tensor
 
-from torchmetrics.utilities import rank_zero_info
+from torchmetrics.utilities import rank_zero_info, rank_zero_warn
 from torchmetrics.utilities.imports import _LIBROSA_AVAILABLE, _ONNXRUNTIME_AVAILABLE, _REQUESTS_AVAILABLE
 
 if _LIBROSA_AVAILABLE and _ONNXRUNTIME_AVAILABLE and _REQUESTS_AVAILABLE:
@@ -264,8 +264,7 @@ def deep_noise_suppression_mean_opinion_score(
                 input_features = ort.OrtValue.ortvalue_from_numpy(input_features, device.type, device.index)
                 p808_input_features = ort.OrtValue.ortvalue_from_numpy(p808_input_features, device.type, device.index)
             except Exception as e:
-                print("available providers:", ort.get_available_providers())
-                raise e
+                rank_zero_warn(f"Failed to use GPU for DNSMOS, reverting to CPU. Error: {e}")
 
         oi = {"input_1": input_features}
         p808_oi = {"input_1": p808_input_features}
