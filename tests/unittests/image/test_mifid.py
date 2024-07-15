@@ -168,7 +168,7 @@ def test_compare_mifid(equal_size):
     n, m = 100, 100 if equal_size else 90
 
     # Generate some synthetic data
-    torch.manual_seed(42)
+    seed_all(42)
     img1 = torch.randint(0, 180, (n, 3, 299, 299), dtype=torch.uint8)
     img2 = torch.randint(100, 255, (m, 3, 299, 299), dtype=torch.uint8)
 
