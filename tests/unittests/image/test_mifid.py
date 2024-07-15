@@ -18,11 +18,10 @@ import numpy as np
 import pytest
 import torch
 from scipy.linalg import sqrtm
-
-from tests.unittests._helpers import seed_all
 from torchmetrics.image.mifid import MemorizationInformedFrechetInceptionDistance, NoTrainInceptionV3
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
+from tests.unittests._helpers import seed_all
 from unittests import _reference_cachier
 
 

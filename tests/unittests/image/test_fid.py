@@ -19,10 +19,10 @@ import pytest
 import torch
 from torch.nn import Module
 from torch.utils.data import Dataset
-
-from tests.unittests._helpers import seed_all
 from torchmetrics.image.fid import FrechetInceptionDistance, NoTrainInceptionV3
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
+
+from tests.unittests._helpers import seed_all
 
 torch.manual_seed(42)
 
