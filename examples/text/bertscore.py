@@ -21,18 +21,14 @@ target_text = " over the lazy dog."
 # %%
 # Generate a sample text using the GPT-2 model
 
-generated_text = pipe(
-    prompt,
-    max_new_tokens=20,
-    do_sample=False,
-    temperature=0,
-    pad_token_id=tokenizer.eos_token_id
-)[0]["generated_text"][len(prompt):]
+generated_text = pipe(prompt, max_new_tokens=20, do_sample=False, temperature=0, pad_token_id=tokenizer.eos_token_id)[
+    0
+]["generated_text"][len(prompt) :]
 
 # %%
 # Calculate the BERTScore of the generated text
 
-bertscore = BERTScore(model_name_or_path='roberta-base')
+bertscore = BERTScore(model_name_or_path="roberta-base")
 score = bertscore(preds=[generated_text], target=[target_text])
 
 print(f"Prompt: {prompt}")
@@ -47,9 +43,9 @@ candidate_good = "it is cold today"
 candidate_bad = "it is warm outside"
 
 rouge = ROUGEScore()
-bertscore = BERTScore(model_name_or_path='roberta-base')
+bertscore = BERTScore(model_name_or_path="roberta-base")
 
-print("ROUGE for candidate_good:", rouge(preds=[candidate_good], target=[reference])['rouge1_fmeasure'])
-print("ROUGE for candidate_bad:", rouge(preds=[candidate_bad], target=[reference])['rouge1_fmeasure'])
-print("BERTScore for candidate_good:", bertscore(preds=[candidate_good], target=[reference])['f1'])
-print("BERTScore for candidate_bad:", bertscore(preds=[candidate_bad], target=[reference])['f1'])
+print("ROUGE for candidate_good:", rouge(preds=[candidate_good], target=[reference])["rouge1_fmeasure"])
+print("ROUGE for candidate_bad:", rouge(preds=[candidate_bad], target=[reference])["rouge1_fmeasure"])
+print("BERTScore for candidate_good:", bertscore(preds=[candidate_good], target=[reference])["f1"])
+print("BERTScore for candidate_bad:", bertscore(preds=[candidate_bad], target=[reference])["f1"])
