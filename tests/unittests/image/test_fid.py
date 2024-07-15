@@ -19,6 +19,8 @@ import pytest
 import torch
 from torch.nn import Module
 from torch.utils.data import Dataset
+
+from tests.unittests._helpers import seed_all
 from torchmetrics.image.fid import FrechetInceptionDistance, NoTrainInceptionV3
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
@@ -97,6 +99,7 @@ def test_fid_same_input(feature):
     """If real and fake are update on the same data the fid score should be 0."""
     metric = FrechetInceptionDistance(feature=feature)
 
+    seed_all(42)
     for _ in range(2):
         img = torch.randint(0, 255, (10, 3, 299, 299), dtype=torch.uint8)
         metric.update(img, real=True)
