@@ -21,7 +21,7 @@ from torch.utils.data import Dataset
 from torchmetrics.image.kid import KernelInceptionDistance
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
-from tests.unittests._helpers import seed_all
+from unittests._helpers import seed_all
 
 seed_all(42)
 
