@@ -37,7 +37,7 @@ from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_GREATE
 
 
 @contextmanager
-def ignore_log_warning():
+def _ignore_log_warning():
     # Ignore irrelevant fine-tuning warning from transformers when loading the model for BertScore
     logger = logging.getLogger("transformers.modeling_utils")
     original_level = logger.getEffectiveLevel()
@@ -56,7 +56,7 @@ if _TRANSFORMERS_GREATER_EQUAL_4_4:
 
     def _download_model_for_bert_score() -> None:
         """Download intensive operations."""
-        with ignore_log_warning():
+        with _ignore_log_warning():
             AutoTokenizer.from_pretrained(_DEFAULT_MODEL)
             AutoModel.from_pretrained(_DEFAULT_MODEL)
 
@@ -372,7 +372,7 @@ def bert_score(
                 " `transformers` model are used."
                 f"It is, therefore, used the default recommended model - {_DEFAULT_MODEL}."
             )
-        with ignore_log_warning():
+        with _ignore_log_warning():
             tokenizer = AutoTokenizer.from_pretrained(model_name_or_path or _DEFAULT_MODEL)
             model = AutoModel.from_pretrained(model_name_or_path or _DEFAULT_MODEL)
     else:
