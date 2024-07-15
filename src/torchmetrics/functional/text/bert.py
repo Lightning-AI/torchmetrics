@@ -37,8 +37,8 @@ from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_GREATE
 
 
 @contextmanager
-def _ignore_log_warning():
-    # Ignore irrelevant fine-tuning warning from transformers when loading the model for BertScore
+def _ignore_log_warning():  # noqa: ANN202
+    """Ignore irrelevant fine-tuning warning from transformers when loading the model for BertScore."""
     logger = logging.getLogger("transformers.modeling_utils")
     original_level = logger.getEffectiveLevel()
     try:
