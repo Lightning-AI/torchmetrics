@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import csv
-import urllib
 import logging
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+import urllib
 from contextlib import contextmanager
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -46,6 +46,7 @@ def ignore_log_warning():
         yield
     finally:
         logger.setLevel(original_level)
+
 
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL = "roberta-large"
