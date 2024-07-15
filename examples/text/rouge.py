@@ -38,7 +38,7 @@ rouge(preds=[sample_text], target=[target_text])
 # %%
 # By default, the ROUGE score is calculated using a whitespace tokenizer. You can also calculate the ROUGE for the tokens directly:
 token_rouge = ROUGEScore(tokenizer=lambda text: tokenizer.tokenize(text))
-rouge(preds=[sample_text], target=[target_text])
+token_rouge(preds=[sample_text], target=[target_text])
 
 # %%
 # Since ROUGE is a text-based metric, it can be used to benchmark decoding strategies. For example, you can compare temperature settings:
