@@ -418,8 +418,8 @@ class MeanAveragePrecision(Metric):
                 "When providing a list of max detection thresholds it should have length 3."
                 " Got value {len(max_detection_thresholds)}"
             )
-        max_det_thr, _ = torch.sort(torch.tensor(max_detection_thresholds or [1, 10, 100], dtype=torch.int))
-        self.max_detection_thresholds = max_det_thr.tolist()
+        max_det_threshold, _ = torch.sort(torch.tensor(max_detection_thresholds or [1, 10, 100], dtype=torch.int))
+        self.max_detection_thresholds = max_det_threshold.tolist()
 
         if not isinstance(class_metrics, bool):
             raise ValueError("Expected argument `class_metrics` to be a boolean")
@@ -665,7 +665,7 @@ class MeanAveragePrecision(Metric):
             >>> # https://github.com/cocodataset/cocoapi/tree/master/results
             >>> from torchmetrics.detection import MeanAveragePrecision
             >>> preds, target = MeanAveragePrecision.coco_to_tm(
-            ...   "instances_val2014_fakebbox100_results.json.json",
+            ...   "instances_val2014_fakebbox100_results.json",
             ...   "val2014_fake_eval_res.txt.json"
             ...   iou_type="bbox"
             ... )  # doctest: +SKIP
@@ -775,21 +775,35 @@ class MeanAveragePrecision(Metric):
             ...     labels=tensor([0]),
             ...   )
             ... ]
-            >>> metric = MeanAveragePrecision()
+            >>> metric = MeanAveragePrecision(iou_type="bbox")
             >>> metric.update(preds, target)
-            >>> metric.tm_to_coco("tm_map_input")  # doctest: +SKIP
+            >>> metric.tm_to_coco("tm_map_input")
 
         """
         target_dataset = self._get_coco_format(
             labels=self.groundtruth_labels,
-            boxes=self.groundtruth_box,
-            masks=self.groundtruth_mask,
+            boxes=self.groundtruth_box if len(self.groundtruth_box) > 0 else None,
+            masks=self.groundtruth_mask if len(self.groundtruth_mask) > 0 else None,
             crowds=self.groundtruth_crowds,
             area=self.groundtruth_area,
         )
         preds_dataset = self._get_coco_format(
-            labels=self.detection_labels, boxes=self.detection_box, masks=self.detection_mask
+            labels=self.detection_labels,
+            boxes=self.detection_box if len(self.detection_box) > 0 else None,
+            masks=self.detection_mask if len(self.detection_mask) > 0 else None,
+            scores=self.detection_scores,
         )
+        if "segm" in self.iou_type:
+            # the rle masks needs to be decoded to be written to a file
+            preds_dataset["annotations"] = apply_to_collection(
+                preds_dataset["annotations"], dtype=bytes, function=lambda x: x.decode("utf-8")
+            )
+            preds_dataset["annotations"] = apply_to_collection(
+                preds_dataset["annotations"],
+                dtype=np.uint32,
+                function=lambda x: int(x),
+            )
+            target_dataset = apply_to_collection(target_dataset, dtype=bytes, function=lambda x: x.decode("utf-8"))
 
         preds_json = json.dumps(preds_dataset["annotations"], indent=4)
         target_json = json.dumps(target_dataset, indent=4)
@@ -827,8 +841,9 @@ class MeanAveragePrecision(Metric):
                 rle = self.mask_utils.encode(np.asfortranarray(i))
                 masks.append((tuple(rle["size"]), rle["counts"]))
             output[1] = tuple(masks)  # type: ignore[call-overload]
-        if (output[0] is not None and len(output[0]) > self.max_detection_thresholds[-1]) or (
-            output[1] is not None and len(output[1]) > self.max_detection_thresholds[-1]
+        if warn and (
+            (output[0] is not None and len(output[0]) > self.max_detection_thresholds[-1])
+            or (output[1] is not None and len(output[1]) > self.max_detection_thresholds[-1])
         ):
             _warning_on_too_many_detections(self.max_detection_thresholds[-1])
         return output  # type: ignore[return-value]

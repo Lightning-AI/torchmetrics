@@ -60,11 +60,7 @@ def setup_ddp(rank, world_size):
 
 
 def pytest_sessionstart():
-    """Global initialization of multiprocessing pool.
-
-    Runs before any test.
-
-    """
+    """Global initialization of multiprocessing pool; runs before any test."""
     if not USE_PYTEST_POOL:
         return
     pool = Pool(processes=NUM_PROCESSES)
@@ -73,11 +69,7 @@ def pytest_sessionstart():
 
 
 def pytest_sessionfinish():
-    """Correctly closes the global multiprocessing pool.
-
-    Runs after all tests.
-
-    """
+    """Correctly closes the global multiprocessing pool; runs after all tests."""
     if not USE_PYTEST_POOL:
         return
     pytest.pool.close()

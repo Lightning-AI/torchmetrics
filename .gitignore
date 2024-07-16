@@ -60,6 +60,7 @@ coverage.xml
 docs/_build/
 docs/source/api/
 docs/source/generated/
+docs/source/gallery/
 docs/source/*.md
 docs/source/_static/fetched-s3-assets
 

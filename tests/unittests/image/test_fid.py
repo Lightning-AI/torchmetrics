@@ -22,7 +22,9 @@ from torch.utils.data import Dataset
 from torchmetrics.image.fid import FrechetInceptionDistance, NoTrainInceptionV3
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
-torch.manual_seed(42)
+from unittests._helpers import seed_all
+
+seed_all(42)
 
 
 @pytest.mark.skipif(_TORCH_FIDELITY_AVAILABLE, reason="test only works if torch-fidelity is not installed")
@@ -80,12 +82,24 @@ def test_fid_raises_errors_and_warnings():
         _ = FrechetInceptionDistance(feature=[1, 2])
 
 
+class _DummyFeatureExtractor(Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.flatten = torch.nn.Flatten()
+        self.extractor = torch.nn.Linear(3 * 299 * 299, 64)
+
+    def __call__(self, img) -> torch.Tensor:
+        img = (img / 125.5).float()  # Convert int img input to float as Linear layer expects float inputs
+        return self.extractor(self.flatten(img))
+
+
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
-@pytest.mark.parametrize("feature", [64, 192, 768, 2048])
+@pytest.mark.parametrize("feature", [64, 192, 768, 2048, _DummyFeatureExtractor()])
 def test_fid_same_input(feature):
     """If real and fake are update on the same data the fid score should be 0."""
     metric = FrechetInceptionDistance(feature=feature)
 
+    seed_all(42)
     for _ in range(2):
         img = torch.randint(0, 255, (10, 3, 299, 299), dtype=torch.uint8)
         metric.update(img, real=True)
@@ -122,7 +136,7 @@ def test_compare_fid(tmpdir, equal_size, feature=768):
     n, m = 100, 100 if equal_size else 90
 
     # Generate some synthetic data
-    torch.manual_seed(42)
+    seed_all(42)
     img1 = torch.randint(0, 180, (n, 3, 299, 299), dtype=torch.uint8)
     img2 = torch.randint(100, 255, (m, 3, 299, 299), dtype=torch.uint8)
 

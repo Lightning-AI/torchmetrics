@@ -22,7 +22,7 @@ from lightning_utilities import apply_to_collection
 from sklearn.metrics import mean_squared_error, precision_score, recall_score
 from torch import Tensor
 from torchmetrics.classification import MulticlassF1Score, MulticlassPrecision, MulticlassRecall
-from torchmetrics.regression import MeanSquaredError
+from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
 from torchmetrics.wrappers.bootstrapping import BootStrapper, _bootstrap_sampler
 
 from unittests._helpers import seed_all
@@ -124,6 +124,17 @@ def test_bootstrap(device, sampling_strategy, metric, ref_metric):
     assert np.allclose(output["std"].cpu(), np.std(sk_scores, ddof=1))
     assert np.allclose(output["raw"].cpu(), sk_scores)
 
+    # check that resetting works
+    bootstrapper.reset()
+
+    assert bootstrapper.update_count == 0
+    assert all(m.update_count == 0 for m in bootstrapper.metrics)
+    output = bootstrapper.compute()
+    if not isinstance(metric, MeanSquaredError):
+        assert output["mean"] == 0
+        assert output["std"] == 0
+        assert (output["raw"] == torch.zeros(10, device=device)).all()
+
 
 @pytest.mark.parametrize("sampling_strategy", ["poisson", "multinomial"])
 def test_low_sample_amount(sampling_strategy):
@@ -140,3 +151,23 @@ def test_low_sample_amount(sampling_strategy):
         MulticlassF1Score(num_classes=3, average=None), num_bootstraps=20, sampling_strategy=sampling_strategy
     )
     assert bootstrap_f1(preds, target)  # does not work
+
+
+def test_args_and_kwargs_works():
+    """Test that metric works with both args and kwargs and mix.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2450
+
+    """
+    x = torch.rand(100)
+    y = x + torch.randn_like(x)
+    ae = MeanAbsoluteError()
+    assert ae(x, y) == ae(preds=x, target=y)
+
+    bootstrapped_ae = BootStrapper(ae)
+    res1 = bootstrapped_ae(x, y)
+    res2 = bootstrapped_ae(x, target=y)
+    res3 = bootstrapped_ae(preds=x, target=y)
+
+    assert (res1["mean"].shape == res2["mean"].shape) & (res2["mean"].shape == res3["mean"].shape)
+    assert (res1["std"].shape == res2["std"].shape) & (res2["mean"].shape == res3["std"].shape)

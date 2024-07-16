@@ -138,7 +138,7 @@
 .. _Spectral Angle Mapper: https://ntrs.nasa.gov/citations/19940012238
 .. _Multilabel coverage error: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
 .. _Panoptic Quality: https://arxiv.org/abs/1801.00868
-.. _torchmetrics mAP example: https://github.com/Lightning-AI/torchmetrics/blob/master/examples/detection_map.py
+.. _torchmetrics mAP example: https://github.com/Lightning-AI/torchmetrics/blob/master/_samples/detection_map.py
 .. _Peak Signal to Noise Ratio With Blocked Effect: https://ieeexplore.ieee.org/abstract/document/5535179
 .. _Minkowski Distance: https://en.wikipedia.org/wiki/Minkowski_distance
 .. _Demographic parity: http://www.fairmlbook.org/
@@ -170,3 +170,4 @@
 .. _FLORES-200: https://arxiv.org/abs/2207.04672
 .. _averaging curve objects: https://scikit-learn.org/stable/auto_examples/model_selection/plot_roc.html
 .. _SCC: https://www.ingentaconnect.com/content/tandf/tres/1998/00000019/00000004/art00013
+.. _Generalized Dice Score: https://arxiv.org/abs/1707.03237
