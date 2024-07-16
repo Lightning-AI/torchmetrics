@@ -21,7 +21,9 @@ from torch.utils.data import Dataset
 from torchmetrics.image.inception import InceptionScore
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
-torch.manual_seed(42)
+from unittests._helpers import seed_all
+
+seed_all(42)
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")
