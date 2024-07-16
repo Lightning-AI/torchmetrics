@@ -40,14 +40,14 @@ _inputs3 = _Input(
 def _reference_mean_iou(
     preds: torch.Tensor,
     target: torch.Tensor,
+    input_format: str,
     include_background: bool = True,
     per_class: bool = True,
     reduce: bool = True,
 ):
     """Calculate reference metric for `MeanIoU`."""
-    if (preds.bool() != preds).any():  # preds is an index tensor
+    if input_format == "index":
         preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
-    if (target.bool() != target).any():  # target is an index tensor
         target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
 
     val = compute_iou(preds, target, include_background=include_background)
@@ -58,11 +58,11 @@ def _reference_mean_iou(
 
 
 @pytest.mark.parametrize(
-    "preds, target",
+    "preds, target, input_format",
     [
-        (_inputs1.preds, _inputs1.target),
-        (_inputs2.preds, _inputs2.target),
-        (_inputs3.preds, _inputs3.target),
+        (_inputs1.preds, _inputs1.target, "one-hot"),
+        (_inputs2.preds, _inputs2.target, "one-hot"),
+        (_inputs3.preds, _inputs3.target, "index"),
     ],
 )
 @pytest.mark.parametrize("include_background", [True, False])
@@ -73,7 +73,7 @@ class TestMeanIoU(MetricTester):
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("per_class", [True, False])
-    def test_mean_iou_class(self, preds, target, include_background, per_class, ddp):
+    def test_mean_iou_class(self, preds, target, input_format, include_background, per_class, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
@@ -81,17 +81,33 @@ class TestMeanIoU(MetricTester):
             target=target,
             metric_class=MeanIoU,
             reference_metric=partial(
-                _reference_mean_iou, include_background=include_background, per_class=per_class, reduce=True
+                _reference_mean_iou,
+                input_format=input_format,
+                include_background=include_background,
+                per_class=per_class,
+                reduce=True,
             ),
-            metric_args={"num_classes": NUM_CLASSES, "include_background": include_background, "per_class": per_class},
+            metric_args={
+                "num_classes": NUM_CLASSES,
+                "include_background": include_background,
+                "per_class": per_class,
+                "input_format": input_format,
+            },
         )
 
-    def test_mean_iou_functional(self, preds, target, include_background):
+    def test_mean_iou_functional(self, preds, target, input_format, include_background):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=mean_iou,
-            reference_metric=partial(_reference_mean_iou, include_background=include_background, reduce=False),
-            metric_args={"num_classes": NUM_CLASSES, "include_background": include_background, "per_class": True},
+            reference_metric=partial(
+                _reference_mean_iou, input_format=input_format, include_background=include_background, reduce=False
+            ),
+            metric_args={
+                "num_classes": NUM_CLASSES,
+                "include_background": include_background,
+                "per_class": True,
+                "input_format": input_format,
+            },
         )

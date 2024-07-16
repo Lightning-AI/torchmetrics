@@ -17,6 +17,7 @@ clean:
 	rm -rf ./docs/source/generated
 	rm -rf ./docs/source/*/generated
 	rm -rf ./docs/source/api
+	rm -rf ./docs/source/gallery
 	rm -rf build
 	rm -rf dist
 	rm -rf *.egg-info
