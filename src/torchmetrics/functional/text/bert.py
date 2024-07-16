@@ -15,7 +15,7 @@ import csv
 import logging
 import urllib
 from contextlib import contextmanager
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -37,7 +37,7 @@ from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_GREATE
 
 
 @contextmanager
-def _ignore_log_warning():  # noqa: ANN202
+def _ignore_log_warning() -> Iterator[None]:
     """Ignore irrelevant fine-tuning warning from transformers when loading the model for BertScore."""
     logger = logging.getLogger("transformers.modeling_utils")
     original_level = logger.getEffectiveLevel()
