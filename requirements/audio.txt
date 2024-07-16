@@ -2,7 +2,7 @@
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
 # this need to be the same as used inside speechmetrics
-pesq @ git+https://github.com/ludlows/python-pesq
+pesq >=0.0.4, <0.0.5
 pystoi >=0.3.0, <0.5.0
-torchaudio >=0.10.0, <2.4.0
-gammatone @ https://github.com/detly/gammatone/archive/master.zip#egg=Gammatone
+torchaudio >=0.10.0, <2.5.0
+gammatone >=1.0.0, <1.1.0
