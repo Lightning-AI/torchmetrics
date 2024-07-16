@@ -422,6 +422,9 @@ def bert_score(
     preds_embeddings = preds_embeddings[preds_loader.dataset.sorting_indices]
     target_embeddings = target_embeddings[target_loader.dataset.sorting_indices]
 
+    preds_idf_scale = preds_idf_scale[preds_loader.dataset.sorting_indices]
+    target_idf_scale = target_idf_scale[target_loader.dataset.sorting_indices]
+
     precision, recall, f1_score = _get_precision_recall_f1(
         preds_embeddings, target_embeddings, preds_idf_scale, target_idf_scale
     )
