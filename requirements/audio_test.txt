@@ -4,4 +4,4 @@
 mir-eval >=0.6, <=0.7
 fast-bss-eval >=0.1.0, <0.1.5
 torch_complex <0.5.0 # needed for fast-bss-eval
-srmrpy @ git+https://github.com/jfsantos/SRMRpy
+srmrpy @ git+https://github.com/Lightning-Sandbox/SRMRpy

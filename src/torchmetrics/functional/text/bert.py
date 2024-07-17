@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import csv
+import logging
 import urllib
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from contextlib import contextmanager
+from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -33,6 +35,19 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _TQDM_AVAILABLE, _TRANSFORMERS_GREATER_EQUAL_4_4
 
+
+@contextmanager
+def _ignore_log_warning() -> Iterator[None]:
+    """Ignore irrelevant fine-tuning warning from transformers when loading the model for BertScore."""
+    logger = logging.getLogger("transformers.modeling_utils")
+    original_level = logger.getEffectiveLevel()
+    try:
+        logger.setLevel(logging.ERROR)
+        yield
+    finally:
+        logger.setLevel(original_level)
+
+
 # Default model recommended in the original implementation.
 _DEFAULT_MODEL = "roberta-large"
 
@@ -41,8 +56,9 @@ if _TRANSFORMERS_GREATER_EQUAL_4_4:
 
     def _download_model_for_bert_score() -> None:
         """Download intensive operations."""
-        AutoTokenizer.from_pretrained(_DEFAULT_MODEL, resume_download=True)
-        AutoModel.from_pretrained(_DEFAULT_MODEL, resume_download=True)
+        with _ignore_log_warning():
+            AutoTokenizer.from_pretrained(_DEFAULT_MODEL)
+            AutoModel.from_pretrained(_DEFAULT_MODEL)
 
     if _SKIP_SLOW_DOCTEST and not _try_proceed_with_timeout(_download_model_for_bert_score):
         __doctest_skip__ = ["bert_score"]
@@ -356,8 +372,9 @@ def bert_score(
                 " `transformers` model are used."
                 f"It is, therefore, used the default recommended model - {_DEFAULT_MODEL}."
             )
-        tokenizer = AutoTokenizer.from_pretrained(model_name_or_path or _DEFAULT_MODEL)
-        model = AutoModel.from_pretrained(model_name_or_path or _DEFAULT_MODEL)
+        with _ignore_log_warning():
+            tokenizer = AutoTokenizer.from_pretrained(model_name_or_path or _DEFAULT_MODEL)
+            model = AutoModel.from_pretrained(model_name_or_path or _DEFAULT_MODEL)
     else:
         tokenizer = user_tokenizer
     model.eval()
