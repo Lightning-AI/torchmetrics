@@ -298,8 +298,8 @@ def _multiclass_stat_scores_tensor_validation(
     elif preds.ndim == target.ndim:
         if preds.shape != target.shape:
             raise ValueError(
-                "The `preds` and `target` should have the same shape,",
-                f" got `preds` with shape={preds.shape} and `target` with shape={target.shape}.",
+                "The `preds` and `target` should have the same shape,"
+                f" got `preds` with shape={preds.shape} and `target` with shape={target.shape}."
             )
         if multidim_average != "global" and preds.ndim < 2:
             raise ValueError(
