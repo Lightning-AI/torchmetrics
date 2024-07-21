@@ -42,6 +42,7 @@ class MeanAbsoluteError(Metric):
     - ``mean_absolute_error`` (:class:`~torch.Tensor`): A tensor with the mean absolute error over the state
 
     Args:
+        num_outputs: Number of outputs in multioutput setting
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
