@@ -3,7 +3,7 @@
 
 BERTScore is a text generation metric to compute the similarity between a generated text and a reference text using a pre-trained BERT model. Instead of relying on exact token matches, BERTScore leverages contextual embeddings to capture the semantic similarity between the texts. This makes BERTScore robust to paraphrasing and word order variations. BERTScore has been shown to correlate well with human judgments and is widely used in evaluating text generation models.
 
-Let's consider a use case in natural language processing where BERTScore is used to evaluate the quality of a text generation model.
+Let's consider a use case in natural language processing where BERTScore is used to evaluate the quality of a text generation model. In this case we are imaging that we are developing a automated news summarization system. The goal is to create concise summaries of news articles that accurately capture the key points of the original articles. To evaluate the performance of your summarization system, you need a metric that can compare the generated summaries to human-written summaries. This is where the BERTScore can be used.
 """
 
 from torchmetrics.text import BERTScore, ROUGEScore
@@ -15,8 +15,8 @@ tokenizer = AutoTokenizer.from_pretrained("openai-community/gpt2")
 # %%
 # Define the prompt and target texts
 
-prompt = "The quick brown fox jumps"
-target_text = " over the lazy dog."
+prompt = "Economic recovery is underway with a 3.5% GDP growth and a decrease in unemployment. Experts forecast continued improvement with boosts from consumer spending and government projects."
+target_text = "The economy is recovering, with GDP growth at 3.5% and unemployment at a two-year low. Experts expect this trend to continue due to higher consumer spending and government infrastructure investments."
 
 # %%
 # Generate a sample text using the GPT-2 model
