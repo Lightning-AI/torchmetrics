@@ -124,7 +124,7 @@ def _single_target_ref_wrapper(preds, target, sk_fn, metric_args):
 
     res = sk_fn(sk_target, sk_preds)
 
-    return math.sqrt(res) if (metric_args and not metric_args["squared"]) else res
+    return math.sqrt(res) if (metric_args and "squared" in metric_args and not metric_args["squared"]) else res
 
 
 def _multi_target_ref_wrapper(preds, target, sk_fn, metric_args):
@@ -132,7 +132,7 @@ def _multi_target_ref_wrapper(preds, target, sk_fn, metric_args):
     sk_target = target.view(-1, NUM_TARGETS).numpy()
     sk_kwargs = {"multioutput": "raw_values"} if metric_args and "num_outputs" in metric_args else {}
     res = sk_fn(sk_target, sk_preds, **sk_kwargs)
-    return math.sqrt(res) if (metric_args and not metric_args["squared"]) else res
+    return math.sqrt(res) if (metric_args and "squared" in metric_args and not metric_args["squared"]) else res
 
 
 @pytest.mark.parametrize(
