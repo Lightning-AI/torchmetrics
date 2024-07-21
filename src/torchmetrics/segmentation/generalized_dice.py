@@ -53,12 +53,12 @@ class GeneralizedDiceScore(Metric):
 
         - ``preds`` (:class:`~torch.Tensor`): An one-hot boolean tensor of shape ``(N, C, ...)`` with ``N`` being
           the number of samples and ``C`` the number of classes. Alternatively, an integer tensor of shape ``(N, ...)``
-          can be provided, where the integer values correspond to the class index. That format will be automatically
-          converted to a one-hot tensor.
+          can be provided, where the integer values correspond to the class index. The input type can be controlled
+          with the ``input_format`` argument.
         - ``target`` (:class:`~torch.Tensor`): An one-hot boolean tensor of shape ``(N, C, ...)`` with ``N`` being
           the number of samples and ``C`` the number of classes. Alternatively, an integer tensor of shape ``(N, ...)``
-          can be provided, where the integer values correspond to the class index. That format will be automatically
-          converted to a one-hot tensor.
+          can be provided, where the integer values correspond to the class index. The input type can be controlled
+          with the ``input_format`` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -72,6 +72,8 @@ class GeneralizedDiceScore(Metric):
         per_class: Whether to compute the metric for each class separately.
         weight_type: The type of weight to apply to each class. Can be one of ``"square"``, ``"simple"``, or
             ``"linear"``.
+        input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors
+            or ``"index"`` for index tensors
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -83,6 +85,8 @@ class GeneralizedDiceScore(Metric):
             If ``per_class`` is not a boolean
         ValueError:
             If ``weight_type`` is not one of ``"square"``, ``"simple"``, or ``"linear"``
+        ValueError:
+            If ``input_format`` is not one of ``"one-hot"`` or ``"index"``
 
     Example:
         >>> import torch
@@ -116,14 +120,16 @@ class GeneralizedDiceScore(Metric):
         include_background: bool = True,
         per_class: bool = False,
         weight_type: Literal["square", "simple", "linear"] = "square",
+        input_format: Literal["one-hot", "index"] = "one-hot",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        _generalized_dice_validate_args(num_classes, include_background, per_class, weight_type)
+        _generalized_dice_validate_args(num_classes, include_background, per_class, weight_type, input_format)
         self.num_classes = num_classes
         self.include_background = include_background
         self.per_class = per_class
         self.weight_type = weight_type
+        self.input_format = input_format
 
         num_classes = num_classes - 1 if not include_background else num_classes
         self.add_state("score", default=torch.zeros(num_classes if per_class else 1), dist_reduce_fx="sum")
@@ -132,7 +138,7 @@ class GeneralizedDiceScore(Metric):
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the state with new data."""
         numerator, denominator = _generalized_dice_update(
-            preds, target, self.num_classes, self.include_background, self.weight_type
+            preds, target, self.num_classes, self.include_background, self.weight_type, self.input_format
         )
         self.score += _generalized_dice_compute(numerator, denominator, self.per_class).sum(dim=0)
         self.samples += preds.shape[0]

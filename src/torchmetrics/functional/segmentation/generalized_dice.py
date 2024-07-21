@@ -25,6 +25,7 @@ def _generalized_dice_validate_args(
     include_background: bool,
     per_class: bool,
     weight_type: Literal["square", "simple", "linear"],
+    input_format: Literal["one-hot", "index"],
 ) -> None:
     """Validate the arguments of the metric."""
     if num_classes <= 0:
@@ -37,6 +38,8 @@ def _generalized_dice_validate_args(
         raise ValueError(
             f"Expected argument `weight_type` to be one of 'square', 'simple', 'linear', but got {weight_type}."
         )
+    if input_format not in ["one-hot", "index"]:
+        raise ValueError(f"Expected argument `input_format` to be one of 'one-hot', 'index', but got {input_format}.")
 
 
 def _generalized_dice_update(
@@ -45,15 +48,15 @@ def _generalized_dice_update(
     num_classes: int,
     include_background: bool,
     weight_type: Literal["square", "simple", "linear"] = "square",
+    input_format: Literal["one-hot", "index"] = "one-hot",
 ) -> Tensor:
     """Update the state with the current prediction and target."""
     _check_same_shape(preds, target)
     if preds.ndim < 3:
         raise ValueError(f"Expected both `preds` and `target` to have at least 3 dimensions, but got {preds.ndim}.")
 
-    if (preds.bool() != preds).any():  # preds is an index tensor
+    if input_format == "index":
         preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
-    if (target.bool() != target).any():  # target is an index tensor
         target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
 
     if not include_background:
@@ -104,6 +107,7 @@ def generalized_dice_score(
     include_background: bool = True,
     per_class: bool = False,
     weight_type: Literal["square", "simple", "linear"] = "square",
+    input_format: Literal["one-hot", "index"] = "one-hot",
 ) -> Tensor:
     """Compute the Generalized Dice Score for semantic segmentation.
 
@@ -114,6 +118,8 @@ def generalized_dice_score(
         include_background: Whether to include the background class in the computation
         per_class: Whether to compute the IoU for each class separately, else average over all classes
         weight_type: Type of weight factor to apply to the classes. One of ``"square"``, ``"simple"``, or ``"linear"``
+        input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors
+            or ``"index"`` for index tensors
 
     Returns:
         The Generalized Dice Score
@@ -133,6 +139,8 @@ def generalized_dice_score(
                 [0.4715, 0.4925, 0.4797, 0.5267, 0.4788]])
 
     """
-    _generalized_dice_validate_args(num_classes, include_background, per_class, weight_type)
-    numerator, denominator = _generalized_dice_update(preds, target, num_classes, include_background, weight_type)
+    _generalized_dice_validate_args(num_classes, include_background, per_class, weight_type, input_format)
+    numerator, denominator = _generalized_dice_update(
+        preds, target, num_classes, include_background, weight_type, input_format
+    )
     return _generalized_dice_compute(numerator, denominator, per_class)
