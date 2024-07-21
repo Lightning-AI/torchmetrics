@@ -64,6 +64,7 @@ def mean_absolute_error(preds: Tensor, target: Tensor, num_outputs: int = 1) -> 
     Args:
         preds: estimated labels
         target: ground truth labels
+        num_outputs: Number of outputs in multioutput setting
 
     Return:
         Tensor with MAE
