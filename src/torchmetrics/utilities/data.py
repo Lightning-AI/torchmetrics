@@ -215,8 +215,7 @@ def _cumsum(x: Tensor, dim: Optional[int] = 0, dtype: Optional[torch.dtype] = No
             "Expect some slowdowns.",
             TorchMetricsUserWarning,
         )
-        device = x.device
-        return x.cpu().cumsum(dim=dim, dtype=dtype).to(device)
+        return x.cpu().cumsum(dim=dim, dtype=dtype).to(x.device)
     return torch.cumsum(x, dim=dim, dtype=dtype)
 
 
