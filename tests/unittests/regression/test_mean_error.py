@@ -176,6 +176,7 @@ def _multi_target_ref_wrapper(preds, target, sk_fn, metric_args):
         (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": False}),
         (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": True, "num_outputs": NUM_TARGETS}),
         (MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error, {}),
+        (MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error, {"num_outputs": NUM_TARGETS}),
         (MeanAbsolutePercentageError, mean_absolute_percentage_error, sk_mean_abs_percentage_error, {}),
         (
             SymmetricMeanAbsolutePercentageError,
