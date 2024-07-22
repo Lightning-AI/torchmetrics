@@ -354,8 +354,8 @@ class TestMulticlassAccuracy(MetricTester):
         """Test GPU support of the metric, avoiding CPU sync points."""
         preds, target = inputs
 
-        # Wrap the default functional to attach sync_debug_mode
-        # `run_precision_test_gpu`` handles moving data onto the GPU, so we cannot set the debug mode outside of that
+        # Wrap the default functional to attach `sync_debug_mode` as `run_precision_test_gpu` handles moving data
+        # onto the GPU, so we cannot set the debug mode outside the call
         def wrapped_multiclass_accuracy(
             preds: torch.Tensor,
             target: torch.Tensor,
@@ -399,7 +399,6 @@ class TestMulticlassAccuracy(MetricTester):
         Tests that `test_multiclass_accuracy_gpu_sync_points` is kept up to date, explicitly validating that known
         failures still fail, so that if they're fixed they must be added to
         `test_multiclass_accuracy_gpu_sync_points`.
-
         """
         with pytest.raises(RuntimeError, match="called a synchronizing CUDA operation"):
             self.test_multiclass_accuracy_gpu_sync_points(
