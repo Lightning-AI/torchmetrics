@@ -341,10 +341,8 @@ class TestMulticlassAccuracy(MetricTester):
         ["average", "use_deterministic_algorithms"],
         [
             [None, True],  # Defaults to "macro", but explicitly included for testing omission
-            [
-                "macro",
-                True,
-            ],  # average=`macro` uses a different code path with `bincount` when not `use_deterministic` and incurs a CPU sync
+            # average=`macro` stays on GPU when `use_deterministic` is True. Otherwise syncs in `bincount`
+            ["macro", True],
             ["micro", False],
             ["micro", True],
             ["weighted", True],
@@ -367,9 +365,7 @@ class TestMulticlassAccuracy(MetricTester):
             try:
                 validate_args = False  # `validate_args` will require CPU sync for exceptions
                 # average = average  #'micro'  # default is `macro` which uses a `_bincount` that does a CPU sync
-                torch.use_deterministic_algorithms(
-                    mode=use_deterministic_algorithms
-                )  # uses a different path for average=`macro`, which avoids `bincount` and a CPU sync
+                torch.use_deterministic_algorithms(mode=use_deterministic_algorithms)
                 return multiclass_accuracy(preds, target, num_classes, validate_args=validate_args, average=average)
             finally:
                 torch.cuda.set_sync_debug_mode(prev_sync_debug_mode)
@@ -388,10 +384,8 @@ class TestMulticlassAccuracy(MetricTester):
     @pytest.mark.parametrize(
         ["average", "use_deterministic_algorithms"],
         [
-            [
-                None,
-                False,
-            ],  # If you remove from this collection, please add items to `test_multiclass_accuracy_gpu_sync_points`
+            # If you remove from this collection, please add items to `test_multiclass_accuracy_gpu_sync_points`
+            [None, False],
             ["macro", False],
             ["weighted", False],
         ],
