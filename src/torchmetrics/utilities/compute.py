@@ -56,7 +56,6 @@ def _safe_divide(num: Tensor, denom: Tensor, zero_division: float = 0.0) -> Tens
     """
     num = num if num.is_floating_point() else num.float()
     denom = denom if denom.is_floating_point() else denom.float()
-    zero_division = torch.tensor(zero_division).float().to(num.device)
     return torch.where(denom != 0, num / denom, zero_division)
 
 
