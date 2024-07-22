@@ -65,6 +65,8 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division:
+            Value to replace when there is a division by zero. Should be `0` or `1`.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
@@ -85,6 +87,7 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         tensor(0.5000)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -96,15 +99,17 @@ class BinaryJaccardIndex(BinaryConfusionMatrix):
         threshold: float = 0.5,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        zero_division: float = 0,
         **kwargs: Any,
     ) -> None:
         super().__init__(
             threshold=threshold, ignore_index=ignore_index, normalize=None, validate_args=validate_args, **kwargs
         )
+        self.zero_division = zero_division
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return _jaccard_index_reduce(self.confmat, average="binary")
+        return _jaccard_index_reduce(self.confmat, average="binary", zero_division=self.zero_division)
 
     def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -186,6 +191,8 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division:
+            Value to replace when there is a division by zero. Should be `0` or `1`.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (pred is integer tensor):
@@ -209,6 +216,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         tensor(0.6667)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -222,6 +230,7 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        zero_division: float = 0,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -231,10 +240,13 @@ class MulticlassJaccardIndex(MulticlassConfusionMatrix):
             _multiclass_jaccard_index_arg_validation(num_classes, ignore_index, average)
         self.validate_args = validate_args
         self.average = average
+        self.zero_division = zero_division
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return _jaccard_index_reduce(self.confmat, average=self.average, ignore_index=self.ignore_index)
+        return _jaccard_index_reduce(
+            self.confmat, average=self.average, ignore_index=self.ignore_index, zero_division=self.zero_division
+        )
 
     def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -317,6 +329,8 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
 
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division:
+            Value to replace when there is a division by zero. Should be `0` or `1`.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example (preds is int tensor):
@@ -352,6 +366,7 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
+        zero_division: float = 0,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -366,10 +381,11 @@ class MultilabelJaccardIndex(MultilabelConfusionMatrix):
             _multilabel_jaccard_index_arg_validation(num_labels, threshold, ignore_index, average)
         self.validate_args = validate_args
         self.average = average
+        self.zero_division = zero_division
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return _jaccard_index_reduce(self.confmat, average=self.average)
+        return _jaccard_index_reduce(self.confmat, average=self.average, zero_division=self.zero_division)
 
     def plot(  # type: ignore[override]
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

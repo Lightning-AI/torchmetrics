@@ -110,6 +110,7 @@
 .. _Theils Uncertainty coefficient: https://en.wikipedia.org/wiki/Uncertainty_coefficient
 .. _Perceptual Evaluation of Speech Quality: https://en.wikipedia.org/wiki/Perceptual_Evaluation_of_Speech_Quality
 .. _pesq package: https://github.com/ludlows/python-pesq
+.. _Deep Noise Suppression performance evaluation based on Mean Opinion Score: https://arxiv.org/abs/2010.15258
 .. _Cees Taal's website: http://www.ceestaal.nl/code/
 .. _pystoi package: https://github.com/mpariente/pystoi
 .. _stoi ref1: https://ieeexplore.ieee.org/abstract/document/5495701
@@ -128,7 +129,7 @@
 .. _Permutation invariant training: https://arxiv.org/abs/1607.00325
 .. _ranking ref1: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
 .. _Spectral Distortion Index: https://www.semanticscholar.org/paper/Multispectral-and-panchromatic-data-fusion-without-Alparone-Aiazzi/b6db12e3785326577cb95fd743fecbf5bc66c7c9
-.. _Relative dimensionless global error synthesis: https://ieeexplore.ieee.org/abstract/document/4317530
+.. _Error relative global dimensionless synthesis: https://minesparis-psl.hal.science/hal-00464703/document
 .. _fid ref1: https://arxiv.org/abs/1512.00567
 .. _fid ref2: https://arxiv.org/abs/1706.08500
 .. _inception ref1: https://arxiv.org/abs/1606.03498
@@ -138,7 +139,7 @@
 .. _Spectral Angle Mapper: https://ntrs.nasa.gov/citations/19940012238
 .. _Multilabel coverage error: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
 .. _Panoptic Quality: https://arxiv.org/abs/1801.00868
-.. _torchmetrics mAP example: https://github.com/Lightning-AI/torchmetrics/blob/master/examples/detection_map.py
+.. _torchmetrics mAP example: https://github.com/Lightning-AI/torchmetrics/blob/master/_samples/detection_map.py
 .. _Peak Signal to Noise Ratio With Blocked Effect: https://ieeexplore.ieee.org/abstract/document/5535179
 .. _Minkowski Distance: https://en.wikipedia.org/wiki/Minkowski_distance
 .. _Demographic parity: http://www.fairmlbook.org/
@@ -170,3 +171,4 @@
 .. _FLORES-200: https://arxiv.org/abs/2207.04672
 .. _averaging curve objects: https://scikit-learn.org/stable/auto_examples/model_selection/plot_roc.html
 .. _SCC: https://www.ingentaconnect.com/content/tandf/tres/1998/00000019/00000004/art00013
+.. _Generalized Dice Score: https://arxiv.org/abs/1707.03237

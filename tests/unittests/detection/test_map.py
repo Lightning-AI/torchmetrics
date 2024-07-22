@@ -32,8 +32,8 @@ from torchmetrics.utilities.imports import (
     _TORCHVISION_GREATER_EQUAL_0_8,
 )
 
+from unittests._helpers.testers import MetricTester
 from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL
-from unittests.helpers.testers import MetricTester
 
 _pytest_condition = not (_PYCOCOTOOLS_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
 
@@ -63,6 +63,58 @@ def _generate_coco_inputs(iou_type):
 
 _coco_bbox_input = _generate_coco_inputs("bbox")
 _coco_segm_input = _generate_coco_inputs("segm")
+
+
+@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 and pycocotools is installed")
+@pytest.mark.parametrize("iou_type", ["bbox", "segm"])
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+def test_tm_to_coco(tmpdir, iou_type, backend):
+    """Test that the conversion from TM to COCO format works."""
+    preds, target = _coco_bbox_input if iou_type == "bbox" else _coco_segm_input
+    metric = MeanAveragePrecision(iou_type=iou_type, backend=backend, box_format="xywh")
+    for bp, bt in zip(preds, target):
+        metric.update(bp, bt)
+    metric.tm_to_coco(f"{tmpdir}/tm_map_input")
+    preds_2, target_2 = MeanAveragePrecision.coco_to_tm(
+        f"{tmpdir}/tm_map_input_preds.json",
+        f"{tmpdir}/tm_map_input_target.json",
+        iou_type=iou_type,
+        backend=backend,
+    )
+
+    preds = [p for batch in preds for p in batch]
+    target = [t for batch in target for t in batch]
+
+    # make sure that every prediction/target is found in the new prediction/target after saving and loading
+    for sample1 in preds:
+        sample_found = False
+        for sample2 in preds_2:
+            if iou_type == "segm":
+                if sample1["masks"].shape == sample2["masks"].shape and torch.allclose(
+                    sample1["masks"], sample2["masks"]
+                ):
+                    sample_found = True
+            else:
+                if sample1["boxes"].shape == sample2["boxes"].shape and torch.allclose(
+                    sample1["boxes"], sample2["boxes"]
+                ):
+                    sample_found = True
+        assert sample_found, "preds not found"
+
+    for sample1 in target:
+        sample_found = False
+        for sample2 in target_2:
+            if iou_type == "segm":
+                if sample1["masks"].shape == sample2["masks"].shape and torch.allclose(
+                    sample1["masks"], sample2["masks"]
+                ):
+                    sample_found = True
+            else:
+                if sample1["boxes"].shape == sample2["boxes"].shape and torch.allclose(
+                    sample1["boxes"], sample2["boxes"]
+                ):
+                    sample_found = True
+        assert sample_found, "target not found"
 
 
 def _compare_against_coco_fn(preds, target, iou_type, iou_thresholds=None, rec_thresholds=None, class_metrics=True):
@@ -236,34 +288,30 @@ _inputs = {
         ],
         [
             {
-                "boxes": Tensor(
-                    [
-                        [87.87, 276.25, 384.29, 379.43],
-                        [0.00, 3.66, 142.15, 316.06],
-                        [296.55, 93.96, 314.97, 152.79],
-                        [328.94, 97.05, 342.49, 122.98],
-                        [356.62, 95.47, 372.33, 147.55],
-                        [464.08, 105.09, 495.74, 146.99],
-                        [276.11, 103.84, 291.44, 150.72],
-                    ]
-                ),
+                "boxes": Tensor([
+                    [87.87, 276.25, 384.29, 379.43],
+                    [0.00, 3.66, 142.15, 316.06],
+                    [296.55, 93.96, 314.97, 152.79],
+                    [328.94, 97.05, 342.49, 122.98],
+                    [356.62, 95.47, 372.33, 147.55],
+                    [464.08, 105.09, 495.74, 146.99],
+                    [276.11, 103.84, 291.44, 150.72],
+                ]),
                 "scores": Tensor([0.546, 0.3, 0.407, 0.611, 0.335, 0.805, 0.953]),
                 "labels": IntTensor([4, 1, 0, 0, 0, 0, 0]),
             },  # coco image id 74
             {
-                "boxes": Tensor(
-                    [
-                        [72.92, 45.96, 91.23, 80.57],
-                        [45.17, 45.34, 66.28, 79.83],
-                        [82.28, 47.04, 99.66, 78.50],
-                        [59.96, 46.17, 80.35, 80.48],
-                        [75.29, 23.01, 91.85, 50.85],
-                        [71.14, 1.10, 96.96, 28.33],
-                        [61.34, 55.23, 77.14, 79.57],
-                        [41.17, 45.78, 60.99, 78.48],
-                        [56.18, 44.80, 64.42, 56.25],
-                    ]
-                ),
+                "boxes": Tensor([
+                    [72.92, 45.96, 91.23, 80.57],
+                    [45.17, 45.34, 66.28, 79.83],
+                    [82.28, 47.04, 99.66, 78.50],
+                    [59.96, 46.17, 80.35, 80.48],
+                    [75.29, 23.01, 91.85, 50.85],
+                    [71.14, 1.10, 96.96, 28.33],
+                    [61.34, 55.23, 77.14, 79.57],
+                    [41.17, 45.78, 60.99, 78.48],
+                    [56.18, 44.80, 64.42, 56.25],
+                ]),
                 "scores": Tensor([0.532, 0.204, 0.782, 0.202, 0.883, 0.271, 0.561, 0.204, 0.349]),
                 "labels": IntTensor([49, 49, 49, 49, 49, 49, 49, 49, 49]),
             },  # coco image id 987 category_id 49
@@ -276,45 +324,39 @@ _inputs = {
                 "labels": IntTensor([4]),
             },  # coco image id 42
             {
-                "boxes": Tensor(
-                    [
-                        [13.00, 22.75, 548.98, 632.42],
-                        [1.66, 3.32, 270.26, 275.23],
-                    ]
-                ),
+                "boxes": Tensor([
+                    [13.00, 22.75, 548.98, 632.42],
+                    [1.66, 3.32, 270.26, 275.23],
+                ]),
                 "labels": IntTensor([2, 2]),
             },  # coco image id 73
         ],
         [
             {
-                "boxes": Tensor(
-                    [
-                        [61.87, 276.25, 358.29, 379.43],
-                        [2.75, 3.66, 162.15, 316.06],
-                        [295.55, 93.96, 313.97, 152.79],
-                        [326.94, 97.05, 340.49, 122.98],
-                        [356.62, 95.47, 372.33, 147.55],
-                        [462.08, 105.09, 493.74, 146.99],
-                        [277.11, 103.84, 292.44, 150.72],
-                    ]
-                ),
+                "boxes": Tensor([
+                    [61.87, 276.25, 358.29, 379.43],
+                    [2.75, 3.66, 162.15, 316.06],
+                    [295.55, 93.96, 313.97, 152.79],
+                    [326.94, 97.05, 340.49, 122.98],
+                    [356.62, 95.47, 372.33, 147.55],
+                    [462.08, 105.09, 493.74, 146.99],
+                    [277.11, 103.84, 292.44, 150.72],
+                ]),
                 "labels": IntTensor([4, 1, 0, 0, 0, 0, 0]),
             },  # coco image id 74
             {
-                "boxes": Tensor(
-                    [
-                        [72.92, 45.96, 91.23, 80.57],
-                        [50.17, 45.34, 71.28, 79.83],
-                        [81.28, 47.04, 98.66, 78.50],
-                        [63.96, 46.17, 84.35, 80.48],
-                        [75.29, 23.01, 91.85, 50.85],
-                        [56.39, 21.65, 75.66, 45.54],
-                        [73.14, 1.10, 98.96, 28.33],
-                        [62.34, 55.23, 78.14, 79.57],
-                        [44.17, 45.78, 63.99, 78.48],
-                        [58.18, 44.80, 66.42, 56.25],
-                    ]
-                ),
+                "boxes": Tensor([
+                    [72.92, 45.96, 91.23, 80.57],
+                    [50.17, 45.34, 71.28, 79.83],
+                    [81.28, 47.04, 98.66, 78.50],
+                    [63.96, 46.17, 84.35, 80.48],
+                    [75.29, 23.01, 91.85, 50.85],
+                    [56.39, 21.65, 75.66, 45.54],
+                    [73.14, 1.10, 98.96, 28.33],
+                    [62.34, 55.23, 78.14, 79.57],
+                    [44.17, 45.78, 63.99, 78.48],
+                    [58.18, 44.80, 66.42, 56.25],
+                ]),
                 "labels": IntTensor([49, 49, 49, 49, 49, 49, 49, 49, 49, 49]),
             },  # coco image id 987 category_id 49
         ],
@@ -722,7 +764,8 @@ class TestMapProperties:
         assert round(float(result["ious"][(0, 0)]), 3) == iou_val_expected
 
     @pytest.mark.parametrize("iou_type", ["bbox", "segm"])
-    def test_warning_on_many_detections(self, iou_type, backend):
+    @pytest.mark.parametrize("warn_on_many_detections", [False, True])
+    def test_warning_on_many_detections(self, iou_type, warn_on_many_detections, backend, recwarn):
         """Test that a warning is raised when there are many detections."""
         if iou_type == "bbox":
             preds = [
@@ -737,8 +780,13 @@ class TestMapProperties:
             preds, targets = _generate_random_segm_input("cpu", 1, 101, 10, False)
 
         metric = MeanAveragePrecision(iou_type=iou_type, backend=backend)
-        with pytest.warns(UserWarning, match="Encountered more than 100 detections in a single image.*"):
-            metric.update(preds, targets)
+        metric.warn_on_many_detections = warn_on_many_detections
+
+        if warn_on_many_detections:
+            with pytest.warns(UserWarning, match="Encountered more than 100 detections in a single image.*"):
+                metric.update(preds, targets)
+        else:
+            assert len(recwarn) == 0
 
     @pytest.mark.parametrize(
         ("preds", "target", "expected_iou_len", "iou_keys", "precision_shape", "recall_shape", "scores_shape"),

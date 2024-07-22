@@ -43,20 +43,25 @@ def _safe_xlogy(x: Tensor, y: Tensor) -> Tensor:
     return res
 
 
-def _safe_divide(num: Tensor, denom: Tensor) -> Tensor:
+def _safe_divide(num: Tensor, denom: Tensor, zero_division: float = 0.0) -> Tensor:
     """Safe division, by preventing division by zero.
 
-    Additionally casts to float if input is not already to secure backwards compatibility.
+    Function will cast to float if input is not already to secure backwards compatibility.
+
+    Args:
+        num: numerator tensor
+        denom: denominator tensor, which may contain zeros
+        zero_division: value to replace elements divided by zero
 
     """
-    denom[denom == 0.0] = 1
     num = num if num.is_floating_point() else num.float()
     denom = denom if denom.is_floating_point() else denom.float()
-    return num / denom
+    zero_division = torch.tensor(zero_division).float().to(num.device)
+    return torch.where(denom != 0, num / denom, zero_division)
 
 
 def _adjust_weights_safe_divide(
-    score: Tensor, average: Optional[str], multilabel: bool, tp: Tensor, fp: Tensor, fn: Tensor
+    score: Tensor, average: Optional[str], multilabel: bool, tp: Tensor, fp: Tensor, fn: Tensor, top_k: int = 1
 ) -> Tensor:
     if average is None or average == "none":
         return score
@@ -65,7 +70,7 @@ def _adjust_weights_safe_divide(
     else:
         weights = torch.ones_like(score)
         if not multilabel:
-            weights[tp + fp + fn == 0] = 0.0
+            weights[tp + fp + fn == 0 if top_k == 1 else tp + fn == 0] = 0.0
     return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
@@ -92,8 +97,8 @@ def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float, axis: int
 
     """
     with torch.no_grad():
-        auc_: Tensor = torch.trapz(y, x, dim=axis) * direction
-    return auc_
+        auc_score: Tensor = torch.trapz(y, x, dim=axis) * direction
+    return auc_score
 
 
 def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:

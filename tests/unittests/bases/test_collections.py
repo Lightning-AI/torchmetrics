@@ -17,7 +17,7 @@ from typing import Any
 
 import pytest
 import torch
-from torchmetrics import Metric, MetricCollection
+from torchmetrics import ClasswiseWrapper, Metric, MetricCollection
 from torchmetrics.classification import (
     BinaryAccuracy,
     MulticlassAccuracy,
@@ -33,9 +33,10 @@ from torchmetrics.classification import (
     MultilabelAveragePrecision,
 )
 from torchmetrics.utilities.checks import _allclose_recursive
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_0
 
-from unittests.helpers import seed_all
-from unittests.helpers.testers import DummyMetricDiff, DummyMetricMultiOutputDict, DummyMetricSum
+from unittests._helpers import seed_all
+from unittests._helpers.testers import DummyMetricDiff, DummyMetricMultiOutputDict, DummyMetricSum
 
 seed_all(42)
 
@@ -150,6 +151,7 @@ def test_metric_collection_args_kwargs(tmpdir):
     assert metric_collection["DummyMetricDiff"].x == -20
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_0, reason="Test requires torch 2.0 or higher")
 @pytest.mark.parametrize(
     ("prefix", "postfix"),
     [
@@ -203,6 +205,10 @@ def test_metric_collection_prefix_postfix_args(prefix, postfix):
     names = [n[: -len(postfix)] if postfix is not None else n for n in names]  # strip away old postfix
     for name in names:
         assert f"new_prefix_{name}_new_postfix" in out, "postfix argument not working as intended with clone method"
+
+    keys = list(new_metric_collection.keys())
+    for k in keys:
+        assert new_metric_collection[k]  # check that the keys are valid even with prefix and postfix
 
 
 def test_metric_collection_repr():
@@ -446,9 +452,28 @@ class TestComputeGroups:
             for key in res_cg:
                 assert torch.allclose(res_cg[key], res_without_cg[key])
 
+            # Check if second compute is the same
+            res_cg2 = m.compute()
+            for key in res_cg2:
+                assert torch.allclose(res_cg[key], res_cg2[key])
+
             if with_reset:
                 m.reset()
                 m2.reset()
+
+        # Test if a second compute without a reset is the same
+        m.reset()
+        m.update(preds, target)
+        res_cg = m.compute()
+        # Simulate different preds by simply inversing them
+        m.update(1 - preds, target)
+        res_cg2 = m.compute()
+        # Now check if the results from the first compute are different from the second
+        for key in res_cg:
+            # A different shape is okay, therefore skip (this happens for multidim_average="samplewise")
+            if res_cg[key].shape != res_cg2[key].shape:
+                continue
+            assert not torch.all(res_cg[key] == res_cg2[key])
 
     @pytest.mark.parametrize("method", ["items", "values", "keys"])
     def test_check_compute_groups_items_and_values(self, metrics, expected, preds, target, method):
@@ -540,14 +565,50 @@ def test_compute_group_define_by_user():
     assert m.compute()
 
 
+def test_classwise_wrapper_compute_group():
+    """Check that user can provide compute groups."""
+    classwise_accuracy = ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None), prefix="accuracy")
+    classwise_recall = ClasswiseWrapper(MulticlassRecall(num_classes=3, average=None), prefix="recall")
+    classwise_precision = ClasswiseWrapper(MulticlassPrecision(num_classes=3, average=None), prefix="precision")
+
+    m = MetricCollection(
+        {
+            "accuracy": ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None), prefix="accuracy"),
+            "recall": ClasswiseWrapper(MulticlassRecall(num_classes=3, average=None), prefix="recall"),
+            "precision": ClasswiseWrapper(MulticlassPrecision(num_classes=3, average=None), prefix="precision"),
+        },
+        compute_groups=[["accuracy", "recall", "precision"]],
+    )
+
+    # Check that we are not going to check the groups in the first update
+    assert m._groups_checked
+    assert m.compute_groups == {0: ["accuracy", "recall", "precision"]}
+
+    preds = torch.randn(10, 3).softmax(dim=-1)
+    target = torch.randint(3, (10,))
+
+    expected = {
+        **classwise_accuracy(preds, target),
+        **classwise_recall(preds, target),
+        **classwise_precision(preds, target),
+    }
+
+    m.update(preds, target)
+    res = m.compute()
+
+    for key in expected:
+        assert torch.allclose(res[key], expected[key])
+
+    # check metric state_dict
+    m.state_dict()
+
+
 def test_compute_on_different_dtype():
     """Check that extraction of compute groups are robust towards difference in dtype."""
-    m = MetricCollection(
-        [
-            MulticlassConfusionMatrix(num_classes=3),
-            MulticlassMatthewsCorrCoef(num_classes=3),
-        ]
-    )
+    m = MetricCollection([
+        MulticlassConfusionMatrix(num_classes=3),
+        MulticlassMatthewsCorrCoef(num_classes=3),
+    ])
     assert not m._groups_checked
     assert m.compute_groups == {0: ["MulticlassConfusionMatrix"], 1: ["MulticlassMatthewsCorrCoef"]}
     preds = torch.randn(10, 3).softmax(dim=-1)
@@ -589,18 +650,14 @@ def test_error_on_wrong_specified_compute_groups():
             ),
         ],
         {
-            "macro": MetricCollection(
-                [
-                    MulticlassAccuracy(num_classes=3, average="macro"),
-                    MulticlassPrecision(num_classes=3, average="macro"),
-                ]
-            ),
-            "micro": MetricCollection(
-                [
-                    MulticlassAccuracy(num_classes=3, average="micro"),
-                    MulticlassPrecision(num_classes=3, average="micro"),
-                ]
-            ),
+            "macro": MetricCollection([
+                MulticlassAccuracy(num_classes=3, average="macro"),
+                MulticlassPrecision(num_classes=3, average="macro"),
+            ]),
+            "micro": MetricCollection([
+                MulticlassAccuracy(num_classes=3, average="micro"),
+                MulticlassPrecision(num_classes=3, average="micro"),
+            ]),
         },
     ],
 )

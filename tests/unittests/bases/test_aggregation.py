@@ -5,7 +5,7 @@ from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric
 from torchmetrics.collections import MetricCollection
 
 from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers.testers import MetricTester
+from unittests._helpers.testers import MetricTester
 
 
 def compare_mean(values, weights):
@@ -96,11 +96,11 @@ class TestAggregation(MetricTester):
         )
 
 
-_case1 = float("nan") * torch.ones(5)
-_case2 = torch.tensor([1.0, 2.0, float("nan"), 4.0, 5.0])
+_CASE_1 = float("nan") * torch.ones(5)
+_CASE_2 = torch.tensor([1.0, 2.0, float("nan"), 4.0, 5.0])
 
 
-@pytest.mark.parametrize("value", [_case1, _case2])
+@pytest.mark.parametrize("value", [_CASE_1, _CASE_2])
 @pytest.mark.parametrize("nan_strategy", ["error", "warn"])
 @pytest.mark.parametrize("metric_class", [MinMetric, MaxMetric, SumMetric, MeanMetric, CatMetric])
 def test_nan_error(value, nan_strategy, metric_class):
@@ -117,26 +117,26 @@ def test_nan_error(value, nan_strategy, metric_class):
 @pytest.mark.parametrize(
     ("metric_class", "nan_strategy", "value", "expected"),
     [
-        (MinMetric, "ignore", _case1, torch.tensor(float("inf"))),
-        (MinMetric, 2.0, _case1, 2.0),
-        (MinMetric, "ignore", _case2, 1.0),
-        (MinMetric, 2.0, _case2, 1.0),
-        (MaxMetric, "ignore", _case1, -torch.tensor(float("inf"))),
-        (MaxMetric, 2.0, _case1, 2.0),
-        (MaxMetric, "ignore", _case2, 5.0),
-        (MaxMetric, 2.0, _case2, 5.0),
-        (SumMetric, "ignore", _case1, 0.0),
-        (SumMetric, 2.0, _case1, 10.0),
-        (SumMetric, "ignore", _case2, 12.0),
-        (SumMetric, 2.0, _case2, 14.0),
-        (MeanMetric, "ignore", _case1, torch.tensor([float("nan")])),
-        (MeanMetric, 2.0, _case1, 2.0),
-        (MeanMetric, "ignore", _case2, 3.0),
-        (MeanMetric, 2.0, _case2, 2.8),
-        (CatMetric, "ignore", _case1, []),
-        (CatMetric, 2.0, _case1, torch.tensor([2.0, 2.0, 2.0, 2.0, 2.0])),
-        (CatMetric, "ignore", _case2, torch.tensor([1.0, 2.0, 4.0, 5.0])),
-        (CatMetric, 2.0, _case2, torch.tensor([1.0, 2.0, 2.0, 4.0, 5.0])),
+        (MinMetric, "ignore", _CASE_1, torch.tensor(float("inf"))),
+        (MinMetric, 2.0, _CASE_1, 2.0),
+        (MinMetric, "ignore", _CASE_2, 1.0),
+        (MinMetric, 2.0, _CASE_2, 1.0),
+        (MaxMetric, "ignore", _CASE_1, -torch.tensor(float("inf"))),
+        (MaxMetric, 2.0, _CASE_1, 2.0),
+        (MaxMetric, "ignore", _CASE_2, 5.0),
+        (MaxMetric, 2.0, _CASE_2, 5.0),
+        (SumMetric, "ignore", _CASE_1, 0.0),
+        (SumMetric, 2.0, _CASE_1, 10.0),
+        (SumMetric, "ignore", _CASE_2, 12.0),
+        (SumMetric, 2.0, _CASE_2, 14.0),
+        (MeanMetric, "ignore", _CASE_1, torch.tensor([float("nan")])),
+        (MeanMetric, 2.0, _CASE_1, 2.0),
+        (MeanMetric, "ignore", _CASE_2, 3.0),
+        (MeanMetric, 2.0, _CASE_2, 2.8),
+        (CatMetric, "ignore", _CASE_1, []),
+        (CatMetric, 2.0, _CASE_1, torch.tensor([2.0, 2.0, 2.0, 2.0, 2.0])),
+        (CatMetric, "ignore", _CASE_2, torch.tensor([1.0, 2.0, 4.0, 5.0])),
+        (CatMetric, 2.0, _CASE_2, torch.tensor([1.0, 2.0, 2.0, 4.0, 5.0])),
         (CatMetric, "ignore", torch.zeros(5), torch.zeros(5)),
     ],
 )
@@ -214,10 +214,11 @@ def test_with_default_dtype(metric_class, compare_function):
     """Test that the metric works with a default dtype of float64."""
     torch.set_default_dtype(torch.float64)
     metric = metric_class()
+    assert metric.dtype == torch.float64
     values = torch.randn(10000)
     metric.update(values)
     result = metric.compute()
     assert result.dtype == torch.float64
     assert result.dtype == values.dtype
-    assert torch.allclose(result, compare_function(values), atol=1e-12)
+    assert result == compare_function(values)
     torch.set_default_dtype(torch.float32)

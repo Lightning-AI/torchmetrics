@@ -22,7 +22,7 @@ class _ErrorRelativeGlobalDimensionlessSynthesis(ErrorRelativeGlobalDimensionles
     >>> target = preds * 0.75
     >>> ergas = _ErrorRelativeGlobalDimensionlessSynthesis()
     >>> torch.round(ergas(preds, target))
-    tensor(154.)
+    tensor(10.)
 
     """
 
@@ -109,7 +109,7 @@ class _RelativeAverageSpectralError(RelativeAverageSpectralError):
     >>> target = torch.rand(4, 3, 16, 16)
     >>> rase = _RelativeAverageSpectralError()
     >>> rase(preds, target)
-    tensor(5114.6641)
+    tensor(5114.66...)
 
     """
 

@@ -24,6 +24,12 @@ if not _TORCHVISION_GREATER_EQUAL_0_8:
 def _iou_update(
     preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float], replacement_val: float = 0
 ) -> torch.Tensor:
+    """Compute the IoU matrix between two sets of boxes."""
+    if preds.ndim != 2 or preds.shape[-1] != 4:
+        raise ValueError(f"Expected preds to be of shape (N, 4) but got {preds.shape}")
+    if target.ndim != 2 or target.shape[-1] != 4:
+        raise ValueError(f"Expected target to be of shape (N, 4) but got {target.shape}")
+
     from torchvision.ops import box_iou
 
     iou = box_iou(preds, target)

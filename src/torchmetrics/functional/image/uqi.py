@@ -17,7 +17,7 @@ import torch
 from torch import Tensor, nn
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.helper import _gaussian_kernel_2d
+from torchmetrics.functional.image.utils import _gaussian_kernel_2d
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 

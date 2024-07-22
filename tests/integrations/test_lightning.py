@@ -19,20 +19,22 @@ from torch import tensor
 from torch.nn import Linear
 
 if module_available("lightning"):
-    from lightning.pytorch import LightningModule, Trainer
+    from lightning.pytorch import LightningModule, Trainer, seed_everything
     from lightning.pytorch.loggers import CSVLogger
 else:
-    from pytorch_lightning import LightningModule, Trainer
+    from pytorch_lightning import LightningModule, Trainer, seed_everything
     from pytorch_lightning.loggers import CSVLogger
 
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import SumMetric
 from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
+from torchmetrics.utilities.prints import rank_zero_only
 from torchmetrics.wrappers import MultitaskWrapper
 
-from integrations.helpers import no_warning_call
 from integrations.lightning.boring_model import BoringModel
+
+seed_everything(42)
 
 
 class DiffMetric(SumMetric):
@@ -240,7 +242,16 @@ def test_metric_lightning_log(tmpdir):
 
     model = TestModel()
 
-    logger = CSVLogger("tmpdir/logs")
+    class CustomCSVLogger(CSVLogger):
+        """Custom CSVLogger that does not call `experiment.save()` to prevent state being reset."""
+
+        @rank_zero_only
+        def save(self) -> None:
+            pass
+
+    logger = CustomCSVLogger("tmpdir/logs")
+    # is_cuda = torch.cuda.is_available()
+    # cuda_extra = {"devices": int(is_cuda)} if is_cuda else {}
     trainer = Trainer(
         default_root_dir=tmpdir,
         limit_train_batches=2,
@@ -248,14 +259,11 @@ def test_metric_lightning_log(tmpdir):
         max_epochs=2,
         log_every_n_steps=1,
         logger=logger,
+        # **cuda_extra,
     )
-    with no_warning_call(
-        UserWarning,
-        match="Torchmetrics v0.9 introduced a new argument class property called.*",
-    ):
-        trainer.fit(model)
+    trainer.fit(model)
 
-    logged_metrics = logger._experiment.metrics
+    logged_metrics = logger.experiment.metrics
 
     epoch_0_step_0 = logged_metrics[0]
     assert "metric_forward" in epoch_0_step_0
@@ -341,6 +349,8 @@ def test_metric_collection_lightning_log(tmpdir):
             self.log_dict({f"{k}_epoch": v for k, v in metric_vals.items()})
 
     model = TestModel()
+    # is_cuda = torch.cuda.is_available()
+    # cuda_extra = {"devices": int(is_cuda)} if is_cuda else {}
 
     trainer = Trainer(
         default_root_dir=tmpdir,
@@ -348,12 +358,9 @@ def test_metric_collection_lightning_log(tmpdir):
         limit_val_batches=0,
         max_epochs=1,
         log_every_n_steps=1,
+        # **cuda_extra,
     )
-    with no_warning_call(
-        UserWarning,
-        match="Torchmetrics v0.9 introduced a new argument class property called.*",
-    ):
-        trainer.fit(model)
+    trainer.fit(model)
 
     logged = trainer.logged_metrics
     assert torch.allclose(tensor(logged["SumMetric_epoch"]), model.sum, atol=2e-4)
@@ -367,12 +374,10 @@ def test_task_wrapper_lightning_logging(tmpdir):
         def __init__(self) -> None:
             super().__init__()
             self.multitask = MultitaskWrapper({"classification": BinaryAccuracy(), "regression": MeanSquaredError()})
-            self.multitask_collection = MultitaskWrapper(
-                {
-                    "classification": MetricCollection([BinaryAccuracy(), BinaryAveragePrecision()]),
-                    "regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
-                }
-            )
+            self.multitask_collection = MultitaskWrapper({
+                "classification": MetricCollection([BinaryAccuracy(), BinaryAveragePrecision()]),
+                "regression": MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
+            })
 
             self.accuracy = BinaryAccuracy()
             self.mse = MeanSquaredError()
@@ -405,11 +410,7 @@ def test_task_wrapper_lightning_logging(tmpdir):
         max_epochs=1,
         log_every_n_steps=1,
     )
-    with no_warning_call(
-        UserWarning,
-        match="Torchmetrics v0.9 introduced a new argument class property called.*",
-    ):
-        trainer.fit(model)
+    trainer.fit(model)
 
     logged = trainer.logged_metrics
     assert torch.allclose(logged["accuracy_step"], logged["classification_step"])

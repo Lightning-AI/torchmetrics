@@ -97,7 +97,7 @@ TorchMetrics is a collection of 100+ PyTorch metrics implementations and an easy
 - Metrics optimized for distributed-training
 - Automatic synchronization between multiple devices
 
-You can use TorchMetrics with any PyTorch model or with [PyTorch Lightning](https://pytorch-lightning.readthedocs.io/en/stable/) to enjoy additional features such as:
+You can use TorchMetrics with any PyTorch model or with [PyTorch Lightning](https://lightning.ai/docs/pytorch/stable/) to enjoy additional features such as:
 
 - Module metrics are automatically placed on the correct device.
 - Native support for logging metrics in Lightning to reduce even more boilerplate.
@@ -288,6 +288,7 @@ covers the following domains:
 - Multimodal (Image-Text)
 - Nominal
 - Regression
+- Segmentation
 - Text
 
 Each domain may require some additional dependencies which can be installed with `pip install torchmetrics[audio]`,
@@ -334,7 +335,7 @@ fig3, ax3 = acc.plot(values)
   <img src="docs/source/_static/images/plot_example.png" width="1000">
 </p>
 
-For examples of plotting different metrics try running [this example file](examples/plotting.py).
+For examples of plotting different metrics try running [this example file](_samples/plotting.py).
 
 ## Contribute!
 
@@ -342,11 +343,11 @@ The lightning + TorchMetrics team is hard at work adding even more metrics.
 But we're looking for incredible contributors like you to submit new metrics
 and improve existing ones!
 
-Join our [Slack](https://www.pytorchlightning.ai/community) to get help with becoming a contributor!
+Join our [Discord](https://discord.com/invite/tfXFetEZxv) to get help with becoming a contributor!
 
 ## Community
 
-For help or questions, join our huge community on [Slack](https://www.pytorchlightning.ai/community)!
+For help or questions, join our huge community on [Discord](https://discord.com/invite/tfXFetEZxv)!
 
 ## Citation
 

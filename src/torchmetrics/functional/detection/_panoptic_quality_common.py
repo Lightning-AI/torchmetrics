@@ -148,9 +148,9 @@ def _get_category_id_to_continuous_id(things: Set[int], stuffs: Set[int]) -> Dic
 
     """
     # things metrics are stored with a continuous id in [0, len(things)[,
-    thing_id_to_continuous_id = {thing_id: idx for idx, thing_id in enumerate(things)}
+    thing_id_to_continuous_id = {thing_id: idx for idx, thing_id in enumerate(sorted(things))}
     # stuff metrics are stored with a continuous id in [len(things), len(things) + len(stuffs)[
-    stuff_id_to_continuous_id = {stuff_id: idx + len(things) for idx, stuff_id in enumerate(stuffs)}
+    stuff_id_to_continuous_id = {stuff_id: idx + len(things) for idx, stuff_id in enumerate(sorted(stuffs))}
     cat_id_to_continuous_id = {}
     cat_id_to_continuous_id.update(thing_id_to_continuous_id)
     cat_id_to_continuous_id.update(stuff_id_to_continuous_id)
@@ -205,7 +205,7 @@ def _prepocess_inputs(
     mask_stuffs_instance = torch.stack([torch.zeros_like(mask_stuffs), mask_stuffs], dim=-1)
     out[mask_stuffs_instance] = 0
     if not allow_unknown_category and not torch.all(mask_things | mask_stuffs):
-        raise ValueError(f"Unknown categories found: {out[~(mask_things|mask_stuffs)]}")
+        raise ValueError(f"Unknown categories found: {out[~(mask_things | mask_stuffs)]}")
     # set unknown categories to void color
     out[~(mask_things | mask_stuffs)] = out.new(void_color)
     return out
@@ -449,7 +449,7 @@ def _panoptic_quality_compute(
     true_positives: Tensor,
     false_positives: Tensor,
     false_negatives: Tensor,
-) -> Tensor:
+) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Compute the final panoptic quality from interim values.
 
     Args:
@@ -459,11 +459,17 @@ def _panoptic_quality_compute(
         false_negatives: the FN value from the update step
 
     Returns:
-        Panoptic quality as a tensor containing a single scalar.
+        A tuple containing the per-class panoptic, segmentation and recognition quality followed by the averages
 
     """
-    # per category calculation
-    denominator = (true_positives + 0.5 * false_positives + 0.5 * false_negatives).double()
-    panoptic_quality = torch.where(denominator > 0.0, iou_sum / denominator, 0.0)
-    # Reduce across categories. TODO: is it useful to have the option of returning per class metrics?
-    return torch.mean(panoptic_quality[denominator > 0])
+    # compute segmentation and recognition quality (per-class)
+    sq: Tensor = torch.where(true_positives > 0.0, iou_sum / true_positives, 0.0)
+    denominator: Tensor = true_positives + 0.5 * false_positives + 0.5 * false_negatives
+    rq: Tensor = torch.where(denominator > 0.0, true_positives / denominator, 0.0)
+    # compute per-class panoptic quality
+    pq: Tensor = sq * rq
+    # compute averages
+    pq_avg: Tensor = torch.mean(pq[denominator > 0])
+    sq_avg: Tensor = torch.mean(sq[denominator > 0])
+    rq_avg: Tensor = torch.mean(rq[denominator > 0])
+    return pq, sq, rq, pq_avg, sq_avg, rq_avg

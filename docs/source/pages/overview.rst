@@ -96,7 +96,7 @@ be moved to the same device as the input of the metric:
     print(out.device) # cuda:0
 
 However, when **properly defined** inside a :class:`~torch.nn.Module` or
-`LightningModule <https://pytorch-lightning.readthedocs.io/en/stable/common/lightning_module.html>`_ the metric will
+`LightningModule <https://lightning.ai/docs/pytorch/stable/common/lightning_module.html>`_ the metric will
 be automatically moved to the same device as the module when using ``.to(device)``.  Being
 **properly defined** means that the metric is correctly identified as a child module of the
 model (check ``.children()`` attribute of the model). Therefore, metrics cannot be placed
@@ -453,7 +453,7 @@ of metrics e.g. computation of confidence intervals by resampling of input data.
 .. testoutput::
     :options: +NORMALIZE_WHITESPACE
 
-    {'mean': tensor(0.1476), 'std': tensor(0.0613)}
+    {'mean': tensor(0.1333), 'std': tensor(0.1554)}
 
 You can see all implemented wrappers under the wrapper section of the API docs.
 

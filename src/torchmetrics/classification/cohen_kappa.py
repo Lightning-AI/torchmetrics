@@ -55,7 +55,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``bck`` (:class:`~torch.Tensor`): A tensor containing cohen kappa score
+    - ``bc_kappa`` (:class:`~torch.Tensor`): A tensor containing cohen kappa score
 
     Args:
         threshold: Threshold for transforming probability to binary (0,1) predictions
@@ -89,6 +89,7 @@ class BinaryCohenKappa(BinaryConfusionMatrix):
         tensor(0.5000)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -216,6 +217,7 @@ class MulticlassCohenKappa(MulticlassConfusionMatrix):
         tensor(0.6364)
 
     """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False

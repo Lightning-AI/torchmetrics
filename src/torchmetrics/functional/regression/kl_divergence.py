@@ -93,11 +93,11 @@ def kl_divergence(
     is a non-symmetrical metric i.e. :math:`D_{KL}(P||Q) \neq D_{KL}(Q||P)`.
 
     .. warning::
-        The input order and naming in metric `kl_divergence` is set to be deprecated in v1.4 and changed in v1.5.
-        Input argument `p` will be renamed to `target` and will be moved to be the second argument of the metric.
-        Input argument `q` will be renamed to `preds` and will be moved to the first argument of the metric.
-        Thus, `kl_divergence(p, q)` will equal `kl_divergence(target=q, preds=p)` in the future to be consistent
-        with the rest of torchmetrics. From v1.4 the two new arguments will be added as keyword arguments and
+        The input order and naming in metric ``kl_divergence`` is set to be deprecated in v1.4 and changed in v1.5.
+        Input argument ``p`` will be renamed to ``target`` and will be moved to be the second argument of the metric.
+        Input argument ``q`` will be renamed to ``preds`` and will be moved to the first argument of the metric.
+        Thus, ``kl_divergence(p, q)`` will equal ``kl_divergence(target=q, preds=p)`` in the future to be consistent
+        with the rest of ``torchmetrics``. From v1.4 the two new arguments will be added as keyword arguments and
         from v1.5 the two old arguments will be removed.
 
     Args:

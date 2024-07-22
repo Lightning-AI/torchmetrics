@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from functools import partial
 
 import numpy as np
@@ -34,14 +35,14 @@ from torchmetrics.functional.classification.precision_recall_curve import binary
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
 
 seed_all(42)
 
 
-def _sklearn_avg_precision_binary(preds, target, ignore_index=None):
+def _reference_sklearn_avg_precision_binary(preds, target, ignore_index=None):
     preds = preds.flatten().numpy()
     target = target.flatten().numpy()
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
@@ -66,7 +67,7 @@ class TestBinaryAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_class=BinaryAveragePrecision,
-            reference_metric=partial(_sklearn_avg_precision_binary, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_avg_precision_binary, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
@@ -83,7 +84,7 @@ class TestBinaryAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_functional=binary_average_precision,
-            reference_metric=partial(_sklearn_avg_precision_binary, ignore_index=ignore_index),
+            reference_metric=partial(_reference_sklearn_avg_precision_binary, ignore_index=ignore_index),
             metric_args={
                 "thresholds": None,
                 "ignore_index": ignore_index,
@@ -142,7 +143,15 @@ class TestBinaryAveragePrecision(MetricTester):
             assert torch.allclose(ap1, ap2)
 
 
-def _sklearn_avg_precision_multiclass(preds, target, average="macro", ignore_index=None):
+def test_warning_on_no_positives():
+    """Test that a warning is raised when there are no positive samples in the target."""
+    preds = torch.rand(100)
+    target = torch.zeros(100).long()
+    with pytest.warns(UserWarning, match="No positive samples found in target, recall is undefined. Setting recall.*"):
+        binary_average_precision(preds, target)
+
+
+def _reference_sklearn_avg_precision_multiclass(preds, target, average="macro", ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
@@ -182,7 +191,9 @@ class TestMulticlassAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_class=MulticlassAveragePrecision,
-            reference_metric=partial(_sklearn_avg_precision_multiclass, average=average, ignore_index=ignore_index),
+            reference_metric=partial(
+                _reference_sklearn_avg_precision_multiclass, average=average, ignore_index=ignore_index
+            ),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -202,7 +213,9 @@ class TestMulticlassAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multiclass_average_precision,
-            reference_metric=partial(_sklearn_avg_precision_multiclass, average=average, ignore_index=ignore_index),
+            reference_metric=partial(
+                _reference_sklearn_avg_precision_multiclass, average=average, ignore_index=ignore_index
+            ),
             metric_args={
                 "thresholds": None,
                 "num_classes": NUM_CLASSES,
@@ -266,10 +279,10 @@ class TestMulticlassAveragePrecision(MetricTester):
             assert torch.allclose(ap1, ap2)
 
 
-def _sklearn_avg_precision_multilabel(preds, target, average="macro", ignore_index=None):
+def _reference_sklearn_avg_precision_multilabel(preds, target, average="macro", ignore_index=None):
     if average == "micro":
-        return _sklearn_avg_precision_binary(preds.flatten(), target.flatten(), ignore_index)
-    res = [_sklearn_avg_precision_binary(preds[:, i], target[:, i], ignore_index) for i in range(NUM_CLASSES)]
+        return _reference_sklearn_avg_precision_binary(preds.flatten(), target.flatten(), ignore_index)
+    res = [_reference_sklearn_avg_precision_binary(preds[:, i], target[:, i], ignore_index) for i in range(NUM_CLASSES)]
     if average == "macro":
         return np.array(res)[~np.isnan(res)].mean()
     if average == "weighted":
@@ -298,7 +311,9 @@ class TestMultilabelAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_class=MultilabelAveragePrecision,
-            reference_metric=partial(_sklearn_avg_precision_multilabel, average=average, ignore_index=ignore_index),
+            reference_metric=partial(
+                _reference_sklearn_avg_precision_multilabel, average=average, ignore_index=ignore_index
+            ),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
@@ -318,7 +333,9 @@ class TestMultilabelAveragePrecision(MetricTester):
             preds=preds,
             target=target,
             metric_functional=multilabel_average_precision,
-            reference_metric=partial(_sklearn_avg_precision_multilabel, average=average, ignore_index=ignore_index),
+            reference_metric=partial(
+                _reference_sklearn_avg_precision_multilabel, average=average, ignore_index=ignore_index
+            ),
             metric_args={
                 "thresholds": None,
                 "num_labels": NUM_CLASSES,
@@ -391,11 +408,10 @@ class TestMultilabelAveragePrecision(MetricTester):
     ],
 )
 @pytest.mark.parametrize("thresholds", [None, 100, [0.3, 0.5, 0.7, 0.9], torch.linspace(0, 1, 10)])
-def test_valid_input_thresholds(metric, thresholds):
+def test_valid_input_thresholds(recwarn, metric, thresholds):
     """Test valid formats of the threshold argument."""
-    with pytest.warns(None) as record:
-        metric(thresholds=thresholds)
-    assert len(record) == 0
+    metric(thresholds=thresholds)
+    assert len(recwarn) == 0, "Warning was raised when it should not have been."
 
 
 @pytest.mark.parametrize(

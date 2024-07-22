@@ -20,8 +20,8 @@ from torchmetrics.functional.text.perplexity import perplexity
 from torchmetrics.text.perplexity import Perplexity
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_2
 
-from unittests.helpers.testers import MetricTester
-from unittests.text.inputs import (
+from unittests._helpers.testers import MetricTester
+from unittests.text._inputs import (
     MASK_INDEX,
     _logits_inputs_fp32,
     _logits_inputs_fp32_with_mask,
@@ -30,7 +30,7 @@ from unittests.text.inputs import (
 )
 
 
-def _baseline_perplexity(preds, target, ignore_index):
+def _reference_local_perplexity(preds, target, ignore_index):
     """Baseline implementation of perplexity metric based upon PyTorch Cross Entropy."""
     preds = preds.reshape(-1, preds.shape[-1])
     target = target.reshape(-1)
@@ -58,7 +58,7 @@ class TestPerplexity(MetricTester):
             preds=preds,
             target=target,
             metric_class=Perplexity,
-            reference_metric=partial(_baseline_perplexity, ignore_index=ignore_index),
+            reference_metric=partial(_reference_local_perplexity, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )
 
@@ -68,7 +68,7 @@ class TestPerplexity(MetricTester):
             preds,
             target,
             metric_functional=perplexity,
-            reference_metric=partial(_baseline_perplexity, ignore_index=ignore_index),
+            reference_metric=partial(_reference_local_perplexity, ignore_index=ignore_index),
             metric_args={"ignore_index": ignore_index},
         )
 

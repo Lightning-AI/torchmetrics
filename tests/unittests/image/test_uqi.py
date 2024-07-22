@@ -22,8 +22,8 @@ from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.uqi import UniversalImageQualityIndex
 
 from unittests import BATCH_SIZE, NUM_BATCHES
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester
 
 seed_all(42)
 
@@ -55,7 +55,7 @@ for size, channel, coef, multichannel, dtype in [
     )
 
 
-def _skimage_uqi(preds, target, multichannel, kernel_size):
+def _reference_skimage_uqi(preds, target, multichannel, kernel_size):
     c, h, w = preds.shape[-3:]
     sk_preds = preds.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
     sk_target = target.view(-1, c, h, w).permute(0, 2, 3, 1).numpy()
@@ -93,8 +93,8 @@ class TestUQI(MetricTester):
             ddp,
             preds,
             target,
-            UniversalImageQualityIndex,
-            partial(_skimage_uqi, multichannel=multichannel, kernel_size=kernel_size),
+            metric_class=UniversalImageQualityIndex,
+            reference_metric=partial(_reference_skimage_uqi, multichannel=multichannel, kernel_size=kernel_size),
             metric_args={"kernel_size": (kernel_size, kernel_size)},
         )
 
@@ -103,8 +103,8 @@ class TestUQI(MetricTester):
         self.run_functional_metric_test(
             preds,
             target,
-            universal_image_quality_index,
-            partial(_skimage_uqi, multichannel=multichannel, kernel_size=kernel_size),
+            metric_functional=universal_image_quality_index,
+            reference_metric=partial(_reference_skimage_uqi, multichannel=multichannel, kernel_size=kernel_size),
             metric_args={"kernel_size": (kernel_size, kernel_size)},
         )
 
@@ -174,36 +174,32 @@ def test_uqi_different_dtype():
 
 def test_uqi_unequal_kernel_size():
     """Test the case where kernel_size[0] != kernel_size[1]."""
-    preds = torch.tensor(
+    preds = torch.tensor([
         [
             [
-                [
-                    [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
-                    [1.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0],
-                    [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-                    [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
-                    [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0],
-                    [0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0],
-                    [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
-                ]
+                [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
+                [1.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+                [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0],
+                [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
             ]
         ]
-    )
-    target = torch.tensor(
+    ])
+    target = torch.tensor([
         [
             [
-                [
-                    [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
-                    [0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0],
-                    [1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0],
-                    [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0],
-                    [1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0],
-                    [0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0],
-                    [0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0],
-                ]
+                [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
+                [0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0],
+                [1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0],
+                [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0],
+                [1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0],
+                [0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0],
             ]
         ]
-    )
+    ])
     # kernel order matters
     torch.allclose(universal_image_quality_index(preds, target, kernel_size=(3, 5)), torch.tensor(0.10662283))
     torch.allclose(universal_image_quality_index(preds, target, kernel_size=(5, 3)), torch.tensor(0.10662283))

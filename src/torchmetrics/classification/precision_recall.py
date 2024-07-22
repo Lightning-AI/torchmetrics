@@ -18,7 +18,9 @@ from typing_extensions import Literal
 
 from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
-from torchmetrics.functional.classification.precision_recall import _precision_recall_reduce
+from torchmetrics.functional.classification.precision_recall import (
+    _precision_recall_reduce,
+)
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
@@ -42,7 +44,7 @@ class BinaryPrecision(BinaryStatScores):
 
     Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and false positives
     respectively. The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0`. If this case is
-    encountered a score of 0 is returned.
+    encountered a score of `zero_division` (0 or 1, default is 0) is returned.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -73,6 +75,7 @@ class BinaryPrecision(BinaryStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -101,6 +104,7 @@ class BinaryPrecision(BinaryStatScores):
         tensor([0.4000, 0.0000])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -111,7 +115,14 @@ class BinaryPrecision(BinaryStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
-            "precision", tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average
+            "precision",
+            tp,
+            fp,
+            tn,
+            fn,
+            average="binary",
+            multidim_average=self.multidim_average,
+            zero_division=self.zero_division,
         )
 
     def plot(
@@ -164,8 +175,8 @@ class MulticlassPrecision(MulticlassStatScores):
 
     Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and false positives
     respectively. The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0`. If this case is
-    encountered for any class, the metric for that class will be set to 0 and the overall metric may therefore be
-    affected in turn.
+    encountered for any class, the metric for that class will be set to `zero_division` (0 or 1, default is 0) and
+    the overall metric may therefore be affected in turn.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -216,6 +227,7 @@ class MulticlassPrecision(MulticlassStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -256,6 +268,7 @@ class MulticlassPrecision(MulticlassStatScores):
                 [0.0000, 0.5000, 0.3333]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -267,7 +280,15 @@ class MulticlassPrecision(MulticlassStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
-            "precision", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
+            "precision",
+            tp,
+            fp,
+            tn,
+            fn,
+            average=self.average,
+            multidim_average=self.multidim_average,
+            top_k=self.top_k,
+            zero_division=self.zero_division,
         )
 
     def plot(
@@ -320,8 +341,8 @@ class MultilabelPrecision(MultilabelStatScores):
 
     Where :math:`\text{TP}` and :math:`\text{FP}` represent the number of true positives and false positives
     respectively. The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0`. If this case is
-    encountered for any label, the metric for that label will be set to 0 and the overall metric may therefore be
-    affected in turn.
+    encountered for any label, the metric for that label will be set to `zero_division` (0 or 1, default is 0) and
+    the overall metric may therefore be affected in turn.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -371,6 +392,7 @@ class MultilabelPrecision(MultilabelStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -409,6 +431,7 @@ class MultilabelPrecision(MultilabelStatScores):
                 [0.0000, 0.0000, 0.0000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -420,7 +443,15 @@ class MultilabelPrecision(MultilabelStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
-            "precision", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
+            "precision",
+            tp,
+            fp,
+            tn,
+            fn,
+            average=self.average,
+            multidim_average=self.multidim_average,
+            multilabel=True,
+            zero_division=self.zero_division,
         )
 
     def plot(
@@ -473,7 +504,7 @@ class BinaryRecall(BinaryStatScores):
 
     Where :math:`\text{TP}` and :math:`\text{FN}` represent the number of true positives and false negatives
     respectively. The metric is only proper defined when :math:`\text{TP} + \text{FN} \neq 0`. If this case is
-    encountered a score of 0 is returned.
+    encountered a score of `zero_division` (0 or 1, default is 0) is returned.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -504,6 +535,7 @@ class BinaryRecall(BinaryStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FN} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -532,6 +564,7 @@ class BinaryRecall(BinaryStatScores):
         tensor([0.6667, 0.0000])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -542,7 +575,14 @@ class BinaryRecall(BinaryStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
-            "recall", tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average
+            "recall",
+            tp,
+            fp,
+            tn,
+            fn,
+            average="binary",
+            multidim_average=self.multidim_average,
+            zero_division=self.zero_division,
         )
 
     def plot(
@@ -595,8 +635,8 @@ class MulticlassRecall(MulticlassStatScores):
 
     Where :math:`\text{TP}` and :math:`\text{FN}` represent the number of true positives and false negatives
     respectively. The metric is only proper defined when :math:`\text{TP} + \text{FN} \neq 0`. If this case is
-    encountered for any class, the metric for that class will be set to 0 and the overall metric may therefore be
-    affected in turn.
+    encountered for any class, the metric for that class will be set to `zero_division` (0 or 1, default is 0) and
+    the overall metric may therefore be affected in turn.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -646,6 +686,7 @@ class MulticlassRecall(MulticlassStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FN} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -686,6 +727,7 @@ class MulticlassRecall(MulticlassStatScores):
                 [0.0000, 0.3333, 0.5000]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -697,7 +739,15 @@ class MulticlassRecall(MulticlassStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
-            "recall", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average
+            "recall",
+            tp,
+            fp,
+            tn,
+            fn,
+            average=self.average,
+            multidim_average=self.multidim_average,
+            top_k=self.top_k,
+            zero_division=self.zero_division,
         )
 
     def plot(
@@ -750,8 +800,8 @@ class MultilabelRecall(MultilabelStatScores):
 
     Where :math:`\text{TP}` and :math:`\text{FN}` represent the number of true positives and false negatives
     respectively. The metric is only proper defined when :math:`\text{TP} + \text{FN} \neq 0`. If this case is
-    encountered for any label, the metric for that label will be set to 0 and the overall metric may therefore be
-    affected in turn.
+    encountered for any label, the metric for that label will be set to `zero_division` (0 or 1, default is 0) and
+    the overall metric may therefore be affected in turn.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -800,6 +850,7 @@ class MultilabelRecall(MultilabelStatScores):
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FN} = 0`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -838,6 +889,7 @@ class MultilabelRecall(MultilabelStatScores):
                 [0., 0., 0.]])
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
@@ -849,7 +901,15 @@ class MultilabelRecall(MultilabelStatScores):
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
         return _precision_recall_reduce(
-            "recall", tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
+            "recall",
+            tp,
+            fp,
+            tn,
+            fn,
+            average=self.average,
+            multidim_average=self.multidim_average,
+            multilabel=True,
+            zero_division=self.zero_division,
         )
 
     def plot(
@@ -924,7 +984,7 @@ class Precision(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls: Type["Precision"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
@@ -939,9 +999,11 @@ class Precision(_ClassificationTaskWrapper):
     ) -> Metric:
         """Initialize task metric."""
         assert multidim_average is not None  # noqa: S101  # needed for mypy
-        kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
-        )
+        kwargs.update({
+            "multidim_average": multidim_average,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+        })
         task = ClassificationTask.from_str(task)
         if task == ClassificationTask.BINARY:
             return BinaryPrecision(threshold, **kwargs)
@@ -987,7 +1049,7 @@ class Recall(_ClassificationTaskWrapper):
 
     """
 
-    def __new__(
+    def __new__(  # type: ignore[misc]
         cls: Type["Recall"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
@@ -1003,9 +1065,11 @@ class Recall(_ClassificationTaskWrapper):
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
         assert multidim_average is not None  # noqa: S101  # needed for mypy
-        kwargs.update(
-            {"multidim_average": multidim_average, "ignore_index": ignore_index, "validate_args": validate_args}
-        )
+        kwargs.update({
+            "multidim_average": multidim_average,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+        })
         if task == ClassificationTask.BINARY:
             return BinaryRecall(threshold, **kwargs)
         if task == ClassificationTask.MULTICLASS:
@@ -1018,4 +1082,4 @@ class Recall(_ClassificationTaskWrapper):
             if not isinstance(num_labels, int):
                 raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
             return MultilabelRecall(num_labels, threshold, average, **kwargs)
-        return None
+        return None  # type: ignore[return-value]

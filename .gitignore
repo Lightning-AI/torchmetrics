@@ -40,9 +40,8 @@ pip-delete-this-directory.txt
 # Unit test / coverage reports
 tests/_data/
 data.zip
+tests/_cache-references/
 htmlcov/
-.tox/
-.nox/
 .coverage
 .coverage.*
 .cache
@@ -61,6 +60,7 @@ coverage.xml
 docs/_build/
 docs/source/api/
 docs/source/generated/
+docs/source/gallery/
 docs/source/*.md
 docs/source/_static/fetched-s3-assets
 

@@ -48,11 +48,11 @@ class KLDivergence(Metric):
     - ``kl_divergence`` (:class:`~torch.Tensor`): A tensor with the KL divergence
 
     .. warning::
-        The input order and naming in metric `KLDivergence` is set to be deprecated in v1.4 and changed in v1.5.
-        Input argument `p` will be renamed to `target` and will be moved to be the second argument of the metric.
-        Input argument `q` will be renamed to `preds` and will be moved to the first argument of the metric.
-        Thus, `KLDivergence(p, q)` will equal `KLDivergence(target=q, preds=p)` in the future to be consistent
-        with the rest of torchmetrics. From v1.4 the two new arguments will be added as keyword arguments and
+        The input order and naming in metric ``KLDivergence`` is set to be deprecated in v1.4 and changed in v1.5.
+        Input argument ``p`` will be renamed to ``target`` and will be moved to be the second argument of the metric.
+        Input argument ``q`` will be renamed to ``preds`` and will be moved to the first argument of the metric.
+        Thus, ``KLDivergence(p, q)`` will equal ``KLDivergence(target=q, preds=p)`` in the future to be consistent
+        with the rest of ``torchmetrics``. From v1.4 the two new arguments will be added as keyword arguments and
         from v1.5 the two old arguments will be removed.
 
     Args:
@@ -86,6 +86,7 @@ class KLDivergence(Metric):
         tensor(0.0853)
 
     """
+
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False

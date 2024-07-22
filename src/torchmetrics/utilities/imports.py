@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Import utilities."""
+
 import shutil
 import sys
 
 from lightning_utilities.core.imports import RequirementCache
-from packaging.version import Version, parse
 
 _PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-_PYTHON_LOWER_3_8 = parse(_PYTHON_VERSION) < Version("3.8")
 _TORCH_LOWER_2_0 = RequirementCache("torch<2.0.0")
 _TORCH_GREATER_EQUAL_1_11 = RequirementCache("torch>=1.11.0")
 _TORCH_GREATER_EQUAL_1_12 = RequirementCache("torch>=1.12.0")
@@ -28,7 +27,6 @@ _TORCH_GREATER_EQUAL_2_0 = RequirementCache("torch>=2.0.0")
 _TORCH_GREATER_EQUAL_2_1 = RequirementCache("torch>=2.1.0")
 _TORCH_GREATER_EQUAL_2_2 = RequirementCache("torch>=2.2.0")
 
-_JIWER_AVAILABLE = RequirementCache("jiwer")
 _NLTK_AVAILABLE = RequirementCache("nltk")
 _ROUGE_SCORE_AVAILABLE = RequirementCache("rouge_score")
 _BERTSCORE_AVAILABLE = RequirementCache("bert_score")
@@ -48,9 +46,11 @@ _PESQ_AVAILABLE = RequirementCache("pesq")
 _GAMMATONE_AVAILABLE = RequirementCache("gammatone")
 _TORCHAUDIO_AVAILABLE = RequirementCache("torchaudio")
 _TORCHAUDIO_GREATER_EQUAL_0_10 = RequirementCache("torchaudio>=0.10.0")
-_SACREBLEU_AVAILABLE = RequirementCache("sacrebleu")
 _REGEX_AVAILABLE = RequirementCache("regex")
 _PYSTOI_AVAILABLE = RequirementCache("pystoi")
+_REQUESTS_AVAILABLE = RequirementCache("requests")
+_LIBROSA_AVAILABLE = RequirementCache("librosa")
+_ONNXRUNTIME_AVAILABLE = RequirementCache("onnxruntime")
 _FAST_BSS_EVAL_AVAILABLE = RequirementCache("fast_bss_eval")
 _MATPLOTLIB_AVAILABLE = RequirementCache("matplotlib")
 _SCIENCEPLOT_AVAILABLE = RequirementCache("scienceplots")
@@ -63,5 +63,6 @@ _MECAB_KO_AVAILABLE = RequirementCache("mecab_ko")
 _MECAB_KO_DIC_AVAILABLE = RequirementCache("mecab_ko_dic")
 _IPADIC_AVAILABLE = RequirementCache("ipadic")
 _SENTENCEPIECE_AVAILABLE = RequirementCache("sentencepiece")
+_SKLEARN_GREATER_EQUAL_1_3 = RequirementCache("scikit-learn>=1.3.0")
 
 _LATEX_AVAILABLE: bool = shutil.which("latex") is not None

@@ -53,7 +53,7 @@ def _error_relative_global_dimensionless_synthesis(
     >>> target = preds * 0.75
     >>> ergds = _error_relative_global_dimensionless_synthesis(preds, target)
     >>> torch.round(ergds)
-    tensor(154.)
+    tensor(10.)
 
     """
     _deprecated_root_import_func("error_relative_global_dimensionless_synthesis", "image")
@@ -110,7 +110,7 @@ def _relative_average_spectral_error(preds: Tensor, target: Tensor, window_size:
     >>> preds = torch.rand(4, 3, 16, 16, generator=gen)
     >>> target = torch.rand(4, 3, 16, 16, generator=gen)
     >>> _relative_average_spectral_error(preds, target)
-    tensor(5114.6641)
+    tensor(5114.66...)
 
     """
     _deprecated_root_import_func("relative_average_spectral_error", "image")

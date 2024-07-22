@@ -27,9 +27,8 @@ from torch.nn import Module, Parameter
 from torchmetrics.classification import BinaryAccuracy
 from torchmetrics.regression import PearsonCorrCoef
 
-from unittests.helpers import seed_all
-from unittests.helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
-from unittests.helpers.utilities import no_warning_call
+from unittests._helpers import seed_all
+from unittests._helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
 
 seed_all(42)
 
@@ -125,10 +124,16 @@ def test_reset():
     metric = B()
     assert isinstance(metric.x, list)
     assert len(metric.x) == 0
-    metric.x = tensor(5)
+    metric.x = [tensor(5)]
     metric.reset()
     assert isinstance(metric.x, list)
     assert len(metric.x) == 0
+
+    metric = B()
+    metric.x = [1, 2, 3]
+    reference = metric.x  # prevents garbage collection
+    metric.reset()
+    assert len(reference) == 0  # check list state is freed
 
 
 def test_reset_compute():
@@ -332,14 +337,15 @@ def test_disable_of_normal_dtype_methods():
     assert metric.x.dtype == torch.float32
 
 
-def test_warning_on_compute_before_update():
+def test_warning_on_compute_before_update(recwarn):
     """Test that an warning is raised if user tries to call compute before update."""
     metric = DummyMetricSum()
 
     # make sure everything is fine with forward
-    with pytest.warns(None) as record:
-        val = metric(1)
-    assert not record
+    wcount = len(recwarn)
+    _ = metric(1)
+    # Check that no new warning was raised
+    assert len(recwarn) == wcount
 
     metric.reset()
 
@@ -349,10 +355,11 @@ def test_warning_on_compute_before_update():
 
     # after update things should be fine
     metric.update(2.0)
-    with pytest.warns(None) as record:
-        val = metric.compute()
-    assert not record
+    wcount = len(recwarn)
+    val = metric.compute()
     assert val == 2.0
+    # Check that no new warning was raised
+    assert len(recwarn) == wcount
 
 
 @pytest.mark.parametrize("metric_class", [DummyMetric, DummyMetricSum, DummyMetricMultiOutput, DummyListMetric])
@@ -473,16 +480,32 @@ def test_constant_memory_on_repeat_init():
     def mem():
         return torch.cuda.memory_allocated() / 1024**2
 
-    x = torch.randn(10000).cuda()
-
     for i in range(100):
-        m = DummyListMetric(compute_with_cache=False).cuda()
-        m(x)
+        _ = DummyListMetric(compute_with_cache=False).cuda()
         if i == 0:
             after_one_iter = mem()
 
         # allow for 5% flucturation due to measuring
         assert after_one_iter * 1.05 >= mem(), "memory increased too much above base level"
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU.")
+def test_freed_memory_on_reset():
+    """Test that resetting a metric frees all the memory allocated when updating it."""
+
+    def mem():
+        return torch.cuda.memory_allocated() / 1024**2
+
+    m = DummyListMetric().cuda()
+    after_init = mem()
+
+    for _ in range(100):
+        m(x=torch.randn(10000).cuda())
+
+    m.reset()
+
+    # allow for 5% flucturation due to measuring
+    assert after_init * 1.05 >= mem(), "memory increased too much above base level"
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires gpu")
@@ -498,7 +521,7 @@ def test_specific_error_on_wrong_device():
 
 
 @pytest.mark.parametrize("metric_class", [DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum])
-def test_no_warning_on_custom_forward(metric_class):
+def test_no_warning_on_custom_forward(recwarn, metric_class):
     """If metric is using custom forward, full_state_update is irrelevant."""
 
     class UnsetProperty(metric_class):
@@ -507,11 +530,8 @@ def test_no_warning_on_custom_forward(metric_class):
         def forward(self, *args: Any, **kwargs: Any):
             self.update(*args, **kwargs)
 
-    with no_warning_call(
-        UserWarning,
-        match="Torchmetrics v0.9 introduced a new argument class property called.*",
-    ):
-        UnsetProperty()
+    UnsetProperty()
+    assert len(recwarn) == 0, "Warning was raised when it should not have been."
 
 
 def test_custom_availability_check_and_sync_fn():
@@ -573,3 +593,19 @@ def test_update_properties(metric, method):
     m.reset()
     assert not m.update_called
     assert m.update_count == 0
+
+
+def test_dtype_property():
+    """Test that dtype property works as expected."""
+    metric = DummyMetricSum()
+    assert metric.dtype == torch.float32
+    metric.set_dtype(torch.float64)
+    assert metric.dtype == torch.float64
+
+    torch.set_default_dtype(torch.float64)
+    metric = DummyMetricSum()
+    assert metric.dtype == torch.float64
+    torch.set_default_dtype(torch.float32)
+    assert metric.dtype == torch.float64  # should not change after initialization
+    metric.set_dtype(torch.float32)
+    assert metric.dtype == torch.float32

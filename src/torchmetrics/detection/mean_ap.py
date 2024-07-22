@@ -329,6 +329,7 @@ class MeanAveragePrecision(Metric):
          'mar_small': tensor(0.2000)}
 
     """
+
     is_differentiable: bool = False
     higher_is_better: Optional[bool] = True
     full_state_update: bool = True
@@ -417,8 +418,8 @@ class MeanAveragePrecision(Metric):
                 "When providing a list of max detection thresholds it should have length 3."
                 " Got value {len(max_detection_thresholds)}"
             )
-        max_det_thr, _ = torch.sort(torch.tensor(max_detection_thresholds or [1, 10, 100], dtype=torch.int))
-        self.max_detection_thresholds = max_det_thr.tolist()
+        max_det_threshold, _ = torch.sort(torch.tensor(max_detection_thresholds or [1, 10, 100], dtype=torch.int))
+        self.max_detection_thresholds = max_det_threshold.tolist()
 
         if not isinstance(class_metrics, bool):
             raise ValueError("Expected argument `class_metrics` to be a boolean")
@@ -488,14 +489,14 @@ class MeanAveragePrecision(Metric):
                 If any score is not type float and of length 1
 
         """
-        _input_validator(preds, target, iou_type=self.iou_type)
+        _input_validator(preds, target, iou_type=self.iou_type)  # type: ignore[arg-type]
 
         for item in preds:
             bbox_detection, mask_detection = self._get_safe_item_values(item, warn=self.warn_on_many_detections)
             if bbox_detection is not None:
                 self.detection_box.append(bbox_detection)
             if mask_detection is not None:
-                self.detection_mask.append(mask_detection)
+                self.detection_mask.append(mask_detection)  # type: ignore[arg-type]
             self.detection_labels.append(item["labels"])
             self.detection_scores.append(item["scores"])
 
@@ -504,7 +505,7 @@ class MeanAveragePrecision(Metric):
             if bbox_groundtruth is not None:
                 self.groundtruth_box.append(bbox_groundtruth)
             if mask_groundtruth is not None:
-                self.groundtruth_mask.append(mask_groundtruth)
+                self.groundtruth_mask.append(mask_groundtruth)  # type: ignore[arg-type]
             self.groundtruth_labels.append(item["labels"])
             self.groundtruth_crowds.append(item.get("iscrowd", torch.zeros_like(item["labels"])))
             self.groundtruth_area.append(item.get("area", torch.zeros_like(item["labels"])))
@@ -523,7 +524,7 @@ class MeanAveragePrecision(Metric):
                     for anno in coco_preds.dataset["annotations"]:
                         anno["area"] = anno[f"area_{i_type}"]
 
-                coco_eval = self.cocoeval(coco_target, coco_preds, iouType=i_type)
+                coco_eval = self.cocoeval(coco_target, coco_preds, iouType=i_type)  # type: ignore[operator]
                 coco_eval.params.iouThrs = np.array(self.iou_thresholds, dtype=np.float64)
                 coco_eval.params.recThrs = np.array(self.rec_thresholds, dtype=np.float64)
                 coco_eval.params.maxDets = self.max_detection_thresholds
@@ -552,7 +553,7 @@ class MeanAveragePrecision(Metric):
                         # since micro averaging have all the data in one class, we need to reinitialize the coco_eval
                         # object in macro mode to get the per class stats
                         coco_preds, coco_target = self._get_coco_datasets(average="macro")
-                        coco_eval = self.cocoeval(coco_target, coco_preds, iouType=i_type)
+                        coco_eval = self.cocoeval(coco_target, coco_preds, iouType=i_type)  # type: ignore[operator]
                         coco_eval.params.iouThrs = np.array(self.iou_thresholds, dtype=np.float64)
                         coco_eval.params.recThrs = np.array(self.rec_thresholds, dtype=np.float64)
                         coco_eval.params.maxDets = self.max_detection_thresholds
@@ -596,7 +597,7 @@ class MeanAveragePrecision(Metric):
             groundtruth_labels = self.groundtruth_labels
             detection_labels = self.detection_labels
 
-        coco_target, coco_preds = self.coco(), self.coco()
+        coco_target, coco_preds = self.coco(), self.coco()  # type: ignore[operator]
 
         coco_target.dataset = self._get_coco_format(
             labels=groundtruth_labels,
@@ -664,23 +665,23 @@ class MeanAveragePrecision(Metric):
             >>> # https://github.com/cocodataset/cocoapi/tree/master/results
             >>> from torchmetrics.detection import MeanAveragePrecision
             >>> preds, target = MeanAveragePrecision.coco_to_tm(
-            ...   "instances_val2014_fakebbox100_results.json.json",
+            ...   "instances_val2014_fakebbox100_results.json",
             ...   "val2014_fake_eval_res.txt.json"
             ...   iou_type="bbox"
             ... )  # doctest: +SKIP
 
         """
-        iou_type = _validate_iou_type_arg(iou_type)
+        iou_type = _validate_iou_type_arg(iou_type)  # type: ignore[arg-type]
         coco, _, _ = _load_backend_tools(backend)
 
         with contextlib.redirect_stdout(io.StringIO()):
-            gt = coco(coco_target)
+            gt = coco(coco_target)  # type: ignore[operator]
             dt = gt.loadRes(coco_preds)
 
         gt_dataset = gt.dataset["annotations"]
         dt_dataset = dt.dataset["annotations"]
 
-        target = {}
+        target: dict = {}
         for t in gt_dataset:
             if t["image_id"] not in target:
                 target[t["image_id"]] = {
@@ -701,7 +702,7 @@ class MeanAveragePrecision(Metric):
             target[t["image_id"]]["iscrowd"].append(t["iscrowd"])
             target[t["image_id"]]["area"].append(t["area"])
 
-        preds = {}
+        preds: dict = {}
         for p in dt_dataset:
             if p["image_id"] not in preds:
                 preds[p["image_id"]] = {"scores": [], "labels": []}
@@ -774,21 +775,35 @@ class MeanAveragePrecision(Metric):
             ...     labels=tensor([0]),
             ...   )
             ... ]
-            >>> metric = MeanAveragePrecision()
+            >>> metric = MeanAveragePrecision(iou_type="bbox")
             >>> metric.update(preds, target)
-            >>> metric.tm_to_coco("tm_map_input")  # doctest: +SKIP
+            >>> metric.tm_to_coco("tm_map_input")
 
         """
         target_dataset = self._get_coco_format(
             labels=self.groundtruth_labels,
-            boxes=self.groundtruth_box,
-            masks=self.groundtruth_mask,
+            boxes=self.groundtruth_box if len(self.groundtruth_box) > 0 else None,
+            masks=self.groundtruth_mask if len(self.groundtruth_mask) > 0 else None,
             crowds=self.groundtruth_crowds,
             area=self.groundtruth_area,
         )
         preds_dataset = self._get_coco_format(
-            labels=self.detection_labels, boxes=self.detection_box, masks=self.detection_mask
+            labels=self.detection_labels,
+            boxes=self.detection_box if len(self.detection_box) > 0 else None,
+            masks=self.detection_mask if len(self.detection_mask) > 0 else None,
+            scores=self.detection_scores,
         )
+        if "segm" in self.iou_type:
+            # the rle masks needs to be decoded to be written to a file
+            preds_dataset["annotations"] = apply_to_collection(
+                preds_dataset["annotations"], dtype=bytes, function=lambda x: x.decode("utf-8")
+            )
+            preds_dataset["annotations"] = apply_to_collection(
+                preds_dataset["annotations"],
+                dtype=np.uint32,
+                function=lambda x: int(x),
+            )
+            target_dataset = apply_to_collection(target_dataset, dtype=bytes, function=lambda x: x.decode("utf-8"))
 
         preds_json = json.dumps(preds_dataset["annotations"], indent=4)
         target_json = json.dumps(target_dataset, indent=4)
@@ -819,18 +834,19 @@ class MeanAveragePrecision(Metric):
             boxes = _fix_empty_tensors(item["boxes"])
             if boxes.numel() > 0:
                 boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xywh")
-            output[0] = boxes
+            output[0] = boxes  # type: ignore[call-overload]
         if "segm" in self.iou_type:
             masks = []
             for i in item["masks"].cpu().numpy():
                 rle = self.mask_utils.encode(np.asfortranarray(i))
                 masks.append((tuple(rle["size"]), rle["counts"]))
-            output[1] = tuple(masks)
-        if (output[0] is not None and len(output[0]) > self.max_detection_thresholds[-1]) or (
-            output[1] is not None and len(output[1]) > self.max_detection_thresholds[-1]
+            output[1] = tuple(masks)  # type: ignore[call-overload]
+        if warn and (
+            (output[0] is not None and len(output[0]) > self.max_detection_thresholds[-1])
+            or (output[1] is not None and len(output[1]) > self.max_detection_thresholds[-1])
         ):
             _warning_on_too_many_detections(self.max_detection_thresholds[-1])
-        return output
+        return output  # type: ignore[return-value]
 
     def _get_classes(self) -> List:
         """Return a list of unique classes found in ground truth and detection data."""
@@ -865,11 +881,11 @@ class MeanAveragePrecision(Metric):
                 image_masks = masks[image_id]
                 if len(image_masks) == 0 and boxes is None:
                     continue
-            image_labels = image_labels.cpu().tolist()
+            image_labels = image_labels.cpu().tolist()  # type: ignore[assignment]
 
             images.append({"id": image_id})
             if "segm" in self.iou_type and len(image_masks) > 0:
-                images[-1]["height"], images[-1]["width"] = image_masks[0][0][0], image_masks[0][0][1]
+                images[-1]["height"], images[-1]["width"] = image_masks[0][0][0], image_masks[0][0][1]  # type: ignore[assignment]
 
             for k, image_label in enumerate(image_labels):
                 if boxes is not None:
@@ -891,7 +907,7 @@ class MeanAveragePrecision(Metric):
 
                 area_stat_box = None
                 area_stat_mask = None
-                if area is not None and area[image_id][k].cpu().tolist() > 0:
+                if area is not None and area[image_id][k].cpu().tolist() > 0:  # type: ignore[operator]
                     area_stat = area[image_id][k].cpu().tolist()
                 else:
                     area_stat = (
@@ -1010,11 +1026,11 @@ class MeanAveragePrecision(Metric):
         to gather the list of tuples and then convert it back to a list of tuples.
 
         """
-        super()._sync_dist(dist_sync_fn=dist_sync_fn, process_group=process_group)
+        super()._sync_dist(dist_sync_fn=dist_sync_fn, process_group=process_group)  # type: ignore[arg-type]
 
         if "segm" in self.iou_type:
-            self.detection_mask = self._gather_tuple_list(self.detection_mask, process_group)
-            self.groundtruth_mask = self._gather_tuple_list(self.groundtruth_mask, process_group)
+            self.detection_mask = self._gather_tuple_list(self.detection_mask, process_group)  # type: ignore[arg-type]
+            self.groundtruth_mask = self._gather_tuple_list(self.groundtruth_mask, process_group)  # type: ignore[arg-type]
 
     @staticmethod
     def _gather_tuple_list(list_to_gather: List[Tuple], process_group: Optional[Any] = None) -> List[Any]:
@@ -1034,7 +1050,7 @@ class MeanAveragePrecision(Metric):
         list_gathered = [None for _ in range(world_size)]
         dist.all_gather_object(list_gathered, list_to_gather, group=process_group)
 
-        return [list_gathered[rank][idx] for idx in range(len(list_gathered[0])) for rank in range(world_size)]
+        return [list_gathered[rank][idx] for idx in range(len(list_gathered[0])) for rank in range(world_size)]  # type: ignore[arg-type,index]
 
 
 def _warning_on_too_many_detections(limit: int) -> None:
