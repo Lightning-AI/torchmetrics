@@ -58,11 +58,11 @@ class MeanAbsoluteError(Metric):
         Multioutput mse computation:
 
         >>> from torch import tensor
-        >>> from torchmetrics.regression import MeanSquaredError
+        >>> from torchmetrics.regression import MeanAbsoluteError
         >>> target = tensor([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]])
         >>> preds = tensor([[1.0, 2.0, 3.0], [1.0, 2.0, 3.0]])
-        >>> mean_squared_error = MeanSquaredError(num_outputs=3)
-        >>> mean_squared_error(preds, target)
+        >>> mean_absolute_error = MeanAbsoluteError(num_outputs=3)
+        >>> mean_absolute_error(preds, target)
         tensor([1., 2., 3.])
 
     """

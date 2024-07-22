@@ -50,7 +50,7 @@ def _mean_absolute_error_compute(sum_abs_error: Tensor, num_obs: Union[int, Tens
     Example:
         >>> preds = torch.tensor([0., 1, 2, 3])
         >>> target = torch.tensor([0., 1, 2, 2])
-        >>> sum_abs_error, num_obs = _mean_absolute_error_update(preds, target)
+        >>> sum_abs_error, num_obs = _mean_absolute_error_update(preds, target, num_outputs=1)
         >>> _mean_absolute_error_compute(sum_abs_error, num_obs)
         tensor(0.2500)
 
