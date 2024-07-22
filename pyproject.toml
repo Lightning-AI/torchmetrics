@@ -82,7 +82,6 @@ lint.unfixable = [
 lint.mccabe.max-complexity = 10
 # Use Google-style docstrings.
 lint.pydocstyle.convention = "google"
-lint.ignore-init-module-imports = true
 
 [tool.codespell]
 #skip = '*.py'

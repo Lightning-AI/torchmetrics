@@ -86,7 +86,11 @@ RUN \
     pip install -q "numpy<1.24" && \
     CUDA_VERSION_MM=${CUDA_VERSION%.*} && \
     CU_VERSION_MM=${CUDA_VERSION_MM//'.'/''} && \
+    # requirements for assistant
+    pip install -q -U packaging fire && \
+    # switch some packages to be GPU related
     python assistant.py replace_str_requirements "onnxruntime" "onnxruntime_gpu" && \
+    # install develop environment
     pip install --no-cache-dir -r requirements/_devel.txt \
       --find-links="https://download.pytorch.org/whl/cu${CU_VERSION_MM}/torch_stable.html" \
       --extra-index-url="https://download.pytorch.org/whl/test/cu${CU_VERSION_MM}" && \
