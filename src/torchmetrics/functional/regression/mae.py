@@ -19,7 +19,7 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _mean_absolute_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
+def _mean_absolute_error_update(preds: Tensor, target: Tensor, num_outputs: int) -> Tuple[Tensor, int]:
     """Update and returns variables required to compute Mean Absolute Error.
 
     Check for same shape of input tensors.
@@ -27,13 +27,17 @@ def _mean_absolute_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, 
     Args:
         preds: Predicted tensor
         target: Ground truth tensor
+        num_outputs: Number of outputs in multioutput setting
 
     """
     _check_same_shape(preds, target)
+    if num_outputs == 1:
+        preds = preds.view(-1)
+        target = target.view(-1)
     preds = preds if preds.is_floating_point else preds.float()  # type: ignore[truthy-function] # todo
     target = target if target.is_floating_point else target.float()  # type: ignore[truthy-function] # todo
-    sum_abs_error = torch.sum(torch.abs(preds - target))
-    return sum_abs_error, target.numel()
+    sum_abs_error = torch.sum(torch.abs(preds - target), dim=0)
+    return sum_abs_error, target.shape[0]
 
 
 def _mean_absolute_error_compute(sum_abs_error: Tensor, num_obs: Union[int, Tensor]) -> Tensor:
@@ -46,7 +50,7 @@ def _mean_absolute_error_compute(sum_abs_error: Tensor, num_obs: Union[int, Tens
     Example:
         >>> preds = torch.tensor([0., 1, 2, 3])
         >>> target = torch.tensor([0., 1, 2, 2])
-        >>> sum_abs_error, num_obs = _mean_absolute_error_update(preds, target)
+        >>> sum_abs_error, num_obs = _mean_absolute_error_update(preds, target, num_outputs=1)
         >>> _mean_absolute_error_compute(sum_abs_error, num_obs)
         tensor(0.2500)
 
@@ -54,12 +58,13 @@ def _mean_absolute_error_compute(sum_abs_error: Tensor, num_obs: Union[int, Tens
     return sum_abs_error / num_obs
 
 
-def mean_absolute_error(preds: Tensor, target: Tensor) -> Tensor:
+def mean_absolute_error(preds: Tensor, target: Tensor, num_outputs: int = 1) -> Tensor:
     """Compute mean absolute error.
 
     Args:
         preds: estimated labels
         target: ground truth labels
+        num_outputs: Number of outputs in multioutput setting
 
     Return:
         Tensor with MAE
@@ -72,5 +77,5 @@ def mean_absolute_error(preds: Tensor, target: Tensor) -> Tensor:
         tensor(0.2500)
 
     """
-    sum_abs_error, num_obs = _mean_absolute_error_update(preds, target)
+    sum_abs_error, num_obs = _mean_absolute_error_update(preds, target, num_outputs=num_outputs)
     return _mean_absolute_error_compute(sum_abs_error, num_obs)
