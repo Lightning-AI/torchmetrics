@@ -130,14 +130,12 @@ class LogAUC(_ClassificationTaskWrapper):
     ) -> Metric:
         """Initialize task metric."""
         task = ClassificationTask.from_str(task)
-        kwargs.update(
-            {
-                "thresholds": thresholds,
-                "fp_range": fp_range,
-                "ignore_index": ignore_index,
-                "validate_args": validate_args,
-            }
-        )
+        kwargs.update({
+            "thresholds": thresholds,
+            "fp_range": fp_range,
+            "ignore_index": ignore_index,
+            "validate_args": validate_args,
+        })
         if task == ClassificationTask.BINARY:
             return BinaryLogAUC(**kwargs)
         if task == ClassificationTask.MULTICLASS:
