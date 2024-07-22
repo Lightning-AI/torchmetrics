@@ -338,14 +338,14 @@ class TestMulticlassAccuracy(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     @pytest.mark.parametrize(
-        ["average", "use_deterministic_algorithms"],
+        ("average", "use_deterministic_algorithms"),
         [
-            [None, True],  # Defaults to "macro", but explicitly included for testing omission
+            (None, True),  # Defaults to "macro", but explicitly included for testing omission
             # average=`macro` stays on GPU when `use_deterministic` is True. Otherwise syncs in `bincount`
-            ["macro", True],
-            ["micro", False],
-            ["micro", True],
-            ["weighted", True],
+            ("macro", True),
+            ("micro", False),
+            ("micro", True),
+            ("weighted", True),
         ],
     )
     def test_multiclass_accuracy_gpu_sync_points(
@@ -354,7 +354,8 @@ class TestMulticlassAccuracy(MetricTester):
         """Test GPU support of the metric, avoiding CPU sync points."""
         preds, target = inputs
 
-        # Wrap the default functional to attach sync_debug_mode as run_precision_test_gpu handles moving data onto the GPU, so we cannot set the debug mode outside the call
+        # Wrap the default functional to attach `sync_debug_mode` as `run_precision_test_gpu` handles moving data
+        # onto the GPU, so we cannot set the debug mode outside the call
         def wrapped_multiclass_accuracy(
             preds: torch.Tensor,
             target: torch.Tensor,
@@ -382,20 +383,23 @@ class TestMulticlassAccuracy(MetricTester):
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     @pytest.mark.parametrize(
-        ["average", "use_deterministic_algorithms"],
+        ("average", "use_deterministic_algorithms"),
         [
             # If you remove from this collection, please add items to `test_multiclass_accuracy_gpu_sync_points`
-            [None, False],
-            ["macro", False],
-            ["weighted", False],
+            (None, False),
+            ("macro", False),
+            ("weighted", False),
         ],
     )
     def test_multiclass_accuracy_gpu_sync_points_uptodate(
         self, inputs, dtype: torch.dtype, average: str, use_deterministic_algorithms: bool
     ):
-        """Tests that `test_multiclass_accuracy_gpu_sync_points` is kept up to date, explicitly validates that known
+        """Tests multiclass accuracy GPU sync points.
+
+        Tests that `test_multiclass_accuracy_gpu_sync_points` is kept up to date, explicitly validates that known
         failures still fail, so that if they're fixed they must be added to
-        `test_multiclass_accuracy_gpu_sync_points`
+        `test_multiclass_accuracy_gpu_sync_points`.
+
         """
         with pytest.raises(RuntimeError, match="called a synchronizing CUDA operation"):
             self.test_multiclass_accuracy_gpu_sync_points(
