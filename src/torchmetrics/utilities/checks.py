@@ -31,9 +31,7 @@ _SKIP_SLOW_DOCTEST = bool(os.environ.get("SKIP_SLOW_DOCTEST", 0))
 
 
 def _check_for_empty_tensors(preds: Tensor, target: Tensor) -> bool:
-    if preds.numel() == target.numel() == 0:
-        return True
-    return False
+    return preds.numel() == target.numel() == 0
 
 
 def _check_same_shape(preds: Tensor, target: Tensor) -> None:
