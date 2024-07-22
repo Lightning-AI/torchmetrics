@@ -73,21 +73,32 @@ class AssistantCLI:
             fp.write(requires)
 
     @staticmethod
-    def replace_min_requirements(fpath: str) -> None:
-        """Replace all `>=` by `==` in given file."""
-        logging.info(f"processing: {fpath}")
+    def _replace_requirements(fpath: str, old_str: str = "", new_str: str = "") -> None:
+        """Replace all strings given file."""
+        logging.info(f"processing '{old_str}' -> '{new_str}': {fpath}")
         with open(fpath, encoding="utf-8") as fp:
             req = fp.read()
-        req = req.replace(">=", "==")
+        req = req.replace(old_str, new_str)
         with open(fpath, "w", encoding="utf-8") as fp:
             fp.write(req)
+
+    @staticmethod
+    def replace_str_requirements(old_str: str, new_str: str, req_files: List[str] = REQUIREMENTS_FILES) -> None:
+        """Replace a particular string in all requirements files."""
+        AssistantCLI.set_min_torch_by_python()
+        for fpath in req_files:
+            AssistantCLI._replace_requirements(fpath, old_str=old_str, new_str=new_str)
+
+    @staticmethod
+    def replace_min_requirements(fpath: str) -> None:
+        """Replace all `>=` by `==` in given file."""
+        AssistantCLI._replace_requirements(fpath, old_str=">=", new_str="==")
 
     @staticmethod
     def set_oldest_versions(req_files: List[str] = REQUIREMENTS_FILES) -> None:
         """Set the oldest version for requirements."""
         AssistantCLI.set_min_torch_by_python()
         for fpath in req_files:
-            logging.info(f"processing req: `{fpath}`")
             AssistantCLI.replace_min_requirements(fpath)
 
     @staticmethod
