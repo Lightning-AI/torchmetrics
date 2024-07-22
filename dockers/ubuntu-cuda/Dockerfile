@@ -89,7 +89,7 @@ RUN \
     # requirements for assistant
     pip install -q -U packaging fire && \
     # switch some packages to be GPU related
-    python assistant.py replace_str_requirements "onnxruntime" "onnxruntime_gpu" && \
+    python assistant.py replace_str_requirements "onnxruntime" "onnxruntime_gpu" --req_files requirements/audio.txt && \
     # install develop environment
     pip install --no-cache-dir -r requirements/_devel.txt \
       --find-links="https://download.pytorch.org/whl/cu${CU_VERSION_MM}/torch_stable.html" \
