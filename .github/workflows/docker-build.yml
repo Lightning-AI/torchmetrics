@@ -48,7 +48,7 @@ jobs:
 
       - name: Build (and Push) Devcontainer
         # publish master/release
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           build-args: |
             VARIANT=${{ matrix.python }}
@@ -72,6 +72,8 @@ jobs:
           - { python: "3.10", pytorch: "2.2", cuda: "12.1.1", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.2", cuda: "12.1.1", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.3", cuda: "12.1.1", ubuntu: "22.04" }
+          # the future version - test or RC version
+          - { python: "3.11", pytorch: "2.4", cuda: "12.1.1", ubuntu: "22.04" }
     steps:
       - uses: actions/checkout@v4
 
@@ -83,7 +85,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build (and Push) runner
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           build-args: |
             UBUNTU_VERSION=${{ matrix.ubuntu }}

@@ -15,6 +15,7 @@ from typing import Any, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.functional.segmentation.mean_iou import _mean_iou_compute, _mean_iou_update, _mean_iou_validate_args
 from torchmetrics.metric import Metric
@@ -36,12 +37,12 @@ class MeanIoU(Metric):
 
         - ``preds`` (:class:`~torch.Tensor`): An one-hot boolean tensor of shape ``(N, C, ...)`` with ``N`` being
           the number of samples and ``C`` the number of classes. Alternatively, an integer tensor of shape ``(N, ...)``
-          can be provided, where the integer values correspond to the class index. That format will be automatically
-          converted to a one-hot tensor.
+          can be provided, where the integer values correspond to the class index. The input type can be controlled
+          with the ``input_format`` argument.
         - ``target`` (:class:`~torch.Tensor`): An one-hot boolean tensor of shape ``(N, C, ...)`` with ``N`` being
           the number of samples and ``C`` the number of classes. Alternatively, an integer tensor of shape ``(N, ...)``
-          can be provided, where the integer values correspond to the class index. That format will be automatically
-          converted to a one-hot tensor.
+          can be provided, where the integer values correspond to the class index. The input type can be controlled
+          with the ``input_format`` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
@@ -54,6 +55,8 @@ class MeanIoU(Metric):
         include_background: Whether to include the background class in the computation
         per_class: Whether to compute the IoU for each class separately. If set to ``False``, the metric will
             compute the mean IoU over all classes.
+        input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors
+            or ``"index"`` for index tensors
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -63,6 +66,8 @@ class MeanIoU(Metric):
             If ``include_background`` is not a boolean
         ValueError:
             If ``per_class`` is not a boolean
+        ValueError:
+            If ``input_format`` is not one of ``"one-hot"`` or ``"index"``
 
     Example:
         >>> import torch
@@ -95,20 +100,24 @@ class MeanIoU(Metric):
         num_classes: int,
         include_background: bool = True,
         per_class: bool = False,
+        input_format: Literal["one-hot", "index"] = "one-hot",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        _mean_iou_validate_args(num_classes, include_background, per_class)
+        _mean_iou_validate_args(num_classes, include_background, per_class, input_format)
         self.num_classes = num_classes
         self.include_background = include_background
         self.per_class = per_class
+        self.input_format = input_format
 
         num_classes = num_classes - 1 if not include_background else num_classes
         self.add_state("score", default=torch.zeros(num_classes if per_class else 1), dist_reduce_fx="mean")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the state with the new data."""
-        intersection, union = _mean_iou_update(preds, target, self.num_classes, self.include_background)
+        intersection, union = _mean_iou_update(
+            preds, target, self.num_classes, self.include_background, self.input_format
+        )
         score = _mean_iou_compute(intersection, union, per_class=self.per_class)
         self.score += score.mean(0) if self.per_class else score.mean()
 

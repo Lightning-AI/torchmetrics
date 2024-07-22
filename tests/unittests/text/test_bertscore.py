@@ -170,3 +170,24 @@ class TestBERTScore(TextTester):
             metric_args=metric_args,
             key=metric_key,
         )
+
+
+@skip_on_connection_issues()
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
+@pytest.mark.parametrize(
+    "idf",
+    [(False,), (True,)],
+)
+def test_bertscore_sorting(idf: bool):
+    """Test that BERTScore is invariant to the order of the inputs."""
+    short = "Short text"
+    long = "This is a longer text"
+
+    preds = [long, long]
+    targets = [long, short]
+
+    metric = BERTScore(idf=idf)
+    score = metric(preds, targets)
+
+    # First index should be the self-comparison - sorting by length should not shuffle this
+    assert score["f1"][0] > score["f1"][1]
