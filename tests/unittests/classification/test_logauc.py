@@ -19,14 +19,14 @@ import torch
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from tdc.evaluator import range_logAUC
-from torchmetrics.classification.logauc import BinaryLogAUC, MulticlassLogAUC, MultilabelLogAUC
-from torchmetrics.functional.classification.logauc import binary_logauc, multiclass_logauc, multilabel_logauc
+from torchmetrics.classification.logauc import BinaryLogAUC, MulticlassLogAUC
+from torchmetrics.functional.classification.logauc import binary_logauc, multiclass_logauc
 from torchmetrics.functional.classification.roc import binary_roc
 
 from unittests import NUM_CLASSES
-from unittests.classification.inputs import _binary_cases, _multiclass_cases, _multilabel_cases
+from unittests.classification.inputs import _binary_cases, _multiclass_cases
 from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
+from unittests.helpers.testers import MetricTester
 
 seed_all(42)
 
