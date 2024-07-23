@@ -105,7 +105,9 @@ class MetricTracker(ModuleList):
 
     """
 
-    def __init__(self, metric: Union[Metric, MetricCollection], maximize: Union[bool, List[bool]] = True) -> None:
+    def __init__(
+        self, metric: Union[Metric, MetricCollection], maximize: Optional[Union[bool, List[bool]]] = True
+    ) -> None:
         super().__init__()
         if not isinstance(metric, (Metric, MetricCollection)):
             raise TypeError(
@@ -113,13 +115,40 @@ class MetricTracker(ModuleList):
                 f" `Metric` or `MetricCollection` but got {metric}"
             )
         self._base_metric = metric
-        if not isinstance(maximize, (bool, list)):
-            raise ValueError("Argument `maximize` should either be a single bool or list of bool")
-        if isinstance(maximize, list) and isinstance(metric, MetricCollection) and len(maximize) != len(metric):
-            raise ValueError("The len of argument `maximize` should match the length of the metric collection")
-        if isinstance(metric, Metric) and not isinstance(maximize, bool):
-            raise ValueError("Argument `maximize` should be a single bool when `metric` is a single Metric")
-        self.maximize = maximize
+
+        if maximize is None:
+            if isinstance(metric, Metric):
+                if not hasattr(metric, "higher_is_better"):
+                    raise AttributeError(
+                        f"The metric '{metric.__class__.__name__}' does not have a 'higher_is_better' attribute."
+                        " Please provide the `maximize` argument explicitly."
+                    )
+                self.maximize = metric.higher_is_better
+            elif isinstance(metric, MetricCollection):
+                self.maximize = []
+                for name, m in metric.items():
+                    if not hasattr(m, "higher_is_better"):
+                        raise AttributeError(
+                            f"The metric '{name}' in the MetricCollection does not have a 'higher_is_better' attribute."
+                            " Please provide the `maximize` argument explicitly."
+                        )
+                    self.maximize.append(m.higher_is_better)
+        else:
+            rank_zero_warn(
+                "The default value for `maximize` will be changed from `True` to `None` in v1.7.0 of TorchMetrics,"
+                "will automatically infer the value based on the `higher_is_better` attribute of the metric"
+                " (if such attribute exists) or raise an error if it does not. If you are explicitly setting the"
+                " `maximize` argument to either `True` or `False` already, you can ignore this warning.",
+                FutureWarning,
+            )
+
+            if not isinstance(maximize, (bool, list)):
+                raise ValueError("Argument `maximize` should either be a single bool or list of bool")
+            if isinstance(maximize, list) and isinstance(metric, MetricCollection) and len(maximize) != len(metric):
+                raise ValueError("The len of argument `maximize` should match the length of the metric collection")
+            if isinstance(metric, Metric) and not isinstance(maximize, bool):
+                raise ValueError("Argument `maximize` should be a single bool when `metric` is a single Metric")
+            self.maximize = maximize
 
         self._increment_called = False
 
