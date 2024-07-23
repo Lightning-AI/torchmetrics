@@ -985,19 +985,19 @@ class Metric(Module, ABC):
         """Construct compositional metric using the floor division operator."""
         return CompositionalMetric(torch.floor_divide, self, other)
 
-    def __ge__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[misc]
+    def __ge__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the greater than or equal operator."""
         return CompositionalMetric(torch.ge, self, other)
 
-    def __gt__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[misc]
+    def __gt__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the greater than operator."""
         return CompositionalMetric(torch.gt, self, other)
 
-    def __le__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[misc]
+    def __le__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the less than or equal operator."""
         return CompositionalMetric(torch.le, self, other)
 
-    def __lt__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[misc]
+    def __lt__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the less than operator."""
         return CompositionalMetric(torch.lt, self, other)
 
@@ -1025,7 +1025,7 @@ class Metric(Module, ABC):
         """Construct compositional metric using the exponential/power operator."""
         return CompositionalMetric(torch.pow, self, other)
 
-    def __radd__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[misc]
+    def __radd__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the addition operator."""
         return CompositionalMetric(torch.add, other, self)
 
@@ -1042,11 +1042,11 @@ class Metric(Module, ABC):
         """Construct compositional metric using the matrix multiplication operator."""
         return CompositionalMetric(torch.matmul, other, self)
 
-    def __rmod__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[misc]
+    def __rmod__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the remainder operator."""
         return CompositionalMetric(torch.fmod, other, self)
 
-    def __rmul__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[misc]
+    def __rmul__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the multiplication operator."""
         return CompositionalMetric(torch.mul, other, self)
 
@@ -1058,11 +1058,11 @@ class Metric(Module, ABC):
         """Construct compositional metric using the exponential/power operator."""
         return CompositionalMetric(torch.pow, other, self)
 
-    def __rsub__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[misc]
+    def __rsub__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the subtraction operator."""
         return CompositionalMetric(torch.sub, other, self)
 
-    def __rtruediv__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[misc]
+    def __rtruediv__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the true divide operator."""
         return CompositionalMetric(torch.true_divide, other, self)
 
