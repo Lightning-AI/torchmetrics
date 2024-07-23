@@ -137,8 +137,7 @@ Or directly from conda
 
 .. toctree::
    :maxdepth: 2
-   :caption: Aggregation
-   :glob:
+   :titlesonly:
 
    aggregation/index
 
