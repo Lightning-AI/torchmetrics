@@ -318,7 +318,7 @@ def _multiclass_stat_scores_tensor_validation(
         if num_unique_values > check_value:
             raise RuntimeError(
                 f"Detected more unique values in `{name}` than expected. Expected only {check_value} but found"
-                f" {num_unique_values} in `target`."
+                f" {num_unique_values} in `{name}`. Found values: {torch.unique(t)}."
             )
 
 
