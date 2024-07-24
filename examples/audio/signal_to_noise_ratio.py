@@ -45,8 +45,7 @@ def fft_denoise(noisy_signal: np.ndarray, threshold: float) -> np.ndarray:
     freq_domain = np.fft.fft(noisy_signal)  # Filter frequencies using FFT
     magnitude = np.abs(freq_domain)
     filtered_freq_domain = freq_domain * (magnitude > threshold)
-    denoised_signal = np.fft.ifft(filtered_freq_domain).real  # Perform inverse FFT to reconstruct the signal
-    return denoised_signal
+    return np.fft.ifft(filtered_freq_domain).real  # Perform inverse FFT to reconstruct the signal
 
 
 # %%
