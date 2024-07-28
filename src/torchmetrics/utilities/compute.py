@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -43,7 +43,7 @@ def _safe_xlogy(x: Tensor, y: Tensor) -> Tensor:
     return res
 
 
-def _safe_divide(num: Tensor, denom: Tensor, zero_division: float = 0.0) -> Tensor:
+def _safe_divide(num: Tensor, denom: Tensor, zero_division: Union[float, Tensor] = 0.0) -> Tensor:
     """Safe division, by preventing division by zero.
 
     Function will cast to float if input is not already to secure backwards compatibility.
@@ -56,6 +56,8 @@ def _safe_divide(num: Tensor, denom: Tensor, zero_division: float = 0.0) -> Tens
     """
     num = num if num.is_floating_point() else num.float()
     denom = denom if denom.is_floating_point() else denom.float()
+    zero_division = torch.tensor(zero_division).float().to(num.device, non_blocking=True)
+    
     return torch.where(denom != 0, num / denom, zero_division)
 
 
