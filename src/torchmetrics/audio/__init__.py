@@ -51,7 +51,7 @@ if _PYSTOI_AVAILABLE:
 
     __all__ += ["ShortTimeObjectiveIntelligibility"]
 
-if _GAMMATONE_AVAILABLE and _TORCHAUDIO_AVAILABLE
+if _GAMMATONE_AVAILABLE and _TORCHAUDIO_AVAILABLE:
     from torchmetrics.audio.srmr import SpeechReverberationModulationEnergyRatio
 
     __all__ += ["SpeechReverberationModulationEnergyRatio"]
