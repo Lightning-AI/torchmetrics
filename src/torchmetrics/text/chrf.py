@@ -50,7 +50,7 @@ class CHRFScore(Metric):
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
     .. attention::
-        ChrF has been temporarily removed from the TorchMetrics package.
+        ChrF has been temporarily removed from the TorchMetrics package due to licensing issues with the upstream package.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
