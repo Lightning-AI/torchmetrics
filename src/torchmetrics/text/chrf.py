@@ -187,7 +187,7 @@ class CHRFScore(Metric):
 
     def _get_text_n_gram_iterator(self) -> Iterator[Tuple[Tuple[str, int], str]]:
         """Get iterator over char/word and reference/hypothesis/matching n-gram level."""
-        return itertools.product(zip(_N_GRAM_LEVELS, [self.n_char_order, self.n_word_order]), _TEXT_LEVELS)  # type: ignore[return-value]
+        return itertools.product(zip(_N_GRAM_LEVELS, [self.n_char_order, self.n_word_order]), _TEXT_LEVELS)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
