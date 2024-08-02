@@ -29,7 +29,6 @@ from torchmetrics.utilities.imports import (
     _PESQ_AVAILABLE,
     _PYSTOI_AVAILABLE,
     _TORCHAUDIO_AVAILABLE,
-    _TORCHAUDIO_GREATER_EQUAL_0_10,
 )
 
 __all__ = [
@@ -53,7 +52,7 @@ if _PYSTOI_AVAILABLE:
 
     __all__ += ["short_time_objective_intelligibility"]
 
-if _GAMMATONE_AVAILABLE and _TORCHAUDIO_AVAILABLE and _TORCHAUDIO_GREATER_EQUAL_0_10:
+if _GAMMATONE_AVAILABLE and _TORCHAUDIO_AVAILABLE:
     from torchmetrics.functional.audio.srmr import speech_reverberation_modulation_energy_ratio
 
     __all__ += ["speech_reverberation_modulation_energy_ratio"]
