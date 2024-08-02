@@ -19,10 +19,6 @@ import sys
 from lightning_utilities.core.imports import RequirementCache
 
 _PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-_TORCH_LOWER_2_0 = RequirementCache("torch<2.0.0")
-_TORCH_GREATER_EQUAL_1_11 = RequirementCache("torch>=1.11.0")
-_TORCH_GREATER_EQUAL_1_12 = RequirementCache("torch>=1.12.0")
-_TORCH_GREATER_EQUAL_1_13 = RequirementCache("torch>=1.13.0")
 _TORCH_GREATER_EQUAL_2_0 = RequirementCache("torch>=2.0.0")
 _TORCH_GREATER_EQUAL_2_1 = RequirementCache("torch>=2.1.0")
 _TORCH_GREATER_EQUAL_2_2 = RequirementCache("torch>=2.2.0")

@@ -21,7 +21,6 @@ from scipy.io import wavfile
 from torch import Tensor
 from torchmetrics.audio import SignalDistortionRatio
 from torchmetrics.functional import signal_distortion_ratio
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_11
 
 from unittests import _Input
 from unittests._helpers import seed_all
@@ -61,8 +60,8 @@ def _reference_sdr_batch(
     return sdr
 
 
-@pytest.mark.skipif(  # FIXME: figure out why tests leads to cuda errors on latest torch
-    _TORCH_GREATER_EQUAL_1_11 and torch.cuda.is_available(), reason="tests leads to cuda errors on latest torch"
+@pytest.mark.xfail(  # FIXME: figure out why tests leads to cuda errors on latest torch
+    torch.cuda.is_available(), reason="tests leads to cuda errors on latest torch"
 )
 @pytest.mark.parametrize(
     "preds, target",
