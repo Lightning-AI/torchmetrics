@@ -14,6 +14,7 @@
 
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.functional.text.cer import char_error_rate
+from torchmetrics.functional.text.chrf import chrf_score
 from torchmetrics.functional.text.edit import edit_distance
 from torchmetrics.functional.text.eed import extended_edit_distance
 from torchmetrics.functional.text.mer import match_error_rate

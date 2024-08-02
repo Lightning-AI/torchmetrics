@@ -6,6 +6,7 @@ import pytest
 from torchmetrics import (
     BLEUScore,
     CharErrorRate,
+    CHRFScore,
     ErrorRelativeGlobalDimensionlessSynthesis,
     ExtendedEditDistance,
     MatchErrorRate,
@@ -85,6 +86,7 @@ from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
         # Text
         BLEUScore,
         CharErrorRate,
+        CHRFScore,
         ExtendedEditDistance,
         MatchErrorRate,
         Perplexity,

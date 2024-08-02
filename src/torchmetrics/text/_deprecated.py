@@ -2,6 +2,7 @@ from typing import Any, Literal, Optional, Sequence
 
 from torchmetrics.text.bleu import BLEUScore
 from torchmetrics.text.cer import CharErrorRate
+from torchmetrics.text.chrf import CHRFScore
 from torchmetrics.text.eed import ExtendedEditDistance
 from torchmetrics.text.mer import MatchErrorRate
 from torchmetrics.text.perplexity import Perplexity
@@ -55,7 +56,7 @@ class _CharErrorRate(CharErrorRate):
         super().__init__(**kwargs)
 
 
-class _CHRFScore:
+class _CHRFScore(CHRFScore):
     """Wrapper for deprecated import."""
 
     def __init__(
@@ -68,7 +69,16 @@ class _CHRFScore:
         return_sentence_level_score: bool = False,
         **kwargs: Any,
     ) -> None:
-        raise NotImplementedError("Chrf was temporarily removed.")
+        _deprecated_root_import_class("CHRFScore", "text")
+        super().__init__(
+            n_char_order=n_char_order,
+            n_word_order=n_word_order,
+            beta=beta,
+            lowercase=lowercase,
+            whitespace=whitespace,
+            return_sentence_level_score=return_sentence_level_score,
+            **kwargs,
+        )
 
 
 class _ExtendedEditDistance(ExtendedEditDistance):
