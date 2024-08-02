@@ -55,6 +55,22 @@ class _CharErrorRate(CharErrorRate):
         super().__init__(**kwargs)
 
 
+class _CHRFScore:
+    """Wrapper for deprecated import."""
+
+    def __init__(
+        self,
+        n_char_order: int = 6,
+        n_word_order: int = 2,
+        beta: float = 2.0,
+        lowercase: bool = False,
+        whitespace: bool = False,
+        return_sentence_level_score: bool = False,
+        **kwargs: Any,
+    ) -> None:
+        raise NotImplementedError("Chrf was temporarily removed.")
+
+
 class _ExtendedEditDistance(ExtendedEditDistance):
     """Wrapper for deprecated import.
 
