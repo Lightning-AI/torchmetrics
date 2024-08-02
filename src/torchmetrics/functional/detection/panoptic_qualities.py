@@ -27,7 +27,6 @@ from torchmetrics.functional.detection._panoptic_quality_common import (
 )
 
 
-
 def panoptic_quality(
     preds: Tensor,
     target: Tensor,

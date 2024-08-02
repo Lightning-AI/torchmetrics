@@ -16,8 +16,6 @@ from typing import Optional
 import torch
 
 
-
-
 def _giou_update(
     preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float], replacement_val: float = 0
 ) -> torch.Tensor:

@@ -6,7 +6,6 @@ from torchmetrics.functional.detection.panoptic_qualities import modified_panopt
 from torchmetrics.utilities.prints import _deprecated_root_import_func
 
 
-
 def _modified_panoptic_quality(
     preds: Tensor,
     target: Tensor,
