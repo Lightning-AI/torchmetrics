@@ -33,7 +33,7 @@ def chrf_score(
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
     .. attention::
-        CHRF has been temporarily removed from the TorchMetrics package.
+        ChrF has been temporarily removed from the TorchMetrics package.
 
     Args:
         preds: An iterable of hypothesis corpus.
