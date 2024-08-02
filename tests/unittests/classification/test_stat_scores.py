@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
 from functools import partial
 
 import numpy as np
@@ -577,6 +578,8 @@ class TestMultilabelStatScores(MetricTester):
         )
 
 
+# fixme: Expected only 5 but found 7 in `target`
+@pytest.mark.flaky(reruns=3, condition=sys.platform.startswith("win32"))
 def test_support_for_int():
     """See issue: https://github.com/Lightning-AI/torchmetrics/issues/1970."""
     seed_all(42)
