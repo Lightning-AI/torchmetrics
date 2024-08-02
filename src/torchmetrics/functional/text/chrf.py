@@ -33,7 +33,8 @@ def chrf_score(
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
     .. attention::
-        ChrF has been temporarily removed from the TorchMetrics package due to licensing issues with the upstream package.
+        ChrF has been temporarily removed from the TorchMetrics package
+        due to licensing issues with the upstream package.
 
     Args:
         preds: An iterable of hypothesis corpus.
@@ -55,4 +56,7 @@ def chrf_score(
         [2] chrF++: words helping character n-grams by Maja Popović `chrF++ score`_
 
     """
-    raise NotImplementedError("ChrF has been temporarily removed from the TorchMetrics package due to licensing issues with the upstream package.")
+    raise NotImplementedError(
+        "ChrF has been temporarily removed from the TorchMetrics package"
+        " due to licensing issues with the upstream package."
+    )

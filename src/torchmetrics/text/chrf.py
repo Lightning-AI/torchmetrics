@@ -50,7 +50,8 @@ class CHRFScore(Metric):
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
     .. attention::
-        ChrF has been temporarily removed from the TorchMetrics package due to licensing issues with the upstream package.
+        ChrF has been temporarily removed from the TorchMetrics package
+        due to licensing issues with the upstream package.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -117,7 +118,10 @@ class CHRFScore(Metric):
         #
         # if self.return_sentence_level_score:
         #     self.add_state("sentence_chrf_score", [], dist_reduce_fx="cat")
-        raise NotImplementedError("ChrF has been temporarily removed from the TorchMetrics package due to licensing issues with the upstream package.")
+        raise NotImplementedError(
+            "ChrF has been temporarily removed from the TorchMetrics package"
+            " due to licensing issues with the upstream package."
+        )
 
     def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:
         """Update state with predictions and targets."""
@@ -137,7 +141,7 @@ class CHRFScore(Metric):
         # if self.sentence_chrf_score is not None:
         #     self.sentence_chrf_score = n_grams_dicts_tuple[-1]
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:  # type: ignore[empty-body]
         """Calculate chrF/chrF++ score."""
         # if self.sentence_chrf_score is not None:
         #     return (
@@ -146,7 +150,7 @@ class CHRFScore(Metric):
         #     )
         # return _chrf_score_compute(*self._convert_states_to_dicts(), self.n_order, self.beta)
 
-    def _convert_states_to_dicts(self) -> _DICT_STATES_TYPES:
+    def _convert_states_to_dicts(self) -> _DICT_STATES_TYPES:  # type: ignore[empty-body]
         """Convert global metric states to the n-gram dictionaries to be passed in ``_chrf_score_update``."""
         # n_grams_dicts: Dict[str, Dict[int, Tensor]] = dict(
         #     zip(_DICT_STATES_NAMES, _prepare_n_grams_dicts(self.n_char_order, self.n_word_order))
@@ -183,7 +187,7 @@ class CHRFScore(Metric):
 
     def _get_text_n_gram_iterator(self) -> Iterator[Tuple[Tuple[str, int], str]]:
         """Get iterator over char/word and reference/hypothesis/matching n-gram level."""
-        return itertools.product(zip(_N_GRAM_LEVELS, [self.n_char_order, self.n_word_order]), _TEXT_LEVELS)
+        return itertools.product(zip(_N_GRAM_LEVELS, [self.n_char_order, self.n_word_order]), _TEXT_LEVELS)  # type: ignore[return-value]
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
