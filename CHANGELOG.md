@@ -8,43 +8,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [UnReleased] - 2022-MM-DD
-
-### Added
-
--
-
-- Added better error messages for intersection detection metrics for wrong user input ([#2577](https://github.com/Lightning-AI/torchmetrics/pull/2577))
-
+## [1.4.1] - 2024-08-02
 
 ### Changed
 
-- Calculate text color of ConfusionMatrix plot based on luminance
-
+- Calculate text color of `ConfusionMatrix` plot based on luminance ([#2590](https://github.com/Lightning-AI/torchmetrics/pull/2590))
+- Updated `_safe_divide` to allow `Accuracy` to run on the GPU ([#2640](https://github.com/Lightning-AI/torchmetrics/pull/2640))
+- Improved error messages for intersection detection metrics for wrong user input ([#2577](https://github.com/Lightning-AI/torchmetrics/pull/2577))
 
 ### Removed
 
--
-
+- Dropped `Chrf` implementation due to licensing issues with the upstream package ([#2668](https://github.com/Lightning-AI/torchmetrics/pull/2668))
 
 ### Fixed
 
 - Fixed bug in `MetricCollection` when using compute groups and `compute` is called more than once ([#2571](https://github.com/Lightning-AI/torchmetrics/pull/2571))
-
-
 - Fixed class order of `panoptic_quality(..., return_per_class=True)` output ([#2548](https://github.com/Lightning-AI/torchmetrics/pull/2548))
-
-
 - Fixed `BootstrapWrapper` not being reset correctly ([#2574](https://github.com/Lightning-AI/torchmetrics/pull/2574))
-
-
 - Fixed integration between `ClasswiseWrapper` and `MetricCollection` with custom `_filter_kwargs` method ([#2575](https://github.com/Lightning-AI/torchmetrics/pull/2575))
-
-
 - Fixed BertScore calculation: pred target misalignment ([#2347](https://github.com/Lightning-AI/torchmetrics/pull/2347))
-
-
-- Update `_safe_divide` to allow `Accuracy` to run on the GPU ([#2640](https://github.com/Lightning-AI/torchmetrics/pull/2640))
+- Fixed `_cumsum` helper function in multi-gpu ([#2636](https://github.com/Lightning-AI/torchmetrics/pull/2636))
+- Fixed bug in `MeanAveragePrecision.coco_to_tm` ([#2588](https://github.com/Lightning-AI/torchmetrics/pull/2588))
+- Fixed missed f-strings in exceptions/warnings ([#2667](https://github.com/Lightning-AI/torchmetrics/pull/2667))
 
 
 ## [1.4.0] - 2024-05-03
