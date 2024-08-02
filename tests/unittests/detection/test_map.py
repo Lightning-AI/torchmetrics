@@ -29,13 +29,10 @@ from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.utilities.imports import (
     _FASTER_COCO_EVAL_AVAILABLE,
     _PYCOCOTOOLS_AVAILABLE,
-    _TORCHVISION_GREATER_EQUAL_0_8,
 )
 
 from unittests._helpers.testers import MetricTester
 from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL
-
-_pytest_condition = not (_PYCOCOTOOLS_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
 
 
 def _skip_if_faster_coco_eval_missing(backend):
@@ -65,7 +62,7 @@ _coco_bbox_input = _generate_coco_inputs("bbox")
 _coco_segm_input = _generate_coco_inputs("segm")
 
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 and pycocotools is installed")
+@pytest.mark.skipif(_PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 and pycocotools is installed")
 @pytest.mark.parametrize("iou_type", ["bbox", "segm"])
 @pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
 def test_tm_to_coco(tmpdir, iou_type, backend):
@@ -175,7 +172,7 @@ def _compare_against_coco_fn(preds, target, iou_type, iou_thresholds=None, rec_t
     }
 
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 and pycocotools is installed")
+@pytest.mark.skipif(_PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 and pycocotools is installed")
 @pytest.mark.parametrize("iou_type", ["bbox", "segm"])
 @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
 @pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
@@ -450,7 +447,7 @@ def _generate_random_segm_input(device, batch_size=2, num_preds_size=10, num_gt_
     return preds, targets
 
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
+@pytest.mark.skipif(_PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 is installed")
 @pytest.mark.parametrize(
     "backend",
     [
