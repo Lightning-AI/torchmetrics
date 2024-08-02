@@ -55,4 +55,6 @@ def chrf_score(
         [2] chrF++: words helping character n-grams by Maja Popović `chrF++ score`_
 
     """
-    raise NotImplementedError("ChrF has been temporarily removed from the TorchMetrics package due to licensing issues with the upstream package.")
+    raise NotImplementedError(
+        "ChrF has been temporarily removed from the TorchMetrics package due to licensing issues with the upstream package."
+    )

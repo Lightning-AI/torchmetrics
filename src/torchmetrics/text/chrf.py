@@ -117,7 +117,9 @@ class CHRFScore(Metric):
         #
         # if self.return_sentence_level_score:
         #     self.add_state("sentence_chrf_score", [], dist_reduce_fx="cat")
-        raise NotImplementedError("ChrF has been temporarily removed from the TorchMetrics package due to licensing issues with the upstream package.")
+        raise NotImplementedError(
+            "ChrF has been temporarily removed from the TorchMetrics package due to licensing issues with the upstream package."
+        )
 
     def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:
         """Update state with predictions and targets."""
