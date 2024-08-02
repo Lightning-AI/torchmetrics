@@ -8,7 +8,6 @@ from torch.nn import Module
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.functional.text.cer import char_error_rate
-from torchmetrics.functional.text.chrf import chrf_score
 from torchmetrics.functional.text.eed import extended_edit_distance
 from torchmetrics.functional.text.infolm import (
     _ALLOWED_INFORMATION_MEASURE_LITERAL as _INFOLM_ALLOWED_INFORMATION_MEASURE_LITERAL,
@@ -134,25 +133,8 @@ def _chrf_score(
     whitespace: bool = False,
     return_sentence_level_score: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Wrapper for deprecated import.
-
-    >>> preds = ['the cat is on the mat']
-    >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
-    >>> _chrf_score(preds, target)
-    tensor(0.8640)
-
-    """
-    _deprecated_root_import_func("chrf_score", "text")
-    return chrf_score(
-        preds=preds,
-        target=target,
-        n_char_order=n_char_order,
-        n_word_order=n_word_order,
-        beta=beta,
-        lowercase=lowercase,
-        whitespace=whitespace,
-        return_sentence_level_score=return_sentence_level_score,
-    )
+    """Wrapper for deprecated import."""
+    raise NotImplementedError("Chrf was temporarily removed.")
 
 
 def _extended_edit_distance(

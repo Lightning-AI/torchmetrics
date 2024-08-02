@@ -77,8 +77,6 @@
 .. _Scikit_Learn-Ranking.py: https: //github.com/scikit-learn/scikit-learn/blob/master/sklearn/metrics/_ranking.py
 .. _Verified Uncertainty Calibration: https://arxiv.org/abs/1909.10155
 .. _SQuAD Metric: https://arxiv.org/abs/1606.05250
-.. _chrF score: https://aclanthology.org/W15-3049
-.. _chrF++ score: https://aclanthology.org/W17-4770
 .. _TER: https://aclanthology.org/2006.amta-papers.25
 .. _ExtendedEditDistance: https://aclanthology.org/W19-5359
 .. _MultiScaleSSIM: https://ece.uwaterloo.ca/~z70wang/publications/msssim
