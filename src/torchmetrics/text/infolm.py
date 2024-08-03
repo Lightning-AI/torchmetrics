@@ -48,8 +48,8 @@ _Information_Measure_Higher_Is_Better = {
     "renyi_divergence": False,
     "l1_distance": False,
     "l2_distance": False,
-    "l_infinity_distanc": False,
-    "fisher_rao_distanc": False,
+    "l_infinity_distance": False,
+    "fisher_rao_distance": False,
 }
 
 
