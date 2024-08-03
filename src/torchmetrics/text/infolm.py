@@ -38,6 +38,21 @@ if not _TRANSFORMERS_GREATER_EQUAL_4_4:
     __doctest_skip__ = ["InfoLM", "InfoLM.plot"]
 
 
+_Information_Measure_Higher_Is_Better = {
+    # following values are <0
+    "kl_divergence": True,
+    "alpha_divergence": True,
+    # following values are >0
+    "beta_divergence": False,
+    "ab_divergence": False,
+    "renyi_divergence": False,
+    "l1_distance": False,
+    "l2_distance": False,
+    "l_infinity_distanc": False,
+    "fisher_rao_distanc": False,
+}
+
+
 class InfoLM(Metric):
     """Calculate `InfoLM`_.
 
@@ -111,7 +126,6 @@ class InfoLM(Metric):
     """
 
     is_differentiable = False
-    higher_is_better = True
     preds_input_ids: List[Tensor]
     preds_attention_mask: List[Tensor]
     target_input_ids: List[Tensor]
@@ -148,6 +162,7 @@ class InfoLM(Metric):
 
         self.tokenizer, self.model = _load_tokenizer_and_model(model_name_or_path, device)
         self.information_measure_cls = _InformationMeasure(information_measure, alpha, beta)
+        self.higher_is_better = _Information_Measure_Higher_Is_Better[information_measure]
         self.max_length = max_length or self.model.config.max_length
         self.special_tokens_map = _get_special_tokens_map(self.tokenizer)
 
