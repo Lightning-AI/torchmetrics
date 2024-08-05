@@ -60,9 +60,6 @@ def _reference_sdr_batch(
     return sdr
 
 
-@pytest.mark.xfail(  # FIXME: figure out why tests leads to cuda errors on latest torch
-    torch.cuda.is_available(), reason="tests leads to cuda errors on latest torch"
-)
 @pytest.mark.parametrize(
     "preds, target",
     [(inputs_1spk.preds, inputs_1spk.target), (inputs_2spk.preds, inputs_2spk.target)],
