@@ -46,6 +46,7 @@ lint.ignore = [
   "D107",   # Missing docstring in `__init__`
   "E731",   # Do not assign a lambda expression, use a def
   "EXE002", # The file is executable but no shebang is present
+  "ISC001", # potehtional comflict, flagged by Ruff itsel
 ]
 lint.per-file-ignores."docs/source/conf.py" = [
   "A001",
