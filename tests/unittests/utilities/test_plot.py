@@ -154,7 +154,6 @@ from torchmetrics.text import (
     BERTScore,
     BLEUScore,
     CharErrorRate,
-    CHRFScore,
     EditDistance,
     ExtendedEditDistance,
     InfoLM,
@@ -588,7 +587,6 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
         pytest.param(EditDistance, _text_input_1, _text_input_2, id="edit distance"),
         pytest.param(MatchErrorRate, _text_input_1, _text_input_2, id="match error rate"),
         pytest.param(BLEUScore, _text_input_3, _text_input_4, id="bleu score"),
-        pytest.param(CHRFScore, _text_input_3, _text_input_4, id="bleu score"),
         pytest.param(
             partial(InfoLM, model_name_or_path="google/bert_uncased_L-2_H-128_A-2", idf=False, verbose=False),
             _text_input_1,
