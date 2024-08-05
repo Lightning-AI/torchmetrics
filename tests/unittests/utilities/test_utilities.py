@@ -188,7 +188,9 @@ def test_cumsum_still_not_supported(use_deterministic_algorithms):
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU")
 def test_custom_cumsum(use_deterministic_algorithms):
     """Test custom cumsum implementation."""
-    x = torch.arange(100).float().cuda()
+    # check that cumsum works as expected on non-default cuda device
+    device = torch.device("cuda:1") if torch.cuda.device_count() > 1 else torch.device("cuda:0")
+    x = torch.arange(100).float().to(device)
     if sys.platform != "win32":
         with pytest.warns(
             TorchMetricsUserWarning, match="You are trying to use a metric in deterministic mode on GPU that.*"
