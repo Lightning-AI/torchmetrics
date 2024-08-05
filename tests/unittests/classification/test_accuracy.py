@@ -335,6 +335,77 @@ class TestMulticlassAccuracy(MetricTester):
             dtype=dtype,
         )
 
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    @pytest.mark.parametrize(
+        ("average", "use_deterministic_algorithms"),
+        [
+            (None, True),  # Defaults to "macro", but explicitly included for testing omission
+            # average=`macro` stays on GPU when `use_deterministic` is True. Otherwise syncs in `bincount`
+            ("macro", True),
+            ("micro", False),
+            ("micro", True),
+            ("weighted", True),
+        ],
+    )
+    def test_multiclass_accuracy_gpu_sync_points(
+        self, inputs, dtype: torch.dtype, average: str, use_deterministic_algorithms: bool
+    ):
+        """Test GPU support of the metric, avoiding CPU sync points."""
+        preds, target = inputs
+
+        # Wrap the default functional to attach `sync_debug_mode` as `run_precision_test_gpu` handles moving data
+        # onto the GPU, so we cannot set the debug mode outside the call
+        def wrapped_multiclass_accuracy(
+            preds: torch.Tensor,
+            target: torch.Tensor,
+            num_classes: int,
+        ) -> torch.Tensor:
+            prev_sync_debug_mode = torch.cuda.get_sync_debug_mode()
+            torch.cuda.set_sync_debug_mode("error")
+            try:
+                validate_args = False  # `validate_args` will require CPU sync for exceptions
+                # average = average  #'micro'  # default is `macro` which uses a `_bincount` that does a CPU sync
+                torch.use_deterministic_algorithms(mode=use_deterministic_algorithms)
+                return multiclass_accuracy(preds, target, num_classes, validate_args=validate_args, average=average)
+            finally:
+                torch.cuda.set_sync_debug_mode(prev_sync_debug_mode)
+
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=MulticlassAccuracy,
+            metric_functional=wrapped_multiclass_accuracy,
+            metric_args={"num_classes": NUM_CLASSES},
+            dtype=dtype,
+        )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    @pytest.mark.parametrize(
+        ("average", "use_deterministic_algorithms"),
+        [
+            # If you remove from this collection, please add items to `test_multiclass_accuracy_gpu_sync_points`
+            (None, False),
+            ("macro", False),
+            ("weighted", False),
+        ],
+    )
+    def test_multiclass_accuracy_gpu_sync_points_uptodate(
+        self, inputs, dtype: torch.dtype, average: str, use_deterministic_algorithms: bool
+    ):
+        """Negative test for `test_multiclass_accuracy_gpu_sync_points`, to confirm completeness.
+
+        Tests that `test_multiclass_accuracy_gpu_sync_points` is kept up to date, explicitly validating that known
+        failures still fail, so that if they're fixed they must be added to
+        `test_multiclass_accuracy_gpu_sync_points`.
+
+        """
+        with pytest.raises(RuntimeError, match="called a synchronizing CUDA operation"):
+            self.test_multiclass_accuracy_gpu_sync_points(
+                inputs=inputs, dtype=dtype, average=average, use_deterministic_algorithms=use_deterministic_algorithms
+            )
+
 
 _mc_k_target = torch.tensor([0, 1, 2])
 _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])

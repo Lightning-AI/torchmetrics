@@ -91,7 +91,7 @@
 .. _CER: https://rechtsprechung-im-ostseeraum.archiv.uni-greifswald.de/word-error-rate-character-error-rate-how-to-evaluate-a-model
 .. _MER: https://www.isca-speech.org/archive/interspeech_2004/morris04_interspeech.html
 .. _WIL: https://www.isca-speech.org/archive/interspeech_2004/morris04_interspeech.html
-.. _WIP: https://infoscience.epfl.ch/record/82766
+.. _WIP: https://infoscience.epfl.ch/entities/publication/9983d013-8239-422e-a3f7-a1500d309474
 .. _TV: https://en.wikipedia.org/wiki/Total_variation_denoising
 .. _InfoLM: https://arxiv.org/abs/2112.01589
 .. _alpha divergence: https://static.renyi.hu/renyi_cikkek/1961_on_measures_of_entropy_and_information.pdf
@@ -110,6 +110,7 @@
 .. _Theils Uncertainty coefficient: https://en.wikipedia.org/wiki/Uncertainty_coefficient
 .. _Perceptual Evaluation of Speech Quality: https://en.wikipedia.org/wiki/Perceptual_Evaluation_of_Speech_Quality
 .. _pesq package: https://github.com/ludlows/python-pesq
+.. _Deep Noise Suppression performance evaluation based on Mean Opinion Score: https://arxiv.org/abs/2010.15258
 .. _Cees Taal's website: http://www.ceestaal.nl/code/
 .. _pystoi package: https://github.com/mpariente/pystoi
 .. _stoi ref1: https://ieeexplore.ieee.org/abstract/document/5495701

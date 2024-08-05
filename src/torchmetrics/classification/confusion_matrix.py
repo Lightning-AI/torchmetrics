@@ -199,7 +199,7 @@ class MulticlassConfusionMatrix(Metric):
 
     - :math:`C_{i, i}` represents the number of true positives for class :math:`i`
     - :math:`\sum_{j=1, j\neq i}^N C_{i, j}` represents the number of false negatives for class :math:`i`
-    - :math:`\sum_{i=1, i\neq j}^N C_{i, j}` represents the number of false positives for class :math:`i`
+    - :math:`\sum_{j=1, j\neq i}^N C_{j, i}` represents the number of false positives for class :math:`i`
     - the sum of the remaining cells in the matrix represents the number of true negatives for class :math:`i`
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
