@@ -105,6 +105,8 @@ class MetricTracker(ModuleList):
 
     """
 
+    maximize: Union[bool, List[bool]]
+
     def __init__(
         self, metric: Union[Metric, MetricCollection], maximize: Optional[Union[bool, List[bool]]] = True
     ) -> None:
@@ -144,6 +146,8 @@ class MetricTracker(ModuleList):
 
             if not isinstance(maximize, (bool, list)):
                 raise ValueError("Argument `maximize` should either be a single bool or list of bool")
+            if isinstance(maximize, list) and not all(isinstance(m, bool) for m in maximize):
+                raise ValueError("Argument `maximize` is list but not type of bool.")
             if isinstance(maximize, list) and isinstance(metric, MetricCollection) and len(maximize) != len(metric):
                 raise ValueError("The len of argument `maximize` should match the length of the metric collection")
             if isinstance(metric, Metric) and not isinstance(maximize, bool):
