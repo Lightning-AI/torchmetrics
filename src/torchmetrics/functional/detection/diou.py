@@ -15,6 +15,11 @@ from typing import Optional
 
 import torch
 
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
+
+if not _TORCHVISION_AVAILABLE:
+    __doctest_skip__ = ["distance_intersection_over_union"]
+
 
 def _diou_update(
     preds: torch.Tensor, target: torch.Tensor, iou_threshold: Optional[float], replacement_val: float = 0

@@ -20,10 +20,12 @@ from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
 from torchmetrics.functional.detection.iou import _iou_compute, _iou_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-if not _MATPLOTLIB_AVAILABLE:
+if not _TORCHVISION_AVAILABLE:
+    __doctest_skip__ = ["IntersectionOverUnion", "IntersectionOverUnion.plot"]
+elif not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["IntersectionOverUnion.plot"]
 
 

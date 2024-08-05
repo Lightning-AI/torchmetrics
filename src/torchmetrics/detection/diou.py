@@ -17,10 +17,12 @@ from torch import Tensor
 
 from torchmetrics.detection.iou import IntersectionOverUnion
 from torchmetrics.functional.detection.diou import _diou_compute, _diou_update
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-if not _MATPLOTLIB_AVAILABLE:
+if not _TORCHVISION_AVAILABLE:
+    __doctest_skip__ = ["DistanceIntersectionOverUnion", "DistanceIntersectionOverUnion.plot"]
+elif not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["DistanceIntersectionOverUnion.plot"]
 
 
