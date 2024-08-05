@@ -120,7 +120,7 @@ class MetricTracker(ModuleList):
 
         if maximize is None:
             if isinstance(metric, Metric):
-                if not hasattr(metric, "higher_is_better"):
+                if not hasattr(metric, "higher_is_better") or metric.higher_is_better is None:
                     raise AttributeError(
                         f"The metric '{metric.__class__.__name__}' does not have a 'higher_is_better' attribute."
                         " Please provide the `maximize` argument explicitly."
