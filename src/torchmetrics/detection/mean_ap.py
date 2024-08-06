@@ -416,7 +416,7 @@ class MeanAveragePrecision(Metric):
         if max_detection_thresholds is not None and len(max_detection_thresholds) != 3:
             raise ValueError(
                 "When providing a list of max detection thresholds it should have length 3."
-                " Got value {len(max_detection_thresholds)}"
+                f" Got value {len(max_detection_thresholds)}"
             )
         max_det_threshold, _ = torch.sort(torch.tensor(max_detection_thresholds or [1, 10, 100], dtype=torch.int))
         self.max_detection_thresholds = max_det_threshold.tolist()

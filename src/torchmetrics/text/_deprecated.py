@@ -57,15 +57,7 @@ class _CharErrorRate(CharErrorRate):
 
 
 class _CHRFScore(CHRFScore):
-    """Wrapper for deprecated import.
-
-    >>> preds = ['the cat is on the mat']
-    >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
-    >>> chrf = _CHRFScore()
-    >>> chrf(preds, target)
-    tensor(0.8640)
-
-    """
+    """Wrapper for deprecated import."""
 
     def __init__(
         self,

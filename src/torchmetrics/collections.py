@@ -343,7 +343,7 @@ class MetricCollection(ModuleDict):
             elif method_name == "forward":
                 res = m(*args, **m._filter_kwargs(**kwargs))
             else:
-                raise ValueError("method_name should be either 'compute' or 'forward', but got {method_name}")
+                raise ValueError(f"method_name should be either 'compute' or 'forward', but got {method_name}")
             result[k] = res
 
         _, duplicates = _flatten_dict(result)
