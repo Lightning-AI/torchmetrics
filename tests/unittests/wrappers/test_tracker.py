@@ -12,9 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import warnings
+
 import pytest
 import torch
-from torchmetrics import MetricCollection
+from torchmetrics import Metric, MetricCollection
 from torchmetrics.classification import (
     MulticlassAccuracy,
     MulticlassConfusionMatrix,
@@ -22,6 +24,7 @@ from torchmetrics.classification import (
     MulticlassRecall,
 )
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
+from torchmetrics.utilities.imports import _TORCHMETRICS_GREATER_EQUAL_1_6
 from torchmetrics.wrappers import MetricTracker, MultioutputWrapper
 
 from unittests._helpers import seed_all
@@ -216,3 +219,37 @@ def test_metric_tracker_and_collection_multioutput(input_to_tracker, assert_type
     else:
         assert best_metric is None
         assert which_epoch is None
+
+
+def test_tracker_futurewarning():
+    """Check that future warning is raised for the maximize argument.
+
+    Also to make sure that we remove it in future versions of TM.
+
+    """
+    if _TORCHMETRICS_GREATER_EQUAL_1_6:
+        # Check that for future versions that we remove the warning
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            MetricTracker(MeanSquaredError(), maximize=True)
+    else:
+        with pytest.warns(FutureWarning, match="The default value for `maximize` will be changed from `True` to.*"):
+            MetricTracker(MeanSquaredError(), maximize=True)
+
+
+@pytest.mark.parametrize(
+    "base_metric",
+    [
+        MeanSquaredError(),
+        MeanAbsoluteError(),
+        MulticlassAccuracy(num_classes=10),
+        MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
+    ],
+)
+def test_tracker_higher_is_better_integration(base_metric):
+    """Check that the maximize argument is correctly set based on the metric higher_is_better attribute."""
+    tracker = MetricTracker(base_metric, maximize=None)
+    if isinstance(base_metric, Metric):
+        assert tracker.maximize == base_metric.higher_is_better
+    else:
+        assert tracker.maximize == [m.higher_is_better for m in base_metric.values()]
