@@ -172,9 +172,10 @@ class InfoLM(Metric):
 
     @property
     def higher_is_better(self) -> bool:
-        """
-        Returns a bool indicating whether a higher value of the information measure is better.
+        """Returns a bool indicating whether a higher value of the information measure is better.
+
         Done this way as depends on if the information measure is positive or negative.
+
         """
         return _Information_Measure_Higher_Is_Better[self.information_measure]
 
