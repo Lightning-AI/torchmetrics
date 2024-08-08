@@ -162,7 +162,6 @@ class InfoLM(Metric):
 
         self.tokenizer, self.model = _load_tokenizer_and_model(model_name_or_path, device)
         self.information_measure_cls = _InformationMeasure(information_measure, alpha, beta)
-        self.higher_is_better = _Information_Measure_Higher_Is_Better[information_measure]
         self.max_length = max_length or self.model.config.max_length
         self.special_tokens_map = _get_special_tokens_map(self.tokenizer)
 
@@ -170,6 +169,14 @@ class InfoLM(Metric):
         self.add_state("preds_attention_mask", [], dist_reduce_fx="cat")
         self.add_state("target_input_ids", [], dist_reduce_fx="cat")
         self.add_state("target_attention_mask", [], dist_reduce_fx="cat")
+
+    @property
+    def higher_is_better(self) -> bool:
+        """
+        Returns a bool indicating whether a higher value of the information measure is better.
+        Done this way as depends on if the information measure is positive or negative.
+        """
+        return _Information_Measure_Higher_Is_Better[self.information_measure]
 
     def update(self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str]]) -> None:
         """Update state with predictions and targets."""
