@@ -46,6 +46,9 @@ target = torch.tensor(
 
 _inputs = _Input(preds=preds, target=target)
 
+# Wrapper that converts to numpy to avoid Torch-to-numpy functional issues
+torch_skimage_hausdorff_distance = lambda p, t: skimage_hausdorff_distance(p.numpy(), t.numpy())
+
 
 @pytest.mark.parametrize(
     "preds, target",
@@ -70,7 +73,7 @@ class TestHausdorffDistance(MetricTester):
             preds=preds,
             target=target,
             metric_class=HausdorffDistance,
-            reference_metric=skimage_hausdorff_distance,
+            reference_metric=torch_skimage_hausdorff_distance,
             metric_args={"distance_metric": distance_metric, "spacing": None},
         )
 
@@ -80,7 +83,7 @@ class TestHausdorffDistance(MetricTester):
             preds=preds,
             target=target,
             metric_functional=hausdorff_distance,
-            reference_metric=skimage_hausdorff_distance,
+            reference_metric=torch_skimage_hausdorff_distance,
             metric_args={"distance_metric": distance_metric, "spacing": None},
         )
 
