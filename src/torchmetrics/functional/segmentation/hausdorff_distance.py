@@ -68,7 +68,7 @@ def _hausdorff_distance_compute(
         ...                        [1, 0, 0, 1, 0],
         ...                        [1, 1, 1, 1, 0]], dtype=torch.bool)
         >>> hausdorff_distance(preds, target, distance_metric="euclidean")
-        tensor(1.0)
+        tensor(1.)
 
     """
     fwd = surface_distance(preds, target, distance_metric=distance_metric, spacing=spacing)
@@ -94,6 +94,7 @@ def hausdorff_distance(
         Hausdorff Distance
 
     Example:
+        >>> import torch
         >>> from torchmetrics.functional.segmentation import hausdorff_distance
         >>> preds = torch.tensor([[1, 1, 1, 1, 1],
         ...                       [1, 0, 0, 0, 1],
@@ -106,7 +107,7 @@ def hausdorff_distance(
         ...                        [1, 0, 0, 1, 0],
         ...                        [1, 1, 1, 1, 0]], dtype=torch.bool)
         >>> hausdorff_distance(preds, target, distance_metric="euclidean")
-        tensor(1.0)
+        tensor(1.)
 
     """
     preds, target = _hausdorff_distance_update(preds, target)

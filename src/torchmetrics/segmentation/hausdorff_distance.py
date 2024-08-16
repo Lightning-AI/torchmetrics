@@ -46,6 +46,7 @@ class HausdorffDistance(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> import torch
         >>> preds = torch.tensor([[1, 1, 1, 1, 1],
         ...                       [1, 0, 0, 0, 1],
         ...                       [1, 0, 0, 0, 1],
@@ -59,7 +60,7 @@ class HausdorffDistance(Metric):
         >>> hausdorff_distance = HausdorffDistance(distance_metric="euclidean")
         >>> hausdorff_distance.update(preds, target)
         >>> hausdorff_distance.compute()
-        tensor(1.0)
+        tensor(1.)
 
     """
 
@@ -115,10 +116,10 @@ class HausdorffDistance(Metric):
         .. plot::
             :scale: 75
 
-            >>> from torch import randn
-            >>> from torchmetrics.regression import HausdorffDistance
+            >>> from torch import randint
             >>> metric = HausdorffDistance()
-            >>> metric.update(randn(10,), randn(10,))
+            >>> data1, data2 = randint(0, 2, (1,10,)).bool(), randint(0, 2, (1,10,)).bool()
+            >>> metric.update(data1, data2)
             >>> fig_, ax_ = metric.plot()
 
         """
