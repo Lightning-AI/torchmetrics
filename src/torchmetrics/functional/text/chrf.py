@@ -11,26 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# referenced from
-# Library Name: torchtext
-# Authors: torchtext authors
-# Date: 2021-11-25
-# Link:
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Copyright 2017 Maja Popovic
-
-# The program is distributed under the terms
-# of the GNU General Public Licence (GPL)
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Licensed under the Apache License, Version 2.0 (the "License")
 
 from collections import defaultdict
 from itertools import chain
