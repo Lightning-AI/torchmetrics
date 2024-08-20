@@ -3,5 +3,5 @@
 
 pandas >=1.4.0, <=2.2.2
 netcal >1.0.0, <1.4.0 # calibration_error
-numpy <2.1.0
+numpy <2.2.0
 fairlearn # group_fairness
