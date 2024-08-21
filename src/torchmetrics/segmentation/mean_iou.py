@@ -123,7 +123,7 @@ class MeanIoU(Metric):
         self.num_batches += 1
 
     def compute(self) -> Tensor:
-        """Update the state with the new data."""
+        """Compute the final Mean Intersection over Union (mIoU)."""
         return self.score / self.num_batches
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
