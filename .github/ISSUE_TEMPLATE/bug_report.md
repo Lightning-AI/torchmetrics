@@ -19,8 +19,10 @@ Steps to reproduce the behavior...
 <details>
   <summary>Code sample</summary>
 
-<!-- Ideally attach a minimal code sample to reproduce the decried issue.
-Minimal means having the shortest code but still preserving the bug. -->
+```python
+# Ideally attach a minimal code sample to reproduce the decried issue.
+# Minimal means having the shortest code but still preserving the bug.
+```
 
 </details>
 
@@ -30,9 +32,9 @@ Minimal means having the shortest code but still preserving the bug. -->
 
 ### Environment
 
-- TorchMetrics version (and how you installed TM, e.g. `conda`, `pip`, build from source):
-- Python & PyTorch Version (e.g., 1.0):
-- Any other relevant information such as OS (e.g., Linux):
+- TorchMetrics version (if build from source, add commit SHA): ???
+- Python & PyTorch Version (e.g., 1.0): ???
+- Any other relevant information such as OS (e.g., Linux): ???
 
 ### Additional context
 
