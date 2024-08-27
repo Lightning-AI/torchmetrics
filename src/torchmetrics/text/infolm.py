@@ -38,7 +38,7 @@ if not _TRANSFORMERS_GREATER_EQUAL_4_4:
     __doctest_skip__ = ["InfoLM", "InfoLM.plot"]
 
 
-_Information_Measure_Higher_Is_Better = {
+_information_measure_higher_is_better = {
     # following values are <0
     "kl_divergence": True,
     "alpha_divergence": True,
@@ -177,7 +177,7 @@ class InfoLM(Metric):
         Done this way as depends on if the information measure is positive or negative.
 
         """
-        return _Information_Measure_Higher_Is_Better[self.information_measure]
+        return _information_measure_higher_is_better[self.information_measure]
 
     def update(self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str]]) -> None:
         """Update state with predictions and targets."""
