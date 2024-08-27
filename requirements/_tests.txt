@@ -10,8 +10,8 @@ pytest-timeout ==2.3.1
 pytest-xdist ==3.6.1
 phmdoctest ==1.4.0
 
-psutil <6.1.0
-pyGithub ==2.4.*
+psutil ==6.1.*
+pyGithub >=2.3.0, <2.5.0
 fire ==0.6.*
 
 cloudpickle >1.3, <=3.0.0
