@@ -76,7 +76,7 @@ COPY requirements/ requirements/
 
 RUN \
     # set particular PyTorch version
-    pip install -q wget packaging && \
+    pip install -q wget packaging "setuptools==69.5.1" && \
     python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py  && \
     for fpath in `ls requirements/*.txt`; do \
       python ./adjust-torch-versions.py $fpath ${PYTORCH_VERSION}; \
@@ -87,7 +87,7 @@ RUN \
     CU_VERSION_MM=${CUDA_VERSION_MM//'.'/''} && \
     pip install --no-cache-dir -r requirements/_devel.txt \
       --find-links="https://download.pytorch.org/whl/cu${CU_VERSION_MM}/torch_stable.html" \
-      --find-links="https://download.pytorch.org/whl/test/cu${CU_VERSION_MM}/torch_test.html" && \
+      --extra-index-url="https://download.pytorch.org/whl/test/cu${CU_VERSION_MM}" && \
     rm -rf requirements/
 
 RUN \
