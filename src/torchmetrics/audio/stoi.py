@@ -69,7 +69,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
         >>> stoi = ShortTimeObjectiveIntelligibility(8000, False)
-        >>> stoi(preds, target)
+        >>> stoi(preds, target).round(decimals=3)
         tensor(-0.0100)
 
     """

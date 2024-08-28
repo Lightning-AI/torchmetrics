@@ -217,7 +217,7 @@ def deep_noise_suppression_mean_opinion_score(
         >>> from torch import randn
         >>> from torchmetrics.functional.audio.dnsmos import deep_noise_suppression_mean_opinion_score
         >>> g = torch.manual_seed(1)
-        >>> preds = randn(8000)
+        >>> preds = randn(8000, generator=g)
         >>> deep_noise_suppression_mean_opinion_score(preds, 8000, False)
         tensor([2.2285, 2.1132, 1.3972, 1.3652], dtype=torch.float64)
 

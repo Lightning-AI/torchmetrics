@@ -64,7 +64,7 @@ def short_time_objective_intelligibility(
         >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
-        >>> short_time_objective_intelligibility(preds, target, 8000).float()
+        >>> short_time_objective_intelligibility(preds, target, 8000).round(decimals=3)
         tensor(-0.0100)
 
     """
