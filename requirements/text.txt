@@ -1,7 +1,7 @@
 # NOTE: the upper bound for the package version is only set for CI stability, and it is dropped while installing this package
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
-nltk >=3.6, <=3.8.1
+nltk >=3.8.2, <=3.9.1
 tqdm >=4.41.0, <4.67.0
 regex >=2021.9.24, <=2024.7.24
 transformers >4.4.0, <4.45.0
