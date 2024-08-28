@@ -68,7 +68,6 @@ def perceptual_evaluation_speech_quality(
     Example:
         >>> from torch import randn
         >>> from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
-        >>> g = torch.manual_seed(1)
         >>> preds = randn(8000)
         >>> target = randn(8000)
         >>> perceptual_evaluation_speech_quality(preds, target, 8000, 'nb')

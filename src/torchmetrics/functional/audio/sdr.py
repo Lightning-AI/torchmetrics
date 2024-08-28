@@ -124,17 +124,16 @@ def signal_distortion_ratio(
             If ``preds`` and ``target`` does not have the same shape
 
     Example:
-        >>> import torch
+        >>> from torch import randn
         >>> from torchmetrics.functional.audio import signal_distortion_ratio
-        >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn(8000)
-        >>> target = torch.randn(8000)
+        >>> preds = randn(8000)
+        >>> target = randn(8000)
         >>> signal_distortion_ratio(preds, target)
         tensor(-12.0589)
         >>> # use with permutation_invariant_training
         >>> from torchmetrics.functional.audio import permutation_invariant_training
-        >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
-        >>> target = torch.randn(4, 2, 8000)
+        >>> preds = randn(4, 2, 8000)  # [batch, spk, time]
+        >>> target = randn(4, 2, 8000)
         >>> best_metric, best_perm = permutation_invariant_training(preds, target, signal_distortion_ratio)
         >>> best_metric
         tensor([-11.6375, -11.4358, -11.7148, -11.6325])
@@ -260,17 +259,16 @@ def source_aggregated_signal_distortion_ratio(
         SA-SDR with shape ``(...)``
 
     Example:
-        >>> import torch
+        >>> from torch import randn
         >>> from torchmetrics.functional.audio import source_aggregated_signal_distortion_ratio
-        >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn(2, 8000)  # [..., spk, time]
-        >>> target = torch.randn(2, 8000)
+        >>> preds = randn(2, 8000)  # [..., spk, time]
+        >>> target = randn(2, 8000)
         >>> source_aggregated_signal_distortion_ratio(preds, target)
         tensor(-41.6579)
         >>> # use with permutation_invariant_training
         >>> from torchmetrics.functional.audio import permutation_invariant_training
-        >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
-        >>> target = torch.randn(4, 2, 8000)
+        >>> preds = randn(4, 2, 8000)  # [batch, spk, time]
+        >>> target = randn(4, 2, 8000)
         >>> best_metric, best_perm = permutation_invariant_training(preds, target,
         ...     source_aggregated_signal_distortion_ratio, mode="permutation-wise")
         >>> best_metric

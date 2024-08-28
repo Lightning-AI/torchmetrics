@@ -185,17 +185,16 @@ def spatial_correlation_coefficient(
         Tensor with scc score
 
     Example:
-        >>> import torch
+        >>> from torch import randn
         >>> from torchmetrics.functional.image import spatial_correlation_coefficient as scc
-        >>> _ = torch.manual_seed(42)
-        >>> x = torch.randn(5, 3, 16, 16)
+        >>> x = randn(5, 3, 16, 16)
         >>> scc(x, x)
         tensor(1.)
-        >>> x = torch.randn(5, 16, 16)
+        >>> x = randn(5, 16, 16)
         >>> scc(x, x)
         tensor(1.)
-        >>> x = torch.randn(5, 3, 16, 16)
-        >>> y = torch.randn(5, 3, 16, 16)
+        >>> x = randn(5, 3, 16, 16)
+        >>> y = randn(5, 3, 16, 16)
         >>> scc(x, y, reduction="none")
         tensor([0.0223, 0.0256, 0.0616, 0.0159, 0.0170])
 

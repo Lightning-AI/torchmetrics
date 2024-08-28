@@ -130,10 +130,10 @@ def tschuprows_t(
         Tschuprow's T statistic
 
     Example:
+        >>> from torch import randint, round
         >>> from torchmetrics.functional.nominal import tschuprows_t
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.randint(0, 4, (100,))
-        >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
+        >>> preds = randint(0, 4, (100,))
+        >>> target = round(preds + torch.randn(100)).clamp(0, 4)
         >>> tschuprows_t(preds, target)
         tensor(0.4930)
 
@@ -169,9 +169,9 @@ def tschuprows_t_matrix(
         Tschuprow's T statistic for a dataset of categorical variables
 
     Example:
+        >>> from torch import randint
         >>> from torchmetrics.functional.nominal import tschuprows_t_matrix
-        >>> _ = torch.manual_seed(42)
-        >>> matrix = torch.randint(0, 4, (200, 5))
+        >>> matrix = randint(0, 4, (200, 5))
         >>> tschuprows_t_matrix(matrix)
         tensor([[1.0000, 0.0637, 0.0000, 0.0542, 0.1337],
                 [0.0637, 1.0000, 0.0000, 0.0000, 0.0000],

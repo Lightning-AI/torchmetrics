@@ -63,9 +63,8 @@ class ShortTimeObjectiveIntelligibility(Metric):
             If ``pystoi`` package is not installed
 
     Example:
-        >>> import torch
+        >>> from torch import randn
         >>> from torchmetrics.audio import ShortTimeObjectiveIntelligibility
-        >>> g = torch.manual_seed(1)
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
         >>> stoi = ShortTimeObjectiveIntelligibility(8000, False)
@@ -132,9 +131,8 @@ class ShortTimeObjectiveIntelligibility(Metric):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> import torch
+            >>> from torch import randn
             >>> from torchmetrics.audio import ShortTimeObjectiveIntelligibility
-            >>> g = torch.manual_seed(1)
             >>> preds = torch.randn(8000)
             >>> target = torch.randn(8000)
             >>> metric = ShortTimeObjectiveIntelligibility(8000, False)
@@ -145,10 +143,9 @@ class ShortTimeObjectiveIntelligibility(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> import torch
+            >>> from torch import randn
             >>> from torchmetrics.audio import ShortTimeObjectiveIntelligibility
             >>> metric = ShortTimeObjectiveIntelligibility(8000, False)
-            >>> g = torch.manual_seed(1)
             >>> preds = torch.randn(8000)
             >>> target = torch.randn(8000)
             >>> values = [ ]

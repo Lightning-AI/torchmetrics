@@ -80,10 +80,10 @@ def relative_average_spectral_error(preds: Tensor, target: Tensor, window_size: 
         Relative Average Spectral Error (RASE)
 
     Example:
+        >>> from torch import rand
         >>> from torchmetrics.functional.image import relative_average_spectral_error
-        >>> g = torch.manual_seed(22)
-        >>> preds = torch.rand(4, 3, 16, 16)
-        >>> target = torch.rand(4, 3, 16, 16)
+        >>> preds = rand(4, 3, 16, 16)
+        >>> target = rand(4, 3, 16, 16)
         >>> relative_average_spectral_error(preds, target)
         tensor(5114.66...)
 

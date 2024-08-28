@@ -54,11 +54,10 @@ class CalinskiHarabaszScore(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example::
-        >>> import torch
+        >>> from torch import randn, randint
         >>> from torchmetrics.clustering import CalinskiHarabaszScore
-        >>> _ = torch.manual_seed(42)
-        >>> data = torch.randn(10, 3)
-        >>> labels = torch.randint(3, (10,))
+        >>> data = randn(10, 3)
+        >>> labels = randint(3, (10,))
         >>> metric = CalinskiHarabaszScore()
         >>> metric(data, labels)
         tensor(3.0053)

@@ -62,10 +62,9 @@ def _drop_empty_rows_and_cols(confmat: Tensor) -> Tensor:
     """Drop all rows and columns containing only zeros.
 
     Example:
-        >>> import torch
+        >>> from torch import randint
         >>> from torchmetrics.functional.nominal.utils import _drop_empty_rows_and_cols
-        >>> _ = torch.manual_seed(22)
-        >>> matrix = torch.randint(10, size=(3, 3))
+        >>> matrix = randint(10, size=(3, 3))
         >>> matrix[1, :] = matrix[:, 1] = 0
         >>> matrix
         tensor([[9, 0, 6],

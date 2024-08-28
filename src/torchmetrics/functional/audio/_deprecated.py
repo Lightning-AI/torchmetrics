@@ -69,15 +69,14 @@ def _signal_distortion_ratio(
 ) -> Tensor:
     """Wrapper for deprecated import.
 
-    >>> import torch
-    >>> g = torch.manual_seed(1)
-    >>> preds = torch.randn(8000)
-    >>> target = torch.randn(8000)
+    >>> from torch import randn
+    >>> preds = randn(8000)
+    >>> target = randn(8000)
     >>> _signal_distortion_ratio(preds, target)
     tensor(-12.0589)
     >>> # use with permutation_invariant_training
-    >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
-    >>> target = torch.randn(4, 2, 8000)
+    >>> preds = randn(4, 2, 8000)  # [batch, spk, time]
+    >>> target = randn(4, 2, 8000)
     >>> best_metric, best_perm = _permutation_invariant_training(preds, target, _signal_distortion_ratio)
     >>> best_metric
     tensor([-11.6375, -11.4358, -11.7148, -11.6325])
