@@ -76,7 +76,7 @@ class SignalDistortionRatio(Metric):
         >>> target = randn(8000)
         >>> sdr = SignalDistortionRatio()
         >>> sdr(preds, target)
-        tensor(-12.0589)
+        tensor(-11.9930)
         >>> # use with pit
         >>> from torchmetrics.audio import PermutationInvariantTraining
         >>> from torchmetrics.functional.audio import signal_distortion_ratio
