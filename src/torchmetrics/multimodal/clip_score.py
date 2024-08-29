@@ -87,7 +87,7 @@ class CLIPScore(Metric):
         >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
         >>> score = metric(randint(255, (3, 224, 224)), "a photo of a cat")
         >>> score.detach()
-        tensor(24.4255)
+        tensor(24.8020)
 
     """
 

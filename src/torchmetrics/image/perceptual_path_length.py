@@ -112,9 +112,9 @@ class PerceptualPathLength(Metric):
         >>> generator = DummyGenerator(2)
         >>> ppl = PerceptualPathLength(num_samples=10)
         >>> ppl(generator)
-        (tensor(0.2369),
+        (tensor(0.2371),
          tensor(0.1760),
-         tensor([0.3489, 0.1363, 0.2535, 0.0907, 0.1785, 0.0769, 0.5864, 0.0691, 0.3920]))
+         tensor([0.3494, 0.1367, 0.2531, 0.0907, 0.1789, 0.0769, 0.5863, 0.0691, 0.3926]))
 
     """
 
