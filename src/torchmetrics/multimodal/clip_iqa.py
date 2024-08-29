@@ -145,7 +145,7 @@ class CLIPImageQualityAssessment(Metric):
         >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
         >>> metric = CLIPImageQualityAssessment(prompts=("quality", "brightness"))
         >>> metric(imgs)
-        {'quality': tensor([0.8693, 0.8705]), 'brightness': tensor([0.5722, 0.4762])}
+        {'quality': tensor([0.8894, 0.8902]), 'brightness': tensor([0.5507, 0.5208])}
 
     Example::
         Custom prompts. Must always be a tuple of length 2, with a positive and negative prompt.
