@@ -114,10 +114,10 @@ def pearsons_contingency_coefficient(
         Pearson's Contingency Coefficient
 
     Example:
+        >>> from torch import randint, round
         >>> from torchmetrics.functional.nominal import pearsons_contingency_coefficient
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.randint(0, 4, (100,))
-        >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
+        >>> preds = randint(0, 4, (100,))
+        >>> target = round(preds + torch.randn(100)).clamp(0, 4)
         >>> pearsons_contingency_coefficient(preds, target)
         tensor(0.6948)
 
@@ -151,9 +151,9 @@ def pearsons_contingency_coefficient_matrix(
         Pearson's Contingency Coefficient statistic for a dataset of categorical variables
 
     Example:
+        >>> from torch import randint
         >>> from torchmetrics.functional.nominal import pearsons_contingency_coefficient_matrix
-        >>> _ = torch.manual_seed(42)
-        >>> matrix = torch.randint(0, 4, (200, 5))
+        >>> matrix = randint(0, 4, (200, 5))
         >>> pearsons_contingency_coefficient_matrix(matrix)
         tensor([[1.0000, 0.2326, 0.1959, 0.2262, 0.2989],
                 [0.2326, 1.0000, 0.1386, 0.1895, 0.1329],

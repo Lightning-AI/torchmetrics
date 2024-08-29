@@ -202,9 +202,8 @@ def perceptual_path_length(
         A tuple containing the mean, standard deviation and all distances.
 
     Example::
-        >>> from torchmetrics.functional.image import perceptual_path_length
         >>> import torch
-        >>> _ = torch.manual_seed(42)
+        >>> from torchmetrics.functional.image import perceptual_path_length
         >>> class DummyGenerator(torch.nn.Module):
         ...    def __init__(self, z_size) -> None:
         ...       super().__init__()

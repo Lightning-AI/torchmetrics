@@ -78,21 +78,19 @@ def fleiss_kappa(ratings: Tensor, mode: Literal["counts", "probs"] = "counts") -
 
     Example:
         >>> # Ratings are provided as counts
-        >>> import torch
+        >>> from torch import randint
         >>> from torchmetrics.functional.nominal import fleiss_kappa
-        >>> _ = torch.manual_seed(42)
-        >>> ratings = torch.randint(0, 10, size=(100, 5)).long()  # 100 samples, 5 categories, 10 raters
+        >>> ratings = randint(0, 10, size=(100, 5)).long()  # 100 samples, 5 categories, 10 raters
         >>> fleiss_kappa(ratings)
         tensor(0.0089)
 
     Example:
         >>> # Ratings are provided as probabilities
-        >>> import torch
+        >>> from torch import randn
         >>> from torchmetrics.functional.nominal import fleiss_kappa
-        >>> _ = torch.manual_seed(42)
-        >>> ratings = torch.randn(100, 5, 10).softmax(dim=1)  # 100 samples, 5 categories, 10 raters
+        >>> ratings = randn(100, 5, 10).softmax(dim=1)  # 100 samples, 5 categories, 10 raters
         >>> fleiss_kappa(ratings, mode='probs')
-        tensor(-0.0105)
+        tensor(-0.0075)
 
     """
     if mode not in ["counts", "probs"]:

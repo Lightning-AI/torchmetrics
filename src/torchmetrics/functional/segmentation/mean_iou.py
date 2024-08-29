@@ -90,11 +90,10 @@ def mean_iou(
         The mean IoU score
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
+        >>> from torch import randint
         >>> from torchmetrics.functional.segmentation import mean_iou
-        >>> preds = torch.randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
-        >>> target = torch.randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 target
+        >>> preds = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
+        >>> target = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 target
         >>> mean_iou(preds, target, num_classes=5)
         tensor([0.3193, 0.3305, 0.3382, 0.3246])
         >>> mean_iou(preds, target, num_classes=5, per_class=True)
