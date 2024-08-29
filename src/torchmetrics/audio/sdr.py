@@ -307,7 +307,7 @@ class SourceAggregatedSignalDistortionRatio(Metric):
         >>> target = randn(2, 8000)
         >>> sasdr = SourceAggregatedSignalDistortionRatio()
         >>> sasdr(preds, target)
-        tensor(-41.6579)
+        tensor(-50.8171)
         >>> # use with pit
         >>> from torchmetrics.audio import PermutationInvariantTraining
         >>> from torchmetrics.functional.audio import source_aggregated_signal_distortion_ratio
@@ -316,7 +316,7 @@ class SourceAggregatedSignalDistortionRatio(Metric):
         >>> pit = PermutationInvariantTraining(source_aggregated_signal_distortion_ratio,
         ...     mode="permutation-wise", eval_func="max")
         >>> pit(preds, target)
-        tensor(-41.2790)
+        tensor(-43.9780)
 
     """
 

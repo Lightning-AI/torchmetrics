@@ -49,8 +49,7 @@ def _error_relative_global_dimensionless_synthesis(
     >>> from torch import rand
     >>> preds = rand([16, 1, 16, 16])
     >>> target = preds * 0.75
-    >>> ergds = _error_relative_global_dimensionless_synthesis(preds, target)
-    >>> torch.round(ergds)
+    >>> _error_relative_global_dimensionless_synthesis(preds, target).round()
     tensor(10.)
 
     """
@@ -104,10 +103,10 @@ def _relative_average_spectral_error(preds: Tensor, target: Tensor, window_size:
     """Wrapper for deprecated import.
 
     >>> from torch import rand
-    >>> preds = rand(4, 3, 16, 16, generator=gen)
-    >>> target = rand(4, 3, 16, 16, generator=gen)
+    >>> preds = rand(4, 3, 16, 16)
+    >>> target = rand(4, 3, 16, 16)
     >>> _relative_average_spectral_error(preds, target)
-    tensor(5114.66...)
+    tensor(5326.40...)
 
     """
     _deprecated_root_import_func("relative_average_spectral_error", "image")
@@ -120,10 +119,10 @@ def _root_mean_squared_error_using_sliding_window(
     """Wrapper for deprecated import.
 
     >>> from torch import rand
-    >>> preds = rand(4, 3, 16, 16, generator=gen)
-    >>> target = rand(4, 3, 16, 16, generator=gen)
+    >>> preds = rand(4, 3, 16, 16)
+    >>> target = rand(4, 3, 16, 16)
     >>> _root_mean_squared_error_using_sliding_window(preds, target)
-    tensor(0.3999)
+    tensor(0.4158)
 
     """
     _deprecated_root_import_func("root_mean_squared_error_using_sliding_window", "image")
@@ -140,8 +139,8 @@ def _spectral_angle_mapper(
     """Wrapper for deprecated import.
 
     >>> from torch import rand
-    >>> preds = rand([16, 3, 16, 16], generator=gen)
-    >>> target = rand([16, 3, 16, 16], generator=gen)
+    >>> preds = rand([16, 3, 16, 16])
+    >>> target = rand([16, 3, 16, 16])
     >>> _spectral_angle_mapper(preds, target)
     tensor(0.5914)
 
@@ -166,7 +165,7 @@ def _multiscale_structural_similarity_index_measure(
     """Wrapper for deprecated import.
 
     >>> from torch import rand
-    >>> preds = rand([3, 3, 256, 256], generator=gen)
+    >>> preds = rand([3, 3, 256, 256])
     >>> target = preds * 0.75
     >>> _multiscale_structural_similarity_index_measure(preds, target, data_range=1.0)
     tensor(0.9627)

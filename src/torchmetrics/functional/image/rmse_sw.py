@@ -129,7 +129,7 @@ def root_mean_squared_error_using_sliding_window(
         >>> preds = rand(4, 3, 16, 16)
         >>> target = rand(4, 3, 16, 16)
         >>> root_mean_squared_error_using_sliding_window(preds, target)
-        tensor(0.3999)
+        tensor(0.4158)
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.

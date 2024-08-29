@@ -274,7 +274,7 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
         >>> target = randn((1,257,100,2))
         >>> c_si_snr = ComplexScaleInvariantSignalNoiseRatio()
         >>> c_si_snr(preds, target)
-        tensor(-63.4849)
+        tensor(-38.8832)
 
     """
 

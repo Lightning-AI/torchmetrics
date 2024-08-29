@@ -85,7 +85,7 @@ def relative_average_spectral_error(preds: Tensor, target: Tensor, window_size: 
         >>> preds = rand(4, 3, 16, 16)
         >>> target = rand(4, 3, 16, 16)
         >>> relative_average_spectral_error(preds, target)
-        tensor(5114.66...)
+        tensor(5326.40...)
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.

@@ -65,11 +65,11 @@ class ShortTimeObjectiveIntelligibility(Metric):
     Example:
         >>> from torch import randn
         >>> from torchmetrics.audio import ShortTimeObjectiveIntelligibility
-        >>> preds = torch.randn(8000)
-        >>> target = torch.randn(8000)
+        >>> preds = randn(8000)
+        >>> target = randn(8000)
         >>> stoi = ShortTimeObjectiveIntelligibility(8000, False)
         >>> stoi(preds, target)
-        tensor(-0.0100)
+        tensor(-0.0842)
 
     """
 
@@ -133,8 +133,8 @@ class ShortTimeObjectiveIntelligibility(Metric):
             >>> # Example plotting a single value
             >>> from torch import randn
             >>> from torchmetrics.audio import ShortTimeObjectiveIntelligibility
-            >>> preds = torch.randn(8000)
-            >>> target = torch.randn(8000)
+            >>> preds = randn(8000)
+            >>> target = randn(8000)
             >>> metric = ShortTimeObjectiveIntelligibility(8000, False)
             >>> metric.update(preds, target)
             >>> fig_, ax_ = metric.plot()
@@ -146,8 +146,8 @@ class ShortTimeObjectiveIntelligibility(Metric):
             >>> from torch import randn
             >>> from torchmetrics.audio import ShortTimeObjectiveIntelligibility
             >>> metric = ShortTimeObjectiveIntelligibility(8000, False)
-            >>> preds = torch.randn(8000)
-            >>> target = torch.randn(8000)
+            >>> preds = randn(8000)
+            >>> target = randn(8000)
             >>> values = [ ]
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))

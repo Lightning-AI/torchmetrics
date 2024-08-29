@@ -64,15 +64,16 @@ def _drop_empty_rows_and_cols(confmat: Tensor) -> Tensor:
     Example:
         >>> from torch import randint
         >>> from torchmetrics.functional.nominal.utils import _drop_empty_rows_and_cols
-        >>> matrix = randint(10, size=(3, 3))
+        >>> matrix = randint(10, size=(4, 3))
         >>> matrix[1, :] = matrix[:, 1] = 0
         >>> matrix
-        tensor([[9, 0, 6],
+        tensor([[2, 0, 6],
                 [0, 0, 0],
-                [2, 0, 8]])
+                [0, 0, 0],
+                [3, 0, 4]])
         >>> _drop_empty_rows_and_cols(matrix)
-        tensor([[9, 6],
-                [2, 8]])
+        tensor([[2, 6],
+                [3, 4]])
 
     """
     confmat = confmat[confmat.sum(1) != 0]

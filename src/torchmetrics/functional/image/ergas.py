@@ -63,7 +63,7 @@ def _ergas_compute(
 
     Example:
         >>> from torch import rand
-        >>> preds = rand([16, 1, 16, 16], generator=gen)
+        >>> preds = rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> preds, target = _ergas_update(preds, target)
         >>> torch.round(_ergas_compute(preds, target))
@@ -113,7 +113,7 @@ def error_relative_global_dimensionless_synthesis(
     Example:
         >>> from torch import rand
         >>> from torchmetrics.functional.image import error_relative_global_dimensionless_synthesis
-        >>> preds = rand([16, 1, 16, 16], generator=gen)
+        >>> preds = rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> error_relative_global_dimensionless_synthesis(preds, target)
         tensor(9.6193)

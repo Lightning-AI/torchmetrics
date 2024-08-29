@@ -81,7 +81,7 @@ class SpeechReverberationModulationEnergyRatio(Metric):
         >>> preds = randn(8000)
         >>> srmr = SpeechReverberationModulationEnergyRatio(8000)
         >>> srmr(preds)
-        tensor(0.3354)
+        tensor(0.3191)
 
     """
 

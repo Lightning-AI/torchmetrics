@@ -239,8 +239,8 @@ def _perplexity(preds: Tensor, target: Tensor, ignore_index: Optional[int] = Non
     """Wrapper for deprecated import.
 
     >>> from torch import rand, randint
-    >>> preds = rand(2, 8, 5, generator=gen)
-    >>> target = randint(5, (2, 8), generator=gen)
+    >>> preds = rand(2, 8, 5)
+    >>> target = randint(5, (2, 8))
     >>> target[0, 6:] = -100
     >>> _perplexity(preds, target, ignore_index=-100)
     tensor(5.8540)

@@ -66,8 +66,8 @@ def _sam_compute(
 
     Example:
         >>> from torch import rand
-        >>> preds = rand([16, 3, 16, 16], generator=gen)
-        >>> target = rand([16, 3, 16, 16], generator=gen)
+        >>> preds = rand([16, 3, 16, 16])
+        >>> target = rand([16, 3, 16, 16])
         >>> preds, target = _sam_update(preds, target)
         >>> _sam_compute(preds, target)
         tensor(0.5914)

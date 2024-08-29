@@ -90,7 +90,7 @@ def fleiss_kappa(ratings: Tensor, mode: Literal["counts", "probs"] = "counts") -
         >>> from torchmetrics.functional.nominal import fleiss_kappa
         >>> ratings = randn(100, 5, 10).softmax(dim=1)  # 100 samples, 5 categories, 10 raters
         >>> fleiss_kappa(ratings, mode='probs')
-        tensor(-0.0105)
+        tensor(-0.0075)
 
     """
     if mode not in ["counts", "probs"]:

@@ -79,7 +79,7 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
         >>> preds = randn(8000)
         >>> dnsmos = DeepNoiseSuppressionMeanOpinionScore(8000, False)
         >>> dnsmos(preds)
-        tensor([2.2285, 2.1132, 1.3972, 1.3652], dtype=torch.float64)
+        tensor([2.2687, 2.0766, 1.1375, 1.2722], dtype=torch.float64)
 
     """
 

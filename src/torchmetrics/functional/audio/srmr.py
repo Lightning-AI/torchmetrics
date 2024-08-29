@@ -225,7 +225,7 @@ def speech_reverberation_modulation_energy_ratio(
         >>> from torchmetrics.functional.audio import speech_reverberation_modulation_energy_ratio
         >>> preds = randn(8000)
         >>> speech_reverberation_modulation_energy_ratio(preds, 8000)
-        tensor([0.3354], dtype=torch.float64)
+        tensor([0.3191], dtype=torch.float64)
 
     """
     if not _TORCHAUDIO_AVAILABLE or not _TORCHAUDIO_GREATER_EQUAL_0_10 or not _GAMMATONE_AVAILABLE:

@@ -31,7 +31,7 @@ def davies_bouldin_score(data: Tensor, labels: Tensor) -> Tensor:
         Scalar tensor with the Davies bouldin score
 
     Example:
-        >>> from torch import rand, randint
+        >>> from torch import randn, randint
         >>> from torchmetrics.functional.clustering import davies_bouldin_score
         >>> data = randn(10, 3)
         >>> labels = randint(0, 2, (10,))

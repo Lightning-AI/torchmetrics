@@ -77,10 +77,10 @@ class PerceptualEvaluationSpeechQuality(Metric):
         >>> target = randn(8000)
         >>> pesq = PerceptualEvaluationSpeechQuality(8000, 'nb')
         >>> pesq(preds, target)
-        tensor(2.2076)
+        tensor(2.2885)
         >>> wb_pesq = PerceptualEvaluationSpeechQuality(16000, 'wb')
         >>> wb_pesq(preds, target)
-        tensor(1.7359)
+        tensor(1.6805)
 
     """
 

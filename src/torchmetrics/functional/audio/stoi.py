@@ -64,7 +64,7 @@ def short_time_objective_intelligibility(
         >>> preds = randn(8000)
         >>> target = randn(8000)
         >>> short_time_objective_intelligibility(preds, target, 8000).float()
-        tensor(-0.0100)
+        tensor(-0.0842)
 
     """
     if not _PYSTOI_AVAILABLE:

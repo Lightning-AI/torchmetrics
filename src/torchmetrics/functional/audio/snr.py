@@ -111,7 +111,7 @@ def complex_scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor, ze
         >>> preds = randn((1,257,100,2))
         >>> target = randn((1,257,100,2))
         >>> complex_scale_invariant_signal_noise_ratio(preds, target)
-        tensor([-63.4849])
+        tensor([-38.8832])
 
     """
     if preds.is_complex():

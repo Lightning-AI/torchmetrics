@@ -71,9 +71,9 @@ def perceptual_evaluation_speech_quality(
         >>> preds = randn(8000)
         >>> target = randn(8000)
         >>> perceptual_evaluation_speech_quality(preds, target, 8000, 'nb')
-        tensor(2.2076)
+        tensor(2.2885)
         >>> perceptual_evaluation_speech_quality(preds, target, 16000, 'wb')
-        tensor(1.7359)
+        tensor(1.6805)
 
     """
     if not _PESQ_AVAILABLE:
