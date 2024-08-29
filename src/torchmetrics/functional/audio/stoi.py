@@ -65,7 +65,7 @@ def short_time_objective_intelligibility(
         >>> preds = torch.randn(8000)
         >>> target = torch.randn(8000)
         >>> short_time_objective_intelligibility(preds, target, 8000).round(decimals=3)
-        tensor(-0.0100)
+        tensor(-0.0100, dtype=torch.float64)
 
     """
     if not _PYSTOI_AVAILABLE:
