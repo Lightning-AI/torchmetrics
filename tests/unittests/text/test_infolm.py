@@ -16,7 +16,7 @@ from functools import partial
 import pytest
 import torch
 from torchmetrics.functional.text.infolm import infolm
-from torchmetrics.text.infolm import InfoLM, _information_measure_higher_is_better
+from torchmetrics.text.infolm import InfoLM
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
 from unittests._helpers import skip_on_connection_issues
@@ -196,4 +196,4 @@ class TestInfoLM(TextTester):
         }
 
         metric = InfoLM(**metric_args)
-        assert metric.higher_is_better == _information_measure_higher_is_better[information_measure]
+        assert metric.higher_is_better == metric._information_measure_higher_is_better[information_measure]

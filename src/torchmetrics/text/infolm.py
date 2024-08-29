@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, ClassVar, Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -36,21 +36,6 @@ if not _MATPLOTLIB_AVAILABLE:
 
 if not _TRANSFORMERS_GREATER_EQUAL_4_4:
     __doctest_skip__ = ["InfoLM", "InfoLM.plot"]
-
-
-_information_measure_higher_is_better = {
-    # following values are <0
-    "kl_divergence": True,
-    "alpha_divergence": True,
-    # following values are >0
-    "beta_divergence": False,
-    "ab_divergence": False,
-    "renyi_divergence": False,
-    "l1_distance": False,
-    "l2_distance": False,
-    "l_infinity_distance": False,
-    "fisher_rao_distance": False,
-}
 
 
 class InfoLM(Metric):
@@ -131,6 +116,20 @@ class InfoLM(Metric):
     target_input_ids: List[Tensor]
     target_attention_mask: List[Tensor]
 
+    _information_measure_higher_is_better: ClassVar = {
+        # following values are <0
+        "kl_divergence": True,
+        "alpha_divergence": True,
+        # following values are >0
+        "beta_divergence": False,
+        "ab_divergence": False,
+        "renyi_divergence": False,
+        "l1_distance": False,
+        "l2_distance": False,
+        "l_infinity_distance": False,
+        "fisher_rao_distance": False,
+    }
+
     def __init__(
         self,
         model_name_or_path: Union[str, os.PathLike] = "bert-base-uncased",
@@ -177,7 +176,7 @@ class InfoLM(Metric):
         Done this way as depends on if the information measure is positive or negative.
 
         """
-        return _information_measure_higher_is_better[self.information_measure]
+        return self._information_measure_higher_is_better[self.information_measure]
 
     def update(self, preds: Union[str, Sequence[str]], target: Union[str, Sequence[str]]) -> None:
         """Update state with predictions and targets."""
