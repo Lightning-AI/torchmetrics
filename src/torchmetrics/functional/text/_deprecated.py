@@ -134,7 +134,14 @@ def _chrf_score(
     whitespace: bool = False,
     return_sentence_level_score: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Wrapper for deprecated import."""
+    """Wrapper for deprecated import.
+
+    >>> preds = ['the cat is on the mat']
+    >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
+    >>> _chrf_score(preds, target)
+    tensor(0.8640)
+
+    """
     _deprecated_root_import_func("chrf_score", "text")
     return chrf_score(
         preds=preds,
