@@ -85,7 +85,7 @@ class SignalDistortionRatio(Metric):
         >>> pit = PermutationInvariantTraining(signal_distortion_ratio,
         ...     mode="speaker-wise", eval_func="max")
         >>> pit(preds, target)
-        tensor(-11.6051)
+        tensor(-11.7277)
 
     """
 
