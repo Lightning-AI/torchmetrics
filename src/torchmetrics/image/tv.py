@@ -53,9 +53,8 @@ class TotalVariation(Metric):
             If ``reduction`` is not one of ``'sum'``, ``'mean'``, ``'none'`` or ``None``
 
     Example:
-        >>> import torch
+        >>> from torch import rand
         >>> from torchmetrics.image import TotalVariation
-        >>> _ = torch.manual_seed(42)
         >>> tv = TotalVariation()
         >>> img = torch.rand(5, 3, 28, 28)
         >>> tv(img)

@@ -39,11 +39,10 @@ class SpatialCorrelationCoefficient(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
+        >>> from torch import randn
         >>> from torchmetrics.image import SpatialCorrelationCoefficient as SCC
-        >>> preds = torch.randn([32, 3, 64, 64])
-        >>> target = torch.randn([32, 3, 64, 64])
+        >>> preds = randn([32, 3, 64, 64])
+        >>> target = randn([32, 3, 64, 64])
         >>> scc = SCC()
         >>> scc(preds, target)
         tensor(0.0023)

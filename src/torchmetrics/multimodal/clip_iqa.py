@@ -128,10 +128,9 @@ class CLIPImageQualityAssessment(Metric):
     Example::
         Single prompt:
 
+        >>> from torch import randint
         >>> from torchmetrics.multimodal import CLIPImageQualityAssessment
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
-        >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
+        >>> imgs = randint(255, (2, 3, 224, 224)).float()
         >>> metric = CLIPImageQualityAssessment()
         >>> metric(imgs)
         tensor([0.8894, 0.8902])
@@ -139,10 +138,9 @@ class CLIPImageQualityAssessment(Metric):
     Example::
         Multiple prompts:
 
+        >>> from torch import randint
         >>> from torchmetrics.multimodal import CLIPImageQualityAssessment
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
-        >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
+        >>> imgs = randint(255, (2, 3, 224, 224)).float()
         >>> metric = CLIPImageQualityAssessment(prompts=("quality", "brightness"))
         >>> metric(imgs)
         {'quality': tensor([0.8894, 0.8902]), 'brightness': tensor([0.5507, 0.5208])}
@@ -150,10 +148,9 @@ class CLIPImageQualityAssessment(Metric):
     Example::
         Custom prompts. Must always be a tuple of length 2, with a positive and negative prompt.
 
+        >>> from torch import randint
         >>> from torchmetrics.multimodal import CLIPImageQualityAssessment
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
-        >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
+        >>> imgs = randint(255, (2, 3, 224, 224)).float()
         >>> metric = CLIPImageQualityAssessment(prompts=(("Super good photo.", "Super bad photo."), "brightness"))
         >>> metric(imgs)
         {'user_defined_0': tensor([0.9652, 0.9629]), 'brightness': tensor([0.5507, 0.5208])}

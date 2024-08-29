@@ -43,13 +43,13 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
+        >>> from torch import rand
         >>> from torchmetrics.image import RootMeanSquaredErrorUsingSlidingWindow
-        >>> g = torch.manual_seed(22)
-        >>> preds = torch.rand(4, 3, 16, 16)
-        >>> target = torch.rand(4, 3, 16, 16)
+        >>> preds = rand(4, 3, 16, 16)
+        >>> target = rand(4, 3, 16, 16)
         >>> rmse_sw = RootMeanSquaredErrorUsingSlidingWindow()
         >>> rmse_sw(preds, target)
-        tensor(0.3999)
+        tensor(0.4158)
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.
