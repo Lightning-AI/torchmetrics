@@ -502,9 +502,9 @@ def multiscale_structural_similarity_index_measure(
             If one of the elements of ``sigma`` is not a ``positive number``.
 
     Example:
+        >>> from torch import rand
         >>> from torchmetrics.functional.image import multiscale_structural_similarity_index_measure
-        >>> gen = torch.manual_seed(42)
-        >>> preds = torch.rand([3, 3, 256, 256], generator=gen)
+        >>> preds = rand([3, 3, 256, 256])
         >>> target = preds * 0.75
         >>> multiscale_structural_similarity_index_measure(preds, target, data_range=1.0)
         tensor(0.9627)

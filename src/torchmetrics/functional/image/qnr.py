@@ -63,12 +63,11 @@ def quality_with_no_reference(
             If ``alpha`` or ``beta`` is not a non-negative real number.
 
     Example:
-        >>> import torch
+        >>> from torch import rand
         >>> from torchmetrics.functional.image import quality_with_no_reference
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand([16, 3, 32, 32])
-        >>> ms = torch.rand([16, 3, 16, 16])
-        >>> pan = torch.rand([16, 3, 32, 32])
+        >>> preds = rand([16, 3, 32, 32])
+        >>> ms = rand([16, 3, 16, 16])
+        >>> pan = rand([16, 3, 32, 32])
         >>> quality_with_no_reference(preds, ms, pan)
         tensor(0.9694)
 
