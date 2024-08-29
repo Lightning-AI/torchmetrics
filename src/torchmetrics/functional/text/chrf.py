@@ -16,7 +16,8 @@
 
 # Copyright 2017 Maja Popovic
 # The code is derived from https://github.com/m-popovic/chrF/blob/6d3c384/chrF%2B%2B.py
-# The original author and copyright holder have agreed to relicense the derived code  under the Apache License, Version 2.0 (the "License")
+# The original author and copyright holder have agreed to relicense the derived code under the Apache License,
+# Version 2.0 (the "License")
 # Reference to the approval: https://github.com/Lightning-AI/torchmetrics/pull/2701#issuecomment-2316891785
 
 from collections import defaultdict
