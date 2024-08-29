@@ -11,13 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# referenced from
+# Library Name: torchtext
+# Authors: torchtext authors and @sluks
+# Date: 2021-11-25
+# Link:
 
 import itertools
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Union
 
-from torch import Tensor
+import torch
+from torch import Tensor, tensor
 
 from torchmetrics import Metric
+from torchmetrics.functional.text.chrf import _chrf_score_compute, _chrf_score_update, _prepare_n_grams_dicts
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -49,10 +56,6 @@ class CHRFScore(Metric):
     in `chrF++ score`_. This implementation follows the implementations from https://github.com/m-popovic/chrF and
     https://github.com/mjpost/sacrebleu/blob/master/sacrebleu/metrics/chrf.py.
 
-    .. attention::
-        ChrF has been temporarily removed from the TorchMetrics package
-        due to licensing issues with the upstream package.
-
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
     - ``preds`` (:class:`~Sequence`): An iterable of hypothesis corpus
@@ -72,6 +75,22 @@ class CHRFScore(Metric):
         whitespace: An indication whether keep whitespaces during n-gram extraction.
         return_sentence_level_score: An indication whether a sentence-level chrF/chrF++ score to be returned.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Raises:
+        ValueError:
+            If ``n_char_order`` is not an integer greater than or equal to 1.
+        ValueError:
+            If ``n_word_order`` is not an integer greater than or equal to 0.
+        ValueError:
+            If ``beta`` is smaller than 0.
+
+    Example:
+        >>> from torchmetrics.text import CHRFScore
+        >>> preds = ['the cat is on the mat']
+        >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
+        >>> chrf = CHRFScore()
+        >>> chrf(preds, target)
+        tensor(0.8640)
 
     """
 
@@ -93,77 +112,73 @@ class CHRFScore(Metric):
         return_sentence_level_score: bool = False,
         **kwargs: Any,
     ) -> None:
-        # super().__init__(**kwargs)
-        #
-        # if not isinstance(n_char_order, int) or n_char_order < 1:
-        #     raise ValueError("Expected argument `n_char_order` to be an integer greater than or equal to 1.")
-        # self.n_char_order = n_char_order
-        # if not isinstance(n_word_order, int) or n_word_order < 0:
-        #     raise ValueError("Expected argument `n_word_order` to be an integer greater than or equal to 0.")
-        # self.n_word_order = n_word_order
-        # if beta < 0:
-        #     raise ValueError("Expected argument `beta` to be greater than 0.")
-        # self.beta = beta
-        # self.lowercase = lowercase
-        # self.whitespace = whitespace
-        # self.return_sentence_level_score = return_sentence_level_score
-        #
-        # self.n_order = float(n_char_order + n_word_order)
-        #
-        # # Adding state dynamically
-        # for (n_gram_level, n_gram_order), text in self._get_text_n_gram_iterator():
-        #     for n in range(1, n_gram_order + 1):
-        #         state_name = self._get_state_name(text, n_gram_level, n)
-        #         self.add_state(state_name, tensor(0.0), dist_reduce_fx="sum")
-        #
-        # if self.return_sentence_level_score:
-        #     self.add_state("sentence_chrf_score", [], dist_reduce_fx="cat")
-        raise NotImplementedError(
-            "ChrF has been temporarily removed from the TorchMetrics package"
-            " due to licensing issues with the upstream package."
-        )
+        super().__init__(**kwargs)
+
+        if not isinstance(n_char_order, int) or n_char_order < 1:
+            raise ValueError("Expected argument `n_char_order` to be an integer greater than or equal to 1.")
+        self.n_char_order = n_char_order
+        if not isinstance(n_word_order, int) or n_word_order < 0:
+            raise ValueError("Expected argument `n_word_order` to be an integer greater than or equal to 0.")
+        self.n_word_order = n_word_order
+        if beta < 0:
+            raise ValueError("Expected argument `beta` to be greater than 0.")
+        self.beta = beta
+        self.lowercase = lowercase
+        self.whitespace = whitespace
+        self.return_sentence_level_score = return_sentence_level_score
+
+        self.n_order = float(n_char_order + n_word_order)
+
+        # Adding state dynamically
+        for (n_gram_level, n_gram_order), text in self._get_text_n_gram_iterator():
+            for n in range(1, n_gram_order + 1):
+                state_name = self._get_state_name(text, n_gram_level, n)
+                self.add_state(state_name, tensor(0.0), dist_reduce_fx="sum")
+
+        if self.return_sentence_level_score:
+            self.add_state("sentence_chrf_score", [], dist_reduce_fx="cat")
 
     def update(self, preds: Sequence[str], target: Sequence[Sequence[str]]) -> None:
         """Update state with predictions and targets."""
-        # n_grams_dicts_tuple = _chrf_score_update(
-        #     preds,
-        #     target,
-        #     *self._convert_states_to_dicts(),
-        #     self.n_char_order,
-        #     self.n_word_order,
-        #     self.n_order,
-        #     self.beta,
-        #     self.lowercase,
-        #     self.whitespace,
-        #     self.sentence_chrf_score if self.return_sentence_level_score else None,
-        # )
-        # self._update_states_from_dicts(n_grams_dicts_tuple[:-1])
-        # if self.sentence_chrf_score is not None:
-        #     self.sentence_chrf_score = n_grams_dicts_tuple[-1]
+        n_grams_dicts_tuple = _chrf_score_update(
+            preds,
+            target,
+            *self._convert_states_to_dicts(),
+            self.n_char_order,
+            self.n_word_order,
+            self.n_order,
+            self.beta,
+            self.lowercase,
+            self.whitespace,
+            self.sentence_chrf_score if self.return_sentence_level_score else None,
+        )
+        self._update_states_from_dicts(n_grams_dicts_tuple[:-1])
+        if self.sentence_chrf_score is not None:
+            self.sentence_chrf_score = n_grams_dicts_tuple[-1]
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:  # type: ignore[empty-body]
+    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
         """Calculate chrF/chrF++ score."""
-        # if self.sentence_chrf_score is not None:
-        #     return (
-        #         _chrf_score_compute(*self._convert_states_to_dicts(), self.n_order, self.beta),
-        #         torch.cat(self.sentence_chrf_score),
-        #     )
-        # return _chrf_score_compute(*self._convert_states_to_dicts(), self.n_order, self.beta)
+        if self.sentence_chrf_score is not None:
+            return (
+                _chrf_score_compute(*self._convert_states_to_dicts(), self.n_order, self.beta),
+                torch.cat(self.sentence_chrf_score),
+            )
+        return _chrf_score_compute(*self._convert_states_to_dicts(), self.n_order, self.beta)
 
-    def _convert_states_to_dicts(self) -> _DICT_STATES_TYPES:  # type: ignore[empty-body]
+    def _convert_states_to_dicts(self) -> _DICT_STATES_TYPES:
         """Convert global metric states to the n-gram dictionaries to be passed in ``_chrf_score_update``."""
-        # n_grams_dicts: Dict[str, Dict[int, Tensor]] = dict(
-        #     zip(_DICT_STATES_NAMES, _prepare_n_grams_dicts(self.n_char_order, self.n_word_order))
-        # )
-        #
-        # for (n_gram_level, n_gram_order), text in self._get_text_n_gram_iterator():
-        #     for n in range(1, n_gram_order + 1):
-        #         dict_name = self._get_dict_name(text, n_gram_level)
-        #         state_name = self._get_state_name(text, n_gram_level, n)
-        #
-        #         n_grams_dicts[dict_name][n] = getattr(self, state_name)
-        #
-        # return tuple(n_grams_dicts.values())  # type: ignore
+        n_grams_dicts: Dict[str, Dict[int, Tensor]] = dict(
+            zip(_DICT_STATES_NAMES, _prepare_n_grams_dicts(self.n_char_order, self.n_word_order))
+        )
+
+        for (n_gram_level, n_gram_order), text in self._get_text_n_gram_iterator():
+            for n in range(1, n_gram_order + 1):
+                dict_name = self._get_dict_name(text, n_gram_level)
+                state_name = self._get_state_name(text, n_gram_level, n)
+
+                n_grams_dicts[dict_name][n] = getattr(self, state_name)
+
+        return tuple(n_grams_dicts.values())  # type: ignore
 
     def _update_states_from_dicts(self, n_grams_dicts_tuple: _DICT_STATES_TYPES) -> None:
         """Update global metric states based on the n-gram dictionaries calculated on the current batch."""
@@ -205,6 +220,30 @@ class CHRFScore(Metric):
         Raises:
             ModuleNotFoundError:
                 If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> from torchmetrics.text import CHRFScore
+            >>> metric = CHRFScore()
+            >>> preds = ['the cat is on the mat']
+            >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
+            >>> metric.update(preds, target)
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> from torchmetrics.text import CHRFScore
+            >>> metric = CHRFScore()
+            >>> preds = ['the cat is on the mat']
+            >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(metric(preds, target))
+            >>> fig_, ax_ = metric.plot(values)
 
         """
         return self._plot(val, ax)
