@@ -13,11 +13,11 @@
 # limitations under the License.
 from typing import Any, Optional, Sequence, Union
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.r2 import _r2_score_compute, _r2_score_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -100,14 +100,19 @@ class R2Score(Metric):
 
     def __init__(
         self,
-        num_outputs: int = 1,
+        num_outputs: Optional[int] = None,
         adjusted: int = 0,
         multioutput: str = "uniform_average",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
-        self.num_outputs = num_outputs
+        if num_outputs is not None:
+            rank_zero_warn(
+                "Argument `num_outputs` in `R2Score` has been deprecated because it is no longer necessary and will be"
+                "removed in v1.6.0 of TorchMetrics. The number of outputs is now automatically inferred from the shape"
+                "of the input tensors.",
+            )
 
         if adjusted < 0 or not isinstance(adjusted, int):
             raise ValueError("`adjusted` parameter should be an integer larger or equal to 0.")
@@ -120,19 +125,19 @@ class R2Score(Metric):
             )
         self.multioutput = multioutput
 
-        self.add_state("sum_squared_error", default=torch.zeros(self.num_outputs), dist_reduce_fx="sum")
-        self.add_state("sum_error", default=torch.zeros(self.num_outputs), dist_reduce_fx="sum")
-        self.add_state("residual", default=torch.zeros(self.num_outputs), dist_reduce_fx="sum")
+        self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("sum_error", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("residual", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         sum_squared_error, sum_error, residual, total = _r2_score_update(preds, target)
 
-        self.sum_squared_error += sum_squared_error
-        self.sum_error += sum_error
-        self.residual += residual
-        self.total += total
+        self.sum_squared_error = self.sum_squared_error + sum_squared_error
+        self.sum_error = self.sum_error + sum_error
+        self.residual = self.residual + residual
+        self.total = self.total + total
 
     def compute(self) -> Tensor:
         """Compute r2 score over the metric states."""
