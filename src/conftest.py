@@ -3,9 +3,7 @@ from typing import Optional
 
 from lightning_utilities.core.imports import package_available
 
-testing = package_available("pytest") and package_available("doctest")
-
-if testing:
+if package_available("pytest") and package_available("doctest"):
     import doctest
 
     import pytest
