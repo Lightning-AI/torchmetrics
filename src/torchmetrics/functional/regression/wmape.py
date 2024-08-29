@@ -74,10 +74,9 @@ def weighted_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Te
         Tensor with WMAPE.
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.randn(20,)
-        >>> target = torch.randn(20,)
+        >>> from torch import randn
+        >>> preds = randn(20,)
+        >>> target = randn(20,)
         >>> weighted_mean_absolute_percentage_error(preds, target)
         tensor(1.3967)
 
