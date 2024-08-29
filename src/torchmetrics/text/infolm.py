@@ -170,7 +170,7 @@ class InfoLM(Metric):
         self.add_state("target_attention_mask", [], dist_reduce_fx="cat")
 
     @property
-    def higher_is_better(self) -> bool:
+    def higher_is_better(self) -> bool:  # type: ignore[override]
         """Returns a bool indicating whether a higher value of the information measure is better.
 
         Done this way as depends on if the information measure is positive or negative.
