@@ -86,7 +86,6 @@ def _reference_sklearn_fbeta_score_binary(preds, target, sk_fn, ignore_index, mu
 )
 class TestBinaryFBetaScore(MetricTester):
     """Test class for `BinaryFBetaScore` metric."""
-    atol = 1e-7
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
@@ -259,7 +258,6 @@ def _reference_sklearn_fbeta_score_multiclass(
 )
 class TestMulticlassFBetaScore(MetricTester):
     """Test class for `MulticlassFBetaScore` metric."""
-    atol = 1e-7
 
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
@@ -517,7 +515,6 @@ def _reference_sklearn_fbeta_score_multilabel(
 )
 class TestMultilabelFBetaScore(MetricTester):
     """Test class for `MultilabelFBetaScore` metric."""
-    atol = 1e-7
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("ignore_index", [None, -1])
