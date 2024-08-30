@@ -37,11 +37,10 @@ class VisualInformationFidelity(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
+        >>> from torch import randn
         >>> from torchmetrics.image import VisualInformationFidelity
-        >>> preds = torch.randn([32, 3, 41, 41])
-        >>> target = torch.randn([32, 3, 41, 41])
+        >>> preds = randn([32, 3, 41, 41])
+        >>> target = randn([32, 3, 41, 41])
         >>> vif = VisualInformationFidelity()
         >>> vif(preds, target)
         tensor(0.0032)

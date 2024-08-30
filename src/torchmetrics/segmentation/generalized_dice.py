@@ -85,20 +85,19 @@ class GeneralizedDiceScore(Metric):
             If ``weight_type`` is not one of ``"square"``, ``"simple"``, or ``"linear"``
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(0)
+        >>> from torch import randint
         >>> from torchmetrics.segmentation import GeneralizedDiceScore
         >>> gds = GeneralizedDiceScore(num_classes=3)
-        >>> preds = torch.randint(0, 2, (10, 3, 128, 128))
-        >>> target = torch.randint(0, 2, (10, 3, 128, 128))
+        >>> preds = randint(0, 2, (10, 3, 128, 128))
+        >>> target = randint(0, 2, (10, 3, 128, 128))
         >>> gds(preds, target)
-        tensor(0.4983)
+        tensor(0.4992)
         >>> gds = GeneralizedDiceScore(num_classes=3, per_class=True)
         >>> gds(preds, target)
-        tensor([0.4987, 0.4966, 0.4995])
+        tensor([0.5001, 0.4993, 0.4982])
         >>> gds = GeneralizedDiceScore(num_classes=3, per_class=True, include_background=False)
         >>> gds(preds, target)
-        tensor([0.4966, 0.4995])
+        tensor([0.4993, 0.4982])
 
     """
 
