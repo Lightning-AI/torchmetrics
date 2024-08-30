@@ -86,7 +86,7 @@ class CLIPScore(Metric):
         >>> from torchmetrics.multimodal.clip_score import CLIPScore
         >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
         >>> score = metric(randint(255, (3, 224, 224)), "a photo of a cat")
-        >>> round(score.detach(), decimals=3)
+        >>> score.detach().round(decimals=3)
         tensor(24.8020)
 
     """
