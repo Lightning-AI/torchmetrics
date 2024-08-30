@@ -133,12 +133,8 @@ def test_on_real_audio():
     """Test that metric works on real audio signal."""
     _, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
     _, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
-    assert torch.allclose(
-        signal_distortion_ratio(torch.from_numpy(deg), torch.from_numpy(ref)).float(),
-        torch.tensor(0.2211),
-        rtol=0.0001,
-        atol=1e-4,
-    )
+    sdr = signal_distortion_ratio(torch.from_numpy(deg), torch.from_numpy(ref))
+    assert torch.allclose(sdr.float(), torch.tensor(0.2211), rtol=0.0001, atol=1e-4)
 
 
 def test_too_low_precision():
