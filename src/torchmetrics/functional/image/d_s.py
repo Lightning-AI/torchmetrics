@@ -160,10 +160,10 @@ def _spatial_distortion_index_compute(
             If ``window_size`` is smaller than dimension of ``ms``.
 
     Example:
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand([16, 3, 32, 32])
-        >>> ms = torch.rand([16, 3, 16, 16])
-        >>> pan = torch.rand([16, 3, 32, 32])
+        >>> from torch import rand
+        >>> preds = rand([16, 3, 32, 32])
+        >>> ms = rand([16, 3, 16, 16])
+        >>> pan = rand([16, 3, 32, 32])
         >>> preds, ms, pan, pan_lr = _spatial_distortion_index_update(preds, ms, pan)
         >>> _spatial_distortion_index_compute(preds, ms, pan, pan_lr)
         tensor(0.0090)
@@ -250,11 +250,11 @@ def spatial_distortion_index(
             If ``window_size`` is not a positive integer.
 
     Example:
+        >>> from torch import rand
         >>> from torchmetrics.functional.image import spatial_distortion_index
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand([16, 3, 32, 32])
-        >>> ms = torch.rand([16, 3, 16, 16])
-        >>> pan = torch.rand([16, 3, 32, 32])
+        >>> preds = rand([16, 3, 32, 32])
+        >>> ms = rand([16, 3, 16, 16])
+        >>> pan = rand([16, 3, 32, 32])
         >>> spatial_distortion_index(preds, ms, pan)
         tensor(0.0090)
 
