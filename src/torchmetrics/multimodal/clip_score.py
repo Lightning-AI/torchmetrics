@@ -82,11 +82,11 @@ class CLIPScore(Metric):
             If transformers package is not installed or version is lower than 4.10.0
 
     Example:
-        >>> from torch import randint
+        >>> from torch import randint, round
         >>> from torchmetrics.multimodal.clip_score import CLIPScore
         >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
         >>> score = metric(randint(255, (3, 224, 224)), "a photo of a cat")
-        >>> score.round(decimals=3).detach()
+        >>> round(score.detach(), decimals=3)
         tensor(24.8020)
 
     """
