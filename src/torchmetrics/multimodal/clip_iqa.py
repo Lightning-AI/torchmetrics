@@ -153,7 +153,7 @@ class CLIPImageQualityAssessment(Metric):
         >>> imgs = randint(255, (2, 3, 224, 224)).float()
         >>> metric = CLIPImageQualityAssessment(prompts=(("Super good photo.", "Super bad photo."), "brightness"))
         >>> metric(imgs)
-        {'user_defined_0': tensor([0.9652, 0.9629]), 'brightness': tensor([0.5507, 0.5208])}
+        {'user_defined_0': tensor([0.9578, 0.9654]), 'brightness': tensor([0.5495, 0.5764])}
 
     """
 
