@@ -23,7 +23,7 @@ from torchmetrics.functional.image.perceptual_path_length import (
     perceptual_path_length,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCH_GREATER_EQUAL_2_0
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_0, _TORCHVISION_AVAILABLE
 
 if not _TORCHVISION_AVAILABLE or not _TORCH_GREATER_EQUAL_2_0:
     __doctest_skip__ = ["PerceptualPathLength"]
