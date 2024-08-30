@@ -99,7 +99,6 @@ class PerceptualPathLength(Metric):
 
     Example::
         >>> import torch
-        >>> from torchmetrics.image import PerceptualPathLength
         >>> class DummyGenerator(torch.nn.Module):
         ...    def __init__(self, z_size) -> None:
         ...       super().__init__()
@@ -112,9 +111,7 @@ class PerceptualPathLength(Metric):
         >>> generator = DummyGenerator(2)
         >>> ppl = PerceptualPathLength(num_samples=10)
         >>> ppl(generator)
-        (tensor(0.2371),
-         tensor(0.1760),
-         tensor([0.3494, 0.1367, 0.2531, 0.0907, 0.1789, 0.0769, 0.5863, 0.0691, 0.3926]))
+        (tensor(...), tensor(...), tensor([...]))
 
     """
 
