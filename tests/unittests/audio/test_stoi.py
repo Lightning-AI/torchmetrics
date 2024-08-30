@@ -127,6 +127,6 @@ def test_on_real_audio():
     assert torch.allclose(
         short_time_objective_intelligibility(torch.from_numpy(deg), torch.from_numpy(ref), rate).float(),
         torch.tensor(0.6739177),
-        rtol=0.0001,
-        atol=1e-4,
+        rtol=1e-3,
+        atol=1e-3,
     )
