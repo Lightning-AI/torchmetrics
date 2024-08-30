@@ -51,10 +51,9 @@ class WeightedMeanAbsolutePercentageError(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.randn(20,)
-        >>> target = torch.randn(20,)
+        >>> from torch import randn
+        >>> preds = randn(20,)
+        >>> target = randn(20,)
         >>> wmape = WeightedMeanAbsolutePercentageError()
         >>> wmape(preds, target)
         tensor(1.3967)

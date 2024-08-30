@@ -73,10 +73,10 @@ class PearsonsContingencyCoefficient(Metric):
 
     Example::
 
+        >>> from torch import randint, randn
         >>> from torchmetrics.nominal import PearsonsContingencyCoefficient
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.randint(0, 4, (100,))
-        >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
+        >>> preds = randint(0, 4, (100,))
+        >>> target = (preds + randn(100)).round().clamp(0, 4)
         >>> pearsons_contingency_coefficient = PearsonsContingencyCoefficient(num_classes=5)
         >>> pearsons_contingency_coefficient(preds, target)
         tensor(0.6948)
