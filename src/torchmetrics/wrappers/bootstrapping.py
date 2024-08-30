@@ -75,15 +75,15 @@ class BootStrapper(WrapperMetric):
 
     Example::
         >>> from pprint import pprint
+        >>> from torch import randint
         >>> from torchmetrics.wrappers import BootStrapper
         >>> from torchmetrics.classification import MulticlassAccuracy
-        >>> _ = torch.manual_seed(123)
         >>> base_metric = MulticlassAccuracy(num_classes=5, average='micro')
         >>> bootstrap = BootStrapper(base_metric, num_bootstraps=20)
-        >>> bootstrap.update(torch.randint(5, (20,)), torch.randint(5, (20,)))
+        >>> bootstrap.update(randint(5, (20,)), randint(5, (20,)))
         >>> output = bootstrap.compute()
         >>> pprint(output)
-        {'mean': tensor(0.2205), 'std': tensor(0.0859)}
+        {'mean': tensor(0.2089), 'std': tensor(0.0772)}
 
     """
 

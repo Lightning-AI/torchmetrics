@@ -21,7 +21,10 @@ from torchmetrics.functional.segmentation.generalized_dice import generalized_di
 from torchmetrics.segmentation.generalized_dice import GeneralizedDiceScore
 
 from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, _Input
+from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
+
+seed_all(42)
 
 _inputs1 = _Input(
     preds=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 16)),
