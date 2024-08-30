@@ -62,12 +62,12 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> import torch
+        >>> from torch import rand
         >>> from torchmetrics.image import ErrorRelativeGlobalDimensionlessSynthesis
-        >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+        >>> preds = rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> ergas = ErrorRelativeGlobalDimensionlessSynthesis()
-        >>> torch.round(ergas(preds, target))
+        >>> ergas(preds, target).round()
         tensor(10.)
 
     """
@@ -131,9 +131,9 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> import torch
+            >>> from torch import rand
             >>> from torchmetrics.image import ErrorRelativeGlobalDimensionlessSynthesis
-            >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+            >>> preds = rand([16, 1, 16, 16])
             >>> target = preds * 0.75
             >>> metric = ErrorRelativeGlobalDimensionlessSynthesis()
             >>> metric.update(preds, target)
@@ -143,9 +143,9 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> import torch
+            >>> from torch import rand
             >>> from torchmetrics.image import ErrorRelativeGlobalDimensionlessSynthesis
-            >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+            >>> preds = rand([16, 1, 16, 16])
             >>> target = preds * 0.75
             >>> metric = ErrorRelativeGlobalDimensionlessSynthesis()
             >>> values = [ ]
