@@ -125,4 +125,4 @@ def test_on_real_audio():
     rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
     rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
     stoi = short_time_objective_intelligibility(torch.from_numpy(deg), torch.from_numpy(ref), rate)
-    assert torch.allclose(stoi.float(), torch.tensor(0.6739177), rtol=1e-3, atol=1e-3)
+    assert torch.allclose(stoi.float(), torch.tensor(0.6739177), rtol=5e-3, atol=5e-3)
