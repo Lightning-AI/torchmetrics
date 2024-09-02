@@ -72,19 +72,19 @@ class R2Score(Metric):
             If ``multioutput`` is not one of ``"raw_values"``, ``"uniform_average"`` or ``"variance_weighted"``.
 
     Example (single output):
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics.regression import R2Score
-        >>> target = torch.tensor([3, -0.5, 2, 7])
-        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> target = tensor([3, -0.5, 2, 7])
+        >>> preds = tensor([2.5, 0.0, 2, 8])
         >>> r2score = R2Score()
         >>> r2score(preds, target)
         tensor(0.9486)
 
     Example (multioutput):
-        >>> import torch
+        >>> from torch import tensor
         >>> from torchmetrics.regression import R2Score
-        >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
-        >>> preds = torch.tensor([[0, 2], [-1, 2], [8, -5]])
+        >>> target = tensor([[0.5, 1], [-1, 1], [7, -6]])
+        >>> preds = tensor([[0, 2], [-1, 2], [8, -5]])
         >>> r2score = R2Score(multioutput='raw_values')
         >>> r2score(preds, target)
         tensor([0.9654, 0.9082])
