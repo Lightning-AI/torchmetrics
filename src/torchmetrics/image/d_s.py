@@ -74,13 +74,12 @@ class SpatialDistortionIndex(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
+        >>> from torch import rand
         >>> from torchmetrics.image import SpatialDistortionIndex
-        >>> preds = torch.rand([16, 3, 32, 32])
+        >>> preds = rand([16, 3, 32, 32])
         >>> target = {
-        ...     'ms': torch.rand([16, 3, 16, 16]),
-        ...     'pan': torch.rand([16, 3, 32, 32]),
+        ...     'ms': rand([16, 3, 16, 16]),
+        ...     'pan': rand([16, 3, 32, 32]),
         ... }
         >>> sdi = SpatialDistortionIndex()
         >>> sdi(preds, target)
@@ -191,13 +190,12 @@ class SpatialDistortionIndex(Metric):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> import torch
-            >>> _ = torch.manual_seed(42)
+            >>> from torch import rand
             >>> from torchmetrics.image import SpatialDistortionIndex
-            >>> preds = torch.rand([16, 3, 32, 32])
+            >>> preds = rand([16, 3, 32, 32])
             >>> target = {
-            ...     'ms': torch.rand([16, 3, 16, 16]),
-            ...     'pan': torch.rand([16, 3, 32, 32]),
+            ...     'ms': rand([16, 3, 16, 16]),
+            ...     'pan': rand([16, 3, 32, 32]),
             ... }
             >>> metric = SpatialDistortionIndex()
             >>> metric.update(preds, target)
@@ -207,13 +205,12 @@ class SpatialDistortionIndex(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> import torch
-            >>> _ = torch.manual_seed(42)
+            >>> from torch import rand
             >>> from torchmetrics.image import SpatialDistortionIndex
-            >>> preds = torch.rand([16, 3, 32, 32])
+            >>> preds = rand([16, 3, 32, 32])
             >>> target = {
-            ...     'ms': torch.rand([16, 3, 16, 16]),
-            ...     'pan': torch.rand([16, 3, 32, 32]),
+            ...     'ms': rand([16, 3, 16, 16]),
+            ...     'pan': rand([16, 3, 32, 32]),
             ... }
             >>> metric = SpatialDistortionIndex()
             >>> values = [ ]

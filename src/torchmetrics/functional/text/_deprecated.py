@@ -134,7 +134,14 @@ def _chrf_score(
     whitespace: bool = False,
     return_sentence_level_score: bool = False,
 ) -> Union[Tensor, Tuple[Tensor, Tensor]]:
-    """Wrapper for deprecated import."""
+    """Wrapper for deprecated import.
+
+    >>> preds = ['the cat is on the mat']
+    >>> target = [['there is a cat on the mat', 'a cat is on the mat']]
+    >>> _chrf_score(preds, target)
+    tensor(0.8640)
+
+    """
     _deprecated_root_import_func("chrf_score", "text")
     return chrf_score(
         preds=preds,
@@ -238,10 +245,9 @@ def _match_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]
 def _perplexity(preds: Tensor, target: Tensor, ignore_index: Optional[int] = None) -> Tensor:
     """Wrapper for deprecated import.
 
-    >>> import torch
-    >>> gen = torch.manual_seed(42)
-    >>> preds = torch.rand(2, 8, 5, generator=gen)
-    >>> target = torch.randint(5, (2, 8), generator=gen)
+    >>> from torch import rand, randint
+    >>> preds = rand(2, 8, 5)
+    >>> target = randint(5, (2, 8))
     >>> target[0, 6:] = -100
     >>> _perplexity(preds, target, ignore_index=-100)
     tensor(5.8540)

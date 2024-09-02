@@ -56,11 +56,10 @@ class SpectralAngleMapper(Metric):
         Tensor with SpectralAngleMapper score
 
     Example:
-        >>> import torch
+        >>> from torch import rand
         >>> from torchmetrics.image import SpectralAngleMapper
-        >>> gen = torch.manual_seed(42)
-        >>> preds = torch.rand([16, 3, 16, 16], generator=gen)
-        >>> target = torch.rand([16, 3, 16, 16], generator=gen)
+        >>> preds = rand([16, 3, 16, 16])
+        >>> target = rand([16, 3, 16, 16])
         >>> sam = SpectralAngleMapper()
         >>> sam(preds, target)
         tensor(0.5914)
@@ -141,11 +140,10 @@ class SpectralAngleMapper(Metric):
             :scale: 75
 
             >>> # Example plotting single value
-            >>> import torch
+            >>> from torch import rand
             >>> from torchmetrics.image import SpectralAngleMapper
-            >>> gen = torch.manual_seed(42)
-            >>> preds = torch.rand([16, 3, 16, 16], generator=gen)
-            >>> target = torch.rand([16, 3, 16, 16], generator=gen)
+            >>> preds = rand([16, 3, 16, 16])
+            >>> target = rand([16, 3, 16, 16])
             >>> metric = SpectralAngleMapper()
             >>> metric.update(preds, target)
             >>> fig_, ax_ = metric.plot()
@@ -154,11 +152,10 @@ class SpectralAngleMapper(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> import torch
+            >>> from torch import rand
             >>> from torchmetrics.image import SpectralAngleMapper
-            >>> gen = torch.manual_seed(42)
-            >>> preds = torch.rand([16, 3, 16, 16], generator=gen)
-            >>> target = torch.rand([16, 3, 16, 16], generator=gen)
+            >>> preds = rand([16, 3, 16, 16])
+            >>> target = rand([16, 3, 16, 16])
             >>> metric = SpectralAngleMapper()
             >>> values = [ ]
             >>> for _ in range(10):

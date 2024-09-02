@@ -122,11 +122,10 @@ def peak_signal_noise_ratio_with_blocked_effect(
         Tensor with PSNRB score
 
     Example:
-        >>> import torch
+        >>> from torch import rand
         >>> from torchmetrics.functional.image import peak_signal_noise_ratio_with_blocked_effect
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand(1, 1, 28, 28)
-        >>> target = torch.rand(1, 1, 28, 28)
+        >>> preds = rand(1, 1, 28, 28)
+        >>> target = rand(1, 1, 28, 28)
         >>> peak_signal_noise_ratio_with_blocked_effect(preds, target)
         tensor(7.8402)
 

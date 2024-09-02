@@ -124,10 +124,10 @@ def cramers_v(
         Cramer's V statistic
 
     Example:
+        >>> from torch import randint, round
         >>> from torchmetrics.functional.nominal import cramers_v
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.randint(0, 4, (100,))
-        >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
+        >>> preds = randint(0, 4, (100,))
+        >>> target = round(preds + torch.randn(100)).clamp(0, 4)
         >>> cramers_v(preds, target)
         tensor(0.5284)
 
@@ -161,9 +161,9 @@ def cramers_v_matrix(
         Cramer's V statistic for a dataset of categorical variables
 
     Example:
+        >>> from torch import randint
         >>> from torchmetrics.functional.nominal import cramers_v_matrix
-        >>> _ = torch.manual_seed(42)
-        >>> matrix = torch.randint(0, 4, (200, 5))
+        >>> matrix = randint(0, 4, (200, 5))
         >>> cramers_v_matrix(matrix)
         tensor([[1.0000, 0.0637, 0.0000, 0.0542, 0.1337],
                 [0.0637, 1.0000, 0.0000, 0.0000, 0.0000],

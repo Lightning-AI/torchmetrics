@@ -64,10 +64,9 @@ def total_variation(img: Tensor, reduction: Optional[Literal["mean", "sum", "non
             If ``img`` is not 4D tensor
 
     Example:
-        >>> import torch
+        >>> from torch import rand
         >>> from torchmetrics.functional.image import total_variation
-        >>> _ = torch.manual_seed(42)
-        >>> img = torch.rand(5, 3, 28, 28)
+        >>> img = rand(5, 3, 28, 28)
         >>> total_variation(img)
         tensor(7546.8018)
 

@@ -76,13 +76,12 @@ class SpeechReverberationModulationEnergyRatio(Metric):
             If ``gammatone`` or ``torchaudio`` package is not installed
 
     Example:
-        >>> import torch
+        >>> from torch import randn
         >>> from torchmetrics.audio import SpeechReverberationModulationEnergyRatio
-        >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn(8000)
+        >>> preds = randn(8000)
         >>> srmr = SpeechReverberationModulationEnergyRatio(8000)
         >>> srmr(preds)
-        tensor(0.3354)
+        tensor(0.3191)
 
     """
 

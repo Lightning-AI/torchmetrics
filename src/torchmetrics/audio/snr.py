@@ -268,15 +268,13 @@ class ComplexScaleInvariantSignalNoiseRatio(Metric):
             If ``preds`` and ``target`` does not have the same shape.
 
     Example:
-        >>> import torch
-        >>> from torch import tensor
+        >>> from torch import randn
         >>> from torchmetrics.audio import ComplexScaleInvariantSignalNoiseRatio
-        >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn((1,257,100,2))
-        >>> target = torch.randn((1,257,100,2))
+        >>> preds = randn((1,257,100,2))
+        >>> target = randn((1,257,100,2))
         >>> c_si_snr = ComplexScaleInvariantSignalNoiseRatio()
         >>> c_si_snr(preds, target)
-        tensor(-63.4849)
+        tensor(-38.8832)
 
     """
 
