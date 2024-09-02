@@ -46,14 +46,12 @@ class RelativeAverageSpectralError(Metric):
         Relative Average Spectral Error (RASE)
 
     Example:
-        >>> import torch
-        >>> from torchmetrics.image import RelativeAverageSpectralError
-        >>> g = torch.manual_seed(22)
-        >>> preds = torch.rand(4, 3, 16, 16)
-        >>> target = torch.rand(4, 3, 16, 16)
+        >>> from torch import rand
+        >>> preds = rand(4, 3, 16, 16)
+        >>> target = rand(4, 3, 16, 16)
         >>> rase = RelativeAverageSpectralError()
         >>> rase(preds, target)
-        tensor(5114.66...)
+        tensor(5326.40...)
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.
@@ -124,13 +122,12 @@ class RelativeAverageSpectralError(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> import torch
-            >>> _ = torch.manual_seed(42)
+            >>> from torch import rand
             >>> from torchmetrics.image import RelativeAverageSpectralError
             >>> metric = RelativeAverageSpectralError()
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(torch.rand(4, 3, 16, 16), torch.rand(4, 3, 16, 16)))
+            ...     values.append(metric(rand(4, 3, 16, 16), rand(4, 3, 16, 16)))
             >>> fig_, ax_ = metric.plot(values)
 
         """
