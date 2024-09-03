@@ -65,6 +65,11 @@ class R2Score(Metric):
             * ``'variance_weighted'`` scores are weighted by their individual variances
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
+    .. warning::
+        Argument `num_outputs` in `R2Score` has been deprecated because it is no longer necessary and will be
+        removed in v1.6.0 of TorchMetrics. The number of outputs is now automatically inferred from the shape
+        of the input tensors.
+
     Raises:
         ValueError:
             If ``adjusted`` parameter is not an integer larger or equal to 0.
@@ -116,6 +121,7 @@ class R2Score(Metric):
                 "Argument `num_outputs` in `R2Score` has been deprecated because it is no longer necessary and will be"
                 "removed in v1.6.0 of TorchMetrics. The number of outputs is now automatically inferred from the shape"
                 "of the input tensors.",
+                DeprecationWarning,
             )
 
         if adjusted < 0 or not isinstance(adjusted, int):
