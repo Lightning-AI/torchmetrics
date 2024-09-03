@@ -382,11 +382,11 @@ class MeanAveragePrecision(Metric):
                 " Please install with `pip install pycocotools` or `pip install faster-coco-eval` or"
                 " `pip install torchmetrics[detection]`."
             )
-	    if not _TORCHVISION_AVAILABLE:
-	            raise ModuleNotFoundError(
-	                f"Metric `{self._iou_type.upper()}` requires that `torchvision` is installed."
-	                " Please install with `pip install torchmetrics[detection]`."
-	            )
+	if not _TORCHVISION_AVAILABLE:
+	        raise ModuleNotFoundError(
+	            f"Metric `{self._iou_type.upper()}` requires that `torchvision` is installed."
+	            " Please install with `pip install torchmetrics[detection]`."
+	        )
 
         allowed_box_formats = ("xyxy", "xywh", "cxcywh")
         if box_format not in allowed_box_formats:
