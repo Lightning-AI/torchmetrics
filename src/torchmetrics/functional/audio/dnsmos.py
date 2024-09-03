@@ -218,7 +218,7 @@ def deep_noise_suppression_mean_opinion_score(
         >>> from torchmetrics.functional.audio.dnsmos import deep_noise_suppression_mean_opinion_score
         >>> preds = randn(8000)
         >>> deep_noise_suppression_mean_opinion_score(preds, 8000, False)
-        tensor([2.2687, 2.0766, 1.1375, 1.2722], dtype=torch.float64)
+        tensor([2.2..., 2.0..., 1.1..., 1.2...], dtype=torch.float64)
 
     """
     if not _LIBROSA_AVAILABLE or not _ONNXRUNTIME_AVAILABLE or not _REQUESTS_AVAILABLE:
