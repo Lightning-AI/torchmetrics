@@ -205,6 +205,14 @@ Or directly from conda
    :caption: Pairwise
    :glob:
 
+   other/*
+
+.. toctree::
+   :maxdepth: 2
+   :name: pairwise
+   :caption: Pairwise
+   :glob:
+
    pairwise/*
 
 .. toctree::
