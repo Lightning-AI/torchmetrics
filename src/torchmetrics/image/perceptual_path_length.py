@@ -25,6 +25,9 @@ from torchmetrics.functional.image.perceptual_path_length import (
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
+if not _TORCHVISION_AVAILABLE:
+    __doctest_skip__ = ["PerceptualPathLength"]
+
 
 class PerceptualPathLength(Metric):
     r"""Computes the perceptual path length (`PPL`_) of a generator model.
