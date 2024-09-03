@@ -33,7 +33,6 @@ from torchmetrics.classification import (
     MultilabelAveragePrecision,
 )
 from torchmetrics.utilities.checks import _allclose_recursive
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_0
 
 from unittests._helpers import seed_all
 from unittests._helpers.testers import DummyMetricDiff, DummyMetricMultiOutputDict, DummyMetricSum
@@ -151,7 +150,6 @@ def test_metric_collection_args_kwargs(tmpdir):
     assert metric_collection["DummyMetricDiff"].x == -20
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_0, reason="Test requires torch 2.0 or higher")
 @pytest.mark.parametrize(
     ("prefix", "postfix"),
     [
