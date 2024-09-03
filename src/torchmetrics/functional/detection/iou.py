@@ -115,9 +115,9 @@ def intersection_over_union(
 
     """
     if not _TORCHVISION_AVAILABLE:
-            raise ModuleNotFoundError(
-                f"`{complete_intersection_over_union.__name__}` requires that `torchvision` is installed."
-                " Please install with `pip install torchmetrics[detection]`."
-            )
+        raise ModuleNotFoundError(
+            f"`{complete_intersection_over_union.__name__}` requires that `torchvision` is installed."
+            " Please install with `pip install torchmetrics[detection]`."
+        )
     iou = _iou_update(preds, target, iou_threshold, replacement_val)
     return _iou_compute(iou, aggregate)
