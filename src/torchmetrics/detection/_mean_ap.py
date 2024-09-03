@@ -327,6 +327,11 @@ class MeanAveragePrecision(Metric):
                 "`MAP` metric requires that `pycocotools` installed."
                 " Please install with `pip install pycocotools` or `pip install torchmetrics[detection]`"
             )
+        if not _TORCHVISION_AVAILABLE:
+            raise ModuleNotFoundError(
+                "`MeanAveragePrecision` metric requires that `torchvision` is installed."
+                " Please install with `pip install torchmetrics[detection]`."
+            )
 
         allowed_box_formats = ("xyxy", "xywh", "cxcywh")
         allowed_iou_types = ("segm", "bbox")

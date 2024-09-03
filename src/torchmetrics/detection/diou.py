@@ -110,6 +110,11 @@ class DistanceIntersectionOverUnion(IntersectionOverUnion):
         respect_labels: bool = True,
         **kwargs: Any,
     ) -> None:
+    if not _TORCHVISION_AVAILABLE:
+            raise ModuleNotFoundError(
+                f"Metric `{self._iou_type.upper()}` requires that `torchvision` is installed."
+                " Please install with `pip install torchmetrics[detection]`."
+            )
         super().__init__(box_format, iou_threshold, class_metrics, respect_labels, **kwargs)
 
     @staticmethod

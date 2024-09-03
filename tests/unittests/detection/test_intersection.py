@@ -24,10 +24,15 @@ from torchmetrics.functional.detection.ciou import complete_intersection_over_un
 from torchmetrics.functional.detection.diou import distance_intersection_over_union
 from torchmetrics.functional.detection.giou import generalized_intersection_over_union
 from torchmetrics.functional.detection.iou import intersection_over_union
-from torchvision.ops import box_iou as tv_iou
-from torchvision.ops import complete_box_iou as tv_ciou
-from torchvision.ops import distance_box_iou as tv_diou
-from torchvision.ops import generalized_box_iou as tv_giou
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
+
+if _TORCHVISION_AVAILABLE:
+    from torchvision.ops import box_iou as tv_iou
+    from torchvision.ops import complete_box_iou as tv_ciou
+    from torchvision.ops import distance_box_iou as tv_diou
+    from torchvision.ops import generalized_box_iou as tv_giou
+else:
+    tv_iou, tv_ciou, tv_diou, tv_giou = ..., ..., ..., ...
 
 from unittests._helpers.testers import MetricTester
 

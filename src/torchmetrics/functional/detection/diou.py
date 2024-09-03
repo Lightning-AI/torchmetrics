@@ -113,5 +113,10 @@ def distance_intersection_over_union(
                 [-0.3971, -0.1510,  0.5609]])
 
     """
+    if not _TORCHVISION_AVAILABLE:
+            raise ModuleNotFoundError(
+                f"`{complete_intersection_over_union.__name__}` requires that `torchvision` is installed."
+                " Please install with `pip install torchmetrics[detection]`."
+            )
     iou = _diou_update(preds, target, iou_threshold, replacement_val)
     return _diou_compute(iou, aggregate)
