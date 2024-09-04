@@ -46,7 +46,7 @@ def _assert_allclose(tm_result: Any, ref_result: Any, atol: float = 1e-8, key: O
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
         assert np.allclose(
-            tm_result[key].detach().cpu().numpy() if isinstance(tm_result, Tensor) else tm_result[key],
+            tm_result[key].detach().cpu().numpy() if isinstance(tm_result[key], Tensor) else tm_result[key],
             ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result,
             atol=atol,
             equal_nan=True,
