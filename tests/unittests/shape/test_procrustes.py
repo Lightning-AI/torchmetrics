@@ -17,10 +17,10 @@ import numpy as np
 import pytest
 import torch
 from scipy.spatial import procrustes as scipy_procrustes
-from torchmetrics.functional.other.procrustes import procrustes_disparity
-from torchmetrics.other.procrustes import ProcrustesDisparity
+from torchmetrics.functional.shape.procrustes import procrustes_disparity
+from torchmetrics.shape.procrustes import ProcrustesDisparity
 
-from unittests import BATCH_SIZE, NUM_BATCHES, _Input, EXTRA_DIM
+from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 
@@ -30,11 +30,12 @@ NUM_TARGETS = 5
 
 
 _inputs = _Input(
-    dataset1=torch.rand(NUM_BATCHES, BATCH_SIZE, 50, EXTRA_DIM),
-    dataset2=torch.rand(NUM_BATCHES, BATCH_SIZE, 50, EXTRA_DIM),
+    preds=torch.rand(NUM_BATCHES, BATCH_SIZE, 50, EXTRA_DIM),
+    target=torch.rand(NUM_BATCHES, BATCH_SIZE, 50, EXTRA_DIM),
 )
 
-def _reference_procrustes(dataset1, dataset2, reduction):
+
+def _reference_procrustes(dataset1, dataset2, reduction=None):
     dataset1 = dataset1.numpy()
     dataset2 = dataset2.numpy()
 
@@ -49,43 +50,46 @@ def _reference_procrustes(dataset1, dataset2, reduction):
     return disparity
 
 
-
-@pytest.mark.parametrize("dataset1, dataset2", [(_inputs.dataset1, _inputs.dataset2)])
+@pytest.mark.parametrize("dataset1, dataset2", [(_inputs.preds, _inputs.target)])
 class TestProcrustesDisparity(MetricTester):
-    """Test class for `CosineSimilarity` metric."""
+    """Test class for `ProcrustesDisparity` metric."""
+
     @pytest.mark.parametrize("reduction", ["sum", "mean"])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_cosine_similarity(self, reduction, preds, target, ref_metric, ddp):
+    def test_procrustes_disparity(self, reduction, dataset1, dataset2, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
-            preds,
-            target,
-            CosineSimilarity,
-            partial(ref_metric, reduction=reduction),
+            dataset1,
+            dataset2,
+            ProcrustesDisparity,
+            partial(_reference_procrustes, reduction=reduction),
             metric_args={"reduction": reduction},
         )
 
-    def test_cosine_similarity_functional(self, reduction, preds, target, ref_metric):
+    def test_procrustes_disparity_functional(self, dataset1, dataset2):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
-            preds,
-            target,
-            cosine_similarity,
-            partial(ref_metric, reduction=reduction),
-            metric_args={"reduction": reduction},
+            dataset1,
+            dataset2,
+            procrustes_disparity,
+            _reference_procrustes,
         )
 
 
-def test_error_on_different_shape(metric_class=CosineSimilarity):
+def test_error_on_different_shape():
     """Test that error is raised on different shapes of input."""
-    metric = metric_class()
+    metric = ProcrustesDisparity()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
-        metric(torch.randn(100, 2), torch.randn(50, 2))
+        metric(torch.randn(10, 100, 2), torch.randn(10, 50, 2))
+    with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
+        procrustes_disparity(torch.randn(10, 100, 2), torch.randn(10, 50, 2))
 
 
-def test_error_on_non_2d_input():
-    """Test that error is raised if input is not 2-dimensional."""
-    metric = CosineSimilarity()
-    with pytest.raises(ValueError, match="Expected input to cosine similarity to be 2D tensors of shape.*"):
+def test_error_on_non_3d_input():
+    """Test that error is raised if input is not 3-dimensional."""
+    metric = ProcrustesDisparity()
+    with pytest.raises(ValueError, match="Expected both datasets to be 3D tensors of shape"):
         metric(torch.randn(100), torch.randn(100))
+    with pytest.raises(ValueError, match="Expected both datasets to be 3D tensors of shape"):
+        procrustes_disparity(torch.randn(100), torch.randn(100))
