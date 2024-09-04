@@ -124,11 +124,15 @@ def _ssim_update(
     dtype = preds.dtype
     gauss_kernel_size = [int(3.5 * s + 0.5) * 2 + 1 for s in sigma]
 
-    pad_h = (gauss_kernel_size[0] - 1) // 2
-    pad_w = (gauss_kernel_size[1] - 1) // 2
+    if gaussian_kernel:
+        pad_h = (gauss_kernel_size[0] - 1) // 2
+        pad_w = (gauss_kernel_size[1] - 1) // 2
+    else:
+        pad_h = (kernel_size[0] - 1) // 2
+        pad_w = (kernel_size[1] - 1) // 2
 
     if is_3d:
-        pad_d = (gauss_kernel_size[2] - 1) // 2
+        pad_d = (kernel_size[2] - 1) // 2
         preds = _reflection_pad_3d(preds, pad_d, pad_w, pad_h)
         target = _reflection_pad_3d(target, pad_d, pad_w, pad_h)
         if gaussian_kernel:
@@ -164,10 +168,6 @@ def _ssim_update(
 
     ssim_idx_full_image = ((2 * mu_pred_target + c1) * upper) / ((mu_pred_sq + mu_target_sq + c1) * lower)
 
-    if is_3d:
-        ssim_idx = ssim_idx_full_image[..., pad_h:-pad_h, pad_w:-pad_w, pad_d:-pad_d]
-    else:
-        ssim_idx = ssim_idx_full_image[..., pad_h:-pad_h, pad_w:-pad_w]
 
     if return_contrast_sensitivity:
         contrast_sensitivity = upper / lower
@@ -175,14 +175,15 @@ def _ssim_update(
             contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w, pad_d:-pad_d]
         else:
             contrast_sensitivity = contrast_sensitivity[..., pad_h:-pad_h, pad_w:-pad_w]
-        return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), contrast_sensitivity.reshape(
+
+        return ssim_idx_full_image.reshape(ssim_idx_full_image.shape[0], -1).mean(-1), contrast_sensitivity.reshape(
             contrast_sensitivity.shape[0], -1
         ).mean(-1)
 
     if return_full_image:
-        return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1), ssim_idx_full_image
+        return ssim_idx_full_image.reshape(ssim_idx_full_image.shape[0], -1).mean(-1), ssim_idx_full_image
 
-    return ssim_idx.reshape(ssim_idx.shape[0], -1).mean(-1)
+    return ssim_idx_full_image.reshape(ssim_idx_full_image.shape[0], -1).mean(-1)
 
 
 def _ssim_compute(
