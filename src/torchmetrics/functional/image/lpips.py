@@ -52,7 +52,7 @@ def _get_net(net: str, pretrained: bool) -> nn.modules.container.Sequential:
     """
     from torchvision import models as tv
 
-    if _TORCHVISION_AVAILABLE
+    if _TORCHVISION_AVAILABLE:
         if pretrained:
             pretrained_features = getattr(tv, net)(weights=getattr(tv, _weight_map[net]).IMAGENET1K_V1).features
         else:

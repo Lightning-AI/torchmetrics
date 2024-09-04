@@ -16,7 +16,7 @@ from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
 __all__ = ["ModifiedPanopticQuality", "PanopticQuality"]
 
-if _TORCHVISION_GREATER_EQUAL_0_8:
+if _TORCHVISION_AVAILABLE:
     from torchmetrics.detection.ciou import CompleteIntersectionOverUnion
     from torchmetrics.detection.diou import DistanceIntersectionOverUnion
     from torchmetrics.detection.giou import GeneralizedIntersectionOverUnion
