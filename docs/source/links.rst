@@ -172,3 +172,4 @@
 .. _averaging curve objects: https://scikit-learn.org/stable/auto_examples/model_selection/plot_roc.html
 .. _SCC: https://www.ingentaconnect.com/content/tandf/tres/1998/00000019/00000004/art00013
 .. _Generalized Dice Score: https://arxiv.org/abs/1707.03237
+.. _Procrustes Disparity: https://en.wikipedia.org/wiki/Procrustes_analysis

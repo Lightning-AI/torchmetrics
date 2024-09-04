@@ -205,14 +205,6 @@ Or directly from conda
    :caption: Pairwise
    :glob:
 
-   other/*
-
-.. toctree::
-   :maxdepth: 2
-   :name: pairwise
-   :caption: Pairwise
-   :glob:
-
    pairwise/*
 
 .. toctree::
@@ -238,6 +230,14 @@ Or directly from conda
    :glob:
 
    segmentation/*
+
+.. toctree::
+   :maxdepth: 2
+   :name: shape
+   :caption: Shape
+   :glob:
+
+   shape/*
 
 .. toctree::
    :maxdepth: 2
