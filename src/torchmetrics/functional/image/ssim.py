@@ -168,7 +168,6 @@ def _ssim_update(
 
     ssim_idx_full_image = ((2 * mu_pred_target + c1) * upper) / ((mu_pred_sq + mu_target_sq + c1) * lower)
 
-
     if return_contrast_sensitivity:
         contrast_sensitivity = upper / lower
         if is_3d:
