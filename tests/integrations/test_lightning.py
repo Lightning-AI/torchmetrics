@@ -532,7 +532,7 @@ def test_collection_classwise_lightning_integration(tmpdir):
                 prefix="val_",
             )
 
-        def training_step(self, batch):
+        def training_step(self, batch, batch_idx):
             loss = self(batch).sum()
 
             preds = torch.randint(0, 5, (100,), device=batch.device)
@@ -544,7 +544,7 @@ def test_collection_classwise_lightning_integration(tmpdir):
 
             return {"loss": loss}
 
-        def validation_step(self, batch):
+        def validation_step(self, batch, batch_idx):
             preds = torch.randint(0, 5, (100,), device=batch.device)
             target = torch.randint(0, 5, (100,), device=batch.device)
 
