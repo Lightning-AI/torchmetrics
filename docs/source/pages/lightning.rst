@@ -202,19 +202,19 @@ The following contains a list of pitfalls to be aware of:
 
     class MyModule(LightningModule):
 
-            def __init__(self, num_classes):
-                ...
-                self.metric = torchmetrics.image.FrechetInceptionDistance(sync_on_compute=False)
+        def __init__(self, num_classes):
+            ...
+            self.metric = torchmetrics.image.FrechetInceptionDistance(sync_on_compute=False)
 
-            @rank_zero_only
-            def validation_step(self, batch, batch_idx):
-                image, target = batch
-                generated_image = self(x)
-                ...
-                self.metric(image, real=True)¨
-                self.metric(generated_image, real=False)
-                val = self.metric.compute()  # this will only be called on the main process
-                self.log('val_fid', val)
+        @rank_zero_only
+        def validation_step(self, batch, batch_idx):
+            image, target = batch
+            generated_image = self(x)
+            ...
+            self.metric(image, real=True)¨
+            self.metric(generated_image, real=False)
+            val = self.metric.compute()  # this will only be called on the main process
+            self.log('val_fid', val)
 
 * Calling ``self.log("val", self.metric(preds, target))`` with the intention of logging the metric object. Because
   ``self.metric(preds, target)`` corresponds to calling the forward method, this will return a tensor and not the
