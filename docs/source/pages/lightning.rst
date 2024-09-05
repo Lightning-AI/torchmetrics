@@ -211,7 +211,7 @@ The following contains a list of pitfalls to be aware of:
             image, target = batch
             generated_image = self(x)
             ...
-            self.metric(image, real=True)¨
+            self.metric(image, real=True)
             self.metric(generated_image, real=False)
             val = self.metric.compute()  # this will only be called on the main process
             self.log('val_fid', val)
