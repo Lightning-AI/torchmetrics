@@ -507,7 +507,7 @@ def multiscale_structural_similarity_index_measure(
         >>> preds = rand([3, 3, 256, 256])
         >>> target = preds * 0.75
         >>> multiscale_structural_similarity_index_measure(preds, target, data_range=1.0)
-        tensor(0.9627)
+        tensor(0.9628)
 
     References:
         [1] Multi-Scale Structural Similarity For Image Quality Assessment by Zhou Wang, Eero P. Simoncelli and Alan C.
