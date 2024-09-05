@@ -285,7 +285,7 @@ def test_ssim_invalid_inputs(pred, target, kernel, sigma, match):
         ((0.5, 0.25), None, torch.tensor(0.08869550)),
         (None, (3, 5), torch.tensor(0.05131844)),
         (None, (5, 3), torch.tensor(0.05131844)),
-    ]
+    ],
 )
 def test_ssim_unequal_kernel_size(sigma, kernel_size, result):
     """Test the case where kernel_size[0] != kernel_size[1]."""
