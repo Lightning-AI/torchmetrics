@@ -278,7 +278,16 @@ def test_ssim_invalid_inputs(pred, target, kernel, sigma, match):
         structural_similarity_index_measure(pred, target, kernel_size=kernel, sigma=sigma)
 
 
-def test_ssim_unequal_kernel_size():
+@pytest.mark.parametrize(
+    ("sigma", "kernel_size", "result"),
+    [
+        ((0.25, 0.5), None, torch.tensor(0.08869550)),
+        ((0.5, 0.25), None, torch.tensor(0.08869550)),
+        (None, (3, 5), torch.tensor(0.05131844)),
+        (None, (5, 3), torch.tensor(0.05131844)),
+    ]
+)
+def test_ssim_unequal_kernel_size(sigma, kernel_size, result):
     """Test the case where kernel_size[0] != kernel_size[1]."""
     preds = torch.tensor([
         [
@@ -306,24 +315,16 @@ def test_ssim_unequal_kernel_size():
             ]
         ]
     ])
-    # kernel order matters
-    assert torch.isclose(
-        structural_similarity_index_measure(preds, target, gaussian_kernel=True, sigma=(0.25, 0.5)),
-        torch.tensor(0.08869550),
-    )
-    assert not torch.isclose(
-        structural_similarity_index_measure(preds, target, gaussian_kernel=True, sigma=(0.5, 0.25)),
-        torch.tensor(0.08869550),
-    )
-
-    assert torch.isclose(
-        structural_similarity_index_measure(preds, target, gaussian_kernel=False, kernel_size=(3, 5)),
-        torch.tensor(0.05131844),
-    )
-    assert not torch.isclose(
-        structural_similarity_index_measure(preds, target, gaussian_kernel=False, kernel_size=(5, 3)),
-        torch.tensor(0.05131844),
-    )
+    if sigma is not None:
+        assert torch.isclose(
+            structural_similarity_index_measure(preds, target, gaussian_kernel=True, sigma=sigma),
+            result,
+        )
+    else:
+        assert torch.isclose(
+            structural_similarity_index_measure(preds, target, gaussian_kernel=False, kernel_size=kernel_size),
+            result,
+        )
 
 
 @pytest.mark.parametrize(
