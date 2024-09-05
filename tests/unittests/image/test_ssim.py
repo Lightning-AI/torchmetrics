@@ -344,7 +344,7 @@ def test_full_image_output(preds, target):
     assert out[1].shape == preds[0].shape
 
 
-def test_ssim_for_correct_padding:
+def test_ssim_for_correct_padding():
     """Check that padding is correctly added and removed for SSIM.
 
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/2718
