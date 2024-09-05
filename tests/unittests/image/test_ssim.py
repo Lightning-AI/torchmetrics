@@ -348,6 +348,7 @@ def test_ssim_for_correct_padding
     """Check that padding is correctly added and removed for SSIM.
 
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/2718
+
     """
     preds = torch.rand([3, 3, 256, 256])
     # let the edge of the image be 0
