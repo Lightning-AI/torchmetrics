@@ -3,6 +3,7 @@
     import torch
     from torch.nn import Module
     from lightning.pytorch import LightningModule
+    from lightning.pytorch.utilities import rank_zero_only
     from torchmetrics import Metric
 
 #################################
