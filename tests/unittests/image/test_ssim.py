@@ -342,3 +342,18 @@ def test_full_image_output(preds, target):
     assert len(out) == 2
     assert out[0].numel() == 1
     assert out[1].shape == preds[0].shape
+
+
+def test_ssim_for_correct_padding
+    """Check that padding is correctly added and removed for SSIM.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2718
+    """
+    preds = torch.rand([3, 3, 256, 256])
+    # let the edge of the image be 0
+    target = preds.clone()
+    target[:, :, 0, :] = 0
+    target[:, :, -1, :] = 0
+    target[:, :, :, 0] = 0
+    target[:, :, :, -1] = 0
+    assert structural_similarity_index_measure(preds, target) < 1.0
