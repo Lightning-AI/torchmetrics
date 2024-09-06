@@ -66,7 +66,7 @@ class R2Score(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     .. warning::
-        Argument `num_outputs` in `R2Score` has been deprecated because it is no longer necessary and will be
+        Argument ``num_outputs`` in ``R2Score`` has been deprecated because it is no longer necessary and will be
         removed in v1.6.0 of TorchMetrics. The number of outputs is now automatically inferred from the shape
         of the input tensors.
 
