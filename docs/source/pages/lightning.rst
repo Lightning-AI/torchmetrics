@@ -194,9 +194,9 @@ The following contains a list of pitfalls to be aware of:
   Because the object is logged in the first case, Lightning will reset the metric before calling the second line leading
   to errors or nonsense results.
 
-* If you decorate a lightning method with the `rank_zero_only` decorator with the goal of only calculating a particular
+* If you decorate a lightning method with the ``rank_zero_only`` decorator with the goal of only calculating a particular
     metric on the main process, you need to disable the default behavior of the metric to synchronize the metric values
-    across all processes. This can be done by setting the `sync_on_compute` flag to `False` when initializing the
+    across all processes. This can be done by setting the ``sync_on_compute`` flag to ``False`` when initializing the
     metric. Not doing so can lead to race conditions and processes hanging.
 
 .. testcode:: python
