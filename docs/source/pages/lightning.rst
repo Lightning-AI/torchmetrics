@@ -3,6 +3,7 @@
     import torch
     from torch.nn import Module
     from lightning.pytorch import LightningModule
+    from lightning.pytorch.utilities import rank_zero_only
     from torchmetrics import Metric
 
 #################################
@@ -192,6 +193,29 @@ The following contains a list of pitfalls to be aware of:
   ``on_{train|validation|test}_epoch_end`` method.
   Because the object is logged in the first case, Lightning will reset the metric before calling the second line leading
   to errors or nonsense results.
+
+* If you decorate a lightning method with the ``rank_zero_only`` decorator with the goal of only calculating a particular
+    metric on the main process, you need to disable the default behavior of the metric to synchronize the metric values
+    across all processes. This can be done by setting the ``sync_on_compute`` flag to ``False`` when initializing the
+    metric. Not doing so can lead to race conditions and processes hanging.
+
+.. testcode:: python
+
+    class MyModule(LightningModule):
+
+        def __init__(self, num_classes):
+            ...
+            self.metric = torchmetrics.image.FrechetInceptionDistance(sync_on_compute=False)
+
+        @rank_zero_only
+        def validation_step(self, batch, batch_idx):
+            image, target = batch
+            generated_image = self(x)
+            ...
+            self.metric(image, real=True)
+            self.metric(generated_image, real=False)
+            val = self.metric.compute()  # this will only be called on the main process
+            self.log('val_fid', val)
 
 * Calling ``self.log("val", self.metric(preds, target))`` with the intention of logging the metric object. Because
   ``self.metric(preds, target)`` corresponds to calling the forward method, this will return a tensor and not the
