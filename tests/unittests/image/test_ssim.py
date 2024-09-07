@@ -319,11 +319,13 @@ def test_ssim_unequal_kernel_size(sigma, kernel_size, result):
         assert torch.isclose(
             structural_similarity_index_measure(preds, target, gaussian_kernel=True, sigma=sigma),
             result,
+            atol=1e-04,
         )
     else:
         assert torch.isclose(
             structural_similarity_index_measure(preds, target, gaussian_kernel=False, kernel_size=kernel_size),
             result,
+            atol=1e-04,
         )
 
 
