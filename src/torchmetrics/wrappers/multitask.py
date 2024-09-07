@@ -263,10 +263,8 @@ class MultitaskWrapper(WrapperMetric):
 
         """
         multitask_copy = deepcopy(self)
-        if prefix is not None:
-            multitask_copy._prefix = self._check_arg(prefix, "prefix")
-        if postfix is not None:
-            multitask_copy._postfix = self._check_arg(postfix, "prefix")
+        multitask_copy._prefix = self._check_arg(prefix, "prefix") or ""
+        multitask_copy._postfix = self._check_arg(postfix, "prefix") or ""
         return multitask_copy
 
     def plot(
