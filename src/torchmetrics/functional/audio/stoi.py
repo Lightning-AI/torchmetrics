@@ -59,13 +59,12 @@ def short_time_objective_intelligibility(
             If ``preds`` and ``target`` does not have the same shape
 
     Example:
-        >>> import torch
+        >>> from torch import randn
         >>> from torchmetrics.functional.audio.stoi import short_time_objective_intelligibility
-        >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn(8000)
-        >>> target = torch.randn(8000)
+        >>> preds = randn(8000)
+        >>> target = randn(8000)
         >>> short_time_objective_intelligibility(preds, target, 8000).float()
-        tensor(-0.0100)
+        tensor(-0.084...)
 
     """
     if not _PYSTOI_AVAILABLE:

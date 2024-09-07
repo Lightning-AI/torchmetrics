@@ -129,13 +129,12 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
             If ``reset_real_features`` is not an ``bool``
 
     Example::
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
+        >>> from torch import randint
         >>> from torchmetrics.image.mifid import MemorizationInformedFrechetInceptionDistance
         >>> mifid = MemorizationInformedFrechetInceptionDistance(feature=64)
         >>> # generate two slightly overlapping image intensity distributions
-        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
-        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> imgs_dist1 = randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> imgs_dist2 = randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
         >>> mifid.update(imgs_dist1, real=True)
         >>> mifid.update(imgs_dist2, real=False)
         >>> mifid.compute()

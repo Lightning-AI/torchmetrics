@@ -32,6 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tracker higher is better integration ([#2649](https://github.com/Lightning-AI/torchmetrics/pull/2649))
 
 
+- update `InfoLM` class to dynamically set `higher_is_better` ([#2674](https://github.com/Lightning-AI/torchmetrics/pull/2674))
+
+
 ### Removed
 
 -

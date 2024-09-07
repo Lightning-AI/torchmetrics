@@ -51,12 +51,10 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> import torch
-        >>> from torchmetrics.image import PeakSignalNoiseRatioWithBlockedEffect
+        >>> from torch import rand
         >>> metric = PeakSignalNoiseRatioWithBlockedEffect()
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand(2, 1, 10, 10)
-        >>> target = torch.rand(2, 1, 10, 10)
+        >>> preds = rand(2, 1, 10, 10)
+        >>> target = rand(2, 1, 10, 10)
         >>> metric(preds, target)
         tensor(7.2893)
 

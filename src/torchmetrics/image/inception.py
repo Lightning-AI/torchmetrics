@@ -84,15 +84,14 @@ class InceptionScore(Metric):
             If ``feature`` is not an ``str``, ``int`` or ``torch.nn.Module``
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
+        >>> from torch import rand
         >>> from torchmetrics.image.inception import InceptionScore
         >>> inception = InceptionScore()
         >>> # generate some images
         >>> imgs = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)
         >>> inception.update(imgs)
         >>> inception.compute()
-        (tensor(1.0544), tensor(0.0117))
+        (tensor(1.0549), tensor(0.0121))
 
     """
 

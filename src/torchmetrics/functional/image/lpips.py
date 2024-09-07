@@ -421,13 +421,12 @@ def learned_perceptual_image_patch_similarity(
             to ``True`` will instead expect input to be in the ``[0,1]`` range.
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
+        >>> from torch import rand
         >>> from torchmetrics.functional.image.lpips import learned_perceptual_image_patch_similarity
-        >>> img1 = (torch.rand(10, 3, 100, 100) * 2) - 1
-        >>> img2 = (torch.rand(10, 3, 100, 100) * 2) - 1
+        >>> img1 = (rand(10, 3, 100, 100) * 2) - 1
+        >>> img2 = (rand(10, 3, 100, 100) * 2) - 1
         >>> learned_perceptual_image_patch_similarity(img1, img2, net_type='squeeze')
-        tensor(0.1008)
+        tensor(0.1005)
 
     """
     net = _NoTrainLpips(net=net_type).to(device=img1.device, dtype=img1.dtype)

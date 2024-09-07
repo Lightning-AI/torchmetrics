@@ -148,17 +148,16 @@ class KernelInceptionDistance(Metric):
             If ``reset_real_features`` is not an ``bool``
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
+        >>> from torch import randint
         >>> from torchmetrics.image.kid import KernelInceptionDistance
         >>> kid = KernelInceptionDistance(subset_size=50)
         >>> # generate two slightly overlapping image intensity distributions
-        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
-        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> imgs_dist1 = randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> imgs_dist2 = randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
         >>> kid.update(imgs_dist1, real=True)
         >>> kid.update(imgs_dist2, real=False)
         >>> kid.compute()
-        (tensor(0.0337), tensor(0.0023))
+        (tensor(0.0312), tensor(0.0025))
 
     """
 
