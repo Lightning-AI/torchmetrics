@@ -43,9 +43,10 @@ def procrustes_disparity(dataset1: Tensor, dataset2: Tensor, return_all: bool = 
 
     try:
         u, w, v = linalg.svd(torch.matmul(dataset2.transpose(1, 2), dataset1).transpose(1, 2), full_matrices=False)
-    except:
+    except Exception as e:
         rank_zero_warn(
-            "SVD calculation in procrustes_disparity failed. Returning 0 disparity and identity scale/rotation.",
+            f"SVD calculation in procrustes_disparity failed with exception {e}. Returning 0 disparity and identity"
+            " scale/rotation.",
             UserWarning,
         )
         return torch.tensor(0.0), torch.ones(dataset1.shape[0]), torch.eye(dataset1.shape[2])
