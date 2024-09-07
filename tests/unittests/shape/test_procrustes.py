@@ -44,7 +44,7 @@ def _reference_procrustes(dataset1, dataset2, reduction=None):
 
     disparity = 0
     for d1, d2 in zip(dataset1, dataset2):
-        disparity += procrustes_disparity(d1, d2)
+        disparity += scipy_procrustes(d1, d2)[2]
     if reduction == "mean":
         return disparity / len(dataset1)
     return disparity
