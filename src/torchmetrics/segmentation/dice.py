@@ -11,8 +11,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from torchmetrics.segmentation.dice import DiceScore
-from torchmetrics.segmentation.generalized_dice import GeneralizedDiceScore
-from torchmetrics.segmentation.mean_iou import MeanIoU
+from typing import Any, Optional, Sequence, Union
 
-__all__ = ["GeneralizedDiceScore", "MeanIoU", "DiceScore"]
+import torch
+from torch import Tensor
+from typing_extensions import Literal
+
+from torchmetrics.functional.segmentation.generalized_dice import (
+    _generalized_dice_compute,
+    _generalized_dice_update,
+    _generalized_dice_validate_args,
+)
+from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
+from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
+
+if not _MATPLOTLIB_AVAILABLE:
+    __doctest_skip__ = ["DiceScore.plot"]
+
+
+class DiceScore(Metric):
+    pass
