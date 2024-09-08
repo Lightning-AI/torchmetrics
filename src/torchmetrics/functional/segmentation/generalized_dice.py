@@ -28,7 +28,7 @@ def _generalized_dice_validate_args(
     input_format: Literal["one-hot", "index"],
 ) -> None:
     """Validate the arguments of the metric."""
-    if num_classes <= 0:
+    if not isinstance(num_classes, int) or num_classes <= 0:
         raise ValueError(f"Expected argument `num_classes` must be a positive integer, but got {num_classes}.")
     if not isinstance(include_background, bool):
         raise ValueError(f"Expected argument `include_background` must be a boolean, but got {include_background}.")
@@ -116,7 +116,7 @@ def generalized_dice_score(
         target: Ground truth values
         num_classes: Number of classes
         include_background: Whether to include the background class in the computation
-        per_class: Whether to compute the IoU for each class separately, else average over all classes
+        per_class: Whether to compute the score for each class separately, else average over all classes
         weight_type: Type of weight factor to apply to the classes. One of ``"square"``, ``"simple"``, or ``"linear"``
         input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors
             or ``"index"`` for index tensors
