@@ -278,7 +278,16 @@ def test_ssim_invalid_inputs(pred, target, kernel, sigma, match):
         structural_similarity_index_measure(pred, target, kernel_size=kernel, sigma=sigma)
 
 
-def test_ssim_unequal_kernel_size():
+@pytest.mark.parametrize(
+    ("sigma", "kernel_size", "result"),
+    [
+        ((0.25, 0.5), None, torch.tensor(0.20977394)),
+        ((0.5, 0.25), None, torch.tensor(0.13884821)),
+        (None, (3, 5), torch.tensor(0.05032664)),
+        (None, (5, 3), torch.tensor(0.03472072)),
+    ],
+)
+def test_ssim_unequal_kernel_size(sigma, kernel_size, result):
     """Test the case where kernel_size[0] != kernel_size[1]."""
     preds = torch.tensor([
         [
@@ -306,24 +315,18 @@ def test_ssim_unequal_kernel_size():
             ]
         ]
     ])
-    # kernel order matters
-    assert torch.isclose(
-        structural_similarity_index_measure(preds, target, gaussian_kernel=True, sigma=(0.25, 0.5)),
-        torch.tensor(0.08869550),
-    )
-    assert not torch.isclose(
-        structural_similarity_index_measure(preds, target, gaussian_kernel=True, sigma=(0.5, 0.25)),
-        torch.tensor(0.08869550),
-    )
-
-    assert torch.isclose(
-        structural_similarity_index_measure(preds, target, gaussian_kernel=False, kernel_size=(3, 5)),
-        torch.tensor(0.05131844),
-    )
-    assert not torch.isclose(
-        structural_similarity_index_measure(preds, target, gaussian_kernel=False, kernel_size=(5, 3)),
-        torch.tensor(0.05131844),
-    )
+    if sigma is not None:
+        assert torch.isclose(
+            structural_similarity_index_measure(preds, target, gaussian_kernel=True, sigma=sigma),
+            result,
+            atol=1e-04,
+        )
+    else:
+        assert torch.isclose(
+            structural_similarity_index_measure(preds, target, gaussian_kernel=False, kernel_size=kernel_size),
+            result,
+            atol=1e-04,
+        )
 
 
 @pytest.mark.parametrize(
@@ -341,3 +344,19 @@ def test_full_image_output(preds, target):
     assert len(out) == 2
     assert out[0].numel() == 1
     assert out[1].shape == preds[0].shape
+
+
+def test_ssim_for_correct_padding():
+    """Check that padding is correctly added and removed for SSIM.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2718
+
+    """
+    preds = torch.rand([3, 3, 256, 256])
+    # let the edge of the image be 0
+    target = preds.clone()
+    target[:, :, 0, :] = 0
+    target[:, :, -1, :] = 0
+    target[:, :, :, 0] = 0
+    target[:, :, :, -1] = 0
+    assert structural_similarity_index_measure(preds, target) < 1.0
