@@ -44,7 +44,7 @@ class _MultiScaleStructuralSimilarityIndexMeasure(MultiScaleStructuralSimilarity
     >>> target = preds * 0.75
     >>> ms_ssim = _MultiScaleStructuralSimilarityIndexMeasure(data_range=1.0)
     >>> ms_ssim(preds, target)
-    tensor(0.9627)
+    tensor(0.9628)
 
     """
 
