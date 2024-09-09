@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Tuple, Union
+
 import torch
 from torch import Tensor, linalg
 
@@ -18,7 +20,9 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.prints import rank_zero_warn
 
 
-def procrustes_disparity(dataset1: Tensor, dataset2: Tensor, return_all: bool = False) -> Tensor:
+def procrustes_disparity(
+    dataset1: Tensor, dataset2: Tensor, return_all: bool = False
+) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor]]:
     """Runs procrustrus analysis on a batch of data points.
 
     Works similar `scipy.spatial.procrustes` but for batches of data points.

@@ -86,7 +86,7 @@ class ProcrustesDisparity(Metric):
 
     def update(self, dataset1: torch.Tensor, dataset2: torch.Tensor) -> None:
         """Update the Procrustes Disparity with the given datasets."""
-        disparity = procrustes_disparity(dataset1, dataset2)
+        disparity: Tensor = procrustes_disparity(dataset1, dataset2)  # type: ignore[assignment]
         self.disparity += disparity.sum()
         self.total += disparity.numel()
 
