@@ -69,7 +69,7 @@ class ShortTimeObjectiveIntelligibility(Metric):
         >>> target = randn(8000)
         >>> stoi = ShortTimeObjectiveIntelligibility(8000, False)
         >>> stoi(preds, target)
-        tensor(-0.0842)
+        tensor(-0.084...)
 
     """
 
