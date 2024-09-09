@@ -31,11 +31,10 @@ def calinski_harabasz_score(data: Tensor, labels: Tensor) -> Tensor:
         Scalar tensor with the Calinski Harabasz Score
 
     Example:
-        >>> import torch
+        >>> from torch import randn, randint
         >>> from torchmetrics.functional.clustering import calinski_harabasz_score
-        >>> _ = torch.manual_seed(42)
-        >>> data = torch.randn(10, 3)
-        >>> labels = torch.randint(0, 2, (10,))
+        >>> data = randn(10, 3)
+        >>> labels = randint(0, 2, (10,))
         >>> calinski_harabasz_score(data, labels)
         tensor(3.4998)
 

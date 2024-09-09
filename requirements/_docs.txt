@@ -1,6 +1,6 @@
 sphinx ==5.3.0
 myst-parser ==1.0.0
-pandoc ==2.3
+pandoc ==2.4
 docutils ==0.19
 sphinxcontrib-fulltoc >=1.0
 sphinxcontrib-mockautodoc
@@ -9,10 +9,10 @@ sphinx-autodoc-typehints ==1.23.0
 sphinx-paramlinks ==0.6.0
 sphinx-togglebutton ==0.3.2
 sphinx-copybutton ==0.5.2
-sphinx-gallery ==0.17.0
+sphinx-gallery ==0.17.1
 
-lightning >=1.8.0, <2.4.0
-lightning-utilities ==0.11.6
+lightning >=1.8.0, <2.5.0
+lightning-utilities ==0.11.7
 pydantic > 1.0.0, < 3.0.0
 
 # integrations
@@ -29,4 +29,4 @@ pydantic > 1.0.0, < 3.0.0
 # todo: until this has resolution - https://github.com/sphinx-gallery/sphinx-gallery/issues/1290
 # Image
 scikit-image ~=0.22; python_version < "3.10"
-scikit-image ~=0.24; python_version >= "3.10"
+scikit-image ~=0.24; python_version > "3.9"  # we do not use `> =` because of oldest replcement

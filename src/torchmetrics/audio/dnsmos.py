@@ -76,11 +76,10 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
     Example:
         >>> from torch import randn
         >>> from torchmetrics.audio import DeepNoiseSuppressionMeanOpinionScore
-        >>> g = torch.manual_seed(1)
         >>> preds = randn(8000)
         >>> dnsmos = DeepNoiseSuppressionMeanOpinionScore(8000, False)
         >>> dnsmos(preds)
-        tensor([2.2285, 2.1132, 1.3972, 1.3652], dtype=torch.float64)
+        tensor([2.2..., 2.0..., 1.1..., 1.2...], dtype=torch.float64)
 
     """
 

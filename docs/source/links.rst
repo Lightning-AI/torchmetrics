@@ -91,7 +91,7 @@
 .. _CER: https://rechtsprechung-im-ostseeraum.archiv.uni-greifswald.de/word-error-rate-character-error-rate-how-to-evaluate-a-model
 .. _MER: https://www.isca-speech.org/archive/interspeech_2004/morris04_interspeech.html
 .. _WIL: https://www.isca-speech.org/archive/interspeech_2004/morris04_interspeech.html
-.. _WIP: https://infoscience.epfl.ch/entities/publication/9983d013-8239-422e-a3f7-a1500d309474
+.. _WIP: https://www.isca-archive.org/interspeech_2004/morris04_interspeech.pdf
 .. _TV: https://en.wikipedia.org/wiki/Total_variation_denoising
 .. _InfoLM: https://arxiv.org/abs/2112.01589
 .. _alpha divergence: https://static.renyi.hu/renyi_cikkek/1961_on_measures_of_entropy_and_information.pdf

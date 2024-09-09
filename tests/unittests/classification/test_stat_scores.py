@@ -578,8 +578,6 @@ class TestMultilabelStatScores(MetricTester):
         )
 
 
-# fixme: Expected only 5 but found 7 in `target`
-@pytest.mark.flaky(reruns=5, only_rerun="RuntimeError")
 def test_support_for_int():
     """See issue: https://github.com/Lightning-AI/torchmetrics/issues/1970."""
     seed_all(42)
