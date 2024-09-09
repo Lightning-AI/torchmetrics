@@ -15,11 +15,10 @@ from functools import partial
 
 import pytest
 import torch
-
 from monai.metrics.meandice import compute_dice
+from sklearn.metrics import jaccard_score
 from torchmetrics.functional.segmentation.dice import dice_score
 from torchmetrics.segmentation.dice import DiceScore
-from sklearn.metrics import jaccard_score
 
 from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, _Input
 from unittests._helpers import seed_all
@@ -39,6 +38,7 @@ _inputs3 = _Input(
     preds=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 32, 32)),
     target=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 32, 32)),
 )
+
 
 def sklearn_dice(*args, **kwargs):
     js = jaccard_score(*args, **kwargs)

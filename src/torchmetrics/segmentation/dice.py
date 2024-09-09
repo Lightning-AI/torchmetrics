@@ -32,13 +32,13 @@ if not _MATPLOTLIB_AVAILABLE:
 
 class DiceScore(Metric):
     r"""Compute `Dice Score`_.
-    
+
     The metric can be used to evaluate the performance of image segmentation models. The Dice Score is defined as:
 
     ..math::
         DS = \frac{2 \sum_{i=1}^{N} t_i p_i}{\sum_{i=1}^{N} t_i + \sum_{i=1}^{N} p_i}
 
-    where :math:`N` is the number of classes, :math:`t_i` is the target tensor, and :math:`p_i` is the prediction 
+    where :math:`N` is the number of classes, :math:`t_i` is the target tensor, and :math:`p_i` is the prediction
     tensor. In general the Dice Score can be interpreted as the overlap between the prediction and target tensors
     divided by the total number of elements in the tensors.
 
@@ -54,7 +54,7 @@ class DiceScore(Metric):
           with the ``input_format`` argument.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
-    
+
     """
 
     score: Tensor
@@ -65,7 +65,7 @@ class DiceScore(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    def __init__(self, 
+    def __init__(self,
         num_classes: int,
         include_background: bool = True,
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
@@ -82,5 +82,5 @@ class DiceScore(Metric):
         num_classes = num_classes - 1 if include_background else num_classes
         self.add_state("score", default=torch.zeros(num_classes), dist_reduce_fx="sum")
         self.add_state("samples", default=torch.zeros(1), dist_reduce_fx="sum")
-    
+
     def update(self, preds: Tensor, target: Tensor) -> None:
