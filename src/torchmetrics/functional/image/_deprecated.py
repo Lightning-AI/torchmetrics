@@ -168,7 +168,7 @@ def _multiscale_structural_similarity_index_measure(
     >>> preds = rand([3, 3, 256, 256])
     >>> target = preds * 0.75
     >>> _multiscale_structural_similarity_index_measure(preds, target, data_range=1.0)
-    tensor(0.9627)
+    tensor(0.9628)
 
     """
     _deprecated_root_import_func("multiscale_structural_similarity_index_measure", "image")
