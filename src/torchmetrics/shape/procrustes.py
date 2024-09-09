@@ -64,7 +64,7 @@ class ProcrustesDisparity(Metric):
         >>> dataset1 = randn(10, 50, 2)
         >>> dataset2 = randn(10, 50, 2)
         >>> metric(dataset1, dataset2)
-        tensor(0.9608)
+        tensor(0.9770)
 
     """
 
