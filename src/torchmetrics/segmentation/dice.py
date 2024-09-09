@@ -17,10 +17,10 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.segmentation.generalized_dice import (
-    _generalized_dice_compute,
-    _generalized_dice_update,
-    _generalized_dice_validate_args,
+from torchmetrics.functional.segmentation.dice import (
+    _dice_score_validate_args,
+    _dice_score_update,
+    _dice_score_compute,
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
@@ -31,4 +31,56 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class DiceScore(Metric):
-    pass
+    r"""Compute `Dice Score`_.
+    
+    The metric can be used to evaluate the performance of image segmentation models. The Dice Score is defined as:
+
+    ..math::
+        DS = \frac{2 \sum_{i=1}^{N} t_i p_i}{\sum_{i=1}^{N} t_i + \sum_{i=1}^{N} p_i}
+
+    where :math:`N` is the number of classes, :math:`t_i` is the target tensor, and :math:`p_i` is the prediction 
+    tensor. In general the Dice Score can be interpreted as the overlap between the prediction and target tensors
+    divided by the total number of elements in the tensors.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+        - ``preds`` (:class:`~torch.Tensor`): An one-hot boolean tensor of shape ``(N, C, ...)`` with ``N`` being
+          the number of samples and ``C`` the number of classes. Alternatively, an integer tensor of shape ``(N, ...)``
+          can be provided, where the integer values correspond to the class index. The input type can be controlled
+          with the ``input_format`` argument.
+        - ``target`` (:class:`~torch.Tensor`): An one-hot boolean tensor of shape ``(N, C, ...)`` with ``N`` being
+          the number of samples and ``C`` the number of classes. Alternatively, an integer tensor of shape ``(N, ...)``
+          can be provided, where the integer values correspond to the class index. The input type can be controlled
+          with the ``input_format`` argument.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+    
+    """
+
+    score: Tensor
+    samples: Tensor
+    full_state_update: bool = False
+    is_differentiable: bool = False
+    higher_is_better: bool = True
+    plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 1.0
+
+    def __init__(self, 
+        num_classes: int,
+        include_background: bool = True,
+        average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+        input_format: Literal["one-hot", "index"] = "one-hot",
+        **kwargs: Any
+    ) -> None:
+        super().__init__(**kwargs)
+        _dice_score_validate_args(num_classes, include_background, average, input_format)
+        self.num_classes = num_classes
+        self.include_background = include_background
+        self.average = average
+        self.input_format = input_format
+
+        num_classes = num_classes - 1 if include_background else num_classes
+        self.add_state("score", default=torch.zeros(num_classes), dist_reduce_fx="sum")
+        self.add_state("samples", default=torch.zeros(1), dist_reduce_fx="sum")
+    
+    def update(self, preds: Tensor, target: Tensor) -> None:
