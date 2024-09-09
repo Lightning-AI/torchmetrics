@@ -354,6 +354,8 @@ def bert_score(
         preds = list(preds)
     if not isinstance(target, (str, list, dict)):  # dict for BERTScore class compute call
         target = list(target)
+    if not isinstance(idf, bool):
+        raise ValueError(f"The value of idf must be a boolean. Value passed:{idf=}")
 
     if verbose and (not _TQDM_AVAILABLE):
         raise ModuleNotFoundError(

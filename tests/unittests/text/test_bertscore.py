@@ -175,7 +175,7 @@ class TestBERTScore(TextTester):
 @skip_on_connection_issues()
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
 @pytest.mark.parametrize(
-    "idf",
+    ["idf"],
     [(False,), (True,)],
 )
 def test_bertscore_sorting(idf: bool):
