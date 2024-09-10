@@ -248,14 +248,24 @@ def test_key_value_items_method(method, flatten):
 
 def test_clone_with_prefix_and_postfix():
     """Check that the clone method works with prefix and postfix arguments."""
-    multitask_metrics = MultitaskWrapper({"Classification": BinaryAccuracy(), "Regression": MeanSquaredError()})
-    cloned_metrics_with_prefix = multitask_metrics.clone(prefix="prefix_")
-    cloned_metrics_with_postfix = multitask_metrics.clone(postfix="_postfix")
+    multitask_metrics = MultitaskWrapper(
+        {"Classification": BinaryAccuracy(), "Regression": MeanSquaredError()},
+        prefix="prefix_",
+        postfix="_postfix",
+    )
+    assert set(multitask_metrics.keys()) == {"prefix_Classification_postfix", "prefix_Regression_postfix"}
 
-    # Check if the cloned metrics have the expected keys
-    assert set(cloned_metrics_with_prefix.task_metrics.keys()) == {"prefix_Classification", "prefix_Regression"}
-    assert set(cloned_metrics_with_postfix.task_metrics.keys()) == {"Classification_postfix", "Regression_postfix"}
+    output = multitask_metrics(
+        {"Classification": _classification_preds, "Regression": _regression_preds},
+        {"Classification": _classification_target, "Regression": _regression_target},
+    )
+    assert set(output.keys()) == {"prefix_Classification_postfix", "prefix_Regression_postfix"}
 
-    # Check if the cloned metrics have the expected values
-    assert isinstance(cloned_metrics_with_prefix.task_metrics["prefix_Classification"], BinaryAccuracy)
-    assert isinstance(cloned_metrics_with_prefix.task_metrics["prefix_Regression"], MeanSquaredError)
+    cloned_metrics = multitask_metrics.clone(prefix="new_prefix_", postfix="_new_postfix")
+    assert set(cloned_metrics.keys()) == {"new_prefix_Classification_new_postfix", "new_prefix_Regression_new_postfix"}
+
+    output = cloned_metrics(
+        {"Classification": _classification_preds, "Regression": _regression_preds},
+        {"Classification": _classification_target, "Regression": _regression_target},
+    )
+    assert set(output.keys()) == {"new_prefix_Classification_new_postfix", "new_prefix_Regression_new_postfix"}
