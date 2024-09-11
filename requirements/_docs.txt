@@ -15,6 +15,8 @@ lightning >=1.8.0, <2.5.0
 lightning-utilities ==0.11.7
 pydantic > 1.0.0, < 3.0.0
 
+numpy <2.0  # required by pesq package
+
 # integrations
 -r _integrate.txt
 -r visual.txt
