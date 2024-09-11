@@ -60,6 +60,7 @@ _MECAB_KO_AVAILABLE = RequirementCache("mecab_ko")
 _MECAB_KO_DIC_AVAILABLE = RequirementCache("mecab_ko_dic")
 _IPADIC_AVAILABLE = RequirementCache("ipadic")
 _SENTENCEPIECE_AVAILABLE = RequirementCache("sentencepiece")
+_SCIPI_AVAILABLE = RequirementCache("scipy")
 _SKLEARN_GREATER_EQUAL_1_3 = RequirementCache("scikit-learn>=1.3.0")
 
 _LATEX_AVAILABLE: bool = shutil.which("latex") is not None
