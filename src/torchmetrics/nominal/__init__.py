@@ -11,11 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from torchmetrics.nominal.cramers import CramersV
 from torchmetrics.nominal.fleiss_kappa import FleissKappa
 from torchmetrics.nominal.pearson import PearsonsContingencyCoefficient
 from torchmetrics.nominal.theils_u import TheilsU
 from torchmetrics.nominal.tschuprows import TschuprowsT
+from torchmetrics.utilities.imports import _SCIPI_AVAILABLE
+
+if _SCIPI_AVAILABLE:
+    import scipy.signal
+
+    # back compatibility patch due to SMRMpy using scipy.signal.hamming
+    if not hasattr(scipy.signal, "hamming"):
+        scipy.signal.hamming = scipy.signal.windows.hamming
 
 __all__ = [
     "CramersV",
