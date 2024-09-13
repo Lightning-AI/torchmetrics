@@ -11,15 +11,16 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 import glob
+import inspect
 import os
 import re
 import shutil
 import sys
-from typing import Optional
+from typing import Optional, Tuple
 
 import lai_sphinx_theme
 import torchmetrics
-from lightning_utilities.docs.formatting import _linkcode_resolve, _transform_changelog
+from lightning_utilities.docs.formatting import _transform_changelog
 
 _PATH_HERE = os.path.abspath(os.path.dirname(__file__))
 _PATH_ROOT = os.path.realpath(os.path.join(_PATH_HERE, "..", ".."))
@@ -293,9 +294,9 @@ epub_exclude_files = ["search.html"]
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
-    "torch": ("https://pytorch.org/docs/stable/", None),
-    "numpy": ("https://numpy.org/doc/stable/", None),
-    "matplotlib": ("https://matplotlib.org/stable/", None),
+    "torch": ("https://pytorch.org/docs/2.4/", None),
+    "numpy": ("https://numpy.org/doc/2.1/", None),
+    "matplotlib": ("https://matplotlib.org/3.9.2/", None),
 }
 nitpicky = True
 
@@ -358,8 +359,50 @@ MOCK_PACKAGES = [PACKAGE_MAPPING.get(pkg, pkg) for pkg in MOCK_PACKAGES]
 autodoc_mock_imports = MOCK_PACKAGES
 
 
-# Resolve function
-# This function is used to populate the (source) links in the API
+def _linkcode_resolve(
+    domain: str,
+    info: dict,
+    github_user: str,
+    github_repo: str,
+    main_branch: str = "master",
+    stable_branch: str = "release/stable",
+) -> str:
+    def find_source() -> Tuple[str, int, int]:
+        # try to find the file and line number, based on code from numpy:
+        # https://github.com/numpy/numpy/blob/master/doc/source/conf.py#L286
+        obj = sys.modules[info["module"]]
+        for part in info["fullname"].split("."):
+            obj = getattr(obj, part)
+        fname = str(inspect.getsourcefile(obj))
+        # https://github.com/rtfd/readthedocs.org/issues/5735
+        if any(s in fname for s in ("readthedocs", "rtfd", "checkouts")):
+            # /home/docs/checkouts/readthedocs.org/user_builds/pytorch_lightning/checkouts/
+            #  devel/pytorch_lightning/utilities/cls_experiment.py#L26-L176
+            path_top = os.path.abspath(os.path.join("..", "..", ".."))
+            fname = str(os.path.relpath(fname, start=path_top))
+        else:
+            # Local build, imitate master
+            fname = f'{main_branch}/{os.path.relpath(fname, start=os.path.abspath(".."))}'
+        source, line_start = inspect.getsourcelines(obj)
+        return fname, line_start, line_start + len(source) - 1
+
+    if domain != "py" or not info["module"]:
+        return ""
+    try:
+        filename = "%s#L%d-L%d" % find_source()
+    except Exception:
+        filename = info["module"].replace(".", "/") + ".py"
+    # import subprocess
+    # tag = subprocess.Popen(['git', 'rev-parse', 'HEAD'], stdout=subprocess.PIPE,
+    #                        universal_newlines=True).communicate()[0][:-1]
+    branch = filename.split("/")[0]
+    # do mapping from latest tags to master
+    branch = {"latest": main_branch, "stable": stable_branch}.get(branch, branch)
+    filename = "/".join([branch] + filename.split("/")[1:])
+    return f"https://github.com/{github_user}/{github_repo}/blob/{filename}"
+
+
+# Resolve function, this function is used to populate the (source) links in the API
 def linkcode_resolve(domain, info) -> Optional[str]:  # noqa: ANN001
     return _linkcode_resolve(domain, info=info, github_user="Lightning-AI", github_repo="torchmetrics")
 
