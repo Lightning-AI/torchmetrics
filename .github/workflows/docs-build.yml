@@ -59,7 +59,7 @@ jobs:
       - name: Install package & dependencies
         run: |
           make get-sphinx-template
-          pip install . -U -r requirements/_docs.txt \
+          pip install -e . -U -r requirements/_docs.txt \
             --find-links="${PYPI_CACHE}" --find-links="${TORCH_URL}"
       - run: pip list
       - name: Full build for deployment

@@ -270,6 +270,11 @@ texinfo_documents = [
     ),
 ]
 
+# MathJax configuration
+mathjax3_config = {
+    "tex": {"packages": {"[+]": ["ams", "newcommand", "configMacros"]}},
+}
+
 # -- Options for Epub output -------------------------------------------------
 
 # Bibliographic Dublin Core info.
