@@ -48,13 +48,13 @@ jobs:
           pytorch-version: ${{ matrix.pytorch-version }}
           pypi-dir: ${{ env.PYPI_CACHE }}
 
-#      - name: Install Latex
-#        if: ${{ matrix.target == 'html' }}
-#        # install Texlive, see https://linuxconfig.org/how-to-install-latex-on-ubuntu-20-04-focal-fossa-linux
-#        run: |
-#          sudo apt-get update --fix-missing
-#          sudo apt-get install -y \
-#            texlive-latex-extra texlive-pictures texlive-fonts-recommended dvipng cm-super
+      #      - name: Install Latex
+      #        if: ${{ matrix.target == 'html' }}
+      #        # install Texlive, see https://linuxconfig.org/how-to-install-latex-on-ubuntu-20-04-focal-fossa-linux
+      #        run: |
+      #          sudo apt-get update --fix-missing
+      #          sudo apt-get install -y \
+      #            texlive-latex-extra texlive-pictures texlive-fonts-recommended dvipng cm-super
 
       - name: Install package & dependencies
         run: |
