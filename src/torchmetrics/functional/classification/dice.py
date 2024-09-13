@@ -152,9 +152,9 @@ def dice(
             than what they appear to be.
 
     .. warning::
-        The `dice` metrics is being deprecated from the classification subpackage in v1.6.0 of torchmetrics and will be
-        removed in v1.7.0. Please instead consider using `f1score` metric from the classification subpackage as it
-        provides the same functionality. Additionally, we are going to re-add the `dice` metric in the segmentation
+        The ``dice`` metrics is being deprecated from the classification subpackage in v1.6.0 of torchmetrics and will be
+        removed in v1.7.0. Please instead consider using ``f1score`` metric from the classification subpackage as it
+        provides the same functionality. Additionally, we are going to re-add the ``dice`` metric in the segmentation
         domain in v1.6.0 with slight modifications to functionality.
 
     Return:
