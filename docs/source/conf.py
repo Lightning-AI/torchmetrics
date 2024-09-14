@@ -269,6 +269,11 @@ texinfo_documents = [
     ),
 ]
 
+# MathJax configuration
+mathjax3_config = {
+    "tex": {"packages": {"[+]": ["ams", "newcommand", "configMacros"]}},
+}
+
 # -- Options for Epub output -------------------------------------------------
 
 # Bibliographic Dublin Core info.
@@ -358,8 +363,7 @@ MOCK_PACKAGES = [PACKAGE_MAPPING.get(pkg, pkg) for pkg in MOCK_PACKAGES]
 autodoc_mock_imports = MOCK_PACKAGES
 
 
-# Resolve function
-# This function is used to populate the (source) links in the API
+# Resolve function - this function is used to populate the (source) links in the API
 def linkcode_resolve(domain, info) -> Optional[str]:  # noqa: ANN001
     return _linkcode_resolve(domain, info=info, github_user="Lightning-AI", github_repo="torchmetrics")
 
