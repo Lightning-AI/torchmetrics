@@ -33,7 +33,7 @@ class ProcrustesDisparity(Metric):
     applying a Procrustes transformation. The Procrustes Disparity is useful to compare two datasets
     that are similar but not aligned.
 
-    The metric works similar to `scipy.spatial.procrustes` but for batches of data points. The disparity is
+    The metric works similar to ``scipy.spatial.procrustes`` but for batches of data points. The disparity is
     aggregated over the batch, thus to get the individual disparities please use the functional version of this
     metric: ``torchmetrics.functional.shape.procrustes.procrustes_disparity``.
 
