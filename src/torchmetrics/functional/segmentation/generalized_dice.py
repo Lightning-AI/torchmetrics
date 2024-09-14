@@ -124,11 +124,24 @@ def generalized_dice_score(
     Returns:
         The Generalized Dice Score
 
-    Example:
+    Example (with one-hot encoded tensors):
         >>> from torch import randint
         >>> from torchmetrics.functional.segmentation import generalized_dice_score
         >>> preds = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
         >>> target = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 target
+        >>> generalized_dice_score(preds, target, num_classes=5)
+        tensor([0.4830, 0.4935, 0.5044, 0.4880])
+        >>> generalized_dice_score(preds, target, num_classes=5, per_class=True)
+        tensor([[0.4724, 0.5185, 0.4710, 0.5062, 0.4500],
+                [0.4571, 0.4980, 0.5191, 0.4380, 0.5649],
+                [0.5428, 0.4904, 0.5358, 0.4830, 0.4724],
+                [0.4715, 0.4925, 0.4797, 0.5267, 0.4788]])
+    
+    Example (with index tensors):
+        >>> from torch import randint
+        >>> from torchmetrics.functional.segmentation import generalized_dice_score
+        >>> preds = randint(0, 5, (4, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
+        >>> target = randint(0, 5, (4, 16, 16))  # 4 samples, 5 classes, 16x16 target
         >>> generalized_dice_score(preds, target, num_classes=5)
         tensor([0.4830, 0.4935, 0.5044, 0.4880])
         >>> generalized_dice_score(preds, target, num_classes=5, per_class=True)

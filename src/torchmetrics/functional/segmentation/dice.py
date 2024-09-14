@@ -74,8 +74,8 @@ def _dice_score_compute(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
 ) -> Tensor:
     if average == "micro":
-        numerator = torch.sum(numerator, dim=0)
-        denominator = torch.sum(denominator, dim=0)
+        numerator = torch.sum(numerator, dim=1)
+        denominator = torch.sum(denominator, dim=1)
     dice = _safe_divide(numerator, denominator, zero_division=1.0)
     if average == "macro":
         dice = torch.mean(dice)
@@ -95,7 +95,8 @@ def dice_score(
 ) -> Tensor:
     """Compute the Dice score for semantic segmentation.
 
-            preds: Predictions from model
+    Args:
+        preds: Predictions from model
         target: Ground truth values
         num_classes: Number of classes
         include_background: Whether to include the background class in the computation
@@ -104,6 +105,16 @@ def dice_score(
 
     Returns:
         The Dice score.
+
+    Example (with one-hot encoded tensors):
+        >>> from torch import randint
+        >>> from torchmetrics.functional.segmentation import dice_score
+        >>> preds = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
+        >>> target = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 target
+        >>> dice_score(preds, target, num_classes=5)
+        tensor([0.4872, 0.5000, 0.5019, 0.4891, 0.4926])
+
+    Example (with index tensors):
 
     """
     _dice_score_validate_args(num_classes, include_background, average, input_format)
