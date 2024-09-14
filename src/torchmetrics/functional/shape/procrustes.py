@@ -36,7 +36,7 @@ def procrustes_disparity(
     _check_same_shape(dataset1, dataset2)
     if dataset1.ndim != 3:
         raise ValueError(
-            "Expected both datasets to be 3D tensors of shape (N, M, D), where N is the batch size, M is the number of "
+            "Expected both datasets to be 3D tensors of shape (N, M, D), where N is the batch size, M is the number of"
             f" data points and D is the dimensionality of the data points, but got {dataset1.ndim} dimensions."
         )
 
