@@ -25,7 +25,7 @@ def procrustes_disparity(
 ) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor]]:
     """Runs procrustrus analysis on a batch of data points.
 
-    Works similar `scipy.spatial.procrustes` but for batches of data points.
+    Works similar ``scipy.spatial.procrustes`` but for batches of data points.
 
     Args:
         dataset1: The first set of data points
