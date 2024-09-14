@@ -136,7 +136,7 @@ def generalized_dice_score(
                 [0.4571, 0.4980, 0.5191, 0.4380, 0.5649],
                 [0.5428, 0.4904, 0.5358, 0.4830, 0.4724],
                 [0.4715, 0.4925, 0.4797, 0.5267, 0.4788]])
-    
+
     Example (with index tensors):
         >>> from torch import randint
         >>> from torchmetrics.functional.segmentation import generalized_dice_score
