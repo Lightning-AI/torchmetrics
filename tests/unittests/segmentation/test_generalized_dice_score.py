@@ -66,11 +66,11 @@ def _reference_generalized_dice(
     ],
 )
 @pytest.mark.parametrize("include_background", [True, False])
-class TestMeanDiceScore(MetricTester):
+class TestGeneralizedDiceScore(MetricTester):
     """Test class for `MeanIoU` metric."""
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_mean_iou_class(self, preds, target, input_format, include_background, ddp):
+    def test_generalized_dice_class(self, preds, target, input_format, include_background, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
@@ -90,7 +90,7 @@ class TestMeanDiceScore(MetricTester):
             },
         )
 
-    def test_mean_iou_functional(self, preds, target, input_format, include_background):
+    def test_generalized_dice_functional(self, preds, target, input_format, include_background):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
