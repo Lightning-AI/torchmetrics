@@ -26,6 +26,7 @@ from torchmetrics.classification.jaccard import (
     MultilabelJaccardIndex,
 )
 from torchmetrics.functional.classification.jaccard import (
+    _jaccard_index_reduce,
     binary_jaccard_index,
     multiclass_jaccard_index,
     multilabel_jaccard_index,
@@ -401,6 +402,26 @@ def test_corner_case():
     assert torch.allclose(res, torch.ones_like(res))
     res = multiclass_jaccard_index(pred, target, num_classes=10, average="none")
     assert torch.allclose(res, out)
+
+
+def test_jaccard_index_zero_division():
+    """Issue: https://github.com/Lightning-AI/torchmetrics/issues/2658."""
+    # Test case where all pixels are background (zeros)
+    confmat = torch.tensor([[4, 0], [0, 0]])
+
+    # Test with zero_division=0.0
+    result = _jaccard_index_reduce(confmat, average="binary", zero_division=0.0)
+    assert result == 0.0, f"Expected 0.0, but got {result}"
+
+    # Test with zero_division=1.0
+    result = _jaccard_index_reduce(confmat, average="binary", zero_division=1.0)
+    assert result == 1.0, f"Expected 1.0, but got {result}"
+
+    # Test case with some foreground pixels
+    confmat = torch.tensor([[2, 1], [1, 1]])
+    result = _jaccard_index_reduce(confmat, average="binary", zero_division=0.0)
+    expected = 1 / 3
+    assert torch.isclose(result, torch.tensor(expected)), f"Expected {expected}, but got {result}"
 
 
 @pytest.mark.parametrize(
