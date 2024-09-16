@@ -3,6 +3,6 @@ contact_links:
   - name: Ask a Question
     url: https://github.com/Lightning-AI/torchmetrics/discussions/new
     about: Ask and answer TorchMetrics related questions
-  - name: 💬 Slack
-    url: https://app.slack.com/client/TR9DVT48M/CQXV8BRH9/thread/CQXV8BRH9-1591382895.254600
-    about: Chat with our community
+  - name: 💬 Chat with us
+    url: https://discord.gg/VptPCZkGNa
+    about: Live chat with experts, engineers, and users in our Discord community.
