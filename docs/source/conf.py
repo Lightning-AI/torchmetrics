@@ -220,6 +220,7 @@ html_logo = "_static/images/logo.svg"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 html_css_files = ["css/custom.css"]
+html_js_files = ["runllm.js"]
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
