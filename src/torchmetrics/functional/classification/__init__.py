@@ -71,6 +71,7 @@ from torchmetrics.functional.classification.jaccard import (
     multiclass_jaccard_index,
     multilabel_jaccard_index,
 )
+from torchmetrics.functional.classification.logauc import binary_logauc, logauc, multiclass_logauc, multilabel_logauc
 from torchmetrics.functional.classification.matthews_corrcoef import (
     binary_matthews_corrcoef,
     matthews_corrcoef,
@@ -234,4 +235,8 @@ __all__ = [
     "demographic_parity",
     "equal_opportunity",
     "precision_at_fixed_recall",
+    "binary_logauc",
+    "multiclass_logauc",
+    "multilabel_logauc",
+    "logauc",
 ]
