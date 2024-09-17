@@ -103,7 +103,7 @@ def perceptual_evaluation_speech_quality(
             pesq_val_np = np.empty(shape=(preds_np.shape[0]))
             for b in range(preds_np.shape[0]):
                 pesq_val_np[b] = pesq_backend.pesq(fs, target_np[b, :], preds_np[b, :], mode)
-        pesq_val = torch.from_numpy(pesq_val_np)
+        pesq_val = torch.from_numpy(list(filter(lambda x: isinstance(x, (int, float)), pesq_val_np)))
         pesq_val = pesq_val.reshape(preds.shape[:-1])
 
     if keep_same_device:
