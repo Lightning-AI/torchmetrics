@@ -2,6 +2,7 @@
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
 pandas >1.4.0, <=2.2.2 # cannot pin version due to numpy version incompatibility
-dython ~=0.7.6
+dython ==0.7.6 ; python_version <"3.9"
+dython ~=0.7.7 ; python_version > "3.8"  # we do not use `> =`
 scipy >1.0.0, <1.15.0 # cannot pin version due to some version conflicts with `oldest` CI configuration
 statsmodels >0.13.5, <0.15.0
