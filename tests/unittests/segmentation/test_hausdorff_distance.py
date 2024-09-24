@@ -47,8 +47,8 @@ target = torch.tensor(
 _inputs = _Input(preds=preds, target=target)
 
 # Wrapper that converts to numpy to avoid Torch-to-numpy functional issues
-torch_skimage_hausdorff_distance = lambda p, t: skimage_hausdorff_distance(p.numpy(), t.numpy())
-
+def torch_skimage_hausdorff_distance(p: torch.Tensor, t: torch.Tensor) -> float:
+    return skimage_hausdorff_distance(p.numpy(), t.numpy())
 
 @pytest.mark.parametrize(
     "preds, target",
