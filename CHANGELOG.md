@@ -63,6 +63,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed flakiness in tests related to `torch.unique` with `dim=None` ([#2650](https://github.com/Lightning-AI/torchmetrics/pull/2650))
 
 
+- Fixed corner case in `MatthewsCorrCoef` ([#2743](https://github.com/Lightning-AI/torchmetrics/pull/2743))
+
+
 ## [1.4.1] - 2024-08-02
 
 ### Changed
