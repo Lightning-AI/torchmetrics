@@ -10,7 +10,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Literal, Optional, Sequence, Union
+from typing import Any, Literal, Optional, Sequence, Union, List
 
 from torch import Tensor
 
@@ -69,13 +69,13 @@ class HausdorffDistance(Metric):
     full_state_update: bool = True
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
-    preds: list[Tensor]
-    target: list[Tensor]
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,
         distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
-        spacing: Optional[Union[Tensor, list[float]]] = None,
+        spacing: Optional[Union[Tensor, List[float]]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
