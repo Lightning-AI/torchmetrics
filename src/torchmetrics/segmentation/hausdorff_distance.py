@@ -47,6 +47,7 @@ class HausdorffDistance(Metric):
 
     Example:
         >>> import torch
+        >>> from torchmetrics.segmentation import HausdorffDistance
         >>> preds = torch.tensor([[1, 1, 1, 1, 1],
         ...                       [1, 0, 0, 0, 1],
         ...                       [1, 0, 0, 0, 1],
