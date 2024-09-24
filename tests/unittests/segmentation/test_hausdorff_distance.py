@@ -65,7 +65,7 @@ class TestHausdorffDistance(MetricTester):
 
     atol = 1e-5
 
-    @pytest.mark.parametrize("ddp", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_hausdorff_distance_class(self, preds, target, distance_metric, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
