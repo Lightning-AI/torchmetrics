@@ -165,11 +165,13 @@ def test_single_sample_update():
     res2 = metric.compute()
     assert torch.allclose(res1, res2)
 
+
 def test_overwrite_reference_inputs():
     """Test that the normalizations does not overwrite inputs.
 
-    Variables var_x, var_y, corr_xy are references to the object variables and get incorrectly scaled down
-    such that when you update again and compute you get very wrong values.
+    Variables var_x, var_y, corr_xy are references to the object variables and get incorrectly scaled down such that
+    when you update again and compute you get very wrong values.
+
     """
     y = torch.randn(100)
     y_pred = y + torch.randn(y.shape) / 5
