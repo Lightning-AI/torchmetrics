@@ -56,7 +56,7 @@ class ConcordanceCorrCoef(PearsonCorrCoef):
         >>> preds = tensor([2.5, 0.0, 2, 8])
         >>> concordance = ConcordanceCorrCoef()
         >>> concordance(preds, target)
-        tensor(0.9777)
+        tensor(0.9796)
 
     Example (multi output regression):
         >>> from torchmetrics.regression import ConcordanceCorrCoef

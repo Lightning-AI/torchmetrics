@@ -48,7 +48,7 @@ def concordance_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
         >>> target = torch.tensor([3, -0.5, 2, 7])
         >>> preds = torch.tensor([2.5, 0.0, 2, 8])
         >>> concordance_corrcoef(preds, target)
-        tensor([0.9777])
+        tensor([0.9796])
 
     Example (multi output regression):
         >>> from torchmetrics.functional.regression import concordance_corrcoef
