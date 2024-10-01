@@ -164,3 +164,23 @@ def test_single_sample_update():
     metric(torch.tensor([7.0]), torch.tensor([8.0]))
     res2 = metric.compute()
     assert torch.allclose(res1, res2)
+
+def test_overwrite_reference_inputs():
+    """Test that the normalizations does not overwrite inputs.
+
+    Variables var_x, var_y, corr_xy are references to the object variables and get incorrectly scaled down
+    such that when you update again and compute you get very wrong values.
+    """
+    y = torch.randn(100)
+    y_pred = y + torch.randn(y.shape) / 5
+    # Initialize Pearson correlation coefficient metric
+    pearson = PearsonCorrCoef()
+    # Compute the Pearson correlation coefficient
+    correlation = pearson(y, y_pred)
+
+    pearson = PearsonCorrCoef()
+    for lower, upper in [(0, 33), (33, 66), (66, 99), (99, 100)]:
+        pearson.update(torch.tensor(y[lower:upper]), torch.tensor(y_pred[lower:upper]))
+        pearson.compute()
+
+    assert torch.isclose(pearson.compute(), correlation)
