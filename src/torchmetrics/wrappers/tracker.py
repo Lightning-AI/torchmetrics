@@ -52,15 +52,14 @@ class MetricTracker(ModuleList):
             better (``True``) or lower is better (``False``).
 
     Example (single metric):
+        >>> from torch import randint
         >>> from torchmetrics.wrappers import MetricTracker
         >>> from torchmetrics.classification import MulticlassAccuracy
-        >>> _ = torch.manual_seed(42)
         >>> tracker = MetricTracker(MulticlassAccuracy(num_classes=10, average='micro'))
         >>> for epoch in range(5):
         ...     tracker.increment()
         ...     for batch_idx in range(5):
-        ...         preds, target = torch.randint(10, (100,)), torch.randint(10, (100,))
-        ...         tracker.update(preds, target)
+        ...         tracker.update(randint(10, (100,)), randint(10, (100,)))
         ...     print(f"current acc={tracker.compute()}")
         current acc=0.1120000034570694
         current acc=0.08799999952316284
@@ -76,36 +75,39 @@ class MetricTracker(ModuleList):
         tensor([0.1120, 0.0880, 0.1260, 0.0800, 0.1020])
 
     Example (multiple metrics using MetricCollection):
+        >>> from torch import randn
         >>> from torchmetrics.wrappers import MetricTracker
         >>> from torchmetrics import MetricCollection
         >>> from torchmetrics.regression import MeanSquaredError, ExplainedVariance
-        >>> _ = torch.manual_seed(42)
         >>> tracker = MetricTracker(MetricCollection([MeanSquaredError(), ExplainedVariance()]), maximize=[False, True])
         >>> for epoch in range(5):
         ...     tracker.increment()
         ...     for batch_idx in range(5):
-        ...         preds, target = torch.randn(100), torch.randn(100)
-        ...         tracker.update(preds, target)
+        ...         tracker.update(randn(100), randn(100))
         ...     print(f"current stats={tracker.compute()}")  # doctest: +NORMALIZE_WHITESPACE
-        current stats={'MeanSquaredError': tensor(1.8218), 'ExplainedVariance': tensor(-0.8969)}
-        current stats={'MeanSquaredError': tensor(2.0268), 'ExplainedVariance': tensor(-1.0206)}
-        current stats={'MeanSquaredError': tensor(1.9491), 'ExplainedVariance': tensor(-0.8298)}
-        current stats={'MeanSquaredError': tensor(1.9800), 'ExplainedVariance': tensor(-0.9199)}
-        current stats={'MeanSquaredError': tensor(2.2481), 'ExplainedVariance': tensor(-1.1622)}
+        current stats={'MeanSquaredError': tensor(2.3292), 'ExplainedVariance': tensor(-0.9516)}
+        current stats={'MeanSquaredError': tensor(2.1370), 'ExplainedVariance': tensor(-1.0775)}
+        current stats={'MeanSquaredError': tensor(2.1695), 'ExplainedVariance': tensor(-0.9945)}
+        current stats={'MeanSquaredError': tensor(2.1072), 'ExplainedVariance': tensor(-1.1878)}
+        current stats={'MeanSquaredError': tensor(2.0562), 'ExplainedVariance': tensor(-1.0754)}
         >>> from pprint import pprint
         >>> best_res, which_epoch = tracker.best_metric(return_step=True)
         >>> pprint(best_res)  # doctest: +ELLIPSIS
-        {'ExplainedVariance': -0.829...,
-         'MeanSquaredError': 1.821...}
+        {'ExplainedVariance': -0.951...,
+         'MeanSquaredError': 2.056...}
         >>> which_epoch
-        {'MeanSquaredError': 0, 'ExplainedVariance': 2}
+        {'MeanSquaredError': 4, 'ExplainedVariance': 0}
         >>> pprint(tracker.compute_all())
-        {'ExplainedVariance': tensor([-0.8969, -1.0206, -0.8298, -0.9199, -1.1622]),
-         'MeanSquaredError': tensor([1.8218, 2.0268, 1.9491, 1.9800, 2.2481])}
+        {'ExplainedVariance': tensor([-0.9516, -1.0775, -0.9945, -1.1878, -1.0754]),
+         'MeanSquaredError': tensor([2.3292, 2.1370, 2.1695, 2.1072, 2.0562])}
 
     """
 
-    def __init__(self, metric: Union[Metric, MetricCollection], maximize: Union[bool, List[bool]] = True) -> None:
+    maximize: Union[bool, List[bool]]
+
+    def __init__(
+        self, metric: Union[Metric, MetricCollection], maximize: Optional[Union[bool, List[bool]]] = True
+    ) -> None:
         super().__init__()
         if not isinstance(metric, (Metric, MetricCollection)):
             raise TypeError(
@@ -113,13 +115,42 @@ class MetricTracker(ModuleList):
                 f" `Metric` or `MetricCollection` but got {metric}"
             )
         self._base_metric = metric
-        if not isinstance(maximize, (bool, list)):
-            raise ValueError("Argument `maximize` should either be a single bool or list of bool")
-        if isinstance(maximize, list) and isinstance(metric, MetricCollection) and len(maximize) != len(metric):
-            raise ValueError("The len of argument `maximize` should match the length of the metric collection")
-        if isinstance(metric, Metric) and not isinstance(maximize, bool):
-            raise ValueError("Argument `maximize` should be a single bool when `metric` is a single Metric")
-        self.maximize = maximize
+
+        if maximize is None:
+            if isinstance(metric, Metric):
+                if getattr(metric, "higher_is_better", None) is None:
+                    raise AttributeError(
+                        f"The metric '{metric.__class__.__name__}' does not have a 'higher_is_better' attribute."
+                        " Please provide the `maximize` argument explicitly."
+                    )
+                self.maximize = metric.higher_is_better  # type: ignore[assignment]  # this is false alarm
+            elif isinstance(metric, MetricCollection):
+                self.maximize = []
+                for name, m in metric.items():
+                    if getattr(m, "higher_is_better", None) is None:
+                        raise AttributeError(
+                            f"The metric '{name}' in the MetricCollection does not have a 'higher_is_better' attribute."
+                            " Please provide the `maximize` argument explicitly."
+                        )
+                    self.maximize.append(m.higher_is_better)  # type: ignore[arg-type]  # this is false alarm
+        else:
+            rank_zero_warn(
+                "The default value for `maximize` will be changed from `True` to `None` in v1.7.0 of TorchMetrics,"
+                "will automatically infer the value based on the `higher_is_better` attribute of the metric"
+                " (if such attribute exists) or raise an error if it does not. If you are explicitly setting the"
+                " `maximize` argument to either `True` or `False` already, you can ignore this warning.",
+                FutureWarning,
+            )
+
+            if not isinstance(maximize, (bool, list)):
+                raise ValueError("Argument `maximize` should either be a single bool or list of bool")
+            if isinstance(maximize, list) and not all(isinstance(m, bool) for m in maximize):
+                raise ValueError("Argument `maximize` is list but not type of bool.")
+            if isinstance(maximize, list) and isinstance(metric, MetricCollection) and len(maximize) != len(metric):
+                raise ValueError("The len of argument `maximize` should match the length of the metric collection")
+            if isinstance(metric, Metric) and not isinstance(maximize, bool):
+                raise ValueError("Argument `maximize` should be a single bool when `metric` is a single Metric")
+            self.maximize = maximize
 
         self._increment_called = False
 

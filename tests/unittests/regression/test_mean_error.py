@@ -124,7 +124,7 @@ def _single_target_ref_wrapper(preds, target, sk_fn, metric_args):
 
     res = sk_fn(sk_target, sk_preds)
 
-    return math.sqrt(res) if (metric_args and not metric_args["squared"]) else res
+    return math.sqrt(res) if (metric_args and "squared" in metric_args and not metric_args["squared"]) else res
 
 
 def _multi_target_ref_wrapper(preds, target, sk_fn, metric_args):
@@ -132,7 +132,7 @@ def _multi_target_ref_wrapper(preds, target, sk_fn, metric_args):
     sk_target = target.view(-1, NUM_TARGETS).numpy()
     sk_kwargs = {"multioutput": "raw_values"} if metric_args and "num_outputs" in metric_args else {}
     res = sk_fn(sk_target, sk_preds, **sk_kwargs)
-    return math.sqrt(res) if (metric_args and not metric_args["squared"]) else res
+    return math.sqrt(res) if (metric_args and "squared" in metric_args and not metric_args["squared"]) else res
 
 
 @pytest.mark.parametrize(
@@ -149,6 +149,7 @@ def _multi_target_ref_wrapper(preds, target, sk_fn, metric_args):
         (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": False}),
         (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": True, "num_outputs": NUM_TARGETS}),
         (MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error, {}),
+        (MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error, {"num_outputs": NUM_TARGETS}),
         (MeanAbsolutePercentageError, mean_absolute_percentage_error, sk_mean_abs_percentage_error, {}),
         (
             SymmetricMeanAbsolutePercentageError,

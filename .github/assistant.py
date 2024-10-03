@@ -31,8 +31,8 @@ LUT_PYTHON_TORCH = {
     "3.10": "1.11",
     "3.11": "1.13",
 }
-_path = lambda *ds: os.path.join(_PATH_ROOT, *ds)
-REQUIREMENTS_FILES = (*glob.glob(_path("requirements", "*.txt")), _path("requirements.txt"))
+_path_root = lambda *ds: os.path.join(_PATH_ROOT, *ds)
+REQUIREMENTS_FILES = (*glob.glob(_path_root("requirements", "*.txt")), _path_root("requirements.txt"))
 
 
 class AssistantCLI:
@@ -73,21 +73,35 @@ class AssistantCLI:
             fp.write(requires)
 
     @staticmethod
-    def replace_min_requirements(fpath: str) -> None:
-        """Replace all `>=` by `==` in given file."""
-        logging.info(f"processing: {fpath}")
+    def _replace_requirement(fpath: str, old_str: str = "", new_str: str = "") -> None:
+        """Replace all strings given file."""
+        logging.info(f"processing '{old_str}' -> '{new_str}': {fpath}")
         with open(fpath, encoding="utf-8") as fp:
             req = fp.read()
-        req = req.replace(">=", "==")
+        req = req.replace(old_str, new_str)
         with open(fpath, "w", encoding="utf-8") as fp:
             fp.write(req)
+
+    @staticmethod
+    def replace_str_requirements(old_str: str, new_str: str, req_files: List[str] = REQUIREMENTS_FILES) -> None:
+        """Replace a particular string in all requirements files."""
+        if isinstance(req_files, str):
+            req_files = [req_files]
+        for fpath in req_files:
+            AssistantCLI._replace_requirement(fpath, old_str=old_str, new_str=new_str)
+
+    @staticmethod
+    def replace_min_requirements(fpath: str) -> None:
+        """Replace all `>=` by `==` in given file."""
+        AssistantCLI._replace_requirement(fpath, old_str=">=", new_str="==")
 
     @staticmethod
     def set_oldest_versions(req_files: List[str] = REQUIREMENTS_FILES) -> None:
         """Set the oldest version for requirements."""
         AssistantCLI.set_min_torch_by_python()
+        if isinstance(req_files, str):
+            req_files = [req_files]
         for fpath in req_files:
-            logging.info(f"processing req: `{fpath}`")
             AssistantCLI.replace_min_requirements(fpath)
 
     @staticmethod

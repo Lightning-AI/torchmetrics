@@ -187,8 +187,7 @@ class BERTScore(Metric):
                     " `transformers` model is used."
                     f" It will use the default recommended model - {_DEFAULT_MODEL!r}."
                 )
-            resume_download = self.model_name_or_path == _DEFAULT_MODEL
-            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name_or_path, resume_download=resume_download)
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name_or_path)
             self.user_tokenizer = False
 
         self.add_state("preds_input_ids", [], dist_reduce_fx="cat")

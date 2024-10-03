@@ -48,11 +48,10 @@ class Perplexity(Metric):
             Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Examples:
+        >>> from torch import rand, randint
         >>> from torchmetrics.text import Perplexity
-        >>> import torch
-        >>> gen = torch.manual_seed(42)
-        >>> preds = torch.rand(2, 8, 5, generator=gen)
-        >>> target = torch.randint(5, (2, 8), generator=gen)
+        >>> preds = rand(2, 8, 5)
+        >>> target = randint(5, (2, 8))
         >>> target[0, 6:] = -100
         >>> perp = Perplexity(ignore_index=-100)
         >>> perp(preds, target)

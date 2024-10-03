@@ -67,7 +67,7 @@ def _binary_stat_scores_tensor_validation(
     _check_same_shape(preds, target)
 
     # Check that target only contains [0,1] values or value in ignore_index
-    unique_values = torch.unique(target)
+    unique_values = torch.unique(target, dim=None)
     if ignore_index is None:
         check = torch.any((unique_values != 0) & (unique_values != 1))
     else:
@@ -80,7 +80,7 @@ def _binary_stat_scores_tensor_validation(
 
     # If preds is label tensor, also check that it only contains [0,1] values
     if not preds.is_floating_point():
-        unique_values = torch.unique(preds)
+        unique_values = torch.unique(preds, dim=None)
         if torch.any((unique_values != 0) & (unique_values != 1)):
             raise RuntimeError(
                 f"Detected the following values in `preds`: {unique_values} but expected only"
@@ -298,8 +298,8 @@ def _multiclass_stat_scores_tensor_validation(
     elif preds.ndim == target.ndim:
         if preds.shape != target.shape:
             raise ValueError(
-                "The `preds` and `target` should have the same shape,",
-                f" got `preds` with shape={preds.shape} and `target` with shape={target.shape}.",
+                "The `preds` and `target` should have the same shape,"
+                f" got `preds` with shape={preds.shape} and `target` with shape={target.shape}."
             )
         if multidim_average != "global" and preds.ndim < 2:
             raise ValueError(
@@ -314,11 +314,11 @@ def _multiclass_stat_scores_tensor_validation(
 
     check_value = num_classes if ignore_index is None else num_classes + 1
     for t, name in ((target, "target"),) + ((preds, "preds"),) if not preds.is_floating_point() else ():  # noqa: RUF005
-        num_unique_values = len(torch.unique(t))
+        num_unique_values = len(torch.unique(t, dim=None))
         if num_unique_values > check_value:
             raise RuntimeError(
                 f"Detected more unique values in `{name}` than expected. Expected only {check_value} but found"
-                f" {num_unique_values} in `target`."
+                f" {num_unique_values} in `{name}`. Found values: {torch.unique(t, dim=None)}."
             )
 
 
@@ -624,7 +624,7 @@ def _multilabel_stat_scores_tensor_validation(
         )
 
     # Check that target only contains [0,1] values or value in ignore_index
-    unique_values = torch.unique(target)
+    unique_values = torch.unique(target, dim=None)
     if ignore_index is None:
         check = torch.any((unique_values != 0) & (unique_values != 1))
     else:
@@ -637,7 +637,7 @@ def _multilabel_stat_scores_tensor_validation(
 
     # If preds is label tensor, also check that it only contains [0,1] values
     if not preds.is_floating_point():
-        unique_values = torch.unique(preds)
+        unique_values = torch.unique(preds, dim=None)
         if torch.any((unique_values != 0) & (unique_values != 1)):
             raise RuntimeError(
                 f"Detected the following values in `preds`: {unique_values} but expected only"

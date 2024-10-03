@@ -21,7 +21,10 @@ from torchmetrics.functional.segmentation.generalized_dice import generalized_di
 from torchmetrics.segmentation.generalized_dice import GeneralizedDiceScore
 
 from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, _Input
+from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
+
+seed_all(42)
 
 _inputs1 = _Input(
     preds=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 16)),
@@ -63,11 +66,11 @@ def _reference_generalized_dice(
     ],
 )
 @pytest.mark.parametrize("include_background", [True, False])
-class TestMeanIoU(MetricTester):
+class TestGeneralizedDiceScore(MetricTester):
     """Test class for `MeanIoU` metric."""
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_mean_iou_class(self, preds, target, input_format, include_background, ddp):
+    def test_generalized_dice_class(self, preds, target, input_format, include_background, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
@@ -87,7 +90,7 @@ class TestMeanIoU(MetricTester):
             },
         )
 
-    def test_mean_iou_functional(self, preds, target, input_format, include_background):
+    def test_generalized_dice_functional(self, preds, target, input_format, include_background):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,

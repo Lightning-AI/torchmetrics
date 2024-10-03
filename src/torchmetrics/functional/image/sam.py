@@ -65,9 +65,9 @@ def _sam_compute(
             - ``'none'`` or ``None``: no reduction will be applied
 
     Example:
-        >>> gen = torch.manual_seed(42)
-        >>> preds = torch.rand([16, 3, 16, 16], generator=gen)
-        >>> target = torch.rand([16, 3, 16, 16], generator=gen)
+        >>> from torch import rand
+        >>> preds = rand([16, 3, 16, 16])
+        >>> target = rand([16, 3, 16, 16])
         >>> preds, target = _sam_update(preds, target)
         >>> _sam_compute(preds, target)
         tensor(0.5914)
@@ -106,10 +106,10 @@ def spectral_angle_mapper(
             If ``preds`` and ``target`` don't have ``BxCxHxW shape``.
 
     Example:
+        >>> from torch import rand
         >>> from torchmetrics.functional.image import spectral_angle_mapper
-        >>> gen = torch.manual_seed(42)
-        >>> preds = torch.rand([16, 3, 16, 16], generator=gen)
-        >>> target = torch.rand([16, 3, 16, 16], generator=gen)
+        >>> preds = rand([16, 3, 16, 16],)
+        >>> target = rand([16, 3, 16, 16])
         >>> spectral_angle_mapper(preds, target)
         tensor(0.5914)
 

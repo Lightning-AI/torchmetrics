@@ -59,10 +59,10 @@ class TheilsU(Metric):
 
     Example::
 
+        >>> from torch import randint
         >>> from torchmetrics.nominal import TheilsU
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.randint(10, (10,))
-        >>> target = torch.randint(10, (10,))
+        >>> preds = randint(10, (10,))
+        >>> target = randint(10, (10,))
         >>> metric = TheilsU(num_classes=10)
         >>> metric(preds, target)
         tensor(0.8530)

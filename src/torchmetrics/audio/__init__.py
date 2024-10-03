@@ -24,6 +24,8 @@ from torchmetrics.audio.snr import (
 )
 from torchmetrics.utilities.imports import (
     _GAMMATONE_AVAILABLE,
+    _LIBROSA_AVAILABLE,
+    _ONNXRUNTIME_AVAILABLE,
     _PESQ_AVAILABLE,
     _PYSTOI_AVAILABLE,
     _TORCHAUDIO_AVAILABLE,
@@ -54,3 +56,8 @@ if _GAMMATONE_AVAILABLE and _TORCHAUDIO_AVAILABLE and _TORCHAUDIO_GREATER_EQUAL_
     from torchmetrics.audio.srmr import SpeechReverberationModulationEnergyRatio
 
     __all__ += ["SpeechReverberationModulationEnergyRatio"]
+
+if _LIBROSA_AVAILABLE and _ONNXRUNTIME_AVAILABLE:
+    from torchmetrics.audio.dnsmos import DeepNoiseSuppressionMeanOpinionScore
+
+    __all__ += ["DeepNoiseSuppressionMeanOpinionScore"]

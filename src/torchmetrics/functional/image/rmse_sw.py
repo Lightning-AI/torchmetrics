@@ -124,12 +124,12 @@ def root_mean_squared_error_using_sliding_window(
         (Optionally) RMSE map
 
     Example:
+        >>> from torch import rand
         >>> from torchmetrics.functional.image import root_mean_squared_error_using_sliding_window
-        >>> g = torch.manual_seed(22)
-        >>> preds = torch.rand(4, 3, 16, 16)
-        >>> target = torch.rand(4, 3, 16, 16)
+        >>> preds = rand(4, 3, 16, 16)
+        >>> target = rand(4, 3, 16, 16)
         >>> root_mean_squared_error_using_sliding_window(preds, target)
-        tensor(0.3999)
+        tensor(0.4158)
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.

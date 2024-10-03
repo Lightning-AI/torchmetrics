@@ -326,7 +326,7 @@ def plot_curve(
             If `curve` does not have 3 elements, being in the wrong format
     """
     if len(curve) < 2:
-        raise ValueError("Expected 2 or 3 elements in curve but got {len(curve)}")
+        raise ValueError(f"Expected 2 or 3 elements in curve but got {len(curve)}")
     x, y = curve[:2]
 
     _error_on_missing_matplotlib()
