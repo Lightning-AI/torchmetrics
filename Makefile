@@ -1,5 +1,6 @@
 .PHONY: clean test get-sphinx-template docs live-docs env data
 
+export TOKENIZERS_PARALLELISM=false
 export FREEZE_REQUIREMENTS=1
 # assume you have installed need packages
 export SPHINX_MOCK_REQUIREMENTS=1
