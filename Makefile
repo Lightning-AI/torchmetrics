@@ -42,7 +42,7 @@ docs: clean get-sphinx-template
 
 live-docs: get-sphinx-template
 	pip install -e . --quiet -r requirements/_docs.txt
-	cd docs && make livehtml
+	cd docs && make livehtml --jobs $(nproc)
 
 env:
 	pip install -e . -U -r requirements/_devel.txt
