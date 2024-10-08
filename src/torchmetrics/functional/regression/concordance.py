@@ -27,6 +27,8 @@ def _concordance_corrcoef_compute(
 ) -> Tensor:
     """Compute the final concordance correlation coefficient based on accumulated statistics."""
     pearson = _pearson_corrcoef_compute(var_x, var_y, corr_xy, nb)
+    var_x = var_x / (nb - 1)
+    var_y = var_y / (nb - 1)
     return 2.0 * pearson * var_x.sqrt() * var_y.sqrt() / (var_x + var_y + (mean_x - mean_y) ** 2)
 
 

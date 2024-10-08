@@ -124,19 +124,23 @@ class MeanAveragePrecision(Metric):
 
     - ``map_dict``: A dictionary containing the following key-values:
 
-        - map: (:class:`~torch.Tensor`), global mean average precision
-        - map_small: (:class:`~torch.Tensor`), mean average precision for small objects
-        - map_medium:(:class:`~torch.Tensor`), mean average precision for medium objects
-        - map_large: (:class:`~torch.Tensor`), mean average precision for large objects
+        - map: (:class:`~torch.Tensor`), global mean average precision which by default is defined as mAP50-95 e.g. the
+          mean average precision for IoU thresholds 0.50, 0.55, 0.60, ..., 0.95 averaged over all classes and areas. If
+          the IoU thresholds are changed this value will be calculated with the new thresholds.
+        - map_small: (:class:`~torch.Tensor`), mean average precision for small objects (area < 32^2 pixels)
+        - map_medium:(:class:`~torch.Tensor`), mean average precision for medium objects (32^2  pixels < area < 96^2
+          pixels)
+        - map_large: (:class:`~torch.Tensor`), mean average precision for large objects (area > 96^2 pixels)
         - mar_{mdt[0]}: (:class:`~torch.Tensor`), mean average recall for `max_detection_thresholds[0]` (default 1)
           detection per image
         - mar_{mdt[1]}: (:class:`~torch.Tensor`), mean average recall for `max_detection_thresholds[1]` (default 10)
           detection per image
         - mar_{mdt[1]}: (:class:`~torch.Tensor`), mean average recall for `max_detection_thresholds[2]` (default 100)
           detection per image
-        - mar_small: (:class:`~torch.Tensor`), mean average recall for small objects
-        - mar_medium: (:class:`~torch.Tensor`), mean average recall for medium objects
-        - mar_large: (:class:`~torch.Tensor`), mean average recall for large objects
+        - mar_small: (:class:`~torch.Tensor`), mean average recall for small objects (area < 32^2  pixels)
+        - mar_medium: (:class:`~torch.Tensor`), mean average recall for medium objects (32^2 pixels < area < 96^2
+          pixels)
+        - mar_large: (:class:`~torch.Tensor`), mean average recall for large objects (area > 96^2  pixels)
         - map_50: (:class:`~torch.Tensor`) (-1 if 0.5 not in the list of iou thresholds), mean average precision at
           IoU=0.50
         - map_75: (:class:`~torch.Tensor`) (-1 if 0.75 not in the list of iou thresholds), mean average precision at
@@ -150,8 +154,11 @@ class MeanAveragePrecision(Metric):
     For an example on how to use this metric check the `torchmetrics mAP example`_.
 
     .. note::
-        ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ].
-        Caution: If the initialization parameters are changed, dictionary keys for mAR can change as well.
+        ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ]
+        e.g. the mean average precision for IoU thresholds 0.50, 0.55, 0.60, ..., 0.95 averaged over all classes and
+        all areas and all max detections per image. If the IoU thresholds are changed this value will be calculated with
+        the new thresholds. Caution: If the initialization parameters are changed, dictionary keys for mAR can change as
+        well.
 
     .. note::
         This metric supports, at the moment, two different backends for the evaluation. The default backend is

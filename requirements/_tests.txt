@@ -13,7 +13,7 @@ phmdoctest ==1.4.0
 
 psutil ==6.*
 pyGithub >2.0.0, <2.5.0
-fire ==0.6.*
+fire ==0.7.*
 
 cloudpickle >1.3, <=3.0.0
 scikit-learn ==1.2.*; python_version < "3.9"

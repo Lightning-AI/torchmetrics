@@ -92,9 +92,10 @@ def _pearson_corrcoef_compute(
         nb: number of observations
 
     """
-    var_x /= nb - 1
-    var_y /= nb - 1
-    corr_xy /= nb - 1
+    # prevent overwrite the inputs
+    var_x = var_x / (nb - 1)
+    var_y = var_y / (nb - 1)
+    corr_xy = corr_xy / (nb - 1)
     # if var_x, var_y is float16 and on cpu, make it bfloat16 as sqrt is not supported for float16
     # on cpu, remove this after https://github.com/pytorch/pytorch/issues/54774 is fixed
     if var_x.dtype == torch.float16 and var_x.device == torch.device("cpu"):
