@@ -38,8 +38,8 @@ class R2Score(Metric):
 
     where the parameter :math:`k` (the number of independent regressors) should be provided as the `adjusted` argument.
     The score is only proper defined when :math:`SS_{tot}\neq 0`, which can happen for near constant targets. In this
-    case a score of 0 is returned. By definition the score is bounded between 0 and 1, where 1 corresponds to the
-    predictions exactly matching the targets.
+    case a score of 0 is returned. By definition the score is bounded between :math:`-inf` and 1.0, with 1.0 indicating
+    perfect prediction, 0 indicating constant prediction and negative values indicating worse than constant prediction.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -90,7 +90,6 @@ class R2Score(Metric):
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = False
-    plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
     sum_squared_error: Tensor
