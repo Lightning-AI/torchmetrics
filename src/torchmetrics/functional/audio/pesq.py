@@ -83,7 +83,10 @@ def perceptual_evaluation_speech_quality(
         )
     import pesq as pesq_backend
 
-    _filter_error_msg = np.vectorize(lambda x: np.issubdtype(type(x), np.number))
+    def _issubtype_number(x) -> bool:
+        return np.issubdtype(type(x), np.number)
+
+    _filter_error_msg = np.vectorize(_issubtype_number)
 
     if fs not in (8000, 16000):
         raise ValueError(f"Expected argument `fs` to either be 8000 or 16000 but got {fs}")
