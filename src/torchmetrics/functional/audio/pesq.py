@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Any
+
 import numpy as np
 import torch
 from torch import Tensor
@@ -83,7 +85,7 @@ def perceptual_evaluation_speech_quality(
         )
     import pesq as pesq_backend
 
-    def _issubtype_number(x) -> bool:
+    def _issubtype_number(x: Any) -> bool:
         return np.issubdtype(type(x), np.number)
 
     _filter_error_msg = np.vectorize(_issubtype_number)
