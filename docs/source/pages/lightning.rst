@@ -158,7 +158,7 @@ Additionally, we highly recommend that the two ways of logging are not mixed as 
                 self.log('valid_acc', self.valid_acc, on_step=True, on_epoch=True)
 
 In general if you are logging multiple metrics we highly recommend that you combine them into a single metric object
-using the :class:`~torchmetrics.MetricCollection` class and then replacing the `self.log` calls with `self.log_dict`,
+using the :class:`~torchmetrics.MetricCollection` class and then replacing the ``self.log`` calls with ``self.log_dict``,
 assuming that all metrics receive the same input.
 
 .. testcode:: python
@@ -203,10 +203,10 @@ The following contains a list of pitfalls to be aware of:
 
 * Logging a `MetricCollection` object directly using ``self.log_dict`` is only supported if all metrics in the
   collection returns a scalar tensor. If any of the metrics in the collection returns a non-scalar tensor,
-  the logging will fail. This can especially happen when either nesting multiple `MetricCollection` objects or when
+  the logging will fail. This can especially happen when either nesting multiple ``MetricCollection`` objects or when
   using wrapper metrics such as :class:`~torchmetrics.wrappers.ClasswiseWrapper`,
-  :class:`~torchmetrics.wrappers.MinMaxMetric` etc. inside a `MetricCollection` since all these wrappers return
-  dicts or lists of tensors. It is still possible to log such nested metrics manually because the `MetricCollection`
+  :class:`~torchmetrics.wrappers.MinMaxMetric` etc. inside a ``MetricCollection`` since all these wrappers return
+  dicts or lists of tensors. It is still possible to log such nested metrics manually because the ``MetricCollection``
   object will try to flatten everything into a single dict. Example:
 
 .. testcode:: python
