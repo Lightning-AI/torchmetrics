@@ -108,7 +108,7 @@ also manually log the output of the metrics.
 
     class MyModule(LightningModule):
 
-        def __init__(self):
+        def __init__(self, num_classes):
             ...
             self.train_acc = torchmetrics.classification.Accuracy(task="multiclass", num_classes=num_classes)
             self.valid_acc = torchmetrics.classification.Accuracy(task="multiclass", num_classes=num_classes)
@@ -157,12 +157,84 @@ Additionally, we highly recommend that the two ways of logging are not mixed as 
                 self.valid_acc.update(logits, y)
                 self.log('valid_acc', self.valid_acc, on_step=True, on_epoch=True)
 
+In general if you are logging multiple metrics we highly recommend that you combine them into a single metric object
+using the :class:`~torchmetrics.MetricCollection` class and then replacing the `self.log` calls with `self.log_dict`,
+assuming that all metrics receive the same input.
+
+.. testcode:: python
+
+    class MyModule(LightningModule):
+
+        def __init__(self):
+            ...
+            self.train_metrics = torchmetrics.MetricCollection(
+                {
+                    "accuracy": torchmetrics.classification.Accuracy(task="multiclass", num_classes=num_classes),
+                    "f1": torchmetrics.classification.F1(task="multiclass", num_classes=num_classes),
+                },
+                prefix="train_",
+            )
+            self.valid_metrics = self.train_metrics.clone(prefix="valid_")
+
+        def training_step(self, batch, batch_idx):
+            x, y = batch
+            preds = self(x)
+            ...
+            batch_value = self.train_metrics(preds, y)
+            self.log_dict(batch_value)
+
+        def on_train_epoch_end(self):
+            self.train_metrics.reset()
+
+        def validation_step(self, batch, batch_idx):
+            logits = self(x)
+            ...
+            self.valid_metrics.update(logits, y)
+
+        def on_validation_epoch_end(self, outputs):
+            self.log_dict(self.valid_metrics.compute())
+            self.valid_metrics.reset()
 
 ***************
 Common Pitfalls
 ***************
 
 The following contains a list of pitfalls to be aware of:
+
+* Logging a `MetricCollection` object directly using ``self.log_dict`` is only supported if all metrics in the
+  collection returns a scalar tensor. If any of the metrics in the collection returns a non-scalar tensor,
+  the logging will fail. This can especially happen when either nesting multiple `MetricCollection` objects or when
+  using wrapper metrics such as :class:`~torchmetrics.wrappers.ClasswiseWrapper`,
+  :class:`~torchmetrics.wrappers.MinMaxMetric` etc. inside a `MetricCollection` since all these wrappers return
+  dicts or lists of tensors. It is still possible to log such nested metrics manually because the `MetricCollection`
+  object will try to flatten everything into a single dict. Example:
+
+.. testcode:: python
+
+    class MyModule(LightningModule):
+
+        def __init__(self):
+            super().__init__()
+            self.train_metrics = MetricCollection(
+                {
+                    "macro_accuracy": MinMaxMetric(MulticlassAccuracy(num_classes=5, average="macro")),
+                    "weighted_accuracy": MinMaxMetric(MulticlassAccuracy(num_classes=5, average="weighted")),
+                },
+                prefix="train_",
+            )
+
+        def training_step(self, batch, batch_idx):
+            ...
+            # logging the MetricCollection object directly will fail
+            self.log_dict(self.train_metrics(preds, target))
+
+            # manually computing the result and then logging will work
+            batch_values = self.train_metrics(preds, target)
+            self.log_dict(batch_values, on_step=True, on_epoch=False)
+            ...
+
+        def on_train_epoch_end(self):
+            self.train_metrics.reset()
 
 * Modular metrics contain internal states that should belong to only one DataLoader. In case you are using multiple DataLoaders,
   it is recommended to initialize a separate modular metric instances for each DataLoader and use them separately. The same holds
