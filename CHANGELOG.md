@@ -24,12 +24,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added multi-output support for MAE metric ([#2605](https://github.com/Lightning-AI/torchmetrics/pull/2605))
 
 
+- Added Dice metric to segmentation metrics ([#2725](https://github.com/Lightning-AI/torchmetrics/pull/2725))
+
 ### Changed
 
 - Tracker higher is better integration ([#2649](https://github.com/Lightning-AI/torchmetrics/pull/2649))
 
 
 - Updated `InfoLM` class to dynamically set `higher_is_better` ([#2674](https://github.com/Lightning-AI/torchmetrics/pull/2674))
+
+### Deprecated
+
+- Deprecated Dice from classification metrics ([#2725](https://github.com/Lightning-AI/torchmetrics/pull/2725))
 
 
 ### Deprecated
