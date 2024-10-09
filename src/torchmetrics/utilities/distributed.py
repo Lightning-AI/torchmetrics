@@ -18,6 +18,8 @@ from torch import Tensor
 from torch.nn import functional as F  # noqa: N812
 from typing_extensions import Literal
 
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
+
 
 def reduce(x: Tensor, reduction: Literal["elementwise_mean", "sum", "none", None]) -> Tensor:
     """Reduces a given tensor by a given reduction method.
