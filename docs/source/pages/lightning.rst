@@ -15,8 +15,8 @@ framework designed for scaling models without boilerplate.
 
 .. note::
 
-    TorchMetrics always offers compatibility with the last 2 major PyTorch Lightning versions, but we recommend to always keep both frameworks
-    up-to-date for the best experience.
+    TorchMetrics always offers compatibility with the last 2 major PyTorch Lightning versions, but we recommend always
+    keeping both frameworks up-to-date for the best experience.
 
 While TorchMetrics was built to be used with native PyTorch, using TorchMetrics with Lightning offers additional benefits:
 
@@ -74,7 +74,7 @@ method, Lightning will log the metric based on ``on_step`` and ``on_epoch`` flag
     ``sync_dist``, ``sync_dist_group`` and ``reduce_fx`` flags from ``self.log(...)`` don't affect the metric logging
     in any manner. The metric class contains its own distributed synchronization logic.
 
-    This however is only true for metrics that inherit the base class ``Metric``,
+    This, however is only true for metrics that inherit the base class ``Metric``,
     and thus the functional metric API provides no support for in-built distributed synchronization
     or reduction functions.
 
@@ -202,7 +202,7 @@ Common Pitfalls
 The following contains a list of pitfalls to be aware of:
 
 * Logging a `MetricCollection` object directly using ``self.log_dict`` is only supported if all metrics in the
-  collection returns a scalar tensor. If any of the metrics in the collection returns a non-scalar tensor,
+  collection return a scalar tensor. If any of the metrics in the collection return a non-scalar tensor,
   the logging will fail. This can especially happen when either nesting multiple ``MetricCollection`` objects or when
   using wrapper metrics such as :class:`~torchmetrics.wrappers.ClasswiseWrapper`,
   :class:`~torchmetrics.wrappers.MinMaxMetric` etc. inside a ``MetricCollection`` since all these wrappers return
@@ -290,7 +290,7 @@ The following contains a list of pitfalls to be aware of:
             self.log('val_fid', val)
 
 * Calling ``self.log("val", self.metric(preds, target))`` with the intention of logging the metric object. Because
-  ``self.metric(preds, target)`` corresponds to calling the forward method, this will return a tensor and not the
+  ``self.metric(preds, target)`` corresponds to calling the ``forward`` method, this will return a tensor and not the
   metric object. Such logging will be wrong in this case. Instead, it is essential to separate into several lines:
 
 .. testcode:: python
@@ -303,7 +303,8 @@ The following contains a list of pitfalls to be aware of:
         self.accuracy(preds, y)  # compute metrics
         self.log('train_acc_step', self.accuracy)  # log metric object
 
-* Using :class:`~torchmetrics.wrappers.MetricTracker` wrapper with Lightning is a special case, because the wrapper in itself is not a metric
-  i.e. it does not inherit from the base :class:`~torchmetrics.Metric` class but instead from :class:`~torch.nn.ModuleList`. Thus,
-  to log the output of this metric one needs to manually log the returned values (not the object) using ``self.log``
-  and for epoch level logging this should be done in the appropriate ``on_{train|validation|test}_epoch_end`` method.
+* Using :class:`~torchmetrics.wrappers.MetricTracker` wrapper with Lightning is a special case, because the wrapper in
+  itself is not a metric i.e. it does not inherit from the base :class:`~torchmetrics.Metric` class but instead from
+  :class:`~torch.nn.ModuleList`. Thus, to log the output of this metric one needs to manually log the returned values
+  (not the object) using ``self.log`` and for epoch level logging this should be done in the appropriate
+  ``on_{train|validation|test}_epoch_end`` method.

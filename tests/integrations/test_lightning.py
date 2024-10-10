@@ -530,8 +530,7 @@ def test_collection_classwise_lightning_integration(tmpdir):
             preds = torch.randint(0, 5, (100,), device=batch.device)
             target = torch.randint(0, 5, (100,), device=batch.device)
 
-            self.train_metrics.update(preds, target)
-            batch_values = self.train_metrics.compute()
+            batch_values = self.train_metrics(preds, target)
             self.log_dict(batch_values, on_step=True, on_epoch=False)
             return {"loss": loss}
 
@@ -589,8 +588,7 @@ def test_collection_minmax_lightning_integration(tmpdir):
             preds = torch.randint(0, 5, (100,), device=batch.device)
             target = torch.randint(0, 5, (100,), device=batch.device)
 
-            self.train_metrics.update(preds, target)
-            batch_values = self.train_metrics.compute()
+            batch_values = self.train_metrics(preds, target)
             self.log_dict(batch_values, on_step=True, on_epoch=False)
             return {"loss": loss}
 
