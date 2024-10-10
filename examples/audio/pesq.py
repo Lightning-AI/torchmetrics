@@ -22,18 +22,16 @@ from torchmetrics.audio import PerceptualEvaluationSpeechQuality
 # We'll generate a clean sine wave (representing a clean speech signal) and add white noise to simulate the noisy version.
 
 
-def generate_sine_wave(frequency, duration, sample_rate, amplitude=0.5):
+def generate_sine_wave(frequency, duration, sample_rate, amplitude: float = 0.5):
     """Generate a clean sine wave at a given frequency."""
     t = torch.linspace(0, duration, int(sample_rate * duration))
-    waveform = amplitude * torch.sin(2 * np.pi * frequency * t)
-    return waveform
+    return amplitude * torch.sin(2 * np.pi * frequency * t)
 
 
-def add_noise(waveform, noise_factor=0.05):
+def add_noise(waveform: torch.Tensor, noise_factor: float = 0.05) -> torch.Tensor:
     """Add white noise to a waveform."""
     noise = noise_factor * torch.randn(waveform.size())
-    noisy_waveform = waveform + noise
-    return noisy_waveform
+    return waveform + noise
 
 
 # Parameters for the synthetic audio
@@ -54,7 +52,7 @@ noisy_waveform = add_noise(clean_waveform)
 # `spectrogram` method. This is to simulate the enhancement of noisy speech.
 
 
-def reduce_noise(noisy_signal, sample_rate, threshold=0.2):
+def reduce_noise(noisy_signal: torch.Tensor, threshold: float = 0.2) -> torch.Tensor:
     """Basic noise reduction using spectral gating."""
     # Compute the spectrogram
     spec = torchaudio.transforms.Spectrogram()(noisy_signal)
@@ -63,12 +61,11 @@ def reduce_noise(noisy_signal, sample_rate, threshold=0.2):
     spec_denoised = spec * (spec > threshold)
 
     # Convert back to the waveform
-    inverse_spec = torchaudio.transforms.GriffinLim()(spec_denoised)
-    return inverse_spec
+    return torchaudio.transforms.GriffinLim()(spec_denoised)
 
 
 # Apply noise reduction to the noisy waveform
-enhanced_waveform = reduce_noise(noisy_waveform, sample_rate)
+enhanced_waveform = reduce_noise(noisy_waveform)
 
 # %%
 # Initialize the PESQ Metric
