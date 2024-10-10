@@ -174,10 +174,7 @@ class TestBERTScore(TextTester):
 
 @skip_on_connection_issues()
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
-@pytest.mark.parametrize(
-    "idf",
-    [(False,), (True,)],
-)
+@pytest.mark.parametrize("idf", [True, False])
 def test_bertscore_sorting(idf: bool):
     """Test that BERTScore is invariant to the order of the inputs."""
     short = "Short text"
