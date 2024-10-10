@@ -18,6 +18,8 @@ from torch import Tensor
 from torch.nn import functional as F  # noqa: N812
 from typing_extensions import Literal
 
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
+
 
 def reduce(x: Tensor, reduction: Literal["elementwise_mean", "sum", "none", None]) -> Tensor:
     """Reduces a given tensor by a given reduction method.
@@ -91,6 +93,9 @@ def class_reduce(
 def _simple_gather_all_tensors(result: Tensor, group: Any, world_size: int) -> List[Tensor]:
     gathered_result = [torch.zeros_like(result) for _ in range(world_size)]
     torch.distributed.all_gather(gathered_result, result, group)
+    # to propagate autograd graph from local rank (achieves intended effect for torch> 2.0)
+    if _TORCH_GREATER_EQUAL_2_1:
+        gathered_result[torch.distributed.get_rank(group)] = result
     return gathered_result
 
 
@@ -144,4 +149,7 @@ def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tens
     for idx, item_size in enumerate(local_sizes):
         slice_param = [slice(dim_size) for dim_size in item_size]
         gathered_result[idx] = gathered_result[idx][slice_param]
+    # to propagate autograd graph from local rank (achieves intended effect for torch> 2.0)
+    if _TORCH_GREATER_EQUAL_2_1:
+        gathered_result[torch.distributed.get_rank(group)] = result
     return gathered_result
