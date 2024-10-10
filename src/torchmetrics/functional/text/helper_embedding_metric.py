@@ -195,7 +195,7 @@ class TextDataset(Dataset):
         tokenizer: Any,
         max_length: int = 512,
         preprocess_text_fn: Callable[
-            [List[str], Any, int.bool], Union[Dict[str, Tensor], Tuple[Dict[str, Tensor], Optional[Tensor]]]
+            [List[str], Any, int, bool], Union[Dict[str, Tensor], Tuple[Dict[str, Tensor], Optional[Tensor]]]
         ] = _preprocess_text,
         idf: bool = False,
         tokens_idf: Optional[Dict[int, float]] = None,
