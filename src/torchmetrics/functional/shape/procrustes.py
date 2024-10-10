@@ -40,8 +40,8 @@ def procrustes_disparity(
             f" data points and D is the dimensionality of the data points, but got {dataset1.ndim} dimensions."
         )
 
-    dataset1 -= dataset1.mean(dim=1, keepdim=True)
-    dataset2 -= dataset2.mean(dim=1, keepdim=True)
+    dataset1 = dataset1 - dataset1.mean(dim=1, keepdim=True)
+    dataset2 = dataset2 - dataset2.mean(dim=1, keepdim=True)
     dataset1 /= linalg.norm(dataset1, dim=[1, 2], keepdim=True)
     dataset2 /= linalg.norm(dataset2, dim=[1, 2], keepdim=True)
 
