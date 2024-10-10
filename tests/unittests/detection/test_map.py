@@ -410,7 +410,7 @@ _inputs3 = {
             },
         ],
         [
-            {"boxes": Tensor([]), "scores": Tensor([]), "labels": Tensor([])},
+            {"boxes": Tensor([]), "scores": Tensor([]), "labels": IntTensor([])},
         ],
     ],
     "target": [
