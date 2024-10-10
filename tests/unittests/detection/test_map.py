@@ -410,7 +410,7 @@ _inputs3 = {
             },
         ],
         [
-            {"boxes": Tensor([]), "scores": Tensor([]), "labels": Tensor([])},
+            {"boxes": Tensor([]), "scores": Tensor([]), "labels": IntTensor([])},
         ],
     ],
     "target": [
@@ -632,7 +632,12 @@ class TestMapProperties:
             [{"masks": torch.randint(0, 1, (1, 10, 10)).bool(), "scores": Tensor([0.5]), "labels": IntTensor([4])}],
             [{"masks": Tensor([]), "labels": IntTensor([])}],
         )
-        metric.compute()
+        res = metric.compute()
+        for key, value in res.items():
+            if key == "classes":
+                continue
+            assert value.item() == -1, f"Expected -1 for {key}"
+        assert res["classes"] == 4
 
     def test_segm_iou_empty_pred_mask(self, backend):
         """Test empty predictions."""
@@ -641,7 +646,12 @@ class TestMapProperties:
             [{"masks": torch.BoolTensor([]), "scores": Tensor([]), "labels": IntTensor([])}],
             [{"masks": torch.randint(0, 1, (1, 10, 10)).bool(), "labels": IntTensor([4])}],
         )
-        metric.compute()
+        res = metric.compute()
+        for key, value in res.items():
+            if key == "classes":
+                continue
+            assert value.item() == -1, f"Expected -1 for {key}"
+        assert res["classes"] == 4
 
     def test_error_on_wrong_input(self, backend):
         """Test class input validation."""
@@ -862,17 +872,18 @@ class TestMapProperties:
             _preds = apply_to_collection(deepcopy(_inputs["preds"]), IntTensor, lambda x: torch.ones_like(x))
             _target = apply_to_collection(deepcopy(_inputs["target"]), IntTensor, lambda x: torch.ones_like(x))
 
+        metric_micro = MeanAveragePrecision(average="micro", class_metrics=class_metrics, backend=backend)
+        metric_micro.update(deepcopy(_inputs["preds"][0]), deepcopy(_inputs["target"][0]))
+        metric_micro.update(deepcopy(_inputs["preds"][1]), deepcopy(_inputs["target"][1]))
+        result_micro = metric_micro.compute()
+
         metric_macro = MeanAveragePrecision(average="macro", class_metrics=class_metrics, backend=backend)
         metric_macro.update(_preds[0], _target[0])
         metric_macro.update(_preds[1], _target[1])
         result_macro = metric_macro.compute()
 
-        metric_micro = MeanAveragePrecision(average="micro", class_metrics=class_metrics, backend=backend)
-        metric_micro.update(_inputs["preds"][0], _inputs["target"][0])
-        metric_micro.update(_inputs["preds"][1], _inputs["target"][1])
-        result_micro = metric_micro.compute()
-
         if class_metrics:
+            print(result_macro["map_per_class"], result_micro["map_per_class"])
             assert torch.allclose(result_macro["map_per_class"], result_micro["map_per_class"])
             assert torch.allclose(result_macro["mar_100_per_class"], result_micro["mar_100_per_class"])
         else:
