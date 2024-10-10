@@ -349,13 +349,16 @@ def bert_score(
 
     """
     if len(preds) != len(target):
-        raise ValueError("Number of predicted and reference sententes must be the same!")
+        raise ValueError(
+            "Expected number of predicted and reference sententes to be the same, but got"
+            f"{len(preds)} and {len(target)}"
+        )
     if not isinstance(preds, (str, list, dict)):  # dict for BERTScore class compute call
         preds = list(preds)
     if not isinstance(target, (str, list, dict)):  # dict for BERTScore class compute call
         target = list(target)
     if not isinstance(idf, bool):
-        raise ValueError(f"The value of idf must be a boolean. Value passed:{idf=}")
+        raise ValueError(f"Expected argument `idf` to be a boolean, but got {idf}.")
 
     if verbose and (not _TQDM_AVAILABLE):
         raise ModuleNotFoundError(
