@@ -343,6 +343,10 @@ class TestMeanError(MetricTester):
             # WeightedMeanAbsolutePercentageError half + cpu does not work due to missing support in torch.clamp
             pytest.xfail("WeightedMeanAbsolutePercentageError metric does not support cpu + half precision")
 
+        if metric_class == NormalizedRootMeanSquaredError:
+            # NormalizedRootMeanSquaredError half + cpu does not work due to missing support in torch.sqrt
+            pytest.xfail("NormalizedRootMeanSquaredError metric does not support cpu + half precision")
+
         self.run_precision_test_cpu(preds, target, metric_class, metric_functional)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
