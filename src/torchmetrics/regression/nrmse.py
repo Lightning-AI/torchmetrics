@@ -174,7 +174,7 @@ class NormalizedRootMeanSquaredError(Metric):
         self.num_outputs = num_outputs
 
         self.add_state("sum_squared_error", default=torch.zeros(num_outputs), dist_reduce_fx="sum")
-        self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
+        self.add_state("total", default=tensor(0), dist_reduce_fx=None)
         self.add_state("min_val", default=float("Inf") * torch.ones(self.num_outputs), dist_reduce_fx=None)
         self.add_state("max_val", default=-float("Inf") * torch.ones(self.num_outputs), dist_reduce_fx=None)
         self.add_state("mean_val", default=torch.zeros(self.num_outputs), dist_reduce_fx=None)
