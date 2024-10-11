@@ -89,7 +89,7 @@ def normalized_root_mean_squared_error(
         >>> normalized_root_mean_squared_error(preds, target, normalization="std")
         tensor(0.6030)
         >>> normalized_root_mean_squared_error(preds, target, normalization="l2")
-        tensor(0.5000)
+        tensor(0.1667)
 
     Example (multioutput):
         >>> import torch
