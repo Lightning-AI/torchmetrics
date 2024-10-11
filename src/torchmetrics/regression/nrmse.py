@@ -223,8 +223,8 @@ class NormalizedRootMeanSquaredError(Metric):
 
             >>> from torch import randn
             >>> # Example plotting a single value
-            >>> from torchmetrics.regression import MeanSquaredError
-            >>> metric = MeanSquaredError()
+            >>> from torchmetrics.regression import NormalizedRootMeanSquaredError
+            >>> metric = NormalizedRootMeanSquaredError()
             >>> metric.update(randn(10,), randn(10,))
             >>> fig_, ax_ = metric.plot()
 
@@ -233,8 +233,8 @@ class NormalizedRootMeanSquaredError(Metric):
 
             >>> from torch import randn
             >>> # Example plotting multiple values
-            >>> from torchmetrics.regression import MeanSquaredError
-            >>> metric = MeanSquaredError()
+            >>> from torchmetrics.regression import NormalizedRootMeanSquaredError
+            >>> metric = NormalizedRootMeanSquaredError()
             >>> values = []
             >>> for _ in range(10):
             ...     values.append(metric(randn(10,), randn(10,)))
