@@ -170,7 +170,11 @@ def _test_ddp_gather_autograd_different_shape(rank: int, worldsize: int = NUM_PR
         _test_ddp_gather_autograd_different_shape,
     ],
 )
-def test_ddp_autograd(process):
+@pytest.mark.parametrize(
+    "index",
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+)
+def test_ddp_autograd(process, index):
     """Test ddp functions for autograd compatibility."""
     pytest.pool.map(process, range(NUM_PROCESSES))
 
