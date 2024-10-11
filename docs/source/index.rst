@@ -233,6 +233,14 @@ Or directly from conda
 
 .. toctree::
    :maxdepth: 2
+   :name: shape
+   :caption: Shape
+   :glob:
+
+   shape/*
+
+.. toctree::
+   :maxdepth: 2
    :name: text
    :caption: Text
    :glob:
