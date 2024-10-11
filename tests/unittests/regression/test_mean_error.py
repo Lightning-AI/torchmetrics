@@ -163,14 +163,14 @@ def _multi_target_ref_wrapper(preds, target, sk_fn, metric_args):
 
 
 @pytest.mark.parametrize(
-    "preds, target, ref_metric",
+    ("preds", "target", "ref_metric"),
     [
         (_single_target_inputs.preds, _single_target_inputs.target, _single_target_ref_wrapper),
         (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_ref_wrapper),
     ],
 )
 @pytest.mark.parametrize(
-    "metric_class, metric_functional, sk_fn, metric_args",
+    ("metric_class", "metric_functional", "sk_fn", "metric_args"),
     [
         (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": True}),
         (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": False}),
@@ -216,6 +216,13 @@ def _multi_target_ref_wrapper(preds, target, sk_fn, metric_args):
             NormalizedRootMeanSquaredError,
             normalized_root_mean_squared_error,
             _reference_normalized_root_mean_squared_error,
+            {"normalization": "l2", "num_outputs": 1},
+            id="nrmse_multioutput_l2",
+        ),
+        pytest.param(
+            NormalizedRootMeanSquaredError,
+            normalized_root_mean_squared_error,
+            _reference_normalized_root_mean_squared_error,
             {"normalization": "mean", "num_outputs": NUM_TARGETS},
             id="nrmse_multioutput_mean",
         ),
@@ -232,6 +239,13 @@ def _multi_target_ref_wrapper(preds, target, sk_fn, metric_args):
             _reference_normalized_root_mean_squared_error,
             {"normalization": "std", "num_outputs": NUM_TARGETS},
             id="nrmse_multioutput_std",
+        ),
+        pytest.param(
+            NormalizedRootMeanSquaredError,
+            normalized_root_mean_squared_error,
+            _reference_normalized_root_mean_squared_error,
+            {"normalization": "l2", "num_outputs": NUM_TARGETS},
+            id="nrmse_multioutput_l2",
         ),
     ],
 )
@@ -309,10 +323,30 @@ class TestMeanError(MetricTester):
 
 
 @pytest.mark.parametrize(
-    "metric_class", [MeanSquaredError, MeanAbsoluteError, MeanSquaredLogError, MeanAbsolutePercentageError]
+    "metric_class",
+    [
+        MeanSquaredError,
+        MeanAbsoluteError,
+        MeanSquaredLogError,
+        MeanAbsolutePercentageError,
+        NormalizedRootMeanSquaredError,
+    ],
 )
 def test_error_on_different_shape(metric_class):
     """Test that error is raised on different shapes of input."""
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
+
+
+@pytest.mark.parametrize(
+    ("metric_class", "arguments", "error_msg"),
+    [
+        (MeanSquaredError, {"squared": "something"}, "Expected argument `squared` to be a boolean.*"),
+        (NormalizedRootMeanSquaredError, {"normalization": "something"}, "Argument `normalization` should be either.*"),
+    ],
+)
+def test_error_on_wrong_extra_args(metric_class, arguments, error_msg):
+    """Test that error is raised on wrong extra arguments."""
+    with pytest.raises(ValueError, match=error_msg):
+        metric_class(**arguments)
