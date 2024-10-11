@@ -124,9 +124,12 @@ def _reference_normalized_root_mean_squared_error(
     if num_outputs == 1:
         y_true = y_true.flatten()
         y_pred = y_pred.flatten()
-    evaluator = RegressionMetric(y_true, y_pred) if normalization == "range" else RegressionMetric(y_pred, y_true)
-    arg_mapping = {"mean": 1, "range": 2, "std": 4}
-    return evaluator.normalized_root_mean_square_error(model=arg_mapping[normalization])
+    if normalization != "l2":
+        evaluator = RegressionMetric(y_true, y_pred) if normalization == "range" else RegressionMetric(y_pred, y_true)
+        arg_mapping = {"mean": 1, "range": 2, "std": 4}
+        return evaluator.normalized_root_mean_square_error(model=arg_mapping[normalization])
+    # for l2 normalization we do not have a reference implementation
+    return np.sqrt(np.mean(np.square(y_true - y_pred), axis=0)) / np.linalg.norm(y_true, axis=0)
 
 
 def _reference_weighted_mean_abs_percentage_error(target, preds):
@@ -172,24 +175,50 @@ def _multi_target_ref_wrapper(preds, target, sk_fn, metric_args):
 @pytest.mark.parametrize(
     ("metric_class", "metric_functional", "sk_fn", "metric_args"),
     [
-        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": True}),
-        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": False}),
-        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": True, "num_outputs": NUM_TARGETS}),
-        (MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error, {}),
-        (MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error, {"num_outputs": NUM_TARGETS}),
-        (MeanAbsolutePercentageError, mean_absolute_percentage_error, sk_mean_abs_percentage_error, {}),
-        (
+        pytest.param(
+            MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": True}, id="mse_singleoutput"
+        ),
+        pytest.param(
+            MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": False}, id="rmse_singleoutput"
+        ),
+        pytest.param(
+            MeanSquaredError,
+            mean_squared_error,
+            sk_mean_squared_error,
+            {"squared": True, "num_outputs": NUM_TARGETS},
+            id="mse_multioutput",
+        ),
+        pytest.param(MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error, {}, id="mae_singleoutput"),
+        pytest.param(
+            MeanAbsoluteError,
+            mean_absolute_error,
+            sk_mean_absolute_error,
+            {"num_outputs": NUM_TARGETS},
+            id="mae_multioutput",
+        ),
+        pytest.param(
+            MeanAbsolutePercentageError,
+            mean_absolute_percentage_error,
+            sk_mean_abs_percentage_error,
+            {},
+            id="mape_singleoutput",
+        ),
+        pytest.param(
             SymmetricMeanAbsolutePercentageError,
             symmetric_mean_absolute_percentage_error,
             _reference_symmetric_mape,
             {},
+            id="symmetric_mean_absolute_percentage_error",
         ),
-        (MeanSquaredLogError, mean_squared_log_error, sk_mean_squared_log_error, {}),
-        (
+        pytest.param(
+            MeanSquaredLogError, mean_squared_log_error, sk_mean_squared_log_error, {}, id="mean_squared_log_error"
+        ),
+        pytest.param(
             WeightedMeanAbsolutePercentageError,
             weighted_mean_absolute_percentage_error,
             _reference_weighted_mean_abs_percentage_error,
             {},
+            id="weighted_mean_absolute_percentage_error",
         ),
         pytest.param(
             NormalizedRootMeanSquaredError,
