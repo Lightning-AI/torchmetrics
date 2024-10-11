@@ -21,7 +21,7 @@ from torchmetrics.functional.regression.mse import _mean_squared_error_update
 
 
 def _normalized_root_mean_squared_error_update(
-    preds: Tensor, target: Tensor, num_outputs: int, normalization: Literal["mean", "range", "std"] = "mean"
+    preds: Tensor, target: Tensor, num_outputs: int, normalization: Literal["mean", "range", "std", "l2"] = "mean"
 ) -> Tuple[Tensor, int, Tensor]:
     """Updates and returns the sum of squared errors and the number of observations for NRMSE computation.
 
@@ -29,7 +29,7 @@ def _normalized_root_mean_squared_error_update(
         preds: Predicted tensor
         target: Ground truth tensor
         num_outputs: Number of outputs in multioutput setting
-        normalization: type of normalization to be applied. Choose from "mean", "range", "std"
+        normalization: type of normalization to be applied. Choose from "mean", "range", "std", "l2"
 
     """
     sum_squared_error, num_obs = _mean_squared_error_update(preds, target, num_outputs)
@@ -41,8 +41,12 @@ def _normalized_root_mean_squared_error_update(
         denom = torch.max(target, dim=0).values - torch.min(target, dim=0).values
     elif normalization == "std":
         denom = torch.std(target, correction=0, dim=0)
+    elif normalization == "l2":
+        denom = torch.norm(target, p=2, dim=0)
     else:
-        raise ValueError(f"Argument `normalization` should be either 'mean', 'range' or 'std', but got {normalization}")
+        raise ValueError(
+            f"Argument `normalization` should be either 'mean', 'range', 'std' or 'l2' but got {normalization}"
+        )
     return sum_squared_error, num_obs, denom
 
 
@@ -57,7 +61,7 @@ def _normalized_root_mean_squared_error_compute(
 def normalized_root_mean_squared_error(
     preds: Tensor,
     target: Tensor,
-    normalization: Literal["mean", "range", "std"] = "mean",
+    normalization: Literal["mean", "range", "std", "l2"] = "mean",
     num_outputs: int = 1,
 ) -> Tensor:
     """Calculates the `Normalized Root Mean Squared Error`_ (NRMSE) also know as scatter index.
@@ -65,9 +69,9 @@ def normalized_root_mean_squared_error(
     Args:
         preds: estimated labels
         target: ground truth labels
-        normalization: type of normalization to be applied. Choose from "mean", "range", "std" which corresponds to
-            normalizing the RMSE by the mean of the target, the range of the target or the standard deviation of the
-            target.
+        normalization: type of normalization to be applied. Choose from "mean", "range", "std", "l2" which corresponds
+          to normalizing the RMSE by the mean of the target, the range of the target, the standard deviation of the
+          target or the L2 norm of the target.
         num_outputs: Number of outputs in multioutput setting
 
     Return:
@@ -84,6 +88,8 @@ def normalized_root_mean_squared_error(
         tensor(0.2500)
         >>> normalized_root_mean_squared_error(preds, target, normalization="std")
         tensor(0.6030)
+        >>> normalized_root_mean_squared_error(preds, target, normalization="l2")
+        tensor(0.5000)
 
     Example (multioutput):
         >>> import torch

@@ -78,7 +78,8 @@ class NormalizedRootMeanSquaredError(Metric):
         \text{NRMSE} = \frac{\text{RMSE}}{\text{denom}}
 
     where RMSE is the root mean squared error and `denom` is the normalization factor. The normalization factor can be
-    either be the mean, range or standard deviation of the target, which can be set using the `normalization` argument.
+    either be the mean, range, standard deviation or L2 norm of the target, which can be set using the `normalization`
+    argument.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -90,9 +91,9 @@ class NormalizedRootMeanSquaredError(Metric):
     - ``nrmse`` (:class:`~torch.Tensor`): A tensor with the mean squared error
 
     Args:
-        normalization: type of normalization to be applied. Choose from "mean", "range", "std" which corresponds to
-          normalizing the RMSE by the mean of the target, the range of the target or the standard deviation of the
-          target.
+        normalization: type of normalization to be applied. Choose from "mean", "range", "std", "l2" which corresponds
+          to normalizing the RMSE by the mean of the target, the range of the target, the standard deviation of the
+          target or the L2 norm of the target.
         num_outputs: Number of outputs in multioutput setting
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -137,15 +138,15 @@ class NormalizedRootMeanSquaredError(Metric):
 
     def __init__(
         self,
-        normalization: Literal["mean", "range", "std"] = "mean",
+        normalization: Literal["mean", "range", "std", "l2"] = "mean",
         num_outputs: int = 1,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
-        if normalization not in ("mean", "range", "std"):
+        if normalization not in ("mean", "range", "std", "l2"):
             raise ValueError(
-                f"Argument `normalization` should be either 'mean', 'range' or 'std', but got {normalization}"
+                f"Argument `normalization` should be either 'mean', 'range', 'std' or 'l2', but got {normalization}"
             )
         self.normalization = normalization
 
