@@ -173,3 +173,4 @@
 .. _SCC: https://www.ingentaconnect.com/content/tandf/tres/1998/00000019/00000004/art00013
 .. _Normalized Root Mean Squared Error: https://onlinelibrary.wiley.com/doi/abs/10.1111/1365-2478.12109
 .. _Generalized Dice Score: https://arxiv.org/abs/1707.03237
+.. _Procrustes Disparity: https://en.wikipedia.org/wiki/Procrustes_analysis
