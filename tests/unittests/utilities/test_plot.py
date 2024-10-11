@@ -150,6 +150,7 @@ from torchmetrics.retrieval import (
     RetrievalRecallAtFixedPrecision,
     RetrievalRPrecision,
 )
+from torchmetrics.shape import ProcrustesDisparity
 from torchmetrics.text import (
     BERTScore,
     BLEUScore,
@@ -609,6 +610,12 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
         pytest.param(CalinskiHarabaszScore, lambda: torch.randn(100, 3), _nominal_input, id="calinski harabasz score"),
         pytest.param(NormalizedMutualInfoScore, _nominal_input, _nominal_input, id="normalized mutual info score"),
         pytest.param(DunnIndex, lambda: torch.randn(100, 3), _nominal_input, id="dunn index"),
+        pytest.param(
+            ProcrustesDisparity,
+            lambda: torch.randn(1, 100, 3),
+            lambda: torch.randn(1, 100, 3),
+            id="procrustes disparity",
+        ),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 3])
