@@ -13,11 +13,11 @@
 # limitations under the License.
 from typing import Any, Optional, Sequence, Union
 
-import torch
 from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.r2 import _r2_score_compute, _r2_score_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -38,8 +38,8 @@ class R2Score(Metric):
 
     where the parameter :math:`k` (the number of independent regressors) should be provided as the `adjusted` argument.
     The score is only proper defined when :math:`SS_{tot}\neq 0`, which can happen for near constant targets. In this
-    case a score of 0 is returned. By definition the score is bounded between 0 and 1, where 1 corresponds to the
-    predictions exactly matching the targets.
+    case a score of 0 is returned. By definition the score is bounded between :math:`-inf` and 1.0, with 1.0 indicating
+    perfect prediction, 0 indicating constant prediction and negative values indicating worse than constant prediction.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
@@ -65,23 +65,32 @@ class R2Score(Metric):
             * ``'variance_weighted'`` scores are weighted by their individual variances
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
+    .. warning::
+        Argument ``num_outputs`` in ``R2Score`` has been deprecated because it is no longer necessary and will be
+        removed in v1.6.0 of TorchMetrics. The number of outputs is now automatically inferred from the shape
+        of the input tensors.
+
     Raises:
         ValueError:
             If ``adjusted`` parameter is not an integer larger or equal to 0.
         ValueError:
             If ``multioutput`` is not one of ``"raw_values"``, ``"uniform_average"`` or ``"variance_weighted"``.
 
-    Example:
+    Example (single output):
+        >>> from torch import tensor
         >>> from torchmetrics.regression import R2Score
-        >>> target = torch.tensor([3, -0.5, 2, 7])
-        >>> preds = torch.tensor([2.5, 0.0, 2, 8])
+        >>> target = tensor([3, -0.5, 2, 7])
+        >>> preds = tensor([2.5, 0.0, 2, 8])
         >>> r2score = R2Score()
         >>> r2score(preds, target)
         tensor(0.9486)
 
-        >>> target = torch.tensor([[0.5, 1], [-1, 1], [7, -6]])
-        >>> preds = torch.tensor([[0, 2], [-1, 2], [8, -5]])
-        >>> r2score = R2Score(num_outputs=2, multioutput='raw_values')
+    Example (multioutput):
+        >>> from torch import tensor
+        >>> from torchmetrics.regression import R2Score
+        >>> target = tensor([[0.5, 1], [-1, 1], [7, -6]])
+        >>> preds = tensor([[0, 2], [-1, 2], [8, -5]])
+        >>> r2score = R2Score(multioutput='raw_values')
         >>> r2score(preds, target)
         tensor([0.9654, 0.9082])
 
@@ -90,7 +99,6 @@ class R2Score(Metric):
     is_differentiable: bool = True
     higher_is_better: bool = True
     full_state_update: bool = False
-    plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
     sum_squared_error: Tensor
@@ -100,14 +108,20 @@ class R2Score(Metric):
 
     def __init__(
         self,
-        num_outputs: int = 1,
+        num_outputs: Optional[int] = None,
         adjusted: int = 0,
         multioutput: str = "uniform_average",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
-        self.num_outputs = num_outputs
+        if num_outputs is not None:
+            rank_zero_warn(
+                "Argument `num_outputs` in `R2Score` has been deprecated because it is no longer necessary and will be"
+                "removed in v1.6.0 of TorchMetrics. The number of outputs is now automatically inferred from the shape"
+                "of the input tensors.",
+                DeprecationWarning,
+            )
 
         if adjusted < 0 or not isinstance(adjusted, int):
             raise ValueError("`adjusted` parameter should be an integer larger or equal to 0.")
@@ -120,19 +134,19 @@ class R2Score(Metric):
             )
         self.multioutput = multioutput
 
-        self.add_state("sum_squared_error", default=torch.zeros(self.num_outputs), dist_reduce_fx="sum")
-        self.add_state("sum_error", default=torch.zeros(self.num_outputs), dist_reduce_fx="sum")
-        self.add_state("residual", default=torch.zeros(self.num_outputs), dist_reduce_fx="sum")
+        self.add_state("sum_squared_error", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("sum_error", default=tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("residual", default=tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         sum_squared_error, sum_error, residual, total = _r2_score_update(preds, target)
 
-        self.sum_squared_error += sum_squared_error
-        self.sum_error += sum_error
-        self.residual += residual
-        self.total += total
+        self.sum_squared_error = self.sum_squared_error + sum_squared_error
+        self.sum_error = self.sum_error + sum_error
+        self.residual = self.residual + residual
+        self.total = self.total + total
 
     def compute(self) -> Tensor:
         """Compute r2 score over the metric states."""

@@ -220,6 +220,7 @@ html_logo = "_static/images/logo.svg"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 html_css_files = ["css/custom.css"]
+html_js_files = ["runllm.js"]
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -268,6 +269,11 @@ texinfo_documents = [
         "Miscellaneous",
     ),
 ]
+
+# MathJax configuration
+mathjax3_config = {
+    "tex": {"packages": {"[+]": ["ams", "newcommand", "configMacros"]}},
+}
 
 # -- Options for Epub output -------------------------------------------------
 
@@ -358,8 +364,7 @@ MOCK_PACKAGES = [PACKAGE_MAPPING.get(pkg, pkg) for pkg in MOCK_PACKAGES]
 autodoc_mock_imports = MOCK_PACKAGES
 
 
-# Resolve function
-# This function is used to populate the (source) links in the API
+# Resolve function - this function is used to populate the (source) links in the API
 def linkcode_resolve(domain, info) -> Optional[str]:  # noqa: ANN001
     return _linkcode_resolve(domain, info=info, github_user="Lightning-AI", github_repo="torchmetrics")
 

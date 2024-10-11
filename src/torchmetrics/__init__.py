@@ -20,6 +20,13 @@ if package_available("PIL"):
     if not hasattr(PIL, "PILLOW_VERSION"):
         PIL.PILLOW_VERSION = PIL.__version__
 
+if package_available("scipy"):
+    import scipy.signal
+
+    # back compatibility patch due to SMRMpy using scipy.signal.hamming
+    if not hasattr(scipy.signal, "hamming"):
+        scipy.signal.hamming = scipy.signal.windows.hamming
+
 from torchmetrics import functional  # noqa: E402
 from torchmetrics.aggregation import (  # noqa: E402
     CatMetric,
