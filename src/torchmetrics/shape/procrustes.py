@@ -39,9 +39,9 @@ class ProcrustesDisparity(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-        - ``dataset1`` (torch.Tensor): A tensor of shape ``(N, M, D)`` with ``N`` being the batch size,
+        - ``point_cloud1`` (torch.Tensor): A tensor of shape ``(N, M, D)`` with ``N`` being the batch size,
           ``M`` the number of data points and ``D`` the dimensionality of the data points.
-        - ``dataset2`` (torch.Tensor): A tensor of shape ``(N, M, D)`` with ``N`` being the batch size,
+        - ``point_cloud2`` (torch.Tensor): A tensor of shape ``(N, M, D)`` with ``N`` being the batch size,
           ``M`` the number of data points and ``D`` the dimensionality of the data points.
 
 
@@ -61,9 +61,9 @@ class ProcrustesDisparity(Metric):
         >>> from torch import randn
         >>> from torchmetrics.shape import ProcrustesDisparity
         >>> metric = ProcrustesDisparity()
-        >>> dataset1 = randn(10, 50, 2)
-        >>> dataset2 = randn(10, 50, 2)
-        >>> metric(dataset1, dataset2)
+        >>> point_cloud1 = randn(10, 50, 2)
+        >>> point_cloud2 = randn(10, 50, 2)
+        >>> metric(point_cloud1, point_cloud2)
         tensor(0.9770)
 
     """
@@ -84,9 +84,9 @@ class ProcrustesDisparity(Metric):
         self.add_state("disparity", default=torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
-    def update(self, dataset1: torch.Tensor, dataset2: torch.Tensor) -> None:
+    def update(self, point_cloud1: torch.Tensor, point_cloud2: torch.Tensor) -> None:
         """Update the Procrustes Disparity with the given datasets."""
-        disparity: Tensor = procrustes_disparity(dataset1, dataset2)  # type: ignore[assignment]
+        disparity: Tensor = procrustes_disparity(point_cloud1, point_cloud2)  # type: ignore[assignment]
         self.disparity += disparity.sum()
         self.total += disparity.numel()
 

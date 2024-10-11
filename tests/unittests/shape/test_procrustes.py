@@ -35,43 +35,43 @@ _inputs = _Input(
 )
 
 
-def _reference_procrustes(dataset1, dataset2, reduction=None):
-    dataset1 = dataset1.numpy()
-    dataset2 = dataset2.numpy()
+def _reference_procrustes(point_cloud1, point_cloud2, reduction=None):
+    point_cloud1 = point_cloud1.numpy()
+    point_cloud2 = point_cloud2.numpy()
 
     if reduction is None:
-        return np.array([scipy_procrustes(d1, d2)[2] for d1, d2 in zip(dataset1, dataset2)])
+        return np.array([scipy_procrustes(d1, d2)[2] for d1, d2 in zip(point_cloud1, point_cloud2)])
 
     disparity = 0
-    for d1, d2 in zip(dataset1, dataset2):
+    for d1, d2 in zip(point_cloud1, point_cloud2):
         disparity += scipy_procrustes(d1, d2)[2]
     if reduction == "mean":
-        return disparity / len(dataset1)
+        return disparity / len(point_cloud1)
     return disparity
 
 
-@pytest.mark.parametrize("dataset1, dataset2", [(_inputs.preds, _inputs.target)])
+@pytest.mark.parametrize("point_cloud1, point_cloud2", [(_inputs.preds, _inputs.target)])
 class TestProcrustesDisparity(MetricTester):
     """Test class for `ProcrustesDisparity` metric."""
 
     @pytest.mark.parametrize("reduction", ["sum", "mean"])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_procrustes_disparity(self, reduction, dataset1, dataset2, ddp):
+    def test_procrustes_disparity(self, reduction, point_cloud1, point_cloud2, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
-            dataset1,
-            dataset2,
+            point_cloud1,
+            point_cloud2,
             ProcrustesDisparity,
             partial(_reference_procrustes, reduction=reduction),
             metric_args={"reduction": reduction},
         )
 
-    def test_procrustes_disparity_functional(self, dataset1, dataset2):
+    def test_procrustes_disparity_functional(self, point_cloud1, point_cloud2):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
-            dataset1,
-            dataset2,
+            point_cloud1,
+            point_cloud2,
             procrustes_disparity,
             _reference_procrustes,
         )
