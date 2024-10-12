@@ -104,7 +104,8 @@ def _rmse_sw_compute(
     """
     rmse = rmse_val_sum / total_images if rmse_val_sum is not None else None
     if rmse_map is not None:
-        rmse_map /= total_images
+        # prevent overwrite the inputs
+        rmse_map = rmse_map / total_images
     return rmse, rmse_map
 
 
