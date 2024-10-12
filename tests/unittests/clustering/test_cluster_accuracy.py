@@ -36,7 +36,7 @@ class TestAdjustedMutualInfoScore(MetricTester):
     """Test class for `AdjustedMutualInfoScore` metric."""
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_cluster_accuracy_score(self, preds, target, ddp):
+    def test_cluster_accuracy(self, preds, target, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
@@ -47,13 +47,14 @@ class TestAdjustedMutualInfoScore(MetricTester):
             metric_args={"num_classes": NUM_CLASSES},
         )
 
-    def test_cluster_accuracy_score_functional(self, preds, target):
+    def test_cluster_accuracy_functional(self, preds, target):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=cluster_accuracy,
             reference_metric=clustering_accuracy_score,
+            metric_args={"num_classes": NUM_CLASSES},
         )
 
 
@@ -66,8 +67,8 @@ def test_cluster_accuracy_sanity_check():
     assert torch.allclose(res, torch.tensor(1.0))
 
 
-def test_cluster_accuracy_score_functional_raises_invalid_task():
+def test_cluster_accuracy_functional_raises_invalid_task():
     """Check that metric rejects continuous-valued inputs."""
     preds, target = _float_inputs_extrinsic
     with pytest.raises(ValueError, match=r"Expected *"):
-        cluster_accuracy(preds, target)
+        cluster_accuracy(preds, target, num_classes=NUM_CLASSES)

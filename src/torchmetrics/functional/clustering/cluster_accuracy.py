@@ -16,6 +16,7 @@ from torch import Tensor
 from torch_linear_assignment import batch_linear_assignment
 
 from torchmetrics.functional.classification import multiclass_confusion_matrix
+from torchmetrics.functional.clustering.utils import check_cluster_labels
 
 
 def _cluster_accuracy_compute(confmat: Tensor) -> Tensor:
@@ -48,5 +49,6 @@ def cluster_accuracy(preds: Tensor, target: Tensor, num_classes: int) -> Tensor:
         tensor(1.000)
 
     """
+    check_cluster_labels(preds, target)
     confmat = multiclass_confusion_matrix(preds, target, num_classes=num_classes)
     return _cluster_accuracy_compute(confmat)
