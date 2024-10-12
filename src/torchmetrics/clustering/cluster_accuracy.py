@@ -82,6 +82,11 @@ class ClusterAccuracy(Metric):
 
     def __init__(self, num_classes: int, **kwargs: Any) -> None:
         super().__init__(**kwargs)
+        if not _TORCH_LINEAR_ASSIGNMENT_AVAILABLE:
+            raise RuntimeError(
+                "Missing `torch_linear_assignment`. Please install it with `pip install torchmetrics[clustering]`."
+            )
+
         if not isinstance(num_classes, int) or num_classes <= 0:
             raise ValueError("Argument `num_classes` should be a positive integer")
         self.add_state(

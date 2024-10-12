@@ -18,15 +18,14 @@ from torchmetrics.functional.classification import multiclass_confusion_matrix
 from torchmetrics.functional.clustering.utils import check_cluster_labels
 from torchmetrics.utilities.imports import _TORCH_LINEAR_ASSIGNMENT_AVAILABLE
 
-if _TORCH_LINEAR_ASSIGNMENT_AVAILABLE:
-    from torch_linear_assignment import batch_linear_assignment
-else:
-    batch_linear_assignment = None
+if not _TORCH_LINEAR_ASSIGNMENT_AVAILABLE:
     __doctest_skip__ = ["cluster_accuracy"]
 
 
 def _cluster_accuracy_compute(confmat: Tensor) -> Tensor:
     """Computes the clustering accuracy from a confusion matrix."""
+    from torch_linear_assignment import batch_linear_assignment
+
     confmat = confmat[None]
     # solve the linear sum assignment problem
     assignment = batch_linear_assignment(confmat.max() - confmat)
@@ -60,6 +59,10 @@ def cluster_accuracy(preds: Tensor, target: Tensor, num_classes: int) -> Tensor:
         tensor(1.000)
 
     """
+    if not _TORCH_LINEAR_ASSIGNMENT_AVAILABLE:
+        raise RuntimeError(
+            "Missing `torch_linear_assignment`. Please install it with `pip install torchmetrics[clustering]`."
+        )
     check_cluster_labels(preds, target)
     confmat = multiclass_confusion_matrix(preds, target, num_classes=num_classes)
     return _cluster_accuracy_compute(confmat)
