@@ -14,7 +14,10 @@ from typing import Any, List, Literal, Optional, Sequence, Union
 
 from torch import Tensor
 
-from torchmetrics.functional.segmentation import hausdorff_distance
+from torchmetrics.functional.segmentation.hausdorff_distance import (
+    _hausdorff_distance_validate_args,
+    hausdorff_distance,
+)
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat, dim_zero_mean
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
@@ -25,24 +28,33 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class HausdorffDistance(Metric):
-    r"""Compute the Hausdorff distance between two subsets of a metric space.
+    r"""Compute the `Hausdorff Distance`_ between two subsets of a metric space for semantic segmentation.
 
     .. math::
         d_{\Pi}(X,Y) = \max{/sup_{x\in X} {d(x,Y)}, /sup_{y\in Y} {d(X,y)}}
 
-    where :math:`\X, \Y` are ________________, :math:`\X, \Y` ______.
+    where :math:`\X, \Y` are two subsets of a metric space with distance metric :math:`d`. The Hausdorff distance is
+    the maximum distance from a point in one set to the closest point in the other set. The Hausdorff distance is a
+    measure of the degree of mismatch between two sets.
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`):
-    - ``target`` (:class:`~torch.Tensor`):
+    - ``preds`` (:class:`~torch.Tensor`): An one-hot boolean tensor of shape ``(N, C, ...)`` with ``N`` being
+        the number of samples and ``C`` the number of classes. Alternatively, an integer tensor of shape ``(N, ...)``
+        can be provided, where the integer values correspond to the class index. The input type can be controlled
+        with the ``input_format`` argument.
+    - ``target`` (:class:`~torch.Tensor`): An one-hot boolean tensor of shape ``(N, C, ...)`` with ``N`` being
+        the number of samples and ``C`` the number of classes. Alternatively, an integer tensor of shape ``(N, ...)``
+        can be provided, where the integer values correspond to the class index. The input type can be controlled
+        with the ``input_format`` argument.
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
     - ``hausdorff_distance`` (:class:`~torch.Tensor`): A scalar float tensor with the Hausdorff distance.
 
     Args:
-        p: p-norm used for distance metric
+        distance_metric: distance metric to calculate surface distance. Choose between "euclidean", "chessboard" or
+          "taxicab".
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -59,8 +71,7 @@ class HausdorffDistance(Metric):
         ...                        [1, 0, 0, 1, 0],
         ...                        [1, 1, 1, 1, 0]], dtype=torch.bool)
         >>> hausdorff_distance = HausdorffDistance(distance_metric="euclidean")
-        >>> hausdorff_distance.update(preds, target)
-        >>> hausdorff_distance.compute()
+        >>> hausdorff_distance(preds, target)
         tensor(1.)
 
     """
@@ -80,9 +91,9 @@ class HausdorffDistance(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
+        _hausdorff_distance_validate_args(distance_metric, spacing)
         self.distance_metric = distance_metric
         self.spacing = spacing
-
         self.add_state("preds", default=[], dist_reduce_fx="cat")
         self.add_state("target", default=[], dist_reduce_fx="cat")
 

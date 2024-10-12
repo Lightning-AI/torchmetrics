@@ -21,6 +21,19 @@ from torchmetrics.functional.segmentation.utils import check_if_binarized, surfa
 from torchmetrics.utilities.checks import _check_same_shape
 
 
+def _hausdorff_distance_validate_args(
+    distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
+    spacing: Optional[Union[Tensor, list[float]]] = None,
+) -> None:
+    """Validate the arguments of `hausdorff_distance` function."""
+    if distance_metric not in ["euclidean", "chessboard", "taxicab"]:
+        raise ValueError(
+            f"Arg `distance_metric` must be one of 'euclidean', 'chessboard', 'taxicab', but got {distance_metric}."
+        )
+    if spacing is not None and not isinstance(spacing, (list, Tensor)):
+        raise ValueError(f"Arg `spacing` must be a list or tensor, but got {type(spacing)}.")
+
+
 def _hausdorff_distance_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
     """Update and returns variables required to compute `Hausdorff Distance`_.
 
