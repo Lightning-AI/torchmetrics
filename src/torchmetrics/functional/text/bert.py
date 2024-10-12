@@ -276,6 +276,7 @@ def bert_score(
     rescale_with_baseline: bool = False,
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
+    truncation: bool = False,
 ) -> Dict[str, Union[Tensor, List[float], str]]:
     """`Bert_score Evaluating Text Generation`_ for text similirity matching.
 
@@ -323,6 +324,7 @@ def bert_score(
             of the files from `BERT_score`_
         baseline_path: A path to the user's own local csv/tsv file with the baseline scale.
         baseline_url: A url path to the user's own  csv/tsv file with the baseline scale.
+        truncation: An indication of whether the input sequences should be truncated to the maximum length.
 
     Returns:
         Python dictionary containing the keys ``precision``, ``recall`` and ``f1`` with corresponding values.
@@ -417,13 +419,14 @@ def bert_score(
 
     # We ignore mypy typing below as the proper typing is ensured by conditions above, only mypy cannot infer that.
     if _are_valid_lists:
-        target_dataset = TextDataset(target, tokenizer, max_length, idf=idf)  # type: ignore
+        target_dataset = TextDataset(target, tokenizer, max_length, idf=idf, truncation=truncation)  # type: ignore
         preds_dataset = TextDataset(
             preds,  # type: ignore
             tokenizer,
             max_length,
             idf=idf,
             tokens_idf=target_dataset.tokens_idf,
+            truncation=truncation,
         )
     elif _are_valid_tensors:
         target_dataset = TokenizedDataset(**target, idf=idf)  # type: ignore
