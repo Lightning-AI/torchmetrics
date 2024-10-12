@@ -50,6 +50,11 @@ class ClusterAccuracy(Metric):
 
     - ``acc_score`` (:class:`~torch.Tensor`): A tensor with the Cluster Accuracy score
 
+    .. note:: This metric requires you to have `torch_linear_assignment` package installed for solving the
+        linear sum assignment problem. You can install it directly from source with the following command:
+        ``pip install git+https://github.com/ivan-chai/torch-linear-assignment`` or install it with
+        ``pip install torchmetrics[clustering]``.
+
     Args:
         num_classes: number of classes
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
