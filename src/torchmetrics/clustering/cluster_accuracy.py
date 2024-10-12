@@ -69,7 +69,7 @@ class ClusterAccuracy(Metric):
         >>> target = torch.tensor([1, 1, 0, 0])
         >>> metric = ClusterAccuracy(num_classes=2)
         >>> metric(preds, target)
-        tensor(1.0000)
+        tensor(1.)
 
     """
 
@@ -123,7 +123,7 @@ class ClusterAccuracy(Metric):
             >>> # Example plotting a single value
             >>> import torch
             >>> from torchmetrics.clustering import ClusterAccuracy
-            >>> metric = ClusterAccuracy()
+            >>> metric = ClusterAccuracy(num_classes=4)
             >>> metric.update(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
 
@@ -133,7 +133,7 @@ class ClusterAccuracy(Metric):
             >>> # Example plotting multiple values
             >>> import torch
             >>> from torchmetrics.clustering import ClusterAccuracy
-            >>> metric = ClusterAccuracy()
+            >>> metric = ClusterAccuracy(num_classes=4)
             >>> values = [ ]
             >>> for _ in range(10):
             ...     values.append(metric(torch.randint(0, 4, (10,)), torch.randint(0, 4, (10,))))
