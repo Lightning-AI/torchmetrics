@@ -120,8 +120,8 @@ class NormalizedRootMeanSquaredError(Metric):
 
         >>> import torch
         >>> from torchmetrics import NormalizedRootMeanSquaredError
-        >>> target = tensor([2.5, 5.0, 4.0, 8.0])
-        >>> preds = tensor([3.0, 5.0, 2.5, 7.0])
+        >>> target = torch.tensor([2.5, 5.0, 4.0, 8.0])
+        >>> preds = torch.tensor([3.0, 5.0, 2.5, 7.0])
         >>> nrmse = NormalizedRootMeanSquaredError(normalization="mean")
         >>> nrmse(preds, target)
         tensor(0.1919)
