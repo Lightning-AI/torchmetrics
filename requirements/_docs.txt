@@ -24,6 +24,7 @@ pydantic > 1.0.0, < 3.0.0
 -r image.txt
 -r multimodal.txt
 -r text.txt
+-r clustering.txt
 
 # Gallery extra requirements
 # --------------------------
