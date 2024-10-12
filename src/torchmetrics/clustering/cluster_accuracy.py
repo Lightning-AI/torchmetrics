@@ -17,7 +17,7 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.classification import multiclass_confusion_matrix
-from torchmetrics.functional.clustering.accuracy import _cluster_accuracy_compute
+from torchmetrics.functional.clustering.cluster_accuracy import _cluster_accuracy_compute
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
