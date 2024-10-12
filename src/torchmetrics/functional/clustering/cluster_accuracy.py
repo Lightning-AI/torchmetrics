@@ -17,6 +17,10 @@ from torch_linear_assignment import batch_linear_assignment
 
 from torchmetrics.functional.classification import multiclass_confusion_matrix
 from torchmetrics.functional.clustering.utils import check_cluster_labels
+from torchmetrics.utilities.imports import _TORCH_LINEAR_ASSIGNMENT_AVAILABLE
+
+if not _TORCH_LINEAR_ASSIGNMENT_AVAILABLE:
+    __doctest_skip__ = ["cluster_accuracy"]
 
 
 def _cluster_accuracy_compute(confmat: Tensor) -> Tensor:
