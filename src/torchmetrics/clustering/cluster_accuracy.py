@@ -26,7 +26,7 @@ if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["ClusterAccuracy.plot"]
 
 if not _TORCH_LINEAR_ASSIGNMENT_AVAILABLE:
-    __doctest_skip__ = ["ClusterAccuracy"]
+    __doctest_skip__ = ["ClusterAccuracy", "ClusterAccuracy.plot"]
 
 
 class ClusterAccuracy(Metric):
