@@ -123,5 +123,6 @@ def hausdorff_distance(
         tensor(1.)
 
     """
+    _hausdorff_distance_validate_args(distance_metric, spacing)
     preds, target = _hausdorff_distance_update(preds, target)
     return _hausdorff_distance_compute(preds, target, distance_metric=distance_metric, spacing=spacing)

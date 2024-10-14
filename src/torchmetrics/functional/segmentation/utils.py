@@ -345,7 +345,7 @@ def surface_distance(
     target: Tensor,
     distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
     spacing: Optional[Union[Tensor, List[float]]] = None,
-) -> Tensor:
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
     """Calculate the surface distance between two binary edge masks.
 
     May return infinity if the predicted mask is empty and the target mask is not, or vice versa.
@@ -388,6 +388,38 @@ def surface_distance(
             return dis[target]
         dis = distance_transform(~target, sampling=spacing, metric=distance_metric)
     return dis[preds]
+
+
+def edge_surface_distance(
+    preds: Tensor,
+    target: Tensor,
+    distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
+    spacing: Optional[Union[Tensor, List[float]]] = None,
+    symmetric: bool = False,
+) -> Tensor:
+    """Extracts the edges from the input masks and calculates the surface distance between them.
+
+    Args:
+        preds: The predicted binary edge mask.
+        target: The target binary edge mask.
+        distance_metric: The distance metric to use. One of `["euclidean", "chessboard", "taxicab"]`.
+        spacing: The spacing between pixels along each spatial dimension.
+        symmetric: Whether to calculate the symmetric distance between the edges.
+
+    Returns:
+        A tensor with length equal to the number of edges in predictions e.g. `preds.sum()`. Each element is the
+        distance from the corresponding edge in `preds` to the closest edge in `target`. If `symmetric` is `True`, the
+        function returns a tuple containing the distances from the predicted edges to the target edges and vice versa.
+
+    """
+    output = mask_edges(preds, target)
+    edges_preds, edges_target = output[0].bool(), output[1].bool()
+    if symmetric:
+        return (
+            surface_distance(edges_preds, edges_target, distance_metric=distance_metric, spacing=spacing),
+            surface_distance(edges_target, edges_preds, distance_metric=distance_metric, spacing=spacing),
+        )
+    return surface_distance(edges_preds, edges_target, distance_metric=distance_metric, spacing=spacing)
 
 
 @functools.lru_cache
