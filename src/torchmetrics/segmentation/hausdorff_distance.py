@@ -146,6 +146,7 @@ class HausdorffDistance(Metric):
             :scale: 75
 
             >>> from torch import randint
+            >>> from torchmetrics.segmentation import HausdorffDistance
             >>> preds = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
             >>> target = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 target
             >>> metric = HausdorffDistance(num_classes=5)
