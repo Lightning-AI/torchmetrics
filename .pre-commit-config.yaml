@@ -54,13 +54,11 @@ repos:
         exclude: pyproject.toml
 
   - repo: https://github.com/PyCQA/docformatter
-    rev: v1.7.5
+    rev: 06907d0267368b49b9180eed423fae5697c1e909  # todo: fix for docformatter after last 1.7.5
     hooks:
       - id: docformatter
         additional_dependencies: [tomli]
         args: ["--in-place"]
-        language: python
-        types: ["python"]
 
   - repo: https://github.com/sphinx-contrib/sphinx-lint
     rev: v0.9.1
