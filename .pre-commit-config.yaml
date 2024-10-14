@@ -58,8 +58,9 @@ repos:
     hooks:
       - id: docformatter
         additional_dependencies: [tomli]
-        language: python
         args: ["--in-place"]
+        language: python
+        types: ["python"]
 
   - repo: https://github.com/sphinx-contrib/sphinx-lint
     rev: v0.9.1
