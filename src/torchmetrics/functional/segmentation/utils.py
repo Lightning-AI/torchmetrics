@@ -200,9 +200,8 @@ def distance_transform(
 
     Args:
         x: The binary tensor to calculate the distance transform of.
-        sampling: Only relevant when distance is calculated using the euclidean distance. The sampling refers to the
-            pixel spacing in the image, i.e. the distance between two adjacent pixels. If not provided, the pixel
-            spacing is assumed to be 1.
+        sampling: The sampling refers to the pixel spacing in the image, i.e. the distance between two adjacent pixels.
+            If not provided, the pixel spacing is assumed to be 1.
         metric: The distance to use for the distance transform. Can be one of ``"euclidean"``, ``"chessboard"``
             or ``"taxicab"``.
         engine: The engine to use for the distance transform. Can be one of ``["pytorch", "scipy"]``. In general,
