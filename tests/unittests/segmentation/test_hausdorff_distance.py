@@ -11,101 +11,106 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from functools import partial
+from typing import Any
+
 import pytest
 import torch
-from skimage.metrics import hausdorff_distance as skimage_hausdorff_distance
+from monai.metrics.hausdorff_distance import compute_hausdorff_distance as monai_hausdorff_distance
 from torchmetrics.functional.segmentation.hausdorff_distance import hausdorff_distance
 from torchmetrics.segmentation.hausdorff_distance import HausdorffDistance
 
+from unittests import NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
-from unittests.segmentation.inputs import _Input
 
 seed_all(42)
+BATCH_SIZE = 4  # use smaller than normal batch size to reduce test time
+NUM_CLASSES = 3  # use smaller than normal class size to reduce test time
 
-
-preds = torch.tensor(
-    [
-        [[1, 1, 1, 1, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 1, 1, 1, 1]],
-        [[1, 1, 1, 1, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 1, 1, 1, 1]],
-        [[1, 1, 1, 1, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 1, 1, 1, 1]],
-        [[1, 1, 1, 1, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 1, 1, 1, 1]],
-    ],
-    dtype=torch.bool,
+_inputs1 = _Input(
+    preds=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 16, 16)),
+    target=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 16, 16)),
+)
+_inputs2 = _Input(
+    preds=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 32, 32)),
+    target=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 32, 32)),
 )
 
-target = torch.tensor(
-    [
-        [[1, 1, 1, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 1, 1, 1, 0]],
-        [[1, 1, 1, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 1, 1, 1, 0]],
-        [[1, 1, 1, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 1, 1, 1, 0]],
-        [[1, 1, 1, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 1, 1, 1, 0]],
-    ],
-    dtype=torch.bool,
-)
 
-_inputs = _Input(preds=preds, target=target)
+def reference_metric(preds, target, input_format, reduce, **kwargs: Any):
+    """Reference implementation of metric."""
+    if input_format == "index":
+        preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
+        target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
+    score = monai_hausdorff_distance(preds, target, **kwargs)
+    return score.mean() if reduce else score
 
 
-# Wrapper that converts to numpy to avoid Torch-to-numpy functional issues
-def torch_skimage_hausdorff_distance(p: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
-    out = skimage_hausdorff_distance(p.numpy(), t.numpy())
-    return torch.tensor([out], dtype=torch.float32)
-
-
-@pytest.mark.parametrize(
-    "preds, target",
-    [
-        (_inputs.preds, _inputs.target),
-    ],
-)
-@pytest.mark.parametrize(
-    "distance_metric",
-    ["euclidean", "chessboard", "taxicab"],
-)
+@pytest.mark.parametrize("inputs, input_format", [(_inputs1, "one-hot"), (_inputs2, "index")])
+@pytest.mark.parametrize("distance_metric", ["euclidean", "chessboard", "taxicab"])
+@pytest.mark.parametrize("directed", [True, False])
+@pytest.mark.parametrize("spacing", [None, [2, 2]])
 class TestHausdorffDistance(MetricTester):
     """Test class for `HausdorffDistance` metric."""
 
     atol = 1e-5
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_hausdorff_distance_class(self, preds, target, distance_metric, ddp):
+    def test_hausdorff_distance_class(self, inputs, input_format, distance_metric, directed, spacing, ddp):
         """Test class implementation of metric."""
+        if spacing is not None and distance_metric != "euclidean":
+            pytest.skip("Spacing is only supported for Euclidean distance metric.")
+        preds, target = inputs
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
             target=target,
             metric_class=HausdorffDistance,
-            reference_metric=torch_skimage_hausdorff_distance,
-            metric_args={"distance_metric": distance_metric, "spacing": None},
+            reference_metric=partial(
+                reference_metric,
+                input_format=input_format,
+                distance_metric=distance_metric,
+                directed=directed,
+                spacing=spacing,
+                reduce=True,
+            ),
+            metric_args={
+                "num_classes": NUM_CLASSES,
+                "distance_metric": distance_metric,
+                "directed": directed,
+                "spacing": spacing,
+                "input_format": input_format,
+            },
         )
 
-    def test_hausdorff_distance_functional(self, preds, target, distance_metric):
+    def test_hausdorff_distance_functional(self, inputs, input_format, distance_metric, directed, spacing):
         """Test functional implementation of metric."""
+        if spacing is not None and distance_metric != "euclidean":
+            pytest.skip("Spacing is only supported for Euclidean distance metric.")
+        preds, target = inputs
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=hausdorff_distance,
-            reference_metric=torch_skimage_hausdorff_distance,
-            metric_args={"distance_metric": distance_metric, "spacing": None},
+            reference_metric=partial(
+                reference_metric,
+                input_format=input_format,
+                distance_metric=distance_metric,
+                directed=directed,
+                spacing=spacing,
+                reduce=False,
+            ),
+            metric_args={
+                "num_classes": NUM_CLASSES,
+                "distance_metric": distance_metric,
+                "directed": directed,
+                "spacing": spacing,
+                "input_format": input_format,
+            },
         )
 
 
-def test_hausdorff_distance_functional_raises_invalid_task():
-    """Check that metric rejects continuous-valued inputs."""
-    preds, target = _inputs
-    with pytest.raises(ValueError, match=r"Expected *"):
-        hausdorff_distance(preds, target)
-
-
-@pytest.mark.parametrize(
-    "distance_metric",
-    ["euclidean", "chessboard", "taxicab"],
-)
-def test_hausdorff_distance_is_symmetric(distance_metric):
-    """Check that the metric functional is symmetric."""
-    for p, t in zip(_inputs.preds, _inputs.target):
-        assert torch.allclose(
-            hausdorff_distance(p, t, distance_metric),
-            hausdorff_distance(t, p, distance_metric),
-        )
+def test_hausdorff_distance_raises_error():
+    """Check that metric raises appropriate errors."""
+    preds, target = _inputs1
