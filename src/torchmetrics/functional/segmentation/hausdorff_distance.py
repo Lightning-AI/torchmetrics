@@ -110,5 +110,5 @@ def hausdorff_distance(
                 spacing=spacing,
                 symmetric=not directed,
             )
-            distances[b, c] = torch.max(dist) if directed else torch.max(dist[0].max(), dist[1].max())
+            distances[b, c] = torch.max(dist) if directed else torch.max(dist[0].max(), dist[1].max())  # type: ignore
     return distances

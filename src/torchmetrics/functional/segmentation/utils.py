@@ -344,7 +344,7 @@ def surface_distance(
     target: Tensor,
     distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
     spacing: Optional[Union[Tensor, List[float]]] = None,
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+) -> Tensor:
     """Calculate the surface distance between two binary edge masks.
 
     May return infinity if the predicted mask is empty and the target mask is not, or vice versa.
@@ -395,7 +395,7 @@ def edge_surface_distance(
     distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
     spacing: Optional[Union[Tensor, List[float]]] = None,
     symmetric: bool = False,
-) -> Tensor:
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
     """Extracts the edges from the input masks and calculates the surface distance between them.
 
     Args:
