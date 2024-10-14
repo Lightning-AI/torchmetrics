@@ -228,7 +228,6 @@ class NormalizedRootMeanSquaredError(Metric):
                 denom = torch.sqrt(self.var_val / self.total)
             else:
                 denom = torch.sqrt(self.target_squared)
-        print(self.sum_squared_error, self.total, denom)
         return _normalized_root_mean_squared_error_compute(self.sum_squared_error, self.total, denom)
 
     def plot(
