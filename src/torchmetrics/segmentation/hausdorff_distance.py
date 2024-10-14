@@ -10,8 +10,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Literal, Optional, Sequence, Union
+from typing import Any, Literal, Optional, Sequence, Union
 
+import torch
 from torch import Tensor
 
 from torchmetrics.functional.segmentation.hausdorff_distance import (
@@ -19,7 +20,6 @@ from torchmetrics.functional.segmentation.hausdorff_distance import (
     hausdorff_distance,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.data import dim_zero_cat, dim_zero_mean
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -50,65 +50,80 @@ class HausdorffDistance(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``hausdorff_distance`` (:class:`~torch.Tensor`): A scalar float tensor with the Hausdorff distance.
+    - ``hausdorff_distance`` (:class:`~torch.Tensor`): A scalar float tensor with the Hausdorff distance averaged over
+        classes and samples
 
     Args:
-        distance_metric: distance metric to calculate surface distance. Choose between "euclidean", "chessboard" or
-          "taxicab".
+        num_classes: number of classes
+        include_background: whether to include background class in calculation
+        distance_metric: distance metric to calculate surface distance. Choose one of `"euclidean"`,
+          `"chessboard"` or `"taxicab"`
+        spacing: spacing between pixels along each spatial dimension. If not provided the spacing is assumed to be 1
+        directed: whether to calculate directed or undirected Hausdorff distance
+        input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors
+          or ``"index"`` for index tensors
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> import torch
+        >>> from torch import randint
         >>> from torchmetrics.segmentation import HausdorffDistance
-        >>> preds = torch.tensor([[1, 1, 1, 1, 1],
-        ...                       [1, 0, 0, 0, 1],
-        ...                       [1, 0, 0, 0, 1],
-        ...                       [1, 0, 0, 0, 1],
-        ...                       [1, 1, 1, 1, 1]], dtype=torch.bool)
-        >>> target = torch.tensor([[1, 1, 1, 1, 0],
-        ...                        [1, 0, 0, 1, 0],
-        ...                        [1, 0, 0, 1, 0],
-        ...                        [1, 0, 0, 1, 0],
-        ...                        [1, 1, 1, 1, 0]], dtype=torch.bool)
-        >>> hausdorff_distance = HausdorffDistance(distance_metric="euclidean")
+        >>> preds = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
+        >>> target = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 target
+        >>> hausdorff_distance = HausdorffDistance(distance_metric="euclidean", num_classes=5)
         >>> hausdorff_distance(preds, target)
-        tensor(1.)
+        tensor(1.9567)
 
     """
 
     is_differentiable: bool = True
-    higher_is_better: bool = True
-    full_state_update: bool = True
+    higher_is_better: bool = False
+    full_state_update: bool = False
     plot_lower_bound: float = 0.0
-    plot_upper_bound: float = 1.0
-    preds: List[Tensor]
-    target: List[Tensor]
+
+    score: Tensor
+    total: Tensor
 
     def __init__(
         self,
+        num_classes: int,
+        include_background: bool = False,
         distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
-        spacing: Optional[Union[Tensor, List[float]]] = None,
+        spacing: Optional[Union[Tensor, list[float]]] = None,
+        directed: bool = False,
+        input_format: Literal["one-hot", "index"] = "one-hot",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        _hausdorff_distance_validate_args(distance_metric, spacing)
+        _hausdorff_distance_validate_args(
+            num_classes, include_background, distance_metric, spacing, directed, input_format
+        )
+        self.num_classes = num_classes
+        self.include_background = include_background
         self.distance_metric = distance_metric
         self.spacing = spacing
-        self.add_state("preds", default=[], dist_reduce_fx="cat")
-        self.add_state("target", default=[], dist_reduce_fx="cat")
+        self.directed = directed
+        self.input_format = input_format
+        self.add_state("score", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
-        self.preds.append(preds)
-        self.target.append(target)
+        score = hausdorff_distance(
+            preds,
+            target,
+            self.num_classes,
+            include_background=self.include_background,
+            distance_metric=self.distance_metric,
+            spacing=self.spacing,
+            directed=self.directed,
+            input_format=self.input_format,
+        )
+        self.score += score.sum()
+        self.total += score.numel()
 
     def compute(self) -> Tensor:
         """Compute final Hausdorff distance over states."""
-        return dim_zero_mean(
-            dim_zero_cat([
-                hausdorff_distance(p, t, self.distance_metric, self.spacing) for p, t in zip(self.preds, self.target)
-            ])
-        )
+        return self.score / self.total
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -131,9 +146,10 @@ class HausdorffDistance(Metric):
             :scale: 75
 
             >>> from torch import randint
-            >>> metric = HausdorffDistance()
-            >>> data1, data2 = randint(0, 2, (1,10,)).bool(), randint(0, 2, (1,10,)).bool()
-            >>> metric.update(data1, data2)
+            >>> preds = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
+            >>> target = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 target
+            >>> metric = HausdorffDistance(num_classes=5)
+            >>> metric.update(preds, target)
             >>> fig_, ax_ = metric.plot()
 
         """
