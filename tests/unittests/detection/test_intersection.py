@@ -328,6 +328,32 @@ class TestIntersectionMetrics(MetricTester):
         with pytest.raises(ValueError, match="Expected target to be of shape.*"):
             functional_metric(torch.randn(25, 4), torch.randn(25, 25))
 
+    def test_corner_case_only_one_empty_prediction(self, class_metric, functional_metric, reference_metric):
+        """Test that the metric does not crash when there is only one empty prediction."""
+        target = [
+            {
+                "boxes": torch.tensor([
+                    [8.0000, 70.0000, 76.0000, 110.0000],
+                    [247.0000, 131.0000, 315.0000, 175.0000],
+                    [361.0000, 177.0000, 395.0000, 203.0000],
+                ]),
+                "labels": torch.tensor([0, 0, 0]),
+            }
+        ]
+        preds = [
+            {
+                "boxes": torch.empty(size=(0, 4)),
+                "labels": torch.tensor([], dtype=torch.int64),
+                "scores": torch.tensor([]),
+            }
+        ]
+
+        metric = class_metric()
+        metric.update(preds, target)
+        res = metric.compute()
+        for val in res.values():
+            assert val == torch.tensor(0.0)
+
 
 def test_corner_case():
     """See issue: https://github.com/Lightning-AI/torchmetrics/issues/1921."""
