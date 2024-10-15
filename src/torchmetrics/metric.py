@@ -64,7 +64,6 @@ class Metric(Module, ABC):
     * ``update()``
     * ``compute()``
 
-
     Args:
         kwargs: additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
