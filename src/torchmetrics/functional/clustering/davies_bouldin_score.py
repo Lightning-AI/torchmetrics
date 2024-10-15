@@ -33,10 +33,10 @@ def davies_bouldin_score(data: Tensor, labels: Tensor) -> Tensor:
     Example:
         >>> from torch import randn, randint
         >>> from torchmetrics.functional.clustering import davies_bouldin_score
-        >>> data = randn(10, 3)
-        >>> labels = randint(0, 2, (10,))
+        >>> data = randn(20, 3)
+        >>> labels = randint(0, 3, (20,))
         >>> davies_bouldin_score(data, labels)
-        tensor(1.3249)
+        tensor(2.7418)
 
     """
     _validate_intrinsic_cluster_data(data, labels)
