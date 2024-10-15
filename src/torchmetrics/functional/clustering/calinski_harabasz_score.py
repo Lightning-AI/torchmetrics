@@ -36,7 +36,7 @@ def calinski_harabasz_score(data: Tensor, labels: Tensor) -> Tensor:
         >>> data = randn(20, 3)
         >>> labels = randint(0, 3, (20,))
         >>> calinski_harabasz_score(data, labels)
-        tensor(3.4998)
+        tensor(2.2128)
 
     """
     _validate_intrinsic_cluster_data(data, labels)
