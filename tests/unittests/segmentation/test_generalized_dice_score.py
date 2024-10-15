@@ -67,7 +67,7 @@ def _reference_generalized_dice(
 )
 @pytest.mark.parametrize("include_background", [True, False])
 class TestGeneralizedDiceScore(MetricTester):
-    """Test class for `MeanIoU` metric."""
+    """Test class for `GeneralizedDiceScore` metric."""
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_generalized_dice_class(self, preds, target, input_format, include_background, ddp):
