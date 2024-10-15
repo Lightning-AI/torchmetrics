@@ -38,11 +38,6 @@ def _cluster_accuracy_compute(confmat: Tensor) -> Tensor:
 def cluster_accuracy(preds: Tensor, target: Tensor, num_classes: int) -> Tensor:
     """Computes the clustering accuracy between the predicted and target clusters.
 
-    .. note:: This metric requires you to have `torch_linear_assignment` package installed for solving the
-        linear sum assignment problem. You can install it directly from source with the following command:
-        ``pip install git+https://github.com/ivan-chai/torch-linear-assignment`` or install it with
-        ``pip install torchmetrics[clustering]``.
-
     Args:
         preds: predicted cluster labels
         target: ground truth cluster labels

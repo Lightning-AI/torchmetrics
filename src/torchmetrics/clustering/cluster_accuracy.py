@@ -53,11 +53,6 @@ class ClusterAccuracy(Metric):
 
     - ``acc_score`` (:class:`~torch.Tensor`): A tensor with the Cluster Accuracy score
 
-    .. note:: This metric requires you to have `torch_linear_assignment` package installed for solving the
-        linear sum assignment problem. You can install it directly from source with the following command:
-        ``pip install git+https://github.com/ivan-chai/torch-linear-assignment`` or install it with
-        ``pip install torchmetrics[clustering]``.
-
     Args:
         num_classes: number of classes
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -106,7 +101,7 @@ class ClusterAccuracy(Metric):
         """Plot a single or multiple values from the metric.
 
         Args:
-            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+            val: Either a single result from calling ``metric.forward`` or ``metric.compute`` or a list of these results.
                 If no value is provided, will automatically call `metric.compute` and plot that result.
             ax: An matplotlib axis object. If provided will add plot to that axis
 
