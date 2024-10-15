@@ -13,6 +13,7 @@
 # limitations under the License.
 from torchmetrics.functional.segmentation.dice import dice_score
 from torchmetrics.functional.segmentation.generalized_dice import generalized_dice_score
+from torchmetrics.functional.segmentation.hausdorff_distance import hausdorff_distance
 from torchmetrics.functional.segmentation.mean_iou import mean_iou
 
-__all__ = ["generalized_dice_score", "mean_iou", "dice_score"]
+__all__ = ["generalized_dice_score", "mean_iou", "hausdorff_distance", "dice_score"]

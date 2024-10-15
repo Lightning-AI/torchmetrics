@@ -121,7 +121,7 @@ class DunnIndex(Metric):
             >>> metric = DunnIndex(p=2)
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(torch.randn(10, 3), torch.randint(0, 2, (10,))))
+            ...     values.append(metric(torch.randn(50, 3), torch.randint(0, 2, (50,))))
             >>> fig_, ax_ = metric.plot(values)
 
         """

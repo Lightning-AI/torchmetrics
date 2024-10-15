@@ -16,13 +16,13 @@ We are always looking for help implementing new features or fixing bugs.
    - Add details on how to reproduce the issue - a minimal test case is always best, colab is also great.
      Note, that the sample code shall be minimal and if needed with publicly available data.
 
-1. Try to fix it or recommend a solution. We highly recommend to use test-driven approach:
+2. Try to fix it or recommend a solution. We highly recommend to use test-driven approach:
 
    - Convert your minimal code example to a unit/integration test with assert on expected results.
    - Start by debugging the issue... You can run just this particular test in your IDE and draft a fix.
    - Verify that your test case fails on the master branch and only passes with the fix applied.
 
-1. Submit a PR!
+3. Submit a PR!
 
 _**Note**, even if you do not find the solution, sending a PR with a test covering the issue is a valid contribution and we can
 help you or finish it with you :\]_
@@ -31,14 +31,14 @@ help you or finish it with you :\]_
 
 1. Submit a github issue - describe what is the motivation of such feature (adding the use case or an example is helpful).
 
-1. Let's discuss to determine the feature scope.
+2. Let's discuss to determine the feature scope.
 
-1. Submit a PR! We recommend test driven approach to adding new features as well:
+3. Submit a PR! We recommend test driven approach to adding new features as well:
 
    - Write a test for the functionality you want to add.
    - Write the functional code until the test passes.
 
-1. Add/update the relevant tests!
+4. Add/update the relevant tests!
 
 - [This PR](https://github.com/Lightning-AI/torchmetrics/pull/98) is a good example for adding a new metric
 
@@ -71,7 +71,7 @@ In case you adding new dependencies, make sure that they are compatible with the
 ### Coding Style
 
 1. Use f-strings for output formation (except logging when we stay with lazy `logging.info("Hello %s!", name)`.
-1. You can use `pre-commit` to make sure your code style is correct.
+2. You can use `pre-commit` to make sure your code style is correct.
 
 ### Documentation
 
