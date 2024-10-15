@@ -36,7 +36,7 @@ def davies_bouldin_score(data: Tensor, labels: Tensor) -> Tensor:
         >>> data = randn(20, 3)
         >>> labels = randint(0, 3, (20,))
         >>> davies_bouldin_score(data, labels)
-        tensor(1.3249)
+        tensor(2.7418)
 
     """
     _validate_intrinsic_cluster_data(data, labels)
