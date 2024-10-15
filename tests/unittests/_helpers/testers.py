@@ -32,8 +32,6 @@ def _assert_allclose(tm_result: Any, ref_result: Any, atol: float = 1e-8, key: O
     """Recursively assert that two results are within a certain tolerance."""
     # single output compare
     if isinstance(tm_result, Tensor):
-        print("TM", tm_result)
-        print("REF", ref_result)
         assert np.allclose(
             tm_result.detach().cpu().numpy() if isinstance(tm_result, Tensor) else tm_result,
             ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result,

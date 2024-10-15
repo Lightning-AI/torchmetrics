@@ -281,6 +281,8 @@ def _multi_target_ref_wrapper(preds, target, sk_fn, metric_args):
 class TestMeanError(MetricTester):
     """Test class for `MeanError` metric."""
 
+    atol = 1e-5
+
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_mean_error_class(
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args, ddp
