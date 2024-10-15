@@ -123,7 +123,8 @@ def _test_ddp_gather_autograd_same_shape(rank: int, worldsize: int = NUM_PROCESS
     scalar2 = 0
     for idx in range(worldsize):
         if idx == rank:
-            scalar1 = scalar1 + torch.sum(tensor * torch.ones_like(tensor))
+            tensor_contig = tensor.contiguous()
+            scalar1 = scalar1 + torch.sum(tensor_contig * torch.ones_like(tensor_contig))
         else:
             scalar1 = scalar1 + torch.sum(result[idx] * torch.ones_like(result[idx]))
         scalar2 = scalar2 + torch.sum(result[idx] * torch.ones_like(result[idx]))
@@ -150,7 +151,8 @@ def _test_ddp_gather_autograd_different_shape(rank: int, worldsize: int = NUM_PR
     scalar2 = 0
     for idx in range(worldsize):
         if idx == rank:
-            scalar1 = scalar1 + torch.sum(tensor * torch.ones_like(tensor))
+            tensor_contig = tensor.contiguous()
+            scalar1 = scalar1 + torch.sum(tensor_contig * torch.ones_like(tensor_contig))
         else:
             scalar1 = scalar1 + torch.sum(result[idx] * torch.ones_like(result[idx]))
         scalar2 = scalar2 + torch.sum(result[idx] * torch.ones_like(result[idx]))
