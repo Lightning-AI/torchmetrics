@@ -2,9 +2,15 @@
 Evaluating Speech Quality with PESQ metric
 ==============================================
 
-This notebook will guide you through calculating the Perceptual Evaluation of Speech Quality (PESQ) score, a key metric in assessing how effective noise reduction and enhancement techniques are in improving speech quality. PESQ is widely adopted in industries such as telecommunications, VoIP, and audio processing. It provides an objective way to measure the perceived quality of speech signals from a human listener's perspective.
+This notebook will guide you through calculating the Perceptual Evaluation of Speech Quality (PESQ) score,
+ a key metric in assessing how effective noise reduction and enhancement techniques are in improving speech quality.
+PESQ is widely adopted in industries such as telecommunications, VoIP, and audio processing.
+It provides an objective way to measure the perceived quality of speech signals from a human listener's perspective.
 
-Imagine you’re on a noisy street, trying to have a phone call. The technology behind the scenes aims to clean up your voice and make it sound clearer on the other end. But how do engineers measure that improvement? This is where PESQ comes in. In this notebook, we will simulate a similar scenario, applying a simple noise reduction technique and using the PESQ score to evaluate how much the speech quality improves.
+Imagine being on a noisy street, trying to have a phone call. The technology behind the scenes aims
+ to clean up your voice and make it sound clearer on the other end. But how do engineers measure that improvement?
+This is where PESQ comes in. In this notebook, we will simulate a similar scenario, applying a simple noise reduction
+ technique and using the PESQ score to evaluate how much the speech quality improves.
 """
 
 # %%
