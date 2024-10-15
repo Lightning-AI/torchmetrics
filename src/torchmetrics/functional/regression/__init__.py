@@ -23,6 +23,7 @@ from torchmetrics.functional.regression.mae import mean_absolute_error
 from torchmetrics.functional.regression.mape import mean_absolute_percentage_error
 from torchmetrics.functional.regression.minkowski import minkowski_distance
 from torchmetrics.functional.regression.mse import mean_squared_error
+from torchmetrics.functional.regression.nrmse import normalized_root_mean_squared_error
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.functional.regression.r2 import r2_score
 from torchmetrics.functional.regression.rse import relative_squared_error
@@ -39,13 +40,14 @@ __all__ = [
     "kendall_rank_corrcoef",
     "kl_divergence",
     "log_cosh_error",
-    "mean_squared_log_error",
     "mean_absolute_error",
+    "mean_absolute_percentage_error",
+    "mean_absolute_percentage_error",
     "mean_squared_error",
-    "pearson_corrcoef",
-    "mean_absolute_percentage_error",
-    "mean_absolute_percentage_error",
+    "mean_squared_log_error",
     "minkowski_distance",
+    "normalized_root_mean_squared_error",
+    "pearson_corrcoef",
     "r2_score",
     "relative_squared_error",
     "spearman_corrcoef",
