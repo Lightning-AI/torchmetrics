@@ -63,6 +63,8 @@ def _tv_wrapper_class(preds, target, base_fn, respect_labels, iou_threshold, cla
     base_name = {tv_ciou: "ciou", tv_diou: "diou", tv_giou: "giou", tv_iou: "iou"}[base_fn]
 
     result = {f"{base_name}": score.cpu()}
+    if torch.isnan(score):
+        result.update({f"{base_name}": torch.tensor(0.0)})
     if class_metrics:
         for cl in torch.cat(classes).unique().tolist():
             class_score, numel = 0, 0
@@ -71,7 +73,6 @@ def _tv_wrapper_class(preds, target, base_fn, respect_labels, iou_threshold, cla
                 class_score += masked_s[masked_s != -1].sum()
                 numel += masked_s[masked_s != -1].numel()
             result.update({f"{base_name}/cl_{cl}": class_score.cpu() / numel})
-
     return result
 
 
