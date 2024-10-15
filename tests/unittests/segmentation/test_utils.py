@@ -14,6 +14,7 @@
 import pytest
 import torch
 from monai.metrics.utils import get_code_to_measure_table
+from monai.metrics.utils import get_edge_surface_distance as monai_get_edge_surface_distance
 from monai.metrics.utils import get_mask_edges as monai_get_mask_edges
 from monai.metrics.utils import get_surface_distance as monai_get_surface_distance
 from scipy.ndimage import binary_erosion as scibinary_erosion
@@ -23,6 +24,7 @@ from scipy.ndimage import generate_binary_structure as scigenerate_binary_struct
 from torchmetrics.functional.segmentation.utils import (
     binary_erosion,
     distance_transform,
+    edge_surface_distance,
     generate_binary_structure,
     get_neighbour_tables,
     mask_edges,
@@ -231,3 +233,50 @@ def test_mask_edges(cases, spacing, crop, device):
 
     for r1, r2 in zip(res, reference_res):
         assert torch.allclose(r1.cpu().float(), torch.from_numpy(r2).float())
+
+
+@pytest.mark.parametrize(
+    "cases",
+    [
+        (
+            torch.tensor(
+                [[1, 1, 1, 1, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 0, 0, 0, 1], [1, 1, 1, 1, 1]], dtype=torch.bool
+            ),
+            torch.tensor(
+                [[1, 1, 1, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0], [1, 1, 1, 1, 0]], dtype=torch.bool
+            ),
+        ),
+        (torch.randint(0, 2, (5, 5), dtype=torch.bool), torch.randint(0, 2, (5, 5), dtype=torch.bool)),
+        (torch.randint(0, 2, (50, 50), dtype=torch.bool), torch.randint(0, 2, (50, 50), dtype=torch.bool)),
+    ],
+)
+@pytest.mark.parametrize("distance_metric", ["euclidean", "chessboard", "taxicab"])
+@pytest.mark.parametrize("symmetric", [False, True])
+@pytest.mark.parametrize("spacing", [None, 1, 2])
+@pytest.mark.parametrize("device", ["cpu", "cuda"])
+def test_edge_surface_distance(cases, distance_metric, symmetric, spacing, device):
+    """Test the edge surface distance function."""
+    if device == "cuda" and not torch.cuda.is_available():
+        pytest.skip("CUDA device not available.")
+    if spacing == 2 and distance_metric != "euclidean":
+        pytest.skip("Only euclidean distance is supported for spacing != 1 in reference")
+    preds, target = cases
+    if spacing is not None:
+        spacing = preds.ndim * [spacing]
+
+    res = edge_surface_distance(
+        preds.to(device), target.to(device), spacing=spacing, distance_metric=distance_metric, symmetric=symmetric
+    )
+    _, reference_res, _ = monai_get_edge_surface_distance(
+        preds,
+        target,
+        spacing=tuple(spacing) if spacing is not None else spacing,
+        distance_metric=distance_metric,
+        symmetric=symmetric,
+    )
+
+    if symmetric:
+        assert torch.allclose(res[0].cpu(), reference_res[0].to(res[0].dtype))
+        assert torch.allclose(res[1].cpu(), reference_res[1].to(res[1].dtype))
+    else:
+        assert torch.allclose(res.cpu(), reference_res[0].to(res.dtype))

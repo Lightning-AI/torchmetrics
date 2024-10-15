@@ -56,11 +56,11 @@ class CalinskiHarabaszScore(Metric):
     Example::
         >>> from torch import randn, randint
         >>> from torchmetrics.clustering import CalinskiHarabaszScore
-        >>> data = randn(10, 3)
-        >>> labels = randint(3, (10,))
+        >>> data = randn(20, 3)
+        >>> labels = randint(3, (20,))
         >>> metric = CalinskiHarabaszScore()
         >>> metric(data, labels)
-        tensor(3.0053)
+        tensor(2.2128)
 
     """
 
@@ -108,7 +108,7 @@ class CalinskiHarabaszScore(Metric):
             >>> import torch
             >>> from torchmetrics.clustering import CalinskiHarabaszScore
             >>> metric = CalinskiHarabaszScore()
-            >>> metric.update(torch.randn(10, 3), torch.randint(0, 2, (10,)))
+            >>> metric.update(torch.randn(20, 3), torch.randint(3, (20,)))
             >>> fig_, ax_ = metric.plot(metric.compute())
 
         .. plot::
@@ -120,7 +120,7 @@ class CalinskiHarabaszScore(Metric):
             >>> metric = CalinskiHarabaszScore()
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(torch.randn(10, 3), torch.randint(0, 2, (10,))))
+            ...     values.append(metric(torch.randn(20, 3), torch.randint(3, (20,))))
             >>> fig_, ax_ = metric.plot(values)
 
         """
