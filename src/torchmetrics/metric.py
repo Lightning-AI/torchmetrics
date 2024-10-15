@@ -398,6 +398,54 @@ class Metric(Module, ABC):
 
         return batch_val
 
+    def merge_states(self, incoming_state: Union[Dict[str, Any], "Metric"]) -> None:
+        """Merge incoming metric state to the current state of the metric.
+
+        Args:
+            incoming_state: either a dict containing a metric state similar to the metric itself or an instance of the
+                metric class.
+
+        Raises:
+            RuntimeError:
+                If the metric has ``full_state_update=True`` or ``dist_sync_on_step=True``. In these cases, the metric
+                cannot be merged with another metric state in a simple way. The user should overwrite the method in the
+                metric class to handle the merge operation.
+
+        Example:
+            >>> from torchmetrics.aggregation import SumMetric
+            >>> metric1 = SumMetric()
+            >>> metric2 = SumMetric()
+            >>> metric1.update(1)
+            >>> metric2.update(2)
+            >>> metric1.merge_states(metric2)
+            >>> metric1.compute()
+            tensor(3)
+
+        Example:
+            >>> from torchmetrics.aggregation import SumMetric
+            >>> metric = SumMetric()
+            >>> metric.update(1)
+            >>> # SumMetric has one state variable called `sum_value`
+            >>> metric.merge_states({"sum_value": torch.tensor(2)})
+            >>> metric.compute()
+            tensor(3)
+
+        """
+        if self.full_state_update or self.full_state_update is None or self.dist_sync_on_step:
+            raise RuntimeError(
+                "``merge_states`` is not supported for metrics with ``full_state_update=True`` or "
+                "``dist_sync_on_step=True``. Please overwrite the merge_states method in the metric class."
+            )
+        if isinstance(incoming_state, Metric):
+            this_class = self.__class__
+            if not isinstance(incoming_state, this_class):
+                raise ValueError(
+                    f"Expected incoming state to be an instance of {this_class.__name__} but got {type(incoming_state)}"
+                )
+            incoming_state = incoming_state.metric_state
+
+        self._reduce_states(incoming_state)
+
     def _reduce_states(self, incoming_state: Dict[str, Any]) -> None:
         """Add an incoming metric state to the current state of the metric.
 
@@ -407,6 +455,8 @@ class Metric(Module, ABC):
         """
         for attr in self._defaults:
             local_state = getattr(self, attr)
+            if attr not in incoming_state:
+                raise ValueError(f"Expected state variable {attr} to be present in incoming state {incoming_state}")
             global_state = incoming_state[attr]
             reduce_fn = self._reductions[attr]
             if reduce_fn == dim_zero_sum:
