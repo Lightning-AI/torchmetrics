@@ -16,6 +16,7 @@ import torch
 from aeon.performance_metrics.clustering import clustering_accuracy_score
 from torchmetrics.clustering.cluster_accuracy import ClusterAccuracy
 from torchmetrics.functional.clustering.cluster_accuracy import cluster_accuracy
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12
 
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
@@ -25,6 +26,7 @@ from unittests.clustering._inputs import _float_inputs_extrinsic, _single_target
 seed_all(42)
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_12, reason="not available for torch<1.12")
 @pytest.mark.parametrize(
     "preds, target",
     [
@@ -58,6 +60,7 @@ class TestAdjustedMutualInfoScore(MetricTester):
         )
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_12, reason="not available for torch<1.12")
 def test_cluster_accuracy_sanity_check():
     """Check that metric works with the simplest possible inputs."""
     preds = torch.tensor([0, 0, 1, 1])
@@ -67,6 +70,7 @@ def test_cluster_accuracy_sanity_check():
     assert torch.allclose(res, torch.tensor(1.0))
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_12, reason="not available for torch<1.12")
 def test_cluster_accuracy_functional_raises_invalid_task():
     """Check that metric rejects continuous-valued inputs."""
     preds, target = _float_inputs_extrinsic

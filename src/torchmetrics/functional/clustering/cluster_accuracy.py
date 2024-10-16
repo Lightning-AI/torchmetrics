@@ -16,7 +16,7 @@ from torch import Tensor
 
 from torchmetrics.functional.classification import multiclass_confusion_matrix
 from torchmetrics.functional.clustering.utils import check_cluster_labels
-from torchmetrics.utilities.imports import _TORCH_LINEAR_ASSIGNMENT_AVAILABLE
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12, _TORCH_LINEAR_ASSIGNMENT_AVAILABLE
 
 if not _TORCH_LINEAR_ASSIGNMENT_AVAILABLE:
     __doctest_skip__ = ["cluster_accuracy"]
@@ -46,6 +46,10 @@ def cluster_accuracy(preds: Tensor, target: Tensor, num_classes: int) -> Tensor:
     Returns:
         Scalar tensor with clustering accuracy between 0.0 and 1.0
 
+    Raises:
+        RuntimeError:
+            If PyTorch version is less than 1.12 or if `torch_linear_assignment` is not installed
+
     Example:
         >>> from torchmetrics.functional.clustering import cluster_accuracy
         >>> preds = torch.tensor([0, 0, 1, 1])
@@ -54,6 +58,10 @@ def cluster_accuracy(preds: Tensor, target: Tensor, num_classes: int) -> Tensor:
         tensor(1.000)
 
     """
+    if not _TORCH_GREATER_EQUAL_1_12:
+        raise RuntimeError(
+            "The `cluster_accuracy` function requires PyTorch version greater than 1.12. Please update PyTorch."
+        )
     if not _TORCH_LINEAR_ASSIGNMENT_AVAILABLE:
         raise RuntimeError(
             "Missing `torch_linear_assignment`. Please install it with `pip install torchmetrics[clustering]`."
