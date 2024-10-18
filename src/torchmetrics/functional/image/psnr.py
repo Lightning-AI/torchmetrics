@@ -69,6 +69,11 @@ def _psnr_update(
             Default is None meaning scores will be reduced across all dimensions.
 
     """
+    if not preds.is_floating_point():
+        preds = preds.to(torch.float32)
+    if not target.is_floating_point():
+        target = target.to(torch.float32)
+
     if dim is None:
         sum_squared_error = torch.sum(torch.pow(preds - target, 2))
         num_obs = tensor(target.numel(), device=target.device)
