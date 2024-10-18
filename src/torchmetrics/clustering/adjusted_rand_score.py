@@ -64,7 +64,7 @@ class AdjustedRandScore(Metric):
 
     is_differentiable = True
     higher_is_better = None
-    full_state_update: bool = True
+    full_state_update: bool = False
     plot_lower_bound: float = -0.5
     plot_upper_bound: float = 1.0
     preds: List[Tensor]
