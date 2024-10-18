@@ -418,7 +418,7 @@ class Metric(Module, ABC):
             >>> metric2.update(2)
             >>> metric1.merge_state(metric2)
             >>> metric1.compute()
-            tensor(3)
+            tensor(3.)
 
         Example:
             >>> from torchmetrics.aggregation import SumMetric
