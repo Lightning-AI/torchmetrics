@@ -116,7 +116,7 @@ def _test_ddp_gather_autograd_same_shape(rank: int, worldsize: int = NUM_PROCESS
     Note that this test only works for torch>=2.0.
 
     """
-    tensor = torch.ones(50, requires_grad=True)
+    tensor = torch.ones(50, dtype=torch.float64, requires_grad=True)
     result = gather_all_tensors(tensor)
     assert len(result) == worldsize
     scalar1 = 0
@@ -144,7 +144,7 @@ def _test_ddp_gather_autograd_different_shape(rank: int, worldsize: int = NUM_PR
     Note that this test only works for torch>=2.0.
 
     """
-    tensor = torch.ones(rank + 1, 2 - rank, requires_grad=True)
+    tensor = torch.ones(rank + 1, 2 - rank, dtype=torch.float64, requires_grad=True)
     result = gather_all_tensors(tensor)
     assert len(result) == worldsize
     scalar1 = 0
