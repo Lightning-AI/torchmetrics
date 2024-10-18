@@ -397,7 +397,7 @@ class Metric(Module, ABC):
 
         return batch_val
 
-    def merge_states(self, incoming_state: Union[Dict[str, Any], "Metric"]) -> None:
+    def merge_state(self, incoming_state: Union[Dict[str, Any], "Metric"]) -> None:
         """Merge incoming metric state to the current state of the metric.
 
         Args:
@@ -416,7 +416,7 @@ class Metric(Module, ABC):
             >>> metric2 = SumMetric()
             >>> metric1.update(1)
             >>> metric2.update(2)
-            >>> metric1.merge_states(metric2)
+            >>> metric1.merge_state(metric2)
             >>> metric1.compute()
             tensor(3)
 
@@ -425,16 +425,22 @@ class Metric(Module, ABC):
             >>> metric = SumMetric()
             >>> metric.update(1)
             >>> # SumMetric has one state variable called `sum_value`
-            >>> metric.merge_states({"sum_value": torch.tensor(2)})
+            >>> metric.merge_state({"sum_value": torch.tensor(2)})
             >>> metric.compute()
             tensor(3)
 
         """
+        if not isinstance(incoming_state, (dict, Metric)):
+            raise ValueError(
+                f"Expected incoming state to be a dict or an instance of Metric but got {type(incoming_state)}"
+            )
+
         if self.full_state_update or self.full_state_update is None or self.dist_sync_on_step:
             raise RuntimeError(
-                "``merge_states`` is not supported for metrics with ``full_state_update=True`` or "
-                "``dist_sync_on_step=True``. Please overwrite the merge_states method in the metric class."
+                "``merge_state`` is not supported for metrics with ``full_state_update=True`` or "
+                "``dist_sync_on_step=True``. Please overwrite the merge_state method in the metric class."
             )
+
         if isinstance(incoming_state, Metric):
             this_class = self.__class__
             if not isinstance(incoming_state, this_class):
