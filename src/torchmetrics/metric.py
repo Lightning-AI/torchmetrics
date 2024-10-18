@@ -427,7 +427,7 @@ class Metric(Module, ABC):
             >>> # SumMetric has one state variable called `sum_value`
             >>> metric.merge_state({"sum_value": torch.tensor(2)})
             >>> metric.compute()
-            tensor(3)
+            tensor(3.)
 
         """
         if not isinstance(incoming_state, (dict, Metric)):
