@@ -33,6 +33,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `HausdorffDistance` to segmentation package ([#2122](https://github.com/Lightning-AI/torchmetrics/pull/2122))
 
 
+- Added method `merge_state` to `Metric` ([#2786](https://github.com/Lightning-AI/torchmetrics/pull/2786))
+
+
 ### Changed
 
 - Tracker higher is better integration ([#2649](https://github.com/Lightning-AI/torchmetrics/pull/2649))
