@@ -8,56 +8,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [UnReleased] - 2024-MM-DD
+## [1.5.0] - 2024-10-18
 
 ### Added
 
-- Added a new audio metric `DNSMOS` ([#2525](https://github.com/PyTorchLightning/metrics/pull/2525))
-
-
+- Added segmentation metric `HausdorffDistance` ([#2122](https://github.com/Lightning-AI/torchmetrics/pull/2122))
+- Added audio metric `DNSMOS` ([#2525](https://github.com/PyTorchLightning/metrics/pull/2525))
+- Added shape metric `ProcrustesDistance` ([#2723](https://github.com/Lightning-AI/torchmetrics/pull/2723)
 - Added `MetricInputTransformer` wrapper ([#2392](https://github.com/Lightning-AI/torchmetrics/pull/2392))
-
-
 - Added `input_format` argument to segmentation metrics ([#2572](https://github.com/Lightning-AI/torchmetrics/pull/2572))
-
-
-- Added multi-output support for MAE metric ([#2605](https://github.com/Lightning-AI/torchmetrics/pull/2605))
-
-
-- Added new metric `ProcrustesDistance` to new domain Shape ([#2723](https://github.com/Lightning-AI/torchmetrics/pull/2723)
-
-
+- Added `multi-output` support for MAE metric ([#2605](https://github.com/Lightning-AI/torchmetrics/pull/2605))
 - Added `truncation` argument to `BERTScore` ([#2776](https://github.com/Lightning-AI/torchmetrics/pull/2776))
-
-
-- Added `HausdorffDistance` to segmentation package ([#2122](https://github.com/Lightning-AI/torchmetrics/pull/2122))
-
 
 ### Changed
 
 - Tracker higher is better integration ([#2649](https://github.com/Lightning-AI/torchmetrics/pull/2649))
-
-
 - Updated `InfoLM` class to dynamically set `higher_is_better` ([#2674](https://github.com/Lightning-AI/torchmetrics/pull/2674))
-
 
 ### Deprecated
 
 - Deprecated `num_outputs` in `R2Score` ([#2705](https://github.com/Lightning-AI/torchmetrics/pull/2705))
 
-
-### Removed
-
--
-
-
 ### Fixed
 
-- Fixed corner case in `Iou` metric for single empty prediction tensors ([#2780](https://github.com/Lightning-AI/torchmetrics/pull/2780))
-
-
+- Fixed corner case in `IoU` metric for single empty prediction tensors ([#2780](https://github.com/Lightning-AI/torchmetrics/pull/2780))
 - Fixed `PSNR` calculation for integer type input images ([#2788](https://github.com/Lightning-AI/torchmetrics/pull/2788))
 
+---
 
 ## [1.4.3] - 2024-10-10
 
