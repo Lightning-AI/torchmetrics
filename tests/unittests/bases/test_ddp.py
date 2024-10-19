@@ -116,18 +116,19 @@ def _test_ddp_gather_autograd_same_shape(rank: int, worldsize: int = NUM_PROCESS
     Note that this test only works for torch>=2.0.
 
     """
-    tensor = torch.ones(50, dtype=torch.float64, requires_grad=True)
+    tensor = torch.randn(50, dtype=torch.float64, requires_grad=True)
     result = gather_all_tensors(tensor)
     assert len(result) == worldsize
     scalar1 = 0
     scalar2 = 0
     for idx in range(worldsize):
+        W = torch.randn_like(result[idx], requires_grad=False)
         if idx == rank:
-            tensor_contig = tensor.contiguous()
-            scalar1 = scalar1 + torch.sum(tensor_contig * torch.ones_like(tensor_contig))
+            assert torch.allclose(result[idx], tensor)
+            scalar1 = scalar1 + torch.sum(tensor * W)
         else:
-            scalar1 = scalar1 + torch.sum(result[idx] * torch.ones_like(result[idx]))
-        scalar2 = scalar2 + torch.sum(result[idx] * torch.ones_like(result[idx]))
+            scalar1 = scalar1 + torch.sum(result[idx] * W)
+        scalar2 = scalar2 + torch.sum(result[idx] * W)
     gradient1 = torch.autograd.grad(scalar1, [tensor], retain_graph=True)[0]
     gradient2 = torch.autograd.grad(scalar2, [tensor])[0]
     assert torch.allclose(gradient1, gradient2)
@@ -144,18 +145,19 @@ def _test_ddp_gather_autograd_different_shape(rank: int, worldsize: int = NUM_PR
     Note that this test only works for torch>=2.0.
 
     """
-    tensor = torch.ones(rank + 1, 2 - rank, dtype=torch.float64, requires_grad=True)
+    tensor = torch.randn(rank + 1, 2 - rank, dtype=torch.float64, requires_grad=True)
     result = gather_all_tensors(tensor)
     assert len(result) == worldsize
     scalar1 = 0
     scalar2 = 0
     for idx in range(worldsize):
+        W = torch.randn_like(result[idx], requires_grad=False)
         if idx == rank:
-            tensor_contig = tensor.contiguous()
-            scalar1 = scalar1 + torch.sum(tensor_contig * torch.ones_like(tensor_contig))
+            assert torch.allclose(result[idx], tensor)
+            scalar1 = scalar1 + torch.sum(tensor * W)
         else:
-            scalar1 = scalar1 + torch.sum(result[idx] * torch.ones_like(result[idx]))
-        scalar2 = scalar2 + torch.sum(result[idx] * torch.ones_like(result[idx]))
+            scalar1 = scalar1 + torch.sum(result[idx] * W)
+        scalar2 = scalar2 + torch.sum(result[idx] * W)
     gradient1 = torch.autograd.grad(scalar1, [tensor], retain_graph=True)[0]
     gradient2 = torch.autograd.grad(scalar2, [tensor])[0]
     assert torch.allclose(gradient1, gradient2)
