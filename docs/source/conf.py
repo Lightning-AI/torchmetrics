@@ -447,4 +447,7 @@ linkcheck_ignore = [
     "https://aclanthology.org/W17-4770",
     # A wavelet transform method to merge Landsat TM and SPOT panchromatic data
     "https://www.ingentaconnect.com/content/tandf/tres/1998/00000019/00000004/art00013",
+    # todo: these links seems to be unstable, referring to .devcontainer
+    "https://code.visualstudio.com",
+    "https://code.visualstudio.com/.*",
 ]
