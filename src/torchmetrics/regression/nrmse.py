@@ -66,14 +66,18 @@ def _final_aggregation(
             target_squared[i],
             total[i],
         )
+        # update total and mean
         total = total_1 + total_2
         mean = (total_1 * mean_val_1 + total_2 * mean_val_2) / total
-        var = (
-            (total_1 - 1) * var_val_1
-            + (total_2 - 1) * var_val_2
-            + ((mean_val_1 - mean) ** 2) * total_1
-            + ((mean_val_2 - mean) ** 2) * total_2
-        ) / (total - 1)
+
+        # update variance
+        _temp = (total_1 + 1) * mean - total_1 * mean_val_1
+        var_val_1 += (_temp - mean_val_1) * (_temp - mean) - (_temp - mean) ** 2
+        _temp = (total_2 + 1) * mean - total_2 * mean_val_2
+        var_val_2 += (_temp - mean_val_2) * (_temp - mean) - (_temp - mean) ** 2
+        var = var_val_1 + var_val_2
+
+        # update min and max and target squared
         min_val = torch.min(min_val_1, min_val_2)
         max_val = torch.max(max_val_1, max_val_2)
         target_squared = target_squared_1 + target_squared_2
@@ -83,8 +87,8 @@ def _final_aggregation(
     if normalization == "range":
         return max_val - min_val
     if normalization == "std":
-        return var
-    return target_squared
+        return (var / total).sqrt()
+    return target_squared.sqrt()
 
 
 class NormalizedRootMeanSquaredError(Metric):
@@ -219,6 +223,7 @@ class NormalizedRootMeanSquaredError(Metric):
                 total=self.total,
                 normalization=self.normalization,
             )
+            total = self.total.squeeze().sum(dim=0)
         else:
             if self.normalization == "mean":
                 denom = self.mean_val
@@ -228,7 +233,8 @@ class NormalizedRootMeanSquaredError(Metric):
                 denom = torch.sqrt(self.var_val / self.total)
             else:
                 denom = torch.sqrt(self.target_squared)
-        return _normalized_root_mean_squared_error_compute(self.sum_squared_error, self.total, denom)
+            total = self.total
+        return _normalized_root_mean_squared_error_compute(self.sum_squared_error, total, denom)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
