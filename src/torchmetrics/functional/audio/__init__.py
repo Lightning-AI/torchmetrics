@@ -29,9 +29,16 @@ from torchmetrics.utilities.imports import (
     _PESQ_AVAILABLE,
     _PYSTOI_AVAILABLE,
     _REQUESTS_AVAILABLE,
+    _SCIPI_AVAILABLE,
     _TORCHAUDIO_AVAILABLE,
-    _TORCHAUDIO_GREATER_EQUAL_0_10,
 )
+
+if _SCIPI_AVAILABLE:
+    import scipy.signal
+
+    # back compatibility patch due to SMRMpy using scipy.signal.hamming
+    if not hasattr(scipy.signal, "hamming"):
+        scipy.signal.hamming = scipy.signal.windows.hamming
 
 __all__ = [
     "permutation_invariant_training",
@@ -54,7 +61,7 @@ if _PYSTOI_AVAILABLE:
 
     __all__ += ["short_time_objective_intelligibility"]
 
-if _GAMMATONE_AVAILABLE and _TORCHAUDIO_AVAILABLE and _TORCHAUDIO_GREATER_EQUAL_0_10:
+if _GAMMATONE_AVAILABLE and _TORCHAUDIO_AVAILABLE:
     from torchmetrics.functional.audio.srmr import speech_reverberation_modulation_energy_ratio
 
     __all__ += ["speech_reverberation_modulation_energy_ratio"]
