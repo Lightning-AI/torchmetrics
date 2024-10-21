@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import partial
 from typing import Any, Dict, Tuple
 
 import pytest
@@ -46,16 +47,16 @@ inputs = [
         ]),
     },
     {
-        "preds": torch.rand(2, 2, 16000, generator=torch.Generator().manual_seed(42)),
+        "preds": torch.rand(2, 2, 48000, generator=torch.Generator().manual_seed(42)),
         "fs": 48000,
         "reference": torch.tensor([
             [
-                [0.7717766166, 1.1642380953, 2.5894179344, 1.4037175179, 1.4931157827],
-                [0.7730888128, 1.2189327478, 2.6117930412, 1.3941351175, 1.5014400482],
+                [0.7670641541, 1.1634330750, 2.6056811810, 1.4002652168, 1.5218108892],
+                [0.7974857688, 1.1845922470, 2.6476621628, 1.4282002449, 1.5324314833],
             ],
             [
-                [0.7035500407, 1.1133824587, 2.5026409626, 1.3385921717, 1.4153599739],
-                [0.8563135266, 1.1975537539, 2.7270953655, 1.5784986019, 1.5962394476],
+                [0.8114687800, 1.1764185429, 2.6281285286, 1.4396891594, 1.5460423231],
+                [0.6779640913, 1.1818346977, 2.5106279850, 1.2842310667, 1.4014176130],
             ],
         ]),
     },
@@ -84,6 +85,22 @@ inputs = [
 ]
 
 
+def _reference_metric_batch(preds, target, mean):
+    def _reference_metric(preds):
+        for pred, ref in zip(*[
+            [x for i in inputs for x in i[which].reshape(-1, i[which].shape[-1])] for which in ["preds", "reference"]
+        ]):
+            if torch.equal(preds, pred):
+                return ref
+        raise NotImplementedError
+
+    out = torch.stack([_reference_metric(pred) for pred in preds.reshape(-1, preds.shape[-1])])
+    out = out.reshape(*preds.shape[:-1], 5)
+    if mean:
+        out = out.reshape(-1, 5).mean(dim=0)
+    return out
+
+
 def _nisqa_cheat(preds, target, **kwargs: Dict[str, Any]):
     # cheat the MetricTester as non_intrusive_speech_quality_assessment does not need a target
     return non_intrusive_speech_quality_assessment(preds, **kwargs)
@@ -107,44 +124,28 @@ class TestNISQA(MetricTester):
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_nisqa(self, preds: Tensor, reference: Tensor, fs: int, ddp: bool, device=None):
         """Test class implementation of metric."""
-        while preds.ndim < 3:
+        if preds.ndim == 1:
             preds = preds.unsqueeze(0)
-        while reference.ndim < 3:
-            reference = reference.unsqueeze(0)
-        # cheat MetricTester by creating an iterator to retrieve correct reference value
-        # reference_metric is called once for each item in the batch and one last time on the whole batch
-        _ref_iter = iter([*reference, reference.mean(dim=0)])
-
-        def _reference_metric(preds, target):
-            return next(_ref_iter).mean(dim=0)
-
         self.run_class_metric_test(
             ddp,
             preds=preds,
             target=preds,
             metric_class=_NISQACheat,
-            reference_metric=_reference_metric,
+            reference_metric=partial(_reference_metric_batch, mean=True),
             metric_args={"fs": fs},
         )
 
     def test_nisqa_functional(self, preds: Tensor, reference: Tensor, fs: int, device="cpu"):
         """Test functional implementation of metric."""
-        while preds.ndim < 3:
+        if preds.ndim == 1:
             preds = preds.unsqueeze(0)
-        while reference.ndim < 3:
-            reference = reference.unsqueeze(0)
-        # cheat MetricTester by creating an iterator to retrieve correct reference value
-        # reference_metric is called once for each item in the batch
-        _ref_iter = iter(reference)
-
-        def _reference_metric(preds, target):
-            return next(_ref_iter)
-
+        # double preds because MetricTester.run_functional_metric_test only iterates over num_batches // 2
+        preds = torch.cat([preds, preds], dim=0)
         self.run_functional_metric_test(
             preds=preds,
             target=preds,
             metric_functional=_nisqa_cheat,
-            reference_metric=_reference_metric,
+            reference_metric=partial(_reference_metric_batch, mean=False),
             metric_args={"fs": fs},
         )
 

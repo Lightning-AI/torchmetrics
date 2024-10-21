@@ -144,7 +144,7 @@ class _Framewise(nn.Module):
         x_packed = pack_padded_sequence(x, n_wins, batch_first=True, enforce_sorted=False)
         x = self.model(x_packed.data)
         x = x_packed._replace(data=x)
-        x, _ = pad_packed_sequence(x, batch_first=True, padding_value=0.0, total_length=n_wins.max().item())
+        x, _ = pad_packed_sequence(x, batch_first=True, padding_value=0.0, total_length=int(n_wins.max()))
         return x
 
 
