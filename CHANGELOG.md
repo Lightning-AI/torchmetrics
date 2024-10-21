@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -
 
 
+- Added `NegativePredictiveValue` to classification metrics ([#2433](https://github.com/Lightning-AI/torchmetrics/pull/2433))
+
+
 ### Changed
 
 -
