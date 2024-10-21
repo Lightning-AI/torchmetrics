@@ -31,8 +31,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-20.04"]
-        python-version: ["3.9"]
+        os: ["ubuntu-22.04"]
+        python-version: ["3.10"]
         pytorch-version:
           - "2.0.1"
           - "2.1.2"
