@@ -143,6 +143,7 @@ class TestNISQA(MetricTester):
 
 @pytest.mark.parametrize("shape", [(3000,), (2, 3000), (1, 2, 3000), (2, 3, 1, 3000)])
 def test_shape(shape: Tuple[int]):
+    """Test output shape."""
     preds = torch.rand(*shape)
     out = non_intrusive_speech_quality_assessment(preds, 16000)
     assert out.shape == (*shape[:-1], 5)
@@ -152,6 +153,7 @@ def test_shape(shape: Tuple[int]):
 
 
 def test_error_on_short_input():
+    """Test error on short input."""
     preds = torch.rand(3000)
     non_intrusive_speech_quality_assessment(preds, 16000)
     with pytest.raises(RuntimeError, match="Input signal is too short."):
@@ -164,6 +166,7 @@ def test_error_on_short_input():
 
 
 def test_error_on_long_input():
+    """Test error on long input."""
     preds = torch.rand(834240)
     with pytest.raises(RuntimeError, match="Maximum number of melspectrogram segments exceeded. Use shorter audio."):
         non_intrusive_speech_quality_assessment(preds, 16000)

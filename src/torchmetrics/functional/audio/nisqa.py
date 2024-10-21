@@ -99,7 +99,7 @@ def _load_nisqa_model() -> Tuple[nn.Module, Dict[str, Any]]:
         _download_weights()
     checkpoint = torch.load(model_path, map_location="cpu", weights_only=True)
     args = checkpoint["args"]
-    model = NISQADIM(args)
+    model = _NISQADIM(args)
     model.load_state_dict(checkpoint["model_state_dict"], strict=True)
     return model, args
 
@@ -117,15 +117,15 @@ def _download_weights() -> None:
         f.write(myfile.content)
 
 
-class NISQADIM(nn.Module):
+class _NISQADIM(nn.Module):
     # ported from https://github.com/gabrielmittag/NISQA
     # Copyright (c) 2021 Gabriel Mittag, Quality and Usability Lab
     # MIT License
     def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
-        self.cnn = Framewise(args)
-        self.time_dependency = TimeDependency(args)
-        pool = Pooling(args)
+        self.cnn = _Framewise(args)
+        self.time_dependency = _TimeDependency(args)
+        pool = _Pooling(args)
         self.pool_layers = _get_clones(pool, 5)
 
     def forward(self, x: Tensor, n_wins: Tensor) -> Tensor:
@@ -135,10 +135,10 @@ class NISQADIM(nn.Module):
         return torch.cat(out, dim=1)
 
 
-class Framewise(nn.Module):
+class _Framewise(nn.Module):
     def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
-        self.model = AdaptCNN(args)
+        self.model = _AdaptCNN(args)
 
     def forward(self, x: Tensor, n_wins: Tensor) -> Tensor:
         x_packed = pack_padded_sequence(x, n_wins, batch_first=True, enforce_sorted=False)
@@ -148,7 +148,7 @@ class Framewise(nn.Module):
         return x
 
 
-class AdaptCNN(nn.Module):
+class _AdaptCNN(nn.Module):
     def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
         self.pool_1 = args["cnn_pool_1"]
@@ -191,19 +191,19 @@ class AdaptCNN(nn.Module):
         return x.view(-1, self.conv6.out_channels * self.pool_3[0])
 
 
-class TimeDependency(nn.Module):
+class _TimeDependency(nn.Module):
     def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
-        self.model = SelfAttention(args)
+        self.model = _SelfAttention(args)
 
     def forward(self, x: Tensor, n_wins: Tensor) -> Tensor:
         return self.model(x, n_wins)
 
 
-class SelfAttention(nn.Module):
+class _SelfAttention(nn.Module):
     def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
-        encoder_layer = SelfAttentionLayer(args)
+        encoder_layer = _SelfAttentionLayer(args)
         self.norm1 = nn.LayerNorm(args["td_sa_d_model"])
         self.linear = nn.Linear(args["cnn_c_out_3"] * args["cnn_pool_3"][0], args["td_sa_d_model"])
         self.layers = _get_clones(encoder_layer, args["td_sa_num_layers"])
@@ -223,7 +223,7 @@ class SelfAttention(nn.Module):
         return output.transpose(1, 0), n_wins
 
 
-class SelfAttentionLayer(nn.Module):
+class _SelfAttentionLayer(nn.Module):
     def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
         self.self_attn = nn.MultiheadAttention(args["td_sa_d_model"], args["td_sa_nhead"], args["td_sa_dropout"])
@@ -247,16 +247,16 @@ class SelfAttentionLayer(nn.Module):
         return src, n_wins
 
 
-class Pooling(nn.Module):
+class _Pooling(nn.Module):
     def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
-        self.model = PoolAttFF(args)
+        self.model = _PoolAttFF(args)
 
     def forward(self, x: Tensor, n_wins: Tensor) -> Tensor:
         return self.model(x, n_wins)
 
 
-class PoolAttFF(torch.nn.Module):
+class _PoolAttFF(torch.nn.Module):
     def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
         self.linear1 = nn.Linear(args["td_sa_d_model"], args["pool_att_h"])
