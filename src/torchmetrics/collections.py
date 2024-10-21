@@ -501,10 +501,10 @@ class MetricCollection(ModuleDict):
 
     def _to_renamed_dict(self) -> dict:
         # self._modules changed from OrderedDict to dict as of PyTorch 2.5.0
-        d = OrderedDict() if isinstance(self._modules, OrderedDict) else dict
+        dict_modules = OrderedDict() if isinstance(self._modules, OrderedDict) else dict
         for k, v in self._modules.items():
-            d[self._set_name(k)] = v
-        return d
+            dict_modules[self._set_name(k)] = v
+        return dict_modules
 
     def __iter__(self) -> Iterator[Hashable]:
         """Return an iterator over the keys of the MetricDict."""
