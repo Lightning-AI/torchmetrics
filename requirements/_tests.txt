@@ -1,6 +1,7 @@
 # NOTE: the upper bound for the package version is only set for CI stability, and it is dropped while installing this package
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
+codecov ==2.1.13
 coverage ==7.6.*
 codecov ==2.1.13
 pytest ==8.3.*

@@ -21,7 +21,6 @@ from scipy.io import wavfile
 from torch import Tensor
 from torchmetrics.audio import SignalDistortionRatio
 from torchmetrics.functional import signal_distortion_ratio
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_11
 
 from unittests import _Input
 from unittests._helpers import seed_all
@@ -61,9 +60,6 @@ def _reference_sdr_batch(
     return sdr
 
 
-@pytest.mark.skipif(  # FIXME: figure out why tests leads to cuda errors on latest torch
-    _TORCH_GREATER_EQUAL_1_11 and torch.cuda.is_available(), reason="tests leads to cuda errors on latest torch"
-)
 @pytest.mark.parametrize(
     "preds, target",
     [(inputs_1spk.preds, inputs_1spk.target), (inputs_2spk.preds, inputs_2spk.target)],
@@ -137,12 +133,8 @@ def test_on_real_audio():
     """Test that metric works on real audio signal."""
     _, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
     _, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
-    assert torch.allclose(
-        signal_distortion_ratio(torch.from_numpy(deg), torch.from_numpy(ref)).float(),
-        torch.tensor(0.2211),
-        rtol=0.0001,
-        atol=1e-4,
-    )
+    sdr = signal_distortion_ratio(torch.from_numpy(deg), torch.from_numpy(ref))
+    assert torch.allclose(sdr.float(), torch.tensor(0.2211), rtol=0.0001, atol=1e-4)
 
 
 def test_too_low_precision():

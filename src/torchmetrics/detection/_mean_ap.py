@@ -22,13 +22,13 @@ from torch import IntTensor, Tensor
 from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import _cumsum
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MeanAveragePrecision.plot"]
 
-if not _TORCHVISION_GREATER_EQUAL_0_8 or not _PYCOCOTOOLS_AVAILABLE:
+if not _TORCHVISION_AVAILABLE or not _PYCOCOTOOLS_AVAILABLE:
     __doctest_skip__ = ["MeanAveragePrecision.plot", "MeanAveragePrecision"]
 
 log = logging.getLogger(__name__)
@@ -327,10 +327,10 @@ class MeanAveragePrecision(Metric):
                 "`MAP` metric requires that `pycocotools` installed."
                 " Please install with `pip install pycocotools` or `pip install torchmetrics[detection]`"
             )
-        if not _TORCHVISION_GREATER_EQUAL_0_8:
+        if not _TORCHVISION_AVAILABLE:
             raise ModuleNotFoundError(
-                "`MeanAveragePrecision` metric requires that `torchvision` version 0.8.0 or newer is installed."
-                " Please install with `pip install torchvision>=0.8` or `pip install torchmetrics[detection]`."
+                "`MeanAveragePrecision` metric requires that `torchvision` is installed."
+                " Please install with `pip install torchmetrics[detection]`."
             )
 
         allowed_box_formats = ("xyxy", "xywh", "cxcywh")

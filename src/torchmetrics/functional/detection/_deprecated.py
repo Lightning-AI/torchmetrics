@@ -3,11 +3,7 @@ from typing import Collection
 from torch import Tensor
 
 from torchmetrics.functional.detection.panoptic_qualities import modified_panoptic_quality, panoptic_quality
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12
 from torchmetrics.utilities.prints import _deprecated_root_import_func
-
-if not _TORCH_GREATER_EQUAL_1_12:
-    __doctest_skip__ = ["_panoptic_quality", "_modified_panoptic_quality"]
 
 
 def _modified_panoptic_quality(

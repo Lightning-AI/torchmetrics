@@ -30,7 +30,7 @@ import torch
 from torch import Tensor, nn
 from typing_extensions import Literal
 
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_13
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
 _weight_map = {
     "squeezenet1_1": "SqueezeNet1_1_Weights",
@@ -52,13 +52,11 @@ def _get_net(net: str, pretrained: bool) -> nn.modules.container.Sequential:
     """
     from torchvision import models as tv
 
-    if _TORCHVISION_GREATER_EQUAL_0_13:
+    if _TORCHVISION_AVAILABLE:
         if pretrained:
             pretrained_features = getattr(tv, net)(weights=getattr(tv, _weight_map[net]).IMAGENET1K_V1).features
         else:
             pretrained_features = getattr(tv, net)(weights=None).features
-    else:
-        pretrained_features = getattr(tv, net)(pretrained=pretrained).features
     return pretrained_features
 
 
