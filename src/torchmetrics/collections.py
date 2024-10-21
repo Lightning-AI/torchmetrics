@@ -19,7 +19,7 @@ from typing import Any, Dict, Hashable, Iterable, Iterator, List, Optional, Sequ
 import torch
 from torch import Tensor
 from torch.nn import ModuleDict
-from typing_extensions import Literal
+from typing_extensions import Literal, Mapping
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
@@ -499,7 +499,7 @@ class MetricCollection(ModuleDict):
         name = base if self.prefix is None else self.prefix + base
         return name if self.postfix is None else name + self.postfix
 
-    def _to_renamed_dict(self) -> dict:
+    def _to_renamed_dict(self) -> Mapping[str, Metric]:
         # self._modules changed from OrderedDict to dict as of PyTorch 2.5.0
         dict_modules = OrderedDict() if isinstance(self._modules, OrderedDict) else dict
         for k, v in self._modules.items():
