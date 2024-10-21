@@ -14,12 +14,12 @@
 # this is just a bypass for this module name collision with built-in one
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, Dict, Hashable, Iterable, Iterator, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Hashable, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
 from torch.nn import ModuleDict
-from typing_extensions import Literal, Mapping
+from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
