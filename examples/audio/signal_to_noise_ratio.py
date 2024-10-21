@@ -16,13 +16,10 @@ import numpy as np
 import torch
 from torchmetrics.audio import SignalNoiseRatio
 
-# Set seed for reproducibility
-torch.manual_seed(42)
-np.random.seed(42)
-
-
 # %%
 # Generate a clean signal (simulating a high-quality recording)
+
+
 def generate_clean_signal(length: int = 1000) -> Tuple[np.ndarray, np.ndarray]:
     """Generate a clean signal (sine wave)"""
     t = np.linspace(0, 1, length)
@@ -32,6 +29,8 @@ def generate_clean_signal(length: int = 1000) -> Tuple[np.ndarray, np.ndarray]:
 
 # %%
 # Add Gaussian noise to the signal to simulate the noisy environment
+
+
 def add_noise(signal: np.ndarray, noise_level: float = 0.5) -> np.ndarray:
     """Add Gaussian noise to the signal."""
     noise = noise_level * np.random.randn(signal.shape[0])
@@ -40,6 +39,8 @@ def add_noise(signal: np.ndarray, noise_level: float = 0.5) -> np.ndarray:
 
 # %%
 # Apply FFT to filter out the noise
+
+
 def fft_denoise(noisy_signal: np.ndarray, threshold: float) -> np.ndarray:
     """Denoise the signal using FFT."""
     freq_domain = np.fft.fft(noisy_signal)  # Filter frequencies using FFT
@@ -50,6 +51,7 @@ def fft_denoise(noisy_signal: np.ndarray, threshold: float) -> np.ndarray:
 
 # %%
 # Generate and plot clean, noisy, and denoised signals to visualize the reconstruction
+
 length = 1000
 t, clean_signal = generate_clean_signal(length)
 noisy_signal = add_noise(clean_signal, noise_level=0.5)
