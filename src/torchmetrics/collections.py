@@ -14,7 +14,7 @@
 # this is just a bypass for this module name collision with built-in one
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, Dict, Hashable, Iterable, Iterator, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Hashable, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -499,7 +499,7 @@ class MetricCollection(ModuleDict):
         name = base if self.prefix is None else self.prefix + base
         return name if self.postfix is None else name + self.postfix
 
-    def _to_renamed_dict(self) -> dict:
+    def _to_renamed_dict(self) -> Mapping[str, Metric]:
         # self._modules changed from OrderedDict to dict as of PyTorch 2.5.0
         dict_modules = OrderedDict() if isinstance(self._modules, OrderedDict) else dict()
         for k, v in self._modules.items():
