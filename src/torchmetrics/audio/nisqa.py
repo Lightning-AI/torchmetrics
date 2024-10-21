@@ -36,7 +36,7 @@ class NonIntrusiveSpeechQualityAssessment(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``x`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
+    - ``preds`` (:class:`~torch.Tensor`): float tensor with shape ``(...,time)``
 
     As output of ``forward`` and ``compute`` the metric returns the following output
 
@@ -61,9 +61,9 @@ class NonIntrusiveSpeechQualityAssessment(Metric):
         >>> import torch
         >>> from torchmetrics.audio import NonIntrusiveSpeechQualityAssessment
         >>> _ = torch.manual_seed(42)
-        >>> x = torch.randn(16000)
+        >>> preds = torch.randn(16000)
         >>> nisqa = NonIntrusiveSpeechQualityAssessment(16000)
-        >>> nisqa(x)
+        >>> nisqa(preds)
         tensor([1.0433, 1.9545, 2.6087, 1.3460, 1.7117])
 
     References:

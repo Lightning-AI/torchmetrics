@@ -17,6 +17,7 @@ import math
 import os
 import warnings
 from functools import lru_cache
+from typing import Any, Dict, Tuple
 
 import numpy as np
 import torch
@@ -39,14 +40,14 @@ __doctest_requires__ = {("non_intrusive_speech_quality_assessment",): ["librosa"
 NISQA_DIR = "~/.mbchl/NISQA"
 
 
-def non_intrusive_speech_quality_assessment(x: Tensor, fs: int) -> Tensor:
+def non_intrusive_speech_quality_assessment(preds: Tensor, fs: int) -> Tensor:
     """Non-Intrusive Speech Quality Assessment (NISQA v2.0) [1], [2].
 
     .. note:: Using this metric requires you to have ``librosa`` and ``requests`` installed. Install as
         ``pip install librosa requests``.
 
     Args:
-        x: float tensor with shape ``(...,time)``
+        preds: float tensor with shape ``(...,time)``
         fs: sampling frequency of input
 
     Returns:
@@ -56,15 +57,17 @@ def non_intrusive_speech_quality_assessment(x: Tensor, fs: int) -> Tensor:
     Raises:
         ModuleNotFoundError:
             If ``librosa`` or ``requests`` are not installed
-        ValueError:
+        RuntimeError:
+            If the input is too short, causing the number of segments to be zero
+        RuntimeError:
             If the input is too long, causing the number of segments to exceed the maximum allowed
 
     Example:
         >>> import torch
         >>> from torchmetrics.functional.audio.nisqa import non_intrusive_speech_quality_assessment
         >>> _ = torch.manual_seed(42)
-        >>> x = torch.randn(16000)
-        >>> non_intrusive_speech_quality_assessment(x, 16000)
+        >>> preds = torch.randn(16000)
+        >>> non_intrusive_speech_quality_assessment(preds, 16000)
         tensor([1.0433, 1.9545, 2.6087, 1.3460, 1.7117])
 
     References:
@@ -80,18 +83,17 @@ def non_intrusive_speech_quality_assessment(x: Tensor, fs: int) -> Tensor:
         )
     model, args = _load_nisqa_model()
     model.eval()
-    in_shape = x.shape
-    x = x.reshape(-1, in_shape[-1])
+    x = preds.reshape(-1, preds.shape[-1])
     x = _get_librosa_melspec(x.cpu().numpy(), fs, args)
     x, n_wins = _segment_specs(torch.from_numpy(x), args)
     with torch.no_grad():
         x = model(x, n_wins.expand(x.shape[0]))
     # ["mos_pred", "noi_pred", "dis_pred", "col_pred", "loud_pred"]
-    return x.reshape(in_shape[:-1] + (5,))
+    return x.reshape(preds.shape[:-1] + (5,))
 
 
 @lru_cache
-def _load_nisqa_model() -> tuple[nn.Module, dict]:
+def _load_nisqa_model() -> Tuple[nn.Module, Dict[str, Any]]:
     model_path = os.path.expanduser(os.path.join(NISQA_DIR, "nisqa.tar"))
     if not os.path.exists(model_path):
         _download_weights()
@@ -116,7 +118,10 @@ def _download_weights() -> None:
 
 
 class NISQADIM(nn.Module):
-    def __init__(self, args: dict) -> None:
+    # ported from https://github.com/gabrielmittag/NISQA
+    # Copyright (c) 2021 Gabriel Mittag, Quality and Usability Lab
+    # MIT License
+    def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
         self.cnn = Framewise(args)
         self.time_dependency = TimeDependency(args)
@@ -131,7 +136,7 @@ class NISQADIM(nn.Module):
 
 
 class Framewise(nn.Module):
-    def __init__(self, args: dict) -> None:
+    def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
         self.model = AdaptCNN(args)
 
@@ -144,7 +149,7 @@ class Framewise(nn.Module):
 
 
 class AdaptCNN(nn.Module):
-    def __init__(self, args: dict) -> None:
+    def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
         self.pool_1 = args["cnn_pool_1"]
         self.pool_2 = args["cnn_pool_2"]
@@ -187,7 +192,7 @@ class AdaptCNN(nn.Module):
 
 
 class TimeDependency(nn.Module):
-    def __init__(self, args: dict) -> None:
+    def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
         self.model = SelfAttention(args)
 
@@ -196,7 +201,7 @@ class TimeDependency(nn.Module):
 
 
 class SelfAttention(nn.Module):
-    def __init__(self, args: dict) -> None:
+    def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
         encoder_layer = SelfAttentionLayer(args)
         self.norm1 = nn.LayerNorm(args["td_sa_d_model"])
@@ -219,7 +224,7 @@ class SelfAttention(nn.Module):
 
 
 class SelfAttentionLayer(nn.Module):
-    def __init__(self, args: dict) -> None:
+    def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
         self.self_attn = nn.MultiheadAttention(args["td_sa_d_model"], args["td_sa_nhead"], args["td_sa_dropout"])
         self.linear1 = nn.Linear(args["td_sa_d_model"], args["td_sa_h"])
@@ -243,7 +248,7 @@ class SelfAttentionLayer(nn.Module):
 
 
 class Pooling(nn.Module):
-    def __init__(self, args: dict) -> None:
+    def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
         self.model = PoolAttFF(args)
 
@@ -252,7 +257,7 @@ class Pooling(nn.Module):
 
 
 class PoolAttFF(torch.nn.Module):
-    def __init__(self, args: dict) -> None:
+    def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
         self.linear1 = nn.Linear(args["td_sa_d_model"], args["pool_att_h"])
         self.linear2 = nn.Linear(args["pool_att_h"], 1)
@@ -271,7 +276,7 @@ class PoolAttFF(torch.nn.Module):
         return self.linear3(x)
 
 
-def _get_librosa_melspec(y: np.ndarray, sr: int, args: dict) -> None:
+def _get_librosa_melspec(y: np.ndarray, sr: int, args: Dict[str, Any]) -> None:
     hop_length = int(sr * args["ms_hop_length"])
     win_length = int(sr * args["ms_win_length"])
     with warnings.catch_warnings():
@@ -302,11 +307,13 @@ def _get_librosa_melspec(y: np.ndarray, sr: int, args: dict) -> None:
     return np.stack([librosa.amplitude_to_db(m, ref=1.0, amin=1e-4, top_db=80.0) for m in melspec])
 
 
-def _segment_specs(x: np.ndarray, args: dict) -> tuple[Tensor, Tensor]:
+def _segment_specs(x: np.ndarray, args: Dict[str, Any]) -> Tuple[Tensor, Tensor]:
     seg_length = args["ms_seg_length"]
     seg_hop = args["ms_seg_hop_length"]
     max_length = args["ms_max_segments"]
     n_wins = x.shape[2] - (seg_length - 1)
+    if n_wins < 1:
+        raise RuntimeError("Input signal is too short.")
     idx1 = torch.arange(seg_length)
     idx2 = torch.arange(n_wins)
     idx3 = idx1.unsqueeze(0) + idx2.unsqueeze(1)
@@ -314,7 +321,7 @@ def _segment_specs(x: np.ndarray, args: dict) -> tuple[Tensor, Tensor]:
     x = x[:, ::seg_hop]
     n_wins = math.ceil(n_wins / seg_hop)
     if max_length < n_wins:
-        raise ValueError("Maximum number of melspectrogram segments exceeded. Use shorter audio.")
+        raise RuntimeError("Maximum number of melspectrogram segments exceeded. Use shorter audio.")
     x_padded = torch.zeros((x.shape[0], max_length, x.shape[2], x.shape[3], x.shape[4]))
     x_padded[:, :n_wins, :] = x
     return x_padded, torch.tensor(n_wins)
