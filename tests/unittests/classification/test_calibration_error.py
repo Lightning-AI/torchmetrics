@@ -29,7 +29,6 @@ from torchmetrics.functional.classification.calibration_error import (
     multiclass_calibration_error,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_13
 
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
@@ -113,8 +112,6 @@ class TestBinaryCalibrationError(MetricTester):
     def test_binary_calibration_error_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_13:
-            pytest.xfail(reason="torch.linspace in metric not supported before pytorch v1.13 for cpu + half")
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
         self.run_precision_test_cpu(
@@ -129,8 +126,6 @@ class TestBinaryCalibrationError(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_calibration_error_dtype_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_13:
-            pytest.xfail(reason="torch.searchsorted in metric not supported before pytorch v1.13 for gpu + half")
         preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
