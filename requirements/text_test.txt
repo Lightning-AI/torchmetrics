@@ -7,5 +7,5 @@ bert_score ==0.3.13
 huggingface-hub <0.26
 sacrebleu >=2.3.0, <2.5.0
 
-mecab-ko @ https://github.com/Lightning-Sandbox/pymecab-ko/archive/refs/heads/master.zip # todo: use regular release when fixed suppoer to for py3.12+
+mecab-ko @ git+https://github.com/Lightning-Sandbox/pymecab-ko.git  # todo: use regular release when fixed suppoer to for py3.12+
 mecab-ko-dic >=1.0.0, <1.1.0
