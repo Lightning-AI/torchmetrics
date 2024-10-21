@@ -48,18 +48,11 @@ jobs:
           pytorch-version: ${{ matrix.pytorch-version }}
           pypi-dir: ${{ env.PYPI_CACHE }}
 
-      - name: Install Latex
-        if: ${{ matrix.target == 'html' }}
-        # install Texlive, see https://linuxconfig.org/how-to-install-latex-on-ubuntu-20-04-focal-fossa-linux
-        run: |
-          sudo apt-get update --fix-missing
-          sudo apt-get install -y \
-            texlive-latex-extra texlive-pictures texlive-fonts-recommended dvipng cm-super
-
       - name: Install package & dependencies
         run: |
           make get-sphinx-template
-          pip install . -U -r requirements/_docs.txt \
+          # install with -e so the path to source link comes from this project not from the installed package
+          pip install -e . -U -r requirements/_docs.txt \
             --find-links="${PYPI_CACHE}" --find-links="${TORCH_URL}"
       - run: pip list
       - name: Full build for deployment
@@ -70,7 +63,10 @@ jobs:
         run: echo "SPHINX_ENABLE_GALLERY=0" >> $GITHUB_ENV
       - name: make ${{ matrix.target }}
         working-directory: ./docs
-        run: make ${{ matrix.target }} --debug --jobs $(nproc) SPHINXOPTS="-W --keep-going"
+        run: |
+          pwd
+          ls -la
+          make ${{ matrix.target }} --debug --jobs $(nproc) SPHINXOPTS="-W --keep-going"
 
       - name: Upload built docs
         if: ${{ matrix.target == 'html' && github.event_name != 'pull_request' }}
@@ -81,7 +77,7 @@ jobs:
           retention-days: ${{ steps.keep-artifact.outputs.DAYS }}
 
       - name: update cashing
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && matrix.target == 'html' }}
         continue-on-error: true
         uses: ./.github/actions/push-caches
         with:

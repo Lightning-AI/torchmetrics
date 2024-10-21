@@ -211,7 +211,8 @@ class IntersectionOverUnion(Metric):
         """Computes IoU based on inputs passed in to ``update`` previously."""
         score = torch.cat([mat[mat != self._invalid_val] for mat in self.iou_matrix], 0).mean()
         results: Dict[str, Tensor] = {f"{self._iou_type}": score}
-
+        if torch.isnan(score):  # if no valid boxes are found
+            results[f"{self._iou_type}"] = torch.tensor(0.0, device=score.device)
         if self.class_metrics:
             gt_labels = dim_zero_cat(self.groundtruth_labels)
             classes = gt_labels.unique().tolist() if len(gt_labels) > 0 else []
