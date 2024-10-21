@@ -33,7 +33,7 @@ if _LIBROSA_AVAILABLE and _REQUESTS_AVAILABLE:
     import librosa
     import requests
 else:
-    librosa, requests = None, None
+    librosa, requests = None, None  # type:ignore
 
 __doctest_requires__ = {("non_intrusive_speech_quality_assessment",): ["librosa", "requests"]}
 
@@ -144,7 +144,7 @@ class _Framewise(nn.Module):
         x_packed = pack_padded_sequence(x, n_wins, batch_first=True, enforce_sorted=False)
         x = self.model(x_packed.data)
         x = x_packed._replace(data=x)
-        x, _ = pad_packed_sequence(x, batch_first=True, padding_value=0.0, total_length=n_wins.max())
+        x, _ = pad_packed_sequence(x, batch_first=True, padding_value=0.0, total_length=n_wins.max().item())
         return x
 
 
@@ -214,7 +214,7 @@ class _SelfAttention(nn.Module):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
 
-    def forward(self, src: Tensor, n_wins: Tensor) -> Tensor:
+    def forward(self, src: Tensor, n_wins: Tensor) -> Tuple[Tensor, Tensor]:
         src = self.linear(src)
         output = src.transpose(1, 0)
         output = self.norm1(output)
@@ -236,7 +236,7 @@ class _SelfAttentionLayer(nn.Module):
         self.dropout2 = nn.Dropout(args["td_sa_dropout"])
         self.activation = relu
 
-    def forward(self, src: Tensor, n_wins: Tensor) -> Tensor:
+    def forward(self, src: Tensor, n_wins: Tensor) -> Tuple[Tensor, Tensor]:
         mask = torch.arange(src.shape[0])[None, :] < n_wins[:, None]
         src2 = self.self_attn(src, src, src, key_padding_mask=~mask)[0]
         src = src + self.dropout1(src2)
@@ -276,7 +276,7 @@ class _PoolAttFF(torch.nn.Module):
         return self.linear3(x)
 
 
-def _get_librosa_melspec(y: np.ndarray, sr: int, args: Dict[str, Any]) -> None:
+def _get_librosa_melspec(y: np.ndarray, sr: int, args: Dict[str, Any]) -> np.ndarray:
     hop_length = int(sr * args["ms_hop_length"])
     win_length = int(sr * args["ms_win_length"])
     with warnings.catch_warnings():
@@ -307,7 +307,7 @@ def _get_librosa_melspec(y: np.ndarray, sr: int, args: Dict[str, Any]) -> None:
     return np.stack([librosa.amplitude_to_db(m, ref=1.0, amin=1e-4, top_db=80.0) for m in melspec])
 
 
-def _segment_specs(x: np.ndarray, args: Dict[str, Any]) -> Tuple[Tensor, Tensor]:
+def _segment_specs(x: Tensor, args: Dict[str, Any]) -> Tuple[Tensor, Tensor]:
     seg_length = args["ms_seg_length"]
     seg_hop = args["ms_seg_hop_length"]
     max_length = args["ms_max_segments"]
