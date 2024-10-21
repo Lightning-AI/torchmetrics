@@ -83,6 +83,7 @@ inputs = [
     },
 ]
 
+
 def _nisqa_cheat(preds, target, **kwargs: Dict[str, Any]):
     # cheat the MetricTester as non_intrusive_speech_quality_assessment does not need a target
     return non_intrusive_speech_quality_assessment(preds, **kwargs)
