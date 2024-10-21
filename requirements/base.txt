@@ -3,6 +3,6 @@
 
 numpy >1.20.0, <2.0  # strict, for compatibility reasons
 packaging >17.1
-torch >=1.10.0, <2.5.0
+torch >=1.10.0, <2.6.0
 typing-extensions; python_version < '3.9'
 lightning-utilities >=0.8.0, <0.12.0
