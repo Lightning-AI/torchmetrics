@@ -114,12 +114,16 @@ class TestNISQA(MetricTester):
         # cheat MetricTester by creating an iterator to retrieve correct reference value
         # reference_metric is called once for each item in the batch and one last time on the whole batch
         _ref_iter = iter([*reference, reference.mean(dim=0)])
+
+        def _reference_metric(preds, target):
+            return next(_ref_iter).mean(dim=0)
+
         self.run_class_metric_test(
             ddp,
             preds=preds,
             target=preds,
             metric_class=_NISQACheat,
-            reference_metric=lambda x, y: next(_ref_iter).mean(dim=0),
+            reference_metric=_reference_metric,
             metric_args={"fs": fs},
         )
 
@@ -132,11 +136,15 @@ class TestNISQA(MetricTester):
         # cheat MetricTester by creating an iterator to retrieve correct reference value
         # reference_metric is called once for each item in the batch
         _ref_iter = iter(reference)
+
+        def _reference_metric(preds, target):
+            return next(_ref_iter)
+
         self.run_functional_metric_test(
             preds=preds,
             target=preds,
             metric_functional=_nisqa_cheat,
-            reference_metric=lambda x, y: next(_ref_iter),
+            reference_metric=_reference_metric,
             metric_args={"fs": fs},
         )
 
