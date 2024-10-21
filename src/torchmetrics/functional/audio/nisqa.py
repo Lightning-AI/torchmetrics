@@ -37,7 +37,7 @@ else:
 
 __doctest_requires__ = {("non_intrusive_speech_quality_assessment",): ["librosa", "requests"]}
 
-NISQA_DIR = "~/.mbchl/NISQA"
+NISQA_DIR = "~/.torchmetrics/NISQA"
 
 
 def non_intrusive_speech_quality_assessment(preds: Tensor, fs: int) -> Tensor:
