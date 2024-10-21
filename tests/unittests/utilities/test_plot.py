@@ -169,10 +169,6 @@ from torchmetrics.text import (
     WordInfoLost,
     WordInfoPreserved,
 )
-from torchmetrics.utilities.imports import (
-    _TORCH_GREATER_EQUAL_1_12,
-    _TORCHAUDIO_GREATER_EQUAL_0_10,
-)
 from torchmetrics.utilities.plot import _get_col_row_split
 from torchmetrics.wrappers import (
     BootStrapper,
@@ -317,7 +313,6 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             _audio_input,
             None,
             id="speech_reverberation_modulation_energy_ratio",
-            marks=pytest.mark.skipif(not _TORCHAUDIO_GREATER_EQUAL_0_10, reason="test requires torchaudio>=0.10"),
         ),
         pytest.param(
             partial(PermutationInvariantTraining, metric_func=scale_invariant_signal_noise_ratio, eval_func="max"),
@@ -343,9 +338,6 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             _panoptic_input,
             _panoptic_input,
             id="panoptic quality",
-            marks=pytest.mark.skipif(
-                not _TORCH_GREATER_EQUAL_1_12, reason="Panoptic Quality metric requires PyTorch 1.12 or later"
-            ),
         ),
         pytest.param(BinaryAveragePrecision, _rand_input, _binary_randint_input, id="binary average precision"),
         pytest.param(
