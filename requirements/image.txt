@@ -2,5 +2,5 @@
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
 scipy >1.0.0, <1.15.0
-torchvision >=0.8, <0.21.0
+torchvision >=0.15.1, <0.21.0
 torch-fidelity <=0.4.0  # bumping to allow install version from master, now used in testing
