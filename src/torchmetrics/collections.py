@@ -499,11 +499,15 @@ class MetricCollection(ModuleDict):
         name = base if self.prefix is None else self.prefix + base
         return name if self.postfix is None else name + self.postfix
 
-    def _to_renamed_ordered_dict(self) -> OrderedDict:
-        od = OrderedDict()
+    def _to_renamed_dict(self) -> dict:
+        # self._modules changed from OrderedDict to dict as of PyTorch 2.5.0
+        if isinstance(self._modules, OrderedDict):
+            d = OrderedDict()
+        else:
+            d = dict()
         for k, v in self._modules.items():
-            od[self._set_name(k)] = v
-        return od
+            d[self._set_name(k)] = v
+        return d
 
     def __iter__(self) -> Iterator[Hashable]:
         """Return an iterator over the keys of the MetricDict."""
@@ -519,7 +523,7 @@ class MetricCollection(ModuleDict):
         """
         if keep_base:
             return self._modules.keys()
-        return self._to_renamed_ordered_dict().keys()
+        return self._to_renamed_dict().keys()
 
     def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[Tuple[str, Metric]]:
         r"""Return an iterable of the ModuleDict key/value pairs.
@@ -533,7 +537,7 @@ class MetricCollection(ModuleDict):
         self._compute_groups_create_state_ref(copy_state)
         if keep_base:
             return self._modules.items()
-        return self._to_renamed_ordered_dict().items()
+        return self._to_renamed_dict().items()
 
     def values(self, copy_state: bool = True) -> Iterable[Metric]:
         """Return an iterable of the ModuleDict values.
