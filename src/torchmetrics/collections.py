@@ -501,7 +501,7 @@ class MetricCollection(ModuleDict):
 
     def _to_renamed_dict(self) -> Mapping[str, Metric]:
         # self._modules changed from OrderedDict to dict as of PyTorch 2.5.0
-        dict_modules = OrderedDict() if isinstance(self._modules, OrderedDict) else dict()
+        dict_modules = OrderedDict() if isinstance(self._modules, OrderedDict) else {}
         for k, v in self._modules.items():
             dict_modules[self._set_name(k)] = v
         return dict_modules
