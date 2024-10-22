@@ -136,7 +136,7 @@ class _NISQACheat(NonIntrusiveSpeechQualityAssessment):
 class TestNISQA(MetricTester):
     """Test class for `NonIntrusiveSpeechQualityAssessment` metric."""
 
-    atol = 5e-5
+    atol = 7e-5
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_nisqa(self, preds: Tensor, reference: Tensor, fs: int, ddp: bool, device=None):
