@@ -52,6 +52,7 @@ class Metric(Module, ABC):
     """Base class for all metrics present in the Metrics API.
 
     This class is inherited by all metrics and implements the following functionality:
+
     1. Handles the transfer of metric states to correct device
     2. Handles the synchronization of metric states across processes
 
