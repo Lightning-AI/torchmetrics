@@ -11,16 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from typing import Any, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.functional.segmentation.dice import (
-    _dice_score_validate_args,
-    _dice_score_update,
     _dice_score_compute,
+    _dice_score_update,
+    _dice_score_validate_args,
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
@@ -55,7 +55,7 @@ class DiceScore(Metric):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-        - ``gds`` (:class:`~torch.Tensor`): The dice score. If ``average`` is set to ``None`` or ``"none"`` the output 
+        - ``gds`` (:class:`~torch.Tensor`): The dice score. If ``average`` is set to ``None`` or ``"none"`` the output
           will be a tensor of shape ``(C,)`` with the dice score for each class. If ``average`` is set to
           ``"micro"``, ``"macro"``, or ``"weighted"`` the output will be a scalar tensor.
 
@@ -90,23 +90,24 @@ class DiceScore(Metric):
         >>> dice_score(preds, target)
         tensor([0.4993, 0.5002, 0.5004, 0.4996, 0.5000])
 
-
     """
 
-    score: Tensor
-    samples: Tensor
     full_state_update: bool = False
     is_differentiable: bool = False
     higher_is_better: bool = True
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    def __init__(self,
+    numerator: List[Tensor]
+    denominator: List[Tensor]
+
+    def __init__(
+        self,
         num_classes: int,
         include_background: bool = True,
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
         input_format: Literal["one-hot", "index"] = "one-hot",
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
         _dice_score_validate_args(num_classes, include_background, average, input_format)
@@ -115,9 +116,60 @@ class DiceScore(Metric):
         self.average = average
         self.input_format = input_format
 
-        num_classes = num_classes - 1 if include_background else num_classes
-        self.add_state("score", default=torch.zeros(num_classes), dist_reduce_fx="sum")
-        self.add_state("samples", default=torch.zeros(1), dist_reduce_fx="sum")
+        num_classes = num_classes - 1 if not include_background else num_classes
+        self.add_state("numerator", torch.zeros(num_classes), dist_reduce_fx="sum")
+        self.add_state("denominator", torch.zeros(num_classes), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        pass
+        """Update the state with new data."""
+        numerator, denominator = _dice_score_update(
+            preds, target, self.num_classes, self.include_background, self.input_format
+        )
+        self.numerator += numerator.sum(dim=0)
+        self.denominator += denominator.sum(dim=0)
+
+    def compute(self) -> Tensor:
+        """Computes the Dice Score."""
+        return _dice_score_compute(self.numerator, self.denominator, self.average)
+
+    def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
+        """Plot a single or multiple values from the metric.
+
+        Args:
+            val: Either a single result from calling `metric.forward` or `metric.compute` or a list of these results.
+                If no value is provided, will automatically call `metric.compute` and plot that result.
+            ax: An matplotlib axis object. If provided will add plot to that axis
+
+        Returns:
+            Figure and Axes object
+
+        Raises:
+            ModuleNotFoundError:
+                If `matplotlib` is not installed
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting a single value
+            >>> import torch
+            >>> from torchmetrics.segmentation import DiceScore
+            >>> metric = DiceScore(num_classes=3)
+            >>> metric.update(torch.randint(0, 2, (10, 3, 128, 128)), torch.randint(0, 2, (10, 3, 128, 128)))
+            >>> fig_, ax_ = metric.plot()
+
+        .. plot::
+            :scale: 75
+
+            >>> # Example plotting multiple values
+            >>> import torch
+            >>> from torchmetrics.segmentation import DiceScore
+            >>> metric = DiceScore(num_classes=3)
+            >>> values = [ ]
+            >>> for _ in range(10):
+            ...     values.append(
+            ...        metric(torch.randint(0, 2, (10, 3, 128, 128)), torch.randint(0, 2, (10, 3, 128, 128)))
+            ...     )
+            >>> fig_, ax_ = metric.plot(values)
+
+        """
+        return self._plot(val, ax)

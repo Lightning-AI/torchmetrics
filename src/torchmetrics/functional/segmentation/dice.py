@@ -58,7 +58,7 @@ def _dice_score_update(
     if not include_background:
         preds, target = _ignore_background(preds, target, num_classes)
 
-    reduce_axis = list(range(2, preds.ndim))
+    reduce_axis = list(range(2, target.ndim))
     intersection = torch.sum(preds * target, dim=reduce_axis)
     target_sum = torch.sum(target, dim=reduce_axis)
     pred_sum = torch.sum(preds, dim=reduce_axis)
@@ -74,8 +74,8 @@ def _dice_score_compute(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
 ) -> Tensor:
     if average == "micro":
-        numerator = torch.sum(numerator, dim=1)
-        denominator = torch.sum(denominator, dim=1)
+        numerator = torch.sum(numerator, dim=-1)
+        denominator = torch.sum(denominator, dim=-1)
     dice = _safe_divide(numerator, denominator, zero_division=1.0)
     if average == "macro":
         dice = torch.mean(dice)
