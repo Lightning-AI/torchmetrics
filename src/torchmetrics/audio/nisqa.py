@@ -89,6 +89,8 @@ class NonIntrusiveSpeechQualityAssessment(Metric):
                 "NISQA metric requires that librosa and requests are installed. "
                 "Install as `pip install librosa requests`."
             )
+        if not isinstance(fs, int) or fs <= 0:
+            raise ValueError(f"Argument `fs` expected to be a positive integer, but got {fs}")
         self.fs = fs
 
         self.add_state("sum_nisqa", default=tensor([0.0, 0.0, 0.0, 0.0, 0.0]), dist_reduce_fx="sum")
