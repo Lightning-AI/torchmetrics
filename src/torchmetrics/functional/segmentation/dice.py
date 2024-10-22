@@ -100,8 +100,10 @@ def dice_score(
         target: Ground truth values
         num_classes: Number of classes
         include_background: Whether to include the background class in the computation
+        average: The method to average the dice score. Options are ``"micro"``, ``"macro"``, ``"weighted"``, ``"none"``
+          or ``None``. This determines how to average the dice score across different classes.
         input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors
-            or ``"index"`` for index tensors
+          or ``"index"`` for index tensors
 
     Returns:
         The Dice score.
@@ -111,10 +113,30 @@ def dice_score(
         >>> from torchmetrics.functional.segmentation import dice_score
         >>> preds = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
         >>> target = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 target
-        >>> dice_score(preds, target, num_classes=5)
-        tensor([0.4872, 0.5000, 0.5019, 0.4891, 0.4926])
+        >>> # dice score micro averaged over all classes
+        >>> dice_score(preds, target, num_classes=5, average="micro")
+        tensor([0.4842, 0.4968, 0.5053, 0.4902])
+        >>> # dice score per sample and class
+        >>> dice_score(preds, target, num_classes=5, average="none")
+        tensor([[0.4724, 0.5185, 0.4710, 0.5062, 0.4500],
+                [0.4571, 0.4980, 0.5191, 0.4380, 0.5649],
+                [0.5428, 0.4904, 0.5358, 0.4830, 0.4724],
+                [0.4715, 0.4925, 0.4797, 0.5267, 0.4788]])
 
     Example (with index tensors):
+        >>> from torch import randint
+        >>> from torchmetrics.functional.segmentation import dice_score
+        >>> preds = randint(0, 5, (4, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
+        >>> target = randint(0, 5, (4, 16, 16))  # 4 samples, 5 classes, 16x16 target
+        >>> # dice score micro averaged over all classes
+        >>> dice_score(preds, target, num_classes=5, average="micro", input_format="index")
+        tensor([0.2031, 0.1914, 0.2500, 0.2266])
+        >>> # dice score per sample and class
+        >>> dice_score(preds, target, num_classes=5, average="none", input_format="index")
+        tensor([[0.1714, 0.2500, 0.1304, 0.2524, 0.2069],
+                [0.1837, 0.2162, 0.0962, 0.2692, 0.1895],
+                [0.3866, 0.1348, 0.2526, 0.2301, 0.2083],
+                [0.1978, 0.2804, 0.1714, 0.1915, 0.2783]])
 
     """
     _dice_score_validate_args(num_classes, include_background, average, input_format)
