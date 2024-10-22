@@ -24,10 +24,9 @@ from torchmetrics.functional.detection.ciou import complete_intersection_over_un
 from torchmetrics.functional.detection.diou import distance_intersection_over_union
 from torchmetrics.functional.detection.giou import generalized_intersection_over_union
 from torchmetrics.functional.detection.iou import intersection_over_union
-from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_13
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
-# todo: check if some older versions have these functions too?
-if _TORCHVISION_GREATER_EQUAL_0_13:
+if _TORCHVISION_AVAILABLE:
     from torchvision.ops import box_iou as tv_iou
     from torchvision.ops import complete_box_iou as tv_ciou
     from torchvision.ops import distance_box_iou as tv_diou
@@ -185,7 +184,6 @@ def _add_noise(x, scale=10):
         (GeneralizedIntersectionOverUnion, generalized_intersection_over_union, tv_giou),
     ],
 )
-@pytest.mark.skipif(not _TORCHVISION_GREATER_EQUAL_0_13, reason="test requires torchvision >= 0.13")
 class TestIntersectionMetrics(MetricTester):
     """Tester class for the different intersection metrics."""
 

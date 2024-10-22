@@ -167,3 +167,16 @@ def test_missing_data_range():
 
     with pytest.raises(ValueError, match="The `data_range` must be given when `dim` is not None."):
         peak_signal_noise_ratio(_inputs[0].preds, _inputs[0].target, data_range=None, dim=0)
+
+
+def test_psnr_uint_dtype():
+    """Check that automatic casting to float is done for uint dtype.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2787
+
+    """
+    preds = torch.randint(0, 255, _input_size, dtype=torch.uint8)
+    target = torch.randint(0, 255, _input_size, dtype=torch.uint8)
+    psnr = peak_signal_noise_ratio(preds, target)
+    prnr2 = peak_signal_noise_ratio(preds.float(), target.float())
+    assert torch.allclose(psnr, prnr2)
