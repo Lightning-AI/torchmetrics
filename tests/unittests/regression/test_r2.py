@@ -94,32 +94,20 @@ class TestR2Score(MetricTester):
     def test_r2_differentiability(self, adjusted, multioutput, preds, target, ref_metric):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
-            preds=preds,
-            target=target,
-            metric_module=R2Score,
-            metric_functional=r2_score,
-            metric_args={"adjusted": adjusted, "multioutput": multioutput},
+            preds, target, R2Score, r2_score, {"adjusted": adjusted, "multioutput": multioutput}
         )
 
     def test_r2_half_cpu(self, adjusted, multioutput, preds, target, ref_metric):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
-            preds,
-            target,
-            R2Score,
-            r2_score,
-            {"adjusted": adjusted, "multioutput": multioutput},
+            preds, target, R2Score, r2_score, {"adjusted": adjusted, "multioutput": multioutput}
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     def test_r2_half_gpu(self, adjusted, multioutput, preds, target, ref_metric):
         """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
-            preds,
-            target,
-            R2Score,
-            r2_score,
-            {"adjusted": adjusted, "multioutput": multioutput},
+            preds, target, R2Score, r2_score, {"adjusted": adjusted, "multioutput": multioutput}
         )
 
 
