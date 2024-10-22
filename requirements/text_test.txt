@@ -7,5 +7,5 @@ bert_score ==0.3.13
 huggingface-hub <0.26
 sacrebleu >=2.3.0, <2.5.0
 
-mecab-ko >=1.0.0, <1.1.0
-mecab-ko-dic >=1.0.0, <1.1.0
+mecab-ko >=1.0.0, <1.1.0 ; python_version < "3.12"  # strict # todo: unpin python_version
+mecab-ko-dic >=1.0.0, <1.1.0 ; python_version < "3.12"  # todo: unpin python_version
