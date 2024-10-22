@@ -172,6 +172,7 @@
 .. _FLORES-200: https://arxiv.org/abs/2207.04672
 .. _averaging curve objects: https://scikit-learn.org/stable/auto_examples/model_selection/plot_roc.html
 .. _SCC: https://www.ingentaconnect.com/content/tandf/tres/1998/00000019/00000004/art00013
+.. _Normalized Root Mean Squared Error: https://onlinelibrary.wiley.com/doi/abs/10.1111/1365-2478.12109
 .. _Generalized Dice Score: https://arxiv.org/abs/1707.03237
 .. _Hausdorff Distance: https://en.wikipedia.org/wiki/Hausdorff_distance
 .. _averaging curve objects: https://scikit-learn.org/stable/auto_examples/model_selection/plot_roc.html
