@@ -56,11 +56,13 @@ class Metric(Module, ABC):
     2. Handles the synchronization of metric states across processes
 
     The three core methods of the base class are
+
     * ``add_state()``
     * ``forward()``
     * ``reset()``
 
     which should almost never be overwritten by child classes. Instead, the following methods should be overwritten
+
     * ``update()``
     * ``compute()``
 
