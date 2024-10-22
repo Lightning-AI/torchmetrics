@@ -15,8 +15,8 @@ from functools import partial
 
 import pytest
 import torch
-from sklearn.metrics import f1_score
 from monai.metrics.meandice import compute_dice
+from sklearn.metrics import f1_score
 from torchmetrics.functional.segmentation.dice import dice_score
 from torchmetrics.segmentation.dice import DiceScore
 
@@ -48,8 +48,9 @@ def _reference_dice_score(
     average: str = "micro",
     reduce: bool = True,
 ):
-    """Calculate reference metric for dice score"""
+    """Calculate reference metric for dice score."""
     import pdb
+
     pdb.set_trace()
     if input_format == "one-hot":
         preds = preds.argmax(dim=1)
@@ -61,6 +62,7 @@ def _reference_dice_score(
     if reduce:
         return f1_score(target.flatten(), preds.flatten(), average=average, labels=labels)
     import pdb
+
     pdb.set_trace()
     val = [f1_score(t, p, average=average, labels=labels) for t, p in zip(target, preds)]
     return val
