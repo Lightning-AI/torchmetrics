@@ -15,8 +15,8 @@ from functools import partial
 
 import pytest
 import torch
+from sklearn.metrics import f1_score
 from monai.metrics.meandice import compute_dice
-from sklearn.metrics import jaccard_score
 from torchmetrics.functional.segmentation.dice import dice_score
 from torchmetrics.segmentation.dice import DiceScore
 
@@ -40,19 +40,30 @@ _inputs3 = _Input(
 )
 
 
-def sklearn_dice(*args, **kwargs):
-    js = jaccard_score(*args, **kwargs)
-    return 2 * js / (1 + js)
-
-
 def _reference_dice_score(
     preds: torch.Tensor,
     target: torch.Tensor,
     input_format: str,
     include_background: bool = True,
+    average: str = "micro",
     reduce: bool = True,
 ):
-    pass
+    """Calculate reference metric for dice score"""
+    import pdb
+    pdb.set_trace()
+    if input_format == "one-hot":
+        preds = preds.argmax(dim=1)
+        target = target.argmax(dim=1)
+    preds = preds.cpu().numpy()
+    target = target.cpu().numpy()
+
+    labels = list(range(1, NUM_CLASSES) if not include_background else range(NUM_CLASSES))
+    if reduce:
+        return f1_score(target.flatten(), preds.flatten(), average=average, labels=labels)
+    import pdb
+    pdb.set_trace()
+    val = [f1_score(t, p, average=average, labels=labels) for t, p in zip(target, preds)]
+    return val
 
 
 @pytest.mark.parametrize(
@@ -64,5 +75,48 @@ def _reference_dice_score(
     ],
 )
 @pytest.mark.parametrize("include_background", [True, False])
+@pytest.mark.parametrize("average", ["micro", "macro", "weighted", "none"])
 class TestGeneralizedDiceScore(MetricTester):
     """Test class for `DiceScore` metric."""
+
+    # @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    # def test_generalized_dice_class(self, preds, target, input_format, include_background, ddp):
+    #     """Test class implementation of metric."""
+    #     self.run_class_metric_test(
+    #         ddp=ddp,
+    #         preds=preds,
+    #         target=target,
+    #         metric_class=GeneralizedDiceScore,
+    #         reference_metric=partial(
+    #             _reference_generalized_dice,
+    #             input_format=input_format,
+    #             include_background=include_background,
+    #             reduce=True,
+    #         ),
+    #         metric_args={
+    #             "num_classes": NUM_CLASSES,
+    #             "include_background": include_background,
+    #             "input_format": input_format,
+    #         },
+    #     )
+
+    def test_generalized_dice_functional(self, preds, target, input_format, include_background, average):
+        """Test functional implementation of metric."""
+        self.run_functional_metric_test(
+            preds=preds,
+            target=target,
+            metric_functional=dice_score,
+            reference_metric=partial(
+                _reference_dice_score,
+                input_format=input_format,
+                include_background=include_background,
+                average=average,
+                reduce=False,
+            ),
+            metric_args={
+                "num_classes": NUM_CLASSES,
+                "include_background": include_background,
+                "average": average,
+                "input_format": input_format,
+            },
+        )

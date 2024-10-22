@@ -47,7 +47,7 @@ def _reference_generalized_dice(
     include_background: bool = True,
     reduce: bool = True,
 ):
-    """Calculate reference metric for `MeanIoU`."""
+    """Calculate reference metric for generalized dice metric."""
     if input_format == "index":
         preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
         target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
