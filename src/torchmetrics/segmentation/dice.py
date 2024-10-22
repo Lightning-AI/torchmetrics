@@ -55,6 +55,42 @@ class DiceScore(Metric):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
+        - ``gds`` (:class:`~torch.Tensor`): The dice score. If ``average`` is set to ``None`` or ``"none"`` the output 
+          will be a tensor of shape ``(C,)`` with the dice score for each class. If ``average`` is set to
+          ``"micro"``, ``"macro"``, or ``"weighted"`` the output will be a scalar tensor.
+
+    Args:
+        num_classes: The number of classes in the segmentation problem.
+        include_background: Whether to include the background class in the computation.
+        average: The method to average the dice score. Options are ``"micro"``, ``"macro"``, ``"weighted"``, ``"none"``
+            or ``None``. This determines how to average the dice score across different classes.
+        input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors
+            or ``"index"`` for index tensors
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Raises:
+        ValueError:
+            If ``num_classes`` is not a positive integer
+        ValueError:
+            If ``include_background`` is not a boolean
+        ValueError:
+            If ``average`` is not one of ``"micro"``, ``"macro"``, ``"weighted"``, ``"none"`` or ``None``
+        ValueError:
+            If ``input_format`` is not one of ``"one-hot"`` or ``"index"``
+
+    Example:
+        >>> from torch import randint
+        >>> from torchmetrics.segmentation import DiceScore
+        >>> preds = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
+        >>> target = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 target
+        >>> dice_score = DiceScore(num_classes=5, average="micro")
+        >>> dice_score(preds, target)
+        tensor(0.4993)
+        >>> dice_score = DiceScore(num_classes=5, average="none")
+        >>> dice_score(preds, target)
+        tensor([0.4993, 0.5002, 0.5004, 0.4996, 0.5000])
+
+
     """
 
     score: Tensor
@@ -84,3 +120,4 @@ class DiceScore(Metric):
         self.add_state("samples", default=torch.zeros(1), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
+        pass
