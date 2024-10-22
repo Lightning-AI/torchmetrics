@@ -16,12 +16,11 @@ import re
 
 import pytest
 import torch
-
 from torchmetrics import MetricCollection
 from torchmetrics.classification import BinaryAccuracy, BinaryF1Score
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
-from torchmetrics.wrappers import MultitaskWrapper
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_5
+from torchmetrics.wrappers import MultitaskWrapper
 
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests._helpers import seed_all
