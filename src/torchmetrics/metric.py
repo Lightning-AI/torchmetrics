@@ -56,13 +56,13 @@ class Metric(Module, ABC):
     1. Handles the transfer of metric states to correct device
     2. Handles the synchronization of metric states across processes
 
-    The three core methods of the base class are
+    The three core methods of the base class are:
 
     * ``add_state()``
     * ``forward()``
     * ``reset()``
 
-    which should almost never be overwritten by child classes. Instead, the following methods should be overwritten
+    which should almost never be overwritten by child classes. Instead, the following methods should be overwritten:
 
     * ``update()``
     * ``compute()``
@@ -70,15 +70,15 @@ class Metric(Module, ABC):
     Args:
         kwargs: additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-            - compute_on_cpu: If metric state should be stored on CPU during computations. Only works for list states.
-            - dist_sync_on_step: If metric state should synchronize on ``forward()``. Default is ``False``
-            - process_group: The process group on which the synchronization is called. Default is the world.
-            - dist_sync_fn: Function that performs the allgather option on the metric state. Default is an custom
-              implementation that calls ``torch.distributed.all_gather`` internally.
-            - distributed_available_fn: Function that checks if the distributed backend is available. Defaults to a
-              check of ``torch.distributed.is_available()`` and ``torch.distributed.is_initialized()``.
-            - sync_on_compute: If metric state should synchronize when ``compute`` is called. Default is ``True``
-            - compute_with_cache: If results from ``compute`` should be cached. Default is ``True``
+        - compute_on_cpu: If metric state should be stored on CPU during computations. Only works for list states.
+        - dist_sync_on_step: If metric state should synchronize on ``forward()``. Default is ``False``.
+        - process_group: The process group on which the synchronization is called. Default is the world.
+        - dist_sync_fn: Function that performs the allgather option on the metric state. Default is a custom
+          implementation that calls ``torch.distributed.all_gather`` internally.
+        - distributed_available_fn: Function that checks if the distributed backend is available. Defaults to a
+          check of ``torch.distributed.is_available()`` and ``torch.distributed.is_initialized()``.
+        - sync_on_compute: If metric state should synchronize when ``compute`` is called. Default is ``True``.
+        - compute_with_cache: If results from ``compute`` should be cached. Default is ``True``.
 
     """
 
