@@ -82,6 +82,8 @@ def non_intrusive_speech_quality_assessment(preds: Tensor, fs: int) -> Tensor:
             "NISQA metric requires that librosa and requests are installed. Install as `pip install librosa requests`."
         )
     model, args = _load_nisqa_model()
+    if not isinstance(fs, int) or fs <= 0:
+        raise ValueError(f"Argument `fs` expected to be a positive integer, but got {fs}")
     model.eval()
     x = preds.reshape(-1, preds.shape[-1])
     x = _get_librosa_melspec(x.cpu().numpy(), fs, args)
