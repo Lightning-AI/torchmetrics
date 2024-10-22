@@ -402,13 +402,17 @@ class Metric(Module, ABC):
 
         Args:
             incoming_state: either a dict containing a metric state similar to the metric itself or an instance of the
-                metric class.
+              metric class.
 
         Raises:
+            ValueError:
+                If the incoming state is neither a dict nor an instance of the metric class.
             RuntimeError:
                 If the metric has ``full_state_update=True`` or ``dist_sync_on_step=True``. In these cases, the metric
                 cannot be merged with another metric state in a simple way. The user should overwrite the method in the
                 metric class to handle the merge operation.
+            ValueError:
+                If the incoming state is a metric instance but the class is different from the current metric class.
 
         Example:
             >>> from torchmetrics.aggregation import SumMetric
