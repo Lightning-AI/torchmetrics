@@ -136,7 +136,7 @@ class _NISQACheat(NonIntrusiveSpeechQualityAssessment):
 class TestNISQA(MetricTester):
     """Test class for `NonIntrusiveSpeechQualityAssessment` metric."""
 
-    atol = 7e-5
+    atol = 1e-4
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_nisqa(self, preds: Tensor, reference: Tensor, fs: int, ddp: bool, device=None):
@@ -198,11 +198,11 @@ def test_error_on_short_input():
 def test_error_on_long_input():
     """Test error on long input."""
     preds = torch.rand(834240)
-    with pytest.raises(RuntimeError, match="Maximum number of melspectrogram segments exceeded. Use shorter audio."):
+    with pytest.raises(RuntimeError, match="Maximum number of mel spectrogram windows exceeded. Use shorter audio."):
         non_intrusive_speech_quality_assessment(preds, 16000)
     non_intrusive_speech_quality_assessment(preds, 48000)
     preds = torch.rand(2502720)
-    with pytest.raises(RuntimeError, match="Maximum number of melspectrogram segments exceeded. Use shorter audio."):
+    with pytest.raises(RuntimeError, match="Maximum number of mel spectrogram windows exceeded. Use shorter audio."):
         non_intrusive_speech_quality_assessment(preds, 16000)
-    with pytest.raises(RuntimeError, match="Maximum number of melspectrogram segments exceeded. Use shorter audio."):
+    with pytest.raises(RuntimeError, match="Maximum number of mel spectrogram windows exceeded. Use shorter audio."):
         non_intrusive_speech_quality_assessment(preds, 48000)

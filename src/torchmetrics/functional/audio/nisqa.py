@@ -58,9 +58,9 @@ def non_intrusive_speech_quality_assessment(preds: Tensor, fs: int) -> Tensor:
         ModuleNotFoundError:
             If ``librosa`` or ``requests`` are not installed
         RuntimeError:
-            If the input is too short, causing the number of segments to be zero
+            If the input is too short, causing the number of mel spectrogram windows to be zero
         RuntimeError:
-            If the input is too long, causing the number of segments to exceed the maximum allowed
+            If the input is too long, causing the number of mel spectrogram windows to exceed the maximum allowed
 
     Example:
         >>> import torch
@@ -94,6 +94,12 @@ def non_intrusive_speech_quality_assessment(preds: Tensor, fs: int) -> Tensor:
 
 @lru_cache
 def _load_nisqa_model() -> Tuple[nn.Module, Dict[str, Any]]:
+    """Load NISQA model and its parameters.
+
+    Returns:
+        Tuple ``(model,args)`` where ``model`` is the NISQA model and ``args`` is a dictionary with all its parameters
+
+    """
     model_path = os.path.expanduser(os.path.join(NISQA_DIR, "nisqa.tar"))
     if not os.path.exists(model_path):
         _download_weights()
@@ -105,6 +111,7 @@ def _load_nisqa_model() -> Tuple[nn.Module, Dict[str, Any]]:
 
 
 def _download_weights() -> None:
+    """Download NISQA model weights."""
     url = "https://github.com/gabrielmittag/NISQA/raw/refs/heads/master/weights/nisqa.tar"
     nisqa_dir = os.path.expanduser(NISQA_DIR)
     os.makedirs(nisqa_dir, exist_ok=True)
@@ -118,6 +125,7 @@ def _download_weights() -> None:
 
 
 class _NISQADIM(nn.Module):
+    # main NISQA model definition
     # ported from https://github.com/gabrielmittag/NISQA
     # Copyright (c) 2021 Gabriel Mittag, Quality and Usability Lab
     # MIT License
@@ -136,19 +144,21 @@ class _NISQADIM(nn.Module):
 
 
 class _Framewise(nn.Module):
+    # part of NISQA model definition
     def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
         self.model = _AdaptCNN(args)
 
     def forward(self, x: Tensor, n_wins: Tensor) -> Tensor:
         x_packed = pack_padded_sequence(x, n_wins, batch_first=True, enforce_sorted=False)
-        x = self.model(x_packed.data)
+        x = self.model(x_packed.data.unsqueeze(1))
         x = x_packed._replace(data=x)
         x, _ = pad_packed_sequence(x, batch_first=True, padding_value=0.0, total_length=int(n_wins.max()))
         return x
 
 
 class _AdaptCNN(nn.Module):
+    # part of NISQA model definition
     def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
         self.pool_1 = args["cnn_pool_1"]
@@ -192,6 +202,7 @@ class _AdaptCNN(nn.Module):
 
 
 class _TimeDependency(nn.Module):
+    # part of NISQA model definition
     def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
         self.model = _SelfAttention(args)
@@ -201,6 +212,7 @@ class _TimeDependency(nn.Module):
 
 
 class _SelfAttention(nn.Module):
+    # part of NISQA model definition
     def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
         encoder_layer = _SelfAttentionLayer(args)
@@ -224,6 +236,7 @@ class _SelfAttention(nn.Module):
 
 
 class _SelfAttentionLayer(nn.Module):
+    # part of NISQA model definition
     def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
         self.self_attn = nn.MultiheadAttention(args["td_sa_d_model"], args["td_sa_nhead"], args["td_sa_dropout"])
@@ -248,6 +261,7 @@ class _SelfAttentionLayer(nn.Module):
 
 
 class _Pooling(nn.Module):
+    # part of NISQA model definition
     def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
         self.model = _PoolAttFF(args)
@@ -257,6 +271,7 @@ class _Pooling(nn.Module):
 
 
 class _PoolAttFF(torch.nn.Module):
+    # part of NISQA model definition
     def __init__(self, args: Dict[str, Any]) -> None:
         super().__init__()
         self.linear1 = nn.Linear(args["td_sa_d_model"], args["pool_att_h"])
@@ -277,11 +292,21 @@ class _PoolAttFF(torch.nn.Module):
 
 
 def _get_librosa_melspec(y: np.ndarray, sr: int, args: Dict[str, Any]) -> np.ndarray:
+    """Compute mel spectrogram from waveform using librosa.
+
+    Args:
+        y: waveform with shape ``(batch_size,time)``
+        sr: sampling rate
+        args: dictionary with all NISQA parameters
+
+    Returns:
+        Mel spectrogram with shape ``(batch_size,n_mels,n_frames)``
+
+    """
     hop_length = int(sr * args["ms_hop_length"])
     win_length = int(sr * args["ms_win_length"])
     with warnings.catch_warnings():
-        # ignore empty mel filter warning since this is expected when input signal is not fullband and the model
-        # penalizes the signal accordingly
+        # ignore empty mel filter warning since this is expected when input signal is not fullband
         # see https://github.com/gabrielmittag/NISQA/issues/6#issuecomment-838157571
         warnings.filterwarnings("ignore", message="Empty filters detected in mel frequency basis")
         melspec = librosa.feature.melspectrogram(
@@ -308,6 +333,18 @@ def _get_librosa_melspec(y: np.ndarray, sr: int, args: Dict[str, Any]) -> np.nda
 
 
 def _segment_specs(x: Tensor, args: Dict[str, Any]) -> Tuple[Tensor, Tensor]:
+    """Segment mel spectrogram into overlapping windows.
+
+    Args:
+        x: mel spectrogram with shape ``(batch_size,n_mels,n_frames)``
+        args: dictionary with all NISQA parameters
+
+    Returns:
+        Tuple ``(x_padded,n_wins)```, where ``x_padded`` is the segmented mel spectrogram with shape
+        ``(batch_size,max_length,n_mels,seg_length)`` where the second dimension is the number of windows and was
+        padded to ``max_length``, and ``n_wins`` is the number of windows and is 0-dimensional
+
+    """
     seg_length = args["ms_seg_length"]
     seg_hop = args["ms_seg_hop_length"]
     max_length = args["ms_max_segments"]
@@ -317,15 +354,16 @@ def _segment_specs(x: Tensor, args: Dict[str, Any]) -> Tuple[Tensor, Tensor]:
     idx1 = torch.arange(seg_length)
     idx2 = torch.arange(n_wins)
     idx3 = idx1.unsqueeze(0) + idx2.unsqueeze(1)
-    x = x.transpose(2, 1)[:, idx3, :].unsqueeze(2).transpose(4, 3)
+    x = x.transpose(2, 1)[:, idx3, :].transpose(3, 2)
     x = x[:, ::seg_hop]
     n_wins = math.ceil(n_wins / seg_hop)
     if max_length < n_wins:
-        raise RuntimeError("Maximum number of melspectrogram segments exceeded. Use shorter audio.")
-    x_padded = torch.zeros((x.shape[0], max_length, x.shape[2], x.shape[3], x.shape[4]))
-    x_padded[:, :n_wins, :] = x
+        raise RuntimeError("Maximum number of mel spectrogram windows exceeded. Use shorter audio.")
+    x_padded = torch.zeros((x.shape[0], max_length, x.shape[2], x.shape[3]))
+    x_padded[:, :n_wins] = x
     return x_padded, torch.tensor(n_wins)
 
 
 def _get_clones(module: nn.Module, n: int) -> nn.ModuleList:
+    """Create ``n`` copies of a module."""
     return nn.ModuleList([copy.deepcopy(module) for i in range(n)])
