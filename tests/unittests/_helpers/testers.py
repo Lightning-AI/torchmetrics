@@ -37,7 +37,7 @@ def _assert_allclose(tm_result: Any, ref_result: Any, atol: float = 1e-8, key: O
             ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result,
             atol=atol,
             equal_nan=True,
-        )
+        ), f"tm_result: {tm_result}, ref_result: {ref_result}"
     # multi output compare
     elif isinstance(tm_result, Sequence):
         for pl_res, ref_res in zip(tm_result, ref_result):
@@ -50,7 +50,7 @@ def _assert_allclose(tm_result: Any, ref_result: Any, atol: float = 1e-8, key: O
             ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result,
             atol=atol,
             equal_nan=True,
-        )
+        ), f"tm_result: {tm_result}, ref_result: {ref_result}"
     else:
         raise ValueError("Unknown format for comparison")
 
