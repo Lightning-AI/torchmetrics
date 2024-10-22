@@ -17,7 +17,6 @@ from torch import Tensor, tensor
 
 from torchmetrics.functional.regression.r2 import _r2_score_compute, _r2_score_update
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -108,21 +107,11 @@ class R2Score(Metric):
 
     def __init__(
         self,
-        num_outputs: Optional[int] = None,
         adjusted: int = 0,
         multioutput: str = "uniform_average",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-
-        if num_outputs is not None:
-            rank_zero_warn(
-                "Argument `num_outputs` in `R2Score` has been deprecated because it is no longer necessary and will be"
-                "removed in v1.6.0 of TorchMetrics. The number of outputs is now automatically inferred from the shape"
-                "of the input tensors.",
-                DeprecationWarning,
-            )
-
         if adjusted < 0 or not isinstance(adjusted, int):
             raise ValueError("`adjusted` parameter should be an integer larger or equal to 0.")
         self.adjusted = adjusted

@@ -20,7 +20,6 @@ from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.compute import _safe_xlogy
-from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
@@ -92,14 +91,6 @@ def kl_divergence(
     over data and :math:`Q` is often a prior or approximation of :math:`P`. It should be noted that the KL divergence
     is a non-symmetrical metric i.e. :math:`D_{KL}(P||Q) \neq D_{KL}(Q||P)`.
 
-    .. warning::
-        The input order and naming in metric ``kl_divergence`` is set to be deprecated in v1.4 and changed in v1.5.
-        Input argument ``p`` will be renamed to ``target`` and will be moved to be the second argument of the metric.
-        Input argument ``q`` will be renamed to ``preds`` and will be moved to the first argument of the metric.
-        Thus, ``kl_divergence(p, q)`` will equal ``kl_divergence(target=q, preds=p)`` in the future to be consistent
-        with the rest of ``torchmetrics``. From v1.4 the two new arguments will be added as keyword arguments and
-        from v1.5 the two old arguments will be removed.
-
     Args:
         p: data distribution with shape ``[N, d]``
         q: prior or approximate distribution with shape ``[N, d]``
@@ -120,14 +111,5 @@ def kl_divergence(
         tensor(0.0853)
 
     """
-    rank_zero_warn(
-        "The input order and naming in metric `kl_divergence` is set to be deprecated in v1.4 and changed in v1.5."
-        "Input argument `p` will be renamed to `target` and will be moved to be the second argument of the metric."
-        "Input argument `q` will be renamed to `preds` and will be moved to the first argument of the metric."
-        "Thus, `kl_divergence(p, q)` will equal `kl_divergence(target=q, preds=p)` in the future to be consistent with"
-        " the rest of torchmetrics. From v1.4 the two new arguments will be added as keyword arguments and from v1.5"
-        " the two old arguments will be removed.",
-        DeprecationWarning,
-    )
     measures, total = _kld_update(p, q, log_prob)
     return _kld_compute(measures, total, reduction)
