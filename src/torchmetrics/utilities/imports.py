@@ -26,6 +26,7 @@ _TORCH_GREATER_EQUAL_1_13 = RequirementCache("torch>=1.13.0")
 _TORCH_GREATER_EQUAL_2_0 = RequirementCache("torch>=2.0.0")
 _TORCH_GREATER_EQUAL_2_1 = RequirementCache("torch>=2.1.0")
 _TORCH_GREATER_EQUAL_2_2 = RequirementCache("torch>=2.2.0")
+_TORCH_GREATER_EQUAL_2_5 = RequirementCache("torch>=2.5.0")
 _TORCHMETRICS_GREATER_EQUAL_1_6 = RequirementCache("torchmetrics>=1.7.0")
 
 _NLTK_AVAILABLE = RequirementCache("nltk")
