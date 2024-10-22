@@ -21,7 +21,6 @@ from torchmetrics.functional.clustering.cluster_accuracy import _cluster_accurac
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import (
     _MATPLOTLIB_AVAILABLE,
-    _TORCH_GREATER_EQUAL_1_12,
     _TORCH_LINEAR_ASSIGNMENT_AVAILABLE,
 )
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -61,6 +60,12 @@ class ClusterAccuracy(Metric):
         num_classes: number of classes
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
+    Raises:
+        RuntimeError:
+            If ``torch_linear_assignment`` is not installed. To install, run ``pip install torchmetrics[clustering]``.
+        ValueError
+            If ``num_classes`` is not a positive integer
+
     Example::
         >>> import torch
         >>> from torchmetrics.clustering import ClusterAccuracy
@@ -81,11 +86,6 @@ class ClusterAccuracy(Metric):
 
     def __init__(self, num_classes: int, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        if not _TORCH_GREATER_EQUAL_1_12:
-            raise RuntimeError(
-                "The `ClusterAccuracy` metric requires PyTorch version greater than 1.12. Please update PyTorch."
-            )
-
         if not _TORCH_LINEAR_ASSIGNMENT_AVAILABLE:
             raise RuntimeError(
                 "Missing `torch_linear_assignment`. Please install it with `pip install torchmetrics[clustering]`."
