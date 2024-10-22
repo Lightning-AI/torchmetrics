@@ -51,10 +51,10 @@ def _reference_generalized_dice(
     if input_format == "index":
         preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
         target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
-    val = compute_generalized_dice(preds, target, include_background=include_background)
+    val = compute_generalized_dice(preds, target, include_background=include_background, sum_over_classes=True)
     if reduce:
         val = val.mean()
-    return val
+    return val.squeeze()
 
 
 @pytest.mark.parametrize(
