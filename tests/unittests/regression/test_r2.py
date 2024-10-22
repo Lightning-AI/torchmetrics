@@ -60,17 +60,17 @@ def _multi_target_ref_wrapper(preds, target, adjusted, multioutput):
 @pytest.mark.parametrize("adjusted", [0, 5, 10])
 @pytest.mark.parametrize("multioutput", ["raw_values", "uniform_average", "variance_weighted"])
 @pytest.mark.parametrize(
-    "preds, target, ref_metric, num_outputs",
+    "preds, target, ref_metric",
     [
-        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_ref_wrapper, 1),
-        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_ref_wrapper, NUM_TARGETS),
+        (_single_target_inputs.preds, _single_target_inputs.target, _single_target_ref_wrapper),
+        (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_ref_wrapper),
     ],
 )
 class TestR2Score(MetricTester):
     """Test class for `R2Score` metric."""
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_r2(self, adjusted, multioutput, preds, target, ref_metric, num_outputs, ddp):
+    def test_r2(self, adjusted, multioutput, preds, target, ref_metric, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp,
@@ -78,10 +78,10 @@ class TestR2Score(MetricTester):
             target,
             R2Score,
             partial(ref_metric, adjusted=adjusted, multioutput=multioutput),
-            metric_args={"adjusted": adjusted, "multioutput": multioutput, "num_outputs": num_outputs},
+            metric_args={"adjusted": adjusted, "multioutput": multioutput},
         )
 
-    def test_r2_functional(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
+    def test_r2_functional(self, adjusted, multioutput, preds, target, ref_metric):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds,
@@ -91,33 +91,33 @@ class TestR2Score(MetricTester):
             metric_args={"adjusted": adjusted, "multioutput": multioutput},
         )
 
-    def test_r2_differentiability(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
+    def test_r2_differentiability(self, adjusted, multioutput, preds, target, ref_metric):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         self.run_differentiability_test(
             preds=preds,
             target=target,
-            metric_module=partial(R2Score, num_outputs=num_outputs),
+            metric_module=R2Score,
             metric_functional=r2_score,
             metric_args={"adjusted": adjusted, "multioutput": multioutput},
         )
 
-    def test_r2_half_cpu(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
+    def test_r2_half_cpu(self, adjusted, multioutput, preds, target, ref_metric):
         """Test dtype support of the metric on CPU."""
         self.run_precision_test_cpu(
             preds,
             target,
-            partial(R2Score, num_outputs=num_outputs),
+            R2Score,
             r2_score,
             {"adjusted": adjusted, "multioutput": multioutput},
         )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    def test_r2_half_gpu(self, adjusted, multioutput, preds, target, ref_metric, num_outputs):
+    def test_r2_half_gpu(self, adjusted, multioutput, preds, target, ref_metric):
         """Test dtype support of the metric on GPU."""
         self.run_precision_test_gpu(
             preds,
             target,
-            partial(R2Score, num_outputs=num_outputs),
+            R2Score,
             r2_score,
             {"adjusted": adjusted, "multioutput": multioutput},
         )
