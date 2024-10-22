@@ -51,8 +51,8 @@ def non_intrusive_speech_quality_assessment(preds: Tensor, fs: int) -> Tensor:
         fs: sampling frequency of input
 
     Returns:
-        Float tensor with shape ``(...,5)`` corresponding to overall MOS, noisiness, coloration, discontinuity and
-        loudness
+        Float tensor with shape ``(...,5)`` corresponding to overall MOS, noisiness, discontinuity, coloration and
+        loudness in that order
 
     Raises:
         ModuleNotFoundError:
@@ -89,6 +89,8 @@ def non_intrusive_speech_quality_assessment(preds: Tensor, fs: int) -> Tensor:
     with torch.no_grad():
         x = model(x, n_wins.expand(x.shape[0]))
     # ["mos_pred", "noi_pred", "dis_pred", "col_pred", "loud_pred"]
+    # the dimensions are always listed in the papers as MOS, noisiness, coloration, discontinuity and loudness
+    # but based on original code the actual model output order is MOS, noisiness, discontinuity, coloration, loudness
     return x.reshape(preds.shape[:-1] + (5,))
 
 

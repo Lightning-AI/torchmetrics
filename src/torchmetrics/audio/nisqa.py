@@ -41,7 +41,7 @@ class NonIntrusiveSpeechQualityAssessment(Metric):
     As output of ``forward`` and ``compute`` the metric returns the following output
 
     - ``nisqa`` (:class:`~torch.Tensor`): float tensor reduced across the batch with shape ``(5,)`` corresponding to
-      overall MOS, noisiness, coloration, discontinuity and loudness.
+      overall MOS, noisiness, discontinuity, coloration and loudness in that order
 
     .. note:: Using this metric requires you to have ``librosa`` and ``requests`` installed. Install as
         ``pip install librosa requests``.
