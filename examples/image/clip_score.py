@@ -19,6 +19,7 @@ from torchmetrics.multimodal import CLIPScore
 
 # %%
 # Get sample images
+
 images = {
     "astronaut": astronaut(),
     "cat": cat(),
@@ -27,6 +28,7 @@ images = {
 
 # %%
 # Define a hypothetical captions for the images
+
 captions = [
     "A photo of an astronaut.",
     "A photo of a cat.",
@@ -35,6 +37,7 @@ captions = [
 
 # %%
 # Define the models for CLIPScore
+
 models = [
     "openai/clip-vit-base-patch16",
     # "openai/clip-vit-base-patch32",
@@ -44,6 +47,7 @@ models = [
 
 # %%
 # Collect scores for each image-caption pair
+
 score_results = []
 for model in models:
     clip_score = CLIPScore(model_name_or_path=model)
@@ -54,6 +58,7 @@ for model in models:
 
 # %%
 # Create an animation to display the scores
+
 fig, (ax_img, ax_table) = plt.subplots(1, 2, figsize=(10, 5))
 
 
