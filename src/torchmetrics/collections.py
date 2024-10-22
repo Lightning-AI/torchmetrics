@@ -14,7 +14,7 @@
 # this is just a bypass for this module name collision with built-in one
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, Dict, Hashable, Iterable, Iterator, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Hashable, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -499,11 +499,12 @@ class MetricCollection(ModuleDict):
         name = base if self.prefix is None else self.prefix + base
         return name if self.postfix is None else name + self.postfix
 
-    def _to_renamed_ordered_dict(self) -> OrderedDict:
-        od = OrderedDict()
+    def _to_renamed_dict(self) -> Mapping[str, Metric]:
+        # self._modules changed from OrderedDict to dict as of PyTorch 2.5.0
+        dict_modules = OrderedDict() if isinstance(self._modules, OrderedDict) else {}
         for k, v in self._modules.items():
-            od[self._set_name(k)] = v
-        return od
+            dict_modules[self._set_name(k)] = v
+        return dict_modules
 
     def __iter__(self) -> Iterator[Hashable]:
         """Return an iterator over the keys of the MetricDict."""
@@ -519,7 +520,7 @@ class MetricCollection(ModuleDict):
         """
         if keep_base:
             return self._modules.keys()
-        return self._to_renamed_ordered_dict().keys()
+        return self._to_renamed_dict().keys()
 
     def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[Tuple[str, Metric]]:
         r"""Return an iterable of the ModuleDict key/value pairs.
@@ -533,7 +534,7 @@ class MetricCollection(ModuleDict):
         self._compute_groups_create_state_ref(copy_state)
         if keep_base:
             return self._modules.items()
-        return self._to_renamed_ordered_dict().items()
+        return self._to_renamed_dict().items()
 
     def values(self, copy_state: bool = True) -> Iterable[Metric]:
         """Return an iterable of the ModuleDict values.
