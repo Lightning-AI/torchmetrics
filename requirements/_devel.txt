@@ -20,5 +20,6 @@
 -r detection_test.txt
 -r image_test.txt
 -r nominal_test.txt
+-r regression_test.txt
 -r segmentation_test.txt
 -r text_test.txt
