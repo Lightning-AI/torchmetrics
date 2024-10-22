@@ -20,14 +20,8 @@ import torch
 from torch import Tensor
 from torchmetrics.audio.nisqa import NonIntrusiveSpeechQualityAssessment
 from torchmetrics.functional.audio.nisqa import non_intrusive_speech_quality_assessment
-from torchmetrics.utilities.imports import _LIBROSA_AVAILABLE
 
 from unittests._helpers.testers import MetricTester
-
-if _LIBROSA_AVAILABLE:
-    import librosa
-else:
-    librosa = None
 
 # reference values below were calculated using the method described in https://github.com/gabrielmittag/NISQA/blob/master/README.md
 inputs = [
