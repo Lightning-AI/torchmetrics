@@ -32,7 +32,7 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class NonIntrusiveSpeechQualityAssessment(Metric):
-    """Non-Intrusive Speech Quality Assessment (NISQA v2.0) [1], [2].
+    """`Non-Intrusive Speech Quality Assessment`_ (NISQA v2.0) [1], [2].
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 

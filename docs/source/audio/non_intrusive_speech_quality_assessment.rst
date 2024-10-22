@@ -3,6 +3,8 @@
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/audio_classification.svg
    :tags: Audio
 
+.. include:: ../links.rst
+
 ####################################################
 Non-Intrusive Speech Quality Assessment (NISQA v2.0)
 ####################################################
