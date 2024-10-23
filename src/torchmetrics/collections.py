@@ -38,6 +38,7 @@ def _remove_prefix(string: str, prefix: str) -> str:
     'string'
     >>> _remove_prefix("not_prefix_string", "prefix_")
     'not_prefix_string'
+
     """
     return string[len(prefix) :] if string.startswith(prefix) else string
 
@@ -49,6 +50,7 @@ def _remove_suffix(string: str, suffix: str) -> str:
     'string'
     >>> _remove_suffix("string_suffix_missing", "_suffix")
     'string_suffix_missing'
+
     """
     return string[: -len(suffix)] if string.endswith(suffix) else string
 
