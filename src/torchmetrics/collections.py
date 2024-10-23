@@ -31,6 +31,30 @@ if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MetricCollection.plot", "MetricCollection.plot_all"]
 
 
+def _remove_prefix(string: str, prefix: str) -> str:
+    """Patch for older version with missing method `removeprefix`.
+
+    >>> _remove_prefix("prefix_string", "prefix_")
+    'string'
+    >>> _remove_prefix("not_prefix_string", "prefix_")
+    'not_prefix_string'
+
+    """
+    return string[len(prefix) :] if string.startswith(prefix) else string
+
+
+def _remove_suffix(string: str, suffix: str) -> str:
+    """Patch for older version with missing method `removesuffix`.
+
+    >>> _remove_suffix("string_suffix", "_suffix")
+    'string'
+    >>> _remove_suffix("string_suffix_missing", "_suffix")
+    'string_suffix_missing'
+
+    """
+    return string[: -len(suffix)] if string.endswith(suffix) else string
+
+
 class MetricCollection(ModuleDict):
     """MetricCollection class can be used to chain metrics that have the same call pattern into one single class.
 
@@ -558,9 +582,9 @@ class MetricCollection(ModuleDict):
         """
         self._compute_groups_create_state_ref(copy_state)
         if self.prefix:
-            key = key.removeprefix(self.prefix)
+            key = _remove_prefix(key, self.prefix)
         if self.postfix:
-            key = key.removesuffix(self.postfix)
+            key = _remove_suffix(key, self.postfix)
         return self._modules[key]
 
     @staticmethod
