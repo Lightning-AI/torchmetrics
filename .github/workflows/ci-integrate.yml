@@ -53,6 +53,8 @@ jobs:
 
       - name: source cashing
         uses: ./.github/actions/pull-caches
+        with:
+          requires: ${{ matrix.requires }}
       - name: set oldest if/only for integrations
         if: matrix.requires == 'oldest'
         run: python .github/assistant.py set-oldest-versions --req_files='["requirements/_integrate.txt"]'

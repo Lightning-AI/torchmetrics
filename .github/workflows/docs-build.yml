@@ -44,7 +44,6 @@ jobs:
       - name: source cashing
         uses: ./.github/actions/pull-caches
         with:
-          requires: ${{ matrix.requires }}
           pytorch-version: ${{ matrix.pytorch-version }}
           pypi-dir: ${{ env.PYPI_CACHE }}
 
