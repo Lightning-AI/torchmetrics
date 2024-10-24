@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import Any, List, Optional, Sequence, Union
 
-import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -23,6 +22,7 @@ from torchmetrics.functional.segmentation.dice import (
     _dice_score_validate_args,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
@@ -57,7 +57,8 @@ class DiceScore(Metric):
 
         - ``gds`` (:class:`~torch.Tensor`): The dice score. If ``average`` is set to ``None`` or ``"none"`` the output
           will be a tensor of shape ``(C,)`` with the dice score for each class. If ``average`` is set to
-          ``"micro"``, ``"macro"``, or ``"weighted"`` the output will be a scalar tensor.
+          ``"micro"``, ``"macro"``, or ``"weighted"`` the output will be a scalar tensor. The score is an average over
+          all samples.
 
     Args:
         num_classes: The number of classes in the segmentation problem.
@@ -100,6 +101,7 @@ class DiceScore(Metric):
 
     numerator: List[Tensor]
     denominator: List[Tensor]
+    support: List[Tensor]
 
     def __init__(
         self,
@@ -117,20 +119,28 @@ class DiceScore(Metric):
         self.input_format = input_format
 
         num_classes = num_classes - 1 if not include_background else num_classes
-        self.add_state("numerator", torch.zeros(num_classes), dist_reduce_fx="sum")
-        self.add_state("denominator", torch.zeros(num_classes), dist_reduce_fx="sum")
+        self.add_state("numerator", [], dist_reduce_fx="cat")
+        self.add_state("denominator", [], dist_reduce_fx="cat")
+        self.add_state("support", [], dist_reduce_fx="cat")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the state with new data."""
-        numerator, denominator = _dice_score_update(
+        numerator, denominator, support = _dice_score_update(
             preds, target, self.num_classes, self.include_background, self.input_format
         )
-        self.numerator += numerator.sum(dim=0)
-        self.denominator += denominator.sum(dim=0)
+        self.numerator.append(numerator)
+        self.denominator.append(denominator)
+        if self.average == "weighted":
+            self.support.append(support)
 
     def compute(self) -> Tensor:
         """Computes the Dice Score."""
-        return _dice_score_compute(self.numerator, self.denominator, self.average)
+        return _dice_score_compute(
+            dim_zero_cat(self.numerator),
+            dim_zero_cat(self.denominator),
+            self.average,
+            support=dim_zero_cat(self.support) if self.average == "weighted" else None,
+        ).mean(dim=0)
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.

@@ -47,6 +47,7 @@ def _dice_score_update(
     include_background: bool,
     input_format: Literal["one-hot", "index"] = "one-hot",
 ) -> Tensor:
+    """Update the state with the current prediction and target."""
     _check_same_shape(preds, target)
     if preds.ndim < 3:
         raise ValueError(f"Expected both `preds` and `target` to have at least 3 dimensions, but got {preds.ndim}.")
@@ -56,7 +57,7 @@ def _dice_score_update(
         target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
 
     if not include_background:
-        preds, target = _ignore_background(preds, target, num_classes)
+        preds, target = _ignore_background(preds, target)
 
     reduce_axis = list(range(2, target.ndim))
     intersection = torch.sum(preds * target, dim=reduce_axis)
@@ -65,23 +66,26 @@ def _dice_score_update(
 
     numerator = 2 * intersection
     denominator = pred_sum + target_sum
-    return numerator, denominator
+    support = target_sum
+    return numerator, denominator, support
 
 
 def _dice_score_compute(
     numerator: Tensor,
     denominator: Tensor,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    support: Optional[Tensor] = None,
 ) -> Tensor:
+    """Compute the Dice score from the numerator and denominator."""
     if average == "micro":
         numerator = torch.sum(numerator, dim=-1)
         denominator = torch.sum(denominator, dim=-1)
     dice = _safe_divide(numerator, denominator, zero_division=1.0)
     if average == "macro":
-        dice = torch.mean(dice)
-    elif average == "weighted":
-        weights = _safe_divide(denominator, torch.sum(denominator), zero_division=1.0)
-        dice = torch.sum(dice * weights)
+        dice = torch.mean(dice, dim=-1)
+    elif average == "weighted" and support is not None:
+        weights = _safe_divide(support, torch.sum(support, dim=-1, keepdim=True), zero_division=1.0)
+        dice = torch.sum(dice * weights, dim=-1)
     return dice
 
 
@@ -140,5 +144,5 @@ def dice_score(
 
     """
     _dice_score_validate_args(num_classes, include_background, average, input_format)
-    numerator, denominator = _dice_score_update(preds, target, num_classes, include_background, input_format)
-    return _dice_score_compute(numerator, denominator, average)
+    numerator, denominator, support = _dice_score_update(preds, target, num_classes, include_background, input_format)
+    return _dice_score_compute(numerator, denominator, average, support=support)
