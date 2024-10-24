@@ -86,10 +86,10 @@ class DiceScore(Metric):
         >>> target = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 target
         >>> dice_score = DiceScore(num_classes=5, average="micro")
         >>> dice_score(preds, target)
-        tensor(0.4993)
+        tensor(0.4941)
         >>> dice_score = DiceScore(num_classes=5, average="none")
         >>> dice_score(preds, target)
-        tensor([0.4993, 0.5002, 0.5004, 0.4996, 0.5000])
+        tensor([0.4860, 0.4999, 0.5014, 0.4885, 0.4915])
 
     """
 
