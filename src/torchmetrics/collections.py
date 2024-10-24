@@ -14,7 +14,7 @@
 # this is just a bypass for this module name collision with built-in one
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, Dict, Hashable, Iterable, Iterator, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Hashable, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -29,6 +29,30 @@ from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MetricCollection.plot", "MetricCollection.plot_all"]
+
+
+def _remove_prefix(string: str, prefix: str) -> str:
+    """Patch for older version with missing method `removeprefix`.
+
+    >>> _remove_prefix("prefix_string", "prefix_")
+    'string'
+    >>> _remove_prefix("not_prefix_string", "prefix_")
+    'not_prefix_string'
+
+    """
+    return string[len(prefix) :] if string.startswith(prefix) else string
+
+
+def _remove_suffix(string: str, suffix: str) -> str:
+    """Patch for older version with missing method `removesuffix`.
+
+    >>> _remove_suffix("string_suffix", "_suffix")
+    'string'
+    >>> _remove_suffix("string_suffix_missing", "_suffix")
+    'string_suffix_missing'
+
+    """
+    return string[: -len(suffix)] if string.endswith(suffix) else string
 
 
 class MetricCollection(ModuleDict):
@@ -499,11 +523,12 @@ class MetricCollection(ModuleDict):
         name = base if self.prefix is None else self.prefix + base
         return name if self.postfix is None else name + self.postfix
 
-    def _to_renamed_ordered_dict(self) -> OrderedDict:
-        od = OrderedDict()
+    def _to_renamed_dict(self) -> Mapping[str, Metric]:
+        # self._modules changed from OrderedDict to dict as of PyTorch 2.5.0
+        dict_modules = OrderedDict() if isinstance(self._modules, OrderedDict) else {}
         for k, v in self._modules.items():
-            od[self._set_name(k)] = v
-        return od
+            dict_modules[self._set_name(k)] = v
+        return dict_modules
 
     def __iter__(self) -> Iterator[Hashable]:
         """Return an iterator over the keys of the MetricDict."""
@@ -519,7 +544,7 @@ class MetricCollection(ModuleDict):
         """
         if keep_base:
             return self._modules.keys()
-        return self._to_renamed_ordered_dict().keys()
+        return self._to_renamed_dict().keys()
 
     def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[Tuple[str, Metric]]:
         r"""Return an iterable of the ModuleDict key/value pairs.
@@ -533,7 +558,7 @@ class MetricCollection(ModuleDict):
         self._compute_groups_create_state_ref(copy_state)
         if keep_base:
             return self._modules.items()
-        return self._to_renamed_ordered_dict().items()
+        return self._to_renamed_dict().items()
 
     def values(self, copy_state: bool = True) -> Iterable[Metric]:
         """Return an iterable of the ModuleDict values.
@@ -557,9 +582,9 @@ class MetricCollection(ModuleDict):
         """
         self._compute_groups_create_state_ref(copy_state)
         if self.prefix:
-            key = key.removeprefix(self.prefix)
+            key = _remove_prefix(key, self.prefix)
         if self.postfix:
-            key = key.removesuffix(self.postfix)
+            key = _remove_suffix(key, self.postfix)
         return self._modules[key]
 
     @staticmethod

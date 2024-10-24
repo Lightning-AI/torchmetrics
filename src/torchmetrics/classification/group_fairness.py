@@ -302,25 +302,23 @@ class BinaryFairness(_AbstractGroupStatScores):
         .. plot::
             :scale: 75
 
-            >>> import torch
-            >>> _ = torch.manual_seed(42)
+            >>> from torch import ones, rand, randint
             >>> # Example plotting a single value
             >>> from torchmetrics.classification import BinaryFairness
             >>> metric = BinaryFairness(2)
-            >>> metric.update(torch.rand(20), torch.randint(2,(20,)), torch.randint(2,(20,)))
+            >>> metric.update(rand(20), randint(2, (20,)), ones(20).long())
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
             :scale: 75
 
-            >>> import torch
-            >>> _ = torch.manual_seed(42)
+            >>> from torch import ones, rand, randint
             >>> # Example plotting multiple values
             >>> from torchmetrics.classification import BinaryFairness
             >>> metric = BinaryFairness(2)
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(torch.rand(20), torch.randint(2,(20,)), torch.ones(20).long()))
+            ...     values.append(metric(rand(20), randint(2, (20,) ), ones(20).long()))
             >>> fig_, ax_ = metric.plot(values)
 
         """

@@ -138,10 +138,10 @@ def theils_u(
         Tensor containing Theil's U statistic
 
     Example:
+        >>> from torch import randint
         >>> from torchmetrics.functional.nominal import theils_u
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.randint(10, (10,))
-        >>> target = torch.randint(10, (10,))
+        >>> preds = randint(10, (10,))
+        >>> target = randint(10, (10,))
         >>> theils_u(preds, target)
         tensor(0.8530)
 
@@ -172,9 +172,9 @@ def theils_u_matrix(
         Theil's U statistic for a dataset of categorical variables
 
     Example:
+        >>> from torch import randint
         >>> from torchmetrics.functional.nominal import theils_u_matrix
-        >>> _ = torch.manual_seed(42)
-        >>> matrix = torch.randint(0, 4, (200, 5))
+        >>> matrix = randint(0, 4, (200, 5))
         >>> theils_u_matrix(matrix)
         tensor([[1.0000, 0.0202, 0.0142, 0.0196, 0.0353],
                 [0.0202, 1.0000, 0.0070, 0.0136, 0.0065],

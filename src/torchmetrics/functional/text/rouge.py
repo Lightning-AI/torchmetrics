@@ -48,10 +48,10 @@ def _ensure_nltk_punkt_is_downloaded() -> None:
     import nltk
 
     try:
-        nltk.data.find("tokenizers/punkt")
+        nltk.data.find("tokenizers/punkt_tab")
     except LookupError:
         try:
-            nltk.download("punkt", quiet=True, force=False, halt_on_error=False, raise_on_error=True)
+            nltk.download("punkt_tab", quiet=True, force=False, halt_on_error=False, raise_on_error=True)
         except ValueError as err:
             raise OSError(
                 "`nltk` resource `punkt` is not available on a disk and cannot be downloaded as a machine is not "

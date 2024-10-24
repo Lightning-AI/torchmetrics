@@ -3,6 +3,7 @@
     import torch
     from torch.nn import Module
     from lightning.pytorch import LightningModule
+    from lightning.pytorch.utilities import rank_zero_only
     from torchmetrics import Metric
 
 #################################
@@ -14,8 +15,8 @@ framework designed for scaling models without boilerplate.
 
 .. note::
 
-    TorchMetrics always offers compatibility with the last 2 major PyTorch Lightning versions, but we recommend to always keep both frameworks
-    up-to-date for the best experience.
+    TorchMetrics always offers compatibility with the last 2 major PyTorch Lightning versions, but we recommend always
+    keeping both frameworks up-to-date for the best experience.
 
 While TorchMetrics was built to be used with native PyTorch, using TorchMetrics with Lightning offers additional benefits:
 
@@ -73,7 +74,7 @@ method, Lightning will log the metric based on ``on_step`` and ``on_epoch`` flag
     ``sync_dist``, ``sync_dist_group`` and ``reduce_fx`` flags from ``self.log(...)`` don't affect the metric logging
     in any manner. The metric class contains its own distributed synchronization logic.
 
-    This however is only true for metrics that inherit the base class ``Metric``,
+    This, however is only true for metrics that inherit the base class ``Metric``,
     and thus the functional metric API provides no support for in-built distributed synchronization
     or reduction functions.
 
@@ -107,7 +108,7 @@ also manually log the output of the metrics.
 
     class MyModule(LightningModule):
 
-        def __init__(self):
+        def __init__(self, num_classes):
             ...
             self.train_acc = torchmetrics.classification.Accuracy(task="multiclass", num_classes=num_classes)
             self.valid_acc = torchmetrics.classification.Accuracy(task="multiclass", num_classes=num_classes)
@@ -156,12 +157,84 @@ Additionally, we highly recommend that the two ways of logging are not mixed as 
                 self.valid_acc.update(logits, y)
                 self.log('valid_acc', self.valid_acc, on_step=True, on_epoch=True)
 
+In general if you are logging multiple metrics we highly recommend that you combine them into a single metric object
+using the :class:`~torchmetrics.MetricCollection` class and then replacing the ``self.log`` calls with ``self.log_dict``,
+assuming that all metrics receive the same input.
+
+.. testcode:: python
+
+    class MyModule(LightningModule):
+
+        def __init__(self):
+            ...
+            self.train_metrics = torchmetrics.MetricCollection(
+                {
+                    "accuracy": torchmetrics.classification.Accuracy(task="multiclass", num_classes=num_classes),
+                    "f1": torchmetrics.classification.F1(task="multiclass", num_classes=num_classes),
+                },
+                prefix="train_",
+            )
+            self.valid_metrics = self.train_metrics.clone(prefix="valid_")
+
+        def training_step(self, batch, batch_idx):
+            x, y = batch
+            preds = self(x)
+            ...
+            batch_value = self.train_metrics(preds, y)
+            self.log_dict(batch_value)
+
+        def on_train_epoch_end(self):
+            self.train_metrics.reset()
+
+        def validation_step(self, batch, batch_idx):
+            logits = self(x)
+            ...
+            self.valid_metrics.update(logits, y)
+
+        def on_validation_epoch_end(self, outputs):
+            self.log_dict(self.valid_metrics.compute())
+            self.valid_metrics.reset()
 
 ***************
 Common Pitfalls
 ***************
 
 The following contains a list of pitfalls to be aware of:
+
+* Logging a `MetricCollection` object directly using ``self.log_dict`` is only supported if all metrics in the
+  collection return a scalar tensor. If any of the metrics in the collection return a non-scalar tensor,
+  the logging will fail. This can especially happen when either nesting multiple ``MetricCollection`` objects or when
+  using wrapper metrics such as :class:`~torchmetrics.wrappers.ClasswiseWrapper`,
+  :class:`~torchmetrics.wrappers.MinMaxMetric` etc. inside a ``MetricCollection`` since all these wrappers return
+  dicts or lists of tensors. It is still possible to log such nested metrics manually because the ``MetricCollection``
+  object will try to flatten everything into a single dict. Example:
+
+.. testcode:: python
+
+    class MyModule(LightningModule):
+
+        def __init__(self):
+            super().__init__()
+            self.train_metrics = MetricCollection(
+                {
+                    "macro_accuracy": MinMaxMetric(MulticlassAccuracy(num_classes=5, average="macro")),
+                    "weighted_accuracy": MinMaxMetric(MulticlassAccuracy(num_classes=5, average="weighted")),
+                },
+                prefix="train_",
+            )
+
+        def training_step(self, batch, batch_idx):
+            ...
+            # logging the MetricCollection object directly will fail
+            self.log_dict(self.train_metrics(preds, target))
+
+            # manually computing the result and then logging will work
+            batch_values = self.train_metrics(preds, target)
+            self.log_dict(batch_values, on_step=True, on_epoch=False)
+            ...
+
+        def on_train_epoch_end(self):
+            self.train_metrics.reset()
 
 * Modular metrics contain internal states that should belong to only one DataLoader. In case you are using multiple DataLoaders,
   it is recommended to initialize a separate modular metric instances for each DataLoader and use them separately. The same holds
@@ -193,8 +266,31 @@ The following contains a list of pitfalls to be aware of:
   Because the object is logged in the first case, Lightning will reset the metric before calling the second line leading
   to errors or nonsense results.
 
+* If you decorate a lightning method with the ``rank_zero_only`` decorator with the goal of only calculating a particular
+    metric on the main process, you need to disable the default behavior of the metric to synchronize the metric values
+    across all processes. This can be done by setting the ``sync_on_compute`` flag to ``False`` when initializing the
+    metric. Not doing so can lead to race conditions and processes hanging.
+
+.. testcode:: python
+
+    class MyModule(LightningModule):
+
+        def __init__(self, num_classes):
+            ...
+            self.metric = torchmetrics.image.FrechetInceptionDistance(sync_on_compute=False)
+
+        @rank_zero_only
+        def validation_step(self, batch, batch_idx):
+            image, target = batch
+            generated_image = self(x)
+            ...
+            self.metric(image, real=True)
+            self.metric(generated_image, real=False)
+            val = self.metric.compute()  # this will only be called on the main process
+            self.log('val_fid', val)
+
 * Calling ``self.log("val", self.metric(preds, target))`` with the intention of logging the metric object. Because
-  ``self.metric(preds, target)`` corresponds to calling the forward method, this will return a tensor and not the
+  ``self.metric(preds, target)`` corresponds to calling the ``forward`` method, this will return a tensor and not the
   metric object. Such logging will be wrong in this case. Instead, it is essential to separate into several lines:
 
 .. testcode:: python
@@ -207,7 +303,8 @@ The following contains a list of pitfalls to be aware of:
         self.accuracy(preds, y)  # compute metrics
         self.log('train_acc_step', self.accuracy)  # log metric object
 
-* Using :class:`~torchmetrics.wrappers.MetricTracker` wrapper with Lightning is a special case, because the wrapper in itself is not a metric
-  i.e. it does not inherit from the base :class:`~torchmetrics.Metric` class but instead from :class:`~torch.nn.ModuleList`. Thus,
-  to log the output of this metric one needs to manually log the returned values (not the object) using ``self.log``
-  and for epoch level logging this should be done in the appropriate ``on_{train|validation|test}_epoch_end`` method.
+* Using :class:`~torchmetrics.wrappers.MetricTracker` wrapper with Lightning is a special case, because the wrapper in
+  itself is not a metric i.e. it does not inherit from the base :class:`~torchmetrics.Metric` class but instead from
+  :class:`~torch.nn.ModuleList`. Thus, to log the output of this metric one needs to manually log the returned values
+  (not the object) using ``self.log`` and for epoch level logging this should be done in the appropriate
+  ``on_{train|validation|test}_epoch_end`` method.

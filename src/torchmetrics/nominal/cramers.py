@@ -69,10 +69,10 @@ class CramersV(Metric):
 
     Example::
 
+        >>> from torch import randint, randn
         >>> from torchmetrics.nominal import CramersV
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.randint(0, 4, (100,))
-        >>> target = torch.round(preds + torch.randn(100)).clamp(0, 4)
+        >>> preds = randint(0, 4, (100,))
+        >>> target = (preds + randn(100)).round().clamp(0, 4)
         >>> cramers_v = CramersV(num_classes=5)
         >>> cramers_v(preds, target)
         tensor(0.5284)

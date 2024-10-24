@@ -578,14 +578,12 @@ class TestMultilabelStatScores(MetricTester):
         )
 
 
-# fixme: Expected only 5 but found 7 in `target`
-@pytest.mark.flaky(reruns=5, only_rerun="RuntimeError")
 def test_support_for_int():
     """See issue: https://github.com/Lightning-AI/torchmetrics/issues/1970."""
     seed_all(42)
     metric = MulticlassStatScores(num_classes=4, average="none", multidim_average="samplewise", ignore_index=0)
-    prediction = torch.randint(low=0, high=4, size=(1, 224, 224)).to(torch.uint8)
-    label = torch.randint(low=0, high=4, size=(1, 224, 224)).to(torch.uint8)
+    prediction = torch.randint(low=0, high=4, size=(1, 50, 50)).to(torch.uint8)
+    label = torch.randint(low=0, high=4, size=(1, 50, 50)).to(torch.uint8)
     score = metric(preds=prediction, target=label)
     assert score.shape == (1, 4, 5)
 

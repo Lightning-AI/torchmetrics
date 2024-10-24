@@ -15,9 +15,9 @@ from typing import Optional
 
 import torch
 
-from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_13
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
-if not _TORCHVISION_GREATER_EQUAL_0_13:
+if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["complete_intersection_over_union"]
 
 
@@ -113,11 +113,10 @@ def complete_intersection_over_union(
                 [-0.3971, -0.1543,  0.5606]])
 
     """
-    if not _TORCHVISION_GREATER_EQUAL_0_13:
+    if not _TORCHVISION_AVAILABLE:
         raise ModuleNotFoundError(
-            f"`{complete_intersection_over_union.__name__}` requires that `torchvision` version 0.13.0 or newer"
-            " is installed."
-            " Please install with `pip install torchvision>=0.13` or `pip install torchmetrics[detection]`."
+            f"`{complete_intersection_over_union.__name__}` requires that `torchvision` is installed."
+            " Please install with `pip install torchmetrics[detection]`."
         )
     iou = _ciou_update(preds, target, iou_threshold, replacement_val)
     return _ciou_compute(iou, aggregate)
