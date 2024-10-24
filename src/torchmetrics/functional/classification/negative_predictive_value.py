@@ -42,16 +42,18 @@ def _negative_predictive_value_reduce(
     average: Optional[Literal["binary", "micro", "macro", "weighted", "none"]],
     multidim_average: Literal["global", "samplewise"] = "global",
     multilabel: bool = False,
+    top_k: int = 1,
+    zero_division: float = 0,
 ) -> Tensor:
+    """Reduction logic for negative predictive value."""
     if average == "binary":
-        return _safe_divide(tn, tn + fn)
+        return _safe_divide(tn, tn + fn, zero_division)
     if average == "micro":
         tn = tn.sum(dim=0 if multidim_average == "global" else 1)
         fn = fn.sum(dim=0 if multidim_average == "global" else 1)
-        return _safe_divide(tn, tn + fn)
-
-    negative_predictive_value_score = _safe_divide(tn, tn + fn)
-    return _adjust_weights_safe_divide(negative_predictive_value_score, average, multilabel, tp, fp, fn)
+        return _safe_divide(tn, tn + fn, zero_division)
+    score = _safe_divide(tn, tn + fn, zero_division)
+    return _adjust_weights_safe_divide(score, average, multilabel, tp, fp, fn, top_k=top_k)
 
 
 def binary_negative_predictive_value(
@@ -61,13 +63,14 @@ def binary_negative_predictive_value(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
-    r"""Compute `Specificity`_ for binary tasks.
+    r"""Compute `Negative Predictive Value`_ for binary tasks.
 
-    .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
+    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FN}}
 
-    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and
-    false positives respecitively.
+    Where :math:`\text{TN}` and :math:`\text{FN}` represent the number of true negatives and
+    false negatives respecitively.
 
     Accepts the following input tensors:
 
@@ -91,6 +94,7 @@ def binary_negative_predictive_value(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
 
     Returns:
         If ``multidim_average`` is set to ``global``, the metric returns a scalar value. If ``multidim_average``
@@ -117,7 +121,7 @@ def binary_negative_predictive_value(
         >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
         ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> binary_negative_predictive_value(preds, target, multidim_average='samplewise')
-        tensor([0.0000, 0.3333])
+        tensor([0.0000, 0.2500])
 
     """
     if validate_args:
@@ -125,7 +129,9 @@ def binary_negative_predictive_value(
         _binary_stat_scores_tensor_validation(preds, target, multidim_average, ignore_index)
     preds, target = _binary_stat_scores_format(preds, target, threshold, ignore_index)
     tp, fp, tn, fn = _binary_stat_scores_update(preds, target, multidim_average)
-    return _negative_predictive_value_reduce(tp, fp, tn, fn, average="binary", multidim_average=multidim_average)
+    return _negative_predictive_value_reduce(
+        tp, fp, tn, fn, average="binary", multidim_average=multidim_average, zero_division=zero_division
+    )
 
 
 def multiclass_negative_predictive_value(
@@ -137,13 +143,14 @@ def multiclass_negative_predictive_value(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
-    r"""Compute `Specificity`_ for multiclass tasks.
+    r"""Compute `Negative Predictive Value`_ for multiclass tasks.
 
-    .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
+    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FN}}
 
-    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and
-    false positives respecitively.
+    Where :math:`\text{TN}` and :math:`\text{FN}` represent the number of true negatives and
+    false negatives respecitively.
 
     Accepts the following input tensors:
 
@@ -178,6 +185,7 @@ def multiclass_negative_predictive_value(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
@@ -200,7 +208,7 @@ def multiclass_negative_predictive_value(
         >>> multiclass_negative_predictive_value(preds, target, num_classes=3)
         tensor(0.8889)
         >>> multiclass_negative_predictive_value(preds, target, num_classes=3, average=None)
-        tensor([1.0000, 0.6667, 1.0000])
+        tensor([0.6667, 1.0000, 1.0000])
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multiclass_negative_predictive_value
@@ -212,17 +220,19 @@ def multiclass_negative_predictive_value(
         >>> multiclass_negative_predictive_value(preds, target, num_classes=3)
         tensor(0.8889)
         >>> multiclass_negative_predictive_value(preds, target, num_classes=3, average=None)
-        tensor([1.0000, 0.6667, 1.0000])
+        tensor([0.6667, 1.0000, 1.0000])
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import multiclass_negative_predictive_value
         >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_negative_predictive_value(preds, target, num_classes=3, multidim_average='samplewise')
-        tensor([0.7500, 0.6556])
-        >>> multiclass_negative_predictive_value(preds, target, num_classes=3, multidim_average='samplewise', average=None)
-        tensor([[0.7500, 0.7500, 0.7500],
-                [0.8000, 0.6667, 0.5000]])
+        tensor([0.7833, 0.6556])
+        >>> multiclass_negative_predictive_value(
+        ...     preds, target, num_classes=3, multidim_average='samplewise', average=None
+        ... )
+        tensor([[1.0000, 0.6000, 0.7500],
+                [0.8000, 0.5000, 0.6667]])
 
     """
     if validate_args:
@@ -232,7 +242,9 @@ def multiclass_negative_predictive_value(
     tp, fp, tn, fn = _multiclass_stat_scores_update(
         preds, target, num_classes, top_k, average, multidim_average, ignore_index
     )
-    return _negative_predictive_value_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average)
+    return _negative_predictive_value_reduce(
+        tp, fp, tn, fn, average=average, multidim_average=multidim_average, top_k=top_k, zero_division=zero_division
+    )
 
 
 def multilabel_negative_predictive_value(
@@ -244,13 +256,14 @@ def multilabel_negative_predictive_value(
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
-    r"""Compute `Specificity`_ for multilabel tasks.
+    r"""Compute `Negative Predictive Value`_ for multilabel tasks.
 
-    .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
+    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FN}}
 
-    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and
-    false positives respecitively.
+    Where :math:`\text{TN}` and :math:`\text{FN}` represent the number of true negatives and
+    false negatives respecitively.
 
     Accepts the following input tensors:
 
@@ -283,6 +296,7 @@ def multilabel_negative_predictive_value(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+        zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
 
     Returns:
         The returned shape depends on the ``average`` and ``multidim_average`` arguments:
@@ -303,18 +317,18 @@ def multilabel_negative_predictive_value(
         >>> target = tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
         >>> multilabel_negative_predictive_value(preds, target, num_labels=3)
-        tensor(0.6667)
+        tensor(0.5000)
         >>> multilabel_negative_predictive_value(preds, target, num_labels=3, average=None)
-        tensor([1., 1., 0.])
+        tensor([1.0000, 0.5000, 0.0000])
 
     Example (preds is float tensor):
         >>> from torchmetrics.functional.classification import multilabel_negative_predictive_value
         >>> target = tensor([[0, 1, 0], [1, 0, 1]])
         >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> multilabel_negative_predictive_value(preds, target, num_labels=3)
-        tensor(0.6667)
+        tensor(0.5000)
         >>> multilabel_negative_predictive_value(preds, target, num_labels=3, average=None)
-        tensor([1., 1., 0.])
+        tensor([1.0000, 0.5000, 0.0000])
 
     Example (multidim tensors):
         >>> from torchmetrics.functional.classification import multilabel_negative_predictive_value
@@ -322,10 +336,12 @@ def multilabel_negative_predictive_value(
         >>> preds = tensor([[[0.59, 0.91], [0.91, 0.99], [0.63, 0.04]],
         ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> multilabel_negative_predictive_value(preds, target, num_labels=3, multidim_average='samplewise')
-        tensor([0.0000, 0.3333])
-        >>> multilabel_negative_predictive_value(preds, target, num_labels=3, multidim_average='samplewise', average=None)
-        tensor([[0., 0., 0.],
-                [0., 0., 1.]])
+        tensor([0.0000, 0.1667])
+        >>> multilabel_negative_predictive_value(
+        ...     preds, target, num_labels=3, multidim_average='samplewise', average=None
+        ... )
+        tensor([[0.0000, 0.0000, 0.0000],
+                [0.0000, 0.0000, 0.5000]])
 
     """
     if validate_args:
@@ -334,7 +350,7 @@ def multilabel_negative_predictive_value(
     preds, target = _multilabel_stat_scores_format(preds, target, num_labels, threshold, ignore_index)
     tp, fp, tn, fn = _multilabel_stat_scores_update(preds, target, multidim_average)
     return _negative_predictive_value_reduce(
-        tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True
+        tp, fp, tn, fn, average=average, multidim_average=multidim_average, multilabel=True, zero_division=zero_division
     )
 
 
@@ -350,13 +366,14 @@ def negative_predictive_value(
     top_k: Optional[int] = 1,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0,
 ) -> Tensor:
-    r"""Compute `Specificity`_.
+    r"""Compute `Negative Predictive Value`_.
 
-    .. math:: \text{Specificity} = \frac{\text{TN}}{\text{TN} + \text{FP}}
+    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FN}}
 
-    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and
-    false positives respecitively.
+    Where :math:`\text{TN}` and :math:`\text{FN}` represent the number of true negatives and
+    false negatives respecitively.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
@@ -370,7 +387,7 @@ def negative_predictive_value(
         >>> preds  = tensor([2, 0, 2, 1])
         >>> target = tensor([1, 1, 2, 0])
         >>> negative_predictive_value(preds, target, task="multiclass", average='macro', num_classes=3)
-        tensor(0.6111)
+        tensor(0.6667)
         >>> negative_predictive_value(preds, target, task="multiclass", average='micro', num_classes=3)
         tensor(0.6250)
 
@@ -378,19 +395,21 @@ def negative_predictive_value(
     task = ClassificationTask.from_str(task)
     assert multidim_average is not None  # noqa: S101  # needed for mypy
     if task == ClassificationTask.BINARY:
-        return binary_negative_predictive_value(preds, target, threshold, multidim_average, ignore_index, validate_args)
+        return binary_negative_predictive_value(
+            preds, target, threshold, multidim_average, ignore_index, validate_args, zero_division
+        )
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
         if not isinstance(top_k, int):
             raise ValueError(f"`top_k` is expected to be `int` but `{type(top_k)} was passed.`")
         return multiclass_negative_predictive_value(
-            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args
+            preds, target, num_classes, average, top_k, multidim_average, ignore_index, validate_args, zero_division
         )
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_negative_predictive_value(
-            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args
+            preds, target, num_labels, threshold, average, multidim_average, ignore_index, validate_args, zero_division
         )
     raise ValueError(f"Not handled value: {task}")
