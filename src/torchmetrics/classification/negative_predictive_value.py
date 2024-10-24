@@ -18,7 +18,7 @@ from typing_extensions import Literal
 
 from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.stat_scores import BinaryStatScores, MulticlassStatScores, MultilabelStatScores
-from torchmetrics.functional.classification.specificity import _specificity_reduce
+from torchmetrics.functional.classification.negative_predictive_value import _negative_predictive_value_reduce
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
@@ -33,9 +33,9 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class BinaryNegativePredictiveValue(BinaryStatScores):
-    r"""Compute `NegativePredictiveValue`_ for binary tasks.
+    r"""Compute `Negative Predictive Value`_ for binary tasks.
 
-    .. math:: \text{NegativePredictiveValue} = \frac{\text{TN}}{\text{TN} + \text{FP}}
+    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
     Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
     respectively. The metric is only proper defined when :math:`\text{TN} + \text{FP} \neq 0`. If this case is
@@ -50,7 +50,7 @@ class BinaryNegativePredictiveValue(BinaryStatScores):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``bs`` (:class:`~torch.Tensor`): If ``multidim_average`` is set to ``global``, the metric returns a scalar value.
+    - ``npv`` (:class:`~torch.Tensor`): If ``multidim_average`` is set to ``global``, the metric returns a scalar value.
       If ``multidim_average`` is set to ``samplewise``, the metric returns ``(N,)`` vector consisting of a scalar value
       per sample.
 
@@ -95,7 +95,7 @@ class BinaryNegativePredictiveValue(BinaryStatScores):
         ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> metric = BinaryNegativePredictiveValue(multidim_average='samplewise')
         >>> metric(preds, target)
-        tensor([0.0000, 0.3333])
+        tensor([0.0000, 0.2500])
 
     """
 
@@ -105,7 +105,9 @@ class BinaryNegativePredictiveValue(BinaryStatScores):
     def compute(self) -> Tensor:
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
-        return _specificity_reduce(tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average)
+        return _negative_predictive_value_reduce(
+            tp, fp, tn, fn, average="binary", multidim_average=self.multidim_average
+        )
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -151,9 +153,9 @@ class BinaryNegativePredictiveValue(BinaryStatScores):
 
 
 class MulticlassNegativePredictiveValue(MulticlassStatScores):
-    r"""Compute `NegativePredictiveValue`_ for multiclass tasks.
+    r"""Compute `Negative Predictive Value`_ for multiclass tasks.
 
-    .. math:: \text{NegativePredictiveValue} = \frac{\text{TN}}{\text{TN} + \text{FP}}
+    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
     Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
     respectively.  The metric is only proper defined when :math:`\text{TN} + \text{FP} \neq 0`. If this case is
@@ -169,7 +171,7 @@ class MulticlassNegativePredictiveValue(MulticlassStatScores):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``mcs`` (:class:`~torch.Tensor`): The returned shape depends on the ``average`` and ``multidim_average``
+    - ``npv`` (:class:`~torch.Tensor`): The returned shape depends on the ``average`` and ``multidim_average``
       arguments:
 
         - If ``multidim_average`` is set to ``global``:
@@ -218,9 +220,9 @@ class MulticlassNegativePredictiveValue(MulticlassStatScores):
         >>> metric = MulticlassNegativePredictiveValue(num_classes=3)
         >>> metric(preds, target)
         tensor(0.8889)
-        >>> mcs = MulticlassNegativePredictiveValue(num_classes=3, average=None)
-        >>> mcs(preds, target)
-        tensor([1.0000, 0.6667, 1.0000])
+        >>> metric = MulticlassNegativePredictiveValue(num_classes=3, average=None)
+        >>> metric(preds, target)
+        tensor([0.6667, 1.0000, 1.0000])
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MulticlassNegativePredictiveValue
@@ -232,9 +234,9 @@ class MulticlassNegativePredictiveValue(MulticlassStatScores):
         >>> metric = MulticlassNegativePredictiveValue(num_classes=3)
         >>> metric(preds, target)
         tensor(0.8889)
-        >>> mcs = MulticlassNegativePredictiveValue(num_classes=3, average=None)
-        >>> mcs(preds, target)
-        tensor([1.0000, 0.6667, 1.0000])
+        >>> metric = MulticlassNegativePredictiveValue(num_classes=3, average=None)
+        >>> metric(preds, target)
+        tensor([0.6667, 1.0000, 1.0000])
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import MulticlassNegativePredictiveValue
@@ -242,11 +244,11 @@ class MulticlassNegativePredictiveValue(MulticlassStatScores):
         >>> preds = tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> metric = MulticlassNegativePredictiveValue(num_classes=3, multidim_average='samplewise')
         >>> metric(preds, target)
-        tensor([0.7500, 0.6556])
-        >>> mcs = MulticlassNegativePredictiveValue(num_classes=3, multidim_average='samplewise', average=None)
-        >>> mcs(preds, target)
-        tensor([[0.7500, 0.7500, 0.7500],
-                [0.8000, 0.6667, 0.5000]])
+        tensor([0.7833, 0.6556])
+        >>> metric = MulticlassNegativePredictiveValue(num_classes=3, multidim_average='samplewise', average=None)
+        >>> metric(preds, target)
+        tensor([[1.0000, 0.6000, 0.7500],
+                [0.8000, 0.5000, 0.6667]])
 
     """
 
@@ -257,7 +259,9 @@ class MulticlassNegativePredictiveValue(MulticlassStatScores):
     def compute(self) -> Tensor:
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
-        return _specificity_reduce(tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average)
+        return _negative_predictive_value_reduce(
+            tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, top_k=self.top_k
+        )
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -303,9 +307,9 @@ class MulticlassNegativePredictiveValue(MulticlassStatScores):
 
 
 class MultilabelNegativePredictiveValue(MultilabelStatScores):
-    r"""Compute `NegativePredictiveValue`_ for multilabel tasks.
+    r"""Compute `Negative Predictive Value`_ for multilabel tasks.
 
-    .. math:: \text{NegativePredictiveValue} = \frac{\text{TN}}{\text{TN} + \text{FP}}
+    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
     Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
     respectively. The metric is only proper defined when :math:`\text{TN} + \text{FP} \neq 0`. If this case is
@@ -321,7 +325,7 @@ class MultilabelNegativePredictiveValue(MultilabelStatScores):
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``mls`` (:class:`~torch.Tensor`): The returned shape depends on the ``average`` and ``multidim_average``
+    - ``npv`` (:class:`~torch.Tensor`): The returned shape depends on the ``average`` and ``multidim_average``
       arguments:
 
         - If ``multidim_average`` is set to ``global``
@@ -366,10 +370,10 @@ class MultilabelNegativePredictiveValue(MultilabelStatScores):
         >>> preds = tensor([[0, 0, 1], [1, 0, 1]])
         >>> metric = MultilabelNegativePredictiveValue(num_labels=3)
         >>> metric(preds, target)
-        tensor(0.6667)
+        tensor(0.5000)
         >>> mls = MultilabelNegativePredictiveValue(num_labels=3, average=None)
         >>> mls(preds, target)
-        tensor([1., 1., 0.])
+        tensor([1.0000, 0.5000, 0.0000])
 
     Example (preds is float tensor):
         >>> from torchmetrics.classification import MultilabelNegativePredictiveValue
@@ -377,10 +381,10 @@ class MultilabelNegativePredictiveValue(MultilabelStatScores):
         >>> preds = tensor([[0.11, 0.22, 0.84], [0.73, 0.33, 0.92]])
         >>> metric = MultilabelNegativePredictiveValue(num_labels=3)
         >>> metric(preds, target)
-        tensor(0.6667)
+        tensor(0.5000)
         >>> mls = MultilabelNegativePredictiveValue(num_labels=3, average=None)
         >>> mls(preds, target)
-        tensor([1., 1., 0.])
+        tensor([1.0000, 0.5000, 0.0000])
 
     Example (multidim tensors):
         >>> from torchmetrics.classification import MultilabelNegativePredictiveValue
@@ -389,11 +393,11 @@ class MultilabelNegativePredictiveValue(MultilabelStatScores):
         ...                 [[0.38, 0.04], [0.86, 0.780], [0.45, 0.37]]])
         >>> metric = MultilabelNegativePredictiveValue(num_labels=3, multidim_average='samplewise')
         >>> metric(preds, target)
-        tensor([0.0000, 0.3333])
+        tensor([0.0000, 0.1667])
         >>> mls = MultilabelNegativePredictiveValue(num_labels=3, multidim_average='samplewise', average=None)
         >>> mls(preds, target)
-        tensor([[0., 0., 0.],
-                [0., 0., 1.]])
+        tensor([[0.0000, 0.0000, 0.0000],
+                [0.0000, 0.0000, 0.5000]])
 
     """
 
@@ -404,7 +408,7 @@ class MultilabelNegativePredictiveValue(MultilabelStatScores):
     def compute(self) -> Tensor:
         """Compute metric."""
         tp, fp, tn, fn = self._final_state()
-        return _specificity_reduce(
+        return _negative_predictive_value_reduce(
             tp, fp, tn, fn, average=self.average, multidim_average=self.multidim_average, multilabel=True
         )
 
@@ -452,9 +456,9 @@ class MultilabelNegativePredictiveValue(MultilabelStatScores):
 
 
 class NegativePredictiveValue(_ClassificationTaskWrapper):
-    r"""Compute `NegativePredictiveValue`_.
+    r"""Compute `Negative Predictive Value`_.
 
-    .. math:: \text{NegativePredictiveValue} = \frac{\text{TN}}{\text{TN} + \text{FP}}
+    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
     Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
     respectively. The metric is only proper defined when :math:`\text{TP} + \text{FP} \neq 0`. If this case is
@@ -463,19 +467,20 @@ class NegativePredictiveValue(_ClassificationTaskWrapper):
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
-    :class:`~torchmetrics.classification.BinaryNegativePredictiveValue`, :class:`~torchmetrics.classification.MulticlassNegativePredictiveValue`
-    and :class:`~torchmetrics.classification.MultilabelNegativePredictiveValue` for the specific details of each argument influence
-    and examples.
+    :class:`~torchmetrics.classification.BinaryNegativePredictiveValue`,
+    :class:`~torchmetrics.classification.MulticlassNegativePredictiveValue`
+    and :class:`~torchmetrics.classification.MultilabelNegativePredictiveValue` for the specific details of each
+    argument influence and examples.
 
     Legacy Example:
         >>> from torch import tensor
         >>> preds  = tensor([2, 0, 2, 1])
         >>> target = tensor([1, 1, 2, 0])
-        >>> specificity = NegativePredictiveValue(task="multiclass", average='macro', num_classes=3)
-        >>> specificity(preds, target)
-        tensor(0.6111)
-        >>> specificity = NegativePredictiveValue(task="multiclass", average='micro', num_classes=3)
-        >>> specificity(preds, target)
+        >>> nvp = NegativePredictiveValue(task="multiclass", average='macro', num_classes=3)
+        >>> nvp(preds, target)
+        tensor(0.6667)
+        >>> nvp = NegativePredictiveValue(task="multiclass", average='micro', num_classes=3)
+        >>> nvp(preds, target)
         tensor(0.6250)
 
     """

@@ -67,10 +67,11 @@ def binary_negative_predictive_value(
 ) -> Tensor:
     r"""Compute `Negative Predictive Value`_ for binary tasks.
 
-    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FN}}
+    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
-    Where :math:`\text{TN}` and :math:`\text{FN}` represent the number of true negatives and
-    false negatives respecitively.
+    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
+    respectively. The metric is only proper defined when :math:`\text{TN} + \text{FP} \neq 0`. If this case is
+    encountered a score of 0 is returned.
 
     Accepts the following input tensors:
 
@@ -147,10 +148,11 @@ def multiclass_negative_predictive_value(
 ) -> Tensor:
     r"""Compute `Negative Predictive Value`_ for multiclass tasks.
 
-    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FN}}
+    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
-    Where :math:`\text{TN}` and :math:`\text{FN}` represent the number of true negatives and
-    false negatives respecitively.
+    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
+    respectively. The metric is only proper defined when :math:`\text{TN} + \text{FP} \neq 0`. If this case is
+    encountered a score of 0 is returned.
 
     Accepts the following input tensors:
 
@@ -260,10 +262,11 @@ def multilabel_negative_predictive_value(
 ) -> Tensor:
     r"""Compute `Negative Predictive Value`_ for multilabel tasks.
 
-    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FN}}
+    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
-    Where :math:`\text{TN}` and :math:`\text{FN}` represent the number of true negatives and
-    false negatives respecitively.
+    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
+    respectively. The metric is only proper defined when :math:`\text{TN} + \text{FP} \neq 0`. If this case is
+    encountered a score of 0 is returned.
 
     Accepts the following input tensors:
 
@@ -370,10 +373,11 @@ def negative_predictive_value(
 ) -> Tensor:
     r"""Compute `Negative Predictive Value`_.
 
-    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FN}}
+    .. math:: \text{Negative Predictive Value} = \frac{\text{TN}}{\text{TN} + \text{FP}}
 
-    Where :math:`\text{TN}` and :math:`\text{FN}` represent the number of true negatives and
-    false negatives respecitively.
+    Where :math:`\text{TN}` and :math:`\text{FP}` represent the number of true negatives and false positives
+    respectively. The metric is only proper defined when :math:`\text{TN} + \text{FP} \neq 0`. If this case is
+    encountered a score of 0 is returned.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
     ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
