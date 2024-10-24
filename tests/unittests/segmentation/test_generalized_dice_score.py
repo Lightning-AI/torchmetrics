@@ -16,6 +16,7 @@ from functools import partial
 
 import pytest
 import torch
+from lightning_utilities.core.imports import RequirementCache
 from monai.metrics.generalized_dice import compute_generalized_dice
 from torchmetrics.functional.segmentation.generalized_dice import generalized_dice_score
 from torchmetrics.segmentation.generalized_dice import GeneralizedDiceScore
@@ -39,7 +40,8 @@ def _reference_generalized_dice(
     if input_format == "index":
         preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
         target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
-    val = compute_generalized_dice(preds, target, include_background=include_background, sum_over_classes=True)
+    monai_extra_arg = {"sum_over_classes": True} if RequirementCache("monai>=1.4.0") else {}
+    val = compute_generalized_dice(preds, target, include_background=include_background, **monai_extra_arg)
     if reduce:
         val = val.mean()
     return val.squeeze()
