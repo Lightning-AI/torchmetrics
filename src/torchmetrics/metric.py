@@ -52,18 +52,14 @@ class Metric(Module, ABC):
     """Base class for all metrics present in the Metrics API.
 
     This class is inherited by all metrics and implements the following functionality:
-    1. Handles the transfer of metric states to correct device
-    2. Handles the synchronization of metric states across processes
 
-    The three core methods of the base class are
-    * ``add_state()``
-    * ``forward()``
-    * ``reset()``
+    #. Handles the transfer of metric states to correct device
+    #. Handles the synchronization of metric states across processes
+    #. Provides properties and methods to control the overall behavior of the metric and its states
 
-    which should almost never be overwritten by child classes. Instead, the following methods should be overwritten
-    * ``update()``
-    * ``compute()``
-
+    The three core methods of the base class are: ``add_state()``, ``forward()`` and ``reset()`` which should almost
+    never be overwritten by child classes. Instead, the following methods should be overwritten ``update()`` and
+    ``compute()``.
 
     Args:
         kwargs: additional keyword arguments, see :ref:`Metric kwargs` for more info.
