@@ -71,7 +71,7 @@ jobs:
           - { python: "3.11", pytorch: "2.2.2", cuda: "12.1.1", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.3.1", cuda: "12.1.1", ubuntu: "22.04" }
           - { python: "3.11", pytorch: "2.4.1", cuda: "12.1.1", ubuntu: "22.04" }
-          - { python: "3.11", pytorch: "2.5.0", cuda: "12.1.1", ubuntu: "22.04" }
+          - { python: "3.12", pytorch: "2.5.0", cuda: "12.1.1", ubuntu: "22.04" }
           # the future version - test or RC version
           #- { python: "3.11", pytorch: "2.6", cuda: "12.1.1", ubuntu: "22.04" }
     steps:
