@@ -20,21 +20,9 @@ from monai.metrics.meaniou import compute_iou
 from torchmetrics.functional.segmentation.mean_iou import mean_iou
 from torchmetrics.segmentation.mean_iou import MeanIoU
 
-from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, _Input
+from unittests import NUM_CLASSES
 from unittests._helpers.testers import MetricTester
-
-_inputs1 = _Input(
-    preds=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 16)),
-    target=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 16)),
-)
-_inputs2 = _Input(
-    preds=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 32, 32)),
-    target=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 32, 32)),
-)
-_inputs3 = _Input(
-    preds=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 32, 32)),
-    target=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 32, 32)),
-)
+from unittests.segmentation.inputs import _inputs1, _inputs2, _inputs3
 
 
 def _reference_mean_iou(

@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from torchmetrics.segmentation.dice import DiceScore
 from torchmetrics.segmentation.generalized_dice import GeneralizedDiceScore
 from torchmetrics.segmentation.hausdorff_distance import HausdorffDistance
 from torchmetrics.segmentation.mean_iou import MeanIoU
 
-__all__ = ["GeneralizedDiceScore", "MeanIoU", "HausdorffDistance"]
+__all__ = ["GeneralizedDiceScore", "MeanIoU", "HausdorffDistance", "DiceScore"]

@@ -17,6 +17,7 @@ import torch
 from torch import Tensor
 
 from torchmetrics.functional.classification.stat_scores import _reduce_stat_scores, _stat_scores_update
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.checks import _input_squeeze
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 
@@ -150,6 +151,12 @@ def dice(
             Used only in certain special cases, where you want to treat inputs as a different type
             than what they appear to be.
 
+    .. warning::
+        The ``dice`` metrics is being deprecated from the classification subpackage in v1.6.0 of torchmetrics and will
+        be removed in v1.7.0. Please instead consider using ``f1score`` metric from the classification subpackage as it
+        provides the same functionality. Additionally, we are going to re-add the ``dice`` metric in the segmentation
+        domain in v1.6.0 with slight modifications to functionality.
+
     Return:
         The shape of the returned tensor depends on the ``average`` parameter
 
@@ -174,6 +181,14 @@ def dice(
         tensor(0.2500)
 
     """
+    rank_zero_warn(
+        "The `dice` metrics is being deprecated from the classification subpackage in v1.6.0 of torchmetrics and will"
+        " removed in v1.7.0. Please instead consider using `f1score` metric from the classification subpackage as it"
+        " provides the same functionality. Additionally, we are going to re-add the `dice` metric in the segmentation"
+        " domain in v1.6.0 with slight modifications to functionality.",
+        DeprecationWarning,
+    )
+
     allowed_average = ("micro", "macro", "weighted", "samples", "none", None)
     if average not in allowed_average:
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
