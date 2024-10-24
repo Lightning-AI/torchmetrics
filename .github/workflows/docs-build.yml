@@ -53,6 +53,8 @@ jobs:
           # install with -e so the path to source link comes from this project not from the installed package
           pip install -e . -U -r requirements/_docs.txt \
             --find-links="${PYPI_CACHE}" --find-links="${TORCH_URL}"
+        continue-on-error: true
+
       - run: pip list
       - name: Full build for deployment
         if: github.event_name != 'pull_request'
