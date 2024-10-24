@@ -20,24 +20,12 @@ from monai.metrics.generalized_dice import compute_generalized_dice
 from torchmetrics.functional.segmentation.generalized_dice import generalized_dice_score
 from torchmetrics.segmentation.generalized_dice import GeneralizedDiceScore
 
-from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, _Input
+from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
+from unittests.segmentation.inputs import _inputs1, _inputs2, _inputs3
 
 seed_all(42)
-
-_inputs1 = _Input(
-    preds=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 16)),
-    target=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 16)),
-)
-_inputs2 = _Input(
-    preds=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 32, 32)),
-    target=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 32, 32)),
-)
-_inputs3 = _Input(
-    preds=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 32, 32)),
-    target=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 32, 32)),
-)
 
 
 def _reference_generalized_dice(
