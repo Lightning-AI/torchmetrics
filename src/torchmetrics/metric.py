@@ -403,7 +403,7 @@ class Metric(Module, ABC):
 
         Args:
             incoming_state: either a dict containing a metric state similar to the metric itself or an instance of the
-              metric class.
+                metric class.
 
         Raises:
             ValueError:
