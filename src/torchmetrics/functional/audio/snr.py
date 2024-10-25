@@ -106,13 +106,12 @@ def complex_scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor, ze
             If ``preds`` and ``target`` does not have the same shape.
 
     Example:
-        >>> import torch
+        >>> from torch import randn
         >>> from torchmetrics.functional.audio import complex_scale_invariant_signal_noise_ratio
-        >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn((1,257,100,2))
-        >>> target = torch.randn((1,257,100,2))
+        >>> preds = randn((1,257,100,2))
+        >>> target = randn((1,257,100,2))
         >>> complex_scale_invariant_signal_noise_ratio(preds, target)
-        tensor([-63.4849])
+        tensor([-38.8832])
 
     """
     if preds.is_complex():
@@ -123,7 +122,7 @@ def complex_scale_invariant_signal_noise_ratio(preds: Tensor, target: Tensor, ze
     if (preds.ndim < 3 or preds.shape[-1] != 2) or (target.ndim < 3 or target.shape[-1] != 2):
         raise RuntimeError(
             "Predictions and targets are expected to have the shape (..., frequency, time, 2),"
-            " but got {preds.shape} and {target.shape}."
+            f" but got {preds.shape} and {target.shape}."
         )
 
     preds = preds.reshape(*preds.shape[:-3], -1)

@@ -284,7 +284,7 @@ class Metric(Module, ABC):
         """Aggregate and evaluate batch input directly.
 
         Serves the dual purpose of both computing the metric on the current batch of inputs but also add the batch
-        statistics to the overall accumululating metric state. Input arguments are the exact same as corresponding
+        statistics to the overall accumulating metric state. Input arguments are the exact same as corresponding
         ``update`` method. The returned output is the exact same as the output of ``compute``.
 
         Args:
@@ -361,7 +361,7 @@ class Metric(Module, ABC):
     def _forward_reduce_state_update(self, *args: Any, **kwargs: Any) -> Any:
         """Forward computation using single call to `update`.
 
-        This can be done when the global metric state is a sinple reduction of batch states. This can be unsafe for
+        This can be done when the global metric state is a simple reduction of batch states. This can be unsafe for
         certain metric cases but is also the fastest way to both accumulate globally and compute locally.
 
         """
@@ -802,7 +802,7 @@ class Metric(Module, ABC):
         """Overwrite `_apply` function such that we can also move metric states to the correct device.
 
         This method is called by the base ``nn.Module`` class whenever `.to`, `.cuda`, `.float`, `.half` etc. methods
-        are called. Dtype conversion is garded and will only happen through the special `set_dtype` method.
+        are called. Dtype conversion is guarded and will only happen through the special `set_dtype` method.
 
         Args:
             fn: the function to apply
@@ -985,19 +985,19 @@ class Metric(Module, ABC):
         """Construct compositional metric using the floor division operator."""
         return CompositionalMetric(torch.floor_divide, self, other)
 
-    def __ge__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[misc]
+    def __ge__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the greater than or equal operator."""
         return CompositionalMetric(torch.ge, self, other)
 
-    def __gt__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[misc]
+    def __gt__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the greater than operator."""
         return CompositionalMetric(torch.gt, self, other)
 
-    def __le__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[misc]
+    def __le__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the less than or equal operator."""
         return CompositionalMetric(torch.le, self, other)
 
-    def __lt__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[misc]
+    def __lt__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the less than operator."""
         return CompositionalMetric(torch.lt, self, other)
 
@@ -1025,7 +1025,7 @@ class Metric(Module, ABC):
         """Construct compositional metric using the exponential/power operator."""
         return CompositionalMetric(torch.pow, self, other)
 
-    def __radd__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[misc]
+    def __radd__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the addition operator."""
         return CompositionalMetric(torch.add, other, self)
 
@@ -1042,11 +1042,11 @@ class Metric(Module, ABC):
         """Construct compositional metric using the matrix multiplication operator."""
         return CompositionalMetric(torch.matmul, other, self)
 
-    def __rmod__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[misc]
+    def __rmod__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the remainder operator."""
         return CompositionalMetric(torch.fmod, other, self)
 
-    def __rmul__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[misc]
+    def __rmul__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the multiplication operator."""
         return CompositionalMetric(torch.mul, other, self)
 
@@ -1058,11 +1058,11 @@ class Metric(Module, ABC):
         """Construct compositional metric using the exponential/power operator."""
         return CompositionalMetric(torch.pow, other, self)
 
-    def __rsub__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[misc]
+    def __rsub__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the subtraction operator."""
         return CompositionalMetric(torch.sub, other, self)
 
-    def __rtruediv__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":  # type: ignore[misc]
+    def __rtruediv__(self, other: Union["Metric", builtins.float, Tensor]) -> "CompositionalMetric":
         """Construct compositional metric using the true divide operator."""
         return CompositionalMetric(torch.true_divide, other, self)
 
@@ -1166,7 +1166,7 @@ class CompositionalMetric(Metric):
         """
 
     def update(self, *args: Any, **kwargs: Any) -> None:
-        """Redirect the call to the input which the conposition was formed from."""
+        """Redirect the call to the input which the composition was formed from."""
         if isinstance(self.metric_a, Metric):
             self.metric_a.update(*args, **self.metric_a._filter_kwargs(**kwargs))
 
@@ -1174,7 +1174,7 @@ class CompositionalMetric(Metric):
             self.metric_b.update(*args, **self.metric_b._filter_kwargs(**kwargs))
 
     def compute(self) -> Any:
-        """Redirect the call to the input which the conposition was formed from."""
+        """Redirect the call to the input which the composition was formed from."""
         # also some parsing for kwargs?
         val_a = self.metric_a.compute() if isinstance(self.metric_a, Metric) else self.metric_a
         val_b = self.metric_b.compute() if isinstance(self.metric_b, Metric) else self.metric_b
@@ -1216,7 +1216,7 @@ class CompositionalMetric(Metric):
         return self._forward_cache
 
     def reset(self) -> None:
-        """Redirect the call to the input which the conposition was formed from."""
+        """Redirect the call to the input which the composition was formed from."""
         if isinstance(self.metric_a, Metric):
             self.metric_a.reset()
 

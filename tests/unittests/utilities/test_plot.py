@@ -130,6 +130,7 @@ from torchmetrics.regression import (
     MeanSquaredError,
     MeanSquaredLogError,
     MinkowskiDistance,
+    NormalizedRootMeanSquaredError,
     PearsonCorrCoef,
     R2Score,
     RelativeSquaredError,
@@ -150,11 +151,11 @@ from torchmetrics.retrieval import (
     RetrievalRecallAtFixedPrecision,
     RetrievalRPrecision,
 )
+from torchmetrics.shape import ProcrustesDisparity
 from torchmetrics.text import (
     BERTScore,
     BLEUScore,
     CharErrorRate,
-    CHRFScore,
     EditDistance,
     ExtendedEditDistance,
     InfoLM,
@@ -167,10 +168,6 @@ from torchmetrics.text import (
     WordErrorRate,
     WordInfoLost,
     WordInfoPreserved,
-)
-from torchmetrics.utilities.imports import (
-    _TORCH_GREATER_EQUAL_1_12,
-    _TORCHAUDIO_GREATER_EQUAL_0_10,
 )
 from torchmetrics.utilities.plot import _get_col_row_split
 from torchmetrics.wrappers import (
@@ -316,7 +313,6 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             _audio_input,
             None,
             id="speech_reverberation_modulation_energy_ratio",
-            marks=pytest.mark.skipif(not _TORCHAUDIO_GREATER_EQUAL_0_10, reason="test requires torchaudio>=0.10"),
         ),
         pytest.param(
             partial(PermutationInvariantTraining, metric_func=scale_invariant_signal_noise_ratio, eval_func="max"),
@@ -342,9 +338,6 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             _panoptic_input,
             _panoptic_input,
             id="panoptic quality",
-            marks=pytest.mark.skipif(
-                not _TORCH_GREATER_EQUAL_1_12, reason="Panoptic Quality metric requires PyTorch 1.12 or later"
-            ),
         ),
         pytest.param(BinaryAveragePrecision, _rand_input, _binary_randint_input, id="binary average precision"),
         pytest.param(
@@ -477,6 +470,7 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
         pytest.param(MeanAbsoluteError, _rand_input, _rand_input, id="mean absolute error"),
         pytest.param(MeanAbsolutePercentageError, _rand_input, _rand_input, id="mean absolute percentage error"),
         pytest.param(partial(MinkowskiDistance, p=3), _rand_input, _rand_input, id="minkowski distance"),
+        pytest.param(NormalizedRootMeanSquaredError, _rand_input, _rand_input, id="normalized root mean squared error"),
         pytest.param(PearsonCorrCoef, _rand_input, _rand_input, id="pearson corr coef"),
         pytest.param(R2Score, _rand_input, _rand_input, id="r2 score"),
         pytest.param(RelativeSquaredError, _rand_input, _rand_input, id="relative squared error"),
@@ -588,7 +582,6 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
         pytest.param(EditDistance, _text_input_1, _text_input_2, id="edit distance"),
         pytest.param(MatchErrorRate, _text_input_1, _text_input_2, id="match error rate"),
         pytest.param(BLEUScore, _text_input_3, _text_input_4, id="bleu score"),
-        pytest.param(CHRFScore, _text_input_3, _text_input_4, id="bleu score"),
         pytest.param(
             partial(InfoLM, model_name_or_path="google/bert_uncased_L-2_H-128_A-2", idf=False, verbose=False),
             _text_input_1,
@@ -611,6 +604,12 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
         pytest.param(CalinskiHarabaszScore, lambda: torch.randn(100, 3), _nominal_input, id="calinski harabasz score"),
         pytest.param(NormalizedMutualInfoScore, _nominal_input, _nominal_input, id="normalized mutual info score"),
         pytest.param(DunnIndex, lambda: torch.randn(100, 3), _nominal_input, id="dunn index"),
+        pytest.param(
+            ProcrustesDisparity,
+            lambda: torch.randn(1, 100, 3),
+            lambda: torch.randn(1, 100, 3),
+            id="procrustes disparity",
+        ),
     ],
 )
 @pytest.mark.parametrize("num_vals", [1, 3])

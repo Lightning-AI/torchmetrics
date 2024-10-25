@@ -61,12 +61,11 @@ class PermutationInvariantTraining(Metric):
             see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> import torch
+        >>> from torch import randn
         >>> from torchmetrics.audio import PermutationInvariantTraining
         >>> from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.randn(3, 2, 5) # [batch, spk, time]
-        >>> target = torch.randn(3, 2, 5) # [batch, spk, time]
+        >>> preds = randn(3, 2, 5) # [batch, spk, time]
+        >>> target = randn(3, 2, 5) # [batch, spk, time]
         >>> pit = PermutationInvariantTraining(scale_invariant_signal_noise_ratio,
         ...     mode="speaker-wise", eval_func="max")
         >>> pit(preds, target)

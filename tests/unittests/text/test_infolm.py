@@ -182,3 +182,18 @@ class TestInfoLM(TextTester):
             metric_functional=infolm,
             metric_args=metric_args,
         )
+
+    @skip_on_connection_issues()
+    def test_infolm_higher_is_better_property(self, preds, targets, information_measure, idf, alpha, beta):
+        """Test the `higher_is_better` property of the metric."""
+        metric_args = {
+            "model_name_or_path": MODEL_NAME,
+            "information_measure": information_measure,
+            "idf": idf,
+            "alpha": alpha,
+            "beta": beta,
+            "max_length": MAX_LENGTH,
+        }
+
+        metric = InfoLM(**metric_args)
+        assert metric.higher_is_better == metric._information_measure_higher_is_better[information_measure]

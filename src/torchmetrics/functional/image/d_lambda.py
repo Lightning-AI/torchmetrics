@@ -65,9 +65,9 @@ def _spectral_distortion_index_compute(
             - ``'none'``: no reduction will be applied
 
     Example:
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand([16, 3, 16, 16])
-        >>> target = torch.rand([16, 3, 16, 16])
+        >>> from torch import rand
+        >>> preds = rand([16, 3, 16, 16])
+        >>> target = rand([16, 3, 16, 16])
         >>> preds, target = _spectral_distortion_index_update(preds, target)
         >>> _spectral_distortion_index_compute(preds, target)
         tensor(0.0234)
@@ -139,10 +139,10 @@ def spectral_distortion_index(
             If ``p`` is not a positive integer.
 
     Example:
+        >>> from torch import rand
         >>> from torchmetrics.functional.image import spectral_distortion_index
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand([16, 3, 16, 16])
-        >>> target = torch.rand([16, 3, 16, 16])
+        >>> preds = rand([16, 3, 16, 16])
+        >>> target = rand([16, 3, 16, 16])
         >>> spectral_distortion_index(preds, target)
         tensor(0.0234)
 

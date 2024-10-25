@@ -66,14 +66,14 @@ jobs:
         include:
           # These are the base images for PL release docker images,
           #  so include at least all the combinations in release-dockers.yml.
-          - { python: "3.9", pytorch: "1.10", cuda: "11.3.1", ubuntu: "20.04" }
-          #- { python: "3.9", pytorch: "1.11", cuda: "11.8.0", ubuntu: "22.04" }
-          - { python: "3.9", pytorch: "1.13", cuda: "11.8.0", ubuntu: "22.04" }
-          - { python: "3.10", pytorch: "2.2", cuda: "12.1.1", ubuntu: "22.04" }
-          - { python: "3.11", pytorch: "2.2", cuda: "12.1.1", ubuntu: "22.04" }
-          - { python: "3.11", pytorch: "2.3", cuda: "12.1.1", ubuntu: "22.04" }
+          - { python: "3.10", pytorch: "2.0.1", cuda: "12.1.1", ubuntu: "22.04" }
+          - { python: "3.11", pytorch: "2.1.2", cuda: "12.1.1", ubuntu: "22.04" }
+          - { python: "3.11", pytorch: "2.2.2", cuda: "12.1.1", ubuntu: "22.04" }
+          - { python: "3.11", pytorch: "2.3.1", cuda: "12.1.1", ubuntu: "22.04" }
+          - { python: "3.11", pytorch: "2.4.1", cuda: "12.1.1", ubuntu: "22.04" }
+          - { python: "3.11", pytorch: "2.5.0", cuda: "12.1.1", ubuntu: "22.04" }
           # the future version - test or RC version
-          - { python: "3.11", pytorch: "2.4", cuda: "12.1.1", ubuntu: "22.04" }
+          #- { python: "3.11", pytorch: "2.6", cuda: "12.1.1", ubuntu: "22.04" }
     steps:
       - uses: actions/checkout@v4
 
@@ -83,6 +83,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: shorten Torch version
+        run: |
+          # convert 1.10.2 to 1.10
+          pt_version=$(echo ${{ matrix.pytorch }} | cut -d. -f1,2)
+          echo "PT_VERSION=$pt_version" >> $GITHUB_ENV
 
       - name: Build (and Push) runner
         uses: docker/build-push-action@v6
@@ -94,5 +100,5 @@ jobs:
             CUDA_VERSION=${{ matrix.cuda }}
           file: dockers/ubuntu-cuda/Dockerfile
           push: ${{ env.PUSH_DOCKERHUB }}
-          tags: "pytorchlightning/torchmetrics:ubuntu${{ matrix.ubuntu }}-cuda${{ matrix.cuda }}-py${{ matrix.python }}-torch${{ matrix.pytorch }}"
+          tags: "pytorchlightning/torchmetrics:ubuntu${{ matrix.ubuntu }}-cuda${{ matrix.cuda }}-py${{ matrix.python }}-torch${{ env.PT_VERSION }}"
         timeout-minutes: 55

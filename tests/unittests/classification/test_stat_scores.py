@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from functools import partial
 
 import numpy as np
@@ -581,8 +582,8 @@ def test_support_for_int():
     """See issue: https://github.com/Lightning-AI/torchmetrics/issues/1970."""
     seed_all(42)
     metric = MulticlassStatScores(num_classes=4, average="none", multidim_average="samplewise", ignore_index=0)
-    prediction = torch.randint(low=0, high=4, size=(1, 224, 224)).to(torch.uint8)
-    label = torch.randint(low=0, high=4, size=(1, 224, 224)).to(torch.uint8)
+    prediction = torch.randint(low=0, high=4, size=(1, 50, 50)).to(torch.uint8)
+    label = torch.randint(low=0, high=4, size=(1, 50, 50)).to(torch.uint8)
     score = metric(preds=prediction, target=label)
     assert score.shape == (1, 4, 5)
 

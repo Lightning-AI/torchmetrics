@@ -98,9 +98,7 @@ class PerceptualPathLength(Metric):
             If ``upper_discard`` is not a float between 0 and 1 or None.
 
     Example::
-        >>> from torchmetrics.image import PerceptualPathLength
         >>> import torch
-        >>> _ = torch.manual_seed(42)
         >>> class DummyGenerator(torch.nn.Module):
         ...    def __init__(self, z_size) -> None:
         ...       super().__init__()
@@ -112,10 +110,8 @@ class PerceptualPathLength(Metric):
         ...      return torch.randn(num_samples, self.z_size)
         >>> generator = DummyGenerator(2)
         >>> ppl = PerceptualPathLength(num_samples=10)
-        >>> ppl(generator)  # doctest: +SKIP
-        (tensor(0.2371),
-        tensor(0.1763),
-        tensor([0.3502, 0.1362, 0.2535, 0.0902, 0.1784, 0.0769, 0.5871, 0.0691, 0.3921]))
+        >>> ppl(generator)
+        (tensor(...), tensor(...), tensor([...]))
 
     """
 

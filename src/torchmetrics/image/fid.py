@@ -265,8 +265,7 @@ class FrechetInceptionDistance(Metric):
             If ``reset_real_features`` is not an ``bool``
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
+        >>> from torch import rand
         >>> from torchmetrics.image.fid import FrechetInceptionDistance
         >>> fid = FrechetInceptionDistance(feature=64)
         >>> # generate two slightly overlapping image intensity distributions
@@ -275,7 +274,7 @@ class FrechetInceptionDistance(Metric):
         >>> fid.update(imgs_dist1, real=True)
         >>> fid.update(imgs_dist2, real=False)
         >>> fid.compute()
-        tensor(12.7202)
+        tensor(12.6388)
 
     """
 

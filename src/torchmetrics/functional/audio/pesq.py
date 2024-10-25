@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Any
+
 import numpy as np
 import torch
 from torch import Tensor
@@ -68,13 +70,12 @@ def perceptual_evaluation_speech_quality(
     Example:
         >>> from torch import randn
         >>> from torchmetrics.functional.audio.pesq import perceptual_evaluation_speech_quality
-        >>> g = torch.manual_seed(1)
         >>> preds = randn(8000)
         >>> target = randn(8000)
         >>> perceptual_evaluation_speech_quality(preds, target, 8000, 'nb')
-        tensor(2.2076)
+        tensor(2.2885)
         >>> perceptual_evaluation_speech_quality(preds, target, 16000, 'wb')
-        tensor(1.7359)
+        tensor(1.6805)
 
     """
     if not _PESQ_AVAILABLE:
@@ -83,6 +84,11 @@ def perceptual_evaluation_speech_quality(
             " Either install as `pip install torchmetrics[audio]` or `pip install pesq`."
         )
     import pesq as pesq_backend
+
+    def _issubtype_number(x: Any) -> bool:
+        return np.issubdtype(type(x), np.number)
+
+    _filter_error_msg = np.vectorize(_issubtype_number)
 
     if fs not in (8000, 16000):
         raise ValueError(f"Expected argument `fs` to either be 8000 or 16000 but got {fs}")
@@ -104,8 +110,8 @@ def perceptual_evaluation_speech_quality(
             pesq_val_np = np.empty(shape=(preds_np.shape[0]))
             for b in range(preds_np.shape[0]):
                 pesq_val_np[b] = pesq_backend.pesq(fs, target_np[b, :], preds_np[b, :], mode)
-        pesq_val = torch.from_numpy(pesq_val_np)
-        pesq_val = pesq_val.reshape(preds.shape[:-1])
+        pesq_val = torch.from_numpy(pesq_val_np[_filter_error_msg(pesq_val_np)].astype(np.float32))
+        pesq_val = pesq_val.reshape(len(pesq_val))
 
     if keep_same_device:
         return pesq_val.to(preds.device)
