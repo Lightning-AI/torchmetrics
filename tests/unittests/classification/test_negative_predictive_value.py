@@ -33,16 +33,16 @@ from torchmetrics.functional.classification.negative_predictive_value import (
 from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES, THRESHOLD
+from unittests._helpers import seed_all
+from unittests._helpers.testers import MetricTester, inject_ignore_index
 from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases
-from unittests.helpers import seed_all
-from unittests.helpers.testers import MetricTester, inject_ignore_index
 
 seed_all(42)
 
 
-def _calc_negative_predictive_value(tn, fp):
+def _calc_negative_predictive_value(tn, fn):
     """Safely calculate negative_predictive_value."""
-    denom = tn + fp
+    denom = tn + fn
     if np.isscalar(tn):
         denom = 1.0 if denom == 0 else denom
     else:
@@ -68,8 +68,8 @@ def _reference_negative_predictive_value_binary(preds, target, ignore_index, mul
             idx = target == ignore_index
             target = target[~idx]
             preds = preds[~idx]
-        tn, fp, _, _ = sk_confusion_matrix(y_true=target, y_pred=preds, labels=[0, 1]).ravel()
-        return _calc_negative_predictive_value(tn, fp)
+        tn, _, fn, _ = sk_confusion_matrix(y_true=target, y_pred=preds, labels=[0, 1]).ravel()
+        return _calc_negative_predictive_value(tn, fn)
 
     res = []
     for pred, true in zip(preds, target):
@@ -79,8 +79,8 @@ def _reference_negative_predictive_value_binary(preds, target, ignore_index, mul
             idx = true == ignore_index
             true = true[~idx]
             pred = pred[~idx]
-        tn, fp, _, _ = sk_confusion_matrix(y_true=true, y_pred=pred, labels=[0, 1]).ravel()
-        res.append(_calc_negative_predictive_value(tn, fp))
+        tn, _, fn, _ = sk_confusion_matrix(y_true=true, y_pred=pred, labels=[0, 1]).ravel()
+        res.append(_calc_negative_predictive_value(tn, fn))
     return np.stack(res)
 
 
@@ -196,9 +196,9 @@ def _reference_negative_predictive_value_multiclass_global(preds, target, ignore
     tn = confmat.sum() - (fp + fn + tp)
 
     if average == "micro":
-        return _calc_negative_predictive_value(tn.sum(), fp.sum())
+        return _calc_negative_predictive_value(tn.sum(), fn.sum())
 
-    res = _calc_negative_predictive_value(tn, fp)
+    res = _calc_negative_predictive_value(tn, fn)
     if average == "macro":
         res = res[(np.bincount(preds, minlength=NUM_CLASSES) + np.bincount(target, minlength=NUM_CLASSES)) != 0.0]
         return res.mean(0)
@@ -229,9 +229,9 @@ def _reference_negative_predictive_value_multiclass_local(preds, target, ignore_
         fn = confmat.sum(1) - tp
         tn = confmat.sum() - (fp + fn + tp)
         if average == "micro":
-            res.append(_calc_negative_predictive_value(tn.sum(), fp.sum()))
+            res.append(_calc_negative_predictive_value(tn.sum(), fn.sum()))
 
-        r = _calc_negative_predictive_value(tn, fp)
+        r = _calc_negative_predictive_value(tn, fn)
         if average == "macro":
             r = r[(np.bincount(pred, minlength=NUM_CLASSES) + np.bincount(true, minlength=NUM_CLASSES)) != 0.0]
             res.append(r.mean(0) if len(r) > 0 else 0.0)
@@ -366,7 +366,7 @@ _mc_k_preds = tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
     ("k", "preds", "target", "average", "expected_spec"),
     [
         (1, _mc_k_preds, _mc_k_target, "micro", tensor(5 / 6)),
-        (2, _mc_k_preds, _mc_k_target, "micro", tensor(1 / 2)),
+        (2, _mc_k_preds, _mc_k_target, "micro", tensor(1)),
     ],
 )
 def test_top_k(k: int, preds: Tensor, target: Tensor, average: str, expected_spec: Tensor):
@@ -381,23 +381,23 @@ def test_top_k(k: int, preds: Tensor, target: Tensor, average: str, expected_spe
 
 
 def _reference_negative_predictive_value_multilabel_global(preds, target, ignore_index, average):
-    tns, fps = [], []
+    tns, fns = [], []
     for i in range(preds.shape[1]):
         p, t = preds[:, i].flatten(), target[:, i].flatten()
         if ignore_index is not None:
             idx = t == ignore_index
             t = t[~idx]
             p = p[~idx]
-        tn, fp, fn, tp = sk_confusion_matrix(t, p, labels=[0, 1]).ravel()
+        tn, _, fn, _ = sk_confusion_matrix(t, p, labels=[0, 1]).ravel()
         tns.append(tn)
-        fps.append(fp)
+        fns.append(fn)
 
     tn = np.array(tns)
-    fp = np.array(fps)
+    fn = np.array(fns)
     if average == "micro":
-        return _calc_negative_predictive_value(tn.sum(), fp.sum())
+        return _calc_negative_predictive_value(tn.sum(), fn.sum())
 
-    res = _calc_negative_predictive_value(tn, fp)
+    res = _calc_negative_predictive_value(tn, fn)
     if average == "macro":
         return res.mean(0)
     if average == "weighted":
@@ -411,22 +411,22 @@ def _reference_negative_predictive_value_multilabel_global(preds, target, ignore
 def _reference_negative_predictive_value_multilabel_local(preds, target, ignore_index, average):
     negative_predictive_value = []
     for i in range(preds.shape[0]):
-        tns, fps = [], []
+        tns, fns = [], []
         for j in range(preds.shape[1]):
             pred, true = preds[i, j], target[i, j]
             if ignore_index is not None:
                 idx = true == ignore_index
                 true = true[~idx]
                 pred = pred[~idx]
-            tn, fp, _, _ = sk_confusion_matrix(true, pred, labels=[0, 1]).ravel()
+            tn, _, fn, _ = sk_confusion_matrix(true, pred, labels=[0, 1]).ravel()
             tns.append(tn)
-            fps.append(fp)
+            fns.append(fn)
         tn = np.array(tns)
-        fp = np.array(fps)
+        fn = np.array(fns)
         if average == "micro":
-            negative_predictive_value.append(_calc_negative_predictive_value(tn.sum(), fp.sum()))
+            negative_predictive_value.append(_calc_negative_predictive_value(tn.sum(), fn.sum()))
         else:
-            negative_predictive_value.append(_calc_negative_predictive_value(tn, fp))
+            negative_predictive_value.append(_calc_negative_predictive_value(tn, fn))
 
     res = np.stack(negative_predictive_value, 0)
     if average == "micro" or average is None or average == "none":
@@ -558,14 +558,14 @@ class TestMultilabelNegativePredictiveValue(MetricTester):
             preds=preds,
             target=target,
             metric_module=MultilabelNegativePredictiveValue,
-            metric_functional=multilabel_specificity,
+            metric_functional=multilabel_negative_predictive_value,
             metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
             dtype=dtype,
         )
 
 
 def test_corner_cases():
-    """Test corner cases for specificity metric."""
+    """Test corner cases for negative predictive value metric."""
     # simulate the output of a perfect predictor (i.e. preds == target)
     target = torch.tensor([0, 1, 2, 0, 1, 2])
     preds = target
