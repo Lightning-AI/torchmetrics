@@ -1,5 +1,5 @@
 .. customcarditem::
-   :header: Log Area under the Receiver Operating Characteristic Curve (LogAUC)
+   :header: Log Area Receiver Operating Characteristic Curve (LogAUC)
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/tabular_classification.svg
    :tags: Classification
 
@@ -17,19 +17,19 @@ ________________
     :special-members: __new__
 
 BinaryLogAUC
-^^^^^^^^^
+^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.BinaryLogAUC
     :exclude-members: update, compute
 
 MulticlassLogAUC
-^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MulticlassLogAUC
     :exclude-members: update, compute
 
 MultilabelLogAUC
-^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
 
 .. autoclass:: torchmetrics.classification.MultilabelLogAUC
     :exclude-members: update, compute
@@ -40,16 +40,16 @@ ____________________
 .. autofunction:: torchmetrics.functional.logauc
 
 binary_logauc
-^^^^^^^^^^
+^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.classification.binary_logauc
 
 multiclass_logauc
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.classification.multiclass_logauc
 
 multilabel_logauc
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^
 
 .. autofunction:: torchmetrics.functional.classification.multilabel_logauc
