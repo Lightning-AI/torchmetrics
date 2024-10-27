@@ -13,7 +13,6 @@
 # limitations under the License.
 from typing import List, Optional, Tuple, Union
 
-import numpy as np
 import torch
 from torch import Tensor
 from typing_extensions import Literal
@@ -21,16 +20,8 @@ from typing_extensions import Literal
 from torchmetrics.functional.classification.roc import binary_roc, multiclass_roc, multilabel_roc
 from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.compute import _auc_compute_without_check
-
-
-def _interpolate(newpoints: Tensor, x: Tensor, y: Tensor) -> Tensor:
-    """Interpolate the points (x, y) to the newpoints using linear interpolation."""
-    # TODO: Add native torch implementation
-    device = newpoints.device
-    newpoints_n = newpoints.cpu().numpy()
-    x_n = x.cpu().numpy()
-    y_n = y.cpu().numpy()
-    return torch.from_numpy(np.interp(newpoints_n, x_n, y_n)).to(device)
+from torchmetrics.utilities.data import interp
+from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _validate_fpr_range(fpr_range: Tuple[float, float]) -> None:
@@ -52,7 +43,7 @@ def _binary_logauc_compute(
         )
         return torch.tensor(0.0, device=fpr.device)
 
-    tpr = torch.cat([tpr, _interpolate(fpr_range, fpr, tpr)]).sort().values
+    tpr = torch.cat([tpr, interp(fpr_range, fpr, tpr)]).sort().values
     fpr = torch.cat([fpr, fpr_range]).sort().values
 
     log_fpr = torch.log10(fpr)
@@ -76,6 +67,62 @@ def binary_logauc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
+    r"""Compute the `Log AUC`_ score for classification tasks.
+
+    The score is computed by first computing the ROC curve, which then is interpolated to the specified range of false
+    positive rates (FPR) and then the log is taken of the FPR before the area under the curve (AUC) is computed. The
+    score is commonly used in applications where the positive and negative are imbalanced and a low false positive rate
+    is of high importance.
+
+    Accepts the following input tensors:
+
+    - ``preds`` (float tensor): ``(N, ...)``. Preds should be a tensor containing probabilities or logits for each
+      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+      sigmoid per element.
+    - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
+      only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the positive class.
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+    size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+
+    Args:
+        preds: Tensor with predictions
+        target: Tensor with ground truth labels
+        fpr_range: 2-element tuple with the lower and upper bound of the false positive rate range to compute the log
+            AUC score.
+        thresholds:
+            Can be one of:
+
+            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. Most accurate but also most memory consuming approach.
+            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+              0 to 1 as bins for the calculation.
+            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+              bins for the calculation.
+
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+
+    Returns:
+        A single scalar with the log auc score
+
+    Example:
+        >>> from torchmetrics.functional.classification import binary_logauc
+        >>> import torch
+        >>> preds = torch.rand(20)
+        >>> target = torch.randint(0, 2, (20,))
+        >>> binary_logauc(preds, target, thresholds=None)
+        tensor(0.1538)
+
+    """
     _validate_fpr_range(fpr_range)
     fpr, tpr, _ = binary_roc(preds, target, thresholds, ignore_index, validate_args)
     return _binary_logauc_compute(fpr, tpr, fpr_range)
@@ -106,6 +153,14 @@ def multiclass_logauc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
+    r"""Compute the `Log AUC`_ score for multiclass classification tasks.
+
+    The score is computed by first computing the ROC curve, which then is interpolated to the specified range of false
+    positive rates (FPR) and then the log is taken of the FPR before the area under the curve (AUC) is computed. The
+    score is commonly used in applications where the positive and negative are imbalanced and a low false positive rate
+    is of high importance.
+
+    """
     _validate_fpr_range(fpr_range)
     fpr, tpr, _ = multiclass_roc(
         preds, target, num_classes, thresholds, average=None, ignore_index=ignore_index, validate_args=validate_args
@@ -131,9 +186,49 @@ def multilabel_logauc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
+    r"""Compute the `Log AUC`_ score for multilabel classification tasks.
+
+    The score is computed by first computing the ROC curve, which then is interpolated to the specified range of false
+    positive rates (FPR) and then the log is taken of the FPR before the area under the curve (AUC) is computed. The
+    score is commonly used in applications where the positive and negative are imbalanced and a low false positive rate
+    is of high importance.
+
+    """
     fpr, tpr, _ = multilabel_roc(preds, target, num_labels, thresholds, ignore_index, validate_args)
     return _multilabel_logauc_compute(fpr, tpr, fpr_range)
 
 
-def logauc() -> Tensor:
-    pass
+def logauc(
+    preds: Tensor,
+    target: Tensor,
+    task: Literal["binary", "multiclass", "multilabel"],
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    num_classes: Optional[int] = None,
+    num_labels: Optional[int] = None,
+    fpr_range: Tuple[float, float] = (0.001, 0.1),
+    average: Optional[Literal["macro", "weighted", "none"]] = None,
+    ignore_index: Optional[int] = None,
+    validate_args: bool = True,
+) -> Optional[Tensor]:
+    r"""Compute the `Log AUC`_ score for classification tasks.
+
+    The score is computed by first computing the ROC curve, which then is interpolated to the specified range of false
+    positive rates (FPR) and then the log is taken of the FPR before the area under the curve (AUC) is computed. The
+    score is commonly used in applications where the positive and negative are imbalanced and a low false positive rate
+    is of high importance.
+
+    """
+    task = ClassificationTask.from_str(task)
+    if task == ClassificationTask.BINARY:
+        return binary_logauc(preds, target, fpr_range, thresholds, ignore_index, validate_args)
+    if task == ClassificationTask.MULTICLASS:
+        if not isinstance(num_classes, int):
+            raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
+        return multiclass_logauc(
+            preds, target, num_classes, fpr_range, average, thresholds, ignore_index, validate_args
+        )
+    if task == ClassificationTask.MULTILABEL:
+        if not isinstance(num_labels, int):
+            raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
+        return multilabel_logauc(preds, target, num_labels, thresholds, fpr_range, ignore_index, validate_args)
+    return None
