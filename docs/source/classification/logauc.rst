@@ -1,5 +1,5 @@
 .. customcarditem::
-   :header: Log Area Receiver Operating Characteristic Curve (LogAUC)
+   :header: Log Area Receiver Operating Characteristic (LogAUC)
    :image: https://pl-flash-data.s3.amazonaws.com/assets/thumbnails/tabular_classification.svg
    :tags: Classification
 
