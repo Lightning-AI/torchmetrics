@@ -19,7 +19,7 @@ from typing_extensions import Literal
 
 from torchmetrics.functional.classification.roc import binary_roc, multiclass_roc, multilabel_roc
 from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.compute import _auc_compute_without_check
+from torchmetrics.utilities.compute import _auc_compute_without_check, _safe_divide
 from torchmetrics.utilities.data import interp
 from torchmetrics.utilities.enums import ClassificationTask
 
@@ -57,6 +57,32 @@ def _binary_logauc_compute(
 
     # compute area and rescale it to the range of fpr
     return _auc_compute_without_check(trimmed_log_fpr, trimmed_tpr, 1.0) / (bounds[1] - bounds[0])
+
+
+def _reduce_logauc(
+    fpr: Union[Tensor, List[Tensor]],
+    tpr: Union[Tensor, List[Tensor]],
+    fpr_range: Tuple[float, float] = (0.001, 0.1),
+    average: Optional[Literal["macro", "weighted", "none"]] = "macro",
+    weights: Optional[Tensor] = None,
+) -> Tensor:
+    scores = []
+    for fpr_i, tpr_i in zip(fpr, tpr):
+        scores.append(_binary_logauc_compute(fpr_i, tpr_i, fpr_range))
+    scores = torch.stack(scores)
+    if torch.isnan(scores).any():
+        rank_zero_warn(
+            "LogAUC score for one or more classes/labels was `nan`. Ignoring these classes in {average}-average."
+        )
+    idx = ~torch.isnan(scores)
+    if average is None or average == "none":
+        return scores
+    if average == "macro":
+        return scores[idx].mean()
+    if average == "weighted" and weights is not None:
+        weights = _safe_divide(weights[idx], weights[idx].sum())
+        return (scores[idx] * weights).sum()
+    raise ValueError(f"Got unknown average parameter: {average}. Please choose one of ['macro', 'weighted', 'none'].")
 
 
 def binary_logauc(
@@ -119,7 +145,7 @@ def binary_logauc(
         >>> import torch
         >>> preds = torch.rand(20)
         >>> target = torch.randint(0, 2, (20,))
-        >>> binary_logauc(preds, target, thresholds=None)
+        >>> binary_logauc(preds, target)
         tensor(0.1538)
 
     """

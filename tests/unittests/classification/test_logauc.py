@@ -31,7 +31,7 @@ from unittests.classification._inputs import _binary_cases, _multiclass_cases, _
 seed_all(42)
 
 
-def _binary_compare_implementation(preds, target, fpr_range, ignore_index):
+def _binary_compare_implementation(preds, target, fpr_range, ignore_index=None):
     """Binary comparison function for logauc."""
     preds = preds.flatten().numpy()
     target = target.flatten().numpy()
@@ -46,22 +46,23 @@ class TestBinaryLogAUC(MetricTester):
     """Test class for `BinaryLogAUC` metric."""
 
     atol = 1e-2
-    # @pytest.mark.parametrize("fpr_range", [(0.001, 0.1), (0.01, 0.1), (0.1, 0.2)])
-    # @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    # def test_binary_logauc(self, inputs, ddp, fpr_range):
-    #     """Test class implementation of metric."""
-    #     preds, target = inputs
-    #     self.run_class_metric_test(
-    #         ddp=ddp,
-    #         preds=preds,
-    #         target=target,
-    #         metric_class=BinaryLogAUC,
-    #         reference_metric=partial(_binary_compare_implementation, fpr_range=fpr_range),
-    #         metric_args={
-    #             "fpr_range": fpr_range,
-    #             "thresholds": None,
-    #         },
-    #     )
+
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    @pytest.mark.parametrize("fpr_range", [(0.001, 0.1), (0.01, 0.1), (0.1, 0.2)])
+    def test_binary_logauc(self, inputs, ddp, fpr_range):
+        """Test class implementation of metric."""
+        preds, target = inputs
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=BinaryLogAUC,
+            reference_metric=partial(_binary_compare_implementation, fpr_range=fpr_range),
+            metric_args={
+                "fpr_range": fpr_range,
+                "thresholds": None,
+            },
+        )
 
     @pytest.mark.parametrize("fpr_range", [(0.001, 0.1), (0.01, 0.1), (0.1, 0.2)])
     @pytest.mark.parametrize("ignore_index", [None, -1])
@@ -82,57 +83,57 @@ class TestBinaryLogAUC(MetricTester):
             },
         )
 
-    # def test_binary_logauc_differentiability(self, inputs):
-    #     """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-    #     preds, target = inputs
-    #     self.run_differentiability_test(
-    #         preds=preds,
-    #         target=target,
-    #         metric_module=BinaryLogAUC,
-    #         metric_functional=binary_logauc,
-    #         metric_args={"thresholds": None},
-    #     )
+    def test_binary_logauc_differentiability(self, inputs):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        preds, target = inputs
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=BinaryLogAUC,
+            metric_functional=binary_logauc,
+            metric_args={"thresholds": None},
+        )
 
-    # @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    # def test_binary_logauc_dtype_cpu(self, inputs, dtype):
-    #     """Test dtype support of the metric on CPU."""
-    #     preds, target = inputs
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_binary_logauc_dtype_cpu(self, inputs, dtype):
+        """Test dtype support of the metric on CPU."""
+        preds, target = inputs
 
-    #     if (preds < 0).any() and dtype == torch.half:
-    #         pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
-    #     self.run_precision_test_cpu(
-    #         preds=preds,
-    #         target=target,
-    #         metric_module=BinaryLogAUC,
-    #         metric_functional=binary_logauc,
-    #         metric_args={"thresholds": None},
-    #         dtype=dtype,
-    #     )
+        if (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        self.run_precision_test_cpu(
+            preds=preds,
+            target=target,
+            metric_module=BinaryLogAUC,
+            metric_functional=binary_logauc,
+            metric_args={"thresholds": None},
+            dtype=dtype,
+        )
 
-    # @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-    # @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-    # def test_binary_logauc_dtype_gpu(self, inputs, dtype):
-    #     """Test dtype support of the metric on GPU."""
-    #     preds, target = inputs
-    #     self.run_precision_test_gpu(
-    #         preds=preds,
-    #         target=target,
-    #         metric_module=BinaryLogAUC,
-    #         metric_functional=binary_logauc,
-    #         metric_args={"thresholds": None},
-    #         dtype=dtype,
-    #     )
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_binary_logauc_dtype_gpu(self, inputs, dtype):
+        """Test dtype support of the metric on GPU."""
+        preds, target = inputs
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=BinaryLogAUC,
+            metric_functional=binary_logauc,
+            metric_args={"thresholds": None},
+            dtype=dtype,
+        )
 
-    # @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
-    # def test_binary_logauc_threshold_arg(self, inputs, threshold_fn):
-    #     """Test that different types of `thresholds` argument lead to same result."""
-    #     preds, target = inputs
+    @pytest.mark.parametrize("threshold_fn", [lambda x: x, lambda x: x.numpy().tolist()], ids=["as tensor", "as list"])
+    def test_binary_logauc_threshold_arg(self, inputs, threshold_fn):
+        """Test that different types of `thresholds` argument lead to same result."""
+        preds, target = inputs
 
-    #     for pred, true in zip(preds, target):
-    #         _, _, t = binary_roc(pred, true, thresholds=None)
-    #         ap1 = binary_logauc(pred, true, thresholds=None)
-    #         ap2 = binary_logauc(pred, true, thresholds=threshold_fn(t.flip(0)))
-    #         assert torch.allclose(ap1, ap2)
+        for pred, true in zip(preds, target):
+            _, _, t = binary_roc(pred, true, thresholds=None)
+            ap1 = binary_logauc(pred, true, thresholds=None)
+            ap2 = binary_logauc(pred, true, thresholds=threshold_fn(t.flip(0)))
+            assert torch.allclose(ap1, ap2)
 
 
 # def _multiclass_compare_implementation(preds, target, fpr_range, average):

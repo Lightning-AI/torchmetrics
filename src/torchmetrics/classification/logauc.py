@@ -20,7 +20,7 @@ from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.classification.roc import BinaryROC, MulticlassROC, MultilabelROC
 from torchmetrics.functional.classification.logauc import (
     _binary_logauc_compute,
-    _multiclass_logauc_compute,
+    _reduce_logauc,
     _validate_fpr_range,
 )
 from torchmetrics.metric import Metric
@@ -28,6 +28,38 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class BinaryLogAUC(BinaryROC):
+    r"""Compute the `Log AUC`_ score for binary classification tasks.
+
+    The score is computed by first computing the ROC curve, which then is interpolated to the specified range of false
+    positive rates (FPR) and then the log is taken of the FPR before the area under the curve (AUC) is computed. The
+    score is commonly used in applications where the positive and negative are imbalanced and a low false positive rate
+    is of high importance.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)`` containing probabilities or logits for
+      each observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+      sigmoid per element.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and
+      therefore only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the
+      positive class.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``logauc`` (:class:`~torch.Tensor`): A single scalar with the auroc score.
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+    size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+
+    Args:
+
+    """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -43,7 +75,8 @@ class BinaryLogAUC(BinaryROC):
         **kwargs: Any,
     ) -> None:
         super().__init__(thresholds=thresholds, ignore_index=ignore_index, validate_args=validate_args, **kwargs)
-        _validate_fpr_range(fpr_range)
+        if validate_args:
+            _validate_fpr_range(fpr_range)
         self.fpr_range = fpr_range
 
     def compute(self) -> Tensor:
@@ -53,6 +86,38 @@ class BinaryLogAUC(BinaryROC):
 
 
 class MulticlassLogAUC(MulticlassROC):
+    r"""Compute the `Log AUC`_ score for multiclass classification tasks.
+
+    The score is computed by first computing the ROC curve, which then is interpolated to the specified range of false
+    positive rates (FPR) and then the log is taken of the FPR before the area under the curve (AUC) is computed. The
+    score is commonly used in applications where the positive and negative are imbalanced and a low false positive rate
+    is of high importance.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input:
+
+    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, ...)`` containing probabilities or logits for
+      each observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+      sigmoid per element.
+    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and
+      therefore only contain {0,1} values (except if `ignore_index` is specified). The value 1 always encodes the
+      positive class.
+
+    As output to ``forward`` and ``compute`` the metric returns the following output:
+
+    - ``logauc`` (:class:`~torch.Tensor`): A single scalar with the auroc score.
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+    size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
+
+    Args:
+
+    """
+
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
