@@ -82,13 +82,13 @@ class BinaryLogAUC(BinaryROC):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> from torch import rand, randint
+        >>> from torch import tensor
         >>> from torchmetrics.classification import BinaryLogAUC
-        >>> preds = rand(20)
-        >>> target = randint(2, (20,))
+        >>> preds = tensor([0.75, 0.05, 0.05, 0.05, 0.05])
+        >>> target = tensor([1, 0, 0, 0, 0])
         >>> metric = BinaryLogAUC()
         >>> metric(preds, target)
-        tensor(0.1308)
+        tensor(1.)
 
     """
 

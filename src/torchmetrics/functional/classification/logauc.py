@@ -145,11 +145,11 @@ def binary_logauc(
 
     Example:
         >>> from torchmetrics.functional.classification import binary_logauc
-        >>> import torch
-        >>> preds = torch.rand(20)
-        >>> target = torch.randint(0, 2, (20,))
+        >>> from torch import tensor
+        >>> preds = tensor([0.75, 0.05, 0.05, 0.05, 0.05])
+        >>> target = tensor([1, 0, 0, 0, 0])
         >>> binary_logauc(preds, target)
-        tensor(0.1308)
+        tensor(1.)
 
     """
     _validate_fpr_range(fpr_range)
