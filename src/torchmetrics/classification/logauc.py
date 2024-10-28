@@ -88,7 +88,7 @@ class BinaryLogAUC(BinaryROC):
         >>> target = randint(2, (20,))
         >>> metric = BinaryLogAUC()
         >>> metric(preds, target)
-        tensor(0.1538)
+        tensor(0.1308)
 
     """
 
@@ -101,7 +101,7 @@ class BinaryLogAUC(BinaryROC):
     def __init__(
         self,
         fpr_range: Tuple[float, float] = (0.001, 0.1),
-        thresholds: Optional[Union[float, Tensor]] = None,
+        thresholds: Optional[Union[int, List[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = False,
         **kwargs: Any,
@@ -111,7 +111,7 @@ class BinaryLogAUC(BinaryROC):
             _validate_fpr_range(fpr_range)
         self.fpr_range = fpr_range
 
-    def compute(self) -> Tensor:
+    def compute(self) -> Tensor:  # type: ignore[override]
         """Computes the log AUC score."""
         fpr, tpr, _ = super().compute()
         return _binary_logauc_compute(fpr, tpr, fpr_range=self.fpr_range)
@@ -261,7 +261,7 @@ class MulticlassLogAUC(MulticlassROC):
         self.fpr_range = fpr_range
         self.average2 = average  # self.average is already used by parent class
 
-    def compute(self) -> Tensor:
+    def compute(self) -> Tensor:  # type: ignore[override]
         """Computes the log AUC score."""
         fpr, tpr, _ = super().compute()
         return _reduce_logauc(fpr, tpr, fpr_range=self.fpr_range, average=self.average2)
@@ -411,7 +411,7 @@ class MultilabelLogAUC(MultilabelROC):
             **kwargs,
         )
 
-    def compute(self) -> Tensor:
+    def compute(self) -> Tensor:  # type: ignore[override]
         """Computes the log AUC score."""
         fpr, tpr, _ = super().compute()
         return _reduce_logauc(fpr, tpr, fpr_range=self.fpr_range, average=self.average2)

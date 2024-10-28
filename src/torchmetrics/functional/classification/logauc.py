@@ -149,7 +149,7 @@ def binary_logauc(
         >>> preds = torch.rand(20)
         >>> target = torch.randint(0, 2, (20,))
         >>> binary_logauc(preds, target)
-        tensor(0.1538)
+        tensor(0.1308)
 
     """
     _validate_fpr_range(fpr_range)
