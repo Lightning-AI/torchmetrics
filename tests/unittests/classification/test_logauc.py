@@ -19,9 +19,10 @@ import torch
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from tdc.evaluator import range_logAUC
-from torchmetrics.classification.logauc import BinaryLogAUC, MulticlassLogAUC
-from torchmetrics.functional.classification.logauc import binary_logauc, multiclass_logauc
+from torchmetrics.classification.logauc import BinaryLogAUC, LogAUC, MulticlassLogAUC, MultilabelLogAUC
+from torchmetrics.functional.classification.logauc import binary_logauc, multiclass_logauc, multilabel_logauc
 from torchmetrics.functional.classification.roc import binary_roc
+from torchmetrics.metric import Metric
 
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
@@ -136,117 +137,270 @@ class TestBinaryLogAUC(MetricTester):
             assert torch.allclose(ap1, ap2)
 
 
-# def _multiclass_compare_implementation(preds, target, fpr_range, average):
-#     """Multiclass comparison function for logauc."""
-#     preds = preds.permute(0, 2, 1).reshape(-1, NUM_CLASSES).numpy() if preds.ndim == 3 else preds.numpy()
-#     target = target.flatten().numpy()
-#     if not ((preds > 0) & (preds < 1)).all():
-#         preds = softmax(preds, 1)
+def _multiclass_compare_implementation(preds, target, fpr_range, average):
+    """Multiclass comparison function for logauc."""
+    preds = preds.permute(0, 2, 1).reshape(-1, NUM_CLASSES).numpy() if preds.ndim == 3 else preds.numpy()
+    target = target.flatten().numpy()
+    if not ((preds > 0) & (preds < 1)).all():
+        preds = softmax(preds, 1)
 
-#     scores = []
-#     for i in range(NUM_CLASSES):
-#         p, t = preds[:, i], (target == i).astype(int)
-#         scores.append(range_logAUC(t, p, FPR_range=fpr_range))
-#     if average == "macro":
-#         return np.mean(scores)
-#     return scores
+    scores = []
+    for i in range(NUM_CLASSES):
+        p, t = preds[:, i], (target == i).astype(int)
+        scores.append(range_logAUC(t, p, FPR_range=fpr_range))
+    if average == "macro":
+        return np.mean(scores)
+    return scores
 
 
-# @pytest.mark.parametrize(
-#     "inputs", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
-# )
-# class TestMulticlassLogAUC(MetricTester):
-#     """Test class for `MulticlassLogAUC` metric."""
+@pytest.mark.parametrize(
+    "inputs", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
+)
+class TestMulticlassLogAUC(MetricTester):
+    """Test class for `MulticlassLogAUC` metric."""
 
-#     @pytest.mark.parametrize("fpr_range", [(0.001, 0.1), (0.01, 0.1), (0.1, 0.2)])
-#     @pytest.mark.parametrize("average", ["macro", "weighted"])
-#     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-#     def test_multiclass_logauc(self, inputs, fpr_range, average, ddp):
-#         """Test class implementation of metric."""
-#         preds, target = inputs
-#         self.run_class_metric_test(
-#             ddp=ddp,
-#             preds=preds,
-#             target=target,
-#             metric_class=MulticlassLogAUC,
-#             reference_metric=partial(_multiclass_compare_implementation, fpr_range=fpr_range, average=average),
-#             metric_args={
-#                 "thresholds": None,
-#                 "num_classes": NUM_CLASSES,
-#                 "fpr_range": fpr_range,
-#                 "average": average,
-#             },
-#         )
+    @pytest.mark.parametrize("fpr_range", [(0.001, 0.1), (0.01, 0.1), (0.1, 0.2)])
+    @pytest.mark.parametrize("average", ["macro", None])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_multiclass_logauc(self, inputs, fpr_range, average, ddp):
+        """Test class implementation of metric."""
+        preds, target = inputs
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=MulticlassLogAUC,
+            reference_metric=partial(_multiclass_compare_implementation, fpr_range=fpr_range, average=average),
+            metric_args={
+                "thresholds": None,
+                "num_classes": NUM_CLASSES,
+                "fpr_range": fpr_range,
+                "average": average,
+            },
+        )
 
-#     @pytest.mark.parametrize("fpr_range", [(0.001, 0.1), (0.01, 0.1), (0.1, 0.2)])
-#     @pytest.mark.parametrize("average", ["macro", None])
-#     def test_multiclass_logauc_functional(self, inputs, fpr_range, average):
-#         """Test functional implementation of metric."""
-#         preds, target = inputs
-#         self.run_functional_metric_test(
-#             preds=preds,
-#             target=target,
-#             metric_functional=multiclass_logauc,
-#             reference_metric=partial(_multiclass_compare_implementation, fpr_range=fpr_range, average=average),
-#             metric_args={
-#                 "thresholds": None,
-#                 "num_classes": NUM_CLASSES,
-#                 "fpr_range": fpr_range,
-#                 "average": average,
-#             },
-#         )
+    @pytest.mark.parametrize("fpr_range", [(0.001, 0.1), (0.01, 0.1), (0.1, 0.2)])
+    @pytest.mark.parametrize("average", ["macro", None])
+    def test_multiclass_logauc_functional(self, inputs, fpr_range, average):
+        """Test functional implementation of metric."""
+        preds, target = inputs
+        self.run_functional_metric_test(
+            preds=preds,
+            target=target,
+            metric_functional=multiclass_logauc,
+            reference_metric=partial(_multiclass_compare_implementation, fpr_range=fpr_range, average=average),
+            metric_args={
+                "thresholds": None,
+                "num_classes": NUM_CLASSES,
+                "fpr_range": fpr_range,
+                "average": average,
+            },
+        )
 
-# def test_multiclass_logauc_differentiability(self, inputs):
-#     """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-#     preds, target = inputs
-#     self.run_differentiability_test(
-#         preds=preds,
-#         target=target,
-#         metric_module=MulticlassLogAUC,
-#         metric_functional=multiclass_logauc,
-#         metric_args={"thresholds": None, "num_classes": NUM_CLASSES},
-#     )
+    def test_multiclass_logauc_differentiability(self, inputs):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        preds, target = inputs
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=MulticlassLogAUC,
+            metric_functional=multiclass_logauc,
+            metric_args={"thresholds": None, "num_classes": NUM_CLASSES},
+        )
 
-# @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-# def test_multiclass_logauc_dtype_cpu(self, inputs, dtype):
-#     """Test dtype support of the metric on CPU."""
-#     preds, target = inputs
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multiclass_logauc_dtype_cpu(self, inputs, dtype):
+        """Test dtype support of the metric on CPU."""
+        preds, target = inputs
 
-#     if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
-#         pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
-#     self.run_precision_test_cpu(
-#         preds=preds,
-#         target=target,
-#         metric_module=MulticlassLogAUC,
-#         metric_functional=multiclass_logauc,
-#         metric_args={"thresholds": None, "num_classes": NUM_CLASSES},
-#         dtype=dtype,
-#     )
+        if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
+            pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
+        self.run_precision_test_cpu(
+            preds=preds,
+            target=target,
+            metric_module=MulticlassLogAUC,
+            metric_functional=multiclass_logauc,
+            metric_args={"thresholds": None, "num_classes": NUM_CLASSES},
+            dtype=dtype,
+        )
 
-# @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
-# @pytest.mark.parametrize("dtype", [torch.half, torch.double])
-# def test_multiclass_logauc_dtype_gpu(self, inputs, dtype):
-#     """Test dtype support of the metric on GPU."""
-#     preds, target = inputs
-#     self.run_precision_test_gpu(
-#         preds=preds,
-#         target=target,
-#         metric_module=MulticlassLogAUC,
-#         metric_functional=multiclass_logauc,
-#         metric_args={"thresholds": None, "num_classes": NUM_CLASSES},
-#         dtype=dtype,
-#     )
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multiclass_logauc_dtype_gpu(self, inputs, dtype):
+        """Test dtype support of the metric on GPU."""
+        preds, target = inputs
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=MulticlassLogAUC,
+            metric_functional=multiclass_logauc,
+            metric_args={"thresholds": None, "num_classes": NUM_CLASSES},
+            dtype=dtype,
+        )
 
-# @pytest.mark.parametrize("average", ["macro", "weighted", None])
-# def test_multiclass_logauc_threshold_arg(self, inputs, average):
-#     """Test that different types of `thresholds` argument lead to same result."""
-#     preds, target = inputs
-#     if (preds < 0).any():
-#         preds = preds.softmax(dim=-1)
-#     for pred, true in zip(preds, target):
-#         pred = torch.tensor(np.round(pred.numpy(), 2)) + 1e-6  # rounding will simulate binning
-#         ap1 = multiclass_logauc(pred, true, num_classes=NUM_CLASSES, average=average, thresholds=None)
-#         ap2 = multiclass_logauc(
-#             pred, true, num_classes=NUM_CLASSES, average=average, thresholds=torch.linspace(0, 1, 100)
-#         )
-#         assert torch.allclose(ap1, ap2)
+    @pytest.mark.parametrize("average", ["macro", None])
+    def test_multiclass_logauc_threshold_arg(self, inputs, average):
+        """Test that different types of `thresholds` argument lead to same result."""
+        preds, target = inputs
+        if (preds < 0).any():
+            preds = preds.softmax(dim=-1)
+        for pred, true in zip(preds, target):
+            pred = torch.tensor(np.round(pred.numpy(), 2)) + 1e-6  # rounding will simulate binning
+            ap1 = multiclass_logauc(pred, true, num_classes=NUM_CLASSES, average=average, thresholds=None)
+            ap2 = multiclass_logauc(
+                pred, true, num_classes=NUM_CLASSES, average=average, thresholds=torch.linspace(0, 1, 100)
+            )
+            assert torch.allclose(ap1, ap2)
+
+
+def _multilabel_compare_implementation(preds, target, fpr_range, average):
+    if preds.ndim > 2:
+        target = target.transpose(2, 1).reshape(-1, NUM_CLASSES)
+        preds = preds.transpose(2, 1).reshape(-1, NUM_CLASSES)
+    target = target.numpy()
+    preds = preds.numpy()
+    if not ((preds > 0) & (preds < 1)).all():
+        preds = sigmoid(preds)
+    scores = []
+    for i in range(NUM_CLASSES):
+        p, t = preds[:, i], target[:, i]
+        scores.append(range_logAUC(t, p, FPR_range=fpr_range))
+    if average == "macro":
+        return np.mean(scores)
+    return scores
+
+
+@pytest.mark.parametrize(
+    "inputs", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
+)
+class TestMultilabelLogAUC(MetricTester):
+    """Test class for `MultilabelLogAUC` metric."""
+
+    @pytest.mark.parametrize("fpr_range", [(0.001, 0.1), (0.01, 0.1), (0.1, 0.2)])
+    @pytest.mark.parametrize("average", ["macro", None])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    def test_multilabel_logauc(self, inputs, ddp, fpr_range, average):
+        """Test class implementation of metric."""
+        preds, target = inputs
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=MultilabelLogAUC,
+            reference_metric=partial(_multilabel_compare_implementation, fpr_range=fpr_range, average=average),
+            metric_args={
+                "thresholds": None,
+                "num_labels": NUM_CLASSES,
+                "average": average,
+                "fpr_range": fpr_range,
+            },
+        )
+
+    @pytest.mark.parametrize("fpr_range", [(0.001, 0.1), (0.01, 0.1), (0.1, 0.2)])
+    @pytest.mark.parametrize("average", ["macro", None])
+    def test_multilabel_logauc_functional(self, inputs, fpr_range, average):
+        """Test functional implementation of metric."""
+        preds, target = inputs
+        self.run_functional_metric_test(
+            preds=preds,
+            target=target,
+            metric_functional=multilabel_logauc,
+            reference_metric=partial(_multilabel_compare_implementation, fpr_range=fpr_range, average=average),
+            metric_args={
+                "thresholds": None,
+                "num_labels": NUM_CLASSES,
+                "average": average,
+                "fpr_range": fpr_range,
+            },
+        )
+
+    def test_multiclass_logauc_differentiability(self, inputs):
+        """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        preds, target = inputs
+        self.run_differentiability_test(
+            preds=preds,
+            target=target,
+            metric_module=MultilabelLogAUC,
+            metric_functional=multilabel_logauc,
+            metric_args={"thresholds": None, "num_labels": NUM_CLASSES},
+        )
+
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multilabel_logauc_dtype_cpu(self, inputs, dtype):
+        """Test dtype support of the metric on CPU."""
+        preds, target = inputs
+
+        if dtype == torch.half and not ((preds > 0) & (preds < 1)).all():
+            pytest.xfail(reason="half support for torch.softmax on cpu not implemented")
+        self.run_precision_test_cpu(
+            preds=preds,
+            target=target,
+            metric_module=MultilabelLogAUC,
+            metric_functional=multilabel_logauc,
+            metric_args={"thresholds": None, "num_labels": NUM_CLASSES},
+            dtype=dtype,
+        )
+
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+    @pytest.mark.parametrize("dtype", [torch.half, torch.double])
+    def test_multiclass_logauc_dtype_gpu(self, inputs, dtype):
+        """Test dtype support of the metric on GPU."""
+        preds, target = inputs
+        self.run_precision_test_gpu(
+            preds=preds,
+            target=target,
+            metric_module=MultilabelLogAUC,
+            metric_functional=multilabel_logauc,
+            metric_args={"thresholds": None, "num_labels": NUM_CLASSES},
+            dtype=dtype,
+        )
+
+    @pytest.mark.parametrize("average", ["macro", None])
+    def test_multilabel_logauc_threshold_arg(self, inputs, average):
+        """Test that different types of `thresholds` argument lead to same result."""
+        preds, target = inputs
+        if (preds < 0).any():
+            preds = sigmoid(preds)
+        for pred, true in zip(preds, target):
+            pred = torch.tensor(np.round(pred.numpy(), 1)) + 1e-6  # rounding will simulate binning
+            ap1 = multilabel_logauc(pred, true, num_labels=NUM_CLASSES, average=average, thresholds=None)
+            ap2 = multilabel_logauc(
+                pred, true, num_labels=NUM_CLASSES, average=average, thresholds=torch.linspace(0, 1, 100)
+            )
+            assert torch.allclose(ap1, ap2)
+
+
+@pytest.mark.parametrize(
+    "metric",
+    [
+        BinaryLogAUC,
+        partial(MulticlassLogAUC, num_classes=NUM_CLASSES),
+        partial(MultilabelLogAUC, num_labels=NUM_CLASSES),
+    ],
+)
+@pytest.mark.parametrize("thresholds", [None, 100, [0.3, 0.5, 0.7, 0.9], torch.linspace(0, 1, 10)])
+def test_valid_input_thresholds(recwarn, metric, thresholds):
+    """Test valid formats of the threshold argument."""
+    metric(thresholds=thresholds)
+    assert len(recwarn) == 0, "Warning was raised when it should not have been."
+
+
+@pytest.mark.parametrize(
+    ("metric", "kwargs"),
+    [
+        (BinaryLogAUC, {"task": "binary"}),
+        (MulticlassLogAUC, {"task": "multiclass", "num_classes": 3}),
+        (MultilabelLogAUC, {"task": "multilabel", "num_labels": 3}),
+        (None, {"task": "not_valid_task"}),
+    ],
+)
+def test_wrapper_class(metric, kwargs, base_metric=LogAUC):
+    """Test the wrapper class."""
+    assert issubclass(base_metric, Metric)
+    if metric is None:
+        with pytest.raises(ValueError, match=r"Invalid *"):
+            base_metric(**kwargs)
+    else:
+        instance = base_metric(**kwargs)
+        assert isinstance(instance, metric)
+        assert isinstance(instance, Metric)
