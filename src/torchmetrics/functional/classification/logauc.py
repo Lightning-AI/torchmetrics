@@ -93,7 +93,7 @@ def binary_logauc(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    r"""Compute the `Log AUC`_ score for classification tasks.
+    r"""Compute the `Log AUC`_ score for binary classification tasks.
 
     The score is computed by first computing the ROC curve, which then is interpolated to the specified range of false
     positive rates (FPR) and then the log is taken of the FPR before the area under the curve (AUC) is computed. The
@@ -154,27 +154,12 @@ def binary_logauc(
     return _binary_logauc_compute(fpr, tpr, fpr_range)
 
 
-def _multiclass_logauc_compute(
-    fpr: Union[Tensor, List[Tensor]],
-    tpr: Union[Tensor, List[Tensor]],
-    fpr_range: Tuple[float, float] = (0.001, 0.1),
-    average: Optional[Literal["macro", "none"]] = "macro",
-) -> Tensor:
-    scores = []
-    for fpr_i, tpr_i in zip(fpr, tpr):
-        scores.append(_binary_logauc_compute(fpr_i, tpr_i, fpr_range))
-    scores = torch.stack(scores)
-    if average == "macro":
-        return scores.mean()
-    return scores
-
-
 def multiclass_logauc(
     preds: Tensor,
     target: Tensor,
     num_classes: int,
     fpr_range: Tuple[float, float] = (0.001, 0.1),
-    average: Optional[Literal["macro", "weighted", "none"]] = "macro",
+    average: Optional[Literal["macro", "none"]] = "macro",
     thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
@@ -186,29 +171,66 @@ def multiclass_logauc(
     score is commonly used in applications where the positive and negative are imbalanced and a low false positive rate
     is of high importance.
 
+    Accepts the following input tensors:
+
+    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
+      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+      softmax per sample.
+    - ``target`` (int tensor): ``(N, ...)``. Target should be a tensor containing ground truth labels, and therefore
+      only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+    size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
+
+    Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        num_classes: Integer specifying the number of classes
+        fpr_range: 2-element tuple with the lower and upper bound of the false positive rate range to compute the log
+            AUC score.
+        thresholds:
+            Can be one of:
+
+            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. Most accurate but also most memory consuming approach.
+            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+              0 to 1 as bins for the calculation.
+            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+              bins for the calculation.
+
+        average:
+            Defines the reduction that is applied over classes. Should be one of the following:
+
+            - ``macro``: Calculate score for each class and average them
+            - ``"none"`` or ``None``: calculates score for each class and applies no reduction
+
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+
     """
-    _validate_fpr_range(fpr_range)
+    if validate_args:
+        _validate_fpr_range(fpr_range)
     fpr, tpr, _ = multiclass_roc(
         preds, target, num_classes, thresholds, average=None, ignore_index=ignore_index, validate_args=validate_args
     )
-    return _multiclass_logauc_compute(fpr, tpr, fpr_range, average)
-
-
-def _multilabel_logauc_compute(
-    fpr: Union[Tensor, List[Tensor]],
-    tpr: Union[Tensor, List[Tensor]],
-    fpr_range: Tuple[float, float] = (0.001, 0.1),
-    average: Optional[Literal["macro", "weighted", "none"]] = "macro",
-) -> Tensor:
-    pass
+    return _reduce_logauc(fpr, tpr, fpr_range, average)
 
 
 def multilabel_logauc(
     preds: Tensor,
     target: Tensor,
     num_labels: int,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     fpr_range: Tuple[float, float] = (0.001, 0.1),
+    average: Optional[Literal["macro", "none"]] = "macro",
+    thresholds: Optional[Union[int, List[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
@@ -219,9 +241,53 @@ def multilabel_logauc(
     score is commonly used in applications where the positive and negative are imbalanced and a low false positive rate
     is of high importance.
 
+    Accepts the following input tensors:
+
+    - ``preds`` (float tensor): ``(N, C, ...)``. Preds should be a tensor containing probabilities or logits for each
+      observation. If preds has values outside [0,1] range we consider the input to be logits and will auto apply
+      sigmoid per element.
+    - ``target`` (int tensor): ``(N, C, ...)``. Target should be a tensor containing ground truth labels, and therefore
+      only contain {0,1} values (except if `ignore_index` is specified).
+
+    Additional dimension ``...`` will be flattened into the batch dimension.
+
+    The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
+    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
+    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
+    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+    size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
+
+    Args:
+        preds: Tensor with predictions
+        target: Tensor with true labels
+        num_labels: Integer specifying the number of labels
+        fpr_range: 2-element tuple with the lower and upper bound of the false positive rate range to compute the log
+            AUC score.
+        average:
+            Defines the reduction that is applied over labels. Should be one of the following:
+
+            - ``macro``: Calculate score for each label and average them
+            - ``"none"`` or ``None``: calculates score for each label and applies no reduction
+
+        thresholds:
+            Can be one of:
+
+            - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
+              all the data. Most accurate but also most memory consuming approach.
+            - If set to an `int` (larger than 1), will use that number of thresholds linearly spaced from
+              0 to 1 as bins for the calculation.
+            - If set to an `list` of floats, will use the indicated thresholds in the list as bins for the calculation
+            - If set to an 1d `tensor` of floats, will use the indicated thresholds in the tensor as
+              bins for the calculation.
+
+        ignore_index:
+            Specifies a target value that is ignored and does not contribute to the metric calculation
+        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+            Set to ``False`` for faster computations.
+
     """
     fpr, tpr, _ = multilabel_roc(preds, target, num_labels, thresholds, ignore_index, validate_args)
-    return _multilabel_logauc_compute(fpr, tpr, fpr_range)
+    return _reduce_logauc(fpr, tpr, fpr_range, average=average)
 
 
 def logauc(
@@ -232,7 +298,7 @@ def logauc(
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
     fpr_range: Tuple[float, float] = (0.001, 0.1),
-    average: Optional[Literal["macro", "weighted", "none"]] = None,
+    average: Optional[Literal["macro", "none"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Optional[Tensor]:
@@ -256,5 +322,5 @@ def logauc(
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
-        return multilabel_logauc(preds, target, num_labels, thresholds, fpr_range, ignore_index, validate_args)
+        return multilabel_logauc(preds, target, num_labels, fpr_range, average, thresholds, ignore_index, validate_args)
     return None
