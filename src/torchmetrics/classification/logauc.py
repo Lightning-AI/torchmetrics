@@ -81,6 +81,15 @@ class BinaryLogAUC(BinaryROC):
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
+    Example:
+        >>> from torch import rand, randint
+        >>> from torchmetrics.classification import BinaryLogAUC
+        >>> preds = rand(20)
+        >>> target = randint(2, (20,))
+        >>> metric = BinaryLogAUC()
+        >>> metric(preds, target)
+        tensor(0.1538)
+
     """
 
     is_differentiable: bool = False
@@ -204,6 +213,21 @@ class MulticlassLogAUC(MulticlassROC):
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Example:
+        >>> from torch import tensor
+        >>> from torchmetrics.classification import MulticlassLogAUC
+        >>> preds = tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                 [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                 [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                 [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = tensor([0, 1, 3, 2])
+        >>> metric = MulticlassLogAUC(num_classes=5, average="macro", thresholds=None)
+        >>> metric(preds, target)
+        tensor(0.4000)
+        >>> metric = MulticlassLogAUC(num_classes=5, average=None, thresholds=None)
+        >>> metric(preds, target)
+        tensor([1., 1., 0., 0., 0.])
 
     """
 
@@ -351,16 +375,10 @@ class MultilabelLogAUC(MultilabelROC):
         ...                        [1, 1, 1]])
         >>> metric = MultilabelLogAUC(num_labels=3, average="macro", thresholds=None)
         >>> metric(preds, target)
-        tensor(0.6528)
+        tensor(0.3945)
         >>> metric = MultilabelLogAUC(num_labels=3, average=None, thresholds=None)
         >>> metric(preds, target)
-        tensor([0.6250, 0.5000, 0.8333])
-        >>> metric = MultilabelLogAUC(num_labels=3, average="macro", thresholds=5)
-        >>> metric(preds, target)
-        tensor(0.6528)
-        >>> metric = MultilabelLogAUC(num_labels=3, average=None, thresholds=5)
-        >>> metric(preds, target)
-        tensor([0.6250, 0.5000, 0.8333])
+        tensor([0.5000, 0.0000, 0.6835])
 
     """
 

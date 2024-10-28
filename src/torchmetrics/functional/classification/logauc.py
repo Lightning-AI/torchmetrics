@@ -25,6 +25,7 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 def _validate_fpr_range(fpr_range: Tuple[float, float]) -> None:
+    """Validate the `fpr_range` argument for the logauc metric."""
     if not isinstance(fpr_range, tuple) and not len(fpr_range) == 2:
         raise ValueError(f"The `fpr_range` should be a tuple of two floats, but got {type(fpr_range)}.")
     if not (0 <= fpr_range[0] < fpr_range[1] <= 1):
@@ -36,6 +37,7 @@ def _binary_logauc_compute(
     tpr: Tensor,
     fpr_range: Tuple[float, float] = (0.001, 0.1),
 ) -> Tensor:
+    """Compute the logauc score for binary classification tasks."""
     fpr_range = torch.tensor(fpr_range).to(fpr.device)
     if fpr.numel() < 2 or tpr.numel() < 2:
         rank_zero_warn(
@@ -66,6 +68,7 @@ def _reduce_logauc(
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
     weights: Optional[Tensor] = None,
 ) -> Tensor:
+    """Reduce the logauc score to a single value for multiclass and multilabel classification tasks."""
     scores = []
     for fpr_i, tpr_i in zip(fpr, tpr):
         scores.append(_binary_logauc_compute(fpr_i, tpr_i, fpr_range))
@@ -215,6 +218,18 @@ def multiclass_logauc(
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
 
+    Example:
+        >>> from torchmetrics.functional.classification import multiclass_logauc
+        >>> preds = torch.tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
+        ...                       [0.05, 0.75, 0.05, 0.05, 0.05],
+        ...                       [0.05, 0.05, 0.75, 0.05, 0.05],
+        ...                       [0.05, 0.05, 0.05, 0.75, 0.05]])
+        >>> target = torch.tensor([0, 1, 3, 2])
+        >>> multiclass_logauc(preds, target, num_classes=5, average="macro", thresholds=None)
+        tensor(0.4000)
+        >>> multiclass_logauc(preds, target, num_classes=5, average=None, thresholds=None)
+        tensor([1., 1., 0., 0., 0.])
+
     """
     if validate_args:
         _validate_fpr_range(fpr_range)
@@ -284,6 +299,21 @@ def multilabel_logauc(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
+
+    Example:
+        >>> from torchmetrics.functional.classification import multilabel_logauc
+        >>> preds = torch.tensor([[0.75, 0.05, 0.35],
+        ...                       [0.45, 0.75, 0.05],
+        ...                       [0.05, 0.55, 0.75],
+        ...                       [0.05, 0.65, 0.05]])
+        >>> target = torch.tensor([[1, 0, 1],
+        ...                        [0, 0, 0],
+        ...                        [0, 1, 1],
+        ...                        [1, 1, 1]])
+        >>> multilabel_logauc(preds, target, num_labels=3, average="macro", thresholds=None)
+        tensor(0.3945)
+        >>> multilabel_logauc(preds, target, num_labels=3, average=None, thresholds=None)
+        tensor([0.5000, 0.0000, 0.6835])
 
     """
     fpr, tpr, _ = multilabel_roc(preds, target, num_labels, thresholds, ignore_index, validate_args)
