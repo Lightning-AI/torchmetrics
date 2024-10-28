@@ -479,7 +479,7 @@ class LogAUC(_ClassificationTaskWrapper):
         cls: Type["LogAUC"],
         task: Literal["binary", "multiclass", "multilabel"],
         thresholds: Optional[Union[int, List[float], Tensor]] = None,
-        fp_range: Optional[Tuple[float, float]] = (0.001, 0.1),
+        fpr_range: Optional[Tuple[float, float]] = (0.001, 0.1),
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
         ignore_index: Optional[int] = None,
@@ -490,7 +490,7 @@ class LogAUC(_ClassificationTaskWrapper):
         task = ClassificationTask.from_str(task)
         kwargs.update({
             "thresholds": thresholds,
-            "fp_range": fp_range,
+            "fpr_range": fpr_range,
             "ignore_index": ignore_index,
             "validate_args": validate_args,
         })
