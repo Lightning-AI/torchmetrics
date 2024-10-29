@@ -440,7 +440,6 @@ class Metric(Module, ABC):
             >>> metric.compute()
             tensor(3.)
 
-
         """
         if not isinstance(incoming_state, (dict, Metric)):
             raise ValueError(
