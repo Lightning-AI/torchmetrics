@@ -219,7 +219,8 @@ class MetricTracker(ModuleList):
     ) -> Union[
         None,
         float,
-        Tuple[Union[int, float], Union[int, float]],
+        Tensor,
+        Tuple[Union[int, float, Tensor], Union[int, float, Tensor]],
         Tuple[None, None],
         Dict[str, Union[float, None]],
         Tuple[Dict[str, Union[float, None]], Dict[str, Union[int, None]]],
@@ -277,7 +278,7 @@ class MetricTracker(ModuleList):
 
         else:  # this is a metric collection
             maximize = self.maximize if isinstance(self.maximize, list) else len(res) * [self.maximize]
-            value, idx = {}, {}
+            value, idx = {}, {}  # type: ignore[assignment]
             for i, (k, v) in enumerate(res.items()):
                 try:
                     fn = torch.max if maximize[i] else torch.min
@@ -290,7 +291,7 @@ class MetricTracker(ModuleList):
                         "Returning `None` instead.",
                         UserWarning,
                     )
-                    value[k], idx[k] = None, None
+                    value[k], idx[k] = None, None  # type: ignore[assignment]
 
             if return_step:
                 return value, idx
