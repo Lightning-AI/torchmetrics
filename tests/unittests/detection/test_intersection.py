@@ -353,6 +353,43 @@ class TestIntersectionMetrics(MetricTester):
         for val in res.values():
             assert val == torch.tensor(0.0)
 
+    def test_empty_preds_and_target(self, class_metric, functional_metric, reference_metric):
+        """Check that for either empty preds and targets that the metric returns 0 in these cases before averaging."""
+        x = [
+            {
+                "boxes": torch.empty(size=(0, 4), dtype=torch.float32),
+                "labels": torch.tensor([], dtype=torch.long),
+            },
+            {
+                "boxes": torch.FloatTensor([[0.1, 0.1, 0.2, 0.2], [0.3, 0.3, 0.4, 0.4]]),
+                "labels": torch.LongTensor([1, 2]),
+            },
+        ]
+
+        y = [
+            {
+                "boxes": torch.FloatTensor([[0.1, 0.1, 0.2, 0.2], [0.3, 0.3, 0.4, 0.4]]),
+                "labels": torch.LongTensor([1, 2]),
+                "scores": torch.FloatTensor([0.9, 0.8]),
+            },
+            {
+                "boxes": torch.FloatTensor([[0.1, 0.1, 0.2, 0.2], [0.3, 0.3, 0.4, 0.4]]),
+                "labels": torch.LongTensor([1, 2]),
+                "scores": torch.FloatTensor([0.9, 0.8]),
+            },
+        ]
+        metric = class_metric()
+        metric.update(x, y)
+        res = metric.compute()
+        for val in res.values():
+            assert val == torch.tensor(0.5)
+
+        metric = class_metric()
+        metric.update(y, x)
+        res = metric.compute()
+        for val in res.values():
+            assert val == torch.tensor(0.5)
+
 
 def test_corner_case():
     """See issue: https://github.com/Lightning-AI/torchmetrics/issues/1921."""
