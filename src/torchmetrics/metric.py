@@ -64,15 +64,22 @@ class Metric(Module, ABC):
     Args:
         kwargs: additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-            - **compute_on_cpu**: If metric state should be stored on CPU during computations. Only works for list states.
-            - **dist_sync_on_step**: If metric state should synchronize on ``forward()``. Default is ``False``.
-            - **process_group**: The process group on which the synchronization is called. Default is the world.
-            - **dist_sync_fn**: Function that performs the allgather option on the metric state. Default is a custom
-              implementation that calls ``torch.distributed.all_gather`` internally.
-            - **distributed_available_fn**: Function that checks if the distributed backend is available. Defaults to a
-              check of ``torch.distributed.is_available()`` and ``torch.distributed.is_initialized()``.
-            - **sync_on_compute**: If metric state should synchronize when ``compute`` is called. Default is ``True``.
-            - **compute_with_cache**: If results from ``compute`` should be cached. Default is ``True``.
+            - **compute_on_cpu**:
+                If metric state should be stored on CPU during computations. Only works for list states.
+            - **dist_sync_on_step**:
+                If metric state should synchronize on ``forward()``. Default is ``False``.
+            - **process_group**:
+                The process group on which the synchronization is called. Default is the world.
+            - **dist_sync_fn**:
+                Function that performs the allgather option on the metric state. Default is a custom
+                implementation that calls ``torch.distributed.all_gather`` internally.
+            - **distributed_available_fn**:
+                Function that checks if the distributed backend is available. Defaults to a
+                check of ``torch.distributed.is_available()`` and ``torch.distributed.is_initialized()``.
+            - **sync_on_compute**:
+                If metric state should synchronize when ``compute`` is called. Default is ``True``.
+            - **compute_with_cache**:
+                If results from ``compute`` should be cached. Default is ``True``.
 
     """
 
