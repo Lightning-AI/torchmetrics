@@ -53,9 +53,9 @@ class Metric(Module, ABC):
 
     This class is inherited by all metrics and implements the following functionality:
 
-    1. Handles the transfer of metric states to the correct device
-    2. Handles the synchronization of metric states across processes
-    3. Provides properties and methods to control the overall behavior of the metric and its states
+        1. Handles the transfer of metric states to the correct device.
+        2. Handles the synchronization of metric states across processes.
+        3. Provides properties and methods to control the overall behavior of the metric and its states.
 
     The three core methods of the base class are: ``add_state()``, ``forward()`` and ``reset()`` which should almost
     never be overwritten by child classes. Instead, the following methods should be overwritten ``update()`` and
@@ -64,15 +64,15 @@ class Metric(Module, ABC):
     Args:
         kwargs: additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-            - compute_on_cpu: If metric state should be stored on CPU during computations. Only works for list states.
-            - dist_sync_on_step: If metric state should synchronize on ``forward()``. Default is ``False``
-            - process_group: The process group on which the synchronization is called. Default is the world.
-            - dist_sync_fn: Function that performs the allgather option on the metric state. Default is an custom
+            - **compute_on_cpu**: If metric state should be stored on CPU during computations. Only works for list states.
+            - **dist_sync_on_step**: If metric state should synchronize on ``forward()``. Default is ``False``.
+            - **process_group**: The process group on which the synchronization is called. Default is the world.
+            - **dist_sync_fn**: Function that performs the allgather option on the metric state. Default is a custom
               implementation that calls ``torch.distributed.all_gather`` internally.
-            - distributed_available_fn: Function that checks if the distributed backend is available. Defaults to a
+            - **distributed_available_fn**: Function that checks if the distributed backend is available. Defaults to a
               check of ``torch.distributed.is_available()`` and ``torch.distributed.is_initialized()``.
-            - sync_on_compute: If metric state should synchronize when ``compute`` is called. Default is ``True``
-            - compute_with_cache: If results from ``compute`` should be cached. Default is ``True``
+            - **sync_on_compute**: If metric state should synchronize when ``compute`` is called. Default is ``True``.
+            - **compute_with_cache**: If results from ``compute`` should be cached. Default is ``True``.
 
     """
 
@@ -218,7 +218,7 @@ class Metric(Module, ABC):
             persistent (Optional): whether the state will be saved as part of the modules ``state_dict``.
                 Default is ``False``.
 
-        Note:
+        .. note::
             Setting ``dist_reduce_fx`` to None will return the metric state synchronized across different processes.
             However, there won't be any reduction function applied to the synchronized metric state.
 
@@ -232,11 +232,11 @@ class Metric(Module, ABC):
             - If the metric state is a ``list``, the synced value will be a ``list`` containing the
               combined elements from all processes.
 
-        Note:
+        .. note::
             When passing a custom function to ``dist_reduce_fx``, expect the synchronized metric state to follow
             the format discussed in the above note.
 
-        Note:
+        .. note::
             The values inserted into a list state are deleted whenever :meth:`~Metric.reset` is called. This allows
             device memory to be automatically reallocated, but may produce unexpected effects when referencing list
             states. To retain such values after :meth:`~Metric.reset` is called, you must first copy them to another
