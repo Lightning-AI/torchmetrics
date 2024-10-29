@@ -53,9 +53,9 @@ class Metric(Module, ABC):
 
     This class is inherited by all metrics and implements the following functionality:
 
-    #. Handles the transfer of metric states to correct device
-    #. Handles the synchronization of metric states across processes
-    #. Provides properties and methods to control the overall behavior of the metric and its states
+    1. Handles the transfer of metric states to the correct device
+    2. Handles the synchronization of metric states across processes
+    3. Provides properties and methods to control the overall behavior of the metric and its states
 
     The three core methods of the base class are: ``add_state()``, ``forward()`` and ``reset()`` which should almost
     never be overwritten by child classes. Instead, the following methods should be overwritten ``update()`` and
