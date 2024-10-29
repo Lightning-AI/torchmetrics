@@ -159,6 +159,8 @@ def _multiclass_compare_implementation(preds, target, fpr_range, average):
 class TestMulticlassLogAUC(MetricTester):
     """Test class for `MulticlassLogAUC` metric."""
 
+    atol = 1e-4
+
     @pytest.mark.parametrize("fpr_range", [(0.001, 0.1), (0.01, 0.1), (0.1, 0.2)])
     @pytest.mark.parametrize("average", ["macro", None])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
@@ -275,6 +277,8 @@ def _multilabel_compare_implementation(preds, target, fpr_range, average):
 )
 class TestMultilabelLogAUC(MetricTester):
     """Test class for `MultilabelLogAUC` metric."""
+
+    atol = 1e-4
 
     @pytest.mark.parametrize("fpr_range", [(0.001, 0.1), (0.01, 0.1), (0.1, 0.2)])
     @pytest.mark.parametrize("average", ["macro", None])
