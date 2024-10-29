@@ -192,7 +192,7 @@ class IntersectionOverUnion(Metric):
                 if det_boxes.numel() > 0 and gt_boxes.numel() > 0:
                     label_eq = p_i["labels"].unsqueeze(1) == t_i["labels"].unsqueeze(0)  # N x M
                 else:
-                    label_eq = torch.eye(iou_matrix.shape[0], dtype=bool, device=iou_matrix.device)
+                    label_eq = torch.eye(iou_matrix.shape[0], dtype=bool, device=iou_matrix.device)  # type: ignore[call-overload]
                 iou_matrix[~label_eq] = self._invalid_val
             self.iou_matrix.append(iou_matrix)
 
