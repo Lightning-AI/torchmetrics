@@ -405,7 +405,8 @@ class Metric(Module, ABC):
         """Merge incoming metric state to the current state of the metric.
 
         Args:
-            incoming_state: either a dict containing a metric state similar to the metric itself or an instance of the
+            incoming_state:
+                either a dict containing a metric state similar to the metric itself or an instance of the
                 metric class.
 
         Raises:
@@ -418,7 +419,8 @@ class Metric(Module, ABC):
             ValueError:
                 If the incoming state is a metric instance but the class is different from the current metric class.
 
-        Example:
+        Example with a metric instance:
+
             >>> from torchmetrics.aggregation import SumMetric
             >>> metric1 = SumMetric()
             >>> metric2 = SumMetric()
@@ -428,7 +430,8 @@ class Metric(Module, ABC):
             >>> metric1.compute()
             tensor(3.)
 
-        Example:
+        Example with a dict:
+
             >>> from torchmetrics.aggregation import SumMetric
             >>> metric = SumMetric()
             >>> metric.update(1)
@@ -436,6 +439,7 @@ class Metric(Module, ABC):
             >>> metric.merge_state({"sum_value": torch.tensor(2)})
             >>> metric.compute()
             tensor(3.)
+
 
         """
         if not isinstance(incoming_state, (dict, Metric)):
