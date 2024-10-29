@@ -18,9 +18,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `NegativePredictiveValue` to classification metrics ([#2433](https://github.com/Lightning-AI/torchmetrics/pull/2433))
 
 
+- Added `Dice` metric to segmentation metrics ([#2725](https://github.com/Lightning-AI/torchmetrics/pull/2725))
+
+
 ### Changed
 
 - Changed naming and input order arguments in `KLDivergence` ([#2800](https://github.com/Lightning-AI/torchmetrics/pull/2800))
+
+### Deprecated
+
+- Deprecated Dice from classification metrics ([#2725](https://github.com/Lightning-AI/torchmetrics/pull/2725))
 
 
 ### Removed

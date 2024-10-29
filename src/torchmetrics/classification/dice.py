@@ -20,6 +20,7 @@ from typing_extensions import Literal
 from torchmetrics.functional.classification.dice import _dice_compute
 from torchmetrics.functional.classification.stat_scores import _stat_scores_update
 from torchmetrics.metric import Metric
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.enums import AverageMethod, MDMCAverageMethod
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -114,6 +115,12 @@ class Dice(Metric):
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
+    .. warning::
+        The ``dice`` metrics is being deprecated from the classification subpackage in v1.6.0 of torchmetrics and will
+        be removed in v1.7.0. Please instead consider using ``f1score`` metric from the classification subpackage as it
+        provides the same functionality. Additionally, we are going to re-add the ``dice`` metric in the segmentation
+        domain in v1.6.0 with slight modifications to functionality.
+
     Raises:
         ValueError:
             If ``average`` is none of ``"micro"``, ``"macro"``, ``"samples"``, ``"none"``, ``None``.
@@ -155,6 +162,14 @@ class Dice(Metric):
         multiclass: Optional[bool] = None,
         **kwargs: Any,
     ) -> None:
+        rank_zero_warn(
+            "The `dice` metrics is being deprecated from the classification subpackage in v1.6.0 of torchmetrics and"
+            " will removed in v1.7.0. Please instead consider using `f1score` metric from the classification subpackage"
+            " as it provides the same functionality. Additionally, we are going to re-add the `dice` metric in the"
+            " segmentation domain in v1.6.0 with slight modifications to functionality.",
+            DeprecationWarning,
+        )
+
         super().__init__(**kwargs)
         allowed_average = ("micro", "macro", "samples", "none", None)
         if average not in allowed_average:
