@@ -31,6 +31,11 @@ def _diou_update(
 
     from torchvision.ops import distance_box_iou
 
+    if preds.numel() == 0:  # if no boxes are predicted
+        return torch.zeros(target.shape[0], target.shape[0], device=target.device, dtype=torch.float32)
+    if target.numel() == 0:  # if no boxes are true
+        return torch.zeros(preds.shape[0], preds.shape[0], device=preds.device, dtype=torch.float32)
+
     iou = distance_box_iou(preds, target)
     if iou_threshold is not None:
         iou[iou < iou_threshold] = replacement_val
