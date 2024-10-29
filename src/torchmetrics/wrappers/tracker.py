@@ -219,7 +219,8 @@ class MetricTracker(ModuleList):
     ) -> Union[
         None,
         float,
-        Tuple[float, int],
+        Tensor,
+        Tuple[Union[int, float, Tensor], Union[int, float, Tensor]],
         Tuple[None, None],
         Dict[str, Union[float, None]],
         Tuple[Dict[str, Union[float, None]], Dict[str, Union[int, None]]],
@@ -260,7 +261,7 @@ class MetricTracker(ModuleList):
         if isinstance(self._base_metric, Metric):
             fn = torch.max if self.maximize else torch.min
             try:
-                value, idx = fn(res, 0)  # type: ignore[call-overload]
+                value, idx = fn(res, 0)
                 if return_step:
                     return value.item(), idx.item()
                 return value.item()
@@ -277,11 +278,11 @@ class MetricTracker(ModuleList):
 
         else:  # this is a metric collection
             maximize = self.maximize if isinstance(self.maximize, list) else len(res) * [self.maximize]
-            value, idx = {}, {}
+            value, idx = {}, {}  # type: ignore[assignment]
             for i, (k, v) in enumerate(res.items()):
                 try:
                     fn = torch.max if maximize[i] else torch.min
-                    out = fn(v, 0)  # type: ignore[call-overload]
+                    out = fn(v, 0)
                     value[k], idx[k] = out[0].item(), out[1].item()
                 except (ValueError, RuntimeError) as error:  # noqa: PERF203 # todo
                     rank_zero_warn(
@@ -290,7 +291,7 @@ class MetricTracker(ModuleList):
                         "Returning `None` instead.",
                         UserWarning,
                     )
-                    value[k], idx[k] = None, None
+                    value[k], idx[k] = None, None  # type: ignore[assignment]
 
             if return_step:
                 return value, idx
