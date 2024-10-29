@@ -219,7 +219,7 @@ class MetricTracker(ModuleList):
     ) -> Union[
         None,
         float,
-        Tuple[float, int],
+        Tuple[Union[int, float], Union[int, float]],
         Tuple[None, None],
         Dict[str, Union[float, None]],
         Tuple[Dict[str, Union[float, None]], Dict[str, Union[int, None]]],
@@ -260,7 +260,7 @@ class MetricTracker(ModuleList):
         if isinstance(self._base_metric, Metric):
             fn = torch.max if self.maximize else torch.min
             try:
-                value, idx = fn(res, 0)  # type: ignore[call-overload]
+                value, idx = fn(res, 0)
                 if return_step:
                     return value.item(), idx.item()
                 return value.item()
@@ -281,7 +281,7 @@ class MetricTracker(ModuleList):
             for i, (k, v) in enumerate(res.items()):
                 try:
                     fn = torch.max if maximize[i] else torch.min
-                    out = fn(v, 0)  # type: ignore[call-overload]
+                    out = fn(v, 0)
                     value[k], idx[k] = out[0].item(), out[1].item()
                 except (ValueError, RuntimeError) as error:  # noqa: PERF203 # todo
                     rank_zero_warn(
