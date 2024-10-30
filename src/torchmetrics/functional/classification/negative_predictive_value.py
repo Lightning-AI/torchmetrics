@@ -170,8 +170,8 @@ def multiclass_negative_predictive_value(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
+            - ``weighted``: Calculate statistics for each label and compute a weighted average using their support
+            - ``"none"`` or ``None``: Calculate statistics for each label and apply no reduction
 
         top_k:
             Number of highest probability or logit score predictions considered to find the correct label.
@@ -185,7 +185,7 @@ def multiclass_negative_predictive_value(
 
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
-        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+        validate_args: Bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
 
@@ -285,8 +285,8 @@ def multilabel_negative_predictive_value(
 
             - ``micro``: Sum statistics over all labels
             - ``macro``: Calculate statistics for each label and average them
-            - ``weighted``: calculates statistics for each label and computes weighted average using their support
-            - ``"none"`` or ``None``: calculates statistic for each label and applies no reduction
+            - ``weighted``: Calculate statistics for each label and compute a weighted average using their support
+            - ``"none"`` or ``None``: Calculate statistics for each label and apply no reduction
 
         multidim_average:
             Defines how additionally dimensions ``...`` should be handled. Should be one of the following:
@@ -297,7 +297,7 @@ def multilabel_negative_predictive_value(
 
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
-        validate_args: bool indicating if input arguments and tensors should be validated for correctness.
+        validate_args: Bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
         zero_division: Should be `0` or `1`. The value returned when :math:`\text{TP} + \text{FP} = 0`.
 
