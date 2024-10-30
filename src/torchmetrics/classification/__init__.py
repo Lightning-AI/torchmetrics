@@ -64,6 +64,12 @@ from torchmetrics.classification.matthews_corrcoef import (
     MulticlassMatthewsCorrCoef,
     MultilabelMatthewsCorrCoef,
 )
+from torchmetrics.classification.negative_predictive_value import (
+    BinaryNegativePredictiveValue,
+    MulticlassNegativePredictiveValue,
+    MultilabelNegativePredictiveValue,
+    NegativePredictiveValue,
+)
 from torchmetrics.classification.precision_fixed_recall import (
     BinaryPrecisionAtFixedRecall,
     MulticlassPrecisionAtFixedRecall,
@@ -222,4 +228,8 @@ __all__ = [
     "LogAUC",
     "MulticlassLogAUC",
     "MultilabelLogAUC",
+    "BinaryNegativePredictiveValue",
+    "MulticlassNegativePredictiveValue",
+    "MultilabelNegativePredictiveValue",
+    "NegativePredictiveValue",
 ]
