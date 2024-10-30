@@ -161,7 +161,7 @@ def permutation_invariant_training(
     if eval_func not in ["max", "min"]:
         raise ValueError(f'eval_func can only be "max" or "min" but got {eval_func}')
     if mode not in ["speaker-wise", "permutation-wise"]:
-        raise ValueError(f'mode can only be "speaker-wise" or "permutation-wise" but got {eval_func}')
+        raise ValueError(f'mode can only be "speaker-wise" or "permutation-wise" but got {mode}')
     if target.ndim < 2:
         raise ValueError(f"Inputs must be of shape [batch, spk, ...], got {target.shape} and {preds.shape} instead")
 
