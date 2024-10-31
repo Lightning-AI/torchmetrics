@@ -271,7 +271,8 @@ def clip_image_quality_assessment(
             available prompts (see above). If tuple is provided, it must be of length 2 and the first string must be a
             positive prompt and the second string must be a negative prompt.
 
-    .. note:: If using the default `clip_iqa` model, the package `piq` must be installed. Either install with
+    .. hint::
+         If using the default `clip_iqa` model, the package `piq` must be installed. Either install with
         `pip install piq` or `pip install torchmetrics[multimodal]`.
 
     Returns:

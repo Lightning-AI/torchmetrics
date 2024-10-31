@@ -50,7 +50,8 @@ class ShortTimeObjectiveIntelligibility(Metric):
 
     - ``stoi`` (:class:`~torch.Tensor`): float scalar tensor
 
-    .. note:: using this metrics requires you to have ``pystoi`` install. Either install as ``pip install
+    .. hint::
+        Using this metrics requires you to have ``pystoi`` install. Either install as ``pip install
         torchmetrics[audio]`` or ``pip install pystoi``.
 
     Args:

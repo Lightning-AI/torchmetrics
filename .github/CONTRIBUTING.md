@@ -103,7 +103,7 @@ def my_func(param_a: int, param_b: Optional[float] = None) -> str:
         >>> my_func(1, 2)
         3
 
-    .. note:: If you want to add something.
+    .. hint:: If you want to add something.
     """
     p = param_b if param_b else 0
     return str(param_a + p)

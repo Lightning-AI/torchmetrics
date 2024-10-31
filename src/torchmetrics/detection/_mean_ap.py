@@ -202,16 +202,16 @@ class MeanAveragePrecision(Metric):
 
     For an example on how to use this metric check the `torchmetrics mAP example`_.
 
-    .. note::
-        ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ].
+    .. attention::
+        The ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ].
         Caution: If the initialization parameters are changed, dictionary keys for mAR can change as well.
         The default properties are also accessible via fields and will raise an ``AttributeError`` if not available.
 
-    .. note::
+    .. important::
         This metric is following the mAP implementation of `pycocotools`_ a standard implementation for the mAP metric
         for object detection.
 
-    .. note::
+    .. hint::
         This metric requires you to have `torchvision` version 0.8.0 or newer installed
         (with corresponding version 1.7.0 of torch or newer). This metric requires `pycocotools`
         installed when iou_type is `segm`. Please install with ``pip install torchvision`` or

@@ -97,7 +97,8 @@ class KernelInceptionDistance(Metric):
     effect and update method expects to have the tensor given to `imgs` argument to be in the correct shape and
     type that is compatible to the custom feature extractor.
 
-    .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
+    .. hint::
+        Using this metric with the default feature extractor requires that ``torch-fidelity``
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
 
