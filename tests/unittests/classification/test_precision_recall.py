@@ -49,7 +49,7 @@ from unittests.classification._inputs import _binary_cases, _multiclass_cases, _
 seed_all(42)
 
 
-def _reference_sklearn_precision_recall_binary(preds, target, sk_fn, ignore_index, multidim_average, zero_division=0):
+def _reference_sklearn_precision_recall_binary(preds, target, sk_fn, ignore_index, multidim_average, zero_division=0, prob_threshold: float = THRESHOLD):
     if multidim_average == "global":
         preds = preds.view(-1).numpy()
         target = target.view(-1).numpy()
@@ -60,7 +60,7 @@ def _reference_sklearn_precision_recall_binary(preds, target, sk_fn, ignore_inde
     if np.issubdtype(preds.dtype, np.floating):
         if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
-        preds = (preds >= THRESHOLD).astype(np.uint8)
+        preds = (preds >= prob_threshold).astype(np.uint8)
 
     if multidim_average == "global":
         target, preds = remove_ignore_index(target, preds, ignore_index)
@@ -197,7 +197,7 @@ class TestBinaryPrecisionRecall(MetricTester):
 
 
 def _reference_sklearn_precision_recall_multiclass(
-    preds, target, sk_fn, ignore_index, multidim_average, average, zero_division=0
+    preds, target, sk_fn, ignore_index, multidim_average, average, zero_division=0, num_classes: int =NUM_CLASSES
 ):
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
@@ -210,7 +210,7 @@ def _reference_sklearn_precision_recall_multiclass(
             target,
             preds,
             average=average,
-            labels=list(range(NUM_CLASSES)) if average is None else None,
+            labels=list(range(num_classes)) if average is None else None,
             zero_division=zero_division,
         )
 
@@ -235,7 +235,7 @@ def _reference_sklearn_precision_recall_multiclass(
                 true,
                 pred,
                 average=average,
-                labels=list(range(NUM_CLASSES)) if average is None else None,
+                labels=list(range(num_classes)) if average is None else None,
                 zero_division=zero_division,
             )
         res.append(0.0 if np.isnan(r).any() else r)
@@ -481,7 +481,7 @@ def _reference_sklearn_precision_recall_multilabel_local(preds, target, sk_fn, i
 
 
 def _reference_sklearn_precision_recall_multilabel(
-    preds, target, sk_fn, ignore_index, multidim_average, average, zero_division=0
+    preds, target, sk_fn, ignore_index, multidim_average, average, zero_division=0, num_classes: int=NUM_CLASSES
 ):
     preds = preds.numpy()
     target = target.numpy()
@@ -493,8 +493,8 @@ def _reference_sklearn_precision_recall_multilabel(
     target = target.reshape(*target.shape[:2], -1)
     if ignore_index is None and multidim_average == "global":
         return sk_fn(
-            target.transpose(0, 2, 1).reshape(-1, NUM_CLASSES),
-            preds.transpose(0, 2, 1).reshape(-1, NUM_CLASSES),
+            target.transpose(0, 2, 1).reshape(-1, num_classes),
+            preds.transpose(0, 2, 1).reshape(-1, num_classes),
             average=average,
             zero_division=zero_division,
         )
