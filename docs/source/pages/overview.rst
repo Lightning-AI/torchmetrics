@@ -492,9 +492,10 @@ In practice this means that:
 
 A functional metric is differentiable if its corresponding modular metric is differentiable.
 
-For PyTorch versions 2.1 or higher, differentiation in DDP mode is enabled, allowing autograd graph
-propagation after the ``all_gather`` operation. This is useful for synchronizing metrics used as
-loss functions in a DDP setting.
+.. caution::
+    For PyTorch versions 2.1 or higher, differentiation in DDP mode is enabled, allowing autograd graph
+    propagation after the ``all_gather`` operation. This is useful for synchronizing metrics used as
+    loss functions in a DDP setting.
 
 ***************************************
 Metrics and hyperparameter optimization
