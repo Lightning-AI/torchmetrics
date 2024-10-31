@@ -75,7 +75,7 @@ class Dice(Metric):
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
               across samples (with equal weights for each sample).
 
-            .. note::
+            .. hint::
                What is considered a sample in the multi-dimensional multi-class case
                depends on the value of ``mdmc_average``.
 

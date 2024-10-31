@@ -112,7 +112,8 @@ class CLIPImageQualityAssessment(Metric):
             positive prompt and the second string must be a negative prompt.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    .. note:: If using the default `clip_iqa` model, the package `piq` must be installed. Either install with
+    .. hint::
+        If using the default `clip_iqa` model, the package `piq` must be installed. Either install with
         `pip install piq` or `pip install torchmetrics[image]`.
 
     Raises:

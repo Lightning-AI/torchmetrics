@@ -134,8 +134,8 @@ def peak_signal_noise_ratio(
         >>> peak_signal_noise_ratio(pred, target)
         tensor(2.5527)
 
-    .. note::
-        Half precision is only support on GPU for this metric
+    .. attention::
+        Half precision is only support on GPU for this metric.
 
     """
     if dim is None and reduction != "elementwise_mean":

@@ -51,7 +51,8 @@ class PerceptualPathLength(Metric):
     if `conditional=False`, and `forward(z: Tensor, labels: Tensor) -> Tensor` if `conditional=True`. The returned
     tensor should have shape `(num_samples, C, H, W)` and be scaled to the range [0, 255].
 
-    .. note:: using this metric with the default feature extractor requires that ``torchvision`` is installed.
+    .. hint::
+        Using this metric with the default feature extractor requires that ``torchvision`` is installed.
         Either install as ``pip install torchmetrics[image]`` or ``pip install torchvision``
 
     As input to ``forward`` and ``update`` the metric accepts the following input

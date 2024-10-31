@@ -236,11 +236,11 @@ class Metric(Module, ABC):
             - If the metric state is a ``list``, the synced value will be a ``list`` containing the
               combined elements from all processes.
 
-        Note:
+        .. important::
             When passing a custom function to ``dist_reduce_fx``, expect the synchronized metric state to follow
             the format discussed in the above note.
 
-        Note:
+        .. caution::
             The values inserted into a list state are deleted whenever :meth:`~Metric.reset` is called. This allows
             device memory to be automatically reallocated, but may produce unexpected effects when referencing list
             states. To retain such values after :meth:`~Metric.reset` is called, you must first copy them to another

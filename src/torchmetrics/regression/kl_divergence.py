@@ -73,8 +73,8 @@ class KLDivergence(Metric):
         ValueError:
             If ``reduction`` is not one of ``'mean'``, ``'sum'``, ``'none'`` or ``None``.
 
-    .. note::
-        Half precision is only support on GPU for this metric
+    .. attention::
+        Half precision is only support on GPU for this metric.
 
     Example:
         >>> from torch import tensor
