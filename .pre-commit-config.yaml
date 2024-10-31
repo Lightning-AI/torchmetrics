@@ -23,7 +23,7 @@ ci:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
@@ -38,7 +38,7 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.3.0
     hooks:
       - id: codespell
         additional_dependencies: [tomli]
@@ -46,7 +46,7 @@ repos:
         exclude: pyproject.toml
 
   - repo: https://github.com/crate-ci/typos
-    rev: v1.16.26
+    rev: v1.22.9
     hooks:
       - id: typos
         # empty to do not write fixes
@@ -54,7 +54,7 @@ repos:
         exclude: pyproject.toml
 
   - repo: https://github.com/PyCQA/docformatter
-    rev: v1.7.5
+    rev: 06907d0267368b49b9180eed423fae5697c1e909 # todo: fix for docformatter after last 1.7.5
     hooks:
       - id: docformatter
         additional_dependencies: [tomli]
@@ -69,6 +69,7 @@ repos:
     rev: 0.7.17
     hooks:
       - id: mdformat
+        args: ["--number"]
         additional_dependencies:
           - mdformat-gfm
           - mdformat-black
@@ -112,7 +113,7 @@ repos:
       - id: text-unicode-replacement-char
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.3.2
+    rev: v0.5.0
     hooks:
       # try to fix what is possible
       - id: ruff
@@ -123,11 +124,11 @@ repos:
       - id: ruff
 
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: 1.7.0
+    rev: 2.1.3
     hooks:
       - id: pyproject-fmt
         additional_dependencies: [tox]
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.16
+    rev: v0.18
     hooks:
       - id: validate-pyproject

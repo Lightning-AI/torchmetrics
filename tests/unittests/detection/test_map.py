@@ -29,13 +29,10 @@ from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.utilities.imports import (
     _FASTER_COCO_EVAL_AVAILABLE,
     _PYCOCOTOOLS_AVAILABLE,
-    _TORCHVISION_GREATER_EQUAL_0_8,
 )
 
 from unittests._helpers.testers import MetricTester
 from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL
-
-_pytest_condition = not (_PYCOCOTOOLS_AVAILABLE and _TORCHVISION_GREATER_EQUAL_0_8)
 
 
 def _skip_if_faster_coco_eval_missing(backend):
@@ -63,6 +60,58 @@ def _generate_coco_inputs(iou_type):
 
 _coco_bbox_input = _generate_coco_inputs("bbox")
 _coco_segm_input = _generate_coco_inputs("segm")
+
+
+@pytest.mark.skipif(_PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 and pycocotools is installed")
+@pytest.mark.parametrize("iou_type", ["bbox", "segm"])
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+def test_tm_to_coco(tmpdir, iou_type, backend):
+    """Test that the conversion from TM to COCO format works."""
+    preds, target = _coco_bbox_input if iou_type == "bbox" else _coco_segm_input
+    metric = MeanAveragePrecision(iou_type=iou_type, backend=backend, box_format="xywh")
+    for bp, bt in zip(preds, target):
+        metric.update(bp, bt)
+    metric.tm_to_coco(f"{tmpdir}/tm_map_input")
+    preds_2, target_2 = MeanAveragePrecision.coco_to_tm(
+        f"{tmpdir}/tm_map_input_preds.json",
+        f"{tmpdir}/tm_map_input_target.json",
+        iou_type=iou_type,
+        backend=backend,
+    )
+
+    preds = [p for batch in preds for p in batch]
+    target = [t for batch in target for t in batch]
+
+    # make sure that every prediction/target is found in the new prediction/target after saving and loading
+    for sample1 in preds:
+        sample_found = False
+        for sample2 in preds_2:
+            if iou_type == "segm":
+                if sample1["masks"].shape == sample2["masks"].shape and torch.allclose(
+                    sample1["masks"], sample2["masks"]
+                ):
+                    sample_found = True
+            else:
+                if sample1["boxes"].shape == sample2["boxes"].shape and torch.allclose(
+                    sample1["boxes"], sample2["boxes"]
+                ):
+                    sample_found = True
+        assert sample_found, "preds not found"
+
+    for sample1 in target:
+        sample_found = False
+        for sample2 in target_2:
+            if iou_type == "segm":
+                if sample1["masks"].shape == sample2["masks"].shape and torch.allclose(
+                    sample1["masks"], sample2["masks"]
+                ):
+                    sample_found = True
+            else:
+                if sample1["boxes"].shape == sample2["boxes"].shape and torch.allclose(
+                    sample1["boxes"], sample2["boxes"]
+                ):
+                    sample_found = True
+        assert sample_found, "target not found"
 
 
 def _compare_against_coco_fn(preds, target, iou_type, iou_thresholds=None, rec_thresholds=None, class_metrics=True):
@@ -123,7 +172,7 @@ def _compare_against_coco_fn(preds, target, iou_type, iou_thresholds=None, rec_t
     }
 
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 and pycocotools is installed")
+@pytest.mark.skipif(_PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 and pycocotools is installed")
 @pytest.mark.parametrize("iou_type", ["bbox", "segm"])
 @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
 @pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
@@ -358,7 +407,7 @@ _inputs3 = {
             },
         ],
         [
-            {"boxes": Tensor([]), "scores": Tensor([]), "labels": Tensor([])},
+            {"boxes": Tensor([]), "scores": Tensor([]), "labels": IntTensor([])},
         ],
     ],
     "target": [
@@ -398,7 +447,7 @@ def _generate_random_segm_input(device, batch_size=2, num_preds_size=10, num_gt_
     return preds, targets
 
 
-@pytest.mark.skipif(_pytest_condition, reason="test requires that torchvision=>0.8.0 is installed")
+@pytest.mark.skipif(_PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 is installed")
 @pytest.mark.parametrize(
     "backend",
     [
@@ -580,7 +629,12 @@ class TestMapProperties:
             [{"masks": torch.randint(0, 1, (1, 10, 10)).bool(), "scores": Tensor([0.5]), "labels": IntTensor([4])}],
             [{"masks": Tensor([]), "labels": IntTensor([])}],
         )
-        metric.compute()
+        res = metric.compute()
+        for key, value in res.items():
+            if key == "classes":
+                continue
+            assert value.item() == -1, f"Expected -1 for {key}"
+        assert res["classes"] == 4
 
     def test_segm_iou_empty_pred_mask(self, backend):
         """Test empty predictions."""
@@ -589,7 +643,12 @@ class TestMapProperties:
             [{"masks": torch.BoolTensor([]), "scores": Tensor([]), "labels": IntTensor([])}],
             [{"masks": torch.randint(0, 1, (1, 10, 10)).bool(), "labels": IntTensor([4])}],
         )
-        metric.compute()
+        res = metric.compute()
+        for key, value in res.items():
+            if key == "classes":
+                continue
+            assert value.item() == -1, f"Expected -1 for {key}"
+        assert res["classes"] == 4
 
     def test_error_on_wrong_input(self, backend):
         """Test class input validation."""
@@ -712,7 +771,8 @@ class TestMapProperties:
         assert round(float(result["ious"][(0, 0)]), 3) == iou_val_expected
 
     @pytest.mark.parametrize("iou_type", ["bbox", "segm"])
-    def test_warning_on_many_detections(self, iou_type, backend):
+    @pytest.mark.parametrize("warn_on_many_detections", [False, True])
+    def test_warning_on_many_detections(self, iou_type, warn_on_many_detections, backend, recwarn):
         """Test that a warning is raised when there are many detections."""
         if iou_type == "bbox":
             preds = [
@@ -727,8 +787,13 @@ class TestMapProperties:
             preds, targets = _generate_random_segm_input("cpu", 1, 101, 10, False)
 
         metric = MeanAveragePrecision(iou_type=iou_type, backend=backend)
-        with pytest.warns(UserWarning, match="Encountered more than 100 detections in a single image.*"):
-            metric.update(preds, targets)
+        metric.warn_on_many_detections = warn_on_many_detections
+
+        if warn_on_many_detections:
+            with pytest.warns(UserWarning, match="Encountered more than 100 detections in a single image.*"):
+                metric.update(preds, targets)
+        else:
+            assert len(recwarn) == 0
 
     @pytest.mark.parametrize(
         ("preds", "target", "expected_iou_len", "iou_keys", "precision_shape", "recall_shape", "scores_shape"),
@@ -804,17 +869,18 @@ class TestMapProperties:
             _preds = apply_to_collection(deepcopy(_inputs["preds"]), IntTensor, lambda x: torch.ones_like(x))
             _target = apply_to_collection(deepcopy(_inputs["target"]), IntTensor, lambda x: torch.ones_like(x))
 
+        metric_micro = MeanAveragePrecision(average="micro", class_metrics=class_metrics, backend=backend)
+        metric_micro.update(deepcopy(_inputs["preds"][0]), deepcopy(_inputs["target"][0]))
+        metric_micro.update(deepcopy(_inputs["preds"][1]), deepcopy(_inputs["target"][1]))
+        result_micro = metric_micro.compute()
+
         metric_macro = MeanAveragePrecision(average="macro", class_metrics=class_metrics, backend=backend)
         metric_macro.update(_preds[0], _target[0])
         metric_macro.update(_preds[1], _target[1])
         result_macro = metric_macro.compute()
 
-        metric_micro = MeanAveragePrecision(average="micro", class_metrics=class_metrics, backend=backend)
-        metric_micro.update(_inputs["preds"][0], _inputs["target"][0])
-        metric_micro.update(_inputs["preds"][1], _inputs["target"][1])
-        result_micro = metric_micro.compute()
-
         if class_metrics:
+            print(result_macro["map_per_class"], result_micro["map_per_class"])
             assert torch.allclose(result_macro["map_per_class"], result_micro["map_per_class"])
             assert torch.allclose(result_macro["mar_100_per_class"], result_micro["mar_100_per_class"])
         else:

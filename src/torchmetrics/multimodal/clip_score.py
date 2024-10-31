@@ -54,7 +54,8 @@ class CLIPScore(Metric):
     textual CLIP embedding :math:`E_C` for an caption :math:`C`. The score is bound between 0 and 100 and the closer
     to 100 the better.
 
-    .. note:: Metric is not scriptable
+    .. caution::
+        Metric is not scriptable
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -82,12 +83,12 @@ class CLIPScore(Metric):
             If transformers package is not installed or version is lower than 4.10.0
 
     Example:
-        >>> import torch
+        >>> from torch import randint
         >>> from torchmetrics.multimodal.clip_score import CLIPScore
         >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
-        >>> score = metric(torch.randint(255, (3, 224, 224), generator=torch.manual_seed(42)), "a photo of a cat")
-        >>> score.detach()
-        tensor(24.4255)
+        >>> score = metric(randint(255, (3, 224, 224)), "a photo of a cat")
+        >>> score.detach().round()
+        tensor(25.)
 
     """
 

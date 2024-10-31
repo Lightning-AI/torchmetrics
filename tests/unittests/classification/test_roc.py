@@ -37,7 +37,7 @@ def _reference_sklearn_roc_binary(preds, target, ignore_index=None):
     target = target.flatten().numpy()
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     fpr, tpr, thresholds = sk_roc_curve(target, preds, drop_intermediate=False)
     thresholds[0] = 1.0
     return [np.nan_to_num(x, nan=0.0) for x in [fpr, tpr, thresholds]]
@@ -140,7 +140,7 @@ def _reference_sklearn_roc_multiclass(preds, target, ignore_index=None):
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
 
     fpr, tpr, thresholds = [], [], []
     for i in range(NUM_CLASSES):

@@ -18,6 +18,7 @@ from typing import Optional
 import numpy as np
 import pytest
 import torch
+from permetrics.regression import RegressionMetric
 from sklearn.metrics import mean_absolute_error as sk_mean_absolute_error
 from sklearn.metrics import mean_absolute_percentage_error as sk_mean_abs_percentage_error
 from sklearn.metrics import mean_squared_error as sk_mean_squared_error
@@ -29,6 +30,7 @@ from torchmetrics.functional import (
     mean_absolute_percentage_error,
     mean_squared_error,
     mean_squared_log_error,
+    normalized_root_mean_squared_error,
     weighted_mean_absolute_percentage_error,
 )
 from torchmetrics.functional.regression.symmetric_mape import symmetric_mean_absolute_percentage_error
@@ -39,6 +41,7 @@ from torchmetrics.regression import (
     MeanSquaredLogError,
     WeightedMeanAbsolutePercentageError,
 )
+from torchmetrics.regression.nrmse import NormalizedRootMeanSquaredError
 from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError
 
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
@@ -114,65 +117,179 @@ def _reference_symmetric_mape(
     return np.average(output_errors, weights=multioutput)
 
 
+def _reference_normalized_root_mean_squared_error(
+    y_true: np.ndarray, y_pred: np.ndarray, normalization: str = "mean", num_outputs: int = 1
+):
+    """Reference implementation of Normalized Root Mean Squared Error (NRMSE) metric."""
+    if num_outputs == 1:
+        y_true = y_true.flatten()
+        y_pred = y_pred.flatten()
+    if normalization != "l2":
+        evaluator = RegressionMetric(y_true, y_pred) if normalization == "range" else RegressionMetric(y_pred, y_true)
+        arg_mapping = {"mean": 1, "range": 2, "std": 4}
+        return evaluator.normalized_root_mean_square_error(model=arg_mapping[normalization])
+    # for l2 normalization we do not have a reference implementation
+    return np.sqrt(np.mean(np.square(y_true - y_pred), axis=0)) / np.linalg.norm(y_true, axis=0)
+
+
 def _reference_weighted_mean_abs_percentage_error(target, preds):
+    """Reference implementation of Weighted Mean Absolute Percentage Error (WMAPE) metric."""
     return np.sum(np.abs(target - preds)) / np.sum(np.abs(target))
 
 
 def _single_target_ref_wrapper(preds, target, sk_fn, metric_args):
+    """Reference implementation of single-target metrics."""
     sk_preds = preds.view(-1).numpy()
     sk_target = target.view(-1).numpy()
 
-    res = sk_fn(sk_target, sk_preds)
-
-    return math.sqrt(res) if (metric_args and not metric_args["squared"]) else res
+    if metric_args and "normalization" in metric_args:
+        res = sk_fn(sk_target, sk_preds, normalization=metric_args["normalization"])
+    else:
+        res = sk_fn(sk_target, sk_preds)
+    if metric_args and "squared" in metric_args and not metric_args["squared"]:
+        res = math.sqrt(res)
+    return res
 
 
 def _multi_target_ref_wrapper(preds, target, sk_fn, metric_args):
+    """Reference implementation of multi-target metrics."""
     sk_preds = preds.view(-1, NUM_TARGETS).numpy()
     sk_target = target.view(-1, NUM_TARGETS).numpy()
     sk_kwargs = {"multioutput": "raw_values"} if metric_args and "num_outputs" in metric_args else {}
-    res = sk_fn(sk_target, sk_preds, **sk_kwargs)
-    return math.sqrt(res) if (metric_args and not metric_args["squared"]) else res
+    if metric_args and "normalization" in metric_args:
+        res = sk_fn(sk_target, sk_preds, **metric_args)
+    else:
+        res = sk_fn(sk_target, sk_preds, **sk_kwargs)
+    if metric_args and "squared" in metric_args and not metric_args["squared"]:
+        res = math.sqrt(res)
+    return res
 
 
 @pytest.mark.parametrize(
-    "preds, target, ref_metric",
+    ("preds", "target", "ref_metric"),
     [
         (_single_target_inputs.preds, _single_target_inputs.target, _single_target_ref_wrapper),
         (_multi_target_inputs.preds, _multi_target_inputs.target, _multi_target_ref_wrapper),
     ],
 )
 @pytest.mark.parametrize(
-    "metric_class, metric_functional, sk_fn, metric_args",
+    ("metric_class", "metric_functional", "sk_fn", "metric_args"),
     [
-        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": True}),
-        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": False}),
-        (MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": True, "num_outputs": NUM_TARGETS}),
-        (MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error, {}),
-        (MeanAbsolutePercentageError, mean_absolute_percentage_error, sk_mean_abs_percentage_error, {}),
-        (
+        pytest.param(
+            MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": True}, id="mse_singleoutput"
+        ),
+        pytest.param(
+            MeanSquaredError, mean_squared_error, sk_mean_squared_error, {"squared": False}, id="rmse_singleoutput"
+        ),
+        pytest.param(
+            MeanSquaredError,
+            mean_squared_error,
+            sk_mean_squared_error,
+            {"squared": True, "num_outputs": NUM_TARGETS},
+            id="mse_multioutput",
+        ),
+        pytest.param(MeanAbsoluteError, mean_absolute_error, sk_mean_absolute_error, {}, id="mae_singleoutput"),
+        pytest.param(
+            MeanAbsoluteError,
+            mean_absolute_error,
+            sk_mean_absolute_error,
+            {"num_outputs": NUM_TARGETS},
+            id="mae_multioutput",
+        ),
+        pytest.param(
+            MeanAbsolutePercentageError,
+            mean_absolute_percentage_error,
+            sk_mean_abs_percentage_error,
+            {},
+            id="mape_singleoutput",
+        ),
+        pytest.param(
             SymmetricMeanAbsolutePercentageError,
             symmetric_mean_absolute_percentage_error,
             _reference_symmetric_mape,
             {},
+            id="symmetric_mean_absolute_percentage_error",
         ),
-        (MeanSquaredLogError, mean_squared_log_error, sk_mean_squared_log_error, {}),
-        (
+        pytest.param(
+            MeanSquaredLogError, mean_squared_log_error, sk_mean_squared_log_error, {}, id="mean_squared_log_error"
+        ),
+        pytest.param(
             WeightedMeanAbsolutePercentageError,
             weighted_mean_absolute_percentage_error,
             _reference_weighted_mean_abs_percentage_error,
             {},
+            id="weighted_mean_absolute_percentage_error",
+        ),
+        pytest.param(
+            NormalizedRootMeanSquaredError,
+            normalized_root_mean_squared_error,
+            _reference_normalized_root_mean_squared_error,
+            {"normalization": "mean", "num_outputs": 1},
+            id="nrmse_singleoutput_mean",
+        ),
+        pytest.param(
+            NormalizedRootMeanSquaredError,
+            normalized_root_mean_squared_error,
+            _reference_normalized_root_mean_squared_error,
+            {"normalization": "range", "num_outputs": 1},
+            id="nrmse_singleoutput_range",
+        ),
+        pytest.param(
+            NormalizedRootMeanSquaredError,
+            normalized_root_mean_squared_error,
+            _reference_normalized_root_mean_squared_error,
+            {"normalization": "std", "num_outputs": 1},
+            id="nrmse_singleoutput_std",
+        ),
+        pytest.param(
+            NormalizedRootMeanSquaredError,
+            normalized_root_mean_squared_error,
+            _reference_normalized_root_mean_squared_error,
+            {"normalization": "l2", "num_outputs": 1},
+            id="nrmse_multioutput_l2",
+        ),
+        pytest.param(
+            NormalizedRootMeanSquaredError,
+            normalized_root_mean_squared_error,
+            _reference_normalized_root_mean_squared_error,
+            {"normalization": "mean", "num_outputs": NUM_TARGETS},
+            id="nrmse_multioutput_mean",
+        ),
+        pytest.param(
+            NormalizedRootMeanSquaredError,
+            normalized_root_mean_squared_error,
+            _reference_normalized_root_mean_squared_error,
+            {"normalization": "range", "num_outputs": NUM_TARGETS},
+            id="nrmse_multioutput_range",
+        ),
+        pytest.param(
+            NormalizedRootMeanSquaredError,
+            normalized_root_mean_squared_error,
+            _reference_normalized_root_mean_squared_error,
+            {"normalization": "std", "num_outputs": NUM_TARGETS},
+            id="nrmse_multioutput_std",
+        ),
+        pytest.param(
+            NormalizedRootMeanSquaredError,
+            normalized_root_mean_squared_error,
+            _reference_normalized_root_mean_squared_error,
+            {"normalization": "l2", "num_outputs": NUM_TARGETS},
+            id="nrmse_multioutput_l2",
         ),
     ],
 )
 class TestMeanError(MetricTester):
     """Test class for `MeanError` metric."""
 
+    atol = 1e-5
+
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     def test_mean_error_class(
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args, ddp
     ):
         """Test class implementation of metric."""
+        if metric_args and "num_outputs" in metric_args and preds.ndim < 3:
+            pytest.skip("Test only runs for multi-output setting")
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -186,6 +303,8 @@ class TestMeanError(MetricTester):
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args
     ):
         """Test functional implementation of metric."""
+        if metric_args and "num_outputs" in metric_args and preds.ndim < 3:
+            pytest.skip("Test only runs for multi-output setting")
         self.run_functional_metric_test(
             preds=preds,
             target=target,
@@ -198,6 +317,8 @@ class TestMeanError(MetricTester):
         self, preds, target, ref_metric, metric_class, metric_functional, sk_fn, metric_args
     ):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
+        if metric_args and "num_outputs" in metric_args and preds.ndim < 3:
+            pytest.skip("Test only runs for multi-output setting")
         self.run_differentiability_test(
             preds=preds,
             target=target,
@@ -224,6 +345,10 @@ class TestMeanError(MetricTester):
             # WeightedMeanAbsolutePercentageError half + cpu does not work due to missing support in torch.clamp
             pytest.xfail("WeightedMeanAbsolutePercentageError metric does not support cpu + half precision")
 
+        if metric_class == NormalizedRootMeanSquaredError:
+            # NormalizedRootMeanSquaredError half + cpu does not work due to missing support in torch.sqrt
+            pytest.xfail("NormalizedRootMeanSquaredError metric does not support cpu + half precision")
+
         self.run_precision_test_cpu(preds, target, metric_class, metric_functional)
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
@@ -233,10 +358,30 @@ class TestMeanError(MetricTester):
 
 
 @pytest.mark.parametrize(
-    "metric_class", [MeanSquaredError, MeanAbsoluteError, MeanSquaredLogError, MeanAbsolutePercentageError]
+    "metric_class",
+    [
+        MeanSquaredError,
+        MeanAbsoluteError,
+        MeanSquaredLogError,
+        MeanAbsolutePercentageError,
+        NormalizedRootMeanSquaredError,
+    ],
 )
 def test_error_on_different_shape(metric_class):
     """Test that error is raised on different shapes of input."""
     metric = metric_class()
     with pytest.raises(RuntimeError, match="Predictions and targets are expected to have the same shape"):
         metric(torch.randn(100), torch.randn(50))
+
+
+@pytest.mark.parametrize(
+    ("metric_class", "arguments", "error_msg"),
+    [
+        (MeanSquaredError, {"squared": "something"}, "Expected argument `squared` to be a boolean.*"),
+        (NormalizedRootMeanSquaredError, {"normalization": "something"}, "Argument `normalization` should be either.*"),
+    ],
+)
+def test_error_on_wrong_extra_args(metric_class, arguments, error_msg):
+    """Test that error is raised on wrong extra arguments."""
+    with pytest.raises(ValueError, match=error_msg):
+        metric_class(**arguments)

@@ -8,76 +8,82 @@ requires = [
 target-version = "py38"
 line-length = 120
 
-[tool.ruff.format]
-preview = true
-
-[tool.ruff.lint]
-select = [
-    "E",
-    "W", # see: https://pypi.org/project/pycodestyle
-    "F", # see: https://pypi.org/project/pyflakes
-    "I", #see: https://pypi.org/project/isort/
-    "D", # see: https://pypi.org/project/pydocstyle
-    "N", # see: https://pypi.org/project/pep8-naming
-    "S", # see: https://pypi.org/project/flake8-bandit
-    "UP", # see: https://docs.astral.sh/ruff/rules/#pyupgrade-up
-]
-extend-select = [
-    "A",    # see: https://pypi.org/project/flake8-builtins
-    "B",    # see: https://pypi.org/project/flake8-bugbear
-    "C4",   # see: https://pypi.org/project/flake8-comprehensions
-    "PT",   # see: https://pypi.org/project/flake8-pytest-style
-    "RET",  # see: https://pypi.org/project/flake8-return
-    "SIM",  # see: https://pypi.org/project/flake8-simplify
-    "YTT",  # see: https://pypi.org/project/flake8-2020
-    "ANN",  # see: https://pypi.org/project/flake8-annotations
-    "TID",  # see: https://pypi.org/project/flake8-tidy-imports/
-    "T10",  # see: https://pypi.org/project/flake8-debugger
-    "Q",    # see: https://pypi.org/project/flake8-quotes
-    "RUF",  # Ruff-specific rules
-    "EXE",  # see: https://pypi.org/project/flake8-executable
-    "ISC",  # see: https://pypi.org/project/flake8-implicit-str-concat
-    "PIE",  # see: https://pypi.org/project/flake8-pie
-    "PLE",  # see: https://pypi.org/project/pylint/
-    "PERF", # see: https://pypi.org/project/perflint/
-    "PYI",  # see: https://pypi.org/project/flake8-pyi/
-]
-ignore = [
-    "E731",   # Do not assign a lambda expression, use a def
-    "D100",   # todo: Missing docstring in public module
-    "D104",   # todo: Missing docstring in public package
-    "D107",   # Missing docstring in `__init__`
-    "ANN101", # Missing type annotation for `self` in method
-]
-ignore-init-module-imports = true
-unfixable = ["F401"]
-
-[tool.ruff.lint.per-file-ignores]
-"setup.py" = ["ANN202", "ANN401"]
-"docs/source/conf.py" = ["A001", "D103"]
-"src/**" = [
-    "ANN401",
-    "S310",   # todo: Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.  # todo
-    ]
-"tests/**" = [
-    "ANN001",
-    "ANN201",
-    "ANN202",
-    "ANN401",
-    "S101",
-    "S301",   # todo: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue  # todo
-    ]
-
-[tool.ruff.lint.pydocstyle]
-# Use Google-style docstrings.
-convention = "google"
-
 #[tool.ruff.pycodestyle]
 #ignore-overlong-task-comments = true
-
-[tool.ruff.lint.mccabe]
+format.preview = true
+lint.select = [
+  "D",  # see: https://pypi.org/project/pydocstyle
+  "E",
+  "F",  # see: https://pypi.org/project/pyflakes
+  "I",  #see: https://pypi.org/project/isort/
+  "N",  # see: https://pypi.org/project/pep8-naming
+  "S",  # see: https://pypi.org/project/flake8-bandit
+  "UP", # see: https://docs.astral.sh/ruff/rules/#pyupgrade-up
+  "W",  # see: https://pypi.org/project/pycodestyle
+]
+lint.extend-select = [
+  "A",    # see: https://pypi.org/project/flake8-builtins
+  "ANN",  # see: https://pypi.org/project/flake8-annotations
+  "B",    # see: https://pypi.org/project/flake8-bugbear
+  "C4",   # see: https://pypi.org/project/flake8-comprehensions
+  "EXE",  # see: https://pypi.org/project/flake8-executable
+  "ISC",  # see: https://pypi.org/project/flake8-implicit-str-concat
+  "PERF", # see: https://pypi.org/project/perflint/
+  "PIE",  # see: https://pypi.org/project/flake8-pie
+  "PLE",  # see: https://pypi.org/project/pylint/
+  "PT",   # see: https://pypi.org/project/flake8-pytest-style
+  "PYI",  # see: https://pypi.org/project/flake8-pyi/
+  "Q",    # see: https://pypi.org/project/flake8-quotes
+  "RET",  # see: https://pypi.org/project/flake8-return
+  "RUF",  # Ruff-specific rules
+  "SIM",  # see: https://pypi.org/project/flake8-simplify
+  "T10",  # see: https://pypi.org/project/flake8-debugger
+  "TID",  # see: https://pypi.org/project/flake8-tidy-imports/
+  "YTT",  # see: https://pypi.org/project/flake8-2020
+]
+lint.ignore = [
+  "ANN101", # Missing type annotation for `self` in method
+  "D100",   # todo: Missing docstring in public module
+  "D104",   # todo: Missing docstring in public package
+  "D107",   # Missing docstring in `__init__`
+  "E731",   # Do not assign a lambda expression, use a def
+  "EXE002", # The file is executable but no shebang is present
+  "ISC001", # potehtional comflict, flagged by Ruff itsel
+]
+lint.per-file-ignores."docs/source/conf.py" = [
+  "A001",
+  "D103",
+]
+lint.per-file-ignores."examples/*" = [
+  "ANN",  # any annotaions
+  "D205", # 1 blank line required between summary line and description
+  "D212", # [*] Multi-line docstring summary should start at the first line
+  "D415", # First line should end with a period, question mark, or exclamation point
+  "E501", # Line too long (XXX > 120)
+]
+lint.per-file-ignores."setup.py" = [
+  "ANN202",
+  "ANN401",
+]
+lint.per-file-ignores."src/**" = [
+  "ANN401",
+  "S310",   # todo: Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
+]
+lint.per-file-ignores."tests/**" = [
+  "ANN001",
+  "ANN201",
+  "ANN202",
+  "ANN401",
+  "S101",
+  "S301",   # todo: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
+]
+lint.unfixable = [
+  "F401",
+]
 # Unlike Flake8, default to a complexity level of 10.
-max-complexity = 10
+lint.mccabe.max-complexity = 10
+# Use Google-style docstrings.
+lint.pydocstyle.convention = "google"
 
 [tool.codespell]
 #skip = '*.py'
@@ -103,36 +109,51 @@ wrap-descriptions = 120
 blank = true
 
 [tool.check-manifest]
-ignore = ["*.yml", ".github", ".github/*"]
+ignore = [
+  "*.yml",
+  ".github",
+  ".github/*",
+]
 
 [tool.pytest.ini_options]
-norecursedirs = [".git", ".github", "dist", "build", "docs"]
+norecursedirs = [
+  ".git",
+  ".github",
+  "dist",
+  "build",
+  "docs",
+]
 addopts = [
-    "--strict-markers",
-    "--doctest-modules",
-    "--doctest-plus",
-    "--color=yes",
-    "--disable-pytest-warnings",
+  "--strict-markers",
+  "--doctest-modules",
+  "--doctest-plus",
+  "--color=yes",
+  "--disable-pytest-warnings",
 ]
 markers = [
-    "DDP: mark a test as Distributed Data Parallel",
+  "DDP: mark a test as Distributed Data Parallel",
 ]
 filterwarnings = [
-    "ignore::FutureWarning",
-    "default:::torchmetrics",
+  "ignore::FutureWarning",
+  "default:::torchmetrics",
 ]
 xfail_strict = true
 junit_duration_report = "call"
 
 [tool.coverage.report]
-exclude_lines = ["pragma: no cover", "pass"]
+exclude_lines = [
+  "pragma: no cover",
+  "pass",
+]
 [tool.coverage.run]
 parallel = true
 concurrency = "thread"
 relative_files = true
 
 [tool.mypy]
-files = ["src/torchmetrics"]
+files = [
+  "src/torchmetrics",
+]
 install_types = "True"
 non_interactive = "True"
 disallow_untyped_defs = "True"
@@ -149,8 +170,8 @@ warn_no_return = "False"
 
 [tool.typos.default]
 extend-ignore-identifiers-re = [
-    # *sigh* this just isn't worth the cost of fixing
-    "AttributeID.*Supress.*",
+  # *sigh* this just isn't worth the cost of fixing
+  "AttributeID.*Supress.*",
 ]
 
 [tool.typos.default.extend-identifiers]

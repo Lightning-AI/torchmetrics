@@ -11,7 +11,6 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 import glob
-import inspect
 import os
 import re
 import shutil
@@ -20,7 +19,7 @@ from typing import Optional
 
 import lai_sphinx_theme
 import torchmetrics
-from lightning_utilities.docs.formatting import _transform_changelog
+from lightning_utilities.docs.formatting import _linkcode_resolve, _transform_changelog
 
 _PATH_HERE = os.path.abspath(os.path.dirname(__file__))
 _PATH_ROOT = os.path.realpath(os.path.join(_PATH_HERE, "..", ".."))
@@ -30,6 +29,7 @@ FOLDER_GENERATED = "generated"
 SPHINX_MOCK_REQUIREMENTS = int(os.environ.get("SPHINX_MOCK_REQUIREMENTS", True))
 SPHINX_FETCH_ASSETS = int(os.environ.get("SPHINX_FETCH_ASSETS", False))
 SPHINX_PIN_RELEASE_VERSIONS = int(os.getenv("SPHINX_PIN_RELEASE_VERSIONS", False))
+SPHINX_ENABLE_GALLERY = int(os.getenv("SPHINX_ENABLE_GALLERY", True))
 
 html_favicon = "_static/images/icon.svg"
 
@@ -44,11 +44,6 @@ author = torchmetrics.__author__
 version = torchmetrics.__version__
 # The full version, including alpha/beta/rc tags
 release = torchmetrics.__version__
-
-# Options for the linkcode extension
-# ----------------------------------
-github_user = "Lightning-AI"
-github_repo = "metrics"
 
 # -- Project documents -------------------------------------------------------
 
@@ -128,15 +123,22 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx.ext.mathjax",
-    "myst_parser",
     "sphinx.ext.autosectionlabel",
-    "nbsphinx",
+    "sphinx.ext.githubpages",
     "sphinx_autodoc_typehints",
     "sphinx_paramlinks",
-    "sphinx.ext.githubpages",
-    "lai_sphinx_theme.extensions.lightning",
+    "myst_parser",
     "matplotlib.sphinxext.plot_directive",
+    "lai_sphinx_theme.extensions.lightning",
 ]
+if SPHINX_ENABLE_GALLERY:
+    extensions.append("sphinx_gallery.gen_gallery")
+else:
+    # write a dummy file as placeholder
+    path_gallery = os.path.join(_PATH_HERE, "gallery")
+    os.makedirs(path_gallery, exist_ok=True)
+    with open(os.path.join(path_gallery, "index.rst"), "w") as fopen:
+        fopen.write("Gallery is disabled\n===================")
 
 # Set that source code from plotting is always included
 plot_include_source = True
@@ -146,13 +148,19 @@ plot_html_show_source_link = False
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
-# https://berkeley-stat159-f17.github.io/stat159-f17/lectures/14-sphinx..html#conf.py-(cont.)
-# https://stackoverflow.com/questions/38526888/embed-ipython-notebook-in-sphinx-document
-# I execute the notebooks manually in advance. If notebooks test the code,
-# they should be run at build time.
-nbsphinx_execute = "never"
-nbsphinx_allow_errors = True
-nbsphinx_requirejs_path = ""
+sphinx_gallery_conf = {
+    "examples_dirs": os.path.join(_PATH_ROOT, "examples"),  # path to your example scripts
+    "gallery_dirs": "gallery",  # path to where to save gallery generated output
+    "filename_pattern": ".",
+    "ignore_pattern": r"__init__\.py",
+    "example_extensions": {".py"},
+    "line_numbers": True,
+    "promote_jupyter_magic": True,
+    "matplotlib_animations": True,
+    "abort_on_example_error": True,
+    # 'only_warn_on_example_error': True
+    "thumbnail_size": (400, 280),
+}
 
 myst_update_mathjax = False
 
@@ -162,7 +170,7 @@ source_suffix = {
     ".rst": "restructuredtext",
     ".txt": "markdown",
     ".md": "markdown",
-    ".ipynb": "nbsphinx",
+    # ".ipynb": "nbsphinx",
 }
 
 # The master toctree document.
@@ -211,6 +219,8 @@ html_logo = "_static/images/logo.svg"
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+html_css_files = ["css/custom.css"]
+html_js_files = ["runllm.js"]
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -259,6 +269,11 @@ texinfo_documents = [
         "Miscellaneous",
     ),
 ]
+
+# MathJax configuration
+mathjax3_config = {
+    "tex": {"packages": {"[+]": ["ams", "newcommand", "configMacros"]}},
+}
 
 # -- Options for Epub output -------------------------------------------------
 
@@ -349,58 +364,9 @@ MOCK_PACKAGES = [PACKAGE_MAPPING.get(pkg, pkg) for pkg in MOCK_PACKAGES]
 autodoc_mock_imports = MOCK_PACKAGES
 
 
-# Resolve function
-# This function is used to populate the (source) links in the API
+# Resolve function - this function is used to populate the (source) links in the API
 def linkcode_resolve(domain, info) -> Optional[str]:  # noqa: ANN001
-    # try to find the file and line number, based on code from numpy:
-    # https://github.com/numpy/numpy/blob/master/doc/source/conf.py#L424
-
-    if domain != "py" or not info["module"]:
-        return None
-
-    obj = _get_obj(info)
-    file_name = _get_file_name(obj)
-
-    if not file_name:
-        return None
-
-    line_str = _get_line_str(obj)
-    version_str = _get_version_str()
-
-    return f"https://github.com/{github_user}/{github_repo}/blob/{version_str}/src/torchmetrics/{file_name}{line_str}"
-
-
-def _get_obj(info: dict) -> object:
-    module_name = info["module"]
-    full_name = info["fullname"]
-    sub_module = sys.modules.get(module_name)
-    obj = sub_module
-    for part in full_name.split("."):
-        obj = getattr(obj, part)
-    # strip decorators, which would resolve to the source of the decorator
-    return inspect.unwrap(obj)
-
-
-def _get_file_name(obj) -> str:  # noqa: ANN001
-    try:
-        file_name = inspect.getsourcefile(obj)
-        file_name = os.path.relpath(file_name, start=os.path.dirname(torchmetrics.__file__))
-    except TypeError:  # This seems to happen when obj is a property
-        file_name = None
-    return file_name
-
-
-def _get_line_str(obj) -> str:  # noqa: ANN001
-    source, line_number = inspect.getsourcelines(obj)
-    return "#L%d-L%d" % (line_number, line_number + len(source) - 1)
-
-
-def _get_version_str() -> str:
-    if any(s in torchmetrics.__version__ for s in ("dev", "rc")):
-        version_str = "master"
-    else:
-        version_str = f"v{torchmetrics.__version__}"
-    return version_str
+    return _linkcode_resolve(domain, info=info, github_user="Lightning-AI", github_repo="torchmetrics")
 
 
 autosummary_generate = True
@@ -477,4 +443,14 @@ linkcheck_ignore = [
     "https://ieeexplore.ieee.org/abstract/document/4317530",
     # Robust parameter estimation with a small bias against heavy contamination
     "https://www.sciencedirect.com/science/article/pii/S0047259X08000456",
+    # chrF++: words helping character n-grams
+    "https://aclanthology.org/W17-4770",
+    # A wavelet transform method to merge Landsat TM and SPOT panchromatic data
+    "https://www.ingentaconnect.com/content/tandf/tres/1998/00000019/00000004/art00013",
+    # Improved normalization of time-lapse seismic data using normalized root mean square repeatability data ...
+    # ... to improve automatic production and seismic history matching in the Nelson field
+    "https://onlinelibrary.wiley.com/doi/abs/10.1111/1365-2478.12109",
+    # todo: these links seems to be unstable, referring to .devcontainer
+    "https://code.visualstudio.com",
+    "https://code.visualstudio.com/.*",
 ]

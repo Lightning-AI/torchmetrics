@@ -22,6 +22,7 @@ from torchmetrics.image.mifid import MemorizationInformedFrechetInceptionDistanc
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
 
 from unittests import _reference_cachier
+from unittests._helpers import seed_all
 
 
 @_reference_cachier
@@ -145,6 +146,7 @@ def test_fid_same_input(feature):
     """If real and fake are update on the same data the fid score should be 0."""
     metric = MemorizationInformedFrechetInceptionDistance(feature=feature)
 
+    seed_all(42)
     for _ in range(2):
         img = torch.randint(0, 255, (10, 3, 299, 299), dtype=torch.uint8)
         metric.update(img, real=True)
@@ -166,7 +168,7 @@ def test_compare_mifid(equal_size):
     n, m = 100, 100 if equal_size else 90
 
     # Generate some synthetic data
-    torch.manual_seed(42)
+    seed_all(42)
     img1 = torch.randint(0, 180, (n, 3, 299, 299), dtype=torch.uint8)
     img2 = torch.randint(100, 255, (m, 3, 299, 299), dtype=torch.uint8)
 

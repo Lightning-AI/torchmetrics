@@ -91,7 +91,14 @@ class KernelInceptionDistance(Metric):
     flag ``real`` determines if the images should update the statistics of the real distribution or the
     fake distribution.
 
-    .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
+    Using custom feature extractor is also possible. One can give a torch.nn.Module as `feature` argument. This
+    custom feature extractor is expected to have output shape of ``(1, num_features)`` This would change the
+    used feature extractor from default (Inception v3) to the given network. ``normalize`` argument won't have any
+    effect and update method expects to have the tensor given to `imgs` argument to be in the correct shape and
+    type that is compatible to the custom feature extractor.
+
+    .. hint::
+        Using this metric with the default feature extractor requires that ``torch-fidelity``
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
 
@@ -103,7 +110,7 @@ class KernelInceptionDistance(Metric):
     As output of `forward` and `compute` the metric returns the following output
 
     - ``kid_mean`` (:class:`~torch.Tensor`): float scalar tensor with mean value over subsets
-    - ``kid_std`` (:class:`~torch.Tensor`): float scalar tensor with mean value over subsets
+    - ``kid_std`` (:class:`~torch.Tensor`): float scalar tensor with standard deviation value over subsets
 
     Args:
         feature: Either an str, integer or ``nn.Module``:
@@ -142,17 +149,16 @@ class KernelInceptionDistance(Metric):
             If ``reset_real_features`` is not an ``bool``
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
+        >>> from torch import randint
         >>> from torchmetrics.image.kid import KernelInceptionDistance
         >>> kid = KernelInceptionDistance(subset_size=50)
         >>> # generate two slightly overlapping image intensity distributions
-        >>> imgs_dist1 = torch.randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
-        >>> imgs_dist2 = torch.randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> imgs_dist1 = randint(0, 200, (100, 3, 299, 299), dtype=torch.uint8)
+        >>> imgs_dist2 = randint(100, 255, (100, 3, 299, 299), dtype=torch.uint8)
         >>> kid.update(imgs_dist1, real=True)
         >>> kid.update(imgs_dist2, real=False)
         >>> kid.compute()
-        (tensor(0.0337), tensor(0.0023))
+        (tensor(0.0312), tensor(0.0025))
 
     """
 
@@ -187,6 +193,8 @@ class KernelInceptionDistance(Metric):
             UserWarning,
         )
 
+        self.used_custom_model = False
+
         if isinstance(feature, (str, int)):
             if not _TORCH_FIDELITY_AVAILABLE:
                 raise ModuleNotFoundError(
@@ -202,6 +210,7 @@ class KernelInceptionDistance(Metric):
             self.inception: Module = NoTrainInceptionV3(name="inception-v3-compat", features_list=[str(feature)])
         elif isinstance(feature, Module):
             self.inception = feature
+            self.used_custom_model = True
         else:
             raise TypeError("Got unknown input to argument `feature`")
 
@@ -238,8 +247,15 @@ class KernelInceptionDistance(Metric):
         self.add_state("fake_features", [], dist_reduce_fx=None)
 
     def update(self, imgs: Tensor, real: bool) -> None:
-        """Update the state with extracted features."""
-        imgs = (imgs * 255).byte() if self.normalize else imgs
+        """Update the state with extracted features.
+
+        Args:
+            imgs: Input img tensors to evaluate. If used custom feature extractor please
+                make sure dtype and size is correct for the model.
+            real: Whether given image is real or fake.
+
+        """
+        imgs = (imgs * 255).byte() if self.normalize and (not self.used_custom_model) else imgs
         features = self.inception(imgs)
 
         if real:
@@ -251,6 +267,10 @@ class KernelInceptionDistance(Metric):
         """Calculate KID score based on accumulated extracted features from the two distributions.
 
         Implementation inspired by `Fid Score`_
+
+        Returns:
+            kid_mean (:class:`~torch.Tensor`): float scalar tensor with mean value over subsets
+            kid_std (:class:`~torch.Tensor`): float scalar tensor with standard deviation value over subsets
 
         """
         real_features = dim_zero_cat(self.real_features)

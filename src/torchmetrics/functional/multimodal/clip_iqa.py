@@ -271,7 +271,8 @@ def clip_image_quality_assessment(
             available prompts (see above). If tuple is provided, it must be of length 2 and the first string must be a
             positive prompt and the second string must be a negative prompt.
 
-    .. note:: If using the default `clip_iqa` model, the package `piq` must be installed. Either install with
+    .. hint::
+        If using the default `clip_iqa` model, the package `piq` must be installed. Either install with
         `pip install piq` or `pip install torchmetrics[multimodal]`.
 
     Returns:
@@ -293,32 +294,29 @@ def clip_image_quality_assessment(
     Example::
         Single prompt:
 
+        >>> from torch import randint
         >>> from torchmetrics.functional.multimodal import clip_image_quality_assessment
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
-        >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
+        >>> imgs = randint(255, (2, 3, 224, 224)).float()
         >>> clip_image_quality_assessment(imgs, prompts=("quality",))
         tensor([0.8894, 0.8902])
 
     Example::
         Multiple prompts:
 
+        >>> from torch import randint
         >>> from torchmetrics.functional.multimodal import clip_image_quality_assessment
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
-        >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
+        >>> imgs = randint(255, (2, 3, 224, 224)).float()
         >>> clip_image_quality_assessment(imgs, prompts=("quality", "brightness"))
-        {'quality': tensor([0.8894, 0.8902]), 'brightness': tensor([0.5507, 0.5208])}
+        {'quality': tensor([0.8693, 0.8705]), 'brightness': tensor([0.5722, 0.4762])}
 
     Example::
         Custom prompts. Must always be a tuple of length 2, with a positive and negative prompt.
 
+        >>> from torch import rand
         >>> from torchmetrics.functional.multimodal import clip_image_quality_assessment
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
-        >>> imgs = torch.randint(255, (2, 3, 224, 224)).float()
+        >>> imgs = randint(255, (2, 3, 224, 224)).float()
         >>> clip_image_quality_assessment(imgs, prompts=(("Super good photo.", "Super bad photo."), "brightness"))
-        {'user_defined_0': tensor([0.9652, 0.9629]), 'brightness': tensor([0.5507, 0.5208])}
+        {'user_defined_0': tensor([0.9578, 0.9654]), 'brightness': tensor([0.5495, 0.5764])}
 
     """
     prompts_list, prompts_names = _clip_iqa_format_prompts(prompts)

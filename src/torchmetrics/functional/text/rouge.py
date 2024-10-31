@@ -48,10 +48,10 @@ def _ensure_nltk_punkt_is_downloaded() -> None:
     import nltk
 
     try:
-        nltk.data.find("tokenizers/punkt")
+        nltk.data.find("tokenizers/punkt_tab")
     except LookupError:
         try:
-            nltk.download("punkt", quiet=True, force=False, halt_on_error=False, raise_on_error=True)
+            nltk.download("punkt_tab", quiet=True, force=False, halt_on_error=False, raise_on_error=True)
         except ValueError as err:
             raise OSError(
                 "`nltk` resource `punkt` is not available on a disk and cannot be downloaded as a machine is not "
@@ -313,27 +313,18 @@ def _rouge_score_update(
             This function must take a `str` and return `Sequence[str]`
 
     Example:
-        >>> preds = "My name is John".split()
-        >>> target = "Is your name John".split()
+        >>> preds = ["My name is John"]
+        >>> target = [["Is your name John"]]
         >>> from pprint import pprint
-        >>> score = _rouge_score_update(preds, target, rouge_keys_values=[1, 2, 3, 'L'], accumulate='best')
+        >>> score = _rouge_score_update(preds, target, rouge_keys_values=[1, 2, 'L'], accumulate='best')
         >>> pprint(score)
-        {1: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}],
-         2: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}],
-         3: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-             {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}],
-         'L': [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-               {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-               {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)},
-               {'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}]}
+        {1: [{'fmeasure': tensor(0.7500),
+              'precision': tensor(0.7500),
+              'recall': tensor(0.7500)}],
+         2: [{'fmeasure': tensor(0.), 'precision': tensor(0.), 'recall': tensor(0.)}],
+         'L': [{'fmeasure': tensor(0.5000),
+                'precision': tensor(0.5000),
+                'recall': tensor(0.5000)}]}
 
     """
     results: Dict[Union[int, str], List[Dict[str, Tensor]]] = {rouge_key: [] for rouge_key in rouge_keys_values}

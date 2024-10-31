@@ -198,13 +198,21 @@ class FrechetInceptionDistance(Metric):
     flag ``real`` determines if the images should update the statistics of the real distribution or the
     fake distribution.
 
+    Using custom feature extractor is also possible. One can give a torch.nn.Module as `feature` argument. This
+    custom feature extractor is expected to have output shape of ``(1, num_features)``. This would change the
+    used feature extractor from default (Inception v3) to the given network. In case network doesn't have
+    ``num_features`` attribute, a random tensor will be given to the network to infer feature dimensionality.
+    Size of this tensor can be controlled by ``input_img_size`` argument and type of the tensor can be controlled
+    with ``normalize`` argument (``True`` uses float32 tensors and ``False`` uses int8 tensors). In this case, update
+    method expects to have the tensor given to `imgs` argument to be in the correct shape and type that is compatible
+    to the custom feature extractor.
+
     This metric is known to be unstable in its calculatations, and we recommend for the best results using this metric
     that you calculate using `torch.float64` (default is `torch.float32`) which can be set using the `.set_dtype`
     method of the metric.
 
-    .. note:: using this metrics requires you to have torch 1.9 or higher installed
-
-    .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
+    .. hint::
+        Using this metric with the default feature extractor requires that ``torch-fidelity``
         is installed. Either install as ``pip install torchmetrics[image]`` or ``pip install torch-fidelity``
 
     As input to ``forward`` and ``update`` the metric accepts the following input
@@ -228,13 +236,20 @@ class FrechetInceptionDistance(Metric):
         reset_real_features: Whether to also reset the real features. Since in many cases the real dataset does not
             change, the features can be cached them to avoid recomputing them which is costly. Set this to ``False`` if
             your dataset does not change.
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        normalize:
+            Argument for controlling the input image dtype normalization:
 
-    .. note::
-        If a custom feature extractor is provided through the `feature` argument it is expected to either have a
-        attribute called ``num_features`` that indicates the number of features returned by the forward pass or
-        alternatively we will pass through tensor of shape ``(1, 3, 299, 299)`` and dtype ``torch.uint8``` to the
-        forward pass and expect a tensor of shape ``(1, num_features)`` as output.
+            - If default feature extractor is used, controls whether input imgs have values in range [0, 1] or not:
+
+              - True: if input imgs have values ranged in [0, 1]. They are cast to int8/byte tensors.
+              - False: if input imgs have values ranged in [0, 255]. No casting is done.
+
+            - If custom feature extractor module is used, controls type of the input img tensors:
+
+              - True: if input imgs are expected to be in the data type of torch.float32.
+              - False: if input imgs are expected to be in the data type of torch.int8.
+        input_img_size: tuple of integers. Indicates input img size to the custom feature extractor network if provided.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
@@ -249,8 +264,7 @@ class FrechetInceptionDistance(Metric):
             If ``reset_real_features`` is not an ``bool``
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
+        >>> from torch import rand
         >>> from torchmetrics.image.fid import FrechetInceptionDistance
         >>> fid = FrechetInceptionDistance(feature=64)
         >>> # generate two slightly overlapping image intensity distributions
@@ -259,7 +273,7 @@ class FrechetInceptionDistance(Metric):
         >>> fid.update(imgs_dist1, real=True)
         >>> fid.update(imgs_dist2, real=False)
         >>> fid.compute()
-        tensor(12.7202)
+        tensor(12.6388)
 
     """
 
@@ -284,9 +298,16 @@ class FrechetInceptionDistance(Metric):
         feature: Union[int, Module] = 2048,
         reset_real_features: bool = True,
         normalize: bool = False,
+        input_img_size: Tuple[int, int, int] = (3, 299, 299),
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
+
+        if not isinstance(normalize, bool):
+            raise ValueError("Argument `normalize` expected to be a bool")
+        self.normalize = normalize
+        self.used_custom_model = False
+
         if isinstance(feature, int):
             num_features = feature
             if not _TORCH_FIDELITY_AVAILABLE:
@@ -304,10 +325,14 @@ class FrechetInceptionDistance(Metric):
 
         elif isinstance(feature, Module):
             self.inception = feature
+            self.used_custom_model = True
             if hasattr(self.inception, "num_features"):
                 num_features = self.inception.num_features
             else:
-                dummy_image = torch.randint(0, 255, (1, 3, 299, 299), dtype=torch.uint8)
+                if self.normalize:
+                    dummy_image = torch.rand(1, *input_img_size, dtype=torch.float32)
+                else:
+                    dummy_image = torch.randint(0, 255, (1, *input_img_size), dtype=torch.uint8)
                 num_features = self.inception(dummy_image).shape[-1]
         else:
             raise TypeError("Got unknown input to argument `feature`")
@@ -315,10 +340,6 @@ class FrechetInceptionDistance(Metric):
         if not isinstance(reset_real_features, bool):
             raise ValueError("Argument `reset_real_features` expected to be a bool")
         self.reset_real_features = reset_real_features
-
-        if not isinstance(normalize, bool):
-            raise ValueError("Argument `normalize` expected to be a bool")
-        self.normalize = normalize
 
         mx_num_feats = (num_features, num_features)
         self.add_state("real_features_sum", torch.zeros(num_features).double(), dist_reduce_fx="sum")
@@ -330,8 +351,15 @@ class FrechetInceptionDistance(Metric):
         self.add_state("fake_features_num_samples", torch.tensor(0).long(), dist_reduce_fx="sum")
 
     def update(self, imgs: Tensor, real: bool) -> None:
-        """Update the state with extracted features."""
-        imgs = (imgs * 255).byte() if self.normalize else imgs
+        """Update the state with extracted features.
+
+        Args:
+            imgs: Input img tensors to evaluate. If used custom feature extractor please
+                make sure dtype and size is correct for the model.
+            real: Whether given image is real or fake.
+
+        """
+        imgs = (imgs * 255).byte() if self.normalize and (not self.used_custom_model) else imgs
         features = self.inception(imgs)
         self.orig_dtype = features.dtype
         features = features.double()

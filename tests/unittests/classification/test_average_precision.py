@@ -47,7 +47,7 @@ def _reference_sklearn_avg_precision_binary(preds, target, ignore_index=None):
     target = target.flatten().numpy()
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_average_precision_score(target, preds)
 
 
@@ -143,12 +143,20 @@ class TestBinaryAveragePrecision(MetricTester):
             assert torch.allclose(ap1, ap2)
 
 
+def test_warning_on_no_positives():
+    """Test that a warning is raised when there are no positive samples in the target."""
+    preds = torch.rand(100)
+    target = torch.zeros(100).long()
+    with pytest.warns(UserWarning, match="No positive samples found in target, recall is undefined. Setting recall.*"):
+        binary_average_precision(preds, target)
+
+
 def _reference_sklearn_avg_precision_multiclass(preds, target, average="macro", ignore_index=None):
     preds = np.moveaxis(preds.numpy(), 1, -1).reshape((-1, preds.shape[1]))
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
 
     res = []
     for i in range(NUM_CLASSES):

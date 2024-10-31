@@ -35,12 +35,11 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
     band of the result image. It is defined as:
 
     .. math::
-        ERGAS = 100 * \frac{h}{l} \\sqrt{\frac{1}{N} \\sum_{k=1}^{N} \frac{RMSE(B_k)^2}{\\mu_k^2}}
+        ERGAS = \frac{100}{r} \cdot \sqrt{\frac{1}{N} \sum_{k=1}^{N} \frac{RMSE(B_k)^2}{\mu_k^2}}
 
-    where :math:`h` and :math:`l` denote the spatial resolution (pixel size) of the high and low resolution images,
-    often shorted to the ratio between them :math:`r=h/l`. :math:`N` is the number of spectral bands, :math:`RMSE(B_k)`
-    is the root mean square error of the k-th band between low and high resolution images, and :math:`\\mu_k` is the
-    mean value of the k-th band of the reference image.
+    where :math:`r=h/l` denote the ratio in spatial resolution (pixel size) between the high and low resolution images.
+    :math:`N` is the number of spectral bands, :math:`RMSE(B_k)` is the root mean square error of the k-th band between
+    low and high resolution images, and :math:`\\mu_k` is the mean value of the k-th band of the reference image.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -63,13 +62,13 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> import torch
+        >>> from torch import rand
         >>> from torchmetrics.image import ErrorRelativeGlobalDimensionlessSynthesis
-        >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+        >>> preds = rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> ergas = ErrorRelativeGlobalDimensionlessSynthesis()
-        >>> torch.round(ergas(preds, target))
-        tensor(154.)
+        >>> ergas(preds, target).round()
+        tensor(10.)
 
     """
 
@@ -132,9 +131,9 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> import torch
+            >>> from torch import rand
             >>> from torchmetrics.image import ErrorRelativeGlobalDimensionlessSynthesis
-            >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+            >>> preds = rand([16, 1, 16, 16])
             >>> target = preds * 0.75
             >>> metric = ErrorRelativeGlobalDimensionlessSynthesis()
             >>> metric.update(preds, target)
@@ -144,9 +143,9 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> import torch
+            >>> from torch import rand
             >>> from torchmetrics.image import ErrorRelativeGlobalDimensionlessSynthesis
-            >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+            >>> preds = rand([16, 1, 16, 16])
             >>> target = preds * 0.75
             >>> metric = ErrorRelativeGlobalDimensionlessSynthesis()
             >>> values = [ ]

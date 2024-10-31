@@ -33,7 +33,7 @@ from torchmetrics.functional.classification.sensitivity_specificity import (
     multilabel_sensitivity_at_specificity,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_11
+from torchmetrics.utilities.imports import _SKLEARN_GREATER_EQUAL_1_3
 
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
@@ -79,11 +79,11 @@ def _reference_sklearn_sensitivity_at_specificity_binary(preds, target, min_spec
     target = target.flatten().numpy()
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return _sensitivity_at_specificity_x_multilabel(preds, target, min_specificity)
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_11, reason="metric does not support torch versions below 1.11")
+@pytest.mark.skipif(not _SKLEARN_GREATER_EQUAL_1_3, reason="metric does not support scikit-learn versions below 1.3")
 @pytest.mark.parametrize("inputs", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinarySensitivityAtSpecificity(MetricTester):
     """Test class for `BinarySensitivityAtSpecificity` metric."""
@@ -197,7 +197,7 @@ def _reference_sklearn_sensitivity_at_specificity_multiclass(preds, target, min_
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
 
     sensitivity, thresholds = [], []
     for i in range(NUM_CLASSES):
@@ -209,7 +209,7 @@ def _reference_sklearn_sensitivity_at_specificity_multiclass(preds, target, min_
     return sensitivity, thresholds
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_11, reason="metric does not support torch versions below 1.11")
+@pytest.mark.skipif(not _SKLEARN_GREATER_EQUAL_1_3, reason="metric does not support scikit-learn versions below 1.3")
 @pytest.mark.parametrize(
     "inputs", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
@@ -340,7 +340,7 @@ def _reference_sklearn_sensitivity_at_specificity_multilabel(preds, target, min_
     return sensitivity, thresholds
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_11, reason="metric does not support torch versions below 1.11")
+@pytest.mark.skipif(not _SKLEARN_GREATER_EQUAL_1_3, reason="metric does not support scikit-learn versions below 1.3")
 @pytest.mark.parametrize(
     "inputs", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
@@ -460,7 +460,6 @@ class TestMultilabelSensitivityAtSpecificity(MetricTester):
             assert all(torch.allclose(r1[i], r2[i]) for i in range(len(r1)))
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_11, reason="metric does not support torch versions below 1.11")
 @pytest.mark.parametrize(
     "metric",
     [
@@ -476,7 +475,6 @@ def test_valid_input_thresholds(recwarn, metric, thresholds):
     assert len(recwarn) == 0, "Warning was raised when it should not have been."
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_11, reason="metric does not support torch versions below 1.11")
 @pytest.mark.parametrize(
     ("metric", "kwargs"),
     [

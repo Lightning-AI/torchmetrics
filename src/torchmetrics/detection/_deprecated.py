@@ -1,16 +1,7 @@
 from typing import Any, Collection
 
 from torchmetrics.detection import ModifiedPanopticQuality, PanopticQuality
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12
 from torchmetrics.utilities.prints import _deprecated_root_import_class
-
-if not _TORCH_GREATER_EQUAL_1_12:
-    __doctest_skip__ = [
-        "_PanopticQuality",
-        "_PanopticQuality.*",
-        "_ModifiedPanopticQuality",
-        "_ModifiedPanopticQuality.*",
-    ]
 
 
 class _ModifiedPanopticQuality(ModifiedPanopticQuality):

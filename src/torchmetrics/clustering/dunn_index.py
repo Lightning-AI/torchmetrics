@@ -64,7 +64,7 @@ class DunnIndex(Metric):
 
     is_differentiable: bool = True
     higher_is_better: bool = True
-    full_state_update: bool = True
+    full_state_update: bool = False
     plot_lower_bound: float = 0.0
     data: List[Tensor]
     labels: List[Tensor]
@@ -121,7 +121,7 @@ class DunnIndex(Metric):
             >>> metric = DunnIndex(p=2)
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(torch.randn(10, 3), torch.randint(0, 2, (10,))))
+            ...     values.append(metric(torch.randn(50, 3), torch.randint(0, 2, (50,))))
             >>> fig_, ax_ = metric.plot(values)
 
         """

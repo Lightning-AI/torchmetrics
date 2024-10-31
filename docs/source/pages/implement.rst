@@ -9,8 +9,8 @@
 Implementing a Metric
 #####################
 
-While we strive to include as many metrics as possible in ``torchmetrics``, we cannot include them all. Therefore, we
-have made it easy to implement your own metric and possible contribute it to ``torchmetrics``. This page will guide
+While we strive to include as many metrics as possible in ``torchmetrics``, we cannot include them all. We have made it
+easy to implement your own metric, and you can contribute it to ``torchmetrics`` if you wish. This page will guide
 you through the process. If you afterwards are interested in contributing your metric to ``torchmetrics``, please
 read the `contribution guidelines <https://lightning.ai/docs/torchmetrics/latest/generated/CONTRIBUTING.html>`_ and
 see this :ref:`section <contributing metric>`.
@@ -63,7 +63,7 @@ A few important things to note:
 
 * The ``dist_reduce_fx`` argument to ``add_state`` is used to specify how the metric states should be reduced between
   batches in distributed settings. In this case we use ``"sum"`` to sum the metric states across batches. A couple of
-  build in options are available: ``"sum"``, ``"mean"``, ``"cat"``, ``"min"`` or ``"max"``, but a custom reduction is
+  built-in options are available: ``"sum"``, ``"mean"``, ``"cat"``, ``"min"`` or ``"max"``, but a custom reduction is
   also supported.
 
 * In ``update`` we do not return anything but instead update the metric states in-place.
@@ -101,7 +101,7 @@ because we need to calculate the rank of the predictions and targets.
             preds = dim_zero_cat(self.preds)
             target = dim_zero_cat(self.target)
             # some intermediate computation...
-            r_preds, r_target = _rank_data(preds), _rank_dat(target)
+            r_preds, r_target = _rank_data(preds), _rank_data(target)
             preds_diff = r_preds - r_preds.mean(0)
             target_diff = r_target - r_target.mean(0)
             cov = (preds_diff * target_diff).mean(0)
@@ -118,11 +118,15 @@ A few important things to note for this example:
 
 * When working with list states, The ``update(...)`` method should append the batch states to the list.
 
-* In the the ``compute`` method the list states behave a bit differently dependeding on weather you are running in
+* In the the ``compute`` method the list states behave a bit differently dependeding on whether you are running in
   distributed mode or not. In non-distributed mode the list states will be a list of tensors, while in distributed mode
   the list have already been concatenated into a single tensor. For this reason, we recommend always using the
-  ``dim_zero_cat`` helper function which will standardize the list states to be a single concatenate tensor regardless
+  ``dim_zero_cat`` helper function which will standardize the list states to be a single concatenated tensor regardless
   of the mode.
+
+* Calling the ``reset`` method will clear the list state, deleting any values inserted into it. For this reason, care
+  must be taken when referencing list states. If you require the values after your metric is reset, you must first
+  copy the attribute to another object (e.g. using `deepcopy.copy`).
 
 *****************
 Metric attributes
@@ -175,7 +179,7 @@ used, that provides the common plotting functionality for most metrics in torchm
             return self._plot(val, ax)
 
 If the metric returns a more complex output, a custom implementation of the `plot` method is required. For more details
-on the plotting API, see the this :ref:`page <plotting>` . In addti
+on the plotting API, see the this :ref:`page <plotting>` .
 
 *******************************
 Internal implementation details
@@ -243,7 +247,7 @@ as long as they serve a general purpose. However, to keep all our metrics consis
 and tests gets formatted in the following way:
 
 1. Start by reading our `contribution guidelines <https://lightning.ai/docs/torchmetrics/latest/generated/CONTRIBUTING.html>`_.
-2. First implement the functional backend. This takes cares of all the logic that goes into the metric. The code should
+2. First implement the functional backend. This takes care of all the logic that goes into the metric. The code should
    be put into a single file placed under ``src/torchmetrics/functional/"domain"/"new_metric".py`` where ``domain`` is the type of
    metric (classification, regression, text etc.) and ``new_metric`` is the name of the metric. In this file, there should be the
    following three functions:
@@ -253,9 +257,9 @@ and tests gets formatted in the following way:
   3. ``new_metric(...)``: essentially wraps the ``_update`` and ``_compute`` private functions into one public function that
      makes up the functional interface for the metric.
 
-  .. note::
+  .. hint::
      The `functional mean squared error <https://github.com/Lightning-AI/torchmetrics/blob/master/src/torchmetrics/functional/regression/mse.py>`_
-     metric is a great example of this division of logic.
+     metric is a is a great example of how to divide the logic.
 
 3. In a corresponding file placed in ``src/torchmetrics/"domain"/"new_metric".py`` create the module interface:
 
@@ -266,9 +270,9 @@ and tests gets formatted in the following way:
      ``_new_metric_compute(...)`` function in its ``compute``. No logic should really be implemented in the module interface.
      We do this to not have duplicate code to maintain.
 
-   .. note::
-     The module `MeanSquaredError <https://github.com/Lightning-AI/torchmetrics/blob/master/src/torchmetrics/regression/mse.py>`_
-     metric that corresponds to the above functional example showcases these steps.
+  .. note::
+    The module `MeanSquaredError <https://github.com/Lightning-AI/torchmetrics/blob/master/src/torchmetrics/regression/mse.py>`_
+    metric that corresponds to the above functional example showcases these steps.
 
 4. Remember to add binding to the different relevant ``__init__`` files.
 
@@ -279,15 +283,15 @@ and tests gets formatted in the following way:
      both the functional and module interface.
   2. In that file, start by defining a number of test inputs that your metric should be evaluated on.
   3. Create a testclass ``class NewMetric(MetricTester)`` that inherits from ``tests.helpers.testers.MetricTester``.
-     This testclass should essentially implement the ``test_"new_metric"_class`` and ``test_"new_metric"_fn`` methods that
+     This test class should essentially implement the ``test_"new_metric"_class`` and ``test_"new_metric"_fn`` methods that
      respectively tests the module interface and the functional interface.
   4. The testclass should be parameterized (using ``@pytest.mark.parametrize``) by the different test inputs defined initially.
      Additionally, the ``test_"new_metric"_class`` method should also be parameterized with an ``ddp`` parameter such that it gets
      tested in a distributed setting. If your metric has additional parameters, then make sure to also parameterize these
-     such that different combinations of inputs and parameters gets tested.
+     so that different combinations of inputs and parameters get tested.
   5. (optional) If your metric raises any exception, please add tests that showcase this.
 
-  .. note::
+  .. hint::
     The `test file for MSE <https://github.com/Lightning-AI/torchmetrics/blob/master/tests/unittests/regression/test_mean_error.py>`_
     metric shows how to implement such tests.
 

@@ -54,7 +54,7 @@ class BinaryROC(BinaryPrecisionRecallCurve):
       ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value
       1 always encodes the positive class.
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of 3 tensors containing:
@@ -71,8 +71,8 @@ class BinaryROC(BinaryPrecisionRecallCurve):
        `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
-    .. note::
-       The outputted thresholds will be in reversed order to ensure that they corresponds to both fpr and
+    .. attention::
+       The outputted thresholds will be in reversed order to ensure that they correspond to both fpr and
        tpr which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:
@@ -191,7 +191,7 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
       ground truth labels, and therefore only contain values in the [0, n_classes-1] range (except if `ignore_index`
       is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 3 tensors or 3 lists containing
@@ -216,8 +216,8 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
        `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
-    .. note::
-       Note that outputted thresholds will be in reversed order to ensure that they corresponds to both fpr
+    .. attention::
+       Note that outputted thresholds will be in reversed order to ensure that they correspond to both fpr
        and tpr which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:
@@ -297,6 +297,7 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
         curve: Optional[Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
         score: Optional[Union[Tensor, bool]] = None,
         ax: Optional[_AX_TYPE] = None,
+        labels: Optional[List[str]] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -307,6 +308,7 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
                 will automatically compute the score. The score is computed by using the trapezoidal rule to compute the
                 area under the curve.
             ax: An matplotlib axis object. If provided will add plot to that axis
+            labels: a list of strings, if provided will be added to the plot to indicate the different classes
 
         Returns:
             Figure and Axes object
@@ -337,6 +339,7 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
             ax=ax,
             label_names=("False positive rate", "True positive rate"),
             name=self.__class__.__name__,
+            labels=labels,
         )
 
 
@@ -354,7 +357,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``. Target should be a tensor
       containing ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 3 tensors or 3 lists containing
@@ -379,8 +382,8 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
        `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
-    .. note::
-       The outputted thresholds will be in reversed order to ensure that they corresponds to both fpr and tpr
+    .. attention::
+       The outputted thresholds will be in reversed order to ensure that they correspond to both fpr and tpr
        which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:
@@ -456,6 +459,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
         curve: Optional[Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
         score: Optional[Union[Tensor, bool]] = None,
         ax: Optional[_AX_TYPE] = None,
+        labels: Optional[List[str]] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -466,6 +470,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
                 will automatically compute the score. The score is computed by using the trapezoidal rule to compute the
                 area under the curve.
             ax: An matplotlib axis object. If provided will add plot to that axis
+            labels: a list of strings, if provided will be added to the plot to indicate the different classes
 
         Returns:
             Figure and Axes object
@@ -496,6 +501,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
             ax=ax,
             label_names=("False positive rate", "True positive rate"),
             name=self.__class__.__name__,
+            labels=labels,
         )
 
 

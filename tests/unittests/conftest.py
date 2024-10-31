@@ -45,7 +45,17 @@ def use_deterministic_algorithms():  # noqa: PT004
 
 
 def setup_ddp(rank, world_size):
-    """Initialize ddp environment."""
+    """Initialize ddp environment.
+
+    If a particular test relies on the order of the processes in the pool to be [0, 1, 2, ...], then this function
+    should be called inside the test to ensure that the processes are initialized in the same order they are used in
+    the tests.
+
+    Args:
+        rank: the rank of the process
+        world_size: the number of processes
+
+    """
     global CURRENT_PORT
 
     os.environ["MASTER_ADDR"] = "localhost"
@@ -55,16 +65,15 @@ def setup_ddp(rank, world_size):
     if CURRENT_PORT > MAX_PORT:
         CURRENT_PORT = START_PORT
 
+    if torch.distributed.group.WORLD is not None:  # if already initialized, destroy the process group
+        torch.distributed.destroy_process_group()
+
     if torch.distributed.is_available() and sys.platform not in ("win32", "cygwin"):
         torch.distributed.init_process_group("gloo", rank=rank, world_size=world_size)
 
 
 def pytest_sessionstart():
-    """Global initialization of multiprocessing pool.
-
-    Runs before any test.
-
-    """
+    """Global initialization of multiprocessing pool; runs before any test."""
     if not USE_PYTEST_POOL:
         return
     pool = Pool(processes=NUM_PROCESSES)
@@ -73,11 +82,7 @@ def pytest_sessionstart():
 
 
 def pytest_sessionfinish():
-    """Correctly closes the global multiprocessing pool.
-
-    Runs after all tests.
-
-    """
+    """Correctly closes the global multiprocessing pool; runs after all tests."""
     if not USE_PYTEST_POOL:
         return
     pytest.pool.close()

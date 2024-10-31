@@ -169,13 +169,15 @@ class BinaryStatScores(_AbstractStatScores):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
+        zero_division = kwargs.pop("zero_division", 0)
         super(_AbstractStatScores, self).__init__(**kwargs)
         if validate_args:
-            _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index)
+            _binary_stat_scores_arg_validation(threshold, multidim_average, ignore_index, zero_division)
         self.threshold = threshold
         self.multidim_average = multidim_average
         self.ignore_index = ignore_index
         self.validate_args = validate_args
+        self.zero_division = zero_division
 
         self._create_state(size=1, multidim_average=multidim_average)
 
@@ -313,15 +315,19 @@ class MulticlassStatScores(_AbstractStatScores):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
+        zero_division = kwargs.pop("zero_division", 0)
         super(_AbstractStatScores, self).__init__(**kwargs)
         if validate_args:
-            _multiclass_stat_scores_arg_validation(num_classes, top_k, average, multidim_average, ignore_index)
+            _multiclass_stat_scores_arg_validation(
+                num_classes, top_k, average, multidim_average, ignore_index, zero_division
+            )
         self.num_classes = num_classes
         self.top_k = top_k
         self.average = average
         self.multidim_average = multidim_average
         self.ignore_index = ignore_index
         self.validate_args = validate_args
+        self.zero_division = zero_division
 
         self._create_state(
             size=1 if (average == "micro" and top_k == 1) else num_classes, multidim_average=multidim_average
@@ -461,15 +467,19 @@ class MultilabelStatScores(_AbstractStatScores):
         validate_args: bool = True,
         **kwargs: Any,
     ) -> None:
+        zero_division = kwargs.pop("zero_division", 0)
         super(_AbstractStatScores, self).__init__(**kwargs)
         if validate_args:
-            _multilabel_stat_scores_arg_validation(num_labels, threshold, average, multidim_average, ignore_index)
+            _multilabel_stat_scores_arg_validation(
+                num_labels, threshold, average, multidim_average, ignore_index, zero_division
+            )
         self.num_labels = num_labels
         self.threshold = threshold
         self.average = average
         self.multidim_average = multidim_average
         self.ignore_index = ignore_index
         self.validate_args = validate_args
+        self.zero_division = zero_division
 
         self._create_state(size=num_labels, multidim_average=multidim_average)
 

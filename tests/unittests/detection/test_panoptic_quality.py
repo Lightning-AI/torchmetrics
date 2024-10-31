@@ -18,7 +18,6 @@ import pytest
 import torch
 from torchmetrics.detection.panoptic_qualities import PanopticQuality
 from torchmetrics.functional.detection.panoptic_qualities import panoptic_quality
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12
 
 from unittests import _Input
 from unittests._helpers import seed_all
@@ -61,9 +60,25 @@ _INPUTS_1 = _Input(
     .reshape((1, 1, 5, 2))
     .repeat(2, 1, 1, 1),
 )
+
 _ARGS_0 = {"things": {0, 1}, "stuffs": {6, 7}}
 _ARGS_1 = {"things": {2}, "stuffs": {3}, "allow_unknown_preds_category": True}
 _ARGS_2 = {"things": {0, 1}, "stuffs": {10, 11}}
+
+
+def _get_class_order_test_input_args(class_type, class1, class2, class3) -> (np.ndarray, dict):
+    a = [class1, 0]
+    b = [class2, 0]
+    c = [class3, 0]
+    _input = _Input(
+        # Shape of input tensors is (num_batches, batch_size, num_points, 2).
+        preds=torch.tensor([a, a, b, b, b, c]).reshape((1, 1, 6, 2)).repeat(2, 1, 1, 1),
+        target=torch.tensor([a, a, b, b, c, c]).reshape((1, 1, 6, 2)).repeat(2, 1, 1, 1),
+    )
+    _args = {"things": [], "stuffs": [], "return_per_class": True}
+    _args[class_type] = [class1, class2, class3]
+    return _input, _args
+
 
 # TODO: Improve _reference_fn by calling https://github.com/cocodataset/panopticapi/blob/master/panopticapi/evaluation.py
 # directly and compare at runtime on multiple examples.
@@ -84,7 +99,11 @@ def _reference_fn_1_2(preds, target) -> np.ndarray:
     return np.array([(2 / 3 + 1 + 2 / 3) / 3])
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_12, reason="PanopticQuality metric only supports PyTorch >= 1.12")
+def _reference_fn_class_order(preds, target) -> np.ndarray:
+    """Baseline result for the result of _get_class_order_test_input_args."""
+    return np.array([1, 0, 2 / 3])
+
+
 class TestPanopticQuality(MetricTester):
     """Test class for `PanopticQuality` metric."""
 
@@ -95,6 +114,12 @@ class TestPanopticQuality(MetricTester):
             (_INPUTS_0, _ARGS_0, _reference_fn_0_0),
             (_INPUTS_0, _ARGS_1, _reference_fn_0_1),
             (_INPUTS_1, _ARGS_2, _reference_fn_1_2),
+            (*_get_class_order_test_input_args("stuffs", 0, 2, 1), _reference_fn_class_order),
+            (*_get_class_order_test_input_args("stuffs", 0, 3, 2), _reference_fn_class_order),
+            (*_get_class_order_test_input_args("stuffs", 0, 10, 2), _reference_fn_class_order),
+            (*_get_class_order_test_input_args("things", 0, 2, 1), _reference_fn_class_order),
+            (*_get_class_order_test_input_args("things", 0, 3, 2), _reference_fn_class_order),
+            (*_get_class_order_test_input_args("things", 0, 10, 2), _reference_fn_class_order),
         ],
     )
     def test_panoptic_quality_class(self, ddp, inputs, args, reference_metric):
@@ -120,7 +145,6 @@ class TestPanopticQuality(MetricTester):
         )
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_12, reason="PanopticQuality metric only supports PyTorch >= 1.12")
 def test_empty_metric():
     """Test empty metric."""
     with pytest.raises(ValueError, match="At least one of `things` and `stuffs` must be non-empty"):
@@ -130,7 +154,6 @@ def test_empty_metric():
     assert torch.isnan(metric.compute())
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_12, reason="PanopticQuality metric only supports PyTorch >= 1.12")
 def test_error_on_wrong_input():
     """Test class input validation."""
     with pytest.raises(TypeError, match="Expected argument `stuffs` to contain `int` categories.*"):
@@ -173,7 +196,6 @@ def test_error_on_wrong_input():
         metric.update(preds, preds)
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_12, reason="PanopticQuality metric only supports PyTorch >= 1.12")
 def test_extreme_values():
     """Test that the metric returns expected values in trivial cases."""
     # Exact match between preds and target => metric is 1
@@ -182,7 +204,6 @@ def test_extreme_values():
     assert panoptic_quality(_INPUTS_0.target[0], _INPUTS_0.target[0] + 1, **_ARGS_0) == 0.0
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_1_12, reason="PanopticQuality metric only supports PyTorch >= 1.12")
 @pytest.mark.parametrize(
     ("inputs", "args", "cat_dim"),
     [

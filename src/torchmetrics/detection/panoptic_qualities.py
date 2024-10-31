@@ -26,15 +26,11 @@ from torchmetrics.functional.detection._panoptic_quality_common import (
     _validate_inputs,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_GREATER_EQUAL_1_12
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["PanopticQuality.plot", "ModifiedPanopticQuality.plot"]
-
-
-if not _TORCH_GREATER_EQUAL_1_12:
-    __doctest_skip__ = ["PanopticQuality", "PanopticQuality.*", "ModifiedPanopticQuality", "ModifiedPanopticQuality.*"]
 
 
 class PanopticQuality(Metric):
@@ -53,9 +49,11 @@ class PanopticQuality(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-        - ``preds`` (:class:`~torch.Tensor`): An int tensor of shape ``(B, *spatial_dims, 2)``, where there needs to
+        - ``preds`` (:class:`~torch.Tensor`): An int tensor of shape ``(B, *spatial_dims, 2)`` containing
+          the pair ``(category_id, instance_id)`` for each point, where there needs to
           be at least one spatial dimension.
-        - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(B, *spatial_dims, 2)``, where there needs to
+        - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(B, *spatial_dims, 2)`` containing
+          the pair ``(category_id, instance_id)`` for each point, where there needs to
           be at least one spatial dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -64,9 +62,11 @@ class PanopticQuality(Metric):
           single scalar tensor is returned with average panoptic quality over all classes. If ``return_sq_and_rq=True``
           and ``return_per_class=False`` a tensor of length 3 is returned with panoptic, segmentation and recognition
           quality (in that order). If If ``return_sq_and_rq=False`` and ``return_per_class=True`` a tensor of length
-          equal to the number of classes are returned, with panoptic quality for each class. Finally, if both arguments
-          are ``True`` a tensor of shape ``(3, C)`` is returned with individual panoptic, segmentation and recognition
-          quality for each class.
+          equal to the number of classes are returned, with panoptic quality for each class. The order of classes is
+          ``things`` first and then ``stuffs``, and numerically sorted within each.
+          (ex. with ``things=[4, 1], stuffs=[3, 2]``, the output classes are ordered by ``[1, 4, 2, 3]``)
+          Finally, if both arguments are ``True`` a tensor of shape ``(3, C)`` is returned with individual panoptic,
+          segmentation and recognition quality for each class.
 
     Args:
         things:
@@ -162,9 +162,6 @@ class PanopticQuality(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        if not _TORCH_GREATER_EQUAL_1_12:
-            raise RuntimeError("Panoptic Quality metric requires PyTorch 1.12 or later")
-
         things, stuffs = _parse_categories(things, stuffs)
         self.things = things
         self.stuffs = stuffs

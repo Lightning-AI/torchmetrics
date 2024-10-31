@@ -68,7 +68,6 @@ class FeatureShare(MetricCollection):
 
     Example::
         >>> import torch
-        >>> _ = torch.manual_seed(42)
         >>> from torchmetrics.wrappers import FeatureShare
         >>> from torchmetrics.image import FrechetInceptionDistance, KernelInceptionDistance
         >>> # initialize the metrics

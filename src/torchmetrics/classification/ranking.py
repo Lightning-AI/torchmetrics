@@ -51,7 +51,7 @@ class MultilabelCoverageError(Metric):
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``. Target should be a tensor
       containing ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -66,10 +66,10 @@ class MultilabelCoverageError(Metric):
             Set to ``False`` for faster computations.
 
     Example:
+        >>> from torch import rand, randint
         >>> from torchmetrics.classification import MultilabelCoverageError
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand(10, 5)
-        >>> target = torch.randint(2, (10, 5))
+        >>> preds = rand(10, 5)
+        >>> target = randint(2, (10, 5))
         >>> mlce = MultilabelCoverageError(num_labels=5)
         >>> mlce(preds, target)
         tensor(3.9000)
@@ -171,7 +171,7 @@ class MultilabelRankingAveragePrecision(Metric):
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``. Target should be a tensor
       containing ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -186,10 +186,10 @@ class MultilabelRankingAveragePrecision(Metric):
             Set to ``False`` for faster computations.
 
     Example:
+        >>> from torch import rand, randint
         >>> from torchmetrics.classification import MultilabelRankingAveragePrecision
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand(10, 5)
-        >>> target = torch.randint(2, (10, 5))
+        >>> preds = rand(10, 5)
+        >>> target = randint(2, (10, 5))
         >>> mlrap = MultilabelRankingAveragePrecision(num_labels=5)
         >>> mlrap(preds, target)
         tensor(0.7744)
@@ -291,7 +291,7 @@ class MultilabelRankingLoss(Metric):
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``. Target should be a tensor
       containing ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -308,10 +308,10 @@ class MultilabelRankingLoss(Metric):
             Set to ``False`` for faster computations.
 
     Example:
+        >>> from torch import rand, randint
         >>> from torchmetrics.classification import MultilabelRankingLoss
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand(10, 5)
-        >>> target = torch.randint(2, (10, 5))
+        >>> preds = rand(10, 5)
+        >>> target = randint(2, (10, 5))
         >>> mlrl = MultilabelRankingLoss(num_labels=5)
         >>> mlrl(preds, target)
         tensor(0.4167)

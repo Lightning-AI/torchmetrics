@@ -2,6 +2,7 @@ import pytest
 import torch
 from torchmetrics import MetricCollection
 from torchmetrics.classification import MulticlassAccuracy, MulticlassF1Score, MulticlassRecall
+from torchmetrics.clustering import CalinskiHarabaszScore
 from torchmetrics.wrappers import ClasswiseWrapper
 
 
@@ -150,3 +151,27 @@ def test_double_use_of_prefix_with_metriccollection():
     assert "val/accuracy" in res
     assert "val/f_score_Tree" in res
     assert "val/f_score_Bush" in res
+
+
+def test_filter_kwargs_and_metriccollection():
+    """Test that kwargs are correctly filtered when using metric collection."""
+    metric = MetricCollection(
+        {
+            "accuracy": ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None)),
+            "cluster": CalinskiHarabaszScore(),
+        },
+    )
+    preds = torch.randn(10, 3).softmax(dim=-1)
+    target = torch.randint(3, (10,))
+    data = torch.randn(10, 3)
+
+    metric.update(preds=preds, target=target, data=data, labels=target)
+    metric(preds=preds, target=target, data=data, labels=target)
+    val = metric.compute()
+
+    assert isinstance(val, dict)
+    assert len(val) == 4
+    assert "multiclassaccuracy_0" in val
+    assert "multiclassaccuracy_1" in val
+    assert "multiclassaccuracy_2" in val
+    assert "cluster" in val

@@ -41,6 +41,7 @@ RUN \
         git \
         wget \
         curl \
+        zip \
         unzip \
         g++ \
         cmake \
@@ -72,10 +73,11 @@ RUN \
 ENV PYTHONPATH="/usr/lib/python${PYTHON_VERSION}/site-packages"
 
 COPY requirements/ requirements/
+COPY .github/assistant.py ./assistant.py
 
 RUN \
     # set particular PyTorch version
-    pip install -q wget packaging && \
+    pip install -q wget packaging "setuptools==69.5.1" && \
     python -m wget https://raw.githubusercontent.com/Lightning-AI/utilities/main/scripts/adjust-torch-versions.py  && \
     for fpath in `ls requirements/*.txt`; do \
       python ./adjust-torch-versions.py $fpath ${PYTORCH_VERSION}; \
@@ -84,9 +86,14 @@ RUN \
     pip install -q "numpy<1.24" && \
     CUDA_VERSION_MM=${CUDA_VERSION%.*} && \
     CU_VERSION_MM=${CUDA_VERSION_MM//'.'/''} && \
+    # requirements for assistant
+    pip install -q -U packaging fire && \
+    # switch some packages to be GPU related
+    python assistant.py replace_str_requirements "onnxruntime" "onnxruntime_gpu" --req_files requirements/audio.txt && \
+    # install develop environment
     pip install --no-cache-dir -r requirements/_devel.txt \
       --find-links="https://download.pytorch.org/whl/cu${CU_VERSION_MM}/torch_stable.html" \
-      --find-links="https://download.pytorch.org/whl/test/cu${CU_VERSION_MM}/torch_test.html" && \
+      --extra-index-url="https://download.pytorch.org/whl/test/cu${CU_VERSION_MM}" && \
     rm -rf requirements/
 
 RUN \

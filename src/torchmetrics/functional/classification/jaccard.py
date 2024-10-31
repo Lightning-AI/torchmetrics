@@ -39,6 +39,7 @@ def _jaccard_index_reduce(
     confmat: Tensor,
     average: Optional[Literal["micro", "macro", "weighted", "none", "binary"]],
     ignore_index: Optional[int] = None,
+    zero_division: float = 0.0,
 ) -> Tensor:
     """Perform reduction of an un-normalized confusion matrix into jaccard score.
 
@@ -57,6 +58,8 @@ def _jaccard_index_reduce(
 
         ignore_index:
             Specifies a target value that is ignored and does not contribute to the metric calculation
+        zero_division:
+            Value to replace when there is a division by zero. Should be `0` or `1`.
 
     """
     allowed_average = ["binary", "micro", "macro", "weighted", "none", None]
@@ -64,7 +67,7 @@ def _jaccard_index_reduce(
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
     confmat = confmat.float()
     if average == "binary":
-        return confmat[1, 1] / (confmat[0, 1] + confmat[1, 0] + confmat[1, 1])
+        return _safe_divide(confmat[1, 1], (confmat[0, 1] + confmat[1, 0] + confmat[1, 1]), zero_division=zero_division)
 
     ignore_index_cond = ignore_index is not None and 0 <= ignore_index < confmat.shape[0]
     multilabel = confmat.ndim == 3
@@ -79,7 +82,7 @@ def _jaccard_index_reduce(
         num = num.sum()
         denom = denom.sum() - (denom[ignore_index] if ignore_index_cond else 0.0)
 
-    jaccard = _safe_divide(num, denom)
+    jaccard = _safe_divide(num, denom, zero_division=zero_division)
 
     if average is None or average == "none" or average == "micro":
         return jaccard
@@ -100,6 +103,7 @@ def binary_jaccard_index(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0.0,
 ) -> Tensor:
     r"""Calculate the Jaccard index for binary tasks.
 
@@ -126,7 +130,8 @@ def binary_jaccard_index(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        zero_division:
+            Value to replace when there is a division by zero. Should be `0` or `1`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -149,7 +154,7 @@ def binary_jaccard_index(
         _binary_confusion_matrix_tensor_validation(preds, target, ignore_index)
     preds, target = _binary_confusion_matrix_format(preds, target, threshold, ignore_index)
     confmat = _binary_confusion_matrix_update(preds, target)
-    return _jaccard_index_reduce(confmat, average="binary")
+    return _jaccard_index_reduce(confmat, average="binary", zero_division=zero_division)
 
 
 def _multiclass_jaccard_index_arg_validation(
@@ -170,6 +175,7 @@ def multiclass_jaccard_index(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0.0,
 ) -> Tensor:
     r"""Calculate the Jaccard index for multiclass tasks.
 
@@ -204,7 +210,8 @@ def multiclass_jaccard_index(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        zero_division:
+            Value to replace when there is a division by zero. Should be `0` or `1`.
 
     Example (pred is integer tensor):
         >>> from torch import tensor
@@ -230,7 +237,7 @@ def multiclass_jaccard_index(
         _multiclass_confusion_matrix_tensor_validation(preds, target, num_classes, ignore_index)
     preds, target = _multiclass_confusion_matrix_format(preds, target, ignore_index)
     confmat = _multiclass_confusion_matrix_update(preds, target, num_classes)
-    return _jaccard_index_reduce(confmat, average=average, ignore_index=ignore_index)
+    return _jaccard_index_reduce(confmat, average=average, ignore_index=ignore_index, zero_division=zero_division)
 
 
 def _multilabel_jaccard_index_arg_validation(
@@ -253,6 +260,7 @@ def multilabel_jaccard_index(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0.0,
 ) -> Tensor:
     r"""Calculate the Jaccard index for multilabel tasks.
 
@@ -288,7 +296,8 @@ def multilabel_jaccard_index(
             Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
             Set to ``False`` for faster computations.
-        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+        zero_division:
+            Value to replace when there is a division by zero. Should be `0` or `1`.
 
     Example (preds is int tensor):
         >>> from torch import tensor
@@ -311,7 +320,7 @@ def multilabel_jaccard_index(
         _multilabel_confusion_matrix_tensor_validation(preds, target, num_labels, ignore_index)
     preds, target = _multilabel_confusion_matrix_format(preds, target, num_labels, threshold, ignore_index)
     confmat = _multilabel_confusion_matrix_update(preds, target, num_labels)
-    return _jaccard_index_reduce(confmat, average=average, ignore_index=ignore_index)
+    return _jaccard_index_reduce(confmat, average=average, ignore_index=ignore_index, zero_division=zero_division)
 
 
 def jaccard_index(
@@ -324,6 +333,7 @@ def jaccard_index(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
+    zero_division: float = 0.0,
 ) -> Tensor:
     r"""Calculate the Jaccard index.
 
@@ -351,13 +361,15 @@ def jaccard_index(
     """
     task = ClassificationTask.from_str(task)
     if task == ClassificationTask.BINARY:
-        return binary_jaccard_index(preds, target, threshold, ignore_index, validate_args)
+        return binary_jaccard_index(preds, target, threshold, ignore_index, validate_args, zero_division)
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
-        return multiclass_jaccard_index(preds, target, num_classes, average, ignore_index, validate_args)
+        return multiclass_jaccard_index(preds, target, num_classes, average, ignore_index, validate_args, zero_division)
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
-        return multilabel_jaccard_index(preds, target, num_labels, threshold, average, ignore_index, validate_args)
+        return multilabel_jaccard_index(
+            preds, target, num_labels, threshold, average, ignore_index, validate_args, zero_division
+        )
     raise ValueError(f"Not handled value: {task}")

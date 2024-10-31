@@ -148,9 +148,9 @@ def _get_category_id_to_continuous_id(things: Set[int], stuffs: Set[int]) -> Dic
 
     """
     # things metrics are stored with a continuous id in [0, len(things)[,
-    thing_id_to_continuous_id = {thing_id: idx for idx, thing_id in enumerate(things)}
+    thing_id_to_continuous_id = {thing_id: idx for idx, thing_id in enumerate(sorted(things))}
     # stuff metrics are stored with a continuous id in [len(things), len(things) + len(stuffs)[
-    stuff_id_to_continuous_id = {stuff_id: idx + len(things) for idx, stuff_id in enumerate(stuffs)}
+    stuff_id_to_continuous_id = {stuff_id: idx + len(things) for idx, stuff_id in enumerate(sorted(stuffs))}
     cat_id_to_continuous_id = {}
     cat_id_to_continuous_id.update(thing_id_to_continuous_id)
     cat_id_to_continuous_id.update(stuff_id_to_continuous_id)

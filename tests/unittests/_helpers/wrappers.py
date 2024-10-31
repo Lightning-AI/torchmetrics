@@ -6,6 +6,12 @@ import pytest
 
 ALLOW_SKIP_IF_OUT_OF_MEMORY = os.getenv("ALLOW_SKIP_IF_OUT_OF_MEMORY", "0") == "1"
 ALLOW_SKIP_IF_BAD_CONNECTION = os.getenv("ALLOW_SKIP_IF_BAD_CONNECTION", "0") == "1"
+_ERROR_CONNECTION_MESSAGE_PATTERNS = (
+    "We couldn't connect to",
+    "Connection error",
+    "Can't load",
+    "`nltk` resource `punkt` is",
+)
 
 
 def skip_on_running_out_of_memory(reason: str = "Skipping test as it ran out of memory."):
@@ -33,18 +39,25 @@ def skip_on_connection_issues(reason: str = "Unable to load checkpoints from Hug
     The tests run normally if no connection issue arises, and they're marked as skipped otherwise.
 
     """
-    _error_msg_starts = ["We couldn't connect to", "Connection error", "Can't load", "`nltk` resource `punkt` is"]
 
     def test_decorator(function: Callable, *args: Any, **kwargs: Any) -> Optional[Callable]:
         @wraps(function)
         def run_test(*args: Any, **kwargs: Any) -> Optional[Any]:
+            from urllib.error import URLError
+
             try:
                 return function(*args, **kwargs)
-            except (OSError, ValueError) as ex:
-                if all(msg_start not in str(ex) for msg_start in _error_msg_starts):
+            except URLError as ex:
+                if "Error 403: Forbidden" not in str(ex) or not ALLOW_SKIP_IF_BAD_CONNECTION:
                     raise ex
-                if ALLOW_SKIP_IF_BAD_CONNECTION:
-                    pytest.skip(reason)
+                pytest.skip(reason)
+            except (OSError, ValueError) as ex:
+                if (
+                    all(msg_start not in str(ex) for msg_start in _ERROR_CONNECTION_MESSAGE_PATTERNS)
+                    or not ALLOW_SKIP_IF_BAD_CONNECTION
+                ):
+                    raise ex
+                pytest.skip(reason)
 
         return run_test
 

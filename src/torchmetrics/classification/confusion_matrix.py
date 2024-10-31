@@ -38,7 +38,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
-from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_confusion_matrix
+from torchmetrics.utilities.plot import _AX_TYPE, _CMAP_TYPE, _PLOT_OUT_TYPE, plot_confusion_matrix
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = [
@@ -151,6 +151,7 @@ class BinaryConfusionMatrix(Metric):
         ax: Optional[_AX_TYPE] = None,
         add_text: bool = True,
         labels: Optional[List[str]] = None,
+        cmap: Optional[_CMAP_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -160,6 +161,8 @@ class BinaryConfusionMatrix(Metric):
             ax: An matplotlib axis object. If provided will add plot to that axis
             add_text: if the value of each cell should be added to the plot
             labels: a list of strings, if provided will be added to the plot to indicate the different classes
+            cmap: matplotlib colormap to use for the confusion matrix
+                https://matplotlib.org/stable/users/explain/colors/colormaps.html
 
         Returns:
             Figure and Axes object
@@ -181,7 +184,7 @@ class BinaryConfusionMatrix(Metric):
         val = val if val is not None else self.compute()
         if not isinstance(val, Tensor):
             raise TypeError(f"Expected val to be a single tensor but got {val}")
-        fig, ax = plot_confusion_matrix(val, ax=ax, add_text=add_text, labels=labels)
+        fig, ax = plot_confusion_matrix(val, ax=ax, add_text=add_text, labels=labels, cmap=cmap)
         return fig, ax
 
 
@@ -196,7 +199,7 @@ class MulticlassConfusionMatrix(Metric):
 
     - :math:`C_{i, i}` represents the number of true positives for class :math:`i`
     - :math:`\sum_{j=1, j\neq i}^N C_{i, j}` represents the number of false negatives for class :math:`i`
-    - :math:`\sum_{i=1, i\neq j}^N C_{i, j}` represents the number of false positives for class :math:`i`
+    - :math:`\sum_{j=1, j\neq i}^N C_{j, i}` represents the number of false positives for class :math:`i`
     - the sum of the remaining cells in the matrix represents the number of true negatives for class :math:`i`
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
@@ -292,6 +295,7 @@ class MulticlassConfusionMatrix(Metric):
         ax: Optional[_AX_TYPE] = None,
         add_text: bool = True,
         labels: Optional[List[str]] = None,
+        cmap: Optional[_CMAP_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -301,6 +305,8 @@ class MulticlassConfusionMatrix(Metric):
             ax: An matplotlib axis object. If provided will add plot to that axis
             add_text: if the value of each cell should be added to the plot
             labels: a list of strings, if provided will be added to the plot to indicate the different classes
+            cmap: matplotlib colormap to use for the confusion matrix
+                https://matplotlib.org/stable/users/explain/colors/colormaps.html
 
         Returns:
             Figure and Axes object
@@ -322,7 +328,7 @@ class MulticlassConfusionMatrix(Metric):
         val = val if val is not None else self.compute()
         if not isinstance(val, Tensor):
             raise TypeError(f"Expected val to be a single tensor but got {val}")
-        fig, ax = plot_confusion_matrix(val, ax=ax, add_text=add_text, labels=labels)
+        fig, ax = plot_confusion_matrix(val, ax=ax, add_text=add_text, labels=labels, cmap=cmap)
         return fig, ax
 
 
@@ -436,6 +442,7 @@ class MultilabelConfusionMatrix(Metric):
         ax: Optional[_AX_TYPE] = None,
         add_text: bool = True,
         labels: Optional[List[str]] = None,
+        cmap: Optional[_CMAP_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -445,6 +452,8 @@ class MultilabelConfusionMatrix(Metric):
             ax: An matplotlib axis object. If provided will add plot to that axis
             add_text: if the value of each cell should be added to the plot
             labels: a list of strings, if provided will be added to the plot to indicate the different classes
+            cmap: matplotlib colormap to use for the confusion matrix
+                https://matplotlib.org/stable/users/explain/colors/colormaps.html
 
         Returns:
             Figure and Axes object
@@ -466,7 +475,7 @@ class MultilabelConfusionMatrix(Metric):
         val = val if val is not None else self.compute()
         if not isinstance(val, Tensor):
             raise TypeError(f"Expected val to be a single tensor but got {val}")
-        fig, ax = plot_confusion_matrix(val, ax=ax, add_text=add_text, labels=labels)
+        fig, ax = plot_confusion_matrix(val, ax=ax, add_text=add_text, labels=labels, cmap=cmap)
         return fig, ax
 
 

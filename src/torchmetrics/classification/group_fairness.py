@@ -177,7 +177,7 @@ class BinaryFairness(_AbstractGroupStatScores):
 
     Args:
         num_groups: The number of groups.
-        task: The task to compute. Can be either ``demographic_parity`` or ``equal_oppotunity`` or ``all``.
+        task: The task to compute. Can be either ``demographic_parity`` or ``equal_opportunity`` or ``all``.
         threshold: Threshold for transforming probability to binary {0,1} predictions.
         ignore_index: Specifies a target value that is ignored and does not contribute to the metric calculation
         validate_args: bool indicating if input arguments and tensors should be validated for correctness.
@@ -302,25 +302,23 @@ class BinaryFairness(_AbstractGroupStatScores):
         .. plot::
             :scale: 75
 
-            >>> import torch
-            >>> _ = torch.manual_seed(42)
+            >>> from torch import ones, rand, randint
             >>> # Example plotting a single value
             >>> from torchmetrics.classification import BinaryFairness
             >>> metric = BinaryFairness(2)
-            >>> metric.update(torch.rand(20), torch.randint(2,(20,)), torch.randint(2,(20,)))
+            >>> metric.update(rand(20), randint(2, (20,)), ones(20).long())
             >>> fig_, ax_ = metric.plot()
 
         .. plot::
             :scale: 75
 
-            >>> import torch
-            >>> _ = torch.manual_seed(42)
+            >>> from torch import ones, rand, randint
             >>> # Example plotting multiple values
             >>> from torchmetrics.classification import BinaryFairness
             >>> metric = BinaryFairness(2)
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(torch.rand(20), torch.randint(2,(20,)), torch.ones(20).long()))
+            ...     values.append(metric(rand(20), randint(2, (20,) ), ones(20).long()))
             >>> fig_, ax_ = metric.plot(values)
 
         """

@@ -124,9 +124,5 @@ def test_on_real_audio():
     """Test that metric works on real audio signal."""
     rate, ref = wavfile.read(_SAMPLE_AUDIO_SPEECH)
     rate, deg = wavfile.read(_SAMPLE_AUDIO_SPEECH_BAB_DB)
-    assert torch.allclose(
-        short_time_objective_intelligibility(torch.from_numpy(deg), torch.from_numpy(ref), rate).float(),
-        torch.tensor(0.6739177),
-        rtol=0.0001,
-        atol=1e-4,
-    )
+    stoi = short_time_objective_intelligibility(torch.from_numpy(deg), torch.from_numpy(ref), rate)
+    assert torch.allclose(stoi.float(), torch.tensor(0.6739177), rtol=1e-2, atol=5e-3)

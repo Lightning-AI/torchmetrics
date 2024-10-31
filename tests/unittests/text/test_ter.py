@@ -64,7 +64,7 @@ class TestTER(TextTester):
     """Test class for `TranslationEditRate` metric."""
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_chrf_score_class(self, ddp, preds, targets, normalize, no_punctuation, asian_support, lowercase):
+    def test_ter_class(self, ddp, preds, targets, normalize, no_punctuation, asian_support, lowercase):
         """Test class implementation of metric."""
         metric_args = {
             "normalize": normalize,
@@ -113,7 +113,7 @@ class TestTER(TextTester):
             metric_args=metric_args,
         )
 
-    def test_chrf_score_differentiability(self, preds, targets, normalize, no_punctuation, asian_support, lowercase):
+    def test_ter_differentiability(self, preds, targets, normalize, no_punctuation, asian_support, lowercase):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
         metric_args = {
             "normalize": normalize,

@@ -77,6 +77,12 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
     multiclass_matthews_corrcoef,
     multilabel_matthews_corrcoef,
 )
+from torchmetrics.functional.classification.negative_predictive_value import (
+    binary_negative_predictive_value,
+    multiclass_negative_predictive_value,
+    multilabel_negative_predictive_value,
+    negative_predictive_value,
+)
 from torchmetrics.functional.classification.precision_fixed_recall import (
     binary_precision_at_fixed_recall,
     multiclass_precision_at_fixed_recall,
@@ -159,6 +165,7 @@ __all__ = [
     "confusion_matrix",
     "multiclass_confusion_matrix",
     "multilabel_confusion_matrix",
+    "generalized_dice_score",
     "dice",
     "exact_match",
     "multiclass_exact_match",
@@ -233,4 +240,8 @@ __all__ = [
     "demographic_parity",
     "equal_opportunity",
     "precision_at_fixed_recall",
+    "binary_negative_predictive_value",
+    "multiclass_negative_predictive_value",
+    "multilabel_negative_predictive_value",
+    "negative_predictive_value",
 ]

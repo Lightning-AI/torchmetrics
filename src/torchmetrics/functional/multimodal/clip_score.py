@@ -135,7 +135,8 @@ def clip_score(
     textual CLIP embedding :math:`E_C` for an caption :math:`C`. The score is bound between 0 and 100 and the closer
     to 100 the better.
 
-    .. note:: Metric is not scriptable
+    .. caution::
+        Metric is not scriptable
 
     Args:
         images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors
@@ -153,8 +154,6 @@ def clip_score(
             If the number of images and captions do not match
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
         >>> from torchmetrics.functional.multimodal import clip_score
         >>> score = clip_score(torch.randint(255, (3, 224, 224)), "a photo of a cat", "openai/clip-vit-base-patch16")
         >>> score.detach()

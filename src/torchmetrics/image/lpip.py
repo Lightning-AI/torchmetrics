@@ -47,11 +47,9 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     Both input image patches are expected to have shape ``(N, 3, H, W)``. The minimum size of `H, W` depends on the
     chosen backbone (see `net_type` arg).
 
-    .. note:: using this metrics requires you to have ``torchvision`` package installed. Either install as
+    .. hint::
+        Using this metrics requires you to have ``torchvision`` package installed. Either install as
         ``pip install torchmetrics[image]`` or ``pip install torchvision``.
-
-    .. note:: this metric is not scriptable when using ``torch<1.8``. Please update your pytorch installation
-        if this is a issue.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -78,15 +76,14 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
             If ``reduction`` is not one of ``"mean"`` or ``"sum"``
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
+        >>> from torch import rand
         >>> from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
         >>> lpips = LearnedPerceptualImagePatchSimilarity(net_type='squeeze')
         >>> # LPIPS needs the images to be in the [-1, 1] range.
-        >>> img1 = (torch.rand(10, 3, 100, 100) * 2) - 1
-        >>> img2 = (torch.rand(10, 3, 100, 100) * 2) - 1
+        >>> img1 = (rand(10, 3, 100, 100) * 2) - 1
+        >>> img2 = (rand(10, 3, 100, 100) * 2) - 1
         >>> lpips(img1, img2)
-        tensor(0.1046)
+        tensor(0.1024)
 
     """
 

@@ -24,8 +24,15 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
 
 
+def _ignore_background(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+    """Ignore the background class in the computation assuming it is the first, index 0."""
+    preds = preds[:, 1:] if preds.shape[1] > 1 else preds
+    target = target[:, 1:] if target.shape[1] > 1 else target
+    return preds, target
+
+
 def check_if_binarized(x: Tensor) -> None:
-    """Check if the input is binarized.
+    """Check if tensor is binarized.
 
     Example:
         >>> from torchmetrics.functional.segmentation.utils import check_if_binarized
@@ -193,9 +200,8 @@ def distance_transform(
 
     Args:
         x: The binary tensor to calculate the distance transform of.
-        sampling: Only relevant when distance is calculated using the euclidean distance. The sampling refers to the
-            pixel spacing in the image, i.e. the distance between two adjacent pixels. If not provided, the pixel
-            spacing is assumed to be 1.
+        sampling: The sampling refers to the pixel spacing in the image, i.e. the distance between two adjacent pixels.
+            If not provided, the pixel spacing is assumed to be 1.
         metric: The distance to use for the distance transform. Can be one of ``"euclidean"``, ``"chessboard"``
             or ``"taxicab"``.
         engine: The engine to use for the distance transform. Can be one of ``["pytorch", "scipy"]``. In general,
@@ -242,25 +248,25 @@ def distance_transform(
             raise ValueError(f"Expected argument `sampling` to have length 2 but got length `{len(sampling)}`.")
 
     if engine == "pytorch":
+        x = x.float()
         # calculate distance from every foreground pixel to every background pixel
         i0, j0 = torch.where(x == 0)
         i1, j1 = torch.where(x == 1)
-        dis_row = (i1.unsqueeze(1) - i0.unsqueeze(0)).abs_().mul_(sampling[0])
-        dis_col = (j1.unsqueeze(1) - j0.unsqueeze(0)).abs_().mul_(sampling[1])
+        dis_row = (i1.view(-1, 1) - i0.view(1, -1)).abs()
+        dis_col = (j1.view(-1, 1) - j0.view(1, -1)).abs()
 
         # # calculate distance
         h, _ = x.shape
         if metric == "euclidean":
-            dis_row = dis_row.float()
-            dis_row.pow_(2).add_(dis_col.pow_(2)).sqrt_()
+            dis = ((sampling[0] * dis_row) ** 2 + (sampling[1] * dis_col) ** 2).sqrt()
         if metric == "chessboard":
-            dis_row = dis_row.max(dis_col)
+            dis = torch.max(sampling[0] * dis_row, sampling[1] * dis_col).float()
         if metric == "taxicab":
-            dis_row.add_(dis_col)
+            dis = (sampling[0] * dis_row + sampling[1] * dis_col).float()
 
         # select only the closest distance
-        mindis, _ = torch.min(dis_row, dim=1)
-        z = torch.zeros_like(x, dtype=mindis.dtype).view(-1)
+        mindis, _ = torch.min(dis, dim=1)
+        z = torch.zeros_like(x).view(-1)
         z[i1 * h + j1] = mindis
         return z.view(x.shape)
 
@@ -272,7 +278,7 @@ def distance_transform(
 
     if metric == "euclidean":
         return ndimage.distance_transform_edt(x.cpu().numpy(), sampling)
-    return ndimage.distance_transform_cdt(x.cpu().numpy(), metric=metric)
+    return ndimage.distance_transform_cdt(x.cpu().numpy(), sampling, metric=metric)
 
 
 def mask_edges(
@@ -381,6 +387,38 @@ def surface_distance(
             return dis[target]
         dis = distance_transform(~target, sampling=spacing, metric=distance_metric)
     return dis[preds]
+
+
+def edge_surface_distance(
+    preds: Tensor,
+    target: Tensor,
+    distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
+    spacing: Optional[Union[Tensor, List[float]]] = None,
+    symmetric: bool = False,
+) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    """Extracts the edges from the input masks and calculates the surface distance between them.
+
+    Args:
+        preds: The predicted binary edge mask.
+        target: The target binary edge mask.
+        distance_metric: The distance metric to use. One of `["euclidean", "chessboard", "taxicab"]`.
+        spacing: The spacing between pixels along each spatial dimension.
+        symmetric: Whether to calculate the symmetric distance between the edges.
+
+    Returns:
+        A tensor with length equal to the number of edges in predictions e.g. `preds.sum()`. Each element is the
+        distance from the corresponding edge in `preds` to the closest edge in `target`. If `symmetric` is `True`, the
+        function returns a tuple containing the distances from the predicted edges to the target edges and vice versa.
+
+    """
+    output = mask_edges(preds, target)
+    edges_preds, edges_target = output[0].bool(), output[1].bool()
+    if symmetric:
+        return (
+            surface_distance(edges_preds, edges_target, distance_metric=distance_metric, spacing=spacing),
+            surface_distance(edges_target, edges_preds, distance_metric=distance_metric, spacing=spacing),
+        )
+    return surface_distance(edges_preds, edges_target, distance_metric=distance_metric, spacing=spacing)
 
 
 @functools.lru_cache

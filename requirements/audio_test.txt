@@ -1,9 +1,7 @@
 # NOTE: the upper bound for the package version is only set for CI stability, and it is dropped while installing this package
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
-pypesq @ git+https://github.com/vBaiCai/python-pesq
 mir-eval >=0.6, <=0.7
-speechmetrics @ git+https://github.com/aliutkus/speechmetrics
 fast-bss-eval >=0.1.0, <0.1.5
-torch_complex <=0.4.3  # needed for fast-bss-eval
-srmrpy @ git+https://github.com/jfsantos/SRMRpy
+torch_complex <0.5.0 # needed for fast-bss-eval
+srmrpy @ git+https://github.com/Lightning-Sandbox/SRMRpy

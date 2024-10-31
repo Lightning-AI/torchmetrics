@@ -17,12 +17,12 @@ from torchmetrics.utilities.prints import _deprecated_root_import_class
 class _ErrorRelativeGlobalDimensionlessSynthesis(ErrorRelativeGlobalDimensionlessSynthesis):
     """Wrapper for deprecated import.
 
-    >>> import torch
-    >>> preds = torch.rand([16, 1, 16, 16], generator=torch.manual_seed(42))
+    >>> from torch import rand
+    >>> preds = rand([16, 1, 16, 16])
     >>> target = preds * 0.75
     >>> ergas = _ErrorRelativeGlobalDimensionlessSynthesis()
-    >>> torch.round(ergas(preds, target))
-    tensor(154.)
+    >>> ergas(preds, target).round()
+    tensor(10.)
 
     """
 
@@ -39,12 +39,12 @@ class _ErrorRelativeGlobalDimensionlessSynthesis(ErrorRelativeGlobalDimensionles
 class _MultiScaleStructuralSimilarityIndexMeasure(MultiScaleStructuralSimilarityIndexMeasure):
     """Wrapper for deprecated import.
 
-    >>> import torch
-    >>> preds = torch.rand([3, 3, 256, 256], generator=torch.manual_seed(42))
+    >>> from torch import rand
+    >>> preds = rand([3, 3, 256, 256])
     >>> target = preds * 0.75
     >>> ms_ssim = _MultiScaleStructuralSimilarityIndexMeasure(data_range=1.0)
     >>> ms_ssim(preds, target)
-    tensor(0.9627)
+    tensor(0.9628)
 
     """
 
@@ -103,13 +103,12 @@ class _PeakSignalNoiseRatio(PeakSignalNoiseRatio):
 class _RelativeAverageSpectralError(RelativeAverageSpectralError):
     """Wrapper for deprecated import.
 
-    >>> import torch
-    >>> g = torch.manual_seed(22)
-    >>> preds = torch.rand(4, 3, 16, 16)
-    >>> target = torch.rand(4, 3, 16, 16)
+    >>> from torch import rand
+    >>> preds = rand(4, 3, 16, 16)
+    >>> target = rand(4, 3, 16, 16)
     >>> rase = _RelativeAverageSpectralError()
     >>> rase(preds, target)
-    tensor(5114.66...)
+    tensor(5326.40...)
 
     """
 
@@ -125,13 +124,12 @@ class _RelativeAverageSpectralError(RelativeAverageSpectralError):
 class _RootMeanSquaredErrorUsingSlidingWindow(RootMeanSquaredErrorUsingSlidingWindow):
     """Wrapper for deprecated import.
 
-    >>> import torch
-    >>> g = torch.manual_seed(22)
-    >>> preds = torch.rand(4, 3, 16, 16)
-    >>> target = torch.rand(4, 3, 16, 16)
+    >>> from torch import rand
+    >>> preds = rand(4, 3, 16, 16)
+    >>> target = rand(4, 3, 16, 16)
     >>> rmse_sw = RootMeanSquaredErrorUsingSlidingWindow()
     >>> rmse_sw(preds, target)
-    tensor(0.3999)
+    tensor(0.4158)
 
     """
 
@@ -147,10 +145,9 @@ class _RootMeanSquaredErrorUsingSlidingWindow(RootMeanSquaredErrorUsingSlidingWi
 class _SpectralAngleMapper(SpectralAngleMapper):
     """Wrapper for deprecated import.
 
-    >>> import torch
-    >>> gen = torch.manual_seed(42)
-    >>> preds = torch.rand([16, 3, 16, 16], generator=gen)
-    >>> target = torch.rand([16, 3, 16, 16], generator=gen)
+    >>> from torch import rand
+    >>> preds = rand([16, 3, 16, 16])
+    >>> target = rand([16, 3, 16, 16])
     >>> sam = _SpectralAngleMapper()
     >>> sam(preds, target)
     tensor(0.5914)
@@ -169,10 +166,9 @@ class _SpectralAngleMapper(SpectralAngleMapper):
 class _SpectralDistortionIndex(SpectralDistortionIndex):
     """Wrapper for deprecated import.
 
-    >>> import torch
-    >>> _ = torch.manual_seed(42)
-    >>> preds = torch.rand([16, 3, 16, 16])
-    >>> target = torch.rand([16, 3, 16, 16])
+    >>> from torch import rand
+    >>> preds = rand([16, 3, 16, 16])
+    >>> target = rand([16, 3, 16, 16])
     >>> sdi = _SpectralDistortionIndex()
     >>> sdi(preds, target)
     tensor(0.0234)
@@ -229,10 +225,9 @@ class _StructuralSimilarityIndexMeasure(StructuralSimilarityIndexMeasure):
 class _TotalVariation(TotalVariation):
     """Wrapper for deprecated import.
 
-    >>> import torch
-    >>> _ = torch.manual_seed(42)
+    >>> from torch import rand
     >>> tv = _TotalVariation()
-    >>> img = torch.rand(5, 3, 28, 28)
+    >>> img = rand(5, 3, 28, 28)
     >>> tv(img)
     tensor(7546.8018)
 

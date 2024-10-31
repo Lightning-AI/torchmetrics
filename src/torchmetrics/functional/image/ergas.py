@@ -62,12 +62,12 @@ def _ergas_compute(
             - ``'none'`` or ``None``: no reduction will be applied
 
     Example:
-        >>> gen = torch.manual_seed(42)
-        >>> preds = torch.rand([16, 1, 16, 16], generator=gen)
+        >>> from torch import rand
+        >>> preds = rand([16, 1, 16, 16])
         >>> target = preds * 0.75
         >>> preds, target = _ergas_update(preds, target)
         >>> torch.round(_ergas_compute(preds, target))
-        tensor(154.)
+        tensor(10.)
 
     """
     b, c, h, w = preds.shape
@@ -79,7 +79,7 @@ def _ergas_compute(
     rmse_per_band = torch.sqrt(sum_squared_error / (h * w))
     mean_target = torch.mean(target, dim=2)
 
-    ergas_score = 100 * ratio * torch.sqrt(torch.sum((rmse_per_band / mean_target) ** 2, dim=1) / c)
+    ergas_score = 100 / ratio * torch.sqrt(torch.sum((rmse_per_band / mean_target) ** 2, dim=1) / c)
     return reduce(ergas_score, reduction)
 
 
@@ -111,13 +111,12 @@ def error_relative_global_dimensionless_synthesis(
             If ``preds`` and ``target`` don't have ``BxCxHxW shape``.
 
     Example:
+        >>> from torch import rand
         >>> from torchmetrics.functional.image import error_relative_global_dimensionless_synthesis
-        >>> gen = torch.manual_seed(42)
-        >>> preds = torch.rand([16, 1, 16, 16], generator=gen)
+        >>> preds = rand([16, 1, 16, 16])
         >>> target = preds * 0.75
-        >>> ergds = error_relative_global_dimensionless_synthesis(preds, target)
-        >>> torch.round(ergds)
-        tensor(154.)
+        >>> error_relative_global_dimensionless_synthesis(preds, target)
+        tensor(9.6193)
 
     """
     preds, target = _ergas_update(preds, target)

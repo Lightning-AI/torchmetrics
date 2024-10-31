@@ -272,10 +272,7 @@ def _handle_corner_cases_during_shifting(
         return True
 
     # don't try to shift within the subsequence
-    if pred_start <= alignments[target_start] < pred_start + length:
-        return True
-
-    return False
+    return pred_start <= alignments[target_start] < pred_start + length
 
 
 def _perform_shift(words: List[str], start: int, length: int, target: int) -> List[str]:

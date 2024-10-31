@@ -70,23 +70,22 @@ class SignalDistortionRatio(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> import torch
+        >>> from torch import randn
         >>> from torchmetrics.audio import SignalDistortionRatio
-        >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn(8000)
-        >>> target = torch.randn(8000)
+        >>> preds = randn(8000)
+        >>> target = randn(8000)
         >>> sdr = SignalDistortionRatio()
         >>> sdr(preds, target)
-        tensor(-12.0589)
+        tensor(-11.9930)
         >>> # use with pit
         >>> from torchmetrics.audio import PermutationInvariantTraining
         >>> from torchmetrics.functional.audio import signal_distortion_ratio
-        >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
-        >>> target = torch.randn(4, 2, 8000)
+        >>> preds = randn(4, 2, 8000)  # [batch, spk, time]
+        >>> target = randn(4, 2, 8000)
         >>> pit = PermutationInvariantTraining(signal_distortion_ratio,
         ...     mode="speaker-wise", eval_func="max")
         >>> pit(preds, target)
-        tensor(-11.6051)
+        tensor(-11.7277)
 
     """
 
@@ -302,23 +301,22 @@ class SourceAggregatedSignalDistortionRatio(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> import torch
+        >>> from torch import randn
         >>> from torchmetrics.audio import SourceAggregatedSignalDistortionRatio
-        >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn(2, 8000) # [..., spk, time]
-        >>> target = torch.randn(2, 8000)
+        >>> preds = randn(2, 8000) # [..., spk, time]
+        >>> target = randn(2, 8000)
         >>> sasdr = SourceAggregatedSignalDistortionRatio()
         >>> sasdr(preds, target)
-        tensor(-41.6579)
+        tensor(-50.8171)
         >>> # use with pit
         >>> from torchmetrics.audio import PermutationInvariantTraining
         >>> from torchmetrics.functional.audio import source_aggregated_signal_distortion_ratio
-        >>> preds = torch.randn(4, 2, 8000)  # [batch, spk, time]
-        >>> target = torch.randn(4, 2, 8000)
+        >>> preds = randn(4, 2, 8000)  # [batch, spk, time]
+        >>> target = randn(4, 2, 8000)
         >>> pit = PermutationInvariantTraining(source_aggregated_signal_distortion_ratio,
         ...     mode="permutation-wise", eval_func="max")
         >>> pit(preds, target)
-        tensor(-41.2790)
+        tensor(-43.9780)
 
     """
 

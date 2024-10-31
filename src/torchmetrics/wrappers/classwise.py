@@ -44,58 +44,54 @@ class ClasswiseWrapper(WrapperMetric):
     Example::
         Basic example where the output of a metric is unwrapped into a dictionary with the class index as keys:
 
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
+        >>> from torch import randint, randn
         >>> from torchmetrics.wrappers import ClasswiseWrapper
         >>> from torchmetrics.classification import MulticlassAccuracy
         >>> metric = ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None))
-        >>> preds = torch.randn(10, 3).softmax(dim=-1)
-        >>> target = torch.randint(3, (10,))
+        >>> preds = randn(10, 3).softmax(dim=-1)
+        >>> target = randint(3, (10,))
         >>> metric(preds, target)  # doctest: +NORMALIZE_WHITESPACE
         {'multiclassaccuracy_0': tensor(0.5000),
-        'multiclassaccuracy_1': tensor(0.7500),
-        'multiclassaccuracy_2': tensor(0.)}
+         'multiclassaccuracy_1': tensor(0.7500),
+         'multiclassaccuracy_2': tensor(0.)}
 
     Example::
         Using custom name via prefix and postfix:
 
-        >>> import torch
-        >>> _ = torch.manual_seed(42)
+        >>> from torch import randint, randn
         >>> from torchmetrics.wrappers import ClasswiseWrapper
         >>> from torchmetrics.classification import MulticlassAccuracy
         >>> metric_pre = ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None), prefix="acc-")
         >>> metric_post = ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None), postfix="-acc")
-        >>> preds = torch.randn(10, 3).softmax(dim=-1)
-        >>> target = torch.randint(3, (10,))
+        >>> preds = randn(10, 3).softmax(dim=-1)
+        >>> target = randint(3, (10,))
         >>> metric_pre(preds, target)  # doctest: +NORMALIZE_WHITESPACE
-        {'acc-0': tensor(0.5000),
-         'acc-1': tensor(0.7500),
-         'acc-2': tensor(0.)}
+        {'acc-0': tensor(0.3333), 'acc-1': tensor(0.6667), 'acc-2': tensor(0.)}
         >>> metric_post(preds, target)  # doctest: +NORMALIZE_WHITESPACE
-        {'0-acc': tensor(0.5000),
-         '1-acc': tensor(0.7500),
-         '2-acc': tensor(0.)}
+        {'0-acc': tensor(0.3333), '1-acc': tensor(0.6667), '2-acc': tensor(0.)}
 
     Example::
         Providing labels as a list of strings:
 
+        >>> from torch import randint, randn
         >>> from torchmetrics.wrappers import ClasswiseWrapper
         >>> from torchmetrics.classification import MulticlassAccuracy
         >>> metric = ClasswiseWrapper(
         ...    MulticlassAccuracy(num_classes=3, average=None),
         ...    labels=["horse", "fish", "dog"]
         ... )
-        >>> preds = torch.randn(10, 3).softmax(dim=-1)
-        >>> target = torch.randint(3, (10,))
+        >>> preds = randn(10, 3).softmax(dim=-1)
+        >>> target = randint(3, (10,))
         >>> metric(preds, target)  # doctest: +NORMALIZE_WHITESPACE
-        {'multiclassaccuracy_horse': tensor(0.3333),
-        'multiclassaccuracy_fish': tensor(0.6667),
-        'multiclassaccuracy_dog': tensor(0.)}
+        {'multiclassaccuracy_horse': tensor(0.),
+         'multiclassaccuracy_fish': tensor(0.3333),
+         'multiclassaccuracy_dog': tensor(0.4000)}
 
     Example::
         Classwise can also be used in combination with :class:`~torchmetrics.MetricCollection`. In this case, everything
         will be flattened into a single dictionary:
 
+        >>> from torch import randint, randn
         >>> from torchmetrics import MetricCollection
         >>> from torchmetrics.wrappers import ClasswiseWrapper
         >>> from torchmetrics.classification import MulticlassAccuracy, MulticlassRecall
@@ -104,15 +100,15 @@ class ClasswiseWrapper(WrapperMetric):
         ...     {'multiclassaccuracy': ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None), labels),
         ...     'multiclassrecall': ClasswiseWrapper(MulticlassRecall(num_classes=3, average=None), labels)}
         ... )
-        >>> preds = torch.randn(10, 3).softmax(dim=-1)
-        >>> target = torch.randint(3, (10,))
+        >>> preds = randn(10, 3).softmax(dim=-1)
+        >>> target = randint(3, (10,))
         >>> metric(preds, target)  # doctest: +NORMALIZE_WHITESPACE
-        {'multiclassaccuracy_horse': tensor(0.),
+        {'multiclassaccuracy_horse': tensor(0.6667),
          'multiclassaccuracy_fish': tensor(0.3333),
-         'multiclassaccuracy_dog': tensor(0.4000),
-         'multiclassrecall_horse': tensor(0.),
+         'multiclassaccuracy_dog': tensor(0.5000),
+         'multiclassrecall_horse': tensor(0.6667),
          'multiclassrecall_fish': tensor(0.3333),
-         'multiclassrecall_dog': tensor(0.4000)}
+         'multiclassrecall_dog': tensor(0.5000)}
 
     """
 
@@ -142,7 +138,12 @@ class ClasswiseWrapper(WrapperMetric):
 
         self._update_count = 1
 
-    def _convert(self, x: Tensor) -> Dict[str, Any]:
+    def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
+        """Filter kwargs for the metric."""
+        return self.metric._filter_kwargs(**kwargs)
+
+    def _convert_output(self, x: Tensor) -> Dict[str, Any]:
+        """Convert output to dictionary with labels as keys."""
         # Will set the class name as prefix if neither prefix nor postfix is given
         if not self._prefix and not self._postfix:
             prefix = f"{self.metric.__class__.__name__.lower()}_"
@@ -156,7 +157,7 @@ class ClasswiseWrapper(WrapperMetric):
 
     def forward(self, *args: Any, **kwargs: Any) -> Any:
         """Calculate on batch and accumulate to global state."""
-        return self._convert(self.metric(*args, **kwargs))
+        return self._convert_output(self.metric(*args, **kwargs))
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Update state."""
@@ -164,7 +165,7 @@ class ClasswiseWrapper(WrapperMetric):
 
     def compute(self) -> Dict[str, Tensor]:
         """Compute metric."""
-        return self._convert(self.metric.compute())
+        return self._convert_output(self.metric.compute())
 
     def reset(self) -> None:
         """Reset metric."""

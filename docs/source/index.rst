@@ -129,6 +129,7 @@ Or directly from conda
 
    pages/quickstart
    all-metrics
+   gallery/index
    pages/overview
    pages/plotting
    pages/implement
@@ -221,6 +222,22 @@ Or directly from conda
    :glob:
 
    retrieval/*
+
+.. toctree::
+   :maxdepth: 2
+   :name: segmentation
+   :caption: Segmentation
+   :glob:
+
+   segmentation/*
+
+.. toctree::
+   :maxdepth: 2
+   :name: shape
+   :caption: Shape
+   :glob:
+
+   shape/*
 
 .. toctree::
    :maxdepth: 2

@@ -22,13 +22,13 @@ from torch import IntTensor, Tensor
 from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import _cumsum
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MeanAveragePrecision.plot"]
 
-if not _TORCHVISION_GREATER_EQUAL_0_8 or not _PYCOCOTOOLS_AVAILABLE:
+if not _TORCHVISION_AVAILABLE or not _PYCOCOTOOLS_AVAILABLE:
     __doctest_skip__ = ["MeanAveragePrecision.plot", "MeanAveragePrecision"]
 
 log = logging.getLogger(__name__)
@@ -202,16 +202,16 @@ class MeanAveragePrecision(Metric):
 
     For an example on how to use this metric check the `torchmetrics mAP example`_.
 
-    .. note::
-        ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ].
-        Caution: If the initialization parameters are changed, dictionary keys for mAR can change as well.
+    .. attention::
+        The ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ]
+        **Caution:** If the initialization parameters are changed, dictionary keys for mAR can change as well.
         The default properties are also accessible via fields and will raise an ``AttributeError`` if not available.
 
-    .. note::
+    .. important::
         This metric is following the mAP implementation of `pycocotools`_ a standard implementation for the mAP metric
         for object detection.
 
-    .. note::
+    .. hint::
         This metric requires you to have `torchvision` version 0.8.0 or newer installed
         (with corresponding version 1.7.0 of torch or newer). This metric requires `pycocotools`
         installed when iou_type is `segm`. Please install with ``pip install torchvision`` or
@@ -327,10 +327,10 @@ class MeanAveragePrecision(Metric):
                 "`MAP` metric requires that `pycocotools` installed."
                 " Please install with `pip install pycocotools` or `pip install torchmetrics[detection]`"
             )
-        if not _TORCHVISION_GREATER_EQUAL_0_8:
+        if not _TORCHVISION_AVAILABLE:
             raise ModuleNotFoundError(
-                "`MeanAveragePrecision` metric requires that `torchvision` version 0.8.0 or newer is installed."
-                " Please install with `pip install torchvision>=0.8` or `pip install torchmetrics[detection]`."
+                "`MeanAveragePrecision` metric requires that `torchvision` is installed."
+                " Please install with `pip install torchmetrics[detection]`."
             )
 
         allowed_box_formats = ("xyxy", "xywh", "cxcywh")
@@ -340,8 +340,8 @@ class MeanAveragePrecision(Metric):
         self.box_format = box_format
         self.iou_thresholds = iou_thresholds or torch.linspace(0.5, 0.95, round((0.95 - 0.5) / 0.05) + 1).tolist()
         self.rec_thresholds = rec_thresholds or torch.linspace(0.0, 1.00, round(1.00 / 0.01) + 1).tolist()
-        max_det_thr, _ = torch.sort(IntTensor(max_detection_thresholds or [1, 10, 100]))
-        self.max_detection_thresholds = max_det_thr.tolist()
+        max_det_threshold, _ = torch.sort(IntTensor(max_detection_thresholds or [1, 10, 100]))
+        self.max_detection_thresholds = max_det_threshold.tolist()
         if iou_type not in allowed_iou_types:
             raise ValueError(f"Expected argument `iou_type` to be one of {allowed_iou_types} but got {iou_type}")
         if iou_type == "segm" and not _PYCOCOTOOLS_AVAILABLE:
@@ -621,12 +621,12 @@ class MeanAveragePrecision(Metric):
 
     @staticmethod
     def _find_best_gt_match(
-        thr: int, gt_matches: Tensor, idx_iou: float, gt_ignore: Tensor, ious: Tensor, idx_det: int
+        threshold: int, gt_matches: Tensor, idx_iou: float, gt_ignore: Tensor, ious: Tensor, idx_det: int
     ) -> int:
         """Return id of best ground truth match with current detection.
 
         Args:
-            thr:
+            threshold:
                 Current threshold value.
             gt_matches:
                 Tensor showing if a ground truth matches for threshold ``t`` exists.
@@ -645,7 +645,7 @@ class MeanAveragePrecision(Metric):
         remove_mask = previously_matched | gt_ignore
         gt_ious = ious[idx_det] * ~remove_mask
         match_idx = gt_ious.argmax().item()
-        if gt_ious[match_idx] > thr:  # type: ignore[index]
+        if gt_ious[match_idx] > threshold:  # type: ignore[index]
             return match_idx  # type: ignore[return-value]
         return -1
 
@@ -679,16 +679,16 @@ class MeanAveragePrecision(Metric):
             prec = results["precision"]
             # IoU
             if iou_threshold is not None:
-                thr = self.iou_thresholds.index(iou_threshold)
-                prec = prec[thr, :, :, area_inds, mdet_inds]
+                threshold = self.iou_thresholds.index(iou_threshold)
+                prec = prec[threshold, :, :, area_inds, mdet_inds]
             else:
                 prec = prec[:, :, :, area_inds, mdet_inds]
         else:
             # dimension of recall: [TxKxAxM]
             prec = results["recall"]
             if iou_threshold is not None:
-                thr = self.iou_thresholds.index(iou_threshold)
-                prec = prec[thr, :, :, area_inds, mdet_inds]
+                threshold = self.iou_thresholds.index(iou_threshold)
+                prec = prec[threshold, :, :, area_inds, mdet_inds]
             else:
                 prec = prec[:, :, area_inds, mdet_inds]
 
@@ -723,11 +723,11 @@ class MeanAveragePrecision(Metric):
         num_rec_thrs = len(self.rec_thresholds)
         num_classes = len(class_ids)
         num_bbox_areas = len(self.bbox_area_ranges)
-        num_max_det_thrs = len(self.max_detection_thresholds)
+        num_max_det_thresholds = len(self.max_detection_thresholds)
         num_imgs = len(img_ids)
-        precision = -torch.ones((num_iou_thrs, num_rec_thrs, num_classes, num_bbox_areas, num_max_det_thrs))
-        recall = -torch.ones((num_iou_thrs, num_classes, num_bbox_areas, num_max_det_thrs))
-        scores = -torch.ones((num_iou_thrs, num_rec_thrs, num_classes, num_bbox_areas, num_max_det_thrs))
+        precision = -torch.ones((num_iou_thrs, num_rec_thrs, num_classes, num_bbox_areas, num_max_det_thresholds))
+        recall = -torch.ones((num_iou_thrs, num_classes, num_bbox_areas, num_max_det_thresholds))
+        scores = -torch.ones((num_iou_thrs, num_rec_thrs, num_classes, num_bbox_areas, num_max_det_thresholds))
 
         # move tensors if necessary
         rec_thresholds_tensor = torch.tensor(self.rec_thresholds)
@@ -735,14 +735,14 @@ class MeanAveragePrecision(Metric):
         # retrieve E at each category, area range, and max number of detections
         for idx_cls, _ in enumerate(class_ids):
             for idx_bbox_area, _ in enumerate(self.bbox_area_ranges):
-                for idx_max_det_thrs, max_det in enumerate(self.max_detection_thresholds):
+                for idx_max_det_thresholds, max_det in enumerate(self.max_detection_thresholds):
                     recall, precision, scores = MeanAveragePrecision.__calculate_recall_precision_scores(
                         recall,
                         precision,
                         scores,
                         idx_cls=idx_cls,
                         idx_bbox_area=idx_bbox_area,
-                        idx_max_det_thrs=idx_max_det_thrs,
+                        idx_max_det_thresholds=idx_max_det_thresholds,
                         eval_imgs=eval_imgs,
                         rec_thresholds=rec_thresholds_tensor,
                         max_det=max_det,
@@ -764,26 +764,26 @@ class MeanAveragePrecision(Metric):
         """
         results = {"precision": precisions, "recall": recalls}
         map_metrics = MAPMetricResults()
-        last_max_det_thr = self.max_detection_thresholds[-1]
-        map_metrics.map = self._summarize(results, True, max_dets=last_max_det_thr)
+        last_max_det_threshold = self.max_detection_thresholds[-1]
+        map_metrics.map = self._summarize(results, True, max_dets=last_max_det_threshold)
         if 0.5 in self.iou_thresholds:
-            map_metrics.map_50 = self._summarize(results, True, iou_threshold=0.5, max_dets=last_max_det_thr)
+            map_metrics.map_50 = self._summarize(results, True, iou_threshold=0.5, max_dets=last_max_det_threshold)
         else:
             map_metrics.map_50 = torch.tensor([-1])
         if 0.75 in self.iou_thresholds:
-            map_metrics.map_75 = self._summarize(results, True, iou_threshold=0.75, max_dets=last_max_det_thr)
+            map_metrics.map_75 = self._summarize(results, True, iou_threshold=0.75, max_dets=last_max_det_threshold)
         else:
             map_metrics.map_75 = torch.tensor([-1])
-        map_metrics.map_small = self._summarize(results, True, area_range="small", max_dets=last_max_det_thr)
-        map_metrics.map_medium = self._summarize(results, True, area_range="medium", max_dets=last_max_det_thr)
-        map_metrics.map_large = self._summarize(results, True, area_range="large", max_dets=last_max_det_thr)
+        map_metrics.map_small = self._summarize(results, True, area_range="small", max_dets=last_max_det_threshold)
+        map_metrics.map_medium = self._summarize(results, True, area_range="medium", max_dets=last_max_det_threshold)
+        map_metrics.map_large = self._summarize(results, True, area_range="large", max_dets=last_max_det_threshold)
 
         mar_metrics = MARMetricResults()
         for max_det in self.max_detection_thresholds:
             mar_metrics[f"mar_{max_det}"] = self._summarize(results, False, max_dets=max_det)
-        mar_metrics.mar_small = self._summarize(results, False, area_range="small", max_dets=last_max_det_thr)
-        mar_metrics.mar_medium = self._summarize(results, False, area_range="medium", max_dets=last_max_det_thr)
-        mar_metrics.mar_large = self._summarize(results, False, area_range="large", max_dets=last_max_det_thr)
+        mar_metrics.mar_small = self._summarize(results, False, area_range="small", max_dets=last_max_det_threshold)
+        mar_metrics.mar_medium = self._summarize(results, False, area_range="medium", max_dets=last_max_det_threshold)
+        mar_metrics.mar_large = self._summarize(results, False, area_range="large", max_dets=last_max_det_threshold)
 
         return map_metrics, mar_metrics
 
@@ -794,7 +794,7 @@ class MeanAveragePrecision(Metric):
         scores: Tensor,
         idx_cls: int,
         idx_bbox_area: int,
-        idx_max_det_thrs: int,
+        idx_max_det_thresholds: int,
         eval_imgs: list,
         rec_thresholds: Tensor,
         max_det: int,
@@ -838,7 +838,7 @@ class MeanAveragePrecision(Metric):
             prec = torch.zeros((num_rec_thrs,))
             score = torch.zeros((num_rec_thrs,))
 
-            recall[idx, idx_cls, idx_bbox_area, idx_max_det_thrs] = rc[-1] if tp_len else 0
+            recall[idx, idx_cls, idx_bbox_area, idx_max_det_thresholds] = rc[-1] if tp_len else 0
 
             # Remove zigzags for AUC
             diff_zero = torch.zeros((1,), device=pr.device)
@@ -849,11 +849,11 @@ class MeanAveragePrecision(Metric):
 
             inds = torch.searchsorted(rc, rec_thresholds.to(rc.device), right=False)
             num_inds = inds.argmax() if inds.max() >= tp_len else num_rec_thrs
-            inds = inds[:num_inds]  # type: ignore[misc]
-            prec[:num_inds] = pr[inds]  # type: ignore[misc]
-            score[:num_inds] = det_scores_sorted[inds]  # type: ignore[misc]
-            precision[idx, :, idx_cls, idx_bbox_area, idx_max_det_thrs] = prec
-            scores[idx, :, idx_cls, idx_bbox_area, idx_max_det_thrs] = score
+            inds = inds[:num_inds]
+            prec[:num_inds] = pr[inds]
+            score[:num_inds] = det_scores_sorted[inds]
+            precision[idx, :, idx_cls, idx_bbox_area, idx_max_det_thresholds] = prec
+            scores[idx, :, idx_cls, idx_bbox_area, idx_max_det_thresholds] = score
 
         return recall, precision, scores
 

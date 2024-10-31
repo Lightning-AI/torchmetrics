@@ -1,5 +1,7 @@
 # building for PRs and skip stable and latest states
 
+export SPHINX_ENABLE_GALLERY=0
+
 if ! [ $READTHEDOCS_VERSION == "latest" -o $READTHEDOCS_VERSION == "stable" ];
 then
     cd ./docs ;

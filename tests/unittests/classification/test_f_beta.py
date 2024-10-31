@@ -49,7 +49,7 @@ from unittests.classification._inputs import _binary_cases, _multiclass_cases, _
 seed_all(42)
 
 
-def _reference_sklearn_fbeta_score_binary(preds, target, sk_fn, ignore_index, multidim_average):
+def _reference_sklearn_fbeta_score_binary(preds, target, sk_fn, ignore_index, multidim_average, zero_division=0):
     if multidim_average == "global":
         preds = preds.view(-1).numpy()
         target = target.view(-1).numpy()
@@ -63,15 +63,15 @@ def _reference_sklearn_fbeta_score_binary(preds, target, sk_fn, ignore_index, mu
         preds = (preds >= THRESHOLD).astype(np.uint8)
 
     if multidim_average == "global":
-        target, preds = remove_ignore_index(target, preds, ignore_index)
-        return sk_fn(target, preds)
+        target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
+        return sk_fn(target, preds, zero_division=zero_division)
 
     res = []
     for pred, true in zip(preds, target):
         pred = pred.flatten()
         true = true.flatten()
-        true, pred = remove_ignore_index(true, pred, ignore_index)
-        res.append(sk_fn(true, pred))
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
+        res.append(sk_fn(true, pred, zero_division=zero_division))
     return np.stack(res)
 
 
@@ -90,7 +90,10 @@ class TestBinaryFBetaScore(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_binary_fbeta_score(self, ddp, inputs, module, functional, compare, ignore_index, multidim_average):
+    @pytest.mark.parametrize("zero_division", [0, 1])
+    def test_binary_fbeta_score(
+        self, ddp, inputs, module, functional, compare, ignore_index, multidim_average, zero_division
+    ):
         """Test class implementation of metric."""
         preds, target = inputs
         if ignore_index == -1:
@@ -110,13 +113,22 @@ class TestBinaryFBetaScore(MetricTester):
                 sk_fn=compare,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
+                zero_division=zero_division,
             ),
-            metric_args={"threshold": THRESHOLD, "ignore_index": ignore_index, "multidim_average": multidim_average},
+            metric_args={
+                "threshold": THRESHOLD,
+                "ignore_index": ignore_index,
+                "multidim_average": multidim_average,
+                "zero_division": zero_division,
+            },
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
-    def test_binary_fbeta_score_functional(self, inputs, module, functional, compare, ignore_index, multidim_average):
+    @pytest.mark.parametrize("zero_division", [0, 1])
+    def test_binary_fbeta_score_functional(
+        self, inputs, module, functional, compare, ignore_index, multidim_average, zero_division
+    ):
         """Test functional implementation of metric."""
         preds, target = inputs
         if ignore_index == -1:
@@ -133,11 +145,13 @@ class TestBinaryFBetaScore(MetricTester):
                 sk_fn=compare,
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
+                zero_division=zero_division,
             ),
             metric_args={
                 "threshold": THRESHOLD,
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
+                "zero_division": zero_division,
             },
         )
 
@@ -183,14 +197,22 @@ class TestBinaryFBetaScore(MetricTester):
         )
 
 
-def _reference_sklearn_fbeta_score_multiclass(preds, target, sk_fn, ignore_index, multidim_average, average):
+def _reference_sklearn_fbeta_score_multiclass(
+    preds, target, sk_fn, ignore_index, multidim_average, average, zero_division=0
+):
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
     if multidim_average == "global":
         preds = preds.numpy().flatten()
         target = target.numpy().flatten()
-        target, preds = remove_ignore_index(target, preds, ignore_index)
-        return sk_fn(target, preds, average=average, labels=list(range(NUM_CLASSES)) if average is None else None)
+        target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
+        return sk_fn(
+            target,
+            preds,
+            average=average,
+            labels=list(range(NUM_CLASSES)) if average is None else None,
+            zero_division=zero_division,
+        )
 
     preds = preds.numpy()
     target = target.numpy()
@@ -198,8 +220,25 @@ def _reference_sklearn_fbeta_score_multiclass(preds, target, sk_fn, ignore_index
     for pred, true in zip(preds, target):
         pred = pred.flatten()
         true = true.flatten()
-        true, pred = remove_ignore_index(true, pred, ignore_index)
-        r = sk_fn(true, pred, average=average, labels=list(range(NUM_CLASSES)) if average is None else None)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
+
+        if len(pred) == 0 and average == "weighted":
+            # The result of sk_fn([], [], labels=None, average="weighted", zero_division=zero_division)
+            # varies depending on the sklearn version:
+            # 1.2 -> the value of zero_division
+            # 1.3 -> nan
+            # 1.4 -> nan
+            # To avoid breaking some test cases by this behavior,
+            # hard coded to return 0 in this special case.
+            r = 0.0
+        else:
+            r = sk_fn(
+                true,
+                pred,
+                average=average,
+                labels=list(range(NUM_CLASSES)) if average is None else None,
+                zero_division=zero_division,
+            )
         res.append(0.0 if np.isnan(r).any() else r)
     return np.stack(res, 0)
 
@@ -224,8 +263,9 @@ class TestMulticlassFBetaScore(MetricTester):
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    @pytest.mark.parametrize("zero_division", [0, 1])
     def test_multiclass_fbeta_score(
-        self, ddp, inputs, module, functional, compare, ignore_index, multidim_average, average
+        self, ddp, inputs, module, functional, compare, ignore_index, multidim_average, average, zero_division
     ):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -247,20 +287,23 @@ class TestMulticlassFBetaScore(MetricTester):
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
+                zero_division=zero_division,
             ),
             metric_args={
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
                 "average": average,
                 "num_classes": NUM_CLASSES,
+                "zero_division": zero_division,
             },
         )
 
     @pytest.mark.parametrize("ignore_index", [None, 0, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
+    @pytest.mark.parametrize("zero_division", [0, 1])
     def test_multiclass_fbeta_score_functional(
-        self, inputs, module, functional, compare, ignore_index, multidim_average, average
+        self, inputs, module, functional, compare, ignore_index, multidim_average, average, zero_division
     ):
         """Test functional implementation of metric."""
         preds, target = inputs
@@ -279,12 +322,14 @@ class TestMulticlassFBetaScore(MetricTester):
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
+                zero_division=zero_division,
             ),
             metric_args={
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
                 "average": average,
                 "num_classes": NUM_CLASSES,
+                "zero_division": zero_division,
             },
         )
 
@@ -368,18 +413,18 @@ def test_top_k(
     assert torch.isclose(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)
 
 
-def _reference_sklearn_fbeta_score_multilabel_global(preds, target, sk_fn, ignore_index, average):
+def _reference_sklearn_fbeta_score_multilabel_global(preds, target, sk_fn, ignore_index, average, zero_division):
     if average == "micro":
         preds = preds.flatten()
         target = target.flatten()
-        target, preds = remove_ignore_index(target, preds, ignore_index)
-        return sk_fn(target, preds)
+        target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
+        return sk_fn(target, preds, zero_division=zero_division)
 
     fbeta_score, weights = [], []
     for i in range(preds.shape[1]):
         pred, true = preds[:, i].flatten(), target[:, i].flatten()
-        true, pred = remove_ignore_index(true, pred, ignore_index)
-        fbeta_score.append(sk_fn(true, pred))
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
+        fbeta_score.append(sk_fn(true, pred, zero_division=zero_division))
         confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
         weights.append(confmat[1, 1] + confmat[1, 0])
     res = np.stack(fbeta_score, axis=0)
@@ -396,21 +441,21 @@ def _reference_sklearn_fbeta_score_multilabel_global(preds, target, sk_fn, ignor
     return None
 
 
-def _reference_sklearn_fbeta_score_multilabel_local(preds, target, sk_fn, ignore_index, average):
+def _reference_sklearn_fbeta_score_multilabel_local(preds, target, sk_fn, ignore_index, average, zero_division):
     fbeta_score, weights = [], []
     for i in range(preds.shape[0]):
         if average == "micro":
             pred, true = preds[i].flatten(), target[i].flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
-            fbeta_score.append(sk_fn(true, pred))
+            true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
+            fbeta_score.append(sk_fn(true, pred, zero_division=zero_division))
             confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
             weights.append(confmat[1, 1] + confmat[1, 0])
         else:
             scores, w = [], []
             for j in range(preds.shape[1]):
                 pred, true = preds[i, j], target[i, j]
-                true, pred = remove_ignore_index(true, pred, ignore_index)
-                scores.append(sk_fn(true, pred))
+                true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
+                scores.append(sk_fn(true, pred, zero_division=zero_division))
                 confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
                 w.append(confmat[1, 1] + confmat[1, 0])
             fbeta_score.append(np.stack(scores))
@@ -430,7 +475,9 @@ def _reference_sklearn_fbeta_score_multilabel_local(preds, target, sk_fn, ignore
     return None
 
 
-def _reference_sklearn_fbeta_score_multilabel(preds, target, sk_fn, ignore_index, multidim_average, average):
+def _reference_sklearn_fbeta_score_multilabel(
+    preds, target, sk_fn, ignore_index, multidim_average, average, zero_division=0
+):
     preds = preds.numpy()
     target = target.numpy()
     if np.issubdtype(preds.dtype, np.floating):
@@ -444,10 +491,13 @@ def _reference_sklearn_fbeta_score_multilabel(preds, target, sk_fn, ignore_index
             target.transpose(0, 2, 1).reshape(-1, NUM_CLASSES),
             preds.transpose(0, 2, 1).reshape(-1, NUM_CLASSES),
             average=average,
+            zero_division=zero_division,
         )
     if multidim_average == "global":
-        return _reference_sklearn_fbeta_score_multilabel_global(preds, target, sk_fn, ignore_index, average)
-    return _reference_sklearn_fbeta_score_multilabel_local(preds, target, sk_fn, ignore_index, average)
+        return _reference_sklearn_fbeta_score_multilabel_global(
+            preds, target, sk_fn, ignore_index, average, zero_division
+        )
+    return _reference_sklearn_fbeta_score_multilabel_local(preds, target, sk_fn, ignore_index, average, zero_division)
 
 
 @pytest.mark.parametrize("inputs", _multilabel_cases)
@@ -470,8 +520,9 @@ class TestMultilabelFBetaScore(MetricTester):
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
+    @pytest.mark.parametrize("zero_division", [0, 1])
     def test_multilabel_fbeta_score(
-        self, ddp, inputs, module, functional, compare, ignore_index, multidim_average, average
+        self, ddp, inputs, module, functional, compare, ignore_index, multidim_average, average, zero_division
     ):
         """Test class implementation of metric."""
         preds, target = inputs
@@ -493,6 +544,7 @@ class TestMultilabelFBetaScore(MetricTester):
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
+                zero_division=zero_division,
             ),
             metric_args={
                 "num_labels": NUM_CLASSES,
@@ -500,14 +552,16 @@ class TestMultilabelFBetaScore(MetricTester):
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
                 "average": average,
+                "zero_division": zero_division,
             },
         )
 
     @pytest.mark.parametrize("ignore_index", [None, -1])
     @pytest.mark.parametrize("multidim_average", ["global", "samplewise"])
     @pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
+    @pytest.mark.parametrize("zero_division", [0, 1])
     def test_multilabel_fbeta_score_functional(
-        self, inputs, module, functional, compare, ignore_index, multidim_average, average
+        self, inputs, module, functional, compare, ignore_index, multidim_average, average, zero_division
     ):
         """Test functional implementation of metric."""
         preds, target = inputs
@@ -526,6 +580,7 @@ class TestMultilabelFBetaScore(MetricTester):
                 ignore_index=ignore_index,
                 multidim_average=multidim_average,
                 average=average,
+                zero_division=zero_division,
             ),
             metric_args={
                 "num_labels": NUM_CLASSES,
@@ -533,6 +588,7 @@ class TestMultilabelFBetaScore(MetricTester):
                 "ignore_index": ignore_index,
                 "multidim_average": multidim_average,
                 "average": average,
+                "zero_division": zero_division,
             },
         )
 

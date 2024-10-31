@@ -107,6 +107,7 @@ class BERTScore(Metric):
             of the files from `BERT_score`_.
         baseline_path: A path to the user's own local csv/tsv file with the baseline scale.
         baseline_url: A url path to the user's own  csv/tsv file with the baseline scale.
+        truncation: An indication of whether the input sequences should be truncated to the ``max_length``.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
@@ -150,6 +151,7 @@ class BERTScore(Metric):
         rescale_with_baseline: bool = False,
         baseline_path: Optional[str] = None,
         baseline_url: Optional[str] = None,
+        truncation: bool = False,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -169,6 +171,7 @@ class BERTScore(Metric):
         self.rescale_with_baseline = rescale_with_baseline
         self.baseline_path = baseline_path
         self.baseline_url = baseline_url
+        self.truncation = truncation
 
         if user_tokenizer:
             self.tokenizer = user_tokenizer
@@ -187,8 +190,7 @@ class BERTScore(Metric):
                     " `transformers` model is used."
                     f" It will use the default recommended model - {_DEFAULT_MODEL!r}."
                 )
-            resume_download = self.model_name_or_path == _DEFAULT_MODEL
-            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name_or_path, resume_download=resume_download)
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name_or_path)
             self.user_tokenizer = False
 
         self.add_state("preds_input_ids", [], dist_reduce_fx="cat")
@@ -211,7 +213,7 @@ class BERTScore(Metric):
             preds,
             self.tokenizer,
             self.max_length,
-            truncation=False,
+            truncation=self.truncation,
             sort_according_length=False,
             own_tokenizer=self.user_tokenizer,
         )
@@ -219,7 +221,7 @@ class BERTScore(Metric):
             target,
             self.tokenizer,
             self.max_length,
-            truncation=False,
+            truncation=self.truncation,
             sort_according_length=False,
             own_tokenizer=self.user_tokenizer,
         )

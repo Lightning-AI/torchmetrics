@@ -65,7 +65,7 @@ def _reference_ergas(
     rmse_per_band = torch.sqrt(sum_squared_error / (h * w))
     mean_target = torch.mean(sk_target, dim=2)
     # compute ergas score
-    ergas_score = 100 * ratio * torch.sqrt(torch.sum((rmse_per_band / mean_target) ** 2, dim=1) / c)
+    ergas_score = 100 / ratio * torch.sqrt(torch.sum((rmse_per_band / mean_target) ** 2, dim=1) / c)
     # reduction
     if reduction == "sum":
         return torch.sum(ergas_score)

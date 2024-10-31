@@ -11,26 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# referenced from
-# Library Name: torchtext
-# Authors: torchtext authors
-# Date: 2021-11-25
-# Link:
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Copyright 2017 Maja Popovic
-
-# The program is distributed under the terms
-# of the GNU General Public Licence (GPL)
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# The code is derived from https://github.com/m-popovic/chrF/blob/6d3c384/chrF%2B%2B.py
+# The original author and copyright holder have agreed to relicense the derived code under the Apache License,
+# Version 2.0 (the "License")
+# Reference to the approval: https://github.com/Lightning-AI/torchmetrics/pull/2701#issuecomment-2316891785
 
 from collections import defaultdict
 from itertools import chain
@@ -188,7 +176,7 @@ def _get_n_grams_counts_and_total_ngrams(
         """Get total sum of n-grams over n-grams w.r.t n."""
         total_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
         for n in n_grams_counts:
-            total_n_grams[n] = tensor(sum(n_grams_counts[n].values()))
+            total_n_grams[n] = sum(n_grams_counts[n].values()).detach().clone()  # type: ignore
         return total_n_grams
 
     char_n_grams_counts, word_n_grams_counts = _char_and_word_ngrams_counts(
@@ -216,12 +204,10 @@ def _get_ngram_matches(
     """
     matching_n_grams: Dict[int, Tensor] = defaultdict(lambda: tensor(0.0))
     for n in hyp_n_grams_counts:
-        matching_n_grams[n] = tensor(
-            sum(
-                torch.min(ref_n_grams_counts[n][n_gram], hyp_n_grams_counts[n][n_gram])
-                for n_gram in hyp_n_grams_counts[n]
-            )
-        )
+        min_n_grams = [
+            torch.min(ref_n_grams_counts[n][n_gram], hyp_n_grams_counts[n][n_gram]) for n_gram in hyp_n_grams_counts[n]
+        ]
+        matching_n_grams[n] = sum(min_n_grams).detach().clone()  # type: ignore
     return matching_n_grams
 
 
