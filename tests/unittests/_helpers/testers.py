@@ -685,7 +685,16 @@ def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
 
 
 def remove_ignore_index(target: Tensor, preds: Tensor, ignore_index: Optional[int]) -> Tuple[Tensor, Tensor]:
-    """Remove samples that are equal to the ignore_index in comparison functions."""
+    """Remove samples that are equal to the ignore_index in comparison functions.
+
+    Example:
+        >>> target = torch.tensor([0, 1, 2, 3, 4])
+        >>> preds = torch.tensor([0, 1, 2, 3, 4])
+        >>> ignore_index = 2
+        >>> remove_ignore_index(target, preds, ignore_index)
+        (tensor([0, 1, 3, 4]), tensor([0, 1, 3, 4]))
+
+    """
     if ignore_index is not None:
         idx = target == ignore_index
         target, preds = deepcopy(target[~idx]), deepcopy(preds[~idx])

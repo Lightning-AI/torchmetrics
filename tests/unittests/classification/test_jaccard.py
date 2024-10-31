@@ -45,7 +45,7 @@ def _reference_sklearn_jaccard_index_binary(preds, target, ignore_index=None, ze
         if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_jaccard_index(y_true=target, y_pred=preds, zero_division=zero_division)
 
 
@@ -141,7 +141,7 @@ def _reference_sklearn_jaccard_index_multiclass(preds, target, ignore_index=None
         preds = np.argmax(preds, axis=1)
     preds = preds.flatten()
     target = target.flatten()
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     if average is None:
         return sk_jaccard_index(
             y_true=target, y_pred=preds, average=average, labels=list(range(NUM_CLASSES)), zero_division=zero_division
@@ -269,7 +269,7 @@ def _reference_sklearn_jaccard_index_multilabel(preds, target, ignore_index=None
     scores, weights = [], []
     for i in range(preds.shape[1]):
         pred, true = preds[:, i], target[:, i]
-        true, pred = remove_ignore_index(true, pred, ignore_index)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
         confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
         scores.append(sk_jaccard_index(true, pred, zero_division=zero_division))
         weights.append(confmat[1, 0] + confmat[1, 1])
