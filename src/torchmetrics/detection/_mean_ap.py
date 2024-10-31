@@ -203,7 +203,7 @@ class MeanAveragePrecision(Metric):
     For an example on how to use this metric check the `torchmetrics mAP example`_.
 
     .. attention::
-        The ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ].
+        The ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ]
         Caution: If the initialization parameters are changed, dictionary keys for mAR can change as well.
         The default properties are also accessible via fields and will raise an ``AttributeError`` if not available.
 
