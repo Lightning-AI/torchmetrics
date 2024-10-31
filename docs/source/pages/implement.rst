@@ -257,7 +257,7 @@ and tests gets formatted in the following way:
   3. ``new_metric(...)``: essentially wraps the ``_update`` and ``_compute`` private functions into one public function that
      makes up the functional interface for the metric.
 
-  .. note::
+  .. hint::
      The `functional mean squared error <https://github.com/Lightning-AI/torchmetrics/blob/master/src/torchmetrics/functional/regression/mse.py>`_
      metric is a is a great example of how to divide the logic.
 
@@ -270,9 +270,9 @@ and tests gets formatted in the following way:
      ``_new_metric_compute(...)`` function in its ``compute``. No logic should really be implemented in the module interface.
      We do this to not have duplicate code to maintain.
 
-   .. note::
-     The module `MeanSquaredError <https://github.com/Lightning-AI/torchmetrics/blob/master/src/torchmetrics/regression/mse.py>`_
-     metric that corresponds to the above functional example showcases these steps.
+  .. note::
+    The module `MeanSquaredError <https://github.com/Lightning-AI/torchmetrics/blob/master/src/torchmetrics/regression/mse.py>`_
+    metric that corresponds to the above functional example showcases these steps.
 
 4. Remember to add binding to the different relevant ``__init__`` files.
 
@@ -291,7 +291,7 @@ and tests gets formatted in the following way:
      so that different combinations of inputs and parameters get tested.
   5. (optional) If your metric raises any exception, please add tests that showcase this.
 
-  .. note::
+  .. hint::
     The `test file for MSE <https://github.com/Lightning-AI/torchmetrics/blob/master/tests/unittests/regression/test_mean_error.py>`_
     metric shows how to implement such tests.
 

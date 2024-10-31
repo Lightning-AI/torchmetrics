@@ -59,7 +59,7 @@ class BinaryRecallAtFixedPrecision(BinaryPrecisionRecallCurve):
       ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value
       1 always encodes the positive class.
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -194,7 +194,7 @@ class MulticlassRecallAtFixedPrecision(MulticlassPrecisionRecallCurve):
       ground truth labels, and therefore only contain values in the [0, n_classes-1] range (except if `ignore_index`
       is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 2 tensors or 2 lists containing:
@@ -337,7 +337,7 @@ class MultilabelRecallAtFixedPrecision(MultilabelPrecisionRecallCurve):
       ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value
       1 always encodes the positive class.
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 2 tensors or 2 lists containing:

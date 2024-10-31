@@ -106,10 +106,12 @@ def dice(
             - ``'samples'``: Calculate the metric for each sample, and average the metrics
               across samples (with equal weights for each sample).
 
-            .. note:: What is considered a sample in the multi-dimensional multi-class case
+            .. tip::
+                What is considered a sample in the multi-dimensional multi-class case
                 depends on the value of ``mdmc_average``.
 
-            .. note:: If ``'none'`` and a given class doesn't occur in the ``preds`` or ``target``,
+            .. hint::
+                If ``'none'`` and a given class doesn't occur in the ``preds`` or ``target``,
                 the value for the class will be ``nan``.
 
         mdmc_average:

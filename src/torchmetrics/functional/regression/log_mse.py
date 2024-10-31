@@ -68,8 +68,8 @@ def mean_squared_log_error(preds: Tensor, target: Tensor) -> Tensor:
         >>> mean_squared_log_error(x, y)
         tensor(0.0207)
 
-    .. note::
-        Half precision is only support on GPU for this metric
+    .. attention::
+        Half precision is only support on GPU for this metric.
 
     """
     sum_squared_log_error, num_obs = _mean_squared_log_error_update(preds, target)

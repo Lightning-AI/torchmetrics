@@ -203,11 +203,12 @@ def speech_reverberation_modulation_energy_ratio(
             Note: this argument is inherited from `SRMRpy`_. As the translated code is based to pytorch,
             setting `fast=True` may slow down the speed for calculating this metric on GPU.
 
-    .. note:: using this metrics requires you to have ``gammatone`` and ``torchaudio`` installed.
+    .. hint::
+        Usingsing this metrics requires you to have ``gammatone`` and ``torchaudio`` installed.
         Either install as ``pip install torchmetrics[audio]`` or ``pip install torchaudio``
         and ``pip install git+https://github.com/detly/gammatone``.
 
-    .. note::
+    .. attention::
         This implementation is experimental, and might not be consistent with the matlab
         implementation `SRMRToolbox`_, especially the fast implementation.
         The slow versions, a) fast=False, norm=False, max_cf=128, b) fast=False, norm=True, max_cf=30, have

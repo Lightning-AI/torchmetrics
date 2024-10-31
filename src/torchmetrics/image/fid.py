@@ -211,9 +211,8 @@ class FrechetInceptionDistance(Metric):
     that you calculate using `torch.float64` (default is `torch.float32`) which can be set using the `.set_dtype`
     method of the metric.
 
-    .. note:: using this metrics requires you to have torch 1.9 or higher installed
-
-    .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
+    .. hint::
+        Using this metric with the default feature extractor requires that ``torch-fidelity``
         is installed. Either install as ``pip install torchmetrics[image]`` or ``pip install torch-fidelity``
 
     As input to ``forward`` and ``update`` the metric accepts the following input
