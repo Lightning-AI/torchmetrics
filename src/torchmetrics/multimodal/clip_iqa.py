@@ -113,7 +113,7 @@ class CLIPImageQualityAssessment(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     .. hint::
-         If using the default `clip_iqa` model, the package `piq` must be installed. Either install with
+        If using the default `clip_iqa` model, the package `piq` must be installed. Either install with
         `pip install piq` or `pip install torchmetrics[image]`.
 
     Raises:

@@ -272,7 +272,7 @@ def clip_image_quality_assessment(
             positive prompt and the second string must be a negative prompt.
 
     .. hint::
-         If using the default `clip_iqa` model, the package `piq` must be installed. Either install with
+        If using the default `clip_iqa` model, the package `piq` must be installed. Either install with
         `pip install piq` or `pip install torchmetrics[multimodal]`.
 
     Returns:
