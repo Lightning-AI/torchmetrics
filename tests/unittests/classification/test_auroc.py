@@ -38,7 +38,7 @@ def _reference_sklearn_auroc_binary(preds, target, max_fpr=None, ignore_index=No
     target = target.flatten().numpy()
     if not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_roc_auc_score(target, preds, max_fpr=max_fpr)
 
 
@@ -144,7 +144,7 @@ def _reference_sklearn_auroc_multiclass(preds, target, average="macro", ignore_i
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_roc_auc_score(target, preds, average=average, multi_class="ovr", labels=list(range(NUM_CLASSES)))
 
 

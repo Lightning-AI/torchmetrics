@@ -49,7 +49,9 @@ from unittests.classification._inputs import _binary_cases, _multiclass_cases, _
 seed_all(42)
 
 
-def _reference_sklearn_precision_recall_binary(preds, target, sk_fn, ignore_index, multidim_average, zero_division=0):
+def _reference_sklearn_precision_recall_binary(
+    preds, target, sk_fn, ignore_index, multidim_average, zero_division=0, prob_threshold: float = THRESHOLD
+):
     if multidim_average == "global":
         preds = preds.view(-1).numpy()
         target = target.view(-1).numpy()
@@ -60,17 +62,17 @@ def _reference_sklearn_precision_recall_binary(preds, target, sk_fn, ignore_inde
     if np.issubdtype(preds.dtype, np.floating):
         if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
-        preds = (preds >= THRESHOLD).astype(np.uint8)
+        preds = (preds >= prob_threshold).astype(np.uint8)
 
     if multidim_average == "global":
-        target, preds = remove_ignore_index(target, preds, ignore_index)
+        target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
         return sk_fn(target, preds, zero_division=zero_division)
 
     res = []
     for pred, true in zip(preds, target):
         pred = pred.flatten()
         true = true.flatten()
-        true, pred = remove_ignore_index(true, pred, ignore_index)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
         res.append(sk_fn(true, pred, zero_division=zero_division))
     return np.stack(res)
 
@@ -197,7 +199,7 @@ class TestBinaryPrecisionRecall(MetricTester):
 
 
 def _reference_sklearn_precision_recall_multiclass(
-    preds, target, sk_fn, ignore_index, multidim_average, average, zero_division=0
+    preds, target, sk_fn, ignore_index, multidim_average, average, zero_division=0, num_classes: int = NUM_CLASSES
 ):
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
@@ -205,12 +207,12 @@ def _reference_sklearn_precision_recall_multiclass(
     if multidim_average == "global":
         preds = preds.numpy().flatten()
         target = target.numpy().flatten()
-        target, preds = remove_ignore_index(target, preds, ignore_index)
+        target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
         return sk_fn(
             target,
             preds,
             average=average,
-            labels=list(range(NUM_CLASSES)) if average is None else None,
+            labels=list(range(num_classes)) if average is None else None,
             zero_division=zero_division,
         )
 
@@ -220,7 +222,7 @@ def _reference_sklearn_precision_recall_multiclass(
     for pred, true in zip(preds, target):
         pred = pred.flatten()
         true = true.flatten()
-        true, pred = remove_ignore_index(true, pred, ignore_index)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
         if len(pred) == 0 and average == "weighted":
             # The result of sk_fn([], [], labels=None, average="weighted", zero_division=zero_division)
             # varies depending on the sklearn version:
@@ -235,7 +237,7 @@ def _reference_sklearn_precision_recall_multiclass(
                 true,
                 pred,
                 average=average,
-                labels=list(range(NUM_CLASSES)) if average is None else None,
+                labels=list(range(num_classes)) if average is None else None,
                 zero_division=zero_division,
             )
         res.append(0.0 if np.isnan(r).any() else r)
@@ -422,13 +424,13 @@ def _reference_sklearn_precision_recall_multilabel_global(preds, target, sk_fn, 
     if average == "micro":
         preds = preds.flatten()
         target = target.flatten()
-        target, preds = remove_ignore_index(target, preds, ignore_index)
+        target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
         return sk_fn(target, preds, zero_division=zero_division)
 
     precision_recall, weights = [], []
     for i in range(preds.shape[1]):
         pred, true = preds[:, i].flatten(), target[:, i].flatten()
-        true, pred = remove_ignore_index(true, pred, ignore_index)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
         precision_recall.append(sk_fn(true, pred, zero_division=zero_division))
         confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
         weights.append(confmat[1, 1] + confmat[1, 0])
@@ -451,7 +453,7 @@ def _reference_sklearn_precision_recall_multilabel_local(preds, target, sk_fn, i
     for i in range(preds.shape[0]):
         if average == "micro":
             pred, true = preds[i].flatten(), target[i].flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
+            true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
             precision_recall.append(sk_fn(true, pred, zero_division=zero_division))
             confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
             weights.append(confmat[1, 1] + confmat[1, 0])
@@ -459,7 +461,7 @@ def _reference_sklearn_precision_recall_multilabel_local(preds, target, sk_fn, i
             scores, w = [], []
             for j in range(preds.shape[1]):
                 pred, true = preds[i, j], target[i, j]
-                true, pred = remove_ignore_index(true, pred, ignore_index)
+                true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
                 scores.append(sk_fn(true, pred, zero_division=zero_division))
                 confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
                 w.append(confmat[1, 1] + confmat[1, 0])
@@ -481,7 +483,7 @@ def _reference_sklearn_precision_recall_multilabel_local(preds, target, sk_fn, i
 
 
 def _reference_sklearn_precision_recall_multilabel(
-    preds, target, sk_fn, ignore_index, multidim_average, average, zero_division=0
+    preds, target, sk_fn, ignore_index, multidim_average, average, zero_division=0, num_classes: int = NUM_CLASSES
 ):
     preds = preds.numpy()
     target = target.numpy()
@@ -493,8 +495,8 @@ def _reference_sklearn_precision_recall_multilabel(
     target = target.reshape(*target.shape[:2], -1)
     if ignore_index is None and multidim_average == "global":
         return sk_fn(
-            target.transpose(0, 2, 1).reshape(-1, NUM_CLASSES),
-            preds.transpose(0, 2, 1).reshape(-1, NUM_CLASSES),
+            target.transpose(0, 2, 1).reshape(-1, num_classes),
+            preds.transpose(0, 2, 1).reshape(-1, num_classes),
             average=average,
             zero_division=zero_division,
         )
