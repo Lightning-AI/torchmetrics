@@ -34,7 +34,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
     Where :math:`\text{MSE}` denotes the `mean-squared-error`_ function. This metric is a modified version of PSNR that
     better supports evaluation of images with blocked artifacts, that oftens occur in compressed images.
 
-    .. note::
+    .. attention::
         Metric only supports grayscale images. If you have RGB images, please convert them to grayscale first.
 
     As input to ``forward`` and ``update`` the metric accepts the following input

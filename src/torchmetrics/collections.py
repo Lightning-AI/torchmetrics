@@ -83,7 +83,7 @@ class MetricCollection(ModuleDict):
             this argument is ``True`` which enables this feature. Set this argument to `False` for disabling
             this behaviour. Can also be set to a list of lists of metrics for setting the compute groups yourself.
 
-    .. note::
+    .. tip::
         The compute groups feature can significantly speedup the calculation of metrics under the right conditions.
         First, the feature is only available when calling the ``update`` method and not when calling ``forward`` method
         due to the internal logic of ``forward`` preventing this. Secondly, since we compute groups share metric
@@ -91,7 +91,7 @@ class MetricCollection(ModuleDict):
         reference and a copy of states are instead returned in this case (reference will be reestablished on the next
         call to ``update``).
 
-    .. note::
+    .. important::
         Metric collections can be nested at initialization (see last example) but the output of the collection will
         still be a single flatten dictionary combining the prefix and postfix arguments from the nested collection.
 

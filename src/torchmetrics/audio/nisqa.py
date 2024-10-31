@@ -43,10 +43,12 @@ class NonIntrusiveSpeechQualityAssessment(Metric):
     - ``nisqa`` (:class:`~torch.Tensor`): float tensor reduced across the batch with shape ``(5,)`` corresponding to
       overall MOS, noisiness, discontinuity, coloration and loudness in that order
 
-    .. note:: Using this metric requires you to have ``librosa`` and ``requests`` installed. Install as
+    .. hint::
+        Using this metric requires you to have ``librosa`` and ``requests`` installed. Install as
         ``pip install librosa requests``.
 
-    .. note:: The ``forward`` and ``compute`` methods in this class return values reduced across the batch. To obtain
+    .. caution::
+        The ``forward`` and ``compute`` methods in this class return values reduced across the batch. To obtain
         values for each sample, you may use the functional counterpart
         :func:`~torchmetrics.functional.audio.nisqa.non_intrusive_speech_quality_assessment`.
 

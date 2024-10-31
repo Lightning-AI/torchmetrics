@@ -13,7 +13,7 @@ TorchMetrics in PyTorch Lightning
 TorchMetrics was originally created as part of `PyTorch Lightning <https://github.com/Lightning-AI/pytorch-lightning>`_, a powerful deep learning research
 framework designed for scaling models without boilerplate.
 
-.. note::
+.. caution::
 
     TorchMetrics always offers compatibility with the last 2 major PyTorch Lightning versions, but we recommend always
     keeping both frameworks up-to-date for the best experience.
@@ -69,9 +69,9 @@ LightningModule `self.log <https://lightning.ai/docs/pytorch/stable/extensions/l
 method, Lightning will log the metric based on ``on_step`` and ``on_epoch`` flags present in ``self.log(...)``. If
 ``on_epoch`` is True, the logger automatically logs the end of epoch metric value by calling ``.compute()``.
 
-.. note::
+.. caution::
 
-    ``sync_dist``, ``sync_dist_group`` and ``reduce_fx`` flags from ``self.log(...)`` don't affect the metric logging
+    The ``sync_dist``, ``sync_dist_group`` and ``reduce_fx`` flags from ``self.log(...)`` don't affect the metric logging
     in any manner. The metric class contains its own distributed synchronization logic.
 
     This, however is only true for metrics that inherit the base class ``Metric``,
@@ -136,7 +136,7 @@ Note that logging metrics this way will require you to manually reset the metric
 In general, we recommend logging the metric object to make sure that metrics are correctly computed and reset.
 Additionally, we highly recommend that the two ways of logging are not mixed as it can lead to wrong results.
 
-.. note::
+.. hint::
 
     When using any Modular metric, calling ``self.metric(...)`` or ``self.metric.forward(...)`` serves the dual purpose
     of calling ``self.metric.update()`` on its input and simultaneously returning the metric value over the provided

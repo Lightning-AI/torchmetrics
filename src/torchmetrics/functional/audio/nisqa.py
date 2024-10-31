@@ -66,7 +66,8 @@ NISQA_DIR = "~/.torchmetrics/NISQA"
 def non_intrusive_speech_quality_assessment(preds: Tensor, fs: int) -> Tensor:
     """`Non-Intrusive Speech Quality Assessment`_ (NISQA v2.0) [1], [2].
 
-    .. note:: Using this metric requires you to have ``librosa`` and ``requests`` installed. Install as
+    .. hint::
+        Usingsing this metric requires you to have ``librosa`` and ``requests`` installed. Install as
         ``pip install librosa requests``.
 
     Args:
