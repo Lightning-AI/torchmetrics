@@ -204,7 +204,7 @@ class MeanAveragePrecision(Metric):
 
     .. attention::
         The ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ]
-        Caution: If the initialization parameters are changed, dictionary keys for mAR can change as well.
+        **Caution:** If the initialization parameters are changed, dictionary keys for mAR can change as well.
         The default properties are also accessible via fields and will raise an ``AttributeError`` if not available.
 
     .. important::
