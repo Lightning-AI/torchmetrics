@@ -14,7 +14,7 @@
 # this is just a bypass for this module name collision with built-in one
 from collections import OrderedDict
 from copy import deepcopy
-from typing import Any, Dict, Hashable, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, ClassVar, Dict, Hashable, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -192,6 +192,7 @@ class MetricCollection(ModuleDict):
 
     _modules: Dict[str, Metric]  # type: ignore[assignment]
     _groups: Dict[int, List[str]]
+    __jit_unused_properties__: ClassVar[List[str]] = ["metric_state"]
 
     def __init__(
         self,
