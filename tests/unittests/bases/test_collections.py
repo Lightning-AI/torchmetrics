@@ -40,6 +40,15 @@ from unittests._helpers.testers import DummyMetricDiff, DummyMetricMultiOutputDi
 seed_all(42)
 
 
+def test_metric_collection_jit_script():
+    """Test that the MetricCollection can be scripted and jitted."""
+    m1 = DummyMetricSum()
+    m2 = DummyMetricDiff()
+    metric_collection = MetricCollection([m1, m2])
+    scripted = torch.jit.script(metric_collection)
+    assert isinstance(scripted, torch.jit.ScriptModule)
+
+
 def test_metric_collection(tmpdir):
     """Test that updating the metric collection is equal to individually updating metrics in the collection."""
     m1 = DummyMetricSum()
