@@ -46,7 +46,7 @@ def _reference_sklearn_confusion_matrix_binary(preds, target, normalize=None, ig
         if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_confusion_matrix(y_true=target, y_pred=preds, labels=[0, 1], normalize=normalize)
 
 
@@ -147,7 +147,7 @@ def _reference_sklearn_confusion_matrix_multiclass(preds, target, normalize=None
         preds = np.argmax(preds, axis=1)
     preds = preds.flatten()
     target = target.flatten()
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_confusion_matrix(y_true=target, y_pred=preds, normalize=normalize, labels=list(range(NUM_CLASSES)))
 
 
@@ -298,7 +298,7 @@ def _reference_sklearn_confusion_matrix_multilabel(preds, target, normalize=None
     confmat = []
     for i in range(preds.shape[1]):
         pred, true = preds[:, i], target[:, i]
-        true, pred = remove_ignore_index(true, pred, ignore_index)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
         confmat.append(sk_confusion_matrix(true, pred, normalize=normalize, labels=[0, 1]))
     return np.stack(confmat, axis=0)
 

@@ -46,7 +46,7 @@ def _reference_sklearn_precision_recall_curve_binary(preds, target, ignore_index
     target = target.flatten().numpy()
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_precision_recall_curve(target, preds)
 
 
@@ -159,7 +159,7 @@ def _reference_sklearn_precision_recall_curve_multiclass(preds, target, ignore_i
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
 
     precision, recall, thresholds = [], [], []
     for i in range(NUM_CLASSES):
