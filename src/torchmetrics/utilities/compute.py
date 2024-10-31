@@ -59,6 +59,7 @@ def _safe_divide(num: Tensor, denom: Tensor, zero_division: float = 0.0) -> Tens
         >>> denom = torch.tensor([0.0, 1.0, 2.0])
         >>> _safe_divide(num, denom)
         tensor([0.0000, 2.0000, 1.5000])
+
     """
     num = num if num.is_floating_point() else num.float()
     denom = denom if denom.is_floating_point() else denom.float()
@@ -100,6 +101,7 @@ def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float, axis: int
     """Compute area under the curve using the trapezoidal rule.
 
     Assumes increasing or decreasing order of `x`.
+
     """
     with torch.no_grad():
         auc_score: Tensor = torch.trapz(y, x, dim=axis) * direction
@@ -115,6 +117,7 @@ def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
         >>> y = torch.tensor([1, 2, 3, 4])
         >>> _auc_compute(x, y)
         tensor(7.5000)
+
     """
     with torch.no_grad():
         if reorder:
@@ -172,6 +175,7 @@ def interp(x: Tensor, xp: Tensor, fp: Tensor) -> Tensor:
         >>> fp = torch.tensor([1, 2, 3])
         >>> interp(x, xp, fp)
         tensor([0.5000, 1.5000, 2.5000])
+
     """
     m = _safe_divide(fp[1:] - fp[:-1], xp[1:] - xp[:-1])
     b = fp[:-1] - (m * xp[:-1])
