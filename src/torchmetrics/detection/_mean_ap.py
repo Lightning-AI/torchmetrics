@@ -849,9 +849,9 @@ class MeanAveragePrecision(Metric):
 
             inds = torch.searchsorted(rc, rec_thresholds.to(rc.device), right=False)
             num_inds = inds.argmax() if inds.max() >= tp_len else num_rec_thrs
-            inds = inds[:num_inds]  # type: ignore[misc]
-            prec[:num_inds] = pr[inds]  # type: ignore[misc]
-            score[:num_inds] = det_scores_sorted[inds]  # type: ignore[misc]
+            inds = inds[:num_inds]
+            prec[:num_inds] = pr[inds]
+            score[:num_inds] = det_scores_sorted[inds]
             precision[idx, :, idx_cls, idx_bbox_area, idx_max_det_thresholds] = prec
             scores[idx, :, idx_cls, idx_bbox_area, idx_max_det_thresholds] = score
 
