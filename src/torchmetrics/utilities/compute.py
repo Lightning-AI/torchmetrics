@@ -53,6 +53,12 @@ def _safe_divide(num: Tensor, denom: Tensor, zero_division: float = 0.0) -> Tens
         denom: denominator tensor, which may contain zeros
         zero_division: value to replace elements divided by zero
 
+    Example:
+        >>> import torch
+        >>> num = torch.tensor([1.0, 2.0, 3.0])
+        >>> denom = torch.tensor([0.0, 1.0, 2.0])
+        >>> _safe_divide(num, denom)
+        tensor([0.0000, 2.0000, 1.5000])
     """
     num = num if num.is_floating_point() else num.float()
     denom = denom if denom.is_floating_point() else denom.float()
@@ -94,7 +100,6 @@ def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float, axis: int
     """Compute area under the curve using the trapezoidal rule.
 
     Assumes increasing or decreasing order of `x`.
-
     """
     with torch.no_grad():
         auc_score: Tensor = torch.trapz(y, x, dim=axis) * direction
@@ -102,6 +107,15 @@ def _auc_compute_without_check(x: Tensor, y: Tensor, direction: float, axis: int
 
 
 def _auc_compute(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
+    """Compute area under the curve using the trapezoidal rule.
+
+    Example:
+        >>> import torch
+        >>> x = torch.tensor([1, 2, 3, 4])
+        >>> y = torch.tensor([1, 2, 3, 4])
+        >>> _auc_compute(x, y)
+        tensor(7.5000)
+    """
     with torch.no_grad():
         if reorder:
             x, x_idx = torch.sort(x, stable=True)
@@ -139,7 +153,7 @@ def auc(x: Tensor, y: Tensor, reorder: bool = False) -> Tensor:
 def interp(x: Tensor, xp: Tensor, fp: Tensor) -> Tensor:
     """One-dimensional linear interpolation for monotonically increasing sample points.
 
-    Returns the one-dimensional piecewise linear interpolant to a function with
+    Returns the one-dimensional piecewise linear interpolation to a function with
     given discrete data points :math:`(xp, fp)`, evaluated at :math:`x`.
 
     Adjusted version of this https://github.com/pytorch/pytorch/issues/50334#issuecomment-1000917964
@@ -152,6 +166,12 @@ def interp(x: Tensor, xp: Tensor, fp: Tensor) -> Tensor:
     Returns:
         the interpolated values, same size as `x`.
 
+    Example:
+        >>> x = torch.tensor([0.5, 1.5, 2.5])
+        >>> xp = torch.tensor([1, 2, 3])
+        >>> fp = torch.tensor([1, 2, 3])
+        >>> interp(x, xp, fp)
+        tensor([0.5000, 1.5000, 2.5000])
     """
     m = _safe_divide(fp[1:] - fp[:-1], xp[1:] - xp[:-1])
     b = fp[:-1] - (m * xp[:-1])
