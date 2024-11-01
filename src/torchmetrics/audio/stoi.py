@@ -50,7 +50,8 @@ class ShortTimeObjectiveIntelligibility(Metric):
 
     - ``stoi`` (:class:`~torch.Tensor`): float scalar tensor
 
-    .. note:: using this metrics requires you to have ``pystoi`` install. Either install as ``pip install
+    .. hint::
+        Using this metrics requires you to have ``pystoi`` install. Either install as ``pip install
         torchmetrics[audio]`` or ``pip install pystoi``.
 
     Args:
@@ -63,14 +64,13 @@ class ShortTimeObjectiveIntelligibility(Metric):
             If ``pystoi`` package is not installed
 
     Example:
-        >>> import torch
+        >>> from torch import randn
         >>> from torchmetrics.audio import ShortTimeObjectiveIntelligibility
-        >>> g = torch.manual_seed(1)
-        >>> preds = torch.randn(8000)
-        >>> target = torch.randn(8000)
+        >>> preds = randn(8000)
+        >>> target = randn(8000)
         >>> stoi = ShortTimeObjectiveIntelligibility(8000, False)
         >>> stoi(preds, target)
-        tensor(-0.0100)
+        tensor(-0.084...)
 
     """
 
@@ -132,11 +132,10 @@ class ShortTimeObjectiveIntelligibility(Metric):
             :scale: 75
 
             >>> # Example plotting a single value
-            >>> import torch
+            >>> from torch import randn
             >>> from torchmetrics.audio import ShortTimeObjectiveIntelligibility
-            >>> g = torch.manual_seed(1)
-            >>> preds = torch.randn(8000)
-            >>> target = torch.randn(8000)
+            >>> preds = randn(8000)
+            >>> target = randn(8000)
             >>> metric = ShortTimeObjectiveIntelligibility(8000, False)
             >>> metric.update(preds, target)
             >>> fig_, ax_ = metric.plot()
@@ -145,12 +144,11 @@ class ShortTimeObjectiveIntelligibility(Metric):
             :scale: 75
 
             >>> # Example plotting multiple values
-            >>> import torch
+            >>> from torch import randn
             >>> from torchmetrics.audio import ShortTimeObjectiveIntelligibility
             >>> metric = ShortTimeObjectiveIntelligibility(8000, False)
-            >>> g = torch.manual_seed(1)
-            >>> preds = torch.randn(8000)
-            >>> target = torch.randn(8000)
+            >>> preds = randn(8000)
+            >>> target = randn(8000)
             >>> values = [ ]
             >>> for _ in range(10):
             ...     values.append(metric(preds, target))

@@ -34,7 +34,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
     Where :math:`\text{MSE}` denotes the `mean-squared-error`_ function. This metric is a modified version of PSNR that
     better supports evaluation of images with blocked artifacts, that oftens occur in compressed images.
 
-    .. note::
+    .. attention::
         Metric only supports grayscale images. If you have RGB images, please convert them to grayscale first.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
@@ -51,12 +51,10 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Example:
-        >>> import torch
-        >>> from torchmetrics.image import PeakSignalNoiseRatioWithBlockedEffect
+        >>> from torch import rand
         >>> metric = PeakSignalNoiseRatioWithBlockedEffect()
-        >>> _ = torch.manual_seed(42)
-        >>> preds = torch.rand(2, 1, 10, 10)
-        >>> target = torch.rand(2, 1, 10, 10)
+        >>> preds = rand(2, 1, 10, 10)
+        >>> target = rand(2, 1, 10, 10)
         >>> metric(preds, target)
         tensor(7.2893)
 

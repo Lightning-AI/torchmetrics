@@ -211,9 +211,8 @@ class FrechetInceptionDistance(Metric):
     that you calculate using `torch.float64` (default is `torch.float32`) which can be set using the `.set_dtype`
     method of the metric.
 
-    .. note:: using this metrics requires you to have torch 1.9 or higher installed
-
-    .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
+    .. hint::
+        Using this metric with the default feature extractor requires that ``torch-fidelity``
         is installed. Either install as ``pip install torchmetrics[image]`` or ``pip install torch-fidelity``
 
     As input to ``forward`` and ``update`` the metric accepts the following input
@@ -265,8 +264,7 @@ class FrechetInceptionDistance(Metric):
             If ``reset_real_features`` is not an ``bool``
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
+        >>> from torch import rand
         >>> from torchmetrics.image.fid import FrechetInceptionDistance
         >>> fid = FrechetInceptionDistance(feature=64)
         >>> # generate two slightly overlapping image intensity distributions
@@ -275,7 +273,7 @@ class FrechetInceptionDistance(Metric):
         >>> fid.update(imgs_dist1, real=True)
         >>> fid.update(imgs_dist2, real=False)
         >>> fid.compute()
-        tensor(12.7202)
+        tensor(12.6388)
 
     """
 

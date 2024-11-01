@@ -16,25 +16,17 @@ from functools import partial
 
 import pytest
 import torch
+from lightning_utilities.core.imports import RequirementCache
 from monai.metrics.generalized_dice import compute_generalized_dice
 from torchmetrics.functional.segmentation.generalized_dice import generalized_dice_score
 from torchmetrics.segmentation.generalized_dice import GeneralizedDiceScore
 
-from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES, _Input
+from unittests import NUM_CLASSES
+from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
+from unittests.segmentation.inputs import _inputs1, _inputs2, _inputs3
 
-_inputs1 = _Input(
-    preds=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 16)),
-    target=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 16)),
-)
-_inputs2 = _Input(
-    preds=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 32, 32)),
-    target=torch.randint(0, 2, (NUM_BATCHES, BATCH_SIZE, NUM_CLASSES, 32, 32)),
-)
-_inputs3 = _Input(
-    preds=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 32, 32)),
-    target=torch.randint(0, NUM_CLASSES, (NUM_BATCHES, BATCH_SIZE, 32, 32)),
-)
+seed_all(42)
 
 
 def _reference_generalized_dice(
@@ -44,14 +36,15 @@ def _reference_generalized_dice(
     include_background: bool = True,
     reduce: bool = True,
 ):
-    """Calculate reference metric for `MeanIoU`."""
+    """Calculate reference metric for generalized dice metric."""
     if input_format == "index":
         preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
         target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
-    val = compute_generalized_dice(preds, target, include_background=include_background)
+    monai_extra_arg = {"sum_over_classes": True} if RequirementCache("monai>=1.4.0") else {}
+    val = compute_generalized_dice(preds, target, include_background=include_background, **monai_extra_arg)
     if reduce:
         val = val.mean()
-    return val
+    return val.squeeze()
 
 
 @pytest.mark.parametrize(
@@ -63,11 +56,11 @@ def _reference_generalized_dice(
     ],
 )
 @pytest.mark.parametrize("include_background", [True, False])
-class TestMeanIoU(MetricTester):
-    """Test class for `MeanIoU` metric."""
+class TestGeneralizedDiceScore(MetricTester):
+    """Test class for `GeneralizedDiceScore` metric."""
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    def test_mean_iou_class(self, preds, target, input_format, include_background, ddp):
+    def test_generalized_dice_class(self, preds, target, input_format, include_background, ddp):
         """Test class implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
@@ -87,7 +80,7 @@ class TestMeanIoU(MetricTester):
             },
         )
 
-    def test_mean_iou_functional(self, preds, target, input_format, include_background):
+    def test_generalized_dice_functional(self, preds, target, input_format, include_background):
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
             preds=preds,

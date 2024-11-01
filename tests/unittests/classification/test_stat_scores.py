@@ -54,7 +54,7 @@ def _reference_sklearn_stat_scores_binary(preds, target, ignore_index, multidim_
         preds = (preds >= THRESHOLD).astype(np.uint8)
 
     if multidim_average == "global":
-        target, preds = remove_ignore_index(target, preds, ignore_index)
+        target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
         tn, fp, fn, tp = sk_confusion_matrix(y_true=target, y_pred=preds, labels=[0, 1]).ravel()
         return np.array([tp, fp, tn, fn, tp + fn])
 
@@ -62,7 +62,7 @@ def _reference_sklearn_stat_scores_binary(preds, target, ignore_index, multidim_
     for pred, true in zip(preds, target):
         pred = pred.flatten()
         true = true.flatten()
-        true, pred = remove_ignore_index(true, pred, ignore_index)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
         tn, fp, fn, tp = sk_confusion_matrix(y_true=true, y_pred=pred, labels=[0, 1]).ravel()
         res.append(np.array([tp, fp, tn, fn, tp + fn]))
     return np.stack(res)
@@ -164,7 +164,7 @@ class TestBinaryStatScores(MetricTester):
 def _reference_sklearn_stat_scores_multiclass_global(preds, target, ignore_index, average):
     preds = preds.numpy().flatten()
     target = target.numpy().flatten()
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     confmat = sk_confusion_matrix(y_true=target, y_pred=preds, labels=list(range(NUM_CLASSES)))
     tp = np.diag(confmat)
     fp = confmat.sum(0) - tp
@@ -192,7 +192,7 @@ def _reference_sklearn_stat_scores_multiclass_local(preds, target, ignore_index,
     for pred, true in zip(preds, target):
         pred = pred.flatten()
         true = true.flatten()
-        true, pred = remove_ignore_index(true, pred, ignore_index)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
         confmat = sk_confusion_matrix(y_true=true, y_pred=pred, labels=list(range(NUM_CLASSES)))
         tp = np.diag(confmat)
         fp = confmat.sum(0) - tp
@@ -431,7 +431,7 @@ def _reference_sklearn_stat_scores_multilabel(preds, target, ignore_index, multi
         stat_scores = []
         for i in range(preds.shape[1]):
             pred, true = preds[:, i].flatten(), target[:, i].flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
+            true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
             tn, fp, fn, tp = sk_confusion_matrix(true, pred, labels=[0, 1]).ravel()
             stat_scores.append(np.array([tp, fp, tn, fn, tp + fn]))
         res = np.stack(stat_scores, axis=0)
@@ -452,7 +452,7 @@ def _reference_sklearn_stat_scores_multilabel(preds, target, ignore_index, multi
         scores = []
         for j in range(preds.shape[1]):
             pred, true = preds[i, j], target[i, j]
-            true, pred = remove_ignore_index(true, pred, ignore_index)
+            true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
             tn, fp, fn, tp = sk_confusion_matrix(true, pred, labels=[0, 1]).ravel()
             scores.append(np.array([tp, fp, tn, fn, tp + fn]))
         stat_scores.append(np.stack(scores, 1))
@@ -578,14 +578,12 @@ class TestMultilabelStatScores(MetricTester):
         )
 
 
-# fixme: Expected only 5 but found 7 in `target`
-@pytest.mark.flaky(reruns=5, only_rerun="RuntimeError")
 def test_support_for_int():
     """See issue: https://github.com/Lightning-AI/torchmetrics/issues/1970."""
     seed_all(42)
     metric = MulticlassStatScores(num_classes=4, average="none", multidim_average="samplewise", ignore_index=0)
-    prediction = torch.randint(low=0, high=4, size=(1, 224, 224)).to(torch.uint8)
-    label = torch.randint(low=0, high=4, size=(1, 224, 224)).to(torch.uint8)
+    prediction = torch.randint(low=0, high=4, size=(1, 50, 50)).to(torch.uint8)
+    label = torch.randint(low=0, high=4, size=(1, 50, 50)).to(torch.uint8)
     score = metric(preds=prediction, target=label)
     assert score.shape == (1, 4, 5)
 

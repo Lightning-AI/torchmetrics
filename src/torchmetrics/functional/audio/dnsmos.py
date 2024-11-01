@@ -194,7 +194,8 @@ def deep_noise_suppression_mean_opinion_score(
     `DNSMOS P.835 paper <https://arxiv.org/abs/2110.01763>`_.
 
 
-    .. note:: using this metric requires you to have ``librosa``, ``onnxruntime`` and ``requests`` installed. Install
+    .. hint::
+        Using this metric requires you to have ``librosa``, ``onnxruntime`` and ``requests`` installed. Install
         as ``pip install torchmetrics['audio']`` or alternatively ``pip install librosa onnxruntime-gpu requests``
         (if you do not have GPU enabled machine install ``onnxruntime`` instead of ``onnxruntime-gpu``)
 
@@ -216,10 +217,9 @@ def deep_noise_suppression_mean_opinion_score(
     Example:
         >>> from torch import randn
         >>> from torchmetrics.functional.audio.dnsmos import deep_noise_suppression_mean_opinion_score
-        >>> g = torch.manual_seed(1)
         >>> preds = randn(8000)
         >>> deep_noise_suppression_mean_opinion_score(preds, 8000, False)
-        tensor([2.2285, 2.1132, 1.3972, 1.3652], dtype=torch.float64)
+        tensor([2.2..., 2.0..., 1.1..., 1.2...], dtype=torch.float64)
 
     """
     if not _LIBROSA_AVAILABLE or not _ONNXRUNTIME_AVAILABLE or not _REQUESTS_AVAILABLE:

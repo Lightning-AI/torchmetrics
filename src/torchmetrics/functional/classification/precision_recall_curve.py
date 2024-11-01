@@ -148,7 +148,7 @@ def _binary_precision_recall_curve_tensor_validation(
         )
 
     # Check that target only contains {0,1} values or value in ignore_index
-    unique_values = torch.unique(target)
+    unique_values = torch.unique(target, dim=None)
     if ignore_index is None:
         check = torch.any((unique_values != 0) & (unique_values != 1))
     else:
@@ -417,7 +417,7 @@ def _multiclass_precision_recall_curve_tensor_validation(
             f" but got {preds.shape} and {target.shape}"
         )
 
-    num_unique_values = len(torch.unique(target))
+    num_unique_values = len(torch.unique(target, dim=None))
     check = num_unique_values > num_classes if ignore_index is None else num_unique_values > num_classes + 1
     if check:
         raise RuntimeError(

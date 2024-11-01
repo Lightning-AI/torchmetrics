@@ -49,7 +49,8 @@ class InceptionScore(Metric):
     ``normalize`` is set to ``False`` images are expected to have dtype uint8 and take values in the ``[0, 255]``
     range. All images will be resized to 299 x 299 which is the size of the original training data.
 
-    .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
+    .. hint::
+        Using this metric with the default feature extractor requires that ``torch-fidelity``
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
 
@@ -84,15 +85,14 @@ class InceptionScore(Metric):
             If ``feature`` is not an ``str``, ``int`` or ``torch.nn.Module``
 
     Example:
-        >>> import torch
-        >>> _ = torch.manual_seed(123)
+        >>> from torch import rand
         >>> from torchmetrics.image.inception import InceptionScore
         >>> inception = InceptionScore()
         >>> # generate some images
         >>> imgs = torch.randint(0, 255, (100, 3, 299, 299), dtype=torch.uint8)
         >>> inception.update(imgs)
         >>> inception.compute()
-        (tensor(1.0544), tensor(0.0117))
+        (tensor(1.0549), tensor(0.0121))
 
     """
 

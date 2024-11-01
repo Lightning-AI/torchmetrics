@@ -69,6 +69,11 @@ def _psnr_update(
             Default is None meaning scores will be reduced across all dimensions.
 
     """
+    if not preds.is_floating_point():
+        preds = preds.to(torch.float32)
+    if not target.is_floating_point():
+        target = target.to(torch.float32)
+
     if dim is None:
         sum_squared_error = torch.sum(torch.pow(preds - target, 2))
         num_obs = tensor(target.numel(), device=target.device)
@@ -129,8 +134,8 @@ def peak_signal_noise_ratio(
         >>> peak_signal_noise_ratio(pred, target)
         tensor(2.5527)
 
-    .. note::
-        Half precision is only support on GPU for this metric
+    .. attention::
+        Half precision is only support on GPU for this metric.
 
     """
     if dim is None and reduction != "elementwise_mean":

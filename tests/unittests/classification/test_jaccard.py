@@ -26,6 +26,7 @@ from torchmetrics.classification.jaccard import (
     MultilabelJaccardIndex,
 )
 from torchmetrics.functional.classification.jaccard import (
+    _jaccard_index_reduce,
     binary_jaccard_index,
     multiclass_jaccard_index,
     multilabel_jaccard_index,
@@ -44,7 +45,7 @@ def _reference_sklearn_jaccard_index_binary(preds, target, ignore_index=None, ze
         if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_jaccard_index(y_true=target, y_pred=preds, zero_division=zero_division)
 
 
@@ -140,7 +141,7 @@ def _reference_sklearn_jaccard_index_multiclass(preds, target, ignore_index=None
         preds = np.argmax(preds, axis=1)
     preds = preds.flatten()
     target = target.flatten()
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     if average is None:
         return sk_jaccard_index(
             y_true=target, y_pred=preds, average=average, labels=list(range(NUM_CLASSES)), zero_division=zero_division
@@ -268,7 +269,7 @@ def _reference_sklearn_jaccard_index_multilabel(preds, target, ignore_index=None
     scores, weights = [], []
     for i in range(preds.shape[1]):
         pred, true = preds[:, i], target[:, i]
-        true, pred = remove_ignore_index(true, pred, ignore_index)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
         confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
         scores.append(sk_jaccard_index(true, pred, zero_division=zero_division))
         weights.append(confmat[1, 0] + confmat[1, 1])
@@ -401,6 +402,26 @@ def test_corner_case():
     assert torch.allclose(res, torch.ones_like(res))
     res = multiclass_jaccard_index(pred, target, num_classes=10, average="none")
     assert torch.allclose(res, out)
+
+
+def test_jaccard_index_zero_division():
+    """Issue: https://github.com/Lightning-AI/torchmetrics/issues/2658."""
+    # Test case where all pixels are background (zeros)
+    confmat = torch.tensor([[4, 0], [0, 0]])
+
+    # Test with zero_division=0.0
+    result = _jaccard_index_reduce(confmat, average="binary", zero_division=0.0)
+    assert result == 0.0, f"Expected 0.0, but got {result}"
+
+    # Test with zero_division=1.0
+    result = _jaccard_index_reduce(confmat, average="binary", zero_division=1.0)
+    assert result == 1.0, f"Expected 1.0, but got {result}"
+
+    # Test case with some foreground pixels
+    confmat = torch.tensor([[2, 1], [1, 1]])
+    result = _jaccard_index_reduce(confmat, average="binary", zero_division=0.0)
+    expected = 1 / 3
+    assert torch.isclose(result, torch.tensor(expected)), f"Expected {expected}, but got {result}"
 
 
 @pytest.mark.parametrize(

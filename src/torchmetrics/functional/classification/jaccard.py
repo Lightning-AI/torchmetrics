@@ -67,7 +67,7 @@ def _jaccard_index_reduce(
         raise ValueError(f"The `average` has to be one of {allowed_average}, got {average}.")
     confmat = confmat.float()
     if average == "binary":
-        return confmat[1, 1] / (confmat[0, 1] + confmat[1, 0] + confmat[1, 1])
+        return _safe_divide(confmat[1, 1], (confmat[0, 1] + confmat[1, 0] + confmat[1, 1]), zero_division=zero_division)
 
     ignore_index_cond = ignore_index is not None and 0 <= ignore_index < confmat.shape[0]
     multilabel = confmat.ndim == 3

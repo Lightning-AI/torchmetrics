@@ -161,7 +161,7 @@ def permutation_invariant_training(
     if eval_func not in ["max", "min"]:
         raise ValueError(f'eval_func can only be "max" or "min" but got {eval_func}')
     if mode not in ["speaker-wise", "permutation-wise"]:
-        raise ValueError(f'mode can only be "speaker-wise" or "permutation-wise" but got {eval_func}')
+        raise ValueError(f'mode can only be "speaker-wise" or "permutation-wise" but got {mode}')
     if target.ndim < 2:
         raise ValueError(f"Inputs must be of shape [batch, spk, ...], got {target.shape} and {preds.shape} instead")
 
@@ -182,7 +182,7 @@ def permutation_invariant_training(
         metric_of_ps = metric_func(ppreds, ptarget)
         metric_of_ps = torch.mean(metric_of_ps.reshape(batch_size, len(perms), -1), dim=-1)
         # find the best metric and best permutation
-        best_metric, best_indexes = eval_op(metric_of_ps, dim=1)  # type: ignore[call-overload]
+        best_metric, best_indexes = eval_op(metric_of_ps, dim=1)
         best_indexes = best_indexes.detach()
         best_perm = perms[best_indexes, :]
         return best_metric, best_perm

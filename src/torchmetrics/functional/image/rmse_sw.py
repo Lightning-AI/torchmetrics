@@ -104,7 +104,8 @@ def _rmse_sw_compute(
     """
     rmse = rmse_val_sum / total_images if rmse_val_sum is not None else None
     if rmse_map is not None:
-        rmse_map /= total_images
+        # prevent overwrite the inputs
+        rmse_map = rmse_map / total_images
     return rmse, rmse_map
 
 
@@ -124,12 +125,12 @@ def root_mean_squared_error_using_sliding_window(
         (Optionally) RMSE map
 
     Example:
+        >>> from torch import rand
         >>> from torchmetrics.functional.image import root_mean_squared_error_using_sliding_window
-        >>> g = torch.manual_seed(22)
-        >>> preds = torch.rand(4, 3, 16, 16)
-        >>> target = torch.rand(4, 3, 16, 16)
+        >>> preds = rand(4, 3, 16, 16)
+        >>> target = rand(4, 3, 16, 16)
         >>> root_mean_squared_error_using_sliding_window(preds, target)
-        tensor(0.3999)
+        tensor(0.4158)
 
     Raises:
         ValueError: If ``window_size`` is not a positive integer.
