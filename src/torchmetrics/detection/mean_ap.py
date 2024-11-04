@@ -153,14 +153,14 @@ class MeanAveragePrecision(Metric):
 
     For an example on how to use this metric check the `torchmetrics mAP example`_.
 
-    .. note::
-        ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ]
+    .. attention::
+        The ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ]
         e.g. the mean average precision for IoU thresholds 0.50, 0.55, 0.60, ..., 0.95 averaged over all classes and
         all areas and all max detections per image. If the IoU thresholds are changed this value will be calculated with
-        the new thresholds. Caution: If the initialization parameters are changed, dictionary keys for mAR can change as
-        well.
+        the new thresholds.
+        **Caution:** If the initialization parameters are changed, dictionary keys for mAR can change as well.
 
-    .. note::
+    .. important::
         This metric supports, at the moment, two different backends for the evaluation. The default backend is
         ``"pycocotools"``, which either require the official `pycocotools`_ implementation or this
         `fork of pycocotools`_ to be installed. We recommend using the fork as it is better maintained and easily

@@ -303,9 +303,10 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
     - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
       prediction belongs
 
-    .. note:: All ``indexes``, ``preds`` and ``target`` must have the same dimension.
+    .. important::
+         All ``indexes``, ``preds`` and ``target`` must have the same dimension.
 
-    .. note::
+    .. attention::
         Predictions will be first grouped by ``indexes`` and then `RetrievalRecallAtFixedPrecision`
         will be computed as the mean of the `RetrievalRecallAtFixedPrecision` over each query.
 

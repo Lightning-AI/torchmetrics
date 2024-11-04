@@ -43,7 +43,7 @@ def _reference_netcal_binary_calibration_error(preds, target, n_bins, norm, igno
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     metric = ECE if norm == "l1" else MCE
     return metric(n_bins).measure(preds, target)
 
@@ -149,7 +149,7 @@ def _reference_netcal_multiclass_calibration_error(preds, target, n_bins, norm, 
     if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
     preds = np.moveaxis(preds, 1, -1).reshape((-1, preds.shape[1]))
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     metric = ECE if norm == "l1" else MCE
     return metric(n_bins).measure(preds, target)
 

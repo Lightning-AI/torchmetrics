@@ -43,8 +43,8 @@ class MultitaskWrapper(WrapperMetric):
         postfix:
             A string to append after the keys of the output dict. If not provided, will default to an empty string.
 
-    .. note::
-        The use pre prefix and postfix allows for easily creating task wrappers for training, validation and test.
+    .. tip::
+        The use prefix and postfix allows for easily creating task wrappers for training, validation and test.
         The arguments are only changing the output keys of the computed metrics and not the input keys. This means
         that a ``MultitaskWrapper`` initialized as ``MultitaskWrapper({"task": Metric()}, prefix="train_")`` will
         still expect the input to be a dictionary with the key "task", but the output will be a dictionary with the key

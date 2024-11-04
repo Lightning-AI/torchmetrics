@@ -39,7 +39,8 @@ def short_time_objective_intelligibility(
     calculations on CPU, all input will automatically be moved to CPU to perform the metric calculation before being
     moved back to the original device.
 
-    .. note:: using this metrics requires you to have ``pystoi`` install. Either install as ``pip install
+    .. hint::
+        Usingsing this metrics requires you to have ``pystoi`` install. Either install as ``pip install
         torchmetrics[audio]`` or ``pip install pystoi``
 
     Args:
