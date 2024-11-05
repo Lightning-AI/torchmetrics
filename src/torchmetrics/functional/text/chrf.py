@@ -21,8 +21,9 @@
 # Reference to the approval: https://github.com/Lightning-AI/torchmetrics/pull/2701#issuecomment-2316891785
 
 from collections import defaultdict
+from collections.abc import Sequence
 from itertools import chain
-from typing import Dict, List, Optional, Sequence, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor, tensor

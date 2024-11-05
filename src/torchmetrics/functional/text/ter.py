@@ -34,8 +34,9 @@
 # limitations under the License.
 
 import re
+from collections.abc import Iterator, Sequence
 from functools import lru_cache
-from typing import Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union
+from typing import Dict, List, Optional, Tuple, Type, Union
 
 from torch import Tensor, tensor
 

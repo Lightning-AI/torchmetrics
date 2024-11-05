@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-from typing import Any, ClassVar, Dict, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, ClassVar, Dict, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor

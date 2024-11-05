@@ -2,11 +2,12 @@
 import glob
 import os
 import re
+from collections.abc import Iterable, Iterator
 from functools import partial
 from importlib.util import module_from_spec, spec_from_file_location
 from itertools import chain
 from pathlib import Path
-from typing import Any, Iterable, Iterator, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 from pkg_resources import Requirement, yield_lines
 from setuptools import find_packages, setup

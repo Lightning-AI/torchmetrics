@@ -13,7 +13,8 @@
 # limitations under the License.
 import re
 from collections import Counter
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor, tensor

@@ -1,4 +1,5 @@
-from typing import Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Optional, Tuple, Union
 
 from torch import Tensor
 from typing_extensions import Literal

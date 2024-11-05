@@ -14,8 +14,9 @@
 import contextlib
 import io
 import json
+from collections.abc import Sequence
 from types import ModuleType
-from typing import Any, Callable, ClassVar, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, ClassVar, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import torch

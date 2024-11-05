@@ -1,4 +1,5 @@
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, Dict, Optional, Tuple, Union
 
 from typing_extensions import Literal
 

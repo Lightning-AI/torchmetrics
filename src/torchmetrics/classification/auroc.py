@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Type, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Type, Union
 
 from torch import Tensor
 from typing_extensions import Literal

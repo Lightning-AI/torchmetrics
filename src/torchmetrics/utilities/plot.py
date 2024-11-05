@@ -11,9 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from collections.abc import Generator, Sequence
 from itertools import product
 from math import ceil, floor, sqrt
-from typing import Any, Dict, Generator, List, Optional, Sequence, Tuple, Union, no_type_check
+from typing import Any, Dict, List, Optional, Tuple, Union, no_type_check
 
 import numpy as np
 import torch

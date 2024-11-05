@@ -13,8 +13,9 @@
 # limitations under the License.
 # this is just a bypass for this module name collision with built-in one
 from collections import OrderedDict
+from collections.abc import Hashable, Iterable, Iterator, Mapping, Sequence
 from copy import deepcopy
-from typing import Any, ClassVar, Dict, Hashable, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, ClassVar, Dict, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor

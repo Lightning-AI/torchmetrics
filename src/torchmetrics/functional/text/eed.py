@@ -88,8 +88,9 @@
 
 import re
 import unicodedata
+from collections.abc import Sequence
 from math import inf
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 from torch import Tensor, stack, tensor
 from typing_extensions import Literal

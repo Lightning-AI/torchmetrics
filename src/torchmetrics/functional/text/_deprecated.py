@@ -1,5 +1,6 @@
 import os
-from typing import Any, Callable, Dict, List, Literal, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, Callable, Dict, List, Literal, Optional, Tuple, Union
 
 import torch
 from torch import Tensor

@@ -18,9 +18,10 @@ import builtins
 import functools
 import inspect
 from abc import ABC, abstractmethod
+from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, ClassVar, Dict, Generator, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, ClassVar, Dict, List, Optional, Tuple, Union
 
 import torch
 from lightning_utilities import apply_to_collection

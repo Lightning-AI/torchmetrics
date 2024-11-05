@@ -18,7 +18,8 @@
 # Link:
 
 import itertools
-from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Union
+from collections.abc import Iterator, Sequence
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import torch
 from torch import Tensor, tensor

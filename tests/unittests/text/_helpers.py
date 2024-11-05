@@ -13,8 +13,9 @@
 # limitations under the License.
 import pickle
 import sys
+from collections.abc import Sequence
 from functools import partial
-from typing import Any, Callable, Dict, Optional, Sequence, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 import numpy as np
 import pytest
