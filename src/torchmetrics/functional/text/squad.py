@@ -92,7 +92,7 @@ def _metric_max_over_ground_truths(
 
 def _squad_input_check(
     preds: PREDS_TYPE, targets: TARGETS_TYPE
-) -> Tuple[Dict[str, str], List[Dict[str, List[Dict[str, List[Dict[str, Any]]]]]]]:
+) -> Tuple[Dict[str, str], list[Dict[str, List[Dict[str, list[Dict[str, Any]]]]]]]:
     """Check for types and convert the input to necessary format to compute the input."""
     if isinstance(preds, Dict):
         preds = [preds]
@@ -118,7 +118,7 @@ def _squad_input_check(
                 f"{SQuAD_FORMAT}"
             )
 
-        answers: Dict[str, Union[List[str], List[int]]] = target["answers"]  # type: ignore[assignment]
+        answers: dict[str, Union[List[str], list[int]]] = target["answers"]  # type: ignore[assignment]
         if "text" not in answers:
             raise KeyError(
                 "Expected keys in a 'answers' are 'text'."
@@ -135,7 +135,7 @@ def _squad_input_check(
 
 def _squad_update(
     preds: Dict[str, str],
-    target: List[Dict[str, List[Dict[str, List[Dict[str, Any]]]]]],
+    target: list[dict[str, list[dict[str, list[dict[str, Any]]]]]],
 ) -> Tuple[Tensor, Tensor, Tensor]:
     """Compute F1 Score and Exact Match for a collection of predictions and references.
 
