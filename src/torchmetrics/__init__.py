@@ -18,7 +18,7 @@ if package_available("numpy"):
     # compatibility for AttributeError: `np.Inf` was removed in the NumPy 2.0 release. Use `np.inf` instead
     import numpy
 
-    setattr(numpy, "Inf", numpy.inf)
+    numpy.Inf = numpy.inf
 
 
 if package_available("PIL"):
