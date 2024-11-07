@@ -7,16 +7,16 @@ the following command in the root directory of the project:
 pip install . -r requirements/_devel.txt
 ```
 
-Then for windows users, to execute the tests (unit tests and integration tests) run the following command (will only run non-DDP tests):
+Then for Windows users, to execute the tests (unit tests and integration tests) run the following command (will only run non-DDP tests):
 
 ```bash
 pytest tests/
 ```
 
-For linux/Mac users you will need to provide the `-m` argument to indicate if `ddp` tests should also be executed:
+For Linux/Mac users you will need to provide the `-m` argument to indicate if `ddp` tests should also be executed:
 
 ```bash
-pytest -m DDP tests/  # to run only DDP tests
+USE_PYTEST_POOL="1" pytest -m DDP tests/  # to run only DDP tests
 pytest -m "not DDP" tests/  # to run all tests except DDP tests
 ```
 

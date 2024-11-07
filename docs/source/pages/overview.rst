@@ -61,13 +61,13 @@ This metrics API is independent of PyTorch Lightning. Metrics can directly be us
     It is highly recommended to re-initialize the metric per mode as
     shown in the examples above.
 
-.. note::
+.. caution::
 
     Metric states are **not** added to the models ``state_dict`` by default.
     To change this, after initializing the metric, the method ``.persistent(mode)`` can
     be used to enable (``mode=True``) or disable (``mode=False``) this behaviour.
 
-.. note::
+.. important::
 
     Due to specialized logic around metric states, we in general do **not** recommend
     that metrics are initialized inside other metrics (nested metrics), as this can lead
@@ -306,7 +306,7 @@ This pattern is implemented for the following operators (with ``a`` being metric
 * Positive Value (``pos(a)``)
 * Indexing (``a[0]``)
 
-.. note::
+.. caution::
 
     Some of these operations are only fully supported from Pytorch v1.4 and onwards, explicitly we found:
     ``add``, ``mul``, ``rmatmul``, ``rsub``, ``rmod``
@@ -381,7 +381,7 @@ inside your LightningModule. In most cases we just have to replace ``self.log`` 
             # remember to reset metrics at the end of the epoch
             self.valid_metrics.reset()
 
-.. note::
+.. important::
 
     `MetricCollection` as default assumes that all the metrics in the collection
     have the same call signature. If this is not the case, input that should be
@@ -491,6 +491,11 @@ In practice this means that:
     val = metric.compute()  # this value cannot be back-propagated
 
 A functional metric is differentiable if its corresponding modular metric is differentiable.
+
+.. caution::
+    For PyTorch versions 2.1 or higher, differentiation in DDP mode is enabled, allowing autograd graph
+    propagation after the ``all_gather`` operation. This is useful for synchronizing metrics used as
+    loss functions in a DDP setting.
 
 ***************************************
 Metrics and hyperparameter optimization

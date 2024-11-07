@@ -55,14 +55,14 @@ def _reference_sklearn_accuracy_binary(preds, target, ignore_index, multidim_ave
         preds = (preds >= THRESHOLD).astype(np.uint8)
 
     if multidim_average == "global":
-        target, preds = remove_ignore_index(target, preds, ignore_index)
+        target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
         return _reference_sklearn_accuracy(target, preds)
 
     res = []
     for pred, true in zip(preds, target):
         pred = pred.flatten()
         true = true.flatten()
-        true, pred = remove_ignore_index(true, pred, ignore_index)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
         res.append(_reference_sklearn_accuracy(true, pred))
     return np.stack(res)
 
@@ -185,7 +185,7 @@ def _reference_sklearn_accuracy_multiclass(preds, target, ignore_index, multidim
     if multidim_average == "global":
         preds = preds.numpy().flatten()
         target = target.numpy().flatten()
-        target, preds = remove_ignore_index(target, preds, ignore_index)
+        target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
         if average == "micro":
             return _reference_sklearn_accuracy(target, preds)
         confmat = sk_confusion_matrix(target, preds, labels=list(range(NUM_CLASSES)))
@@ -207,7 +207,7 @@ def _reference_sklearn_accuracy_multiclass(preds, target, ignore_index, multidim
     for pred, true in zip(preds, target):
         pred = pred.flatten()
         true = true.flatten()
-        true, pred = remove_ignore_index(true, pred, ignore_index)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
         if average == "micro":
             res.append(_reference_sklearn_accuracy(true, pred))
         else:
@@ -445,13 +445,13 @@ def _reference_sklearn_accuracy_multilabel(preds, target, ignore_index, multidim
         if average == "micro":
             preds = preds.flatten()
             target = target.flatten()
-            target, preds = remove_ignore_index(target, preds, ignore_index)
+            target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
             return _reference_sklearn_accuracy(target, preds)
 
         accuracy, weights = [], []
         for i in range(preds.shape[1]):
             pred, true = preds[:, i].flatten(), target[:, i].flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
+            true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
             confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
             accuracy.append(_reference_sklearn_accuracy(true, pred))
             weights.append(confmat[1, 1] + confmat[1, 0])
@@ -472,7 +472,7 @@ def _reference_sklearn_accuracy_multilabel(preds, target, ignore_index, multidim
     for i in range(preds.shape[0]):
         if average == "micro":
             pred, true = preds[i].flatten(), target[i].flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
+            true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
             accuracy.append(_reference_sklearn_accuracy(true, pred))
             confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
             weights.append(confmat[1, 1] + confmat[1, 0])
@@ -480,7 +480,7 @@ def _reference_sklearn_accuracy_multilabel(preds, target, ignore_index, multidim
             scores, w = [], []
             for j in range(preds.shape[1]):
                 pred, true = preds[i, j], target[i, j]
-                true, pred = remove_ignore_index(true, pred, ignore_index)
+                true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
                 scores.append(_reference_sklearn_accuracy(true, pred))
                 confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
                 w.append(confmat[1, 1] + confmat[1, 0])

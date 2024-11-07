@@ -27,10 +27,9 @@ from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import (
     _GAMMATONE_AVAILABLE,
     _TORCHAUDIO_AVAILABLE,
-    _TORCHAUDIO_GREATER_EQUAL_0_10,
 )
 
-if not _TORCHAUDIO_AVAILABLE or not _TORCHAUDIO_GREATER_EQUAL_0_10 or not _GAMMATONE_AVAILABLE:
+if not _TORCHAUDIO_AVAILABLE or not _GAMMATONE_AVAILABLE:
     __doctest_skip__ = ["speech_reverberation_modulation_energy_ratio"]
 
 
@@ -203,11 +202,12 @@ def speech_reverberation_modulation_energy_ratio(
             Note: this argument is inherited from `SRMRpy`_. As the translated code is based to pytorch,
             setting `fast=True` may slow down the speed for calculating this metric on GPU.
 
-    .. note:: using this metrics requires you to have ``gammatone`` and ``torchaudio`` installed.
+    .. hint::
+        Usingsing this metrics requires you to have ``gammatone`` and ``torchaudio`` installed.
         Either install as ``pip install torchmetrics[audio]`` or ``pip install torchaudio``
         and ``pip install git+https://github.com/detly/gammatone``.
 
-    .. note::
+    .. attention::
         This implementation is experimental, and might not be consistent with the matlab
         implementation `SRMRToolbox`_, especially the fast implementation.
         The slow versions, a) fast=False, norm=False, max_cf=128, b) fast=False, norm=True, max_cf=30, have
@@ -228,7 +228,7 @@ def speech_reverberation_modulation_energy_ratio(
         tensor([0.3191], dtype=torch.float64)
 
     """
-    if not _TORCHAUDIO_AVAILABLE or not _TORCHAUDIO_GREATER_EQUAL_0_10 or not _GAMMATONE_AVAILABLE:
+    if not _TORCHAUDIO_AVAILABLE or not _GAMMATONE_AVAILABLE:
         raise ModuleNotFoundError(
             "speech_reverberation_modulation_energy_ratio requires you to have `gammatone` and"
             " `torchaudio>=0.10` installed. Either install as ``pip install torchmetrics[audio]`` or "

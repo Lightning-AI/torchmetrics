@@ -32,7 +32,12 @@ def _assert_allclose(tm_result: Any, ref_result: Any, atol: float = 1e-8, key: O
     """Recursively assert that two results are within a certain tolerance."""
     # single output compare
     if isinstance(tm_result, Tensor):
-        assert np.allclose(tm_result.detach().cpu().numpy(), ref_result, atol=atol, equal_nan=True)
+        assert np.allclose(
+            tm_result.detach().cpu().numpy() if isinstance(tm_result, Tensor) else tm_result,
+            ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result,
+            atol=atol,
+            equal_nan=True,
+        ), f"tm_result: {tm_result}, ref_result: {ref_result}"
     # multi output compare
     elif isinstance(tm_result, Sequence):
         for pl_res, ref_res in zip(tm_result, ref_result):
@@ -40,7 +45,12 @@ def _assert_allclose(tm_result: Any, ref_result: Any, atol: float = 1e-8, key: O
     elif isinstance(tm_result, Dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
-        assert np.allclose(tm_result[key].detach().cpu().numpy(), ref_result, atol=atol, equal_nan=True)
+        assert np.allclose(
+            tm_result[key].detach().cpu().numpy() if isinstance(tm_result[key], Tensor) else tm_result[key],
+            ref_result.detach().cpu().numpy() if isinstance(ref_result, Tensor) else ref_result,
+            atol=atol,
+            equal_nan=True,
+        ), f"tm_result: {tm_result}, ref_result: {ref_result}"
     else:
         raise ValueError("Unknown format for comparison")
 
@@ -147,12 +157,23 @@ def _class_test(
     # verify metrics work after being loaded from pickled state
     pickled_metric = pickle.dumps(metric)
     metric = pickle.loads(pickled_metric)
+    metric_clone = deepcopy(metric)
 
     for i in range(rank, num_batches, world_size):
         batch_kwargs_update = {k: v[i] if isinstance(v, Tensor) else v for k, v in kwargs_update.items()}
 
         # compute batch stats and aggregate for global stats
         batch_result = metric(preds[i], target[i], **batch_kwargs_update)
+
+        if rank == 0 and world_size == 1 and i == 0:  # check only in non-ddp mode and first batch
+            # dummy check to make sure that forward/update works as expected
+            metric_clone.update(preds[i], target[i], **batch_kwargs_update)
+            update_result = metric_clone.compute()
+            if isinstance(batch_result, dict):
+                for key in batch_result:
+                    _assert_allclose(batch_result, update_result[key], key=key)
+            else:
+                _assert_allclose(batch_result, update_result)
 
         if metric.dist_sync_on_step and check_dist_sync_on_step and rank == 0:
             if isinstance(preds, Tensor):
@@ -664,7 +685,16 @@ def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
 
 
 def remove_ignore_index(target: Tensor, preds: Tensor, ignore_index: Optional[int]) -> Tuple[Tensor, Tensor]:
-    """Remove samples that are equal to the ignore_index in comparison functions."""
+    """Remove samples that are equal to the ignore_index in comparison functions.
+
+    Example:
+        >>> target = torch.tensor([0, 1, 2, 3, 4])
+        >>> preds = torch.tensor([0, 1, 2, 3, 4])
+        >>> ignore_index = 2
+        >>> remove_ignore_index(target, preds, ignore_index)
+        (tensor([0, 1, 3, 4]), tensor([0, 1, 3, 4]))
+
+    """
     if ignore_index is not None:
         idx = target == ignore_index
         target, preds = deepcopy(target[~idx]), deepcopy(preds[~idx])

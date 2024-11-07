@@ -20,10 +20,10 @@ from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
 from torchmetrics.functional.detection.iou import _iou_compute, _iou_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
-if not _TORCHVISION_GREATER_EQUAL_0_8:
+if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["IntersectionOverUnion", "IntersectionOverUnion.plot"]
 elif not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["IntersectionOverUnion.plot"]
@@ -146,10 +146,10 @@ class IntersectionOverUnion(Metric):
     ) -> None:
         super().__init__(**kwargs)
 
-        if not _TORCHVISION_GREATER_EQUAL_0_8:
+        if not _TORCHVISION_AVAILABLE:
             raise ModuleNotFoundError(
-                f"Metric `{self._iou_type.upper()}` requires that `torchvision` version 0.8.0 or newer is installed."
-                " Please install with `pip install torchvision>=0.8` or `pip install torchmetrics[detection]`."
+                f"Metric `{self._iou_type.upper()}` requires that `torchvision` is installed."
+                " Please install with `pip install torchmetrics[detection]`."
             )
 
         allowed_box_formats = ("xyxy", "xywh", "cxcywh")
@@ -182,14 +182,17 @@ class IntersectionOverUnion(Metric):
         """Update state with predictions and targets."""
         _input_validator(preds, target, ignore_score=True)
 
-        for p, t in zip(preds, target):
-            det_boxes = self._get_safe_item_values(p["boxes"])
-            gt_boxes = self._get_safe_item_values(t["boxes"])
-            self.groundtruth_labels.append(t["labels"])
+        for p_i, t_i in zip(preds, target):
+            det_boxes = self._get_safe_item_values(p_i["boxes"])
+            gt_boxes = self._get_safe_item_values(t_i["boxes"])
+            self.groundtruth_labels.append(t_i["labels"])
 
             iou_matrix = self._iou_update_fn(det_boxes, gt_boxes, self.iou_threshold, self._invalid_val)  # N x M
             if self.respect_labels:
-                label_eq = p["labels"].unsqueeze(1) == t["labels"].unsqueeze(0)  # N x M
+                if det_boxes.numel() > 0 and gt_boxes.numel() > 0:
+                    label_eq = p_i["labels"].unsqueeze(1) == t_i["labels"].unsqueeze(0)  # N x M
+                else:
+                    label_eq = torch.eye(iou_matrix.shape[0], dtype=bool, device=iou_matrix.device)  # type: ignore[call-overload]
                 iou_matrix[~label_eq] = self._invalid_val
             self.iou_matrix.append(iou_matrix)
 
@@ -211,7 +214,8 @@ class IntersectionOverUnion(Metric):
         """Computes IoU based on inputs passed in to ``update`` previously."""
         score = torch.cat([mat[mat != self._invalid_val] for mat in self.iou_matrix], 0).mean()
         results: Dict[str, Tensor] = {f"{self._iou_type}": score}
-
+        if torch.isnan(score):  # if no valid boxes are found
+            results[f"{self._iou_type}"] = torch.tensor(0.0, device=score.device)
         if self.class_metrics:
             gt_labels = dim_zero_cat(self.groundtruth_labels)
             classes = gt_labels.unique().tolist() if len(gt_labels) > 0 else []

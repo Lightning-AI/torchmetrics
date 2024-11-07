@@ -15,9 +15,9 @@ from typing import Optional
 
 import torch
 
-from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
-if not _TORCHVISION_GREATER_EQUAL_0_8:
+if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["generalized_intersection_over_union"]
 
 
@@ -30,6 +30,11 @@ def _giou_update(
         raise ValueError(f"Expected target to be of shape (N, 4) but got {target.shape}")
 
     from torchvision.ops import generalized_box_iou
+
+    if preds.numel() == 0:  # if no boxes are predicted
+        return torch.zeros(target.shape[0], target.shape[0], device=target.device, dtype=torch.float32)
+    if target.numel() == 0:  # if no boxes are true
+        return torch.zeros(preds.shape[0], preds.shape[0], device=preds.device, dtype=torch.float32)
 
     iou = generalized_box_iou(preds, target)
     if iou_threshold is not None:
@@ -113,11 +118,10 @@ def generalized_intersection_over_union(
                 [-0.6024, -0.4021,  0.5345]])
 
     """
-    if not _TORCHVISION_GREATER_EQUAL_0_8:
+    if not _TORCHVISION_AVAILABLE:
         raise ModuleNotFoundError(
-            f"`{generalized_intersection_over_union.__name__}` requires that `torchvision` version 0.8.0 or newer"
-            " is installed."
-            " Please install with `pip install torchvision>=0.8` or `pip install torchmetrics[detection]`."
+            f"`{generalized_intersection_over_union.__name__}` requires that `torchvision` is installed."
+            " Please install with `pip install torchmetrics[detection]`."
         )
     iou = _giou_update(preds, target, iou_threshold, replacement_val)
     return _giou_compute(iou, aggregate)
