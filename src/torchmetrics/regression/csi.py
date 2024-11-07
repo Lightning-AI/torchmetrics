@@ -61,7 +61,7 @@ class CriticalSuccessIndex(Metric):
     is_differentiable: bool = False
     higher_is_better: bool = True
 
-    hits:Tensor
+    hits: Tensor
     misses: Tensor
     false_alarms: Tensor
     hits_list: list[Tensor]
