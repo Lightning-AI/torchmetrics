@@ -14,6 +14,7 @@
 from typing import Any, Optional
 
 import torch
+from torch import Tensor
 
 from torchmetrics.functional.regression.csi import _critical_success_index_compute, _critical_success_index_update
 from torchmetrics.metric import Metric
@@ -40,8 +41,8 @@ class CriticalSuccessIndex(Metric):
     Example:
         >>> import torch
         >>> from torchmetrics.regression import CriticalSuccessIndex
-        >>> x = torch.Tensor([[0.2, 0.7], [0.9, 0.3]])
-        >>> y = torch.Tensor([[0.4, 0.2], [0.8, 0.6]])
+        >>> x = Tensor([[0.2, 0.7], [0.9, 0.3]])
+        >>> y = Tensor([[0.4, 0.2], [0.8, 0.6]])
         >>> csi = CriticalSuccessIndex(0.5)
         >>> csi(x, y)
         tensor(0.3333)
@@ -49,8 +50,8 @@ class CriticalSuccessIndex(Metric):
     Example:
         >>> import torch
         >>> from torchmetrics.regression import CriticalSuccessIndex
-        >>> x = torch.Tensor([[[0.2, 0.7], [0.9, 0.3]], [[0.2, 0.7], [0.9, 0.3]]])
-        >>> y = torch.Tensor([[[0.4, 0.2], [0.8, 0.6]], [[0.4, 0.2], [0.8, 0.6]]])
+        >>> x = Tensor([[[0.2, 0.7], [0.9, 0.3]], [[0.2, 0.7], [0.9, 0.3]]])
+        >>> y = Tensor([[[0.4, 0.2], [0.8, 0.6]], [[0.4, 0.2], [0.8, 0.6]]])
         >>> csi = CriticalSuccessIndex(0.5, keep_sequence_dim=0)
         >>> csi(x, y)
         tensor([0.3333, 0.3333])
@@ -60,12 +61,12 @@ class CriticalSuccessIndex(Metric):
     is_differentiable: bool = False
     higher_is_better: bool = True
 
-    hits: torch.Tensor
-    misses: torch.Tensor
-    false_alarms: torch.Tensor
-    hits_list: list[torch.Tensor]
-    misses_list: list[torch.Tensor]
-    false_alarms_list: list[torch.Tensor]
+    hits:Tensor
+    misses: Tensor
+    false_alarms: Tensor
+    hits_list: list[Tensor]
+    misses_list: list[Tensor]
+    false_alarms_list: list[Tensor]
 
     def __init__(self, threshold: float, keep_sequence_dim: Optional[int] = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -84,7 +85,7 @@ class CriticalSuccessIndex(Metric):
             self.add_state("misses_list", default=[], dist_reduce_fx="cat")
             self.add_state("false_alarms_list", default=[], dist_reduce_fx="cat")
 
-    def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:
+    def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         hits, misses, false_alarms = _critical_success_index_update(
             preds, target, self.threshold, self.keep_sequence_dim
@@ -98,7 +99,7 @@ class CriticalSuccessIndex(Metric):
             self.misses_list.append(misses)
             self.false_alarms_list.append(false_alarms)
 
-    def compute(self) -> torch.Tensor:
+    def compute(self) -> Tensor:
         """Compute critical success index over state."""
         if self.keep_sequence_dim is None:
             hits = self.hits

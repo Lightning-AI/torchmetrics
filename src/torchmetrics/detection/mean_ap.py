@@ -866,12 +866,12 @@ class MeanAveragePrecision(Metric):
 
     def _get_coco_format(
         self,
-        labels: list[torch.Tensor],
-        boxes: Optional[list[torch.Tensor]] = None,
-        masks: Optional[list[torch.Tensor]] = None,
-        scores: Optional[list[torch.Tensor]] = None,
-        crowds: Optional[list[torch.Tensor]] = None,
-        area: Optional[list[torch.Tensor]] = None,
+        labels: list[Tensor],
+        boxes: Optional[list[Tensor]] = None,
+        masks: Optional[list[Tensor]] = None,
+        scores: Optional[list[Tensor]] = None,
+        crowds: Optional[list[Tensor]] = None,
+        area: Optional[list[Tensor]] = None,
     ) -> dict:
         """Transforms and returns all cached targets or predictions in COCO format.
 
