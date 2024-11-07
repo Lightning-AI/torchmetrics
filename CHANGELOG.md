@@ -8,14 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [UnReleased] - 2024-MM-DD
+## [1.5.2] - 2024-11-07
+
+### Changed
+
+- Re-adding `numpy` 2+ support ([#2804](https://github.com/Lightning-AI/torchmetrics/pull/2804))
 
 ### Fixed
 
 - Fixed iou scores in detection for either empty predictions/targets leading to wrong scores ([#2805](https://github.com/Lightning-AI/torchmetrics/pull/2805))
-
-
 - Fixed `MetricCollection` compatibility with `torch.jit.script` ([#2813](https://github.com/Lightning-AI/torchmetrics/pull/2813))
+- Fixed assert in PIT ([#2811](https://github.com/Lightning-AI/torchmetrics/pull/2811))
+- Pathed `np.Inf` for `numpy` 2.0+ ([#2826](https://github.com/Lightning-AI/torchmetrics/pull/2826))
 
 
 ---
