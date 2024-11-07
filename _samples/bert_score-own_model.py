@@ -53,7 +53,7 @@ class UserTokenizer:
             self.PAD_TOKEN: torch.zeros(1, _MODEL_DIM),
         }
 
-    def __call__(self, sentences: Union[str, List[str]], max_len: int = _MAX_LEN) -> Dict[str, Tensor]:
+    def __call__(self, sentences: Union[str, list[str]], max_len: int = _MAX_LEN) -> dict[str, Tensor]:
         """Call method to tokenize user input.
 
         The `__call__` method must be defined for this class. To ensure the functionality, the `__call__` method
@@ -69,7 +69,7 @@ class UserTokenizer:
             Python dictionary containing the keys `input_ids` and `attention_mask` with corresponding values.
 
         """
-        output_dict: Dict[str, Tensor] = {}
+        output_dict: dict[str, Tensor] = {}
         if isinstance(sentences, str):
             sentences = [sentences]
         # Add special tokens
@@ -96,7 +96,7 @@ def get_user_model_encoder(num_layers: int = _NUM_LAYERS, d_model: int = _MODEL_
     return nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
 
 
-def user_forward_fn(model: Module, batch: Dict[str, Tensor]) -> Tensor:
+def user_forward_fn(model: Module, batch: dict[str, Tensor]) -> Tensor:
     """User forward function used for the computation of model embeddings.
 
     This function might be arbitrarily complicated inside. However, to ensure functionality, it should obey the

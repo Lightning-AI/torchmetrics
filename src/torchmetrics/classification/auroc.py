@@ -109,7 +109,7 @@ class BinaryAUROC(BinaryPrecisionRecallCurve):
     def __init__(
         self,
         max_fpr: Optional[float] = None,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -258,7 +258,7 @@ class MulticlassAUROC(MulticlassPrecisionRecallCurve):
         self,
         num_classes: int,
         average: Optional[Literal["macro", "weighted", "none"]] = "macro",
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -413,7 +413,7 @@ class MultilabelAUROC(MultilabelPrecisionRecallCurve):
         self,
         num_labels: int,
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -508,9 +508,9 @@ class AUROC(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls: Type["AUROC"],
+        cls: type["AUROC"],
         task: Literal["binary", "multiclass", "multilabel"],
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
         average: Optional[Literal["macro", "weighted", "none"]] = "macro",

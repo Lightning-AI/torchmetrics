@@ -51,7 +51,7 @@ def _binary_hinge_loss_update(
     preds: Tensor,
     target: Tensor,
     squared: bool,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     target = target.bool()
     margin = torch.zeros_like(preds)
     margin[target] = preds[target]
@@ -152,7 +152,7 @@ def _multiclass_hinge_loss_update(
     target: Tensor,
     squared: bool,
     multiclass_mode: Literal["crammer-singer", "one-vs-all"] = "crammer-singer",
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     if not torch.all((preds >= 0) * (preds <= 1)):
         preds = preds.softmax(1)
 

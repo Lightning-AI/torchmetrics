@@ -33,7 +33,7 @@ seed_all(42)
 
 class _InputImagesCaptions(NamedTuple):
     images: Tensor
-    captions: List[List[str]]
+    captions: list[list[str]]
 
 
 captions = [

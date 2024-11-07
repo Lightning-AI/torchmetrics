@@ -42,7 +42,7 @@ def _multiclass_exact_match_update(
     target: Tensor,
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Compute the statistics."""
     if ignore_index is not None:
         preds = preds.clone()
@@ -123,7 +123,7 @@ def multiclass_exact_match(
 
 def _multilabel_exact_match_update(
     preds: Tensor, target: Tensor, num_labels: int, multidim_average: Literal["global", "samplewise"] = "global"
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Compute the statistics."""
     if multidim_average == "global":
         preds = torch.movedim(preds, 1, -1).reshape(-1, num_labels)

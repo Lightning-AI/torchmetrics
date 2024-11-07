@@ -90,7 +90,7 @@ class EditDistance(Metric):
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
 
-    edit_scores_list: List[Tensor]
+    edit_scores_list: list[Tensor]
     edit_scores: Tensor
     num_elements: Tensor
 

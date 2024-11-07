@@ -45,7 +45,7 @@ def _mean_iou_update(
     num_classes: int,
     include_background: bool = False,
     input_format: Literal["one-hot", "index"] = "one-hot",
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Update the intersection and union counts for the mean IoU computation."""
     _check_same_shape(preds, target)
 

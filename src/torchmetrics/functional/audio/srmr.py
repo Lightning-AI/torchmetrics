@@ -56,7 +56,7 @@ def _make_erb_filters(fs: int, num_freqs: int, cutoff: float, device: torch.devi
 @lru_cache(maxsize=100)
 def _compute_modulation_filterbank_and_cutoffs(
     min_cf: float, max_cf: float, n: int, fs: float, q: int, device: torch.device
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     # this function is translated from the SRMRpy packaged
     spacing_factor = (max_cf / min_cf) ** (1.0 / (n - 1))
     cfs = torch.zeros(n, dtype=torch.float64)
@@ -73,7 +73,7 @@ def _compute_modulation_filterbank_and_cutoffs(
 
     mfb = torch.stack([_make_modulation_filter(w0, q) for w0 in 2 * pi * cfs / fs], dim=0)
 
-    def _calc_cutoffs(cfs: Tensor, fs: float, q: int) -> Tuple[Tensor, Tensor]:
+    def _calc_cutoffs(cfs: Tensor, fs: float, q: int) -> tuple[Tensor, Tensor]:
         # Calculates cutoff frequencies (3 dB) for 2nd order bandpass
         w0 = 2 * pi * cfs / fs
         b0 = torch.tan(w0 / 2) / q

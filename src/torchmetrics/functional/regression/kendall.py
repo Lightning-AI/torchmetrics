@@ -47,7 +47,7 @@ class _TestAlternative(EnumStr):
         return "alternative"
 
 
-def _sort_on_first_sequence(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
+def _sort_on_first_sequence(x: Tensor, y: Tensor) -> tuple[Tensor, Tensor]:
     """Sort sequences in an ascent order according to the sequence ``x``."""
     # We need to clone `y` tensor not to change an object in memory
     y = torch.clone(y)
@@ -94,7 +94,7 @@ def _convert_sequence_to_dense_rank(x: Tensor, sort: bool = False) -> Tensor:
     return _cumsum(torch.cat([_ones, (x[1:] != x[:-1]).int()], dim=0), dim=0)
 
 
-def _get_ties(x: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
+def _get_ties(x: Tensor) -> tuple[Tensor, Tensor, Tensor]:
     """Get a total number of ties and staistics for p-value calculation for  a given sequence."""
     ties = torch.zeros(x.shape[1], dtype=x.dtype, device=x.device)
     ties_p1 = torch.zeros(x.shape[1], dtype=x.dtype, device=x.device)
@@ -111,7 +111,7 @@ def _get_ties(x: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
 
 def _get_metric_metadata(
     preds: Tensor, target: Tensor, variant: _MetricVariant
-) -> Tuple[
+) -> tuple[
     Tensor,
     Tensor,
     Optional[Tensor],
@@ -225,10 +225,10 @@ def _calculate_p_value(
 def _kendall_corrcoef_update(
     preds: Tensor,
     target: Tensor,
-    concat_preds: Optional[List[Tensor]] = None,
-    concat_target: Optional[List[Tensor]] = None,
+    concat_preds: Optional[list[Tensor]] = None,
+    concat_target: Optional[list[Tensor]] = None,
     num_outputs: int = 1,
-) -> Tuple[List[Tensor], List[Tensor]]:
+) -> tuple[list[Tensor], list[Tensor]]:
     """Update variables required to compute Kendall rank correlation coefficient.
 
     Args:
@@ -263,7 +263,7 @@ def _kendall_corrcoef_compute(
     target: Tensor,
     variant: _MetricVariant,
     alternative: Optional[_TestAlternative] = None,
-) -> Tuple[Tensor, Optional[Tensor]]:
+) -> tuple[Tensor, Optional[Tensor]]:
     """Compute Kendall rank correlation coefficient, and optionally p-value of corresponding statistical test.
 
     Args:
@@ -324,7 +324,7 @@ def kendall_rank_corrcoef(
     variant: Literal["a", "b", "c"] = "b",
     t_test: bool = False,
     alternative: Optional[Literal["two-sided", "less", "greater"]] = "two-sided",
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+) -> Union[Tensor, tuple[Tensor, Tensor]]:
     r"""Compute `Kendall Rank Correlation Coefficient`_.
 
     .. math::

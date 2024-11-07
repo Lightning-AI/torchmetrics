@@ -69,7 +69,7 @@ class TotalVariation(Metric):
     plot_lower_bound: float = 0.0
 
     num_elements: Tensor
-    score_list: List[Tensor]
+    score_list: list[Tensor]
     score: Tensor
 
     def __init__(self, reduction: Optional[Literal["mean", "sum", "none"]] = "sum", **kwargs: Any) -> None:

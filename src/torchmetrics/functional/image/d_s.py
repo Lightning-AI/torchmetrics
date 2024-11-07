@@ -28,7 +28,7 @@ if not _TORCHVISION_AVAILABLE:
 
 def _spatial_distortion_index_update(
     preds: Tensor, ms: Tensor, pan: Tensor, pan_lr: Optional[Tensor] = None
-) -> Tuple[Tensor, Tensor, Tensor, Optional[Tensor]]:
+) -> tuple[Tensor, Tensor, Tensor, Optional[Tensor]]:
     """Update and returns variables required to compute Spatial Distortion Index.
 
     Args:

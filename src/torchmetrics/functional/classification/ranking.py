@@ -45,7 +45,7 @@ def _multilabel_ranking_tensor_validation(
         raise ValueError(f"Expected preds tensor to be floating point, but received input with dtype {preds.dtype}")
 
 
-def _multilabel_coverage_error_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
+def _multilabel_coverage_error_update(preds: Tensor, target: Tensor) -> tuple[Tensor, int]:
     """Accumulate state for coverage error."""
     offset = torch.zeros_like(preds)
     offset[target == 0] = preds.min().abs() + 10  # Any number >1 works
@@ -109,7 +109,7 @@ def multilabel_coverage_error(
     return _ranking_reduce(coverage, total)
 
 
-def _multilabel_ranking_average_precision_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
+def _multilabel_ranking_average_precision_update(preds: Tensor, target: Tensor) -> tuple[Tensor, int]:
     """Accumulate state for label ranking average precision."""
     # Invert so that the highest score receives rank 1
     neg_preds = -preds
@@ -182,7 +182,7 @@ def multilabel_ranking_average_precision(
     return _ranking_reduce(score, num_elements)
 
 
-def _multilabel_ranking_loss_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, int]:
+def _multilabel_ranking_loss_update(preds: Tensor, target: Tensor) -> tuple[Tensor, int]:
     """Accumulate state for label ranking loss.
 
     Args:

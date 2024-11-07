@@ -67,8 +67,8 @@ class DunnIndex(Metric):
     higher_is_better: bool = True
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
-    data: List[Tensor]
-    labels: List[Tensor]
+    data: list[Tensor]
+    labels: list[Tensor]
 
     def __init__(self, p: float = 2, **kwargs: Any) -> None:
         super().__init__(**kwargs)

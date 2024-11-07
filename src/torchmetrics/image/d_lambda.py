@@ -70,8 +70,8 @@ class SpectralDistortionIndex(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    preds: List[Tensor]
-    target: List[Tensor]
+    preds: list[Tensor]
+    target: list[Tensor]
 
     def __init__(
         self, p: int = 1, reduction: Literal["elementwise_mean", "sum", "none"] = "elementwise_mean", **kwargs: Any

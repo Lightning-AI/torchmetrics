@@ -96,7 +96,7 @@ def _binary_stat_scores_format(
     target: Tensor,
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
     - If preds tensor is floating point, applies sigmoid if pred tensor not in [0,1] range
@@ -125,7 +125,7 @@ def _binary_stat_scores_update(
     preds: Tensor,
     target: Tensor,
     multidim_average: Literal["global", "samplewise"] = "global",
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Compute the statistics."""
     sum_dim = [0, 1] if multidim_average == "global" else [1]
     tp = ((target == preds) & (target == 1)).sum(sum_dim).squeeze()
@@ -326,7 +326,7 @@ def _multiclass_stat_scores_format(
     preds: Tensor,
     target: Tensor,
     top_k: int = 1,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Convert all input to label format except if ``top_k`` is not 1.
 
     - Applies argmax if preds have one more dimension than target
@@ -349,7 +349,7 @@ def _multiclass_stat_scores_update(
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Compute the statistics.
 
     - If ``multidim_average`` is equal to samplewise or ``top_k`` is not 1, we transform both preds and
@@ -650,7 +650,7 @@ def _multilabel_stat_scores_tensor_validation(
 
 def _multilabel_stat_scores_format(
     preds: Tensor, target: Tensor, num_labels: int, threshold: float = 0.5, ignore_index: Optional[int] = None
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
     - If preds tensor is floating point, applies sigmoid if pred tensor not in [0,1] range
@@ -675,7 +675,7 @@ def _multilabel_stat_scores_format(
 
 def _multilabel_stat_scores_update(
     preds: Tensor, target: Tensor, multidim_average: Literal["global", "samplewise"] = "global"
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Compute the statistics."""
     sum_dim = [0, -1] if multidim_average == "global" else [-1]
     tp = ((target == preds) & (target == 1)).sum(sum_dim).squeeze()
@@ -828,7 +828,7 @@ def _del_column(data: Tensor, idx: int) -> Tensor:
 
 def _drop_negative_ignored_indices(
     preds: Tensor, target: Tensor, ignore_index: int, mode: DataType
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Remove negative ignored indices.
 
     Args:
@@ -866,7 +866,7 @@ def _stat_scores(
     preds: Tensor,
     target: Tensor,
     reduce: Optional[str] = "micro",
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Calculate the number of tp, fp, tn, fn.
 
     Args:
@@ -892,7 +892,7 @@ def _stat_scores(
         - If ``reduce='samples'``, the returned tensors are ``(N,X)`` tensors
 
     """
-    dim: Union[int, List[int]] = 1  # for "samples"
+    dim: Union[int, list[int]] = 1  # for "samples"
     if reduce == "micro":
         dim = [0, 1] if preds.ndim == 2 else [1, 2]
     elif reduce == "macro":
@@ -921,7 +921,7 @@ def _stat_scores_update(
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
     mode: Optional[DataType] = None,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Calculate true positives, false positives, true negatives, false negatives.
 
     Raises:

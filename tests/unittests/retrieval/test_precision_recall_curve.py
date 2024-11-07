@@ -42,7 +42,7 @@ def _compute_precision_recall_curve(
     empty_target_action: str = "skip",
     reverse: bool = False,
     aggregation: Union[Literal["mean", "median", "min", "max"], Callable] = "mean",
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor]:
     """Compute metric with multiple iterations over every query predictions set.
 
     Didn't find a reliable implementation of precision-recall curve in Information Retrieval,

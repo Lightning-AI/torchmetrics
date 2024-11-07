@@ -32,7 +32,7 @@ def _pearson_corrcoef_update(
     corr_xy: Tensor,
     num_prior: Tensor,
     num_outputs: int,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Update and returns variables required to compute Pearson Correlation Coefficient.
 
     Check for same shape of input tensors.

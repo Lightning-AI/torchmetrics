@@ -34,7 +34,7 @@ seed_all(42)
 
 class _Input(NamedTuple):
     preds: Tensor
-    target: List[Dict[str, Tensor]]
+    target: list[dict[str, Tensor]]
     ms: Tensor
     pan: Tensor
     pan_lr: Tensor

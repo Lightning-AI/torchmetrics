@@ -98,7 +98,7 @@ def _parse_requirements(strs: Union[str, Iterable[str]]) -> Iterator[_Requiremen
 
 def _load_requirements(
     path_dir: str, file_name: str = "base.txt", unfreeze: bool = not _FREEZE_REQUIREMENTS
-) -> List[str]:
+) -> list[str]:
     """Load requirements from a file.
 
     >>> _load_requirements(_PATH_REQUIRE)
@@ -162,7 +162,7 @@ LONG_DESCRIPTION = _load_readme_description(
 BASE_REQUIREMENTS = _load_requirements(path_dir=_PATH_REQUIRE, file_name="base.txt")
 
 
-def _prepare_extras(skip_pattern: str = "^_", skip_files: Tuple[str] = ("base.txt",)) -> dict:
+def _prepare_extras(skip_pattern: str = "^_", skip_files: tuple[str] = ("base.txt",)) -> dict:
     """Preparing extras for the package listing requirements.
 
     Args:

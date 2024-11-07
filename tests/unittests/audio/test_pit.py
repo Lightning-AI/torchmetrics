@@ -57,7 +57,7 @@ def _reference_scipy_pit(
     target: Tensor,
     metric_func: Callable,
     eval_func: str,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Naive implementation of `Permutation Invariant Training` based on Scipy.
 
     Args:
@@ -87,7 +87,7 @@ def _reference_scipy_pit(
     return torch.from_numpy(np.stack(best_metrics)), torch.from_numpy(np.stack(best_perms))
 
 
-def _reference_scipy_pit_snr(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+def _reference_scipy_pit_snr(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
     return _reference_scipy_pit(
         preds=preds,
         target=target,
@@ -96,7 +96,7 @@ def _reference_scipy_pit_snr(preds: Tensor, target: Tensor) -> Tuple[Tensor, Ten
     )
 
 
-def _reference_scipy_pit_si_sdr(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+def _reference_scipy_pit_si_sdr(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
     return _reference_scipy_pit(
         preds=preds,
         target=target,

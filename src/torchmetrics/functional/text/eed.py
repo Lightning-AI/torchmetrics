@@ -234,7 +234,7 @@ def _preprocess_ja(sentence: str) -> str:
     return unicodedata.normalize("NFKC", sentence)
 
 
-def _eed_compute(sentence_level_scores: List[Tensor]) -> Tensor:
+def _eed_compute(sentence_level_scores: list[Tensor]) -> Tensor:
     """Reduction for extended edit distance.
 
     Args:
@@ -254,7 +254,7 @@ def _preprocess_sentences(
     preds: Union[str, Sequence[str]],
     target: Sequence[Union[str, Sequence[str]]],
     language: Literal["en", "ja"],
-) -> Tuple[Union[str, Sequence[str]], Sequence[Union[str, Sequence[str]]]]:
+) -> tuple[Union[str, Sequence[str]], Sequence[Union[str, Sequence[str]]]]:
     """Preprocess strings according to language requirements.
 
     Args:
@@ -328,8 +328,8 @@ def _eed_update(
     rho: float = 0.3,
     deletion: float = 0.2,
     insertion: float = 1.0,
-    sentence_eed: Optional[List[Tensor]] = None,
-) -> List[Tensor]:
+    sentence_eed: Optional[list[Tensor]] = None,
+) -> list[Tensor]:
     """Compute scores for ExtendedEditDistance.
 
     Args:
@@ -371,7 +371,7 @@ def extended_edit_distance(
     rho: float = 0.3,
     deletion: float = 0.2,
     insertion: float = 1.0,
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+) -> Union[Tensor, tuple[Tensor, Tensor]]:
     """Compute extended edit distance score (`ExtendedEditDistance`_) [1] for strings or list of strings.
 
     The metric utilises the Levenshtein distance and extends it by adding a jump operation.

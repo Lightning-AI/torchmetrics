@@ -84,8 +84,8 @@ class MatchErrorRate(Metric):
 
     def update(
         self,
-        preds: Union[str, List[str]],
-        target: Union[str, List[str]],
+        preds: Union[str, list[str]],
+        target: Union[str, list[str]],
     ) -> None:
         """Update state with predictions and targets."""
         errors, total = _mer_update(preds, target)

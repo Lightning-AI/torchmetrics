@@ -132,8 +132,8 @@ class IntersectionOverUnion(Metric):
     higher_is_better: Optional[bool] = True
     full_state_update: bool = True
 
-    groundtruth_labels: List[Tensor]
-    iou_matrix: List[Tensor]
+    groundtruth_labels: list[Tensor]
+    iou_matrix: list[Tensor]
     _iou_type: str = "iou"
     _invalid_val: float = -1.0
 
@@ -179,7 +179,7 @@ class IntersectionOverUnion(Metric):
     def _iou_compute_fn(*args: Any, **kwargs: Any) -> Tensor:
         return _iou_compute(*args, **kwargs)
 
-    def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:
+    def update(self, preds: list[dict[str, Tensor]], target: list[dict[str, Tensor]]) -> None:
         """Update state with predictions and targets."""
         _input_validator(preds, target, ignore_score=True)
 
@@ -205,7 +205,7 @@ class IntersectionOverUnion(Metric):
             boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
         return boxes
 
-    def _get_gt_classes(self) -> List:
+    def _get_gt_classes(self) -> list:
         """Returns a list of unique classes found in ground truth and detection data."""
         if len(self.groundtruth_labels) > 0:
             return torch.cat(self.groundtruth_labels).unique().tolist()
@@ -214,7 +214,7 @@ class IntersectionOverUnion(Metric):
     def compute(self) -> dict:
         """Computes IoU based on inputs passed in to ``update`` previously."""
         score = torch.cat([mat[mat != self._invalid_val] for mat in self.iou_matrix], 0).mean()
-        results: Dict[str, Tensor] = {f"{self._iou_type}": score}
+        results: dict[str, Tensor] = {f"{self._iou_type}": score}
         if torch.isnan(score):  # if no valid boxes are found
             results[f"{self._iou_type}"] = torch.tensor(0.0, device=score.device)
         if self.class_metrics:

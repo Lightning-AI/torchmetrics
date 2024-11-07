@@ -26,7 +26,7 @@ from torchmetrics.utilities.prints import rank_zero_warn
 METRIC_EPS = 1e-6
 
 
-def dim_zero_cat(x: Union[Tensor, List[Tensor]]) -> Tensor:
+def dim_zero_cat(x: Union[Tensor, list[Tensor]]) -> Tensor:
     """Concatenation along the zero dimension."""
     if isinstance(x, torch.Tensor):
         return x
@@ -61,7 +61,7 @@ def _flatten(x: Sequence) -> list:
     return [item for sublist in x for item in sublist]
 
 
-def _flatten_dict(x: Dict) -> Tuple[Dict, bool]:
+def _flatten_dict(x: dict) -> tuple[dict, bool]:
     """Flatten dict of dicts into single dict and checking for duplicates in keys along the way."""
     new_dict = {}
     duplicates = False

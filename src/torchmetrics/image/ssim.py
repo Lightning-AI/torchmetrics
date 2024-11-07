@@ -84,8 +84,8 @@ class StructuralSimilarityIndexMeasure(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    preds: List[Tensor]
-    target: List[Tensor]
+    preds: list[Tensor]
+    target: list[Tensor]
 
     def __init__(
         self,
@@ -93,7 +93,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         sigma: Union[float, Sequence[float]] = 1.5,
         kernel_size: Union[int, Sequence[int]] = 11,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        data_range: Optional[Union[float, Tuple[float, float]]] = None,
+        data_range: Optional[Union[float, tuple[float, float]]] = None,
         k1: float = 0.01,
         k2: float = 0.03,
         return_full_image: bool = False,
@@ -156,7 +156,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         else:
             self.similarity.append(similarity)
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def compute(self) -> Union[Tensor, tuple[Tensor, Tensor]]:
         """Compute SSIM over state."""
         if self.reduction == "elementwise_mean":
             similarity = self.similarity / self.total
@@ -285,8 +285,8 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    preds: List[Tensor]
-    target: List[Tensor]
+    preds: list[Tensor]
+    target: list[Tensor]
 
     def __init__(
         self,
@@ -294,10 +294,10 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         kernel_size: Union[int, Sequence[int]] = 11,
         sigma: Union[float, Sequence[float]] = 1.5,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        data_range: Optional[Union[float, Tuple[float, float]]] = None,
+        data_range: Optional[Union[float, tuple[float, float]]] = None,
         k1: float = 0.01,
         k2: float = 0.03,
-        betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
+        betas: tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
         normalize: Literal["relu", "simple", None] = "relu",
         **kwargs: Any,
     ) -> None:

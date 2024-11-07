@@ -21,9 +21,9 @@ from torchmetrics.functional.text.helper import _edit_distance
 
 
 def _wer_update(
-    preds: Union[str, List[str]],
-    target: Union[str, List[str]],
-) -> Tuple[Tensor, Tensor]:
+    preds: Union[str, list[str]],
+    target: Union[str, list[str]],
+) -> tuple[Tensor, Tensor]:
     """Update the wer score with the current set of references and predictions.
 
     Args:
@@ -63,7 +63,7 @@ def _wer_compute(errors: Tensor, total: Tensor) -> Tensor:
     return errors / total
 
 
-def word_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
+def word_error_rate(preds: Union[str, list[str]], target: Union[str, list[str]]) -> Tensor:
     """Word error rate (WordErrorRate_) is a common metric of performance of an automatic speech recognition system.
 
     This value indicates the percentage of words that were incorrectly predicted. The lower the value, the better the

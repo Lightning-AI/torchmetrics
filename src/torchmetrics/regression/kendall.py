@@ -120,8 +120,8 @@ class KendallRankCorrCoef(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    preds: List[Tensor]
-    target: List[Tensor]
+    preds: list[Tensor]
+    target: list[Tensor]
 
     def __init__(
         self,
@@ -154,7 +154,7 @@ class KendallRankCorrCoef(Metric):
             num_outputs=self.num_outputs,
         )
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def compute(self) -> Union[Tensor, tuple[Tensor, Tensor]]:
         """Compute Kendall rank correlation coefficient, and optionally p-value of corresponding statistical test."""
         preds = dim_zero_cat(self.preds)
         target = dim_zero_cat(self.target)

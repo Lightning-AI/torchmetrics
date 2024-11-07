@@ -68,8 +68,8 @@ class MutualInfoScore(Metric):
     higher_is_better: Optional[bool] = True
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
-    preds: List[Tensor]
-    target: List[Tensor]
+    preds: list[Tensor]
+    target: list[Tensor]
     contingency: Tensor
 
     def __init__(self, **kwargs: Any) -> None:

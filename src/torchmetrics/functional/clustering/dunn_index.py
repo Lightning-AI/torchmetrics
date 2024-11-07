@@ -18,7 +18,7 @@ import torch
 from torch import Tensor
 
 
-def _dunn_index_update(data: Tensor, labels: Tensor, p: float) -> Tuple[Tensor, Tensor]:
+def _dunn_index_update(data: Tensor, labels: Tensor, p: float) -> tuple[Tensor, Tensor]:
     """Update and return variables required to compute the Dunn index.
 
     Args:

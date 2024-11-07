@@ -191,17 +191,17 @@ class MetricCollection(ModuleDict):
 
     """
 
-    _modules: Dict[str, Metric]  # type: ignore[assignment]
-    _groups: Dict[int, List[str]]
-    __jit_unused_properties__: ClassVar[List[str]] = ["metric_state"]
+    _modules: dict[str, Metric]  # type: ignore[assignment]
+    _groups: dict[int, list[str]]
+    __jit_unused_properties__: ClassVar[list[str]] = ["metric_state"]
 
     def __init__(
         self,
-        metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]],
+        metrics: Union[Metric, Sequence[Metric], dict[str, Metric]],
         *additional_metrics: Metric,
         prefix: Optional[str] = None,
         postfix: Optional[str] = None,
-        compute_groups: Union[bool, List[List[str]]] = True,
+        compute_groups: Union[bool, list[list[str]]] = True,
     ) -> None:
         super().__init__()
 
@@ -214,12 +214,12 @@ class MetricCollection(ModuleDict):
         self.add_metrics(metrics, *additional_metrics)
 
     @property
-    def metric_state(self) -> Dict[str, Dict[str, Any]]:
+    def metric_state(self) -> dict[str, dict[str, Any]]:
         """Get the current state of the metric."""
         return {k: m.metric_state for k, m in self.items(keep_base=False, copy_state=False)}
 
     @torch.jit.unused
-    def forward(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+    def forward(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """Call forward for each metric sequentially.
 
         Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
@@ -342,13 +342,13 @@ class MetricCollection(ModuleDict):
                     mi._update_count = deepcopy(m0._update_count) if copy else m0._update_count
         self._state_is_copy = copy
 
-    def compute(self) -> Dict[str, Any]:
+    def compute(self) -> dict[str, Any]:
         """Compute the result for each metric in the collection."""
         return self._compute_and_reduce("compute")
 
     def _compute_and_reduce(
         self, method_name: Literal["compute", "forward"], *args: Any, **kwargs: Any
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Compute result from collection and reduce into a single dictionary.
 
         Args:
@@ -422,7 +422,7 @@ class MetricCollection(ModuleDict):
             m.persistent(mode)
 
     def add_metrics(
-        self, metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]], *additional_metrics: Metric
+        self, metrics: Union[Metric, Sequence[Metric], dict[str, Metric]], *additional_metrics: Metric
     ) -> None:
         """Add new metrics to Metric Collection."""
         if isinstance(metrics, Metric):
@@ -516,7 +516,7 @@ class MetricCollection(ModuleDict):
             self._groups = {i: [str(k)] for i, k in enumerate(self.keys(keep_base=True))}
 
     @property
-    def compute_groups(self) -> Dict[int, List[str]]:
+    def compute_groups(self) -> dict[int, list[str]]:
         """Return a dict with the current compute groups in the collection."""
         return self._groups
 
@@ -548,7 +548,7 @@ class MetricCollection(ModuleDict):
             return self._modules.keys()
         return self._to_renamed_dict().keys()
 
-    def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[Tuple[str, Metric]]:
+    def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[tuple[str, Metric]]:
         r"""Return an iterable of the ModuleDict key/value pairs.
 
         Args:
@@ -617,7 +617,7 @@ class MetricCollection(ModuleDict):
 
     def plot(
         self,
-        val: Optional[Union[Dict, Sequence[Dict]]] = None,
+        val: Optional[Union[dict, Sequence[dict]]] = None,
         ax: Optional[Union[_AX_TYPE, Sequence[_AX_TYPE]]] = None,
         together: bool = False,
     ) -> Sequence[_PLOT_OUT_TYPE]:

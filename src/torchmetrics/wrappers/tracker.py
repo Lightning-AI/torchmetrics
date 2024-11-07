@@ -104,10 +104,10 @@ class MetricTracker(ModuleList):
 
     """
 
-    maximize: Union[bool, List[bool]]
+    maximize: Union[bool, list[bool]]
 
     def __init__(
-        self, metric: Union[Metric, MetricCollection], maximize: Optional[Union[bool, List[bool]]] = True
+        self, metric: Union[Metric, MetricCollection], maximize: Optional[Union[bool, list[bool]]] = True
     ) -> None:
         super().__init__()
         if not isinstance(metric, (Metric, MetricCollection)):
@@ -221,10 +221,10 @@ class MetricTracker(ModuleList):
         None,
         float,
         Tensor,
-        Tuple[Union[int, float, Tensor], Union[int, float, Tensor]],
-        Tuple[None, None],
-        Dict[str, Union[float, None]],
-        Tuple[Dict[str, Union[float, None]], Dict[str, Union[int, None]]],
+        tuple[Union[int, float, Tensor], Union[int, float, Tensor]],
+        tuple[None, None],
+        dict[str, Union[float, None]],
+        tuple[dict[str, Union[float, None]], dict[str, Union[int, None]]],
     ]:
         """Return the highest metric out of all tracked.
 

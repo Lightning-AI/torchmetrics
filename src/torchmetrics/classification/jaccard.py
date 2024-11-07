@@ -459,7 +459,7 @@ class JaccardIndex(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls: Type["JaccardIndex"],
+        cls: type["JaccardIndex"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,

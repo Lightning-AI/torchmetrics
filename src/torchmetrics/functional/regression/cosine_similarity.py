@@ -22,7 +22,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 def _cosine_similarity_update(
     preds: Tensor,
     target: Tensor,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Update and returns variables required to compute Cosine Similarity. Checks for same shape of input tensors.
 
     Args:

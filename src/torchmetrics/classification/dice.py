@@ -248,7 +248,7 @@ class Dice(Metric):
             self.fn.append(fn)
 
     @no_type_check
-    def _get_final_stats(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    def _get_final_stats(self) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """Perform concatenation on the stat scores if necessary, before passing them to a compute function."""
         tp = torch.cat(self.tp) if isinstance(self.tp, list) else self.tp
         fp = torch.cat(self.fp) if isinstance(self.fp, list) else self.fp

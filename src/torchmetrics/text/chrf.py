@@ -45,8 +45,8 @@ _DICT_STATES_NAMES = (
     "total_matching_word_n_grams",
 )
 
-_DICT_STATES_TYPES = Tuple[
-    Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor], Dict[int, Tensor]
+_DICT_STATES_TYPES = tuple[
+    dict[int, Tensor], dict[int, Tensor], dict[int, Tensor], dict[int, Tensor], dict[int, Tensor], dict[int, Tensor]
 ]
 
 
@@ -101,7 +101,7 @@ class CHRFScore(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    sentence_chrf_score: Optional[List[Tensor]] = None
+    sentence_chrf_score: Optional[list[Tensor]] = None
 
     def __init__(
         self,
@@ -157,7 +157,7 @@ class CHRFScore(Metric):
         if self.sentence_chrf_score is not None:
             self.sentence_chrf_score = n_grams_dicts_tuple[-1]
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def compute(self) -> Union[Tensor, tuple[Tensor, Tensor]]:
         """Calculate chrF/chrF++ score."""
         if self.sentence_chrf_score is not None:
             return (
@@ -168,7 +168,7 @@ class CHRFScore(Metric):
 
     def _convert_states_to_dicts(self) -> _DICT_STATES_TYPES:
         """Convert global metric states to the n-gram dictionaries to be passed in ``_chrf_score_update``."""
-        n_grams_dicts: Dict[str, Dict[int, Tensor]] = dict(
+        n_grams_dicts: dict[str, dict[int, Tensor]] = dict(
             zip(_DICT_STATES_NAMES, _prepare_n_grams_dicts(self.n_char_order, self.n_word_order))
         )
 
@@ -201,7 +201,7 @@ class CHRFScore(Metric):
         """Return a metric state name w.r.t input args."""
         return f"total_{text}_{n_gram_level}_{n}_grams"
 
-    def _get_text_n_gram_iterator(self) -> Iterator[Tuple[Tuple[str, int], str]]:
+    def _get_text_n_gram_iterator(self) -> Iterator[tuple[tuple[str, int], str]]:
         """Get iterator over char/word and reference/hypothesis/matching n-gram level."""
         return itertools.product(zip(_N_GRAM_LEVELS, [self.n_char_order, self.n_word_order]), _TEXT_LEVELS)
 

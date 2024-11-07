@@ -50,7 +50,7 @@ def _specificity_at_sensitivity(
     sensitivity: Tensor,
     thresholds: Tensor,
     min_sensitivity: float,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     # get indices where sensitivity is greater than min_sensitivity
     indices = sensitivity >= min_sensitivity
 
@@ -73,7 +73,7 @@ def _specificity_at_sensitivity(
 
 def _binary_specificity_at_sensitivity_arg_validation(
     min_sensitivity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
@@ -84,11 +84,11 @@ def _binary_specificity_at_sensitivity_arg_validation(
 
 
 def _binary_specificity_at_sensitivity_compute(
-    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    state: Union[Tensor, tuple[Tensor, Tensor]],
     thresholds: Optional[Tensor],
     min_sensitivity: float,
     pos_label: int = 1,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     fpr, sensitivity, thresholds = _binary_roc_compute(state, thresholds, pos_label)
     specificity = _convert_fpr_to_specificity(fpr)
     return _specificity_at_sensitivity(specificity, sensitivity, thresholds, min_sensitivity)
@@ -98,10 +98,10 @@ def binary_specificity_at_sensitivity(
     preds: Tensor,
     target: Tensor,
     min_sensitivity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     r"""Compute the highest possible specificity value given the minimum sensitivity levels provided for binary tasks.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and
@@ -170,7 +170,7 @@ def binary_specificity_at_sensitivity(
 def _multiclass_specificity_at_sensitivity_arg_validation(
     num_classes: int,
     min_sensitivity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
@@ -181,11 +181,11 @@ def _multiclass_specificity_at_sensitivity_arg_validation(
 
 
 def _multiclass_specificity_at_sensitivity_compute(
-    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    state: Union[Tensor, tuple[Tensor, Tensor]],
     num_classes: int,
     thresholds: Optional[Tensor],
     min_sensitivity: float,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     fpr, sensitivity, thresholds = _multiclass_roc_compute(state, num_classes, thresholds)
     specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
@@ -208,10 +208,10 @@ def multiclass_specificity_at_sensitivity(
     target: Tensor,
     num_classes: int,
     min_sensitivity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     r"""Compute the highest possible specificity value given minimum sensitivity level provided for multiclass tasks.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
@@ -286,7 +286,7 @@ def multiclass_specificity_at_sensitivity(
 def _multilabel_specificity_at_sensitivity_arg_validation(
     num_labels: int,
     min_sensitivity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
@@ -297,12 +297,12 @@ def _multilabel_specificity_at_sensitivity_arg_validation(
 
 
 def _multilabel_specificity_at_sensitivity_compute(
-    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    state: Union[Tensor, tuple[Tensor, Tensor]],
     num_labels: int,
     thresholds: Optional[Tensor],
     ignore_index: Optional[int],
     min_sensitivity: float,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     fpr, sensitivity, thresholds = _multilabel_roc_compute(state, num_labels, thresholds, ignore_index)
     specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
@@ -325,10 +325,10 @@ def multilabel_specificity_at_sensitivity(
     target: Tensor,
     num_labels: int,
     min_sensitivity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     r"""Compute the highest possible specificity value given minimum sensitivity level provided for multilabel tasks.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and
@@ -409,12 +409,12 @@ def specicity_at_sensitivity(
     target: Tensor,
     task: Literal["binary", "multiclass", "multilabel"],
     min_sensitivity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+) -> Union[Tensor, tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]]:
     r"""Compute the highest possible specificity value given the minimum sensitivity thresholds provided.
 
     .. warning::
@@ -445,12 +445,12 @@ def specificity_at_sensitivity(
     target: Tensor,
     task: Literal["binary", "multiclass", "multilabel"],
     min_sensitivity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+) -> Union[Tensor, tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]]:
     r"""Compute the highest possible specificity value given the minimum sensitivity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and

@@ -169,8 +169,8 @@ class KernelInceptionDistance(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    real_features: List[Tensor]
-    fake_features: List[Tensor]
+    real_features: list[Tensor]
+    fake_features: list[Tensor]
     inception: Module
     feature_network: str = "inception"
 
@@ -264,7 +264,7 @@ class KernelInceptionDistance(Metric):
         else:
             self.fake_features.append(features)
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def compute(self) -> tuple[Tensor, Tensor]:
         """Calculate KID score based on accumulated extracted features from the two distributions.
 
         Implementation inspired by `Fid Score`_

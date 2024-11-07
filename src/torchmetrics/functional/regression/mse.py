@@ -19,7 +19,7 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _mean_squared_error_update(preds: Tensor, target: Tensor, num_outputs: int) -> Tuple[Tensor, int]:
+def _mean_squared_error_update(preds: Tensor, target: Tensor, num_outputs: int) -> tuple[Tensor, int]:
     """Update and returns variables required to compute Mean Squared Error.
 
     Check for same shape of input tensors.

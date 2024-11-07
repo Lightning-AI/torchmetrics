@@ -88,7 +88,7 @@ def _retrieval_precision(
 
 def _retrieval_precision_recall_curve(
     preds: Tensor, target: Tensor, max_k: Optional[int] = None, adaptive_k: bool = False
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor]:
     """Wrapper for deprecated import.
 
     >>> from torch import tensor

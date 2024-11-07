@@ -49,8 +49,8 @@ def _process_attention_mask_for_special_tokens(attention_mask: Tensor) -> Tensor
 
 
 def _input_data_collator(
-    batch: Dict[str, Tensor], device: Optional[Union[str, torch.device]] = None
-) -> Dict[str, Tensor]:
+    batch: dict[str, Tensor], device: Optional[Union[str, torch.device]] = None
+) -> dict[str, Tensor]:
     """Trim model inputs.
 
     This function trims the model inputs to the longest sequence within the batch and put the input on the proper
@@ -64,7 +64,7 @@ def _input_data_collator(
     return batch
 
 
-def _output_data_collator(model_output: Tensor, attention_mask: Tensor, target_len: int) -> Tuple[Tensor, Tensor]:
+def _output_data_collator(model_output: Tensor, attention_mask: Tensor, target_len: int) -> tuple[Tensor, Tensor]:
     """Pad the model output and attention mask to the target length."""
     zeros_shape = list(model_output.shape)
     zeros_shape[2] = target_len - zeros_shape[2]
@@ -76,7 +76,7 @@ def _output_data_collator(model_output: Tensor, attention_mask: Tensor, target_l
     return model_output, attention_mask
 
 
-def _sort_data_according_length(input_ids: Tensor, attention_mask: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
+def _sort_data_according_length(input_ids: Tensor, attention_mask: Tensor) -> tuple[Tensor, Tensor, Tensor]:
     """Sort tokenized sentence from the shortest to the longest one."""
     sorted_indices = attention_mask.sum(1).argsort()
     input_ids = input_ids[sorted_indices]
@@ -85,13 +85,13 @@ def _sort_data_according_length(input_ids: Tensor, attention_mask: Tensor) -> Tu
 
 
 def _preprocess_text(
-    text: List[str],
+    text: list[str],
     tokenizer: Any,
     max_length: int = 512,
     truncation: bool = True,
     sort_according_length: bool = True,
     own_tokenizer: bool = False,
-) -> Tuple[Dict[str, Tensor], Optional[Tensor]]:
+) -> tuple[dict[str, Tensor], Optional[Tensor]]:
     """Text pre-processing function using `transformers` `AutoTokenizer` instance.
 
     Args:
@@ -164,7 +164,7 @@ def _check_shape_of_model_output(output: Tensor, input_ids: Tensor) -> None:
 
 def _load_tokenizer_and_model(
     model_name_or_path: Union[str, os.PathLike], device: Optional[Union[str, torch.device]] = None
-) -> Tuple["PreTrainedTokenizerBase", "PreTrainedModel"]:
+) -> tuple["PreTrainedTokenizerBase", "PreTrainedModel"]:
     """Load HuggingFace `transformers`' tokenizer and model. This function also handle a device placement.
 
     Args:
@@ -191,14 +191,14 @@ class TextDataset(Dataset):
 
     def __init__(
         self,
-        text: List[str],
+        text: list[str],
         tokenizer: Any,
         max_length: int = 512,
         preprocess_text_fn: Callable[
-            [List[str], Any, int, bool], Union[Dict[str, Tensor], Tuple[Dict[str, Tensor], Optional[Tensor]]]
+            [list[str], Any, int, bool], Union[dict[str, Tensor], tuple[dict[str, Tensor], Optional[Tensor]]]
         ] = _preprocess_text,
         idf: bool = False,
-        tokens_idf: Optional[Dict[int, float]] = None,
+        tokens_idf: Optional[dict[int, float]] = None,
         truncation: bool = False,
     ) -> None:
         """Initialize text dataset class.
@@ -225,7 +225,7 @@ class TextDataset(Dataset):
         if idf:
             self.tokens_idf = tokens_idf if tokens_idf is not None else self._get_tokens_idf()
 
-    def __getitem__(self, idx: int) -> Dict[str, Tensor]:
+    def __getitem__(self, idx: int) -> dict[str, Tensor]:
         """Get the input ids and attention mask belonging to a specific datapoint."""
         input_ids = self.text["input_ids"][idx, :]
         attention_mask = self.text["attention_mask"][idx, :]
@@ -239,7 +239,7 @@ class TextDataset(Dataset):
         """Return the number of sentences in the dataset."""
         return self.num_sentences
 
-    def _get_tokens_idf(self) -> Dict[int, float]:
+    def _get_tokens_idf(self) -> dict[int, float]:
         """Calculate token inverse document frequencies.
 
         Return:
@@ -250,7 +250,7 @@ class TextDataset(Dataset):
         for tokens in map(self._set_of_tokens, self.text["input_ids"]):
             token_counter.update(tokens)
 
-        tokens_idf: Dict[int, float] = defaultdict(self._get_tokens_idf_default_value)
+        tokens_idf: dict[int, float] = defaultdict(self._get_tokens_idf_default_value)
         tokens_idf.update({
             idx: math.log((self.num_sentences + 1) / (occurrence + 1)) for idx, occurrence in token_counter.items()
         })
@@ -261,7 +261,7 @@ class TextDataset(Dataset):
         return math.log((self.num_sentences + 1) / 1)
 
     @staticmethod
-    def _set_of_tokens(input_ids: Tensor) -> Set:
+    def _set_of_tokens(input_ids: Tensor) -> set:
         """Return set of tokens from the `input_ids` :class:`~torch.Tensor`."""
         return set(input_ids.tolist())
 
@@ -274,7 +274,7 @@ class TokenizedDataset(TextDataset):
         input_ids: Tensor,
         attention_mask: Tensor,
         idf: bool = False,
-        tokens_idf: Optional[Dict[int, float]] = None,
+        tokens_idf: Optional[dict[int, float]] = None,
     ) -> None:
         """Initialize the dataset class.
 

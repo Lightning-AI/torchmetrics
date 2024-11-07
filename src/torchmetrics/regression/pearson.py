@@ -33,7 +33,7 @@ def _final_aggregation(
     vars_y: Tensor,
     corrs_xy: Tensor,
     nbs: Tensor,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Aggregate the statistics from multiple devices.
 
     Formula taken from here: `Aggregate the statistics from multiple devices`_
@@ -117,8 +117,8 @@ class PearsonCorrCoef(Metric):
     full_state_update: bool = True
     plot_lower_bound: float = -1.0
     plot_upper_bound: float = 1.0
-    preds: List[Tensor]
-    target: List[Tensor]
+    preds: list[Tensor]
+    target: list[Tensor]
     mean_x: Tensor
     mean_y: Tensor
     var_x: Tensor

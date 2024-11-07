@@ -118,7 +118,7 @@ class CLIPScore(Metric):
         self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
-    def update(self, images: Union[Tensor, List[Tensor]], text: Union[str, List[str]]) -> None:
+    def update(self, images: Union[Tensor, list[Tensor]], text: Union[str, list[str]]) -> None:
         """Update CLIP score on a batch of images and text.
 
         Args:

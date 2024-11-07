@@ -65,7 +65,7 @@ class ExtendedEditDistance(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    sentence_eed: List[Tensor]
+    sentence_eed: list[Tensor]
 
     def __init__(
         self,
@@ -113,7 +113,7 @@ class ExtendedEditDistance(Metric):
             self.sentence_eed,
         )
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def compute(self) -> Union[Tensor, tuple[Tensor, Tensor]]:
         """Calculate extended edit distance score."""
         average = _eed_compute(self.sentence_eed)
 

@@ -44,7 +44,7 @@ def _precision_at_recall(
     recall: Tensor,
     thresholds: Tensor,
     min_recall: float,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     try:
         max_precision, _, best_threshold = max(
             (p, r, t) for p, r, t in zip(precision, recall, thresholds) if r >= min_recall
@@ -64,10 +64,10 @@ def binary_precision_at_fixed_recall(
     preds: Tensor,
     target: Tensor,
     min_recall: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     r"""Compute the highest possible precision value given the minimum recall thresholds provided for binary tasks.
 
     This is done by first calculating the precision-recall curve for different thresholds and the find the precision
@@ -140,10 +140,10 @@ def multiclass_precision_at_fixed_recall(
     target: Tensor,
     num_classes: int,
     min_recall: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     r"""Compute the highest possible precision value given the minimum recall thresholds provided for multiclass tasks.
 
     This is done by first calculating the precision-recall curve for different thresholds and the find the precision
@@ -226,10 +226,10 @@ def multilabel_precision_at_fixed_recall(
     target: Tensor,
     num_labels: int,
     min_recall: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     r"""Compute the highest possible precision value given the minimum recall thresholds provided for multilabel tasks.
 
     This is done by first calculating the precision-recall curve for different thresholds and the find the precision
@@ -311,12 +311,12 @@ def precision_at_fixed_recall(
     target: Tensor,
     task: Literal["binary", "multiclass", "multilabel"],
     min_recall: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Optional[Tuple[Tensor, Tensor]]:
+) -> Optional[tuple[Tensor, Tensor]]:
     r"""Compute the highest possible recall value given the minimum precision thresholds provided.
 
     This is done by first calculating the precision-recall curve for different thresholds and the find the recall for a

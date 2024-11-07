@@ -20,7 +20,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.compute import _safe_xlogy
 
 
-def _tweedie_deviance_score_update(preds: Tensor, targets: Tensor, power: float = 0.0) -> Tuple[Tensor, Tensor]:
+def _tweedie_deviance_score_update(preds: Tensor, targets: Tensor, power: float = 0.0) -> tuple[Tensor, Tensor]:
     """Update and returns variables required to compute Deviance Score for the given power.
 
     Check for same shape of input tensors.

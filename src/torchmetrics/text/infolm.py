@@ -112,10 +112,10 @@ class InfoLM(Metric):
     """
 
     is_differentiable = False
-    preds_input_ids: List[Tensor]
-    preds_attention_mask: List[Tensor]
-    target_input_ids: List[Tensor]
-    target_attention_mask: List[Tensor]
+    preds_input_ids: list[Tensor]
+    preds_attention_mask: list[Tensor]
+    target_input_ids: list[Tensor]
+    target_attention_mask: list[Tensor]
 
     _information_measure_higher_is_better: ClassVar = {
         # following values are <0
@@ -145,7 +145,7 @@ class InfoLM(Metric):
         num_threads: int = 0,
         verbose: bool = True,
         return_sentence_level_score: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: dict[str, Any],
     ) -> None:
         super().__init__(**kwargs)
         self.model_name_or_path = model_name_or_path
@@ -189,7 +189,7 @@ class InfoLM(Metric):
         self.target_input_ids.append(target_input_ids)
         self.target_attention_mask.append(target_attention_mask)
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def compute(self) -> Union[Tensor, tuple[Tensor, Tensor]]:
         """Calculate selected information measure using the pre-trained language model."""
         preds_dataloader = _get_dataloader(
             input_ids=dim_zero_cat(self.preds_input_ids),

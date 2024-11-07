@@ -48,7 +48,7 @@ def _assert_all_close_regardless_of_order(
     elif isinstance(pl_result, Sequence):
         for pl_res, ref_res in zip(pl_result, ref_result):
             _assert_allclose(pl_res, ref_res, atol=atol)
-    elif isinstance(pl_result, Dict):
+    elif isinstance(pl_result, dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
         assert np.allclose(

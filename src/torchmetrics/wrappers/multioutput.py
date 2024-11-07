@@ -104,7 +104,7 @@ class MultioutputWrapper(WrapperMetric):
         self.remove_nans = remove_nans
         self.squeeze_outputs = squeeze_outputs
 
-    def _get_args_kwargs_by_output(self, *args: Tensor, **kwargs: Tensor) -> List[Tuple[Tensor, Tensor]]:
+    def _get_args_kwargs_by_output(self, *args: Tensor, **kwargs: Tensor) -> list[tuple[Tensor, Tensor]]:
         """Get args and kwargs reshaped to be output-specific and (maybe) having NaNs stripped out."""
         args_kwargs_by_output = []
         for i in range(len(self.metrics)):

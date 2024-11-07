@@ -24,7 +24,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
 
-def _ssim_check_inputs(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+def _ssim_check_inputs(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
     """Update and returns variables required to compute Structural Similarity Index Measure.
 
     Args:
@@ -49,12 +49,12 @@ def _ssim_update(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    data_range: Optional[Union[float, Tuple[float, float]]] = None,
+    data_range: Optional[Union[float, tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
     return_full_image: bool = False,
     return_contrast_sensitivity: bool = False,
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+) -> Union[Tensor, tuple[Tensor, Tensor]]:
     """Compute Structural Similarity Index Measure.
 
     Args:
@@ -214,12 +214,12 @@ def structural_similarity_index_measure(
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-    data_range: Optional[Union[float, Tuple[float, float]]] = None,
+    data_range: Optional[Union[float, tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
     return_full_image: bool = False,
     return_contrast_sensitivity: bool = False,
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+) -> Union[Tensor, tuple[Tensor, Tensor]]:
     """Compute Structural Similarity Index Measure.
 
     Args:
@@ -298,11 +298,11 @@ def _get_normalized_sim_and_cs(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    data_range: Optional[Union[float, Tuple[float, float]]] = None,
+    data_range: Optional[Union[float, tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
     normalize: Optional[Literal["relu", "simple"]] = None,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     sim, contrast_sensitivity = _ssim_update(
         preds,
         target,
@@ -326,10 +326,10 @@ def _multiscale_ssim_update(
     gaussian_kernel: bool = True,
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
-    data_range: Optional[Union[float, Tuple[float, float]]] = None,
+    data_range: Optional[Union[float, tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
-    betas: Union[Tuple[float, float, float, float, float], Tuple[float, ...]] = (
+    betas: Union[tuple[float, float, float, float, float], tuple[float, ...]] = (
         0.0448,
         0.2856,
         0.3001,
@@ -372,7 +372,7 @@ def _multiscale_ssim_update(
             If the image width is smaller than ``(kernel_size[0] - 1) * max(1, (len(betas) - 1)) ** 2``.
 
     """
-    mcs_list: List[Tensor] = []
+    mcs_list: list[Tensor] = []
 
     is_3d = preds.ndim == 5
 
@@ -453,10 +453,10 @@ def multiscale_structural_similarity_index_measure(
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-    data_range: Optional[Union[float, Tuple[float, float]]] = None,
+    data_range: Optional[Union[float, tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
-    betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
+    betas: tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
     normalize: Optional[Literal["relu", "simple"]] = "relu",
 ) -> Tensor:
     """Compute `MultiScaleSSIM`_, Multi-scale Structural Similarity Index Measure.

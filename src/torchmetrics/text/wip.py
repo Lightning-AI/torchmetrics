@@ -83,7 +83,7 @@ class WordInfoPreserved(Metric):
         self.add_state("target_total", tensor(0.0), dist_reduce_fx="sum")
         self.add_state("preds_total", tensor(0.0), dist_reduce_fx="sum")
 
-    def update(self, preds: Union[str, List[str]], target: Union[str, List[str]]) -> None:
+    def update(self, preds: Union[str, list[str]], target: Union[str, list[str]]) -> None:
         """Update state with predictions and targets."""
         errors, target_total, preds_total = _wip_update(preds, target)
         self.errors += errors

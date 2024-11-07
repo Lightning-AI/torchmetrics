@@ -395,7 +395,7 @@ class ExactMatch(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls: Type["ExactMatch"],
+        cls: type["ExactMatch"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,

@@ -48,7 +48,7 @@ if not (_PYCOCOTOOLS_AVAILABLE or _FASTER_COCO_EVAL_AVAILABLE):
     ]
 
 
-def _load_backend_tools(backend: Literal["pycocotools", "faster_coco_eval"]) -> Tuple[object, object, ModuleType]:
+def _load_backend_tools(backend: Literal["pycocotools", "faster_coco_eval"]) -> tuple[object, object, ModuleType]:
     """Load the backend tools for the given backend."""
     if backend == "pycocotools":
         if not _PYCOCOTOOLS_AVAILABLE:
@@ -344,19 +344,19 @@ class MeanAveragePrecision(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    detection_box: List[Tensor]
-    detection_mask: List[Tensor]
-    detection_scores: List[Tensor]
-    detection_labels: List[Tensor]
-    groundtruth_box: List[Tensor]
-    groundtruth_mask: List[Tensor]
-    groundtruth_labels: List[Tensor]
-    groundtruth_crowds: List[Tensor]
-    groundtruth_area: List[Tensor]
+    detection_box: list[Tensor]
+    detection_mask: list[Tensor]
+    detection_scores: list[Tensor]
+    detection_labels: list[Tensor]
+    groundtruth_box: list[Tensor]
+    groundtruth_mask: list[Tensor]
+    groundtruth_labels: list[Tensor]
+    groundtruth_crowds: list[Tensor]
+    groundtruth_area: list[Tensor]
 
     warn_on_many_detections: bool = True
 
-    __jit_unused_properties__: ClassVar[List[str]] = [
+    __jit_unused_properties__: ClassVar[list[str]] = [
         "is_differentiable",
         "higher_is_better",
         "plot_lower_bound",
@@ -373,10 +373,10 @@ class MeanAveragePrecision(Metric):
     def __init__(
         self,
         box_format: Literal["xyxy", "xywh", "cxcywh"] = "xyxy",
-        iou_type: Union[Literal["bbox", "segm"], Tuple[str]] = "bbox",
-        iou_thresholds: Optional[List[float]] = None,
-        rec_thresholds: Optional[List[float]] = None,
-        max_detection_thresholds: Optional[List[int]] = None,
+        iou_type: Union[Literal["bbox", "segm"], tuple[str]] = "bbox",
+        iou_thresholds: Optional[list[float]] = None,
+        rec_thresholds: Optional[list[float]] = None,
+        max_detection_thresholds: Optional[list[int]] = None,
         class_metrics: bool = False,
         extended_summary: bool = False,
         average: Literal["macro", "micro"] = "macro",
@@ -475,7 +475,7 @@ class MeanAveragePrecision(Metric):
         _, _, mask_utils = _load_backend_tools(self.backend)
         return mask_utils
 
-    def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:
+    def update(self, preds: list[dict[str, Tensor]], target: list[dict[str, Tensor]]) -> None:
         """Update metric state.
 
         Raises:
@@ -597,7 +597,7 @@ class MeanAveragePrecision(Metric):
 
         return result_dict
 
-    def _get_coco_datasets(self, average: Literal["macro", "micro"]) -> Tuple[object, object]:
+    def _get_coco_datasets(self, average: Literal["macro", "micro"]) -> tuple[object, object]:
         """Returns the coco datasets for the target and the predictions."""
         if average == "micro":
             # for micro averaging we set everything to be the same class
@@ -629,7 +629,7 @@ class MeanAveragePrecision(Metric):
 
         return coco_preds, coco_target
 
-    def _coco_stats_to_tensor_dict(self, stats: List[float], prefix: str) -> Dict[str, Tensor]:
+    def _coco_stats_to_tensor_dict(self, stats: list[float], prefix: str) -> dict[str, Tensor]:
         """Converts the output of COCOeval.stats to a dict of tensors."""
         mdt = self.max_detection_thresholds
         return {
@@ -651,9 +651,9 @@ class MeanAveragePrecision(Metric):
     def coco_to_tm(
         coco_preds: str,
         coco_target: str,
-        iou_type: Union[Literal["bbox", "segm"], List[str]] = "bbox",
+        iou_type: Union[Literal["bbox", "segm"], list[str]] = "bbox",
         backend: Literal["pycocotools", "faster_coco_eval"] = "pycocotools",
-    ) -> Tuple[List[Dict[str, Tensor]], List[Dict[str, Tensor]]]:
+    ) -> tuple[list[dict[str, Tensor]], list[dict[str, Tensor]]]:
         """Utility function for converting .json coco format files to the input format of this metric.
 
         The function accepts a file for the predictions and a file for the target in coco format and converts them to
@@ -825,8 +825,8 @@ class MeanAveragePrecision(Metric):
             f.write(target_json)
 
     def _get_safe_item_values(
-        self, item: Dict[str, Any], warn: bool = False
-    ) -> Tuple[Optional[Tensor], Optional[Tuple]]:
+        self, item: dict[str, Any], warn: bool = False
+    ) -> tuple[Optional[Tensor], Optional[tuple]]:
         """Convert and return the boxes or masks from the item depending on the iou_type.
 
         Args:
@@ -858,7 +858,7 @@ class MeanAveragePrecision(Metric):
             _warning_on_too_many_detections(self.max_detection_thresholds[-1])
         return output  # type: ignore[return-value]
 
-    def _get_classes(self) -> List:
+    def _get_classes(self) -> list:
         """Return a list of unique classes found in ground truth and detection data."""
         if len(self.detection_labels) > 0 or len(self.groundtruth_labels) > 0:
             return torch.cat(self.detection_labels + self.groundtruth_labels).unique().cpu().tolist()
@@ -866,13 +866,13 @@ class MeanAveragePrecision(Metric):
 
     def _get_coco_format(
         self,
-        labels: List[torch.Tensor],
-        boxes: Optional[List[torch.Tensor]] = None,
-        masks: Optional[List[torch.Tensor]] = None,
-        scores: Optional[List[torch.Tensor]] = None,
-        crowds: Optional[List[torch.Tensor]] = None,
-        area: Optional[List[torch.Tensor]] = None,
-    ) -> Dict:
+        labels: list[torch.Tensor],
+        boxes: Optional[list[torch.Tensor]] = None,
+        masks: Optional[list[torch.Tensor]] = None,
+        scores: Optional[list[torch.Tensor]] = None,
+        crowds: Optional[list[torch.Tensor]] = None,
+        area: Optional[list[torch.Tensor]] = None,
+    ) -> dict:
         """Transforms and returns all cached targets or predictions in COCO format.
 
         Format is defined at
@@ -958,7 +958,7 @@ class MeanAveragePrecision(Metric):
         return {"images": images, "annotations": annotations, "categories": classes}
 
     def plot(
-        self, val: Optional[Union[Dict[str, Tensor], Sequence[Dict[str, Tensor]]]] = None, ax: Optional[_AX_TYPE] = None
+        self, val: Optional[Union[dict[str, Tensor], Sequence[dict[str, Tensor]]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
 
@@ -1043,7 +1043,7 @@ class MeanAveragePrecision(Metric):
             self.groundtruth_mask = self._gather_tuple_list(self.groundtruth_mask, process_group)  # type: ignore[arg-type]
 
     @staticmethod
-    def _gather_tuple_list(list_to_gather: List[Tuple], process_group: Optional[Any] = None) -> List[Any]:
+    def _gather_tuple_list(list_to_gather: list[tuple], process_group: Optional[Any] = None) -> list[Any]:
         """Gather a list of tuples over multiple devices.
 
         Args:

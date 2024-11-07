@@ -20,7 +20,7 @@ from torchmetrics.audio import SignalNoiseRatio
 # Generate a clean signal (simulating a high-quality recording)
 
 
-def generate_clean_signal(length: int = 1000) -> Tuple[np.ndarray, np.ndarray]:
+def generate_clean_signal(length: int = 1000) -> tuple[np.ndarray, np.ndarray]:
     """Generate a clean signal (sine wave)"""
     t = np.linspace(0, 1, length)
     signal = np.sin(2 * np.pi * 10 * t)  # 10 Hz sine wave, representing the clean recording

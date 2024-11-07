@@ -47,7 +47,7 @@ else:
     __doctest_skip__ = ["BERTScore", "BERTScore.plot"]
 
 
-def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> Dict[str, Tensor]:
+def _get_input_dict(input_ids: list[Tensor], attention_mask: list[Tensor]) -> dict[str, Tensor]:
     """Create an input dictionary of ``input_ids`` and ``attention_mask`` for BERTScore calculation."""
     return {"input_ids": torch.cat(input_ids), "attention_mask": torch.cat(attention_mask)}
 
@@ -128,10 +128,10 @@ class BERTScore(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    preds_input_ids: List[Tensor]
-    preds_attention_mask: List[Tensor]
-    target_input_ids: List[Tensor]
-    target_attention_mask: List[Tensor]
+    preds_input_ids: list[Tensor]
+    preds_attention_mask: list[Tensor]
+    target_input_ids: list[Tensor]
+    target_attention_mask: list[Tensor]
 
     def __init__(
         self,
@@ -140,7 +140,7 @@ class BERTScore(Metric):
         all_layers: bool = False,
         model: Optional[Module] = None,
         user_tokenizer: Optional[Any] = None,
-        user_forward_fn: Optional[Callable[[Module, Dict[str, Tensor]], Tensor]] = None,
+        user_forward_fn: Optional[Callable[[Module, dict[str, Tensor]], Tensor]] = None,
         verbose: bool = False,
         idf: bool = False,
         device: Optional[Union[str, torch.device]] = None,
@@ -232,7 +232,7 @@ class BERTScore(Metric):
         self.target_input_ids.append(target_dict["input_ids"])
         self.target_attention_mask.append(target_dict["attention_mask"])
 
-    def compute(self) -> Dict[str, Union[Tensor, List[float], str]]:
+    def compute(self) -> dict[str, Union[Tensor, list[float], str]]:
         """Calculate BERT scores."""
         preds = {
             "input_ids": dim_zero_cat(self.preds_input_ids),

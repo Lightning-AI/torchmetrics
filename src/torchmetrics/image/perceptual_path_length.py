@@ -166,7 +166,7 @@ class PerceptualPathLength(Metric):
         _validate_generator_model(generator, self.conditional)
         self.generator = generator
 
-    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+    def compute(self) -> tuple[Tensor, Tensor, Tensor]:
         """Compute the perceptual path length."""
         return perceptual_path_length(
             generator=self.generator,

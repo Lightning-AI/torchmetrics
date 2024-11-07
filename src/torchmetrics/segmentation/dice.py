@@ -100,9 +100,9 @@ class DiceScore(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    numerator: List[Tensor]
-    denominator: List[Tensor]
-    support: List[Tensor]
+    numerator: list[Tensor]
+    denominator: list[Tensor]
+    support: list[Tensor]
 
     def __init__(
         self,

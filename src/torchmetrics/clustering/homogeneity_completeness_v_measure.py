@@ -68,8 +68,8 @@ class HomogeneityScore(Metric):
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
-    preds: List[Tensor]
-    target: List[Tensor]
+    preds: list[Tensor]
+    target: list[Tensor]
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -164,8 +164,8 @@ class CompletenessScore(Metric):
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
-    preds: List[Tensor]
-    target: List[Tensor]
+    preds: list[Tensor]
+    target: list[Tensor]
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -267,8 +267,8 @@ class VMeasureScore(Metric):
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
-    preds: List[Tensor]
-    target: List[Tensor]
+    preds: list[Tensor]
+    target: list[Tensor]
 
     def __init__(self, beta: float = 1.0, **kwargs: Any) -> None:
         super().__init__(**kwargs)

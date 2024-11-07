@@ -106,8 +106,8 @@ class BinaryCalibrationError(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    confidences: List[Tensor]
-    accuracies: List[Tensor]
+    confidences: list[Tensor]
+    accuracies: list[Tensor]
 
     def __init__(
         self,
@@ -259,8 +259,8 @@ class MulticlassCalibrationError(Metric):
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Class"
 
-    confidences: List[Tensor]
-    accuracies: List[Tensor]
+    confidences: list[Tensor]
+    accuracies: list[Tensor]
 
     def __init__(
         self,
@@ -371,7 +371,7 @@ class CalibrationError(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls: Type["CalibrationError"],
+        cls: type["CalibrationError"],
         task: Literal["binary", "multiclass"],
         n_bins: int = 15,
         norm: Literal["l1", "l2", "max"] = "l1",

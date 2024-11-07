@@ -33,7 +33,7 @@ else:
     class InferenceSession:  # type:ignore
         """Dummy InferenceSession."""
 
-        def __init__(self, **kwargs: Dict[str, Any]) -> None: ...
+        def __init__(self, **kwargs: dict[str, Any]) -> None: ...
 
 
 __doctest_requires__ = {

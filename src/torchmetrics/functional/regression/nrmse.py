@@ -22,7 +22,7 @@ from torchmetrics.functional.regression.mse import _mean_squared_error_update
 
 def _normalized_root_mean_squared_error_update(
     preds: Tensor, target: Tensor, num_outputs: int, normalization: Literal["mean", "range", "std", "l2"] = "mean"
-) -> Tuple[Tensor, int, Tensor]:
+) -> tuple[Tensor, int, Tensor]:
     """Updates and returns the sum of squared errors and the number of observations for NRMSE computation.
 
     Args:

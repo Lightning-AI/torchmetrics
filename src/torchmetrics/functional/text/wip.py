@@ -19,9 +19,9 @@ from torchmetrics.functional.text.helper import _edit_distance
 
 
 def _wip_update(
-    preds: Union[str, List[str]],
-    target: Union[str, List[str]],
-) -> Tuple[Tensor, Tensor, Tensor]:
+    preds: Union[str, list[str]],
+    target: Union[str, list[str]],
+) -> tuple[Tensor, Tensor, Tensor]:
     """Update the wip score with the current set of references and predictions.
 
     Args:
@@ -68,7 +68,7 @@ def _wip_compute(errors: Tensor, target_total: Tensor, preds_total: Tensor) -> T
     return (errors / target_total) * (errors / preds_total)
 
 
-def word_information_preserved(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
+def word_information_preserved(preds: Union[str, list[str]], target: Union[str, list[str]]) -> Tensor:
     """Word Information Preserved rate is a metric of the performance of an automatic speech recognition system.
 
     This value indicates the percentage of characters that were incorrectly predicted. The lower the value, the

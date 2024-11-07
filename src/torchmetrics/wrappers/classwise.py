@@ -116,7 +116,7 @@ class ClasswiseWrapper(WrapperMetric):
     def __init__(
         self,
         metric: Metric,
-        labels: Optional[List[str]] = None,
+        labels: Optional[list[str]] = None,
         prefix: Optional[str] = None,
         postfix: Optional[str] = None,
     ) -> None:
@@ -139,11 +139,11 @@ class ClasswiseWrapper(WrapperMetric):
 
         self._update_count = 1
 
-    def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
+    def _filter_kwargs(self, **kwargs: Any) -> dict[str, Any]:
         """Filter kwargs for the metric."""
         return self.metric._filter_kwargs(**kwargs)
 
-    def _convert_output(self, x: Tensor) -> Dict[str, Any]:
+    def _convert_output(self, x: Tensor) -> dict[str, Any]:
         """Convert output to dictionary with labels as keys."""
         # Will set the class name as prefix if neither prefix nor postfix is given
         if not self._prefix and not self._postfix:
@@ -164,7 +164,7 @@ class ClasswiseWrapper(WrapperMetric):
         """Update state."""
         self.metric.update(*args, **kwargs)
 
-    def compute(self) -> Dict[str, Tensor]:
+    def compute(self) -> dict[str, Tensor]:
         """Compute metric."""
         return self._convert_output(self.metric.compute())
 

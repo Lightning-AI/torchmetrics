@@ -83,7 +83,7 @@ class MinMaxMetric(WrapperMetric):
         """Update the underlying metric."""
         self._base_metric.update(*args, **kwargs)
 
-    def compute(self) -> Dict[str, Tensor]:
+    def compute(self) -> dict[str, Tensor]:
         """Compute the underlying metric as well as max and min values for this metric.
 
         Returns a dictionary that consists of the computed value (``raw``), as well as the minimum (``min``) and maximum

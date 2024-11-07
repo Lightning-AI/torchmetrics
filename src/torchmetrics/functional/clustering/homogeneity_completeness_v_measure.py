@@ -20,7 +20,7 @@ from torchmetrics.functional.clustering.mutual_info_score import mutual_info_sco
 from torchmetrics.functional.clustering.utils import calculate_entropy, check_cluster_labels
 
 
-def _homogeneity_score_compute(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+def _homogeneity_score_compute(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Computes the homogeneity score of a clustering given the predicted and target cluster labels."""
     check_cluster_labels(preds, target)
 
@@ -36,7 +36,7 @@ def _homogeneity_score_compute(preds: Tensor, target: Tensor) -> Tuple[Tensor, T
     return homogeneity, mutual_info, entropy_preds, entropy_target
 
 
-def _completeness_score_compute(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+def _completeness_score_compute(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
     """Computes the completeness score of a clustering given the predicted and target cluster labels."""
     homogeneity, mutual_info, entropy_preds, _ = _homogeneity_score_compute(preds, target)
     completeness = mutual_info / entropy_preds if entropy_preds else torch.ones_like(entropy_preds)

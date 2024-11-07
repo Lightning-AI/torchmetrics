@@ -41,10 +41,10 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class _AbstractStatScores(Metric):
-    tp: Union[List[Tensor], Tensor]
-    fp: Union[List[Tensor], Tensor]
-    tn: Union[List[Tensor], Tensor]
-    fn: Union[List[Tensor], Tensor]
+    tp: Union[list[Tensor], Tensor]
+    fp: Union[list[Tensor], Tensor]
+    tn: Union[list[Tensor], Tensor]
+    fn: Union[list[Tensor], Tensor]
 
     # define common functions
     def _create_state(
@@ -79,7 +79,7 @@ class _AbstractStatScores(Metric):
             self.tn += tn
             self.fn += fn
 
-    def _final_state(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    def _final_state(self) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """Aggregate states that are lists and return final states."""
         tp = dim_zero_cat(self.tp)
         fp = dim_zero_cat(self.fp)
@@ -526,7 +526,7 @@ class StatScores(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls: Type["StatScores"],
+        cls: type["StatScores"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,

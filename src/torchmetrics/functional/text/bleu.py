@@ -67,7 +67,7 @@ def _bleu_score_update(
     target_len: Tensor,
     n_gram: int = 4,
     tokenizer: Callable[[str], Sequence[str]] = _tokenize_fn,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Update and returns variables required to compute the BLEU score.
 
     Args:

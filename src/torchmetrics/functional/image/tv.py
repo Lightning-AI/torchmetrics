@@ -17,7 +17,7 @@ from torch import Tensor
 from typing_extensions import Literal
 
 
-def _total_variation_update(img: Tensor) -> Tuple[Tensor, int]:
+def _total_variation_update(img: Tensor) -> tuple[Tensor, int]:
     """Compute total variation statistics on current batch."""
     if img.ndim != 4:
         raise RuntimeError(f"Expected input `img` to be an 4D tensor, but got {img.shape}")

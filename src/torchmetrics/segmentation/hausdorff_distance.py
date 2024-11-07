@@ -89,7 +89,7 @@ class HausdorffDistance(Metric):
         num_classes: int,
         include_background: bool = False,
         distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
-        spacing: Optional[Union[Tensor, List[float]]] = None,
+        spacing: Optional[Union[Tensor, list[float]]] = None,
         directed: bool = False,
         input_format: Literal["one-hot", "index"] = "one-hot",
         **kwargs: Any,

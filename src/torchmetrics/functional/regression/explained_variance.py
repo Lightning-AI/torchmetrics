@@ -23,7 +23,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 ALLOWED_MULTIOUTPUT = ("raw_values", "uniform_average", "variance_weighted")
 
 
-def _explained_variance_update(preds: Tensor, target: Tensor) -> Tuple[int, Tensor, Tensor, Tensor, Tensor]:
+def _explained_variance_update(preds: Tensor, target: Tensor) -> tuple[int, Tensor, Tensor, Tensor, Tensor]:
     """Update and returns variables required to compute Explained Variance. Checks for same shape of input tensors.
 
     Args:

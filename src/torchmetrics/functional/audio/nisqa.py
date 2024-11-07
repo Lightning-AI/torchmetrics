@@ -121,7 +121,7 @@ def non_intrusive_speech_quality_assessment(preds: Tensor, fs: int) -> Tensor:
 
 
 @lru_cache
-def _load_nisqa_model() -> Tuple[nn.Module, Dict[str, Any]]:
+def _load_nisqa_model() -> tuple[nn.Module, dict[str, Any]]:
     """Load NISQA model and its parameters.
 
     Returns:
@@ -157,7 +157,7 @@ class _NISQADIM(nn.Module):
     # ported from https://github.com/gabrielmittag/NISQA
     # Copyright (c) 2021 Gabriel Mittag, Quality and Usability Lab
     # MIT License
-    def __init__(self, args: Dict[str, Any]) -> None:
+    def __init__(self, args: dict[str, Any]) -> None:
         super().__init__()
         self.cnn = _Framewise(args)
         self.time_dependency = _TimeDependency(args)
@@ -173,7 +173,7 @@ class _NISQADIM(nn.Module):
 
 class _Framewise(nn.Module):
     # part of NISQA model definition
-    def __init__(self, args: Dict[str, Any]) -> None:
+    def __init__(self, args: dict[str, Any]) -> None:
         super().__init__()
         self.model = _AdaptCNN(args)
 
@@ -187,7 +187,7 @@ class _Framewise(nn.Module):
 
 class _AdaptCNN(nn.Module):
     # part of NISQA model definition
-    def __init__(self, args: Dict[str, Any]) -> None:
+    def __init__(self, args: dict[str, Any]) -> None:
         super().__init__()
         self.pool_1 = args["cnn_pool_1"]
         self.pool_2 = args["cnn_pool_2"]
@@ -231,7 +231,7 @@ class _AdaptCNN(nn.Module):
 
 class _TimeDependency(nn.Module):
     # part of NISQA model definition
-    def __init__(self, args: Dict[str, Any]) -> None:
+    def __init__(self, args: dict[str, Any]) -> None:
         super().__init__()
         self.model = _SelfAttention(args)
 
@@ -241,7 +241,7 @@ class _TimeDependency(nn.Module):
 
 class _SelfAttention(nn.Module):
     # part of NISQA model definition
-    def __init__(self, args: Dict[str, Any]) -> None:
+    def __init__(self, args: dict[str, Any]) -> None:
         super().__init__()
         encoder_layer = _SelfAttentionLayer(args)
         self.norm1 = nn.LayerNorm(args["td_sa_d_model"])
@@ -254,7 +254,7 @@ class _SelfAttention(nn.Module):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
 
-    def forward(self, src: Tensor, n_wins: Tensor) -> Tuple[Tensor, Tensor]:
+    def forward(self, src: Tensor, n_wins: Tensor) -> tuple[Tensor, Tensor]:
         src = self.linear(src)
         output = src.transpose(1, 0)
         output = self.norm1(output)
@@ -265,7 +265,7 @@ class _SelfAttention(nn.Module):
 
 class _SelfAttentionLayer(nn.Module):
     # part of NISQA model definition
-    def __init__(self, args: Dict[str, Any]) -> None:
+    def __init__(self, args: dict[str, Any]) -> None:
         super().__init__()
         self.self_attn = nn.MultiheadAttention(args["td_sa_d_model"], args["td_sa_nhead"], args["td_sa_dropout"])
         self.linear1 = nn.Linear(args["td_sa_d_model"], args["td_sa_h"])
@@ -277,7 +277,7 @@ class _SelfAttentionLayer(nn.Module):
         self.dropout2 = nn.Dropout(args["td_sa_dropout"])
         self.activation = relu
 
-    def forward(self, src: Tensor, n_wins: Tensor) -> Tuple[Tensor, Tensor]:
+    def forward(self, src: Tensor, n_wins: Tensor) -> tuple[Tensor, Tensor]:
         mask = torch.arange(src.shape[0])[None, :] < n_wins[:, None]
         src2 = self.self_attn(src, src, src, key_padding_mask=~mask)[0]
         src = src + self.dropout1(src2)
@@ -290,7 +290,7 @@ class _SelfAttentionLayer(nn.Module):
 
 class _Pooling(nn.Module):
     # part of NISQA model definition
-    def __init__(self, args: Dict[str, Any]) -> None:
+    def __init__(self, args: dict[str, Any]) -> None:
         super().__init__()
         self.model = _PoolAttFF(args)
 
@@ -300,7 +300,7 @@ class _Pooling(nn.Module):
 
 class _PoolAttFF(torch.nn.Module):
     # part of NISQA model definition
-    def __init__(self, args: Dict[str, Any]) -> None:
+    def __init__(self, args: dict[str, Any]) -> None:
         super().__init__()
         self.linear1 = nn.Linear(args["td_sa_d_model"], args["pool_att_h"])
         self.linear2 = nn.Linear(args["pool_att_h"], 1)
@@ -319,7 +319,7 @@ class _PoolAttFF(torch.nn.Module):
         return self.linear3(x)
 
 
-def _get_librosa_melspec(y: np.ndarray, sr: int, args: Dict[str, Any]) -> np.ndarray:
+def _get_librosa_melspec(y: np.ndarray, sr: int, args: dict[str, Any]) -> np.ndarray:
     """Compute mel spectrogram from waveform using librosa.
 
     Args:
@@ -360,7 +360,7 @@ def _get_librosa_melspec(y: np.ndarray, sr: int, args: Dict[str, Any]) -> np.nda
     return np.stack([librosa.amplitude_to_db(m, ref=1.0, amin=1e-4, top_db=80.0) for m in melspec])
 
 
-def _segment_specs(x: Tensor, args: Dict[str, Any]) -> Tuple[Tensor, Tensor]:
+def _segment_specs(x: Tensor, args: dict[str, Any]) -> tuple[Tensor, Tensor]:
     """Segment mel spectrogram into overlapping windows.
 
     Args:

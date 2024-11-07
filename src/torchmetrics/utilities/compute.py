@@ -81,7 +81,7 @@ def _adjust_weights_safe_divide(
     return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
 
-def _auc_format_inputs(x: Tensor, y: Tensor) -> Tuple[Tensor, Tensor]:
+def _auc_format_inputs(x: Tensor, y: Tensor) -> tuple[Tensor, Tensor]:
     """Check that auc input is correct."""
     x = x.squeeze() if x.ndim > 1 else x
     y = y.squeeze() if y.ndim > 1 else y

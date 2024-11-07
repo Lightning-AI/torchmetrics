@@ -23,7 +23,7 @@ def _symmetric_mean_absolute_percentage_error_update(
     preds: Tensor,
     target: Tensor,
     epsilon: float = 1.17e-06,
-) -> Tuple[Tensor, int]:
+) -> tuple[Tensor, int]:
     """Update and returns variables required to compute Symmetric Mean Absolute Percentage Error.
 
     Check for same shape of input tensors.

@@ -78,8 +78,8 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
 
-    preds: List[Tensor]
-    target: List[Tensor]
+    preds: list[Tensor]
+    target: list[Tensor]
 
     def __init__(
         self,

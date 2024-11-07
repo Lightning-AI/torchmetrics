@@ -63,9 +63,9 @@ class CriticalSuccessIndex(Metric):
     hits: torch.Tensor
     misses: torch.Tensor
     false_alarms: torch.Tensor
-    hits_list: List[torch.Tensor]
-    misses_list: List[torch.Tensor]
-    false_alarms_list: List[torch.Tensor]
+    hits_list: list[torch.Tensor]
+    misses_list: list[torch.Tensor]
+    false_alarms_list: list[torch.Tensor]
 
     def __init__(self, threshold: float, keep_sequence_dim: Optional[int] = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)

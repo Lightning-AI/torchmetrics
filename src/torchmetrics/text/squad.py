@@ -119,7 +119,7 @@ class SQuAD(Metric):
         self.exact_match += exact_match
         self.total += total
 
-    def compute(self) -> Dict[str, Tensor]:
+    def compute(self) -> dict[str, Tensor]:
         """Aggregate the F1 Score and Exact match for the batch."""
         return _squad_compute(self.f1_score, self.exact_match, self.total)
 

@@ -77,7 +77,7 @@ class FleissKappa(Metric):
     is_differentiable: bool = False
     higher_is_better: bool = True
     plot_upper_bound: float = 1.0
-    counts: List[Tensor]
+    counts: list[Tensor]
 
     def __init__(self, mode: Literal["counts", "probs"] = "counts", **kwargs: Any) -> None:
         super().__init__(**kwargs)

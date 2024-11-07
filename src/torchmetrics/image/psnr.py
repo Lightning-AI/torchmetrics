@@ -87,10 +87,10 @@ class PeakSignalNoiseRatio(Metric):
 
     def __init__(
         self,
-        data_range: Optional[Union[float, Tuple[float, float]]] = None,
+        data_range: Optional[Union[float, tuple[float, float]]] = None,
         base: float = 10.0,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        dim: Optional[Union[int, Tuple[int, ...]]] = None,
+        dim: Optional[Union[int, tuple[int, ...]]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)

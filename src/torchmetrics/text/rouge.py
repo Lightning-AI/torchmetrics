@@ -109,7 +109,7 @@ class ROUGEScore(Metric):
         normalizer: Optional[Callable[[str], str]] = None,
         tokenizer: Optional[Callable[[str], Sequence[str]]] = None,
         accumulate: Literal["avg", "best"] = "best",
-        rouge_keys: Union[str, Tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),
+        rouge_keys: Union[str, tuple[str, ...]] = ("rouge1", "rouge2", "rougeL", "rougeLsum"),
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -156,7 +156,7 @@ class ROUGEScore(Metric):
         if isinstance(target, str):
             target = [[target]]
 
-        output: Dict[Union[int, str], List[Dict[str, Tensor]]] = _rouge_score_update(
+        output: dict[Union[int, str], list[dict[str, Tensor]]] = _rouge_score_update(
             preds,
             target,
             self.rouge_keys_values,
@@ -170,7 +170,7 @@ class ROUGEScore(Metric):
                 for tp, value in metric.items():
                     getattr(self, f"rouge{rouge_key}_{tp}").append(value.to(self.device))  # todo
 
-    def compute(self) -> Dict[str, Tensor]:
+    def compute(self) -> dict[str, Tensor]:
         """Calculate (Aggregate and provide confidence intervals) ROUGE score."""
         update_output = {}
         for rouge_key in self.rouge_keys_values:

@@ -42,11 +42,11 @@ else:
 
 
 def _clip_score_update(
-    images: Union[Tensor, List[Tensor]],
-    text: Union[str, List[str]],
+    images: Union[Tensor, list[Tensor]],
+    text: Union[str, list[str]],
     model: _CLIPModel,
     processor: _CLIPProcessor,
-) -> Tuple[Tensor, int]:
+) -> tuple[Tensor, int]:
     if not isinstance(images, list):
         if images.ndim == 3:
             images = [images]
@@ -97,7 +97,7 @@ def _get_clip_model_and_processor(
         "openai/clip-vit-large-patch14-336",
         "openai/clip-vit-large-patch14",
     ] = "openai/clip-vit-large-patch14",
-) -> Tuple[_CLIPModel, _CLIPProcessor]:
+) -> tuple[_CLIPModel, _CLIPProcessor]:
     if _TRANSFORMERS_GREATER_EQUAL_4_10:
         from transformers import CLIPModel as _CLIPModel
         from transformers import CLIPProcessor as _CLIPProcessor
@@ -113,8 +113,8 @@ def _get_clip_model_and_processor(
 
 
 def clip_score(
-    images: Union[Tensor, List[Tensor]],
-    text: Union[str, List[str]],
+    images: Union[Tensor, list[Tensor]],
+    text: Union[str, list[str]],
     model_name_or_path: Literal[
         "openai/clip-vit-base-patch16",
         "openai/clip-vit-base-patch32",

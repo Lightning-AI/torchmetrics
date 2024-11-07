@@ -69,7 +69,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
     def __init__(
         self,
         window_size: int = 8,
-        **kwargs: Dict[str, Any],
+        **kwargs: dict[str, Any],
     ) -> None:
         super().__init__(**kwargs)
         if not isinstance(window_size, int) or isinstance(window_size, int) and window_size < 1:

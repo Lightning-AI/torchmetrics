@@ -40,7 +40,7 @@ else:
 if not _PIQ_GREATER_EQUAL_0_8:
     __doctest_skip__ = ["clip_image_quality_assessment"]
 
-_PROMPTS: Dict[str, Tuple[str, str]] = {
+_PROMPTS: dict[str, tuple[str, str]] = {
     "quality": ("Good photo.", "Bad photo."),
     "brightness": ("Bright photo.", "Dark photo."),
     "noisiness": ("Clean photo.", "Noisy photo."),
@@ -68,7 +68,7 @@ def _get_clip_iqa_model_and_processor(
         "openai/clip-vit-large-patch14-336",
         "openai/clip-vit-large-patch14",
     ],
-) -> Tuple["_CLIPModel", "_CLIPProcessor"]:
+) -> tuple["_CLIPModel", "_CLIPProcessor"]:
     """Extract the CLIP model and processor from the model name or path."""
     from transformers import CLIPProcessor as _CLIPProcessor
 
@@ -89,7 +89,7 @@ def _get_clip_iqa_model_and_processor(
     return _get_clip_model_and_processor(model_name_or_path)
 
 
-def _clip_iqa_format_prompts(prompts: Tuple[Union[str, Tuple[str, str]]] = ("quality",)) -> Tuple[List[str], List[str]]:
+def _clip_iqa_format_prompts(prompts: tuple[Union[str, tuple[str, str]]] = ("quality",)) -> tuple[list[str], list[str]]:
     """Converts the provided keywords into a list of prompts for the model to calculate the anchor vectors.
 
     Args:
@@ -119,8 +119,8 @@ def _clip_iqa_format_prompts(prompts: Tuple[Union[str, Tuple[str, str]]] = ("qua
     if not isinstance(prompts, tuple):
         raise ValueError("Argument `prompts` must be a tuple containing strings or tuples of strings")
 
-    prompts_names: List[str] = []
-    prompts_list: List[str] = []
+    prompts_names: list[str] = []
+    prompts_list: list[str] = []
     count = 0
     for p in prompts:
         if not isinstance(p, (str, tuple)):
@@ -146,7 +146,7 @@ def _clip_iqa_get_anchor_vectors(
     model_name_or_path: str,
     model: "_CLIPModel",
     processor: "_CLIPProcessor",
-    prompts_list: List[str],
+    prompts_list: list[str],
     device: Union[str, torch.device],
 ) -> Tensor:
     """Calculates the anchor vectors for the CLIP IQA metric.
@@ -202,9 +202,9 @@ def _clip_iqa_update(
 def _clip_iqa_compute(
     img_features: Tensor,
     anchors: Tensor,
-    prompts_names: List[str],
+    prompts_names: list[str],
     format_as_dict: bool = True,
-) -> Union[Tensor, Dict[str, Tensor]]:
+) -> Union[Tensor, dict[str, Tensor]]:
     """Final computation of CLIP IQA."""
     logits_per_image = 100 * img_features @ anchors.t()
     probs = logits_per_image.reshape(logits_per_image.shape[0], -1, 2).softmax(-1)[:, :, 0]
@@ -225,8 +225,8 @@ def clip_image_quality_assessment(
         "openai/clip-vit-large-patch14",
     ] = "clip_iqa",
     data_range: float = 1.0,
-    prompts: Tuple[Union[str, Tuple[str, str]]] = ("quality",),
-) -> Union[Tensor, Dict[str, Tensor]]:
+    prompts: tuple[Union[str, tuple[str, str]]] = ("quality",),
+) -> Union[Tensor, dict[str, Tensor]]:
     """Calculates `CLIP-IQA`_, that can be used to measure the visual content of images.
 
     The metric is based on the `CLIP`_ model, which is a neural network trained on a variety of (image, text) pairs to

@@ -102,7 +102,7 @@ class InceptionScore(Metric):
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
 
-    features: List
+    features: list
     inception: Module
     feature_network: str = "inception"
 
@@ -152,7 +152,7 @@ class InceptionScore(Metric):
         features = self.inception(imgs)
         self.features.append(features)
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def compute(self) -> tuple[Tensor, Tensor]:
         """Compute metric."""
         features = dim_zero_cat(self.features)
         # random permute the features

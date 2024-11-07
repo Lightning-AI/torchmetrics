@@ -90,10 +90,10 @@ class QualityWithNoReference(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    preds: List[Tensor]
-    ms: List[Tensor]
-    pan: List[Tensor]
-    pan_lr: List[Tensor]
+    preds: list[Tensor]
+    ms: list[Tensor]
+    pan: list[Tensor]
+    pan_lr: list[Tensor]
 
     def __init__(
         self,
@@ -131,7 +131,7 @@ class QualityWithNoReference(Metric):
         self.add_state("pan", default=[], dist_reduce_fx="cat")
         self.add_state("pan_lr", default=[], dist_reduce_fx="cat")
 
-    def update(self, preds: Tensor, target: Dict[str, Tensor]) -> None:
+    def update(self, preds: Tensor, target: dict[str, Tensor]) -> None:
         """Update state with preds and target.
 
         Args:

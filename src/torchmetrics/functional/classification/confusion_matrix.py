@@ -121,7 +121,7 @@ def _binary_confusion_matrix_format(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     convert_to_labels: bool = True,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
     - Remove all datapoints that should be ignored
@@ -300,7 +300,7 @@ def _multiclass_confusion_matrix_format(
     target: Tensor,
     ignore_index: Optional[int] = None,
     convert_to_labels: bool = True,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
     - Applies argmax if preds have one more dimension than target
@@ -482,7 +482,7 @@ def _multilabel_confusion_matrix_format(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     should_threshold: bool = True,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
     - If preds tensor is floating point, applies sigmoid if pred tensor not in [0,1] range

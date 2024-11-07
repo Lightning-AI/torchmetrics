@@ -54,7 +54,7 @@ def _rank_data(data: Tensor) -> Tensor:
     return rank
 
 
-def _spearman_corrcoef_update(preds: Tensor, target: Tensor, num_outputs: int) -> Tuple[Tensor, Tensor]:
+def _spearman_corrcoef_update(preds: Tensor, target: Tensor, num_outputs: int) -> tuple[Tensor, Tensor]:
     """Update and returns variables required to compute Spearman Correlation Coefficient.
 
     Check for same shape and type of input tensors.

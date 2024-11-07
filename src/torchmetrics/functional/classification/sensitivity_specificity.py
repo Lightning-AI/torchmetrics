@@ -49,7 +49,7 @@ def _sensitivity_at_specificity(
     specificity: Tensor,
     thresholds: Tensor,
     min_specificity: float,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     # get indices where specificity is greater than min_specificity
     indices = specificity >= min_specificity
 
@@ -72,7 +72,7 @@ def _sensitivity_at_specificity(
 
 def _binary_sensitivity_at_specificity_arg_validation(
     min_specificity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
@@ -83,11 +83,11 @@ def _binary_sensitivity_at_specificity_arg_validation(
 
 
 def _binary_sensitivity_at_specificity_compute(
-    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    state: Union[Tensor, tuple[Tensor, Tensor]],
     thresholds: Optional[Tensor],
     min_specificity: float,
     pos_label: int = 1,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     fpr, sensitivity, thresholds = _binary_roc_compute(state, thresholds, pos_label)
     specificity = _convert_fpr_to_specificity(fpr)
     return _sensitivity_at_specificity(sensitivity, specificity, thresholds, min_specificity)
@@ -97,10 +97,10 @@ def binary_sensitivity_at_specificity(
     preds: Tensor,
     target: Tensor,
     min_specificity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     r"""Compute the highest possible sensitivity value given the minimum specificity levels provided for binary tasks.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and
@@ -169,7 +169,7 @@ def binary_sensitivity_at_specificity(
 def _multiclass_sensitivity_at_specificity_arg_validation(
     num_classes: int,
     min_specificity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
@@ -180,11 +180,11 @@ def _multiclass_sensitivity_at_specificity_arg_validation(
 
 
 def _multiclass_sensitivity_at_specificity_compute(
-    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    state: Union[Tensor, tuple[Tensor, Tensor]],
     num_classes: int,
     thresholds: Optional[Tensor],
     min_specificity: float,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     fpr, sensitivity, thresholds = _multiclass_roc_compute(state, num_classes, thresholds)
     specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
@@ -207,10 +207,10 @@ def multiclass_sensitivity_at_specificity(
     target: Tensor,
     num_classes: int,
     min_specificity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     r"""Compute the highest possible sensitivity value given minimum specificity level provided for multiclass tasks.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and the
@@ -285,7 +285,7 @@ def multiclass_sensitivity_at_specificity(
 def _multilabel_sensitivity_at_specificity_arg_validation(
     num_labels: int,
     min_specificity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
@@ -296,12 +296,12 @@ def _multilabel_sensitivity_at_specificity_arg_validation(
 
 
 def _multilabel_sensitivity_at_specificity_compute(
-    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    state: Union[Tensor, tuple[Tensor, Tensor]],
     num_labels: int,
     thresholds: Optional[Tensor],
     ignore_index: Optional[int],
     min_specificity: float,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     fpr, sensitivity, thresholds = _multilabel_roc_compute(state, num_labels, thresholds, ignore_index)
     specificity = [_convert_fpr_to_specificity(fpr_) for fpr_ in fpr]
     if isinstance(state, Tensor):
@@ -324,10 +324,10 @@ def multilabel_sensitivity_at_specificity(
     target: Tensor,
     num_labels: int,
     min_specificity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     r"""Compute the highest possible sensitivity value given minimum specificity level provided for multilabel tasks.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and
@@ -408,12 +408,12 @@ def sensitivity_at_specificity(
     target: Tensor,
     task: Literal["binary", "multiclass", "multilabel"],
     min_specificity: float,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+) -> Union[Tensor, tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]]:
     r"""Compute the highest possible sensitivity value given the minimum specificity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and

@@ -86,7 +86,7 @@ def _psnrb_compute(
     return 10 * torch.log10(1.0 / sum_squared_error)
 
 
-def _psnrb_update(preds: Tensor, target: Tensor, block_size: int = 8) -> Tuple[Tensor, Tensor, Tensor]:
+def _psnrb_update(preds: Tensor, target: Tensor, block_size: int = 8) -> tuple[Tensor, Tensor, Tensor]:
     """Updates and returns variables required to compute peak signal-to-noise ratio.
 
     Args:

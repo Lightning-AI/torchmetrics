@@ -22,7 +22,7 @@ from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.utilities.distributed import reduce
 
 
-def _spectral_distortion_index_update(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+def _spectral_distortion_index_update(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
     """Update and returns variables required to compute Spectral Distortion Index.
 
     Args:

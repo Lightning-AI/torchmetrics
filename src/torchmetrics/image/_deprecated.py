@@ -55,10 +55,10 @@ class _MultiScaleStructuralSimilarityIndexMeasure(MultiScaleStructuralSimilarity
         kernel_size: Union[int, Sequence[int]] = 11,
         sigma: Union[float, Sequence[float]] = 1.5,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        data_range: Optional[Union[float, Tuple[float, float]]] = None,
+        data_range: Optional[Union[float, tuple[float, float]]] = None,
         k1: float = 0.01,
         k2: float = 0.03,
-        betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
+        betas: tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
         normalize: Literal["relu", "simple", None] = "relu",
         **kwargs: Any,
     ) -> None:
@@ -91,10 +91,10 @@ class _PeakSignalNoiseRatio(PeakSignalNoiseRatio):
 
     def __init__(
         self,
-        data_range: Optional[Union[float, Tuple[float, float]]] = None,
+        data_range: Optional[Union[float, tuple[float, float]]] = None,
         base: float = 10.0,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        dim: Optional[Union[int, Tuple[int, ...]]] = None,
+        dim: Optional[Union[int, tuple[int, ...]]] = None,
         **kwargs: Any,
     ) -> None:
         _deprecated_root_import_class("PeakSignalNoiseRatio", "image")
@@ -116,7 +116,7 @@ class _RelativeAverageSpectralError(RelativeAverageSpectralError):
     def __init__(
         self,
         window_size: int = 8,
-        **kwargs: Dict[str, Any],
+        **kwargs: dict[str, Any],
     ) -> None:
         _deprecated_root_import_class("RelativeAverageSpectralError", "image")
         super().__init__(window_size=window_size, **kwargs)
@@ -137,7 +137,7 @@ class _RootMeanSquaredErrorUsingSlidingWindow(RootMeanSquaredErrorUsingSlidingWi
     def __init__(
         self,
         window_size: int = 8,
-        **kwargs: Dict[str, Any],
+        **kwargs: dict[str, Any],
     ) -> None:
         _deprecated_root_import_class("RootMeanSquaredErrorUsingSlidingWindow", "image")
         super().__init__(window_size=window_size, **kwargs)
@@ -201,7 +201,7 @@ class _StructuralSimilarityIndexMeasure(StructuralSimilarityIndexMeasure):
         sigma: Union[float, Sequence[float]] = 1.5,
         kernel_size: Union[int, Sequence[int]] = 11,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        data_range: Optional[Union[float, Tuple[float, float]]] = None,
+        data_range: Optional[Union[float, tuple[float, float]]] = None,
         k1: float = 0.01,
         k2: float = 0.03,
         return_full_image: bool = False,

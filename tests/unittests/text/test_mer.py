@@ -24,7 +24,7 @@ from unittests.text._inputs import _inputs_error_rate_batch_size_1, _inputs_erro
 seed_all(42)
 
 
-def _reference_jiwer_mer(preds: Union[str, List[str]], target: Union[str, List[str]]):
+def _reference_jiwer_mer(preds: Union[str, list[str]], target: Union[str, list[str]]):
     try:
         from jiwer import compute_measures
     except ImportError:

@@ -98,9 +98,9 @@ class RetrievalMetric(Metric, ABC):
     higher_is_better: bool = True
     full_state_update: bool = False
 
-    indexes: List[Tensor]
-    preds: List[Tensor]
-    target: List[Tensor]
+    indexes: list[Tensor]
+    preds: list[Tensor]
+    target: list[Tensor]
 
     def __init__(
         self,

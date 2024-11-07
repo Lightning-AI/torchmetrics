@@ -22,7 +22,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 def _weighted_mean_absolute_percentage_error_update(
     preds: Tensor,
     target: Tensor,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Update and returns variables required to compute Weighted Absolute Percentage Error.
 
     Check for same shape of input tensors.

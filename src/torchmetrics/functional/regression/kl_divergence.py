@@ -22,7 +22,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.compute import _safe_xlogy
 
 
-def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
+def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> tuple[Tensor, int]:
     """Update and returns KL divergence scores for each observation and the total number of observations.
 
     Args:

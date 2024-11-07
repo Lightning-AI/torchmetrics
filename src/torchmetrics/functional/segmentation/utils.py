@@ -24,7 +24,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.imports import _SCIPY_AVAILABLE
 
 
-def _ignore_background(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+def _ignore_background(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
     """Ignore the background class in the computation assuming it is the first, index 0."""
     preds = preds[:, 1:] if preds.shape[1] > 1 else preds
     target = target[:, 1:] if target.shape[1] > 1 else target
@@ -44,7 +44,7 @@ def check_if_binarized(x: Tensor) -> None:
         raise ValueError("Input x should be binarized")
 
 
-def _unfold(x: Tensor, kernel_size: Tuple[int, ...]) -> Tensor:
+def _unfold(x: Tensor, kernel_size: tuple[int, ...]) -> Tensor:
     """Unfold the input tensor to a matrix. Function supports 3d images e.g. (B, C, D, H, W).
 
     Inspired by:
@@ -112,7 +112,7 @@ def generate_binary_structure(rank: int, connectivity: int) -> Tensor:
 
 
 def binary_erosion(
-    image: Tensor, structure: Optional[Tensor] = None, origin: Optional[Tuple[int, ...]] = None, border_value: int = 0
+    image: Tensor, structure: Optional[Tensor] = None, origin: Optional[tuple[int, ...]] = None, border_value: int = 0
 ) -> Tensor:
     """Binary erosion of a tensor image.
 
@@ -183,7 +183,7 @@ def binary_erosion(
 
 def distance_transform(
     x: Tensor,
-    sampling: Optional[Union[Tensor, List[float]]] = None,
+    sampling: Optional[Union[Tensor, list[float]]] = None,
     metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
     engine: Literal["pytorch", "scipy"] = "pytorch",
 ) -> Tensor:
@@ -285,8 +285,8 @@ def mask_edges(
     preds: Tensor,
     target: Tensor,
     crop: bool = True,
-    spacing: Optional[Union[Tuple[int, int], Tuple[int, int, int]]] = None,
-) -> Union[Tuple[Tensor, Tensor], Tuple[Tensor, Tensor, Tensor, Tensor]]:
+    spacing: Optional[Union[tuple[int, int], tuple[int, int, int]]] = None,
+) -> Union[tuple[Tensor, Tensor], tuple[Tensor, Tensor, Tensor, Tensor]]:
     """Get the edges of binary segmentation masks.
 
     Args:
@@ -343,7 +343,7 @@ def surface_distance(
     preds: Tensor,
     target: Tensor,
     distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
-    spacing: Optional[Union[Tensor, List[float]]] = None,
+    spacing: Optional[Union[Tensor, list[float]]] = None,
 ) -> Tensor:
     """Calculate the surface distance between two binary edge masks.
 
@@ -393,9 +393,9 @@ def edge_surface_distance(
     preds: Tensor,
     target: Tensor,
     distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
-    spacing: Optional[Union[Tensor, List[float]]] = None,
+    spacing: Optional[Union[Tensor, list[float]]] = None,
     symmetric: bool = False,
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+) -> Union[Tensor, tuple[Tensor, Tensor]]:
     """Extracts the edges from the input masks and calculates the surface distance between them.
 
     Args:
@@ -423,8 +423,8 @@ def edge_surface_distance(
 
 @functools.lru_cache
 def get_neighbour_tables(
-    spacing: Union[Tuple[int, int], Tuple[int, int, int]], device: Optional[torch.device] = None
-) -> Tuple[Tensor, Tensor]:
+    spacing: Union[tuple[int, int], tuple[int, int, int]], device: Optional[torch.device] = None
+) -> tuple[Tensor, Tensor]:
     """Create a table that maps neighbour codes to the contour length or surface area of the corresponding contour.
 
     Args:
@@ -443,7 +443,7 @@ def get_neighbour_tables(
     raise ValueError("The spacing must be a tuple of length 2 or 3.")
 
 
-def table_contour_length(spacing: Tuple[int, int], device: Optional[torch.device] = None) -> Tuple[Tensor, Tensor]:
+def table_contour_length(spacing: tuple[int, int], device: Optional[torch.device] = None) -> tuple[Tensor, Tensor]:
     """Create a table that maps neighbour codes to the contour length of the corresponding contour.
 
     Adopted from:
@@ -487,7 +487,7 @@ def table_contour_length(spacing: Tuple[int, int], device: Optional[torch.device
 
 
 @functools.lru_cache
-def table_surface_area(spacing: Tuple[int, int, int], device: Optional[torch.device] = None) -> Tuple[Tensor, Tensor]:
+def table_surface_area(spacing: tuple[int, int, int], device: Optional[torch.device] = None) -> tuple[Tensor, Tensor]:
     """Create a table that maps neighbour codes to the surface area of the corresponding surface.
 
     Adopted from:

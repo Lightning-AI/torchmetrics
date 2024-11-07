@@ -22,7 +22,7 @@ from torchmetrics.utilities.prints import rank_zero_warn
 
 def procrustes_disparity(
     point_cloud1: Tensor, point_cloud2: Tensor, return_all: bool = False
-) -> Union[Tensor, Tuple[Tensor, Tensor, Tensor]]:
+) -> Union[Tensor, tuple[Tensor, Tensor, Tensor]]:
     """Runs procrustrus analysis on a batch of data points.
 
     Works similar ``scipy.spatial.procrustes`` but for batches of data points.

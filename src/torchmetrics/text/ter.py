@@ -69,7 +69,7 @@ class TranslationEditRate(Metric):
 
     total_num_edits: Tensor
     total_tgt_len: Tensor
-    sentence_ter: Optional[List[Tensor]] = None
+    sentence_ter: Optional[list[Tensor]] = None
 
     def __init__(
         self,
@@ -109,7 +109,7 @@ class TranslationEditRate(Metric):
             self.sentence_ter,
         )
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def compute(self) -> Union[Tensor, tuple[Tensor, Tensor]]:
         """Calculate the translate error rate (TER)."""
         ter = _ter_compute(self.total_num_edits, self.total_tgt_len)
         if self.sentence_ter is not None:

@@ -28,7 +28,7 @@ class MetricInputTransformer(WrapperMetric):
 
     """
 
-    def __init__(self, wrapped_metric: Union[Metric, MetricCollection], **kwargs: Dict[str, Any]) -> None:
+    def __init__(self, wrapped_metric: Union[Metric, MetricCollection], **kwargs: dict[str, Any]) -> None:
         super().__init__(**kwargs)
         if not isinstance(wrapped_metric, (Metric, MetricCollection)):
             raise TypeError(
@@ -53,7 +53,7 @@ class MetricInputTransformer(WrapperMetric):
         """
         return target
 
-    def _wrap_transform(self, *args: torch.Tensor) -> Tuple[torch.Tensor, ...]:
+    def _wrap_transform(self, *args: torch.Tensor) -> tuple[torch.Tensor, ...]:
         """Wrap transformation functions to dispatch args to their individual transform functions."""
         if len(args) == 1:
             return (self.transform_pred(args[0]),)
@@ -61,7 +61,7 @@ class MetricInputTransformer(WrapperMetric):
             return self.transform_pred(args[0]), self.transform_target(args[1])
         return self.transform_pred(args[0]), self.transform_target(args[1]), *args[2:]
 
-    def update(self, *args: torch.Tensor, **kwargs: Dict[str, Any]) -> None:
+    def update(self, *args: torch.Tensor, **kwargs: dict[str, Any]) -> None:
         """Wrap the update call of the underlying metric."""
         args = self._wrap_transform(*args)
         self.wrapped_metric.update(*args, **kwargs)
@@ -70,7 +70,7 @@ class MetricInputTransformer(WrapperMetric):
         """Wrap the compute call of the underlying metric."""
         return self.wrapped_metric.compute()
 
-    def forward(self, *args: torch.Tensor, **kwargs: Dict[str, Any]) -> Any:
+    def forward(self, *args: torch.Tensor, **kwargs: dict[str, Any]) -> Any:
         """Wrap the forward call of the underlying metric."""
         args = self._wrap_transform(*args)
         return self.wrapped_metric.forward(*args, **kwargs)

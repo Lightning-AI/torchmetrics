@@ -84,7 +84,7 @@ class FeatureShare(MetricCollection):
 
     def __init__(
         self,
-        metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]],
+        metrics: Union[Metric, Sequence[Metric], dict[str, Metric]],
         max_cache_size: Optional[int] = None,
     ) -> None:
         # disable compute groups because the feature sharing is more custom

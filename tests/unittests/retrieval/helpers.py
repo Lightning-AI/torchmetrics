@@ -59,7 +59,7 @@ def _retrieval_aggregate(
     return aggregation(values, dim=dim)
 
 
-def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> List[Union[Tensor, np.ndarray]]:
+def get_group_indexes(indexes: Union[Tensor, np.ndarray]) -> list[Union[Tensor, np.ndarray]]:
     """Extract group indexes.
 
     Given an integer :class:`~torch.Tensor` or `np.ndarray` `indexes`, return a :class:`~torch.Tensor` or
@@ -151,7 +151,7 @@ def _compute_sklearn_metric(
     return np.array(0.0)
 
 
-def _concat_tests(*tests: Tuple[Dict]) -> Dict:
+def _concat_tests(*tests: tuple[dict]) -> dict:
     """Concat tests composed by a string and a list of arguments."""
     assert len(tests), "`_concat_tests` expects at least an argument"
     assert all(tests[0]["argnames"] == x["argnames"] for x in tests[1:]), "the header must be the same for all tests"
@@ -408,7 +408,7 @@ def _errors_test_class_metric(
     metric_class: Metric,
     message: str = "",
     metric_args: Optional[dict] = None,
-    exception_type: Type[Exception] = ValueError,
+    exception_type: type[Exception] = ValueError,
     kwargs_update: Optional[dict] = None,
 ):
     """Check types, parameters and errors.
@@ -437,7 +437,7 @@ def _errors_test_functional_metric(
     target: Tensor,
     metric_functional: Metric,
     message: str = "",
-    exception_type: Type[Exception] = ValueError,
+    exception_type: type[Exception] = ValueError,
     kwargs_update: Optional[dict] = None,
 ):
     """Check types, parameters and errors.
@@ -564,7 +564,7 @@ class RetrievalMetricTester(MetricTester):
         metric_class: Metric,
         message: str = "",
         metric_args: Optional[dict] = None,
-        exception_type: Type[Exception] = ValueError,
+        exception_type: type[Exception] = ValueError,
         kwargs_update: Optional[dict] = None,
     ) -> None:
         """Test that specific errors are raised for incorrect input."""
@@ -585,7 +585,7 @@ class RetrievalMetricTester(MetricTester):
         target: Tensor,
         metric_functional: Callable,
         message: str = "",
-        exception_type: Type[Exception] = ValueError,
+        exception_type: type[Exception] = ValueError,
         kwargs_update: Optional[dict] = None,
     ) -> None:
         """Test that specific errors are raised for incorrect input."""

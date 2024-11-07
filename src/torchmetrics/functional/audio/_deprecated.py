@@ -16,7 +16,7 @@ def _permutation_invariant_training(
     mode: Literal["speaker-wise", "permutation-wise"] = "speaker-wise",
     eval_func: Literal["max", "min"] = "max",
     **kwargs: Any,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Wrapper for deprecated import.
 
     >>> from torch import tensor

@@ -205,7 +205,7 @@ def _spatial_average(in_tens: Tensor, keep_dim: bool = True) -> Tensor:
     return in_tens.mean([2, 3], keepdim=keep_dim)
 
 
-def _upsample(in_tens: Tensor, out_hw: Tuple[int, ...] = (64, 64)) -> Tensor:
+def _upsample(in_tens: Tensor, out_hw: tuple[int, ...] = (64, 64)) -> Tensor:
     """Upsample input with bilinear interpolation."""
     return nn.Upsample(size=out_hw, mode="bilinear", align_corners=False)(in_tens)
 
@@ -331,7 +331,7 @@ class _LPIPS(nn.Module):
 
     def forward(
         self, in0: Tensor, in1: Tensor, retperlayer: bool = False, normalize: bool = False
-    ) -> Union[Tensor, Tuple[Tensor, List[Tensor]]]:
+    ) -> Union[Tensor, tuple[Tensor, list[Tensor]]]:
         if normalize:  # turn on this flag if input is [0,1] so it can be adjusted to [-1, +1]
             in0 = 2 * in0 - 1
             in1 = 2 * in1 - 1
@@ -378,7 +378,7 @@ def _valid_img(img: Tensor, normalize: bool) -> bool:
     return img.ndim == 4 and img.shape[1] == 3 and value_check  # type: ignore[return-value]
 
 
-def _lpips_update(img1: Tensor, img2: Tensor, net: nn.Module, normalize: bool) -> Tuple[Tensor, Union[int, Tensor]]:
+def _lpips_update(img1: Tensor, img2: Tensor, net: nn.Module, normalize: bool) -> tuple[Tensor, Union[int, Tensor]]:
     if not (_valid_img(img1, normalize) and _valid_img(img2, normalize)):
         raise ValueError(
             "Expected both input arguments to be normalized tensors with shape [N, 3, H, W]."

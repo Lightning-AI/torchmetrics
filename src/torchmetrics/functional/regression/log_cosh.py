@@ -20,13 +20,13 @@ from torchmetrics.functional.regression.utils import _check_data_shape_to_num_ou
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _unsqueeze_tensors(preds: Tensor, target: Tensor) -> Tuple[Tensor, Tensor]:
+def _unsqueeze_tensors(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
     if preds.ndim == 2:
         return preds, target
     return preds.unsqueeze(1), target.unsqueeze(1)
 
 
-def _log_cosh_error_update(preds: Tensor, target: Tensor, num_outputs: int) -> Tuple[Tensor, Tensor]:
+def _log_cosh_error_update(preds: Tensor, target: Tensor, num_outputs: int) -> tuple[Tensor, Tensor]:
     """Update and returns variables required to compute LogCosh error.
 
     Check for same shape of input tensors.

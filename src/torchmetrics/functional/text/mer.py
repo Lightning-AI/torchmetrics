@@ -21,9 +21,9 @@ from torchmetrics.functional.text.helper import _edit_distance
 
 
 def _mer_update(
-    preds: Union[str, List[str]],
-    target: Union[str, List[str]],
-) -> Tuple[Tensor, Tensor]:
+    preds: Union[str, list[str]],
+    target: Union[str, list[str]],
+) -> tuple[Tensor, Tensor]:
     """Update the mer score with the current set of references and predictions.
 
     Args:
@@ -64,7 +64,7 @@ def _mer_compute(errors: Tensor, total: Tensor) -> Tensor:
     return errors / total
 
 
-def match_error_rate(preds: Union[str, List[str]], target: Union[str, List[str]]) -> Tensor:
+def match_error_rate(preds: Union[str, list[str]], target: Union[str, list[str]]) -> Tensor:
     """Match error rate is a metric of the performance of an automatic speech recognition system.
 
     This value indicates the percentage of words that were incorrectly predicted and inserted. The lower the value, the

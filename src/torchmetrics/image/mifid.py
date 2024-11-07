@@ -149,8 +149,8 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
     is_differentiable: bool = False
     full_state_update: bool = False
 
-    real_features: List[Tensor]
-    fake_features: List[Tensor]
+    real_features: list[Tensor]
+    fake_features: list[Tensor]
 
     inception: Module
     feature_network: str = "inception"
