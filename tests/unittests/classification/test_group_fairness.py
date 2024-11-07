@@ -13,7 +13,7 @@
 # limitations under the License.
 import inspect
 from functools import partial
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Optional
 from unittest import mock
 
 import numpy as np

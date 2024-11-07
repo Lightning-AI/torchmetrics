@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Callable, Optional, Tuple, Union, no_type_check
+from typing import Any, Callable, Optional, Union, no_type_check
 
 import torch
 from torch import Tensor

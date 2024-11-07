@@ -23,7 +23,7 @@
 from collections import defaultdict
 from collections.abc import Sequence
 from itertools import chain
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import torch
 from torch import Tensor, tensor

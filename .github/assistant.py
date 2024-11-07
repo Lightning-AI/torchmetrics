@@ -16,7 +16,7 @@ import logging
 import os
 import re
 import sys
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import fire
 from packaging.version import parse

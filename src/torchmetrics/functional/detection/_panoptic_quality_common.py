@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Collection, Iterator
-from typing import Dict, List, Optional, Set, Tuple, cast
+from typing import Optional, cast
 
 import torch
 from torch import Tensor

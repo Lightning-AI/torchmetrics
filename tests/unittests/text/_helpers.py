@@ -15,7 +15,7 @@ import pickle
 import sys
 from collections.abc import Sequence
 from functools import partial
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 import numpy as np
 import pytest

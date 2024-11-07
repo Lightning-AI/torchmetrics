@@ -15,7 +15,7 @@
 from collections import OrderedDict
 from collections.abc import Hashable, Iterable, Iterator, Mapping, Sequence
 from copy import deepcopy
-from typing import Any, ClassVar, Dict, List, Optional, Tuple, Union
+from typing import Any, ClassVar, Optional, Union
 
 import torch
 from torch import Tensor

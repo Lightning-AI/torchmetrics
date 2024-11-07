@@ -13,7 +13,7 @@
 # limitations under the License.
 import sys
 from collections.abc import Sequence
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import torch
 from lightning_utilities import apply_to_collection

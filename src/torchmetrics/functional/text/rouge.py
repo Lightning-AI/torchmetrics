@@ -14,7 +14,7 @@
 import re
 from collections import Counter
 from collections.abc import Sequence
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Optional, Union
 
 import torch
 from torch import Tensor, tensor

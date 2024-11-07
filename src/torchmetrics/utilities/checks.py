@@ -17,7 +17,7 @@ import sys
 from collections.abc import Mapping, Sequence
 from functools import partial
 from time import perf_counter
-from typing import Any, Callable, Dict, Optional, Tuple, no_type_check
+from typing import Any, Callable, Optional, no_type_check
 from unittest.mock import Mock
 
 import torch

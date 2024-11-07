@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from collections.abc import Sequence
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor

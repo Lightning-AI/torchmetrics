@@ -21,7 +21,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, ClassVar, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, ClassVar, Optional, Union
 
 import torch
 from lightning_utilities import apply_to_collection

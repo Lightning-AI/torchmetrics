@@ -8,7 +8,6 @@ In this example, we will demonstrate how to generate a clean signal, add varying
 
 # %%
 # Import necessary libraries
-from typing import Tuple
 
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt

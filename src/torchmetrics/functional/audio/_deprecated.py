@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Optional
 
 from torch import Tensor
 from typing_extensions import Literal

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from functools import partial
-from typing import Dict, List, NamedTuple
+from typing import NamedTuple
 
 import pytest
 import torch

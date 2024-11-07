@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
-from typing import Literal, Optional, Tuple, Union
+from typing import Literal, Optional, Union
 
 import torch
 from torch import Tensor, nn

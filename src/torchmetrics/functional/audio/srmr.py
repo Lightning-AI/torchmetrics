@@ -17,7 +17,7 @@
 
 from functools import lru_cache
 from math import ceil, pi
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor

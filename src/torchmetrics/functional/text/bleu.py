@@ -18,7 +18,7 @@
 # Link: https://pytorch.org/text/_modules/torchtext/data/metrics.html#bleu_score
 from collections import Counter
 from collections.abc import Sequence
-from typing import Callable, Optional, Tuple, Union
+from typing import Callable, Optional, Union
 
 import torch
 from torch import Tensor, tensor

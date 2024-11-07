@@ -13,7 +13,7 @@
 # limitations under the License.
 from collections.abc import Sequence
 from functools import partial
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor, tensor

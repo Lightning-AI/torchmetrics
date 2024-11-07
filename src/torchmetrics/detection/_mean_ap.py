@@ -13,7 +13,7 @@
 # limitations under the License.
 import logging
 from collections.abc import Sequence
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Optional, Union
 
 import numpy as np
 import torch

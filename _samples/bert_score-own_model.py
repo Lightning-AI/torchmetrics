@@ -18,7 +18,7 @@ To run: python bert_score-own_model.py
 """
 
 from pprint import pprint
-from typing import Dict, List, Union
+from typing import Union
 
 import torch
 from torch import Tensor, nn

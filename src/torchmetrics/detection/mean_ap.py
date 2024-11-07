@@ -16,7 +16,7 @@ import io
 import json
 from collections.abc import Sequence
 from types import ModuleType
-from typing import Any, Callable, ClassVar, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, ClassVar, Optional, Union
 
 import numpy as np
 import torch

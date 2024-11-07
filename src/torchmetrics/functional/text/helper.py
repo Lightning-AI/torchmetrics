@@ -31,7 +31,7 @@
 import math
 from collections.abc import Sequence
 from enum import Enum, unique
-from typing import Dict, List, Tuple, Union
+from typing import Union
 
 # Tercom-inspired limits
 _BEAM_WIDTH = 25

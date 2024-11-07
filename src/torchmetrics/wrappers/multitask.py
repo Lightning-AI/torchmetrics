@@ -14,7 +14,7 @@
 # this is just a bypass for this module name collision with built-in one
 from collections.abc import Iterable, Sequence
 from copy import deepcopy
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 from torch import Tensor, nn
 

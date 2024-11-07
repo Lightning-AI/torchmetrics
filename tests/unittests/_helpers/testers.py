@@ -16,7 +16,7 @@ import sys
 from collections.abc import Sequence
 from copy import deepcopy
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Optional, Union
 
 import numpy as np
 import pytest

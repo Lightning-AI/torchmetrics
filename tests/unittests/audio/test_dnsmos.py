@@ -13,7 +13,7 @@
 # limitations under the License.
 import os
 from functools import partial
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import numpy as np
 import pytest

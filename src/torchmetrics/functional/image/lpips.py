@@ -24,7 +24,7 @@
 # License under BSD 2-clause
 import inspect
 import os
-from typing import List, NamedTuple, Optional, Tuple, Union
+from typing import NamedTuple, Optional, Union
 
 import torch
 from torch import Tensor, nn

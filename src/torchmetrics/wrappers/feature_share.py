@@ -13,7 +13,7 @@
 # limitations under the License.
 from collections.abc import Sequence
 from functools import lru_cache
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 
 from torch.nn import Module
 

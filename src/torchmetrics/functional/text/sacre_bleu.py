@@ -42,7 +42,7 @@ import re
 import tempfile
 from collections.abc import Sequence
 from functools import partial
-from typing import Any, ClassVar, Dict, Optional, Type
+from typing import Any, ClassVar, Optional
 
 import torch
 from torch import Tensor, tensor

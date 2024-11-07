@@ -90,7 +90,7 @@ import re
 import unicodedata
 from collections.abc import Sequence
 from math import inf
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 
 from torch import Tensor, stack, tensor
 from typing_extensions import Literal
