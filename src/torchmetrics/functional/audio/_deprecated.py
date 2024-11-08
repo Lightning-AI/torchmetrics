@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Optional
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -16,7 +16,7 @@ def _permutation_invariant_training(
     mode: Literal["speaker-wise", "permutation-wise"] = "speaker-wise",
     eval_func: Literal["max", "min"] = "max",
     **kwargs: Any,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Wrapper for deprecated import.
 
     >>> from torch import tensor

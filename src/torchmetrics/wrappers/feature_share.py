@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from collections.abc import Sequence
 from functools import lru_cache
-from typing import Any, Dict, Optional, Sequence, Union
+from typing import Any, Optional, Union
 
 from torch.nn import Module
 
@@ -83,7 +84,7 @@ class FeatureShare(MetricCollection):
 
     def __init__(
         self,
-        metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]],
+        metrics: Union[Metric, Sequence[Metric], dict[str, Metric]],
         max_cache_size: Optional[int] = None,
     ) -> None:
         # disable compute groups because the feature sharing is more custom

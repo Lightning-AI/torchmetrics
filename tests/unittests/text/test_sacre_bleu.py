@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections.abc import Sequence
 from functools import partial
-from typing import Sequence
 
 import pytest
 from lightning_utilities.core.imports import RequirementCache

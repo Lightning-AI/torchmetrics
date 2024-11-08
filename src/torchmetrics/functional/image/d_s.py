@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -28,7 +28,7 @@ if not _TORCHVISION_AVAILABLE:
 
 def _spatial_distortion_index_update(
     preds: Tensor, ms: Tensor, pan: Tensor, pan_lr: Optional[Tensor] = None
-) -> Tuple[Tensor, Tensor, Tensor, Optional[Tensor]]:
+) -> tuple[Tensor, Tensor, Tensor, Optional[Tensor]]:
     """Update and returns variables required to compute Spatial Distortion Index.
 
     Args:

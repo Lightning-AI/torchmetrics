@@ -13,9 +13,10 @@
 # limitations under the License.
 import pickle
 import sys
+from collections.abc import Sequence
 from copy import deepcopy
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Optional, Union
 
 import numpy as np
 import pytest
@@ -42,7 +43,7 @@ def _assert_allclose(tm_result: Any, ref_result: Any, atol: float = 1e-8, key: O
     elif isinstance(tm_result, Sequence):
         for pl_res, ref_res in zip(tm_result, ref_result):
             _assert_allclose(pl_res, ref_res, atol=atol)
-    elif isinstance(tm_result, Dict):
+    elif isinstance(tm_result, dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
         assert np.allclose(
@@ -60,7 +61,7 @@ def _assert_tensor(tm_result: Any, key: Optional[str] = None) -> None:
     if isinstance(tm_result, Sequence):
         for plr in tm_result:
             _assert_tensor(plr)
-    elif isinstance(tm_result, Dict):
+    elif isinstance(tm_result, dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
         assert isinstance(tm_result[key], Tensor)
@@ -73,7 +74,7 @@ def _assert_requires_grad(metric: Metric, tm_result: Any, key: Optional[str] = N
     if isinstance(tm_result, Sequence):
         for plr in tm_result:
             _assert_requires_grad(metric, plr, key=key)
-    elif isinstance(tm_result, Dict):
+    elif isinstance(tm_result, dict):
         if key is None:
             raise KeyError("Provide Key for Dict based metric results.")
         assert metric.is_differentiable == tm_result[key].requires_grad
@@ -84,8 +85,8 @@ def _assert_requires_grad(metric: Metric, tm_result: Any, key: Optional[str] = N
 def _class_test(
     rank: int,
     world_size: int,
-    preds: Union[Tensor, list, List[Dict[str, Tensor]]],
-    target: Union[Tensor, list, List[Dict[str, Tensor]]],
+    preds: Union[Tensor, list, list[dict[str, Tensor]]],
+    target: Union[Tensor, list, list[dict[str, Tensor]]],
     metric_class: Metric,
     reference_metric: Callable,
     dist_sync_on_step: bool,
@@ -251,7 +252,7 @@ def _class_test(
 
 def _functional_test(
     preds: Union[Tensor, list],
-    target: Union[Tensor, list, List[Dict[str, Tensor]]],
+    target: Union[Tensor, list, list[dict[str, Tensor]]],
     metric_functional: Callable,
     reference_metric: Callable,
     metric_args: Optional[dict] = None,
@@ -316,7 +317,7 @@ def _assert_dtype_support(
     metric_module: Optional[Metric],
     metric_functional: Optional[Callable],
     preds: Tensor,
-    target: Union[Tensor, List[Dict[str, Tensor]]],
+    target: Union[Tensor, list[dict[str, Tensor]]],
     device: str = "cpu",
     dtype: torch.dtype = torch.half,
     **kwargs_update: Any,
@@ -419,8 +420,8 @@ class MetricTester:
     def run_class_metric_test(
         self,
         ddp: bool,
-        preds: Union[Tensor, List[Dict]],
-        target: Union[Tensor, List[Dict]],
+        preds: Union[Tensor, list[dict]],
+        target: Union[Tensor, list[dict]],
         metric_class: Metric,
         reference_metric: Callable,
         dist_sync_on_step: bool = False,
@@ -684,7 +685,7 @@ def inject_ignore_index(x: Tensor, ignore_index: int) -> Tensor:
     return x
 
 
-def remove_ignore_index(target: Tensor, preds: Tensor, ignore_index: Optional[int]) -> Tuple[Tensor, Tensor]:
+def remove_ignore_index(target: Tensor, preds: Tensor, ignore_index: Optional[int]) -> tuple[Tensor, Tensor]:
     """Remove samples that are equal to the ignore_index in comparison functions.
 
     Example:
@@ -703,7 +704,7 @@ def remove_ignore_index(target: Tensor, preds: Tensor, ignore_index: Optional[in
 
 def remove_ignore_index_groups(
     target: Tensor, preds: Tensor, groups: Tensor, ignore_index: Optional[int]
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor]:
     """Version of the remove_ignore_index which includes groups."""
     if ignore_index is not None:
         idx = target == ignore_index

@@ -1,4 +1,5 @@
-from typing import Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -57,7 +58,7 @@ def _error_relative_global_dimensionless_synthesis(
     return error_relative_global_dimensionless_synthesis(preds=preds, target=target, ratio=ratio, reduction=reduction)
 
 
-def _image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
+def _image_gradients(img: Tensor) -> tuple[Tensor, Tensor]:
     """Wrapper for deprecated import.
 
     >>> import torch
@@ -79,10 +80,10 @@ def _image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
 def _peak_signal_noise_ratio(
     preds: Tensor,
     target: Tensor,
-    data_range: Optional[Union[float, Tuple[float, float]]] = None,
+    data_range: Optional[Union[float, tuple[float, float]]] = None,
     base: float = 10.0,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-    dim: Optional[Union[int, Tuple[int, ...]]] = None,
+    dim: Optional[Union[int, tuple[int, ...]]] = None,
 ) -> Tensor:
     """Wrapper for deprecated import.
 
@@ -115,7 +116,7 @@ def _relative_average_spectral_error(preds: Tensor, target: Tensor, window_size:
 
 def _root_mean_squared_error_using_sliding_window(
     preds: Tensor, target: Tensor, window_size: int = 8, return_rmse_map: bool = False
-) -> Union[Optional[Tensor], Tuple[Optional[Tensor], Tensor]]:
+) -> Union[Optional[Tensor], tuple[Optional[Tensor], Tensor]]:
     """Wrapper for deprecated import.
 
     >>> from torch import rand
@@ -156,10 +157,10 @@ def _multiscale_structural_similarity_index_measure(
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-    data_range: Optional[Union[float, Tuple[float, float]]] = None,
+    data_range: Optional[Union[float, tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
-    betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
+    betas: tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
     normalize: Optional[Literal["relu", "simple"]] = "relu",
 ) -> Tensor:
     """Wrapper for deprecated import.
@@ -194,12 +195,12 @@ def _structural_similarity_index_measure(
     sigma: Union[float, Sequence[float]] = 1.5,
     kernel_size: Union[int, Sequence[int]] = 11,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-    data_range: Optional[Union[float, Tuple[float, float]]] = None,
+    data_range: Optional[Union[float, tuple[float, float]]] = None,
     k1: float = 0.01,
     k2: float = 0.03,
     return_full_image: bool = False,
     return_contrast_sensitivity: bool = False,
-) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+) -> Union[Tensor, tuple[Tensor, Tensor]]:
     """Wrapper for deprecated import.
 
     >>> import torch

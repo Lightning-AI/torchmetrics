@@ -10,7 +10,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Literal, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Literal, Optional, Union
 
 import torch
 from torch import Tensor
@@ -88,7 +89,7 @@ class HausdorffDistance(Metric):
         num_classes: int,
         include_background: bool = False,
         distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
-        spacing: Optional[Union[Tensor, List[float]]] = None,
+        spacing: Optional[Union[Tensor, list[float]]] = None,
         directed: bool = False,
         input_format: Literal["one-hot", "index"] = "one-hot",
         **kwargs: Any,

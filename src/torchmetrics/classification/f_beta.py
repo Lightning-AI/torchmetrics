@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Type, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -1116,7 +1117,7 @@ class FBetaScore(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls: Type["FBetaScore"],
+        cls: type["FBetaScore"],
         task: Literal["binary", "multiclass", "multilabel"],
         beta: float = 1.0,
         threshold: float = 0.5,
@@ -1183,7 +1184,7 @@ class F1Score(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls: Type["F1Score"],
+        cls: type["F1Score"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,
