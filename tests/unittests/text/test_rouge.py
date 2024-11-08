@@ -273,7 +273,7 @@ def test_rouge_lsum_score(pl_rouge_metric_key, use_stemmer):
     assert torch.isclose(metrics_score[rouge_level + "_" + metric], original_score)
 
 
-pytest.mark.parametrize(
+@pytest.mark.parametrize(
     ("preds", "references", "expected_scores"),
     [
         (
@@ -314,8 +314,6 @@ pytest.mark.parametrize(
         ),
     ],
 )
-
-
 def test_rouge_score_accumulate_best(preds, references, expected_scores):
     """Issue: https://github.com/Lightning-AI/torchmetrics/issues/2148."""
     # Calculate ROUGE scores
