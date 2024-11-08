@@ -111,6 +111,7 @@
 .. _Perceptual Evaluation of Speech Quality: https://en.wikipedia.org/wiki/Perceptual_Evaluation_of_Speech_Quality
 .. _pesq package: https://github.com/ludlows/python-pesq
 .. _Deep Noise Suppression performance evaluation based on Mean Opinion Score: https://arxiv.org/abs/2010.15258
+.. _Non-Intrusive Speech Quality Assessment: https://arxiv.org/abs/2104.09494
 .. _Cees Taal's website: http://www.ceestaal.nl/code/
 .. _pystoi package: https://github.com/mpariente/pystoi
 .. _stoi ref1: https://ieeexplore.ieee.org/abstract/document/5495701
@@ -171,4 +172,9 @@
 .. _FLORES-200: https://arxiv.org/abs/2207.04672
 .. _averaging curve objects: https://scikit-learn.org/stable/auto_examples/model_selection/plot_roc.html
 .. _SCC: https://www.ingentaconnect.com/content/tandf/tres/1998/00000019/00000004/art00013
+.. _Normalized Root Mean Squared Error: https://onlinelibrary.wiley.com/doi/abs/10.1111/1365-2478.12109
 .. _Generalized Dice Score: https://arxiv.org/abs/1707.03237
+.. _Hausdorff Distance: https://en.wikipedia.org/wiki/Hausdorff_distance
+.. _averaging curve objects: https://scikit-learn.org/stable/auto_examples/model_selection/plot_roc.html
+.. _Procrustes Disparity: https://en.wikipedia.org/wiki/Procrustes_analysis
+.. _Negative Predictive Value: https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values

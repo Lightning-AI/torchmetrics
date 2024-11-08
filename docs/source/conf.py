@@ -220,6 +220,7 @@ html_logo = "_static/images/logo.svg"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 html_css_files = ["css/custom.css"]
+html_js_files = ["runllm.js"]
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -268,6 +269,11 @@ texinfo_documents = [
         "Miscellaneous",
     ),
 ]
+
+# MathJax configuration
+mathjax3_config = {
+    "tex": {"packages": {"[+]": ["ams", "newcommand", "configMacros"]}},
+}
 
 # -- Options for Epub output -------------------------------------------------
 
@@ -358,8 +364,7 @@ MOCK_PACKAGES = [PACKAGE_MAPPING.get(pkg, pkg) for pkg in MOCK_PACKAGES]
 autodoc_mock_imports = MOCK_PACKAGES
 
 
-# Resolve function
-# This function is used to populate the (source) links in the API
+# Resolve function - this function is used to populate the (source) links in the API
 def linkcode_resolve(domain, info) -> Optional[str]:  # noqa: ANN001
     return _linkcode_resolve(domain, info=info, github_user="Lightning-AI", github_repo="torchmetrics")
 
@@ -442,4 +447,10 @@ linkcheck_ignore = [
     "https://aclanthology.org/W17-4770",
     # A wavelet transform method to merge Landsat TM and SPOT panchromatic data
     "https://www.ingentaconnect.com/content/tandf/tres/1998/00000019/00000004/art00013",
+    # Improved normalization of time-lapse seismic data using normalized root mean square repeatability data ...
+    # ... to improve automatic production and seismic history matching in the Nelson field
+    "https://onlinelibrary.wiley.com/doi/abs/10.1111/1365-2478.12109",
+    # todo: these links seems to be unstable, referring to .devcontainer
+    "https://code.visualstudio.com",
+    "https://code.visualstudio.com/.*",
 ]

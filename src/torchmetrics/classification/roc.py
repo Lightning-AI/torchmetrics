@@ -54,7 +54,7 @@ class BinaryROC(BinaryPrecisionRecallCurve):
       ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified). The value
       1 always encodes the positive class.
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of 3 tensors containing:
@@ -71,8 +71,8 @@ class BinaryROC(BinaryPrecisionRecallCurve):
        `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
-    .. note::
-       The outputted thresholds will be in reversed order to ensure that they corresponds to both fpr and
+    .. attention::
+       The outputted thresholds will be in reversed order to ensure that they correspond to both fpr and
        tpr which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:
@@ -191,7 +191,7 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
       ground truth labels, and therefore only contain values in the [0, n_classes-1] range (except if `ignore_index`
       is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 3 tensors or 3 lists containing
@@ -216,8 +216,8 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
        `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
-    .. note::
-       Note that outputted thresholds will be in reversed order to ensure that they corresponds to both fpr
+    .. attention::
+       Note that outputted thresholds will be in reversed order to ensure that they correspond to both fpr
        and tpr which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:
@@ -357,7 +357,7 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, C, ...)``. Target should be a tensor
       containing ground truth labels, and therefore only contain {0,1} values (except if `ignore_index` is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns a tuple of either 3 tensors or 3 lists containing
@@ -382,8 +382,8 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
        `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
        size :math:`\mathcal{O}(n_{thresholds} \times n_{labels})` (constant memory).
 
-    .. note::
-       The outputted thresholds will be in reversed order to ensure that they corresponds to both fpr and tpr
+    .. attention::
+       The outputted thresholds will be in reversed order to ensure that they correspond to both fpr and tpr
        which are sorted in reversed order during their calculation, such that they are monotome increasing.
 
     Args:

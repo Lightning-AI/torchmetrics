@@ -195,10 +195,11 @@ class TextDataset(Dataset):
         tokenizer: Any,
         max_length: int = 512,
         preprocess_text_fn: Callable[
-            [List[str], Any, int], Union[Dict[str, Tensor], Tuple[Dict[str, Tensor], Optional[Tensor]]]
+            [List[str], Any, int, bool], Union[Dict[str, Tensor], Tuple[Dict[str, Tensor], Optional[Tensor]]]
         ] = _preprocess_text,
         idf: bool = False,
         tokens_idf: Optional[Dict[int, float]] = None,
+        truncation: bool = False,
     ) -> None:
         """Initialize text dataset class.
 
@@ -209,9 +210,10 @@ class TextDataset(Dataset):
             preprocess_text_fn: A function used for processing the input sentences.
             idf: An indication of whether calculate token inverse document frequencies to weight the model embeddings.
             tokens_idf: Inverse document frequencies (these should be calculated on reference sentences).
+            truncation: An indication of whether tokenized sequences should be padded only to the length of the longest
 
         """
-        _text = preprocess_text_fn(text, tokenizer, max_length)
+        _text = preprocess_text_fn(text, tokenizer, max_length, truncation)
         if isinstance(_text, tuple):
             self.text, self.sorting_indices = _text
         else:

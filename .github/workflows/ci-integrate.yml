@@ -26,8 +26,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-22.04", "macOS-12", "windows-2022"]
-        python-version: ["3.8", "3.10"]
+        os: ["ubuntu-22.04", "macOS-13", "windows-2022"]
+        python-version: ["3.9", "3.11"]
         requires: ["oldest", "latest"]
         exclude:
           - { python-version: "3.10", requires: "oldest" }
@@ -53,6 +53,8 @@ jobs:
 
       - name: source cashing
         uses: ./.github/actions/pull-caches
+        with:
+          requires: ${{ matrix.requires }}
       - name: set oldest if/only for integrations
         if: matrix.requires == 'oldest'
         run: python .github/assistant.py set-oldest-versions --req_files='["requirements/_integrate.txt"]'

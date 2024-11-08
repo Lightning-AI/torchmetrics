@@ -28,7 +28,7 @@ def _generalized_dice_validate_args(
     input_format: Literal["one-hot", "index"],
 ) -> None:
     """Validate the arguments of the metric."""
-    if num_classes <= 0:
+    if not isinstance(num_classes, int) or num_classes <= 0:
         raise ValueError(f"Expected argument `num_classes` must be a positive integer, but got {num_classes}.")
     if not isinstance(include_background, bool):
         raise ValueError(f"Expected argument `include_background` must be a boolean, but got {include_background}.")
@@ -116,7 +116,7 @@ def generalized_dice_score(
         target: Ground truth values
         num_classes: Number of classes
         include_background: Whether to include the background class in the computation
-        per_class: Whether to compute the IoU for each class separately, else average over all classes
+        per_class: Whether to compute the score for each class separately, else average over all classes
         weight_type: Type of weight factor to apply to the classes. One of ``"square"``, ``"simple"``, or ``"linear"``
         input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors
             or ``"index"`` for index tensors
@@ -124,7 +124,7 @@ def generalized_dice_score(
     Returns:
         The Generalized Dice Score
 
-    Example:
+    Example (with one-hot encoded tensors):
         >>> from torch import randint
         >>> from torchmetrics.functional.segmentation import generalized_dice_score
         >>> preds = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
@@ -136,6 +136,19 @@ def generalized_dice_score(
                 [0.4571, 0.4980, 0.5191, 0.4380, 0.5649],
                 [0.5428, 0.4904, 0.5358, 0.4830, 0.4724],
                 [0.4715, 0.4925, 0.4797, 0.5267, 0.4788]])
+
+    Example (with index tensors):
+        >>> from torch import randint
+        >>> from torchmetrics.functional.segmentation import generalized_dice_score
+        >>> preds = randint(0, 5, (4, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
+        >>> target = randint(0, 5, (4, 16, 16))  # 4 samples, 5 classes, 16x16 target
+        >>> generalized_dice_score(preds, target, num_classes=5, input_format="index")
+        tensor([0.1991, 0.1971, 0.2350, 0.2216])
+        >>> generalized_dice_score(preds, target, num_classes=5, per_class=True, input_format="index")
+        tensor([[0.1714, 0.2500, 0.1304, 0.2524, 0.2069],
+                [0.1837, 0.2162, 0.0962, 0.2692, 0.1895],
+                [0.3866, 0.1348, 0.2526, 0.2301, 0.2083],
+                [0.1978, 0.2804, 0.1714, 0.1915, 0.2783]])
 
     """
     _generalized_dice_validate_args(num_classes, include_background, per_class, weight_type, input_format)

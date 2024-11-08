@@ -135,7 +135,8 @@ def clip_score(
     textual CLIP embedding :math:`E_C` for an caption :math:`C`. The score is bound between 0 and 100 and the closer
     to 100 the better.
 
-    .. note:: Metric is not scriptable
+    .. caution::
+        Metric is not scriptable
 
     Args:
         images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors

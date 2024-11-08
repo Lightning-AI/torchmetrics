@@ -22,13 +22,13 @@ from torch import IntTensor, Tensor
 from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import _cumsum
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_GREATER_EQUAL_0_8
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _PYCOCOTOOLS_AVAILABLE, _TORCHVISION_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MeanAveragePrecision.plot"]
 
-if not _TORCHVISION_GREATER_EQUAL_0_8 or not _PYCOCOTOOLS_AVAILABLE:
+if not _TORCHVISION_AVAILABLE or not _PYCOCOTOOLS_AVAILABLE:
     __doctest_skip__ = ["MeanAveragePrecision.plot", "MeanAveragePrecision"]
 
 log = logging.getLogger(__name__)
@@ -202,16 +202,16 @@ class MeanAveragePrecision(Metric):
 
     For an example on how to use this metric check the `torchmetrics mAP example`_.
 
-    .. note::
-        ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ].
-        Caution: If the initialization parameters are changed, dictionary keys for mAR can change as well.
+    .. attention::
+        The ``map`` score is calculated with @[ IoU=self.iou_thresholds | area=all | max_dets=max_detection_thresholds ]
+        **Caution:** If the initialization parameters are changed, dictionary keys for mAR can change as well.
         The default properties are also accessible via fields and will raise an ``AttributeError`` if not available.
 
-    .. note::
+    .. important::
         This metric is following the mAP implementation of `pycocotools`_ a standard implementation for the mAP metric
         for object detection.
 
-    .. note::
+    .. hint::
         This metric requires you to have `torchvision` version 0.8.0 or newer installed
         (with corresponding version 1.7.0 of torch or newer). This metric requires `pycocotools`
         installed when iou_type is `segm`. Please install with ``pip install torchvision`` or
@@ -327,10 +327,10 @@ class MeanAveragePrecision(Metric):
                 "`MAP` metric requires that `pycocotools` installed."
                 " Please install with `pip install pycocotools` or `pip install torchmetrics[detection]`"
             )
-        if not _TORCHVISION_GREATER_EQUAL_0_8:
+        if not _TORCHVISION_AVAILABLE:
             raise ModuleNotFoundError(
-                "`MeanAveragePrecision` metric requires that `torchvision` version 0.8.0 or newer is installed."
-                " Please install with `pip install torchvision>=0.8` or `pip install torchmetrics[detection]`."
+                "`MeanAveragePrecision` metric requires that `torchvision` is installed."
+                " Please install with `pip install torchmetrics[detection]`."
             )
 
         allowed_box_formats = ("xyxy", "xywh", "cxcywh")
@@ -849,9 +849,9 @@ class MeanAveragePrecision(Metric):
 
             inds = torch.searchsorted(rc, rec_thresholds.to(rc.device), right=False)
             num_inds = inds.argmax() if inds.max() >= tp_len else num_rec_thrs
-            inds = inds[:num_inds]  # type: ignore[misc]
-            prec[:num_inds] = pr[inds]  # type: ignore[misc]
-            score[:num_inds] = det_scores_sorted[inds]  # type: ignore[misc]
+            inds = inds[:num_inds]
+            prec[:num_inds] = pr[inds]
+            score[:num_inds] = det_scores_sorted[inds]
             precision[idx, :, idx_cls, idx_bbox_area, idx_max_det_thresholds] = prec
             scores[idx, :, idx_cls, idx_bbox_area, idx_max_det_thresholds] = score
 
