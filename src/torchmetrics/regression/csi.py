@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, Optional, List
 
 import torch
 from torch import Tensor
@@ -64,9 +64,9 @@ class CriticalSuccessIndex(Metric):
     hits: Tensor
     misses: Tensor
     false_alarms: Tensor
-    hits_list: list[torch.Tensor]
-    misses_list: list[torch.Tensor]
-    false_alarms_list: list[torch.Tensor]
+    hits_list: List[Tensor]
+    misses_list: List[Tensor]
+    false_alarms_list: List[Tensor]
 
     def __init__(self, threshold: float, keep_sequence_dim: Optional[int] = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)

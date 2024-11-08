@@ -16,7 +16,7 @@ import io
 import json
 from collections.abc import Sequence
 from types import ModuleType
-from typing import Any, Callable, ClassVar, Optional, Union
+from typing import Any, Callable, ClassVar, Optional, Union, List
 
 import numpy as np
 import torch
@@ -866,12 +866,12 @@ class MeanAveragePrecision(Metric):
 
     def _get_coco_format(
         self,
-        labels: list[torch.Tensor],
-        boxes: Optional[list[torch.Tensor]] = None,
-        masks: Optional[list[torch.Tensor]] = None,
-        scores: Optional[list[torch.Tensor]] = None,
-        crowds: Optional[list[torch.Tensor]] = None,
-        area: Optional[list[torch.Tensor]] = None,
+        labels: List[Tensor],
+        boxes: Optional[List[Tensor]] = None,
+        masks: Optional[List[Tensor]] = None,
+        scores: Optional[List[Tensor]] = None,
+        crowds: Optional[List[Tensor]] = None,
+        area: Optional[List[Tensor]] = None,
     ) -> dict:
         """Transforms and returns all cached targets or predictions in COCO format.
 
