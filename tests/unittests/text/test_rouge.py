@@ -74,10 +74,12 @@ def _reference_rouge_score(
         aggregator_avg = BootstrapAggregator()
 
         if accumulate == "best":
-            key_curr = next(iter(list_results[0].keys()))
-            all_fmeasure = torch.tensor([v[key_curr].fmeasure for v in list_results])
-            highest_idx = torch.argmax(all_fmeasure).item()
-            aggregator.add_scores(list_results[highest_idx])
+            scores = {}
+            for rouge_key in list_results[0]:
+                all_fmeasure = torch.tensor([v[rouge_key].fmeasure for v in list_results])
+                highest_idx = torch.argmax(all_fmeasure).item()
+                scores[rouge_key] = list_results[highest_idx][rouge_key]
+            aggregator.add_scores(scores)
         elif accumulate == "avg":
             for _score in list_results:
                 aggregator_avg.add_scores(_score)
