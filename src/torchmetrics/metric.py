@@ -21,7 +21,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, ClassVar, Optional, Union
+from typing import Any, Callable, ClassVar, List, Optional, Union
 
 import torch
 from lightning_utilities import apply_to_collection
@@ -172,7 +172,7 @@ class Metric(Module, ABC):
 
         # state management
         self._is_synced = False
-        self._cache: Optional[dict[str, Union[list[Tensor], Tensor]]] = None
+        self._cache: Optional[dict[str, Union[List[Tensor], Tensor]]] = None
 
     @property
     def _update_called(self) -> bool:
@@ -194,7 +194,7 @@ class Metric(Module, ABC):
         return self._update_count
 
     @property
-    def metric_state(self) -> dict[str, Union[list[Tensor], Tensor]]:
+    def metric_state(self) -> dict[str, Union[List[Tensor], Tensor]]:
         """Get the current state of the metric."""
         return {attr: getattr(self, attr) for attr in self._defaults}
 

@@ -13,7 +13,7 @@
 # limitations under the License.
 import os
 from collections.abc import Sequence
-from typing import Any, ClassVar, Optional, Union
+from typing import Any, ClassVar, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -112,10 +112,10 @@ class InfoLM(Metric):
     """
 
     is_differentiable = False
-    preds_input_ids: list[Tensor]
-    preds_attention_mask: list[Tensor]
-    target_input_ids: list[Tensor]
-    target_attention_mask: list[Tensor]
+    preds_input_ids: List[Tensor]
+    preds_attention_mask: List[Tensor]
+    target_input_ids: List[Tensor]
+    target_attention_mask: List[Tensor]
 
     _information_measure_higher_is_better: ClassVar = {
         # following values are <0

@@ -19,7 +19,7 @@
 
 import itertools
 from collections.abc import Iterator, Sequence
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -101,7 +101,7 @@ class CHRFScore(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    sentence_chrf_score: Optional[list[Tensor]] = None
+    sentence_chrf_score: Optional[List[Tensor]] = None
 
     def __init__(
         self,

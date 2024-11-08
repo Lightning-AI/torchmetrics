@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -69,7 +69,7 @@ class TotalVariation(Metric):
     plot_lower_bound: float = 0.0
 
     num_elements: Tensor
-    score_list: list[Tensor]
+    score_list: List[Tensor]
     score: Tensor
 
     def __init__(self, reduction: Optional[Literal["mean", "sum", "none"]] = "sum", **kwargs: Any) -> None:

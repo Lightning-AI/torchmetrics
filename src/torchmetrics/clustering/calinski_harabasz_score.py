@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 
@@ -69,8 +69,8 @@ class CalinskiHarabaszScore(Metric):
     higher_is_better: bool = True
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
-    data: list[Tensor]
-    labels: list[Tensor]
+    data: List[Tensor]
+    labels: List[Tensor]
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)

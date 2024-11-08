@@ -36,7 +36,7 @@
 import re
 from collections.abc import Iterator, Sequence
 from functools import lru_cache
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 from torch import Tensor, tensor
 
@@ -477,8 +477,8 @@ def _ter_update(
     tokenizer: _TercomTokenizer,
     total_num_edits: Tensor,
     total_tgt_length: Tensor,
-    sentence_ter: Optional[list[Tensor]] = None,
-) -> tuple[Tensor, Tensor, Optional[list[Tensor]]]:
+    sentence_ter: Optional[List[Tensor]] = None,
+) -> tuple[Tensor, Tensor, Optional[List[Tensor]]]:
     """Update TER statistics.
 
     Args:
@@ -537,7 +537,7 @@ def translation_edit_rate(
     lowercase: bool = True,
     asian_support: bool = False,
     return_sentence_level_score: bool = False,
-) -> Union[Tensor, tuple[Tensor, list[Tensor]]]:
+) -> Union[Tensor, tuple[Tensor, List[Tensor]]]:
     """Calculate Translation edit rate (`TER`_)  of machine translated text with one or more references.
 
     This implementation follows the implementations from
@@ -581,7 +581,7 @@ def translation_edit_rate(
 
     total_num_edits = tensor(0.0)
     total_tgt_length = tensor(0.0)
-    sentence_ter: Optional[list[Tensor]] = [] if return_sentence_level_score else None
+    sentence_ter: Optional[List[Tensor]] = [] if return_sentence_level_score else None
 
     total_num_edits, total_tgt_length, sentence_ter = _ter_update(
         preds,

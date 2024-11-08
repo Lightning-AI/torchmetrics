@@ -23,7 +23,7 @@
 from collections import defaultdict
 from collections.abc import Sequence
 from itertools import chain
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -386,7 +386,7 @@ def _chrf_score_update(
     beta: float,
     lowercase: bool,
     whitespace: bool,
-    sentence_chrf_score: Optional[list[Tensor]] = None,
+    sentence_chrf_score: Optional[List[Tensor]] = None,
 ) -> tuple[
     dict[int, Tensor],
     dict[int, Tensor],
@@ -394,7 +394,7 @@ def _chrf_score_update(
     dict[int, Tensor],
     dict[int, Tensor],
     dict[int, Tensor],
-    Optional[list[Tensor]],
+    Optional[List[Tensor]],
 ]:
     """Update function for chrf score.
 
@@ -594,7 +594,7 @@ def chrf_score(
         total_matching_word_n_grams,
     ) = _prepare_n_grams_dicts(n_char_order, n_word_order)
 
-    sentence_chrf_score: Optional[list[Tensor]] = [] if return_sentence_level_score else None
+    sentence_chrf_score: Optional[List[Tensor]] = [] if return_sentence_level_score else None
 
     (
         total_preds_char_n_grams,

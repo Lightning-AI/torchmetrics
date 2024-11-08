@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -287,14 +287,14 @@ class MulticlassROC(MulticlassPrecisionRecallCurve):
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Class"
 
-    def compute(self) -> Union[tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]]:
+    def compute(self) -> Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multiclass_roc_compute(state, self.num_classes, self.thresholds, self.average)  # type: ignore[arg-type]
 
     def plot(
         self,
-        curve: Optional[Union[tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]]] = None,
+        curve: Optional[Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
         score: Optional[Union[Tensor, bool]] = None,
         ax: Optional[_AX_TYPE] = None,
         labels: Optional[list[str]] = None,
@@ -449,14 +449,14 @@ class MultilabelROC(MultilabelPrecisionRecallCurve):
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Label"
 
-    def compute(self) -> Union[tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]]:
+    def compute(self) -> Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute metric."""
         state = [dim_zero_cat(self.preds), dim_zero_cat(self.target)] if self.thresholds is None else self.confmat
         return _multilabel_roc_compute(state, self.num_labels, self.thresholds, self.ignore_index)  # type: ignore[arg-type]
 
     def plot(
         self,
-        curve: Optional[Union[tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]]] = None,
+        curve: Optional[Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
         score: Optional[Union[Tensor, bool]] = None,
         ax: Optional[_AX_TYPE] = None,
         labels: Optional[list[str]] = None,

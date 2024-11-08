@@ -14,7 +14,7 @@
 from collections.abc import Generator, Sequence
 from itertools import product
 from math import ceil, floor, sqrt
-from typing import Any, Optional, Union, no_type_check
+from typing import Any, List, Optional, Union, no_type_check
 
 import numpy as np
 import torch
@@ -295,7 +295,7 @@ def plot_confusion_matrix(
 
 @style_change(_style)
 def plot_curve(
-    curve: Union[tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]],
+    curve: Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]],
     score: Optional[Tensor] = None,
     ax: Optional[_AX_TYPE] = None,  # type: ignore[valid-type]
     label_names: Optional[tuple[str, str]] = None,

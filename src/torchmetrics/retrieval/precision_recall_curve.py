@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -143,9 +143,9 @@ class RetrievalPrecisionRecallCurve(Metric):
     higher_is_better: bool = True
     full_state_update: bool = False
 
-    indexes: list[Tensor]
-    preds: list[Tensor]
-    target: list[Tensor]
+    indexes: List[Tensor]
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,

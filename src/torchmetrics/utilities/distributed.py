@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 import torch
 from torch import Tensor
@@ -88,7 +88,7 @@ def class_reduce(
     raise ValueError(f"Reduction parameter {class_reduction} unknown. Choose between one of these: {valid_reduction}")
 
 
-def _simple_gather_all_tensors(result: Tensor, group: Any, world_size: int) -> list[Tensor]:
+def _simple_gather_all_tensors(result: Tensor, group: Any, world_size: int) -> List[Tensor]:
     with torch.no_grad():
         gathered_result = [torch.zeros_like(result) for _ in range(world_size)]
         torch.distributed.all_gather(gathered_result, result, group)
@@ -97,8 +97,8 @@ def _simple_gather_all_tensors(result: Tensor, group: Any, world_size: int) -> l
     return gathered_result
 
 
-def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> list[Tensor]:
-    """Gather all tensors from several ddp processes onto a list that is broadcasted to all processes.
+def gather_all_tensors(result: Tensor, group: Optional[Any] = None) -> List[Tensor]:
+    """Gather all tensors from several ddp processes onto a list that is broadcast to all processes.
 
     Works on tensors that have the same number of dimensions, but where each dimension may differ. In this case
     tensors are padded, gathered and then trimmed to secure equal workload for all processes.

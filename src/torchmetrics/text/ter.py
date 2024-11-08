@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from collections.abc import Sequence
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -69,7 +69,7 @@ class TranslationEditRate(Metric):
 
     total_num_edits: Tensor
     total_tgt_len: Tensor
-    sentence_ter: Optional[list[Tensor]] = None
+    sentence_ter: Optional[List[Tensor]] = None
 
     def __init__(
         self,

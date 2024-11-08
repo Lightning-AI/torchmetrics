@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -149,8 +149,8 @@ class MemorizationInformedFrechetInceptionDistance(Metric):
     is_differentiable: bool = False
     full_state_update: bool = False
 
-    real_features: list[Tensor]
-    fake_features: list[Tensor]
+    real_features: List[Tensor]
+    fake_features: List[Tensor]
 
     inception: Module
     feature_network: str = "inception"

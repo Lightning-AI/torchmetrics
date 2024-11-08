@@ -24,7 +24,7 @@
 # License under BSD 2-clause
 import inspect
 import os
-from typing import NamedTuple, Optional, Union
+from typing import List, NamedTuple, Optional, Union
 
 import torch
 from torch import Tensor, nn
@@ -331,7 +331,7 @@ class _LPIPS(nn.Module):
 
     def forward(
         self, in0: Tensor, in1: Tensor, retperlayer: bool = False, normalize: bool = False
-    ) -> Union[Tensor, tuple[Tensor, list[Tensor]]]:
+    ) -> Union[Tensor, tuple[Tensor, List[Tensor]]]:
         if normalize:  # turn on this flag if input is [0,1] so it can be adjusted to [-1, +1]
             in0 = 2 * in0 - 1
             in1 = 2 * in1 - 1

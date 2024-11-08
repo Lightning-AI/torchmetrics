@@ -1,6 +1,6 @@
 import os
 from collections.abc import Sequence
-from typing import Any, Callable, Literal, Optional, Union
+from typing import Any, Callable, List, Literal, Optional, Union
 
 import torch
 from torch import Tensor
@@ -349,7 +349,7 @@ def _translation_edit_rate(
     lowercase: bool = True,
     asian_support: bool = False,
     return_sentence_level_score: bool = False,
-) -> Union[Tensor, tuple[Tensor, list[Tensor]]]:
+) -> Union[Tensor, tuple[Tensor, List[Tensor]]]:
     """Wrapper for deprecated import.
 
     >>> preds = ['the cat is on the mat']

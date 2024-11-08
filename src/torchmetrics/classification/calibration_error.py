@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -106,8 +106,8 @@ class BinaryCalibrationError(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    confidences: list[Tensor]
-    accuracies: list[Tensor]
+    confidences: List[Tensor]
+    accuracies: List[Tensor]
 
     def __init__(
         self,
@@ -259,8 +259,8 @@ class MulticlassCalibrationError(Metric):
     plot_upper_bound: float = 1.0
     plot_legend_name: str = "Class"
 
-    confidences: list[Tensor]
-    accuracies: list[Tensor]
+    confidences: List[Tensor]
+    accuracies: List[Tensor]
 
     def __init__(
         self,

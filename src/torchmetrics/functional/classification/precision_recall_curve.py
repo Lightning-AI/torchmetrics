@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from collections.abc import Sequence
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -540,7 +540,7 @@ def _multiclass_precision_recall_curve_compute(
     num_classes: int,
     thresholds: Optional[Tensor],
     average: Optional[Literal["micro", "macro"]] = None,
-) -> Union[tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]]:
+) -> Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     """Compute the final pr-curve.
 
     If state is a single tensor, then we calculate the pr-curve from a multi threshold confusion matrix. If state is
@@ -599,7 +599,7 @@ def multiclass_precision_recall_curve(
     average: Optional[Literal["micro", "macro"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]]:
+) -> Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Compute the precision-recall curve for multiclass tasks.
 
     The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
@@ -806,7 +806,7 @@ def _multilabel_precision_recall_curve_compute(
     num_labels: int,
     thresholds: Optional[Tensor],
     ignore_index: Optional[int] = None,
-) -> Union[tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]]:
+) -> Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     """Compute the final pr-curve.
 
     If state is a single tensor, then we calculate the pr-curve from a multi threshold confusion matrix. If state is
@@ -845,7 +845,7 @@ def multilabel_precision_recall_curve(
     thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]]:
+) -> Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Compute the precision-recall curve for multilabel tasks.
 
     The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the
@@ -953,7 +953,7 @@ def precision_recall_curve(
     average: Optional[Literal["micro", "macro"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]]:
+) -> Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Compute the precision-recall curve.
 
     The curve consist of multiple pairs of precision and recall values evaluated at different thresholds, such that the

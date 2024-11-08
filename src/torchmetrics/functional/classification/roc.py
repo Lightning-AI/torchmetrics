@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -164,7 +164,7 @@ def _multiclass_roc_compute(
     num_classes: int,
     thresholds: Optional[Tensor],
     average: Optional[Literal["micro", "macro"]] = None,
-) -> Union[tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]]:
+) -> Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     if average == "micro":
         return _binary_roc_compute(state, thresholds, pos_label=1)
 
@@ -212,7 +212,7 @@ def multiclass_roc(
     average: Optional[Literal["micro", "macro"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]]:
+) -> Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Compute the Receiver Operating Characteristic (ROC) for multiclass tasks.
 
     The curve consist of multiple pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at
@@ -331,7 +331,7 @@ def _multilabel_roc_compute(
     num_labels: int,
     thresholds: Optional[Tensor],
     ignore_index: Optional[int] = None,
-) -> Union[tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]]:
+) -> Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     if isinstance(state, Tensor) and thresholds is not None:
         tps = state[:, :, 1, 1]
         fps = state[:, :, 0, 1]
@@ -363,7 +363,7 @@ def multilabel_roc(
     thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]]:
+) -> Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Compute the Receiver Operating Characteristic (ROC) for multilabel tasks.
 
     The curve consist of multiple pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at
@@ -478,7 +478,7 @@ def roc(
     average: Optional[Literal["micro", "macro"]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]]:
+) -> Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Compute the Receiver Operating Characteristic (ROC).
 
     The curve consist of multiple pairs of true positive rate (TPR) and false positive rate (FPR) values evaluated at

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -413,7 +413,7 @@ def sensitivity_at_specificity(
     num_labels: Optional[int] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
-) -> Union[Tensor, tuple[Tensor, Tensor, Tensor], tuple[list[Tensor], list[Tensor], list[Tensor]]]:
+) -> Union[Tensor, tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
     r"""Compute the highest possible sensitivity value given the minimum specificity thresholds provided.
 
     This is done by first calculating the Receiver Operating Characteristic (ROC) curve for different thresholds and

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from collections.abc import Sequence
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -94,10 +94,10 @@ class SpatialDistortionIndex(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    preds: list[Tensor]
-    ms: list[Tensor]
-    pan: list[Tensor]
-    pan_lr: list[Tensor]
+    preds: List[Tensor]
+    ms: List[Tensor]
+    pan: List[Tensor]
+    pan_lr: List[Tensor]
 
     def __init__(
         self,

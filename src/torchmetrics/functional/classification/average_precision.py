@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -41,8 +41,8 @@ from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _reduce_average_precision(
-    precision: Union[Tensor, list[Tensor]],
-    recall: Union[Tensor, list[Tensor]],
+    precision: Union[Tensor, List[Tensor]],
+    recall: Union[Tensor, List[Tensor]],
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
     weights: Optional[Tensor] = None,
 ) -> Tensor:

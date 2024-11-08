@@ -90,7 +90,7 @@ import re
 import unicodedata
 from collections.abc import Sequence
 from math import inf
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 from torch import Tensor, stack, tensor
 from typing_extensions import Literal
@@ -234,7 +234,7 @@ def _preprocess_ja(sentence: str) -> str:
     return unicodedata.normalize("NFKC", sentence)
 
 
-def _eed_compute(sentence_level_scores: list[Tensor]) -> Tensor:
+def _eed_compute(sentence_level_scores: List[Tensor]) -> Tensor:
     """Reduction for extended edit distance.
 
     Args:
@@ -328,8 +328,8 @@ def _eed_update(
     rho: float = 0.3,
     deletion: float = 0.2,
     insertion: float = 1.0,
-    sentence_eed: Optional[list[Tensor]] = None,
-) -> list[Tensor]:
+    sentence_eed: Optional[List[Tensor]] = None,
+) -> List[Tensor]:
     """Compute scores for ExtendedEditDistance.
 
     Args:

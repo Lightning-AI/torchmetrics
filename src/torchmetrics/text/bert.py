@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -47,7 +47,7 @@ else:
     __doctest_skip__ = ["BERTScore", "BERTScore.plot"]
 
 
-def _get_input_dict(input_ids: list[Tensor], attention_mask: list[Tensor]) -> dict[str, Tensor]:
+def _get_input_dict(input_ids: List[Tensor], attention_mask: List[Tensor]) -> dict[str, Tensor]:
     """Create an input dictionary of ``input_ids`` and ``attention_mask`` for BERTScore calculation."""
     return {"input_ids": torch.cat(input_ids), "attention_mask": torch.cat(attention_mask)}
 
@@ -128,10 +128,10 @@ class BERTScore(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    preds_input_ids: list[Tensor]
-    preds_attention_mask: list[Tensor]
-    target_input_ids: list[Tensor]
-    target_attention_mask: list[Tensor]
+    preds_input_ids: List[Tensor]
+    preds_attention_mask: List[Tensor]
+    target_input_ids: List[Tensor]
+    target_attention_mask: List[Tensor]
 
     def __init__(
         self,

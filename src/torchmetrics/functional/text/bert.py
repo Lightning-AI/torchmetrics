@@ -16,7 +16,7 @@ import logging
 import urllib
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -106,8 +106,8 @@ def _get_embeddings_and_idf_scale(
             If ``all_layers = True`` and a model, which is not from the ``transformers`` package, is used.
 
     """
-    embeddings_list: list[Tensor] = []
-    idf_scale_list: list[Tensor] = []
+    embeddings_list: List[Tensor] = []
+    idf_scale_list: List[Tensor] = []
     for batch in _get_progress_bar(dataloader, verbose):
         with torch.no_grad():
             batch = _input_data_collator(batch, device)

@@ -13,7 +13,7 @@
 # limitations under the License.
 import logging
 from collections.abc import Sequence
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 import numpy as np
 import torch
@@ -306,11 +306,11 @@ class MeanAveragePrecision(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    detections: list[Tensor]
-    detection_scores: list[Tensor]
-    detection_labels: list[Tensor]
-    groundtruths: list[Tensor]
-    groundtruth_labels: list[Tensor]
+    detections: List[Tensor]
+    detection_scores: List[Tensor]
+    detection_labels: List[Tensor]
+    groundtruths: List[Tensor]
+    groundtruth_labels: List[Tensor]
 
     def __init__(
         self,

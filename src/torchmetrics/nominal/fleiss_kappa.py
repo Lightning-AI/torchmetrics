@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -77,7 +77,7 @@ class FleissKappa(Metric):
     is_differentiable: bool = False
     higher_is_better: bool = True
     plot_upper_bound: float = 1.0
-    counts: list[Tensor]
+    counts: List[Tensor]
 
     def __init__(self, mode: Literal["counts", "probs"] = "counts", **kwargs: Any) -> None:
         super().__init__(**kwargs)

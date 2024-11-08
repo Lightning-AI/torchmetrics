@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -372,7 +372,7 @@ def _multiscale_ssim_update(
             If the image width is smaller than ``(kernel_size[0] - 1) * max(1, (len(betas) - 1)) ** 2``.
 
     """
-    mcs_list: list[Tensor] = []
+    mcs_list: List[Tensor] = []
 
     is_3d = preds.ndim == 5
 

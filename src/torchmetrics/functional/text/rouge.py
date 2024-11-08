@@ -14,7 +14,7 @@
 import re
 from collections import Counter
 from collections.abc import Sequence
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -374,7 +374,7 @@ def _rouge_score_update(
                 rouge_key: {} for rouge_key in rouge_keys_values
             }
             for rouge_key, metrics in result_avg.items():
-                _dict_metric_score_batch: dict[str, list[Tensor]] = {}
+                _dict_metric_score_batch: dict[str, List[Tensor]] = {}
                 for metric in metrics:
                     for _type, value in metric.items():
                         if _type not in _dict_metric_score_batch:
@@ -391,7 +391,7 @@ def _rouge_score_update(
     return results
 
 
-def _rouge_score_compute(sentence_results: dict[str, list[Tensor]]) -> dict[str, Tensor]:
+def _rouge_score_compute(sentence_results: dict[str, List[Tensor]]) -> dict[str, Tensor]:
     """Compute the combined ROUGE metric for all the input set of predicted and target sentences.
 
     Args:
@@ -505,7 +505,7 @@ def rouge_score(
         accumulate=accumulate,
     )
 
-    output: dict[str, list[Tensor]] = {
+    output: dict[str, List[Tensor]] = {
         f"rouge{rouge_key}_{tp}": [] for rouge_key in rouge_keys_values for tp in ["fmeasure", "precision", "recall"]
     }
     for rouge_key, metrics in sentence_results.items():

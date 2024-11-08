@@ -13,7 +13,7 @@
 # limitations under the License.
 import sys
 from collections.abc import Sequence
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 import torch
 from lightning_utilities import apply_to_collection
@@ -26,7 +26,7 @@ from torchmetrics.utilities.prints import rank_zero_warn
 METRIC_EPS = 1e-6
 
 
-def dim_zero_cat(x: Union[Tensor, list[Tensor]]) -> Tensor:
+def dim_zero_cat(x: Union[Tensor, List[Tensor]]) -> Tensor:
     """Concatenation along the zero dimension."""
     if isinstance(x, torch.Tensor):
         return x

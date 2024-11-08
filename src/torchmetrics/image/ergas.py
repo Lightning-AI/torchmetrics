@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from collections.abc import Sequence
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -78,8 +78,8 @@ class ErrorRelativeGlobalDimensionlessSynthesis(Metric):
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
 
-    preds: list[Tensor]
-    target: list[Tensor]
+    preds: List[Tensor]
+    target: List[Tensor]
 
     def __init__(
         self,

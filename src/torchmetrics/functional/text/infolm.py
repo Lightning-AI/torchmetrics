@@ -14,7 +14,7 @@
 import os
 from collections.abc import Sequence
 from enum import unique
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -393,7 +393,7 @@ def _get_batch_distribution(
 
     """
     seq_len = batch["input_ids"].shape[1]
-    prob_distribution_batch_list: list[Tensor] = []
+    prob_distribution_batch_list: List[Tensor] = []
     token_mask = _get_token_mask(
         batch["input_ids"],
         special_tokens_map["pad_token_id"],
@@ -454,7 +454,7 @@ def _get_data_distribution(
 
     """
     device = model.device
-    prob_distribution: list[Tensor] = []
+    prob_distribution: List[Tensor] = []
 
     for batch in _get_progress_bar(dataloader, verbose):
         batch = _input_data_collator(batch, device)

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Literal, Optional, Union
+from typing import Any, List, Literal, Optional, Union
 
 import torch
 from torch import Tensor
@@ -90,7 +90,7 @@ class EditDistance(Metric):
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
 
-    edit_scores_list: list[Tensor]
+    edit_scores_list: List[Tensor]
     edit_scores: Tensor
     num_elements: Tensor
 

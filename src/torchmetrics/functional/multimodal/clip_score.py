@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, List, Union
 
 import torch
 from torch import Tensor
@@ -42,7 +42,7 @@ else:
 
 
 def _clip_score_update(
-    images: Union[Tensor, list[Tensor]],
+    images: Union[Tensor, List[Tensor]],
     text: Union[str, list[str]],
     model: _CLIPModel,
     processor: _CLIPProcessor,
@@ -113,7 +113,7 @@ def _get_clip_model_and_processor(
 
 
 def clip_score(
-    images: Union[Tensor, list[Tensor]],
+    images: Union[Tensor, List[Tensor]],
     text: Union[str, list[str]],
     model_name_or_path: Literal[
         "openai/clip-vit-base-patch16",

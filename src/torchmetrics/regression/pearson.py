@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -117,8 +117,8 @@ class PearsonCorrCoef(Metric):
     full_state_update: bool = True
     plot_lower_bound: float = -1.0
     plot_upper_bound: float = 1.0
-    preds: list[Tensor]
-    target: list[Tensor]
+    preds: List[Tensor]
+    target: List[Tensor]
     mean_x: Tensor
     mean_y: Tensor
     var_x: Tensor

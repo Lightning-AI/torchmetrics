@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -43,8 +43,8 @@ from torchmetrics.utilities.prints import rank_zero_warn
 
 
 def _reduce_auroc(
-    fpr: Union[Tensor, list[Tensor]],
-    tpr: Union[Tensor, list[Tensor]],
+    fpr: Union[Tensor, List[Tensor]],
+    tpr: Union[Tensor, List[Tensor]],
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
     weights: Optional[Tensor] = None,
     direction: float = 1.0,

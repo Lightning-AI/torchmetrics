@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -225,10 +225,10 @@ def _calculate_p_value(
 def _kendall_corrcoef_update(
     preds: Tensor,
     target: Tensor,
-    concat_preds: Optional[list[Tensor]] = None,
-    concat_target: Optional[list[Tensor]] = None,
+    concat_preds: Optional[List[Tensor]] = None,
+    concat_target: Optional[List[Tensor]] = None,
     num_outputs: int = 1,
-) -> tuple[list[Tensor], list[Tensor]]:
+) -> tuple[List[Tensor], List[Tensor]]:
     """Update variables required to compute Kendall rank correlation coefficient.
 
     Args:

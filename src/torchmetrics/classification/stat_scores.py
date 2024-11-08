@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -41,10 +41,10 @@ from torchmetrics.utilities.enums import ClassificationTask
 
 
 class _AbstractStatScores(Metric):
-    tp: Union[list[Tensor], Tensor]
-    fp: Union[list[Tensor], Tensor]
-    tn: Union[list[Tensor], Tensor]
-    fn: Union[list[Tensor], Tensor]
+    tp: Union[List[Tensor], Tensor]
+    fp: Union[List[Tensor], Tensor]
+    tn: Union[List[Tensor], Tensor]
+    fn: Union[List[Tensor], Tensor]
 
     # define common functions
     def _create_state(

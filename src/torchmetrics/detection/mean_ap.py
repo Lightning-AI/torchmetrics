@@ -344,15 +344,15 @@ class MeanAveragePrecision(Metric):
     plot_lower_bound: float = 0.0
     plot_upper_bound: float = 1.0
 
-    detection_box: list[Tensor]
-    detection_mask: list[Tensor]
-    detection_scores: list[Tensor]
-    detection_labels: list[Tensor]
-    groundtruth_box: list[Tensor]
-    groundtruth_mask: list[Tensor]
-    groundtruth_labels: list[Tensor]
-    groundtruth_crowds: list[Tensor]
-    groundtruth_area: list[Tensor]
+    detection_box: List[Tensor]
+    detection_mask: List[Tensor]
+    detection_scores: List[Tensor]
+    detection_labels: List[Tensor]
+    groundtruth_box: List[Tensor]
+    groundtruth_mask: List[Tensor]
+    groundtruth_labels: List[Tensor]
+    groundtruth_crowds: List[Tensor]
+    groundtruth_area: List[Tensor]
 
     warn_on_many_detections: bool = True
 

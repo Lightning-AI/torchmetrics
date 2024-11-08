@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -132,8 +132,8 @@ class IntersectionOverUnion(Metric):
     higher_is_better: Optional[bool] = True
     full_state_update: bool = True
 
-    groundtruth_labels: list[Tensor]
-    iou_matrix: list[Tensor]
+    groundtruth_labels: List[Tensor]
+    iou_matrix: List[Tensor]
     _iou_type: str = "iou"
     _invalid_val: float = -1.0
 
