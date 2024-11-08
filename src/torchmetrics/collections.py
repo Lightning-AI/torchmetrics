@@ -15,7 +15,7 @@
 from collections import OrderedDict
 from collections.abc import Hashable, Iterable, Iterator, Mapping, Sequence
 from copy import deepcopy
-from typing import Any, ClassVar, Optional, Union
+from typing import Any, ClassVar, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -192,7 +192,7 @@ class MetricCollection(ModuleDict):
     """
 
     _modules: dict[str, Metric]  # type: ignore[assignment]
-    _groups: dict[int, list[str]]
+    _groups: dict[int, List[str]]
     __jit_unused_properties__: ClassVar[list[str]] = ["metric_state"]
 
     def __init__(
@@ -516,7 +516,7 @@ class MetricCollection(ModuleDict):
             self._groups = {i: [str(k)] for i, k in enumerate(self.keys(keep_base=True))}
 
     @property
-    def compute_groups(self) -> dict[int, list[str]]:
+    def compute_groups(self) -> dict[int, List[str]]:
         """Return a dict with the current compute groups in the collection."""
         return self._groups
 
