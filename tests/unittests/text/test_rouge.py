@@ -274,7 +274,7 @@ def test_rouge_lsum_score(pl_rouge_metric_key, use_stemmer):
 
 
 pytest.mark.parametrize(
-    "preds, references, expected_scores",
+    ("preds", "references", "expected_scores"),
     [
         (
             "a b c",
