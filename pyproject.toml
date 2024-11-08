@@ -5,7 +5,7 @@ requires = [
 ]
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py39"
 line-length = 120
 
 #[tool.ruff.pycodestyle]
@@ -68,6 +68,8 @@ lint.per-file-ignores."setup.py" = [
 lint.per-file-ignores."src/**" = [
   "ANN401",
   "S310",   # todo: Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
+  "UP006",  # todo: Use `list` instead of `List` for type annotation
+  "UP035",  # todo: `typing.List` is deprecated, use `list` instead
 ]
 lint.per-file-ignores."tests/**" = [
   "ANN001",
@@ -76,9 +78,6 @@ lint.per-file-ignores."tests/**" = [
   "ANN401",
   "S101",
   "S301",   # todo: `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
-]
-lint.unfixable = [
-  "F401",
 ]
 # Unlike Flake8, default to a complexity level of 10.
 lint.mccabe.max-complexity = 10

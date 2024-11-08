@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -22,7 +22,7 @@ from torchmetrics.utilities.compute import _safe_divide
 
 def _critical_success_index_update(
     preds: Tensor, target: Tensor, threshold: float, keep_sequence_dim: Optional[int] = None
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor]:
     """Update and return variables required to compute Critical Success Index. Checks for same shape of tensors.
 
     Args:

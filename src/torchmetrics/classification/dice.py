@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Optional, Sequence, Tuple, Union, no_type_check
+from collections.abc import Sequence
+from typing import Any, Callable, Optional, Union, no_type_check
 
 import torch
 from torch import Tensor
@@ -247,7 +248,7 @@ class Dice(Metric):
             self.fn.append(fn)
 
     @no_type_check
-    def _get_final_stats(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    def _get_final_stats(self) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """Perform concatenation on the stat scores if necessary, before passing them to a compute function."""
         tp = torch.cat(self.tp) if isinstance(self.tp, list) else self.tp
         fp = torch.cat(self.fp) if isinstance(self.fp, list) else self.fp

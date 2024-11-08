@@ -1,4 +1,5 @@
-from typing import Any, Literal, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any, Literal, Optional
 
 from torchmetrics.text.bleu import BLEUScore
 from torchmetrics.text.cer import CharErrorRate

@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -263,7 +264,7 @@ class KernelInceptionDistance(Metric):
         else:
             self.fake_features.append(features)
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def compute(self) -> tuple[Tensor, Tensor]:
         """Calculate KID score based on accumulated extracted features from the two distributions.
 
         Implementation inspired by `Fid Score`_

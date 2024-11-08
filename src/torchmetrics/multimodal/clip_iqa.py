@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Literal, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, List, Literal, Optional, Union
 
 import torch
 from torch import Tensor
@@ -178,7 +179,7 @@ class CLIPImageQualityAssessment(Metric):
             "openai/clip-vit-large-patch14",
         ] = "clip_iqa",
         data_range: float = 1.0,
-        prompts: Tuple[Union[str, Tuple[str, str]]] = ("quality",),
+        prompts: tuple[Union[str, tuple[str, str]]] = ("quality",),
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -212,7 +213,7 @@ class CLIPImageQualityAssessment(Metric):
                 raise ValueError("Output probs should be a tensor")
             self.probs_list.append(probs)
 
-    def compute(self) -> Union[Tensor, Dict[str, Tensor]]:
+    def compute(self) -> Union[Tensor, dict[str, Tensor]]:
         """Compute metric."""
         probs = dim_zero_cat(self.probs_list)
         if len(self.prompts_name) == 1:

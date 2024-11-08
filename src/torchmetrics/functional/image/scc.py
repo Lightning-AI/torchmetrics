@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -23,7 +23,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.distributed import reduce
 
 
-def _scc_update(preds: Tensor, target: Tensor, hp_filter: Tensor, window_size: int) -> Tuple[Tensor, Tensor, Tensor]:
+def _scc_update(preds: Tensor, target: Tensor, hp_filter: Tensor, window_size: int) -> tuple[Tensor, Tensor, Tensor]:
     """Update and returns variables required to compute Spatial Correlation Coefficient.
 
     Args:
@@ -73,7 +73,7 @@ def _scc_update(preds: Tensor, target: Tensor, hp_filter: Tensor, window_size: i
     return preds, target, hp_filter
 
 
-def _symmetric_reflect_pad_2d(input_img: Tensor, pad: Union[int, Tuple[int, ...]]) -> Tensor:
+def _symmetric_reflect_pad_2d(input_img: Tensor, pad: Union[int, tuple[int, ...]]) -> Tensor:
     """Applies symmetric padding to the 2D image tensor input using ``reflect`` mode (d c b a | a b c d | d c b a)."""
     if isinstance(pad, int):
         pad = (pad, pad, pad, pad)
@@ -106,7 +106,7 @@ def _hp_2d_laplacian(input_img: Tensor, kernel: Tensor) -> Tensor:
     return _signal_convolve_2d(input_img, kernel) * 2.0
 
 
-def _local_variance_covariance(preds: Tensor, target: Tensor, window: Tensor) -> Tuple[Tensor, Tensor, Tensor]:
+def _local_variance_covariance(preds: Tensor, target: Tensor, window: Tensor) -> tuple[Tensor, Tensor, Tensor]:
     """Computes local variance and covariance of the input tensors."""
     # This code is inspired by
     # https://github.com/andrewekhalel/sewar/blob/master/sewar/full_ref.py#L187.

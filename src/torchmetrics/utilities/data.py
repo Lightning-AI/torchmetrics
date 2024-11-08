@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 import torch
 from lightning_utilities import apply_to_collection
@@ -60,7 +61,7 @@ def _flatten(x: Sequence) -> list:
     return [item for sublist in x for item in sublist]
 
 
-def _flatten_dict(x: Dict) -> Tuple[Dict, bool]:
+def _flatten_dict(x: dict) -> tuple[dict, bool]:
     """Flatten dict of dicts into single dict and checking for duplicates in keys along the way."""
     new_dict = {}
     duplicates = False

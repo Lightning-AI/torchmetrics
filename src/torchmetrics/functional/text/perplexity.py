@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -62,7 +62,7 @@ def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> None:
         raise TypeError(f"Input tensor `target` is expected to be of a type {torch.int64} but got {target.dtype}.")
 
 
-def _perplexity_update(preds: Tensor, target: Tensor, ignore_index: Optional[int] = None) -> Tuple[Tensor, Tensor]:
+def _perplexity_update(preds: Tensor, target: Tensor, ignore_index: Optional[int] = None) -> tuple[Tensor, Tensor]:
     """Compute intermediate statistics for Perplexity.
 
     Args:

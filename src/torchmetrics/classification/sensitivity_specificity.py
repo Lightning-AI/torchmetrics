@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Tuple, Type, Union
+from typing import Any, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -111,7 +111,7 @@ class BinarySensitivityAtSpecificity(BinaryPrecisionRecallCurve):
     def __init__(
         self,
         min_specificity: float,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -122,7 +122,7 @@ class BinarySensitivityAtSpecificity(BinaryPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_specificity = min_specificity
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+    def compute(self) -> tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
         state = (_cat(self.preds), _cat(self.target)) if self.thresholds is None else self.confmat
         return _binary_sensitivity_at_specificity_compute(state, self.thresholds, self.min_specificity)
@@ -208,7 +208,7 @@ class MulticlassSensitivityAtSpecificity(MulticlassPrecisionRecallCurve):
         self,
         num_classes: int,
         min_specificity: float,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -223,7 +223,7 @@ class MulticlassSensitivityAtSpecificity(MulticlassPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_specificity = min_specificity
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+    def compute(self) -> tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
         state = (_cat(self.preds), _cat(self.target)) if self.thresholds is None else self.confmat
         return _multiclass_sensitivity_at_specificity_compute(
@@ -309,7 +309,7 @@ class MultilabelSensitivityAtSpecificity(MultilabelPrecisionRecallCurve):
         self,
         num_labels: int,
         min_specificity: float,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -322,7 +322,7 @@ class MultilabelSensitivityAtSpecificity(MultilabelPrecisionRecallCurve):
         self.validate_args = validate_args
         self.min_specificity = min_specificity
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+    def compute(self) -> tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
         state = (_cat(self.preds), _cat(self.target)) if self.thresholds is None else self.confmat
         return _multilabel_sensitivity_at_specificity_compute(
@@ -346,10 +346,10 @@ class SensitivityAtSpecificity(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls: Type["SensitivityAtSpecificity"],
+        cls: type["SensitivityAtSpecificity"],
         task: Literal["binary", "multiclass", "multilabel"],
         min_specificity: float,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
         ignore_index: Optional[int] = None,
