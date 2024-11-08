@@ -68,6 +68,8 @@ lint.per-file-ignores."setup.py" = [
 lint.per-file-ignores."src/**" = [
   "ANN401",
   "S310",   # todo: Audit URL open for permitted schemes. Allowing use of `file:` or custom schemes is often unexpected.
+  "UP006",  # todo: Use `list` instead of `List` for type annotation
+  "UP035",  # todo: `typing.List` is deprecated, use `list` instead
 ]
 lint.per-file-ignores."tests/**" = [
   "ANN001",
