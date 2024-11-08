@@ -41,8 +41,8 @@ class CriticalSuccessIndex(Metric):
     Example:
         >>> import torch
         >>> from torchmetrics.regression import CriticalSuccessIndex
-        >>> x = Tensor([[0.2, 0.7], [0.9, 0.3]])
-        >>> y = Tensor([[0.4, 0.2], [0.8, 0.6]])
+        >>> x = torch.Tensor([[0.2, 0.7], [0.9, 0.3]])
+        >>> y = torch.Tensor([[0.4, 0.2], [0.8, 0.6]])
         >>> csi = CriticalSuccessIndex(0.5)
         >>> csi(x, y)
         tensor(0.3333)
@@ -50,8 +50,8 @@ class CriticalSuccessIndex(Metric):
     Example:
         >>> import torch
         >>> from torchmetrics.regression import CriticalSuccessIndex
-        >>> x = Tensor([[[0.2, 0.7], [0.9, 0.3]], [[0.2, 0.7], [0.9, 0.3]]])
-        >>> y = Tensor([[[0.4, 0.2], [0.8, 0.6]], [[0.4, 0.2], [0.8, 0.6]]])
+        >>> x = torch.Tensor([[[0.2, 0.7], [0.9, 0.3]], [[0.2, 0.7], [0.9, 0.3]]])
+        >>> y = torch.Tensor([[[0.4, 0.2], [0.8, 0.6]], [[0.4, 0.2], [0.8, 0.6]]])
         >>> csi = CriticalSuccessIndex(0.5, keep_sequence_dim=0)
         >>> csi(x, y)
         tensor([0.3333, 0.3333])
@@ -64,9 +64,9 @@ class CriticalSuccessIndex(Metric):
     hits: Tensor
     misses: Tensor
     false_alarms: Tensor
-    hits_list: list[Tensor]
-    misses_list: list[Tensor]
-    false_alarms_list: list[Tensor]
+    hits_list: list[torch.Tensor]
+    misses_list: list[torch.Tensor]
+    false_alarms_list: list[torch.Tensor]
 
     def __init__(self, threshold: float, keep_sequence_dim: Optional[int] = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
