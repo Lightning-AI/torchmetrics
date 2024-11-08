@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Type, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -255,7 +256,7 @@ class MulticlassAveragePrecision(MulticlassPrecisionRecallCurve):
         self,
         num_classes: int,
         average: Optional[Literal["macro", "weighted", "none"]] = "macro",
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -415,7 +416,7 @@ class MultilabelAveragePrecision(MultilabelPrecisionRecallCurve):
         self,
         num_labels: int,
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -517,9 +518,9 @@ class AveragePrecision(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls: Type["AveragePrecision"],
+        cls: type["AveragePrecision"],
         task: Literal["binary", "multiclass", "multilabel"],
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
         average: Optional[Literal["macro", "weighted", "none"]] = "macro",

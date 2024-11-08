@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Type
+from typing import Any, Optional
 
 import torch
 from torch import Tensor
@@ -150,7 +150,7 @@ class BinaryConfusionMatrix(Metric):
         val: Optional[Tensor] = None,
         ax: Optional[_AX_TYPE] = None,
         add_text: bool = True,
-        labels: Optional[List[str]] = None,
+        labels: Optional[list[str]] = None,
         cmap: Optional[_CMAP_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -294,7 +294,7 @@ class MulticlassConfusionMatrix(Metric):
         val: Optional[Tensor] = None,
         ax: Optional[_AX_TYPE] = None,
         add_text: bool = True,
-        labels: Optional[List[str]] = None,
+        labels: Optional[list[str]] = None,
         cmap: Optional[_CMAP_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -441,7 +441,7 @@ class MultilabelConfusionMatrix(Metric):
         val: Optional[Tensor] = None,
         ax: Optional[_AX_TYPE] = None,
         add_text: bool = True,
-        labels: Optional[List[str]] = None,
+        labels: Optional[list[str]] = None,
         cmap: Optional[_CMAP_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -517,7 +517,7 @@ class ConfusionMatrix(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls: Type["ConfusionMatrix"],
+        cls: type["ConfusionMatrix"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,

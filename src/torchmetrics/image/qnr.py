@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -130,7 +131,7 @@ class QualityWithNoReference(Metric):
         self.add_state("pan", default=[], dist_reduce_fx="cat")
         self.add_state("pan_lr", default=[], dist_reduce_fx="cat")
 
-    def update(self, preds: Tensor, target: Dict[str, Tensor]) -> None:
+    def update(self, preds: Tensor, target: dict[str, Tensor]) -> None:
         """Update state with preds and target.
 
         Args:

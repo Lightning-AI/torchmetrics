@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple, Union
+from typing import Union
 
 import torch
 from torch import Tensor
@@ -19,7 +19,7 @@ from torch import Tensor
 from torchmetrics.utilities.checks import _check_same_shape
 
 
-def _mean_absolute_error_update(preds: Tensor, target: Tensor, num_outputs: int) -> Tuple[Tensor, int]:
+def _mean_absolute_error_update(preds: Tensor, target: Tensor, num_outputs: int) -> tuple[Tensor, int]:
     """Update and returns variables required to compute Mean Absolute Error.
 
     Check for same shape of input tensors.

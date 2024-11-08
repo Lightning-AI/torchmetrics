@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from functools import partial
-from typing import Any, Dict, Tuple
+from typing import Any
 
 import pytest
 import torch
@@ -115,7 +115,7 @@ def _reference_metric_batch(preds, target, mean):
     return out.mean(dim=0) if mean else out.reshape(*preds.shape[:-1], 5)
 
 
-def _nisqa_cheat(preds, target, **kwargs: Dict[str, Any]):
+def _nisqa_cheat(preds, target, **kwargs: dict[str, Any]):
     # cheat the MetricTester as non_intrusive_speech_quality_assessment does not need a target
     return non_intrusive_speech_quality_assessment(preds, **kwargs)
 
@@ -156,7 +156,7 @@ class TestNISQA(MetricTester):
 
 
 @pytest.mark.parametrize("shape", [(3000,), (2, 3000), (1, 2, 3000), (2, 3, 1, 3000)])
-def test_shape(shape: Tuple[int]):
+def test_shape(shape: tuple[int]):
     """Test output shape."""
     preds = torch.rand(*shape)
     out = non_intrusive_speech_quality_assessment(preds, 16000)

@@ -1,4 +1,5 @@
-from typing import Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Union
 
 import torch
 from torch import Tensor
@@ -56,7 +57,7 @@ def _gaussian_kernel_2d(
     return kernel.expand(channel, 1, kernel_size[0], kernel_size[1])
 
 
-def _uniform_weight_bias_conv2d(inputs: Tensor, window_size: int) -> Tuple[Tensor, Tensor]:
+def _uniform_weight_bias_conv2d(inputs: Tensor, window_size: int) -> tuple[Tensor, Tensor]:
     """Construct uniform weight and bias for a 2d convolution.
 
     Args:
