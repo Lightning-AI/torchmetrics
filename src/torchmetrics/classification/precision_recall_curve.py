@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Tuple, Type, Union
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -136,7 +136,7 @@ class BinaryPrecisionRecallCurve(Metric):
 
     def __init__(
         self,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -171,14 +171,14 @@ class BinaryPrecisionRecallCurve(Metric):
             self.preds.append(state[0])
             self.target.append(state[1])
 
-    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+    def compute(self) -> tuple[Tensor, Tensor, Tensor]:
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _binary_precision_recall_curve_compute(state, self.thresholds)
 
     def plot(
         self,
-        curve: Optional[Tuple[Tensor, Tensor, Tensor]] = None,
+        curve: Optional[tuple[Tensor, Tensor, Tensor]] = None,
         score: Optional[Union[Tensor, bool]] = None,
         ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
@@ -330,7 +330,7 @@ class MulticlassPrecisionRecallCurve(Metric):
     def __init__(
         self,
         num_classes: int,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         average: Optional[Literal["micro", "macro"]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
@@ -374,14 +374,14 @@ class MulticlassPrecisionRecallCurve(Metric):
             self.preds.append(state[0])
             self.target.append(state[1])
 
-    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    def compute(self) -> Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multiclass_precision_recall_curve_compute(state, self.num_classes, self.thresholds, self.average)
 
     def plot(
         self,
-        curve: Optional[Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
+        curve: Optional[Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
         score: Optional[Union[Tensor, bool]] = None,
         ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
@@ -530,7 +530,7 @@ class MultilabelPrecisionRecallCurve(Metric):
     def __init__(
         self,
         num_labels: int,
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         ignore_index: Optional[int] = None,
         validate_args: bool = True,
         **kwargs: Any,
@@ -570,14 +570,14 @@ class MultilabelPrecisionRecallCurve(Metric):
             self.preds.append(state[0])
             self.target.append(state[1])
 
-    def compute(self) -> Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]:
+    def compute(self) -> Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]:
         """Compute metric."""
         state = (dim_zero_cat(self.preds), dim_zero_cat(self.target)) if self.thresholds is None else self.confmat
         return _multilabel_precision_recall_curve_compute(state, self.num_labels, self.thresholds, self.ignore_index)
 
     def plot(
         self,
-        curve: Optional[Union[Tuple[Tensor, Tensor, Tensor], Tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
+        curve: Optional[Union[tuple[Tensor, Tensor, Tensor], tuple[List[Tensor], List[Tensor], List[Tensor]]]] = None,
         score: Optional[Union[Tensor, bool]] = None,
         ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
@@ -667,9 +667,9 @@ class PrecisionRecallCurve(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls: Type["PrecisionRecallCurve"],
+        cls: type["PrecisionRecallCurve"],
         task: Literal["binary", "multiclass", "multilabel"],
-        thresholds: Optional[Union[int, List[float], Tensor]] = None,
+        thresholds: Optional[Union[int, list[float], Tensor]] = None,
         num_classes: Optional[int] = None,
         num_labels: Optional[int] = None,
         ignore_index: Optional[int] = None,

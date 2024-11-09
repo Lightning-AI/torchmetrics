@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -72,7 +72,7 @@ def _reduce_auroc(
 
 def _binary_auroc_arg_validation(
     max_fpr: Optional[float] = None,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _binary_precision_recall_curve_arg_validation(thresholds, ignore_index)
@@ -81,7 +81,7 @@ def _binary_auroc_arg_validation(
 
 
 def _binary_auroc_compute(
-    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    state: Union[Tensor, tuple[Tensor, Tensor]],
     thresholds: Optional[Tensor],
     max_fpr: Optional[float] = None,
     pos_label: int = 1,
@@ -111,7 +111,7 @@ def binary_auroc(
     preds: Tensor,
     target: Tensor,
     max_fpr: Optional[float] = None,
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
@@ -181,7 +181,7 @@ def binary_auroc(
 def _multiclass_auroc_arg_validation(
     num_classes: int,
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _multiclass_precision_recall_curve_arg_validation(num_classes, thresholds, ignore_index)
@@ -191,7 +191,7 @@ def _multiclass_auroc_arg_validation(
 
 
 def _multiclass_auroc_compute(
-    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    state: Union[Tensor, tuple[Tensor, Tensor]],
     num_classes: int,
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
     thresholds: Optional[Tensor] = None,
@@ -210,7 +210,7 @@ def multiclass_auroc(
     target: Tensor,
     num_classes: int,
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
@@ -296,7 +296,7 @@ def multiclass_auroc(
 def _multilabel_auroc_arg_validation(
     num_labels: int,
     average: Optional[Literal["micro", "macro", "weighted", "none"]],
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
 ) -> None:
     _multilabel_precision_recall_curve_arg_validation(num_labels, thresholds, ignore_index)
@@ -306,7 +306,7 @@ def _multilabel_auroc_arg_validation(
 
 
 def _multilabel_auroc_compute(
-    state: Union[Tensor, Tuple[Tensor, Tensor]],
+    state: Union[Tensor, tuple[Tensor, Tensor]],
     num_labels: int,
     average: Optional[Literal["micro", "macro", "weighted", "none"]],
     thresholds: Optional[Tensor],
@@ -338,7 +338,7 @@ def multilabel_auroc(
     target: Tensor,
     num_labels: int,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
@@ -429,7 +429,7 @@ def auroc(
     preds: Tensor,
     target: Tensor,
     task: Literal["binary", "multiclass", "multilabel"],
-    thresholds: Optional[Union[int, List[float], Tensor]] = None,
+    thresholds: Optional[Union[int, list[float], Tensor]] = None,
     num_classes: Optional[int] = None,
     num_labels: Optional[int] = None,
     average: Optional[Literal["macro", "weighted", "none"]] = "macro",

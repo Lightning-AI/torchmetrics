@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -118,7 +119,7 @@ class SQuAD(Metric):
         self.exact_match += exact_match
         self.total += total
 
-    def compute(self) -> Dict[str, Tensor]:
+    def compute(self) -> dict[str, Tensor]:
         """Aggregate the F1 Score and Exact match for the batch."""
         return _squad_compute(self.f1_score, self.exact_match, self.total)
 
