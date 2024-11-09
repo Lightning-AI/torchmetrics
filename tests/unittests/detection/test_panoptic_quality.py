@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict
+from typing import Any
 
 import numpy as np
 import pytest
@@ -214,7 +214,7 @@ def test_extreme_values():
         (_INPUTS_1, _ARGS_2, 1),
     ],
 )
-def test_ignore_mask(inputs: _Input, args: Dict[str, Any], cat_dim: int):
+def test_ignore_mask(inputs: _Input, args: dict[str, Any], cat_dim: int):
     """Test that the metric correctly ignores regions of the inputs that do not map to a know category ID."""
     preds = inputs.preds[0]
     target = inputs.target[0]

@@ -16,7 +16,7 @@ import logging
 import os
 import re
 import sys
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import fire
 from packaging.version import parse
@@ -83,7 +83,7 @@ class AssistantCLI:
             fp.write(req)
 
     @staticmethod
-    def replace_str_requirements(old_str: str, new_str: str, req_files: List[str] = REQUIREMENTS_FILES) -> None:
+    def replace_str_requirements(old_str: str, new_str: str, req_files: list[str] = REQUIREMENTS_FILES) -> None:
         """Replace a particular string in all requirements files."""
         if isinstance(req_files, str):
             req_files = [req_files]
@@ -96,7 +96,7 @@ class AssistantCLI:
         AssistantCLI._replace_requirement(fpath, old_str=">=", new_str="==")
 
     @staticmethod
-    def set_oldest_versions(req_files: List[str] = REQUIREMENTS_FILES) -> None:
+    def set_oldest_versions(req_files: list[str] = REQUIREMENTS_FILES) -> None:
         """Set the oldest version for requirements."""
         AssistantCLI.set_min_torch_by_python()
         if isinstance(req_files, str):
@@ -109,8 +109,8 @@ class AssistantCLI:
         pr: Optional[int] = None,
         auth_token: Optional[str] = None,
         as_list: bool = False,
-        general_sub_pkgs: Tuple[str] = _PKG_WIDE_SUBPACKAGES,
-    ) -> Union[str, List[str]]:
+        general_sub_pkgs: tuple[str] = _PKG_WIDE_SUBPACKAGES,
+    ) -> Union[str, list[str]]:
         """Determine what domains were changed in particular PR."""
         import github
 
@@ -139,7 +139,7 @@ class AssistantCLI:
             return "unittests"
 
         # parse domains
-        def _crop_path(fname: str, paths: List[str]) -> str:
+        def _crop_path(fname: str, paths: list[str]) -> str:
             for p in paths:
                 fname = fname.replace(p, "")
             return fname

@@ -18,9 +18,10 @@ import builtins
 import functools
 import inspect
 from abc import ABC, abstractmethod
+from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, ClassVar, Dict, Generator, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, ClassVar, List, Optional, Union
 
 import torch
 from lightning_utilities import apply_to_collection
@@ -83,8 +84,8 @@ class Metric(Module, ABC):
 
     """
 
-    __jit_ignored_attributes__: ClassVar[List[str]] = ["device"]
-    __jit_unused_properties__: ClassVar[List[str]] = [
+    __jit_ignored_attributes__: ClassVar[list[str]] = ["device"]
+    __jit_unused_properties__: ClassVar[list[str]] = [
         "is_differentiable",
         "higher_is_better",
         "plot_lower_bound",
@@ -165,13 +166,13 @@ class Metric(Module, ABC):
         self._dtype_convert = False
 
         # initialize state
-        self._defaults: Dict[str, Union[List, Tensor]] = {}
-        self._persistent: Dict[str, bool] = {}
-        self._reductions: Dict[str, Union[str, Callable[..., Any], None]] = {}
+        self._defaults: dict[str, Union[list, Tensor]] = {}
+        self._persistent: dict[str, bool] = {}
+        self._reductions: dict[str, Union[str, Callable[..., Any], None]] = {}
 
         # state management
         self._is_synced = False
-        self._cache: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
+        self._cache: Optional[dict[str, Union[List[Tensor], Tensor]]] = None
 
     @property
     def _update_called(self) -> bool:
@@ -193,7 +194,7 @@ class Metric(Module, ABC):
         return self._update_count
 
     @property
-    def metric_state(self) -> Dict[str, Union[List[Tensor], Tensor]]:
+    def metric_state(self) -> dict[str, Union[List[Tensor], Tensor]]:
         """Get the current state of the metric."""
         return {attr: getattr(self, attr) for attr in self._defaults}
 
@@ -239,11 +240,11 @@ class Metric(Module, ABC):
             - If the metric state is a ``list``, the synced value will be a ``list`` containing the
               combined elements from all processes.
 
-        .. note::
+        .. important::
             When passing a custom function to ``dist_reduce_fx``, expect the synchronized metric state to follow
             the format discussed in the above note.
 
-        .. note::
+        .. caution::
             The values inserted into a list state are deleted whenever :meth:`~Metric.reset` is called. This allows
             device memory to be automatically reallocated, but may produce unexpected effects when referencing list
             states. To retain such values after :meth:`~Metric.reset` is called, you must first copy them to another
@@ -401,7 +402,7 @@ class Metric(Module, ABC):
 
         return batch_val
 
-    def merge_state(self, incoming_state: Union[Dict[str, Any], "Metric"]) -> None:
+    def merge_state(self, incoming_state: Union[dict[str, Any], "Metric"]) -> None:
         """Merge incoming metric state to the current state of the metric.
 
         Args:
@@ -462,7 +463,7 @@ class Metric(Module, ABC):
 
         self._reduce_states(incoming_state)
 
-    def _reduce_states(self, incoming_state: Dict[str, Any]) -> None:
+    def _reduce_states(self, incoming_state: dict[str, Any]) -> None:
         """Add an incoming metric state to the current state of the metric.
 
         Args:
@@ -725,7 +726,7 @@ class Metric(Module, ABC):
 
     def _plot(
         self,
-        val: Optional[Union[Tensor, Sequence[Tensor], Dict[str, Tensor], Sequence[Dict[str, Tensor]]]] = None,
+        val: Optional[Union[Tensor, Sequence[Tensor], dict[str, Tensor], Sequence[dict[str, Tensor]]]] = None,
         ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -776,7 +777,7 @@ class Metric(Module, ABC):
         """Make a copy of the metric."""
         return deepcopy(self)
 
-    def __getstate__(self) -> Dict[str, Any]:
+    def __getstate__(self) -> dict[str, Any]:
         """Get the current state, including all metric states, for the metric.
 
         Used for loading and saving a metric.
@@ -785,7 +786,7 @@ class Metric(Module, ABC):
         # ignore update and compute functions for pickling
         return {k: v for k, v in self.__dict__.items() if k not in ["update", "compute", "_update_signature"]}
 
-    def __setstate__(self, state: Dict[str, Any]) -> None:
+    def __setstate__(self, state: dict[str, Any]) -> None:
         """Set the state of the metric, based on a input state.
 
         Used for loading and saving a metric.
@@ -923,10 +924,10 @@ class Metric(Module, ABC):
 
     def state_dict(  # type: ignore[override]  # todo
         self,
-        destination: Optional[Dict[str, Any]] = None,
+        destination: Optional[dict[str, Any]] = None,
         prefix: str = "",
         keep_vars: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get the current state of metric as an dictionary.
 
         Args:
@@ -937,7 +938,7 @@ class Metric(Module, ABC):
                 If set to ``True``, detaching will not be performed.
 
         """
-        destination: Dict[str, Union[torch.Tensor, List, Any]] = super().state_dict(
+        destination: dict[str, Union[torch.Tensor, list, Any]] = super().state_dict(
             destination=destination,  # type: ignore[arg-type]
             prefix=prefix,
             keep_vars=keep_vars,
@@ -955,9 +956,9 @@ class Metric(Module, ABC):
             destination[prefix + key] = deepcopy(current_val)
         return destination
 
-    def _copy_state_dict(self) -> Dict[str, Union[Tensor, List[Any]]]:
+    def _copy_state_dict(self) -> dict[str, Union[Tensor, list[Any]]]:
         """Copy the current state values."""
-        cache: Dict[str, Union[Tensor, List[Any]]] = {}
+        cache: dict[str, Union[Tensor, list[Any]]] = {}
         for attr in self._defaults:
             current_value = getattr(self, attr)
 
@@ -976,9 +977,9 @@ class Metric(Module, ABC):
         prefix: str,
         local_metadata: dict,
         strict: bool,
-        missing_keys: List[str],
-        unexpected_keys: List[str],
-        error_msgs: List[str],
+        missing_keys: list[str],
+        unexpected_keys: list[str],
+        error_msgs: list[str],
     ) -> None:
         """Load metric states from state_dict."""
         for key in self._defaults:
@@ -989,7 +990,7 @@ class Metric(Module, ABC):
             state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs
         )
 
-    def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
+    def _filter_kwargs(self, **kwargs: Any) -> dict[str, Any]:
         """Filter kwargs such that they match the update signature of the metric."""
         # filter all parameters based on update signature except those of
         # types `VAR_POSITIONAL` for `* args` and `VAR_KEYWORD` for `** kwargs`
@@ -1172,7 +1173,7 @@ class Metric(Module, ABC):
         """Construct compositional metric using the get item operator."""
         return CompositionalMetric(lambda x: x[idx], self, None)
 
-    def __getnewargs__(self) -> Tuple:
+    def __getnewargs__(self) -> tuple:
         """Needed method for construction of new metrics __new__ method."""
         return tuple(
             Metric.__str__(self),

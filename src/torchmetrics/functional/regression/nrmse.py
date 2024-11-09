@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple, Union
+from typing import Union
 
 import torch
 from torch import Tensor
@@ -22,7 +22,7 @@ from torchmetrics.functional.regression.mse import _mean_squared_error_update
 
 def _normalized_root_mean_squared_error_update(
     preds: Tensor, target: Tensor, num_outputs: int, normalization: Literal["mean", "range", "std", "l2"] = "mean"
-) -> Tuple[Tensor, int, Tensor]:
+) -> tuple[Tensor, int, Tensor]:
     """Updates and returns the sum of squared errors and the number of observations for NRMSE computation.
 
     Args:

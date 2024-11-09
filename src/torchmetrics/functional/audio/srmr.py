@@ -17,7 +17,7 @@
 
 from functools import lru_cache
 from math import ceil, pi
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -56,7 +56,7 @@ def _make_erb_filters(fs: int, num_freqs: int, cutoff: float, device: torch.devi
 @lru_cache(maxsize=100)
 def _compute_modulation_filterbank_and_cutoffs(
     min_cf: float, max_cf: float, n: int, fs: float, q: int, device: torch.device
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     # this function is translated from the SRMRpy packaged
     spacing_factor = (max_cf / min_cf) ** (1.0 / (n - 1))
     cfs = torch.zeros(n, dtype=torch.float64)
@@ -73,7 +73,7 @@ def _compute_modulation_filterbank_and_cutoffs(
 
     mfb = torch.stack([_make_modulation_filter(w0, q) for w0 in 2 * pi * cfs / fs], dim=0)
 
-    def _calc_cutoffs(cfs: Tensor, fs: float, q: int) -> Tuple[Tensor, Tensor]:
+    def _calc_cutoffs(cfs: Tensor, fs: float, q: int) -> tuple[Tensor, Tensor]:
         # Calculates cutoff frequencies (3 dB) for 2nd order bandpass
         w0 = 2 * pi * cfs / fs
         b0 = torch.tan(w0 / 2) / q
@@ -202,11 +202,12 @@ def speech_reverberation_modulation_energy_ratio(
             Note: this argument is inherited from `SRMRpy`_. As the translated code is based to pytorch,
             setting `fast=True` may slow down the speed for calculating this metric on GPU.
 
-    .. note:: using this metrics requires you to have ``gammatone`` and ``torchaudio`` installed.
+    .. hint::
+        Usingsing this metrics requires you to have ``gammatone`` and ``torchaudio`` installed.
         Either install as ``pip install torchmetrics[audio]`` or ``pip install torchaudio``
         and ``pip install git+https://github.com/detly/gammatone``.
 
-    .. note::
+    .. attention::
         This implementation is experimental, and might not be consistent with the matlab
         implementation `SRMRToolbox`_, especially the fast implementation.
         The slow versions, a) fast=False, norm=False, max_cf=128, b) fast=False, norm=True, max_cf=30, have

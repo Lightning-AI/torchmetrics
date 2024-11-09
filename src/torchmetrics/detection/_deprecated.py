@@ -1,4 +1,5 @@
-from typing import Any, Collection
+from collections.abc import Collection
+from typing import Any
 
 from torchmetrics.detection import ModifiedPanopticQuality, PanopticQuality
 from torchmetrics.utilities.prints import _deprecated_root_import_class
