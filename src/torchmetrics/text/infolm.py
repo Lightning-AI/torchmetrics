@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-from typing import Any, ClassVar, Dict, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, ClassVar, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -144,7 +145,7 @@ class InfoLM(Metric):
         num_threads: int = 0,
         verbose: bool = True,
         return_sentence_level_score: bool = False,
-        **kwargs: Dict[str, Any],
+        **kwargs: dict[str, Any],
     ) -> None:
         super().__init__(**kwargs)
         self.model_name_or_path = model_name_or_path
@@ -188,7 +189,7 @@ class InfoLM(Metric):
         self.target_input_ids.append(target_input_ids)
         self.target_attention_mask.append(target_attention_mask)
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def compute(self) -> Union[Tensor, tuple[Tensor, Tensor]]:
         """Calculate selected information measure using the pre-trained language model."""
         preds_dataloader = _get_dataloader(
             input_ids=dim_zero_cat(self.preds_input_ids),

@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from collections.abc import Sequence
 from copy import deepcopy
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -47,7 +48,7 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
     def __init__(
         self,
         name: str,
-        features_list: List[str],
+        features_list: list[str],
         feature_extractor_weights_path: Optional[str] = None,
     ) -> None:
         if not _TORCH_FIDELITY_AVAILABLE:
@@ -64,7 +65,7 @@ class NoTrainInceptionV3(_FeatureExtractorInceptionV3):
         """Force network to always be in evaluation mode."""
         return super().train(False)
 
-    def _torch_fidelity_forward(self, x: Tensor) -> Tuple[Tensor, ...]:
+    def _torch_fidelity_forward(self, x: Tensor) -> tuple[Tensor, ...]:
         """Forward method of inception net.
 
         Copy of the forward method from this file:
@@ -298,7 +299,7 @@ class FrechetInceptionDistance(Metric):
         feature: Union[int, Module] = 2048,
         reset_real_features: bool = True,
         normalize: bool = False,
-        input_img_size: Tuple[int, int, int] = (3, 299, 299),
+        input_img_size: tuple[int, int, int] = (3, 299, 299),
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)

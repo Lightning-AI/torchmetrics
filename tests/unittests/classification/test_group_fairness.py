@@ -13,7 +13,7 @@
 # limitations under the License.
 import inspect
 from functools import partial
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Optional
 from unittest import mock
 
 import numpy as np
@@ -72,7 +72,7 @@ def _reference_fairlearn_binary(preds, target, groups, ignore_index):
     }
 
 
-def _assert_tensor(pl_result: Dict[str, Tensor], key: Optional[str] = None) -> None:
+def _assert_tensor(pl_result: dict[str, Tensor], key: Optional[str] = None) -> None:
     if isinstance(pl_result, dict) and key is None:
         for key, val in pl_result.items():
             assert isinstance(val, Tensor), f"{key!r} is not a Tensor!"
@@ -81,7 +81,7 @@ def _assert_tensor(pl_result: Dict[str, Tensor], key: Optional[str] = None) -> N
 
 
 def _assert_allclose(  # todo: unify with the general assert_allclose
-    pl_result: Dict[str, Tensor], sk_result: Dict[str, Tensor], atol: float = 1e-8, key: Optional[str] = None
+    pl_result: dict[str, Tensor], sk_result: dict[str, Tensor], atol: float = 1e-8, key: Optional[str] = None
 ) -> None:
     if isinstance(pl_result, dict) and key is None:
         for (pl_key, pl_val), (sk_key, sk_val) in zip(pl_result.items(), sk_result.items()):

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Literal, Optional, Union
+from typing import Literal, Optional, Union
 
 import torch
 from torch import Tensor
@@ -28,7 +28,7 @@ def _hausdorff_distance_validate_args(
     num_classes: int,
     include_background: bool,
     distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
-    spacing: Optional[Union[Tensor, List[float]]] = None,
+    spacing: Optional[Union[Tensor, list[float]]] = None,
     directed: bool = False,
     input_format: Literal["one-hot", "index"] = "one-hot",
 ) -> None:
@@ -55,7 +55,7 @@ def hausdorff_distance(
     num_classes: int,
     include_background: bool = False,
     distance_metric: Literal["euclidean", "chessboard", "taxicab"] = "euclidean",
-    spacing: Optional[Union[Tensor, List[float]]] = None,
+    spacing: Optional[Union[Tensor, list[float]]] = None,
     directed: bool = False,
     input_format: Literal["one-hot", "index"] = "one-hot",
 ) -> Tensor:

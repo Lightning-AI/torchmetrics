@@ -14,8 +14,9 @@
 import csv
 import logging
 import urllib
+from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
-from typing import Any, Callable, Dict, Iterator, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -75,8 +76,8 @@ def _get_embeddings_and_idf_scale(
     all_layers: bool = False,
     idf: bool = False,
     verbose: bool = False,
-    user_forward_fn: Optional[Callable[[Module, Dict[str, Tensor]], Tensor]] = None,
-) -> Tuple[Tensor, Tensor]:
+    user_forward_fn: Optional[Callable[[Module, dict[str, Tensor]], Tensor]] = None,
+) -> tuple[Tensor, Tensor]:
     """Calculate sentence embeddings and the inverse-document-frequency scaling factor.
 
     Args:
@@ -158,7 +159,7 @@ def _get_scaled_precision_or_recall(cos_sim: Tensor, metric: str, idf_scale: Ten
 
 def _get_precision_recall_f1(
     preds_embeddings: Tensor, target_embeddings: Tensor, preds_idf_scale: Tensor, target_idf_scale: Tensor
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor]:
     """Calculate precision, recall and F1 score over candidate and reference sentences.
 
     Args:
@@ -245,7 +246,7 @@ def _rescale_metrics_with_baseline(
     baseline: Tensor,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor]:
     """Rescale the computed metrics with the pre-computed baseline."""
     if num_layers is None and all_layers is False:
         num_layers = -1
@@ -257,14 +258,14 @@ def _rescale_metrics_with_baseline(
 
 
 def bert_score(
-    preds: Union[str, Sequence[str], Dict[str, Tensor]],
-    target: Union[str, Sequence[str], Dict[str, Tensor]],
+    preds: Union[str, Sequence[str], dict[str, Tensor]],
+    target: Union[str, Sequence[str], dict[str, Tensor]],
     model_name_or_path: Optional[str] = None,
     num_layers: Optional[int] = None,
     all_layers: bool = False,
     model: Optional[Module] = None,
     user_tokenizer: Any = None,
-    user_forward_fn: Optional[Callable[[Module, Dict[str, Tensor]], Tensor]] = None,
+    user_forward_fn: Optional[Callable[[Module, dict[str, Tensor]], Tensor]] = None,
     verbose: bool = False,
     idf: bool = False,
     device: Optional[Union[str, torch.device]] = None,
@@ -277,7 +278,7 @@ def bert_score(
     baseline_path: Optional[str] = None,
     baseline_url: Optional[str] = None,
     truncation: bool = False,
-) -> Dict[str, Union[Tensor, List[float], str]]:
+) -> dict[str, Union[Tensor, list[float], str]]:
     """`Bert_score Evaluating Text Generation`_ for text similirity matching.
 
     This metric leverages the pre-trained contextual embeddings from BERT and matches words in candidate and reference
@@ -405,7 +406,7 @@ def bert_score(
     )
     if _are_empty_lists:
         rank_zero_warn("Predictions and references are empty.")
-        output_dict: Dict[str, Union[Tensor, List[float], str]] = {
+        output_dict: dict[str, Union[Tensor, list[float], str]] = {
             "precision": [0.0],
             "recall": [0.0],
             "f1": [0.0],

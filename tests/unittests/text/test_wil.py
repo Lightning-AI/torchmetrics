@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Union
+from typing import Union
 
 import pytest
 from torchmetrics.functional.text.wil import word_information_lost
@@ -21,7 +21,7 @@ from unittests.text._helpers import TextTester
 from unittests.text._inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 
 
-def _reference_jiwer_wil(preds: Union[str, List[str]], target: Union[str, List[str]]):
+def _reference_jiwer_wil(preds: Union[str, list[str]], target: Union[str, list[str]]):
     try:
         from jiwer import wil
     except ImportError:

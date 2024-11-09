@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -108,7 +109,7 @@ class TranslationEditRate(Metric):
             self.sentence_ter,
         )
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def compute(self) -> Union[Tensor, tuple[Tensor, Tensor]]:
         """Calculate the translate error rate (TER)."""
         ter = _ter_compute(self.total_num_edits, self.total_tgt_len)
         if self.sentence_ter is not None:
