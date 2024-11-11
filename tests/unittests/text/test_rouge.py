@@ -75,10 +75,12 @@ def _reference_rouge_score(
         aggregator_avg = BootstrapAggregator()
 
         if accumulate == "best":
-            key_curr = next(iter(list_results[0].keys()))
-            all_fmeasure = torch.tensor([v[key_curr].fmeasure for v in list_results])
-            highest_idx = torch.argmax(all_fmeasure).item()
-            aggregator.add_scores(list_results[highest_idx])
+            scores = {}
+            for rouge_key in list_results[0]:
+                all_fmeasure = torch.tensor([v[rouge_key].fmeasure for v in list_results])
+                highest_idx = torch.argmax(all_fmeasure).item()
+                scores[rouge_key] = list_results[highest_idx][rouge_key]
+            aggregator.add_scores(scores)
         elif accumulate == "avg":
             for _score in list_results:
                 aggregator_avg.add_scores(_score)
@@ -270,3 +272,56 @@ def test_rouge_lsum_score(pl_rouge_metric_key, use_stemmer):
         use_stemmer=use_stemmer,
     )
     assert torch.isclose(metrics_score[rouge_level + "_" + metric], original_score)
+
+
+@pytest.mark.parametrize(
+    ("preds", "references", "expected_scores"),
+    [
+        (
+            "a b c",
+            ["a b c", "c b a"],
+            {
+                "rouge1_fmeasure": 1.0,
+                "rouge1_precision": 1.0,
+                "rouge1_recall": 1.0,
+                "rouge2_fmeasure": 1.0,
+                "rouge2_precision": 1.0,
+                "rouge2_recall": 1.0,
+                "rougeL_fmeasure": 1.0,
+                "rougeL_precision": 1.0,
+                "rougeL_recall": 1.0,
+                "rougeLsum_fmeasure": 1.0,
+                "rougeLsum_precision": 1.0,
+                "rougeLsum_recall": 1.0,
+            },
+        ),
+        (
+            "a b c",
+            ["c b a", "a b c"],
+            {
+                "rouge1_fmeasure": 1.0,
+                "rouge1_precision": 1.0,
+                "rouge1_recall": 1.0,
+                "rouge2_fmeasure": 1.0,
+                "rouge2_precision": 1.0,
+                "rouge2_recall": 1.0,
+                "rougeL_fmeasure": 1.0,
+                "rougeL_precision": 1.0,
+                "rougeL_recall": 1.0,
+                "rougeLsum_fmeasure": 1.0,
+                "rougeLsum_precision": 1.0,
+                "rougeLsum_recall": 1.0,
+            },
+        ),
+    ],
+)
+def test_rouge_score_accumulate_best(preds, references, expected_scores):
+    """Issue: https://github.com/Lightning-AI/torchmetrics/issues/2148."""
+    # Calculate ROUGE scores
+    result = rouge_score(preds, references, accumulate="best")
+
+    # Assert each expected score
+    for key in expected_scores:
+        assert torch.isclose(
+            result[key], torch.tensor(expected_scores[key])
+        ), f"Expected {expected_scores[key]} for {key}, but got {result[key]}"
