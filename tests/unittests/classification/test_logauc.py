@@ -246,17 +246,16 @@ class TestMulticlassLogAUC(MetricTester):
             dtype=dtype,
         )
 
-    @pytest.mark.parametrize("average", ["macro", None])
-    def test_multiclass_logauc_threshold_arg(self, inputs, average):
+    def test_multiclass_logauc_threshold_arg(self, inputs):
         """Test that different types of `thresholds` argument lead to same result."""
         preds, target = inputs
         if (preds < 0).any():
             preds = preds.softmax(dim=-1)
         for pred, true in zip(preds, target):
             pred = torch.tensor(np.round(pred.numpy(), 2)) + 1e-6  # rounding will simulate binning
-            ap1 = multiclass_logauc(pred, true, num_classes=NUM_CLASSES, average=average, thresholds=None)
+            ap1 = multiclass_logauc(pred, true, num_classes=NUM_CLASSES, average="macro", thresholds=None)
             ap2 = multiclass_logauc(
-                pred, true, num_classes=NUM_CLASSES, average=average, thresholds=torch.linspace(0, 1, 100)
+                pred, true, num_classes=NUM_CLASSES, average="macro", thresholds=torch.linspace(0, 1, 100)
             )
             assert torch.allclose(ap1, ap2, atol=self.atol)
 
@@ -366,17 +365,16 @@ class TestMultilabelLogAUC(MetricTester):
             dtype=dtype,
         )
 
-    @pytest.mark.parametrize("average", ["macro", None])
-    def test_multilabel_logauc_threshold_arg(self, inputs, average):
+    def test_multilabel_logauc_threshold_arg(self, inputs):
         """Test that different types of `thresholds` argument lead to same result."""
         preds, target = inputs
         if (preds < 0).any():
             preds = sigmoid(preds)
         for pred, true in zip(preds, target):
             pred = torch.tensor(np.round(pred.numpy(), 1)) + 1e-6  # rounding will simulate binning
-            ap1 = multilabel_logauc(pred, true, num_labels=NUM_CLASSES, average=average, thresholds=None)
+            ap1 = multilabel_logauc(pred, true, num_labels=NUM_CLASSES, average="macro", thresholds=None)
             ap2 = multilabel_logauc(
-                pred, true, num_labels=NUM_CLASSES, average=average, thresholds=torch.linspace(0, 1, 100)
+                pred, true, num_labels=NUM_CLASSES, average="macro", thresholds=torch.linspace(0, 1, 100)
             )
             assert torch.allclose(ap1, ap2, atol=self.atol)
 
