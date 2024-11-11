@@ -18,7 +18,11 @@ import pytest
 import torch
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
-from tdc.evaluator import range_logAUC
+from torchmetrics.utilities.imports import _PYTDC_AVAILABLE
+
+if _PYTDC_AVAILABLE:
+    from tdc.evaluator import range_logAUC
+
 from torchmetrics.classification.logauc import BinaryLogAUC, LogAUC, MulticlassLogAUC, MultilabelLogAUC
 from torchmetrics.functional.classification.logauc import binary_logauc, multiclass_logauc, multilabel_logauc
 from torchmetrics.functional.classification.roc import binary_roc
@@ -42,6 +46,7 @@ def _binary_compare_implementation(preds, target, fpr_range, ignore_index=None):
     return range_logAUC(target, preds, FPR_range=fpr_range)
 
 
+@pytest.mark.skipif(not _PYTDC_AVAILABLE, reason="test requires pytdc installed.")
 @pytest.mark.parametrize("inputs", (_binary_cases[1], _binary_cases[2], _binary_cases[4], _binary_cases[5]))
 class TestBinaryLogAUC(MetricTester):
     """Test class for `BinaryLogAUC` metric."""
@@ -134,7 +139,7 @@ class TestBinaryLogAUC(MetricTester):
             _, _, t = binary_roc(pred, true, thresholds=None)
             ap1 = binary_logauc(pred, true, thresholds=None)
             ap2 = binary_logauc(pred, true, thresholds=threshold_fn(t.flip(0)))
-            assert torch.allclose(ap1, ap2)
+            assert torch.allclose(ap1, ap2, atol=self.atol)
 
 
 def _multiclass_compare_implementation(preds, target, fpr_range, average):
@@ -153,6 +158,7 @@ def _multiclass_compare_implementation(preds, target, fpr_range, average):
     return scores
 
 
+@pytest.mark.skipif(not _PYTDC_AVAILABLE, reason="test requires pytdc installed.")
 @pytest.mark.parametrize(
     "inputs", (_multiclass_cases[1], _multiclass_cases[2], _multiclass_cases[4], _multiclass_cases[5])
 )
@@ -252,7 +258,7 @@ class TestMulticlassLogAUC(MetricTester):
             ap2 = multiclass_logauc(
                 pred, true, num_classes=NUM_CLASSES, average=average, thresholds=torch.linspace(0, 1, 100)
             )
-            assert torch.allclose(ap1, ap2)
+            assert torch.allclose(ap1, ap2, atol=self.atol)
 
 
 def _multilabel_compare_implementation(preds, target, fpr_range, average):
@@ -272,6 +278,7 @@ def _multilabel_compare_implementation(preds, target, fpr_range, average):
     return scores
 
 
+@pytest.mark.skipif(not _PYTDC_AVAILABLE, reason="test requires pytdc installed.")
 @pytest.mark.parametrize(
     "inputs", (_multilabel_cases[1], _multilabel_cases[2], _multilabel_cases[4], _multilabel_cases[5])
 )
@@ -371,7 +378,7 @@ class TestMultilabelLogAUC(MetricTester):
             ap2 = multilabel_logauc(
                 pred, true, num_labels=NUM_CLASSES, average=average, thresholds=torch.linspace(0, 1, 100)
             )
-            assert torch.allclose(ap1, ap2)
+            assert torch.allclose(ap1, ap2, atol=self.atol)
 
 
 @pytest.mark.parametrize(
