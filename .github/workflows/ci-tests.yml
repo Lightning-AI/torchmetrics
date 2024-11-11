@@ -128,7 +128,6 @@ jobs:
           pip install --requirement requirements/_devel.txt -U \
             $PIP_EXTRA_INDEX_URL --find-links $PYPI_CACHE_DIR
           pip list
-        continue-on-error: true
 
       - name: set special vars for PR
         if: ${{ github.event_name == 'pull_request' }}
