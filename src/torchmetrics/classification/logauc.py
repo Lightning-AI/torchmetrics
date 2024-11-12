@@ -195,8 +195,8 @@ class MulticlassLogAUC(MulticlassROC):
         average:
             Defines the reduction that is applied over classes. Should be one of the following:
 
-            - ``macro``: Calculate score for each class and average them
-            - ``weighted``: calculates score for each class and computes weighted average using their support
+            - ``"macro"``: Calculate score for each class and average them
+            - ``"weighted"``: calculates score for each class and computes weighted average using their support
             - ``"none"`` or ``None``: calculates score for each class and applies no reduction
 
         thresholds:
@@ -345,7 +345,7 @@ class MultilabelLogAUC(MultilabelROC):
         average:
             Defines the reduction that is applied over labels. Should be one of the following:
 
-            - ``macro``: Calculate score for each label and average them
+            - ``"macro"``: Calculate the score for each label and average them
             - ``"none"`` or ``None``: calculates score for each label and applies no reduction
         thresholds:
             Can be one of:
