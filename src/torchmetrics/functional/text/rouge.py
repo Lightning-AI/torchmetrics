@@ -362,12 +362,9 @@ def _rouge_score_update(
             list_results.append(result_inner.copy())
 
         if accumulate == "best":
-            key_curr = rouge_keys_values[0]
-            all_fmeasure = torch.tensor([v[key_curr]["fmeasure"] for v in list_results])
-            highest_idx = int(torch.argmax(all_fmeasure).item())
-
-            for rouge_key in rouge_keys_values:
-                results[rouge_key].append(list_results[highest_idx][rouge_key])  # todo
+            for k in rouge_keys_values:
+                index = torch.argmax(torch.tensor([s[k]["fmeasure"] for s in list_results]))
+                results[k].append(list_results[index][k])
 
         elif accumulate == "avg":
             new_result_avg: dict[Union[int, str], dict[str, Tensor]] = {

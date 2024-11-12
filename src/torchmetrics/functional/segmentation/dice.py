@@ -49,12 +49,13 @@ def _dice_score_update(
 ) -> tuple[Tensor, Tensor, Tensor]:
     """Update the state with the current prediction and target."""
     _check_same_shape(preds, target)
-    if preds.ndim < 3:
-        raise ValueError(f"Expected both `preds` and `target` to have at least 3 dimensions, but got {preds.ndim}.")
 
     if input_format == "index":
         preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
         target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
+
+    if preds.ndim < 3:
+        raise ValueError(f"Expected both `preds` and `target` to have at least 3 dimensions, but got {preds.ndim}.")
 
     if not include_background:
         preds, target = _ignore_background(preds, target)

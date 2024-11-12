@@ -242,3 +242,28 @@ def allclose(tensor1: Tensor, tensor2: Tensor) -> bool:
     if tensor1.dtype != tensor2.dtype:
         tensor2 = tensor2.to(dtype=tensor1.dtype)
     return torch.allclose(tensor1, tensor2)
+
+
+def interp(x: Tensor, xp: Tensor, fp: Tensor) -> Tensor:
+    """Interpolation function comparable to numpy.interp.
+
+    Args:
+        x: x-coordinates where to evaluate the interpolated values
+        xp: x-coordinates of the data points
+        fp: y-coordinates of the data points
+
+    """
+    # Sort xp and fp based on xp for compatibility with np.interp
+    sorted_indices = torch.argsort(xp)
+    xp = xp[sorted_indices]
+    fp = fp[sorted_indices]
+
+    # Calculate slopes for each interval
+    slopes = (fp[1:] - fp[:-1]) / (xp[1:] - xp[:-1])
+
+    # Identify where x falls relative to xp
+    indices = torch.searchsorted(xp, x) - 1
+    indices = torch.clamp(indices, 0, len(slopes) - 1)
+
+    # Compute interpolated values
+    return fp[indices] + slopes[indices] * (x - xp[indices])
