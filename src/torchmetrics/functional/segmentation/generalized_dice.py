@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Tuple
+
 import torch
 from torch import Tensor
 from typing_extensions import Literal
@@ -49,15 +51,16 @@ def _generalized_dice_update(
     include_background: bool,
     weight_type: Literal["square", "simple", "linear"] = "square",
     input_format: Literal["one-hot", "index"] = "one-hot",
-) -> Tensor:
+) -> Tuple[Tensor, Tensor]:
     """Update the state with the current prediction and target."""
     _check_same_shape(preds, target)
-    if preds.ndim < 3:
-        raise ValueError(f"Expected both `preds` and `target` to have at least 3 dimensions, but got {preds.ndim}.")
 
     if input_format == "index":
         preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
         target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
+
+    if preds.ndim < 3:
+        raise ValueError(f"Expected both `preds` and `target` to have at least 3 dimensions, but got {preds.ndim}.")
 
     if not include_background:
         preds, target = _ignore_background(preds, target)
@@ -67,7 +70,6 @@ def _generalized_dice_update(
     target_sum = torch.sum(target, dim=reduce_axis)
     pred_sum = torch.sum(preds, dim=reduce_axis)
     cardinality = target_sum + pred_sum
-
     if weight_type == "simple":
         weights = 1.0 / target_sum
     elif weight_type == "linear":
@@ -89,7 +91,7 @@ def _generalized_dice_update(
 
     numerator = 2.0 * intersection * weights
     denominator = cardinality * weights
-    return numerator, denominator  # type:ignore[return-value]
+    return numerator, denominator
 
 
 def _generalized_dice_compute(numerator: Tensor, denominator: Tensor, per_class: bool = True) -> Tensor:
