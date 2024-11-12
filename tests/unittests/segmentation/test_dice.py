@@ -22,7 +22,7 @@ from torchmetrics.segmentation.dice import DiceScore
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
-from unittests.segmentation.inputs import _inputs1, _inputs2, _inputs3
+from unittests.segmentation.inputs import _input4, _inputs1, _inputs2, _inputs3
 
 seed_all(42)
 
@@ -55,6 +55,7 @@ def _reference_dice_score(
         (_inputs1.preds, _inputs1.target, "one-hot"),
         (_inputs2.preds, _inputs2.target, "one-hot"),
         (_inputs3.preds, _inputs3.target, "index"),
+        (_input4.preds, _input4.target, "index"),
     ],
 )
 @pytest.mark.parametrize("include_background", [True, False])
