@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Dict, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -178,18 +179,21 @@ class IntersectionOverUnion(Metric):
     def _iou_compute_fn(*args: Any, **kwargs: Any) -> Tensor:
         return _iou_compute(*args, **kwargs)
 
-    def update(self, preds: List[Dict[str, Tensor]], target: List[Dict[str, Tensor]]) -> None:
+    def update(self, preds: list[dict[str, Tensor]], target: list[dict[str, Tensor]]) -> None:
         """Update state with predictions and targets."""
         _input_validator(preds, target, ignore_score=True)
 
-        for p, t in zip(preds, target):
-            det_boxes = self._get_safe_item_values(p["boxes"])
-            gt_boxes = self._get_safe_item_values(t["boxes"])
-            self.groundtruth_labels.append(t["labels"])
+        for p_i, t_i in zip(preds, target):
+            det_boxes = self._get_safe_item_values(p_i["boxes"])
+            gt_boxes = self._get_safe_item_values(t_i["boxes"])
+            self.groundtruth_labels.append(t_i["labels"])
 
             iou_matrix = self._iou_update_fn(det_boxes, gt_boxes, self.iou_threshold, self._invalid_val)  # N x M
             if self.respect_labels:
-                label_eq = p["labels"].unsqueeze(1) == t["labels"].unsqueeze(0)  # N x M
+                if det_boxes.numel() > 0 and gt_boxes.numel() > 0:
+                    label_eq = p_i["labels"].unsqueeze(1) == t_i["labels"].unsqueeze(0)  # N x M
+                else:
+                    label_eq = torch.eye(iou_matrix.shape[0], dtype=bool, device=iou_matrix.device)  # type: ignore[call-overload]
                 iou_matrix[~label_eq] = self._invalid_val
             self.iou_matrix.append(iou_matrix)
 
@@ -201,7 +205,7 @@ class IntersectionOverUnion(Metric):
             boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xyxy")
         return boxes
 
-    def _get_gt_classes(self) -> List:
+    def _get_gt_classes(self) -> list:
         """Returns a list of unique classes found in ground truth and detection data."""
         if len(self.groundtruth_labels) > 0:
             return torch.cat(self.groundtruth_labels).unique().tolist()
@@ -210,7 +214,7 @@ class IntersectionOverUnion(Metric):
     def compute(self) -> dict:
         """Computes IoU based on inputs passed in to ``update`` previously."""
         score = torch.cat([mat[mat != self._invalid_val] for mat in self.iou_matrix], 0).mean()
-        results: Dict[str, Tensor] = {f"{self._iou_type}": score}
+        results: dict[str, Tensor] = {f"{self._iou_type}": score}
         if torch.isnan(score):  # if no valid boxes are found
             results[f"{self._iou_type}"] = torch.tensor(0.0, device=score.device)
         if self.class_metrics:

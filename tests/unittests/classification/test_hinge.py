@@ -38,7 +38,7 @@ def _reference_sklearn_binary_hinge_loss(preds, target, ignore_index):
     if not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
 
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     target = 2 * target - 1
     return sk_hinge(target, preds)
 
@@ -125,7 +125,7 @@ def _reference_sklearn_multiclass_hinge_loss(preds, target, multiclass_mode, ign
     if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
     preds = np.moveaxis(preds, 1, -1).reshape((-1, preds.shape[1]))
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
 
     if multiclass_mode == "one-vs-all":
         enc = OneHotEncoder()

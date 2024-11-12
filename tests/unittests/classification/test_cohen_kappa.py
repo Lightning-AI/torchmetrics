@@ -37,7 +37,7 @@ def _reference_sklearn_cohen_kappa_binary(preds, target, weights=None, ignore_in
         if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_cohen_kappa(y1=target, y2=preds, weights=weights)
 
 
@@ -136,7 +136,7 @@ def _reference_sklearn_cohen_kappa_multiclass(preds, target, weights, ignore_ind
         preds = np.argmax(preds, axis=1)
     preds = preds.flatten()
     target = target.flatten()
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_cohen_kappa(y1=target, y2=preds, weights=weights)
 
 

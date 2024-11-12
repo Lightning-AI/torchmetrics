@@ -11,17 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Collection, Dict, Iterator, List, Optional, Set, Tuple, cast
+from collections.abc import Collection, Iterator
+from typing import Optional, cast
 
 import torch
 from torch import Tensor
 
 from torchmetrics.utilities import rank_zero_warn
 
-_Color = Tuple[int, int]  # A (category_id, instance_id) tuple that uniquely identifies a panoptic segment.
+_Color = tuple[int, int]  # A (category_id, instance_id) tuple that uniquely identifies a panoptic segment.
 
 
-def _nested_tuple(nested_list: List) -> Tuple:
+def _nested_tuple(nested_list: list) -> tuple:
     """Construct a nested tuple from a nested list.
 
     Args:
@@ -34,7 +35,7 @@ def _nested_tuple(nested_list: List) -> Tuple:
     return tuple(map(_nested_tuple, nested_list)) if isinstance(nested_list, list) else nested_list
 
 
-def _to_tuple(t: Tensor) -> Tuple:
+def _to_tuple(t: Tensor) -> tuple:
     """Convert a tensor into a nested tuple.
 
     Args:
@@ -47,7 +48,7 @@ def _to_tuple(t: Tensor) -> Tuple:
     return _nested_tuple(t.tolist())
 
 
-def _get_color_areas(inputs: Tensor) -> Dict[Tuple, Tensor]:
+def _get_color_areas(inputs: Tensor) -> dict[tuple, Tensor]:
     """Measure the size of each instance.
 
     Args:
@@ -62,7 +63,7 @@ def _get_color_areas(inputs: Tensor) -> Dict[Tuple, Tensor]:
     return dict(zip(_to_tuple(unique_keys), unique_keys_area))
 
 
-def _parse_categories(things: Collection[int], stuffs: Collection[int]) -> Tuple[Set[int], Set[int]]:
+def _parse_categories(things: Collection[int], stuffs: Collection[int]) -> tuple[set[int], set[int]]:
     """Parse and validate metrics arguments for `things` and `stuff`.
 
     Args:
@@ -121,7 +122,7 @@ def _validate_inputs(preds: Tensor, target: torch.Tensor) -> None:
         )
 
 
-def _get_void_color(things: Set[int], stuffs: Set[int]) -> Tuple[int, int]:
+def _get_void_color(things: set[int], stuffs: set[int]) -> tuple[int, int]:
     """Get an unused color ID.
 
     Args:
@@ -136,7 +137,7 @@ def _get_void_color(things: Set[int], stuffs: Set[int]) -> Tuple[int, int]:
     return unused_category_id, 0
 
 
-def _get_category_id_to_continuous_id(things: Set[int], stuffs: Set[int]) -> Dict[int, int]:
+def _get_category_id_to_continuous_id(things: set[int], stuffs: set[int]) -> dict[int, int]:
     """Convert original IDs to continuous IDs.
 
     Args:
@@ -157,7 +158,7 @@ def _get_category_id_to_continuous_id(things: Set[int], stuffs: Set[int]) -> Dic
     return cat_id_to_continuous_id
 
 
-def _isin(arr: Tensor, values: List) -> Tensor:
+def _isin(arr: Tensor, values: list) -> Tensor:
     """Check if all values of an arr are in another array. Implementation of torch.isin to support pre 0.10 version.
 
     Args:
@@ -173,10 +174,10 @@ def _isin(arr: Tensor, values: List) -> Tensor:
 
 
 def _prepocess_inputs(
-    things: Set[int],
-    stuffs: Set[int],
+    things: set[int],
+    stuffs: set[int],
     inputs: Tensor,
-    void_color: Tuple[int, int],
+    void_color: tuple[int, int],
     allow_unknown_category: bool,
 ) -> Tensor:
     """Preprocesses an input tensor for metric calculation.
@@ -214,9 +215,9 @@ def _prepocess_inputs(
 def _calculate_iou(
     pred_color: _Color,
     target_color: _Color,
-    pred_areas: Dict[_Color, Tensor],
-    target_areas: Dict[_Color, Tensor],
-    intersection_areas: Dict[Tuple[_Color, _Color], Tensor],
+    pred_areas: dict[_Color, Tensor],
+    target_areas: dict[_Color, Tensor],
+    intersection_areas: dict[tuple[_Color, _Color], Tensor],
     void_color: _Color,
 ) -> Tensor:
     """Helper function that calculates the IoU from precomputed areas of segments and their intersections.
@@ -252,10 +253,10 @@ def _calculate_iou(
 
 
 def _filter_false_negatives(
-    target_areas: Dict[_Color, Tensor],
-    target_segment_matched: Set[_Color],
-    intersection_areas: Dict[Tuple[_Color, _Color], Tensor],
-    void_color: Tuple[int, int],
+    target_areas: dict[_Color, Tensor],
+    target_segment_matched: set[_Color],
+    intersection_areas: dict[tuple[_Color, _Color], Tensor],
+    void_color: tuple[int, int],
 ) -> Iterator[int]:
     """Filter false negative segments and yield their category IDs.
 
@@ -281,10 +282,10 @@ def _filter_false_negatives(
 
 
 def _filter_false_positives(
-    pred_areas: Dict[_Color, Tensor],
-    pred_segment_matched: Set[_Color],
-    intersection_areas: Dict[Tuple[_Color, _Color], Tensor],
-    void_color: Tuple[int, int],
+    pred_areas: dict[_Color, Tensor],
+    pred_segment_matched: set[_Color],
+    intersection_areas: dict[tuple[_Color, _Color], Tensor],
+    void_color: tuple[int, int],
 ) -> Iterator[int]:
     """Filter false positive segments and yield their category IDs.
 
@@ -312,10 +313,10 @@ def _filter_false_positives(
 def _panoptic_quality_update_sample(
     flatten_preds: Tensor,
     flatten_target: Tensor,
-    cat_id_to_continuous_id: Dict[int, int],
-    void_color: Tuple[int, int],
-    stuffs_modified_metric: Optional[Set[int]] = None,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    cat_id_to_continuous_id: dict[int, int],
+    void_color: tuple[int, int],
+    stuffs_modified_metric: Optional[set[int]] = None,
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Calculate stat scores required to compute the metric **for a single sample**.
 
     Computed scores: iou sum, true positives, false positives, false negatives.
@@ -351,11 +352,11 @@ def _panoptic_quality_update_sample(
 
     # calculate the area of each prediction, ground truth and pairwise intersection.
     # NOTE: mypy needs `cast()` because the annotation for `_get_color_areas` is too generic.
-    pred_areas = cast(Dict[_Color, Tensor], _get_color_areas(flatten_preds))
-    target_areas = cast(Dict[_Color, Tensor], _get_color_areas(flatten_target))
+    pred_areas = cast(dict[_Color, Tensor], _get_color_areas(flatten_preds))
+    target_areas = cast(dict[_Color, Tensor], _get_color_areas(flatten_target))
     # intersection matrix of shape [num_pixels, 2, 2]
     intersection_matrix = torch.transpose(torch.stack((flatten_preds, flatten_target), -1), -1, -2)
-    intersection_areas = cast(Dict[Tuple[_Color, _Color], Tensor], _get_color_areas(intersection_matrix))
+    intersection_areas = cast(dict[tuple[_Color, _Color], Tensor], _get_color_areas(intersection_matrix))
 
     # select intersection of things of same category with iou > 0.5
     pred_segment_matched = set()
@@ -397,10 +398,10 @@ def _panoptic_quality_update_sample(
 def _panoptic_quality_update(
     flatten_preds: Tensor,
     flatten_target: Tensor,
-    cat_id_to_continuous_id: Dict[int, int],
-    void_color: Tuple[int, int],
-    modified_metric_stuffs: Optional[Set[int]] = None,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    cat_id_to_continuous_id: dict[int, int],
+    void_color: tuple[int, int],
+    modified_metric_stuffs: Optional[set[int]] = None,
+) -> tuple[Tensor, Tensor, Tensor, Tensor]:
     """Calculate stat scores required to compute the metric for a full batch.
 
     Computed scores: iou sum, true positives, false positives, false negatives.
@@ -449,7 +450,7 @@ def _panoptic_quality_compute(
     true_positives: Tensor,
     false_positives: Tensor,
     false_negatives: Tensor,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Compute the final panoptic quality from interim values.
 
     Args:

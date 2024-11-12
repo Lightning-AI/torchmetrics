@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, Dict, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Callable, Optional, Union
 
 from torch import Tensor, tensor
 from typing_extensions import Literal
@@ -87,7 +88,7 @@ class PermutationInvariantTraining(Metric):
         eval_func: Literal["max", "min"] = "max",
         **kwargs: Any,
     ) -> None:
-        base_kwargs: Dict[str, Any] = {
+        base_kwargs: dict[str, Any] = {
             "dist_sync_on_step": kwargs.pop("dist_sync_on_step", False),
             "process_group": kwargs.pop("process_group", None),
             "dist_sync_fn": kwargs.pop("dist_sync_fn", None),

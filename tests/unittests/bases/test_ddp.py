@@ -27,6 +27,7 @@ from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_PROCESSES, USE_PYTEST_POOL
 from unittests._helpers import seed_all
 from unittests._helpers.testers import DummyListMetric, DummyMetric, DummyMetricSum
+from unittests.conftest import setup_ddp
 
 seed_all(42)
 
@@ -102,6 +103,47 @@ def _test_ddp_compositional_tensor(rank: int, worldsize: int = NUM_PROCESSES) ->
 )
 def test_ddp(process):
     """Test ddp functions."""
+    pytest.pool.map(process, range(NUM_PROCESSES))
+
+
+def _test_ddp_gather_all_autograd_same_shape(rank: int, worldsize: int = NUM_PROCESSES) -> None:
+    """Test that ddp gather preserves local rank's autograd graph for same-shaped tensors across ranks."""
+    setup_ddp(rank, worldsize)
+    x = (rank + 1) * torch.ones(10, requires_grad=True)
+
+    # random linear transformation, it should really not matter what we do here
+    a, b = torch.randn(1), torch.randn(1)
+    y = a * x + b  # gradient of y w.r.t. x is a
+
+    result = gather_all_tensors(y)
+    assert len(result) == worldsize
+    grad = torch.autograd.grad(result[rank].sum(), x)[0]
+    assert torch.allclose(grad, a * torch.ones_like(x))
+
+
+def _test_ddp_gather_all_autograd_different_shape(rank: int, worldsize: int = NUM_PROCESSES) -> None:
+    """Test that ddp gather preserves local rank's autograd graph for differently-shaped tensors across ranks."""
+    setup_ddp(rank, worldsize)
+    x = (rank + 1) * torch.ones(rank + 1, 2 - rank, requires_grad=True)
+
+    # random linear transformation, it should really not matter what we do here
+    a, b = torch.randn(1), torch.randn(1)
+    y = a * x + b  # gradient of y w.r.t. x is a
+
+    result = gather_all_tensors(y)
+    assert len(result) == worldsize
+    grad = torch.autograd.grad(result[rank].sum(), x)[0]
+    assert torch.allclose(grad, a * torch.ones_like(x))
+
+
+@pytest.mark.DDP()
+@pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
+@pytest.mark.skipif(not USE_PYTEST_POOL, reason="DDP pool is not available.")
+@pytest.mark.parametrize(
+    "process", [_test_ddp_gather_all_autograd_same_shape, _test_ddp_gather_all_autograd_different_shape]
+)
+def test_ddp_autograd(process):
+    """Test ddp functions for autograd compatibility."""
     pytest.pool.map(process, range(NUM_PROCESSES))
 
 

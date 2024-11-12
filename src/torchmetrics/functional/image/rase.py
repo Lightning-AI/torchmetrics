@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple
 
 import torch
 from torch import Tensor
@@ -23,7 +22,7 @@ from torchmetrics.functional.image.utils import _uniform_filter
 
 def _rase_update(
     preds: Tensor, target: Tensor, window_size: int, rmse_map: Tensor, target_sum: Tensor, total_images: Tensor
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor]:
     """Calculate the sum of RMSE map values for the batch of examples and update intermediate states.
 
     Args:

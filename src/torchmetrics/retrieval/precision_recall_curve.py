@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -34,7 +35,7 @@ def _retrieval_recall_at_fixed_precision(
     recall: Tensor,
     top_k: Tensor,
     min_precision: float,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Compute maximum recall with condition that corresponding precision >= `min_precision`.
 
     Args:
@@ -201,7 +202,7 @@ class RetrievalPrecisionRecallCurve(Metric):
         self.preds.append(preds)
         self.target.append(target)
 
-    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+    def compute(self) -> tuple[Tensor, Tensor, Tensor]:
         """Compute metric."""
         # concat all data
         indexes = dim_zero_cat(self.indexes)
@@ -256,7 +257,7 @@ class RetrievalPrecisionRecallCurve(Metric):
 
     def plot(
         self,
-        curve: Optional[Tuple[Tensor, Tensor, Tensor]] = None,
+        curve: Optional[tuple[Tensor, Tensor, Tensor]] = None,
         ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -303,9 +304,10 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
     - ``indexes`` (:class:`~torch.Tensor`): A long tensor of shape ``(N, ...)`` which indicate to which query a
       prediction belongs
 
-    .. note:: All ``indexes``, ``preds`` and ``target`` must have the same dimension.
+    .. important::
+         All ``indexes``, ``preds`` and ``target`` must have the same dimension.
 
-    .. note::
+    .. attention::
         Predictions will be first grouped by ``indexes`` and then `RetrievalRecallAtFixedPrecision`
         will be computed as the mean of the `RetrievalRecallAtFixedPrecision` over each query.
 
@@ -379,7 +381,7 @@ class RetrievalRecallAtFixedPrecision(RetrievalPrecisionRecallCurve):
 
         self.min_precision = min_precision
 
-    def compute(self) -> Tuple[Tensor, Tensor]:  # type: ignore[override]
+    def compute(self) -> tuple[Tensor, Tensor]:  # type: ignore[override]
         """Compute metric."""
         precisions, recalls, top_k = super().compute()
 

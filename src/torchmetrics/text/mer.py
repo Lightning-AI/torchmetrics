@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -83,8 +84,8 @@ class MatchErrorRate(Metric):
 
     def update(
         self,
-        preds: Union[str, List[str]],
-        target: Union[str, List[str]],
+        preds: Union[str, list[str]],
+        target: Union[str, list[str]],
     ) -> None:
         """Update state with predictions and targets."""
         errors, total = _mer_update(preds, target)

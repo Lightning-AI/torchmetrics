@@ -28,6 +28,7 @@ from torchmetrics.utilities.imports import (
     _ONNXRUNTIME_AVAILABLE,
     _PESQ_AVAILABLE,
     _PYSTOI_AVAILABLE,
+    _REQUESTS_AVAILABLE,
     _SCIPI_AVAILABLE,
     _TORCHAUDIO_AVAILABLE,
 )
@@ -68,3 +69,8 @@ if _LIBROSA_AVAILABLE and _ONNXRUNTIME_AVAILABLE:
     from torchmetrics.audio.dnsmos import DeepNoiseSuppressionMeanOpinionScore
 
     __all__ += ["DeepNoiseSuppressionMeanOpinionScore"]
+
+if _LIBROSA_AVAILABLE and _REQUESTS_AVAILABLE:
+    from torchmetrics.audio.nisqa import NonIntrusiveSpeechQualityAssessment
+
+    __all__ += ["NonIntrusiveSpeechQualityAssessment"]
