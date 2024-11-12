@@ -54,9 +54,9 @@ jobs:
           - { os: "windows-2022", python-version: "3.10", pytorch-version: "2.0.1" }
           - { os: "windows-2022", python-version: "3.12", pytorch-version: "2.5.0" }
           # Future released version
-          #- { os: "ubuntu-22.04", python-version: "3.11", pytorch-version: "2.5.0" }
-          #- { os: "macOS-14", python-version: "3.11", pytorch-version: "2.5.0" }
-          #- { os: "windows-2022", python-version: "3.11", pytorch-version: "2.5.0" }
+          - { os: "ubuntu-22.04", python-version: "3.11", pytorch-version: "2.6.0" }
+          - { os: "macOS-14", python-version: "3.11", pytorch-version: "2.6.0" }
+          - { os: "windows-2022", python-version: "3.11", pytorch-version: "2.6.0" }
     env:
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
       PYPI_CACHE_DIR: "_ci-cache_PyPI"
