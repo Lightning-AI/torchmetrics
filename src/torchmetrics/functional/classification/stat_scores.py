@@ -326,7 +326,7 @@ def _multiclass_stat_scores_format(
     preds: Tensor,
     target: Tensor,
     top_k: int = 1,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Convert all input to label format except if ``top_k`` is not 1.
 
     - Applies argmax if preds have one more dimension than target
