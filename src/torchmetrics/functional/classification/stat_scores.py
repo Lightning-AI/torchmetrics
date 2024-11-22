@@ -311,22 +311,22 @@ def _multiclass_stat_scores_tensor_validation(
             "Either `preds` and `target` both should have the (same) shape (N, ...), or `target` should be (N, ...)"
             " and `preds` should be (N, C, ...)."
         )
-
-    check_value = num_classes if ignore_index is None else num_classes + 1
-    for t, name in ((target, "target"),) + ((preds, "preds"),) if not preds.is_floating_point() else ():  # noqa: RUF005
-        num_unique_values = len(torch.unique(t, dim=None))
-        if num_unique_values > check_value:
-            raise RuntimeError(
-                f"Detected more unique values in `{name}` than expected. Expected only {check_value} but found"
-                f" {num_unique_values} in `{name}`. Found values: {torch.unique(t, dim=None)}."
-            )
+    if num_classes is not None:
+        check_value = num_classes if ignore_index is None else num_classes + 1
+        for t, name in ((target, "target"),) + ((preds, "preds"),) if not preds.is_floating_point() else ():  # noqa: RUF005
+            num_unique_values = len(torch.unique(t, dim=None))
+            if num_unique_values > check_value:
+                raise RuntimeError(
+                    f"Detected more unique values in `{name}` than expected. Expected only {check_value} but found"
+                    f" {num_unique_values} in `{name}`. Found values: {torch.unique(t, dim=None)}."
+                )
 
 
 def _multiclass_stat_scores_format(
     preds: Tensor,
     target: Tensor,
     top_k: int = 1,
-) -> tuple[Tensor, Tensor]:
+) -> Tuple[Tensor, Tensor]:
     """Convert all input to label format except if ``top_k`` is not 1.
 
     - Applies argmax if preds have one more dimension than target

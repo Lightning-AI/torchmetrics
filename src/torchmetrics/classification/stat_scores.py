@@ -307,7 +307,7 @@ class MulticlassStatScores(_AbstractStatScores):
 
     def __init__(
         self,
-        num_classes: int,
+        num_classes: Optional[int] = None,
         top_k: int = 1,
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         multidim_average: Literal["global", "samplewise"] = "global",

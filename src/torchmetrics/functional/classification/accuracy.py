@@ -166,7 +166,7 @@ def binary_accuracy(
 def multiclass_accuracy(
     preds: Tensor,
     target: Tensor,
-    num_classes: int,
+    num_classes: Optional[int] = None,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     top_k: int = 1,
     multidim_average: Literal["global", "samplewise"] = "global",
