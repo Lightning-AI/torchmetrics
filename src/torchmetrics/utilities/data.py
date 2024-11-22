@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 import torch
 from lightning_utilities import apply_to_collection
@@ -60,7 +61,7 @@ def _flatten(x: Sequence) -> list:
     return [item for sublist in x for item in sublist]
 
 
-def _flatten_dict(x: Dict) -> Tuple[Dict, bool]:
+def _flatten_dict(x: dict) -> tuple[dict, bool]:
     """Flatten dict of dicts into single dict and checking for duplicates in keys along the way."""
     new_dict = {}
     duplicates = False
@@ -241,3 +242,28 @@ def allclose(tensor1: Tensor, tensor2: Tensor) -> bool:
     if tensor1.dtype != tensor2.dtype:
         tensor2 = tensor2.to(dtype=tensor1.dtype)
     return torch.allclose(tensor1, tensor2)
+
+
+def interp(x: Tensor, xp: Tensor, fp: Tensor) -> Tensor:
+    """Interpolation function comparable to numpy.interp.
+
+    Args:
+        x: x-coordinates where to evaluate the interpolated values
+        xp: x-coordinates of the data points
+        fp: y-coordinates of the data points
+
+    """
+    # Sort xp and fp based on xp for compatibility with np.interp
+    sorted_indices = torch.argsort(xp)
+    xp = xp[sorted_indices]
+    fp = fp[sorted_indices]
+
+    # Calculate slopes for each interval
+    slopes = (fp[1:] - fp[:-1]) / (xp[1:] - xp[:-1])
+
+    # Identify where x falls relative to xp
+    indices = torch.searchsorted(xp, x) - 1
+    indices = torch.clamp(indices, 0, len(slopes) - 1)
+
+    # Compute interpolated values
+    return fp[indices] + slopes[indices] * (x - xp[indices])

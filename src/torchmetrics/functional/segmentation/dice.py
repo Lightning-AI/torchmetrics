@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -46,15 +46,16 @@ def _dice_score_update(
     num_classes: int,
     include_background: bool,
     input_format: Literal["one-hot", "index"] = "one-hot",
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor]:
     """Update the state with the current prediction and target."""
     _check_same_shape(preds, target)
-    if preds.ndim < 3:
-        raise ValueError(f"Expected both `preds` and `target` to have at least 3 dimensions, but got {preds.ndim}.")
 
     if input_format == "index":
         preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
         target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
+
+    if preds.ndim < 3:
+        raise ValueError(f"Expected both `preds` and `target` to have at least 3 dimensions, but got {preds.ndim}.")
 
     if not include_background:
         preds, target = _ignore_background(preds, target)

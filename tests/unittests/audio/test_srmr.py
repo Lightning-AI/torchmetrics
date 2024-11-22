@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 import torch
@@ -30,7 +30,7 @@ preds = torch.rand(2, 2, 8000)
 
 
 def _reference_srmr_batch(
-    preds: Tensor, target: Tensor, fs: int, fast: bool, norm: bool, reduce_mean: bool = False, **kwargs: Dict[str, Any]
+    preds: Tensor, target: Tensor, fs: int, fast: bool, norm: bool, reduce_mean: bool = False, **kwargs: dict[str, Any]
 ):
     # shape: preds [BATCH_SIZE, Time]
     shape = preds.shape
@@ -51,7 +51,7 @@ def _reference_srmr_batch(
     return srmr
 
 
-def _speech_reverberation_modulation_energy_ratio_cheat(preds, target, **kwargs: Dict[str, Any]):
+def _speech_reverberation_modulation_energy_ratio_cheat(preds, target, **kwargs: dict[str, Any]):
     # cheat the MetricTester as the speech_reverberation_modulation_energy_ratio doesn't need target
     return speech_reverberation_modulation_energy_ratio(preds, **kwargs)
 

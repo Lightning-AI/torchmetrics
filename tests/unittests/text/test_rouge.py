@@ -13,8 +13,9 @@
 # limitations under the License.
 
 import re
+from collections.abc import Sequence
 from functools import partial
-from typing import Callable, Sequence, Union
+from typing import Callable, Union
 
 import pytest
 import torch

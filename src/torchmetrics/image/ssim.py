@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -92,7 +93,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         sigma: Union[float, Sequence[float]] = 1.5,
         kernel_size: Union[int, Sequence[int]] = 11,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        data_range: Optional[Union[float, Tuple[float, float]]] = None,
+        data_range: Optional[Union[float, tuple[float, float]]] = None,
         k1: float = 0.01,
         k2: float = 0.03,
         return_full_image: bool = False,
@@ -155,7 +156,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         else:
             self.similarity.append(similarity)
 
-    def compute(self) -> Union[Tensor, Tuple[Tensor, Tensor]]:
+    def compute(self) -> Union[Tensor, tuple[Tensor, Tensor]]:
         """Compute SSIM over state."""
         if self.reduction == "elementwise_mean":
             similarity = self.similarity / self.total
@@ -293,10 +294,10 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         kernel_size: Union[int, Sequence[int]] = 11,
         sigma: Union[float, Sequence[float]] = 1.5,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        data_range: Optional[Union[float, Tuple[float, float]]] = None,
+        data_range: Optional[Union[float, tuple[float, float]]] = None,
         k1: float = 0.01,
         k2: float = 0.03,
-        betas: Tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
+        betas: tuple[float, ...] = (0.0448, 0.2856, 0.3001, 0.2363, 0.1333),
         normalize: Literal["relu", "simple", None] = "relu",
         **kwargs: Any,
     ) -> None:

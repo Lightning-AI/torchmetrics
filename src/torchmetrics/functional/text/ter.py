@@ -34,8 +34,9 @@
 # limitations under the License.
 
 import re
+from collections.abc import Iterator, Sequence
 from functools import lru_cache
-from typing import Dict, Iterator, List, Optional, Sequence, Tuple, Type, Union
+from typing import List, Optional, Union
 
 from torch import Tensor, tensor
 
@@ -150,7 +151,7 @@ class _TercomTokenizer:
         return sentence
 
     @classmethod
-    def _normalize_asian(cls: Type["_TercomTokenizer"], sentence: str) -> str:
+    def _normalize_asian(cls: type["_TercomTokenizer"], sentence: str) -> str:
         """Split Chinese chars and Japanese kanji down to character level."""
         # 4E00—9FFF CJK Unified Ideographs
         # 3400—4DBF CJK Unified Ideographs Extension A
@@ -182,7 +183,7 @@ class _TercomTokenizer:
         return re.sub(r"[\.,\?:;!\"\(\)]", "", sentence)
 
     @classmethod
-    def _remove_asian_punct(cls: Type["_TercomTokenizer"], sentence: str) -> str:
+    def _remove_asian_punct(cls: type["_TercomTokenizer"], sentence: str) -> str:
         """Remove asian punctuation from an input sentence string."""
         sentence = re.sub(cls._ASIAN_PUNCTUATION, r"", sentence)
         return re.sub(cls._FULL_WIDTH_PUNCTUATION, r"", sentence)
@@ -202,7 +203,7 @@ def _preprocess_sentence(sentence: str, tokenizer: _TercomTokenizer) -> str:
     return tokenizer(sentence.rstrip())
 
 
-def _find_shifted_pairs(pred_words: List[str], target_words: List[str]) -> Iterator[Tuple[int, int, int]]:
+def _find_shifted_pairs(pred_words: list[str], target_words: list[str]) -> Iterator[tuple[int, int, int]]:
     """Find matching word sub-sequences in two lists of words. Ignores sub- sequences starting at the same position.
 
     Args:
@@ -242,9 +243,9 @@ def _find_shifted_pairs(pred_words: List[str], target_words: List[str]) -> Itera
 
 
 def _handle_corner_cases_during_shifting(
-    alignments: Dict[int, int],
-    pred_errors: List[int],
-    target_errors: List[int],
+    alignments: dict[int, int],
+    pred_errors: list[int],
+    target_errors: list[int],
     pred_start: int,
     target_start: int,
     length: int,
@@ -275,7 +276,7 @@ def _handle_corner_cases_during_shifting(
     return pred_start <= alignments[target_start] < pred_start + length
 
 
-def _perform_shift(words: List[str], start: int, length: int, target: int) -> List[str]:
+def _perform_shift(words: list[str], start: int, length: int, target: int) -> list[str]:
     """Perform a shift in ``words`` from ``start`` to ``target``.
 
     Args:
@@ -289,13 +290,13 @@ def _perform_shift(words: List[str], start: int, length: int, target: int) -> Li
 
     """
 
-    def _shift_word_before_previous_position(words: List[str], start: int, target: int, length: int) -> List[str]:
+    def _shift_word_before_previous_position(words: list[str], start: int, target: int, length: int) -> list[str]:
         return words[:target] + words[start : start + length] + words[target:start] + words[start + length :]
 
-    def _shift_word_after_previous_position(words: List[str], start: int, target: int, length: int) -> List[str]:
+    def _shift_word_after_previous_position(words: list[str], start: int, target: int, length: int) -> list[str]:
         return words[:start] + words[start + length : target] + words[start : start + length] + words[target:]
 
-    def _shift_word_within_shifted_string(words: List[str], start: int, target: int, length: int) -> List[str]:
+    def _shift_word_within_shifted_string(words: list[str], start: int, target: int, length: int) -> list[str]:
         shifted_words = words[:start]
         shifted_words += words[start + length : length + target]
         shifted_words += words[start : start + length]
@@ -310,11 +311,11 @@ def _perform_shift(words: List[str], start: int, length: int, target: int) -> Li
 
 
 def _shift_words(
-    pred_words: List[str],
-    target_words: List[str],
+    pred_words: list[str],
+    target_words: list[str],
     cached_edit_distance: _LevenshteinEditDistance,
     checked_candidates: int,
-) -> Tuple[int, List[str], int]:
+) -> tuple[int, list[str], int]:
     """Attempt to shift words to match a hypothesis with a reference.
 
     It returns the lowest number of required edits between a hypothesis and a provided reference, a list of shifted
@@ -342,7 +343,7 @@ def _shift_words(
     trace = _flip_trace(inverted_trace)
     alignments, target_errors, pred_errors = _trace_to_alignment(trace)
 
-    best: Optional[Tuple[int, int, int, int, List[str]]] = None
+    best: Optional[tuple[int, int, int, int, list[str]]] = None
 
     for pred_start, target_start, length in _find_shifted_pairs(pred_words, target_words):
         if _handle_corner_cases_during_shifting(
@@ -390,7 +391,7 @@ def _shift_words(
     return best_score, shifted_words, checked_candidates
 
 
-def _translation_edit_rate(pred_words: List[str], target_words: List[str]) -> Tensor:
+def _translation_edit_rate(pred_words: list[str], target_words: list[str]) -> Tensor:
     """Compute translation edit rate between hypothesis and reference sentences.
 
     Args:
@@ -425,7 +426,7 @@ def _translation_edit_rate(pred_words: List[str], target_words: List[str]) -> Te
     return tensor(total_edits)
 
 
-def _compute_sentence_statistics(pred_words: List[str], target_words: List[List[str]]) -> Tuple[Tensor, Tensor]:
+def _compute_sentence_statistics(pred_words: list[str], target_words: list[list[str]]) -> tuple[Tensor, Tensor]:
     """Compute sentence TER statistics between hypothesis and provided references.
 
     Args:
@@ -477,7 +478,7 @@ def _ter_update(
     total_num_edits: Tensor,
     total_tgt_length: Tensor,
     sentence_ter: Optional[List[Tensor]] = None,
-) -> Tuple[Tensor, Tensor, Optional[List[Tensor]]]:
+) -> tuple[Tensor, Tensor, Optional[List[Tensor]]]:
     """Update TER statistics.
 
     Args:
@@ -504,8 +505,8 @@ def _ter_update(
     target, preds = _validate_inputs(target, preds)
 
     for pred, tgt in zip(preds, target):
-        tgt_words_: List[List[str]] = [_preprocess_sentence(_tgt, tokenizer).split() for _tgt in tgt]
-        pred_words_: List[str] = _preprocess_sentence(pred, tokenizer).split()
+        tgt_words_: list[list[str]] = [_preprocess_sentence(_tgt, tokenizer).split() for _tgt in tgt]
+        pred_words_: list[str] = _preprocess_sentence(pred, tokenizer).split()
         num_edits, tgt_length = _compute_sentence_statistics(pred_words_, tgt_words_)
         total_num_edits += num_edits
         total_tgt_length += tgt_length
@@ -536,7 +537,7 @@ def translation_edit_rate(
     lowercase: bool = True,
     asian_support: bool = False,
     return_sentence_level_score: bool = False,
-) -> Union[Tensor, Tuple[Tensor, List[Tensor]]]:
+) -> Union[Tensor, tuple[Tensor, List[Tensor]]]:
     """Calculate Translation edit rate (`TER`_)  of machine translated text with one or more references.
 
     This implementation follows the implementations from

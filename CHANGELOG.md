@@ -12,46 +12,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added `NormalizedRootMeanSquaredError` metric to regression subpackage ([#2442](https://github.com/Lightning-AI/torchmetrics/pull/2442))
-
-
-- Added `NegativePredictiveValue` to classification metrics ([#2433](https://github.com/Lightning-AI/torchmetrics/pull/2433))
-
-
-- Added method `merge_state` to `Metric` ([#2786](https://github.com/Lightning-AI/torchmetrics/pull/2786))
-
-
-- Added a new audio metric `NISQA` ([#2792](https://github.com/PyTorchLightning/metrics/pull/2792))
-
-
-- Added `Dice` metric to segmentation metrics ([#2725](https://github.com/Lightning-AI/torchmetrics/pull/2725))
-
-
-- Added support for propagation of the autograd graph in ddp setting ([#2754](https://github.com/Lightning-AI/torchmetrics/pull/2754))
+-
 
 
 ### Changed
 
-- Changed naming and input order arguments in `KLDivergence` ([#2800](https://github.com/Lightning-AI/torchmetrics/pull/2800))
-
-
-### Deprecated
-
-- Deprecated Dice from classification metrics ([#2725](https://github.com/Lightning-AI/torchmetrics/pull/2725))
+-
 
 
 ### Removed
 
-- Changed minimum supported Pytorch version to 2.0 ([#2671](https://github.com/Lightning-AI/torchmetrics/pull/2671))
-
-
-- Removed `num_outputs` in `R2Score` ([#2800](https://github.com/Lightning-AI/torchmetrics/pull/2800))
+-
 
 ### Fixed
 
 - Fixed mixed results of `rouge_score` with `accumulate='best'` ([#2830](https://github.com/Lightning-AI/torchmetrics/pull/2830))
 
 - Fixed `top_k` for `multiclassf1score` is not working correctly([#1653](https://github.com/Lightning-AI/torchmetrics/issues/1653))
+
+## [1.6.0] - 2024-11-12
+
+### Added
+
+- Added audio metric `NISQA` ([#2792](https://github.com/PyTorchLightning/metrics/pull/2792))
+- Added classification metric `LogAUC` ([#2377](https://github.com/Lightning-AI/torchmetrics/pull/2377))
+- Added classification metric `NegativePredictiveValue` ([#2433](https://github.com/Lightning-AI/torchmetrics/pull/2433))
+- Added regression metric `NormalizedRootMeanSquaredError` ([#2442](https://github.com/Lightning-AI/torchmetrics/pull/2442))
+- Added segmentation metric `Dice` ([#2725](https://github.com/Lightning-AI/torchmetrics/pull/2725))
+- Added method `merge_state` to `Metric` ([#2786](https://github.com/Lightning-AI/torchmetrics/pull/2786))
+- Added support for propagation of the autograd graph in ddp setting ([#2754](https://github.com/Lightning-AI/torchmetrics/pull/2754))
+
+### Changed
+
+- Changed naming and input order arguments in `KLDivergence` ([#2800](https://github.com/Lightning-AI/torchmetrics/pull/2800))
+
+### Deprecated
+
+- Deprecated Dice from classification metrics ([#2725](https://github.com/Lightning-AI/torchmetrics/pull/2725))
+
+### Removed
+
+- Changed minimum supported Pytorch version to 2.0 ([#2671](https://github.com/Lightning-AI/torchmetrics/pull/2671))
+- Dropped support for Python 3.8 ([#2827](https://github.com/Lightning-AI/torchmetrics/pull/2827))
+- Removed `num_outputs` in `R2Score` ([#2800](https://github.com/Lightning-AI/torchmetrics/pull/2800))
+
+### Fixed
+
+- Fixed segmentation `Dice` + `GeneralizedDice` for 2d index tensors ([#2832](https://github.com/Lightning-AI/torchmetrics/pull/2832))
+- Fixed mixed results of `rouge_score` with `accumulate='best'` ([#2830](https://github.com/Lightning-AI/torchmetrics/pull/2830))
+
+---
 
 ## [1.5.2] - 2024-11-07
 

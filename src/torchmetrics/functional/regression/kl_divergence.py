@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Tuple, Union
+from typing import Union
 
 import torch
 from torch import Tensor
@@ -22,7 +22,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 from torchmetrics.utilities.compute import _safe_xlogy
 
 
-def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> Tuple[Tensor, int]:
+def _kld_update(p: Tensor, q: Tensor, log_prob: bool) -> tuple[Tensor, int]:
     """Update and returns KL divergence scores for each observation and the total number of observations.
 
     Args:

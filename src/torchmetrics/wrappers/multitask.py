@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # this is just a bypass for this module name collision with built-in one
+from collections.abc import Iterable, Sequence
 from copy import deepcopy
-from typing import Any, Dict, Iterable, Optional, Sequence, Tuple, Union
+from typing import Any, Optional, Union
 
 from torch import Tensor, nn
 
@@ -133,7 +134,7 @@ class MultitaskWrapper(WrapperMetric):
 
     def __init__(
         self,
-        task_metrics: Dict[str, Union[Metric, MetricCollection]],
+        task_metrics: dict[str, Union[Metric, MetricCollection]],
         prefix: Optional[str] = None,
         postfix: Optional[str] = None,
     ) -> None:
@@ -159,7 +160,7 @@ class MultitaskWrapper(WrapperMetric):
             raise ValueError(f"Expected argument `postfix` to either be `None` or a string but got {postfix}")
         self._postfix = postfix or ""
 
-    def items(self, flatten: bool = True) -> Iterable[Tuple[str, nn.Module]]:
+    def items(self, flatten: bool = True) -> Iterable[tuple[str, nn.Module]]:
         """Iterate over task and task metrics.
 
         Args:
@@ -203,7 +204,7 @@ class MultitaskWrapper(WrapperMetric):
             else:
                 yield metric
 
-    def update(self, task_preds: Dict[str, Any], task_targets: Dict[str, Any]) -> None:
+    def update(self, task_preds: dict[str, Any], task_targets: dict[str, Any]) -> None:
         """Update each task's metric with its corresponding pred and target.
 
         Args:
@@ -223,15 +224,15 @@ class MultitaskWrapper(WrapperMetric):
             target = task_targets[task_name]
             metric.update(pred, target)
 
-    def _convert_output(self, output: Dict[str, Any]) -> Dict[str, Any]:
+    def _convert_output(self, output: dict[str, Any]) -> dict[str, Any]:
         """Convert the output of the underlying metrics to a dictionary with the task names as keys."""
         return {f"{self._prefix}{task_name}{self._postfix}": task_output for task_name, task_output in output.items()}
 
-    def compute(self) -> Dict[str, Any]:
+    def compute(self) -> dict[str, Any]:
         """Compute metrics for all tasks."""
         return self._convert_output({task_name: metric.compute() for task_name, metric in self.task_metrics.items()})
 
-    def forward(self, task_preds: Dict[str, Tensor], task_targets: Dict[str, Tensor]) -> Dict[str, Any]:
+    def forward(self, task_preds: dict[str, Tensor], task_targets: dict[str, Tensor]) -> dict[str, Any]:
         """Call underlying forward methods for all tasks and return the result as a dictionary."""
         # This method is overridden because we do not need the complex version defined in Metric, that relies on the
         # value of full_state_update, and that also accumulates the results. Here, all computations are handled by the
@@ -268,7 +269,7 @@ class MultitaskWrapper(WrapperMetric):
         return multitask_copy
 
     def plot(
-        self, val: Optional[Union[Dict, Sequence[Dict]]] = None, axes: Optional[Sequence[_AX_TYPE]] = None
+        self, val: Optional[Union[dict, Sequence[dict]]] = None, axes: Optional[Sequence[_AX_TYPE]] = None
     ) -> Sequence[_PLOT_OUT_TYPE]:
         """Plot a single or multiple values from the metric.
 
@@ -352,7 +353,7 @@ class MultitaskWrapper(WrapperMetric):
         fig_axs = []
         for i, (task_name, task_metric) in enumerate(self.task_metrics.items()):
             ax = axes[i] if axes is not None else None
-            if isinstance(val, Dict):
+            if isinstance(val, dict):
                 f, a = task_metric.plot(val[task_name], ax=ax)
             elif isinstance(val, Sequence):
                 f, a = task_metric.plot([v[task_name] for v in val], ax=ax)
