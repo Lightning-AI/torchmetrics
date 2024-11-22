@@ -51,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed mixed results of `rouge_score` with `accumulate='best'` ([#2830](https://github.com/Lightning-AI/torchmetrics/pull/2830))
 
+- Fixed `top_k` for `multiclassf1score` is not working correctly([#1653](https://github.com/Lightning-AI/torchmetrics/issues/1653))
 
 ## [1.5.2] - 2024-11-07
 
