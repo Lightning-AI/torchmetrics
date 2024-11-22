@@ -390,7 +390,7 @@ _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]]
     ("k", "preds", "target", "average", "expected_fbeta", "expected_f1"),
     [
         (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor(2 / 3), torch.tensor(2 / 3)),
-        (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor(5 / 6), torch.tensor(2 / 3)),
+        (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor(1.0), torch.tensor(1.0)),
     ],
 )
 def test_top_k(
@@ -411,6 +411,69 @@ def test_top_k(
 
     assert torch.isclose(class_metric.compute(), result)
     assert torch.isclose(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)
+
+
+@pytest.mark.parametrize("num_classes", [5])
+def test_multiclassf1score_with_top_k(num_classes):
+    """Test that F1 score increases monotonically with top_k and equals 1 when top_k equals num_classes.
+
+    Args:
+        num_classes: Number of classes in the classification task.
+
+    The test verifies two properties:
+    1. F1 score increases or stays the same as top_k increases
+    2. F1 score equals 1 when top_k equals num_classes
+
+    """
+    # Create test data
+    preds = torch.randn(200, num_classes).softmax(dim=-1)
+    target = torch.randint(num_classes, (200,))
+
+    previous_score = 0.0  # To track the last F1 score
+    for k in range(1, num_classes + 1):
+        # Calculate F1 score with top_k
+        f1_score = MulticlassF1Score(num_classes=num_classes, top_k=k, average="macro")
+        score = f1_score(preds, target)
+
+        # Check if the score increases as top_k increases
+        assert score >= previous_score, f"F1 score did not increase for top_k={k}"
+        previous_score = score
+
+        # Check if F1 score is 1 when top_k equals num_classes
+        if k == num_classes:
+            assert torch.isclose(
+                score, torch.tensor(1.0)
+            ), f"F1 score is not 1 for top_k={k} when num_classes={num_classes}"
+
+
+# def test_MulticlassF1Score_top_k_equivalence(num_classes):
+#     """Issue: https://github.com/Lightning-AI/torchmetrics/issues/1653"""
+#     # Create test data
+#     preds = torch.randn(200, num_classes).softmax(dim=-1)
+#     target = torch.randint(num_classes, (200,))
+
+#     # Initialize metrics
+#     f1_val_top3 = MulticlassF1Score(num_classes=5, top_k=3, average="macro")
+#     f1_val_top1 = MulticlassF1Score(num_classes=5, top_k=1, average="macro")
+
+#     # Get top-k predictions
+#     pred_top_3 = torch.argsort(preds, dim=1, descending=True)[:, :3]
+#     pred_top_1 = pred_top_3[:, 0]
+
+#     # Correct predictions if target is in top-3
+#     pred_corrected_top3 = torch.where(
+#         functorch.vmap(lambda t1, t2: torch.isin(t1, t2))(target, pred_top_3),
+#         target,
+#         pred_top_1
+#     )
+
+#     # Calculate F1 scores
+#     score_top3 = f1_val_top3(preds, target)
+#     score_corrected = f1_val_top1(pred_corrected_top3, target)
+
+#     # Assert that both methods give the same result
+#     assert torch.isclose(score_top3, score_corrected), \
+#         f"Top-3 F1 score ({score_top3}) does not match corrected top-1 F1 score ({score_corrected})"
 
 
 def _reference_sklearn_fbeta_score_multilabel_global(preds, target, sk_fn, ignore_index, average, zero_division):
