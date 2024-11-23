@@ -341,51 +341,28 @@ def _multiclass_stat_scores_format(
     return preds, target
 
 
-def refine_preds_oh(preds: Tensor, preds_oh: Tensor, target_oh: Tensor) -> Tensor:
+def refine_preds_oh(preds: Tensor, preds_oh: Tensor, target: Tensor, top_k: int) -> Tensor:
     """Refines prediction one-hot encodings by replacing entries with target one-hot when there's an intersection.
 
-    When no intersection is found, creates a one-hot encoding for the max prediction.
+    When no intersection is found between the top-k predictions and target, uses the top-1 prediction.
 
     Args:
-        preds: Original prediction tensor
-        preds_oh: Current one-hot encoded predictions
-        target_oh: Target one-hot encoded tensor
+        preds: Original prediction tensor with probabilities/logits
+        preds_oh: Current one-hot encoded predictions from top-k selection
+        target: Target tensor with class indices
+        top_k: Number of top predictions to consider
 
     Returns:
         Refined one-hot encoded predictions tensor
 
     """
-    preds_oh_squeezed = preds_oh.squeeze()
-    target_oh_squeezed = target_oh.squeeze()
-
-    preds_oh_mask = preds_oh_squeezed == 1
-    target_oh_mask = target_oh_squeezed == 1
-    intersection_mask = torch.logical_and(preds_oh_mask, target_oh_mask)
-
-    new_preds_oh = preds_oh.clone()
-
-    # Find samples with any intersection
-    samples_with_intersection = torch.any(intersection_mask, dim=1)
-    target_oh_matched = target_oh.clone().to(new_preds_oh.dtype)
-
-    # Replace those samples with corresponding target_oh
-    new_preds_oh[samples_with_intersection] = target_oh_matched[samples_with_intersection]
-
-    no_intersection_samples = ~samples_with_intersection
-
-    # Create one-hot encodings for max predictions in preds in non-intersecting samples
-    if torch.any(no_intersection_samples):
-        # Get max indices for samples with no intersection
-        max_indices = torch.argmax(preds[no_intersection_samples], dim=1)
-
-        # Create one-hot encodings
-        max_one_hot = torch.zeros_like(new_preds_oh[no_intersection_samples], dtype=new_preds_oh.dtype)
-        max_one_hot.scatter_(-1, max_indices.unsqueeze(-1), 1)
-
-        # Replace non-intersecting samples
-        new_preds_oh[no_intersection_samples] = max_one_hot
-
-    return new_preds_oh
+    preds = preds.squeeze()
+    target = target.squeeze()
+    top_k_indices = torch.topk(preds, k=top_k, dim=1).indices
+    top_1_indices = top_k_indices[:, 0]
+    target_in_topk = torch.any(top_k_indices == target.unsqueeze(1), dim=1)
+    result = torch.where(target_in_topk, target, top_1_indices)
+    return torch.zeros_like(preds_oh, dtype=torch.int32).scatter_(-1, result.unsqueeze(1).unsqueeze(1), 1)
 
 
 def _multiclass_stat_scores_update(
@@ -417,16 +394,17 @@ def _multiclass_stat_scores_update(
             idx = idx.unsqueeze(1).repeat(1, num_classes, 1) if preds.ndim > target.ndim else idx
             preds[idx] = num_classes
 
-        target_oh = torch.nn.functional.one_hot(
-            target.long(), num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
-        )
         if top_k > 1:
             preds_oh = torch.movedim(select_topk(preds, topk=top_k, dim=1), 1, -1)
-            preds_oh = refine_preds_oh(preds, preds_oh, target_oh)
+            preds_oh = refine_preds_oh(preds, preds_oh, target, top_k)
         else:
             preds_oh = torch.nn.functional.one_hot(
                 preds.long(), num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
             )
+
+        target_oh = torch.nn.functional.one_hot(
+            target.long(), num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
+        )
 
         if ignore_index is not None:
             if 0 <= ignore_index <= num_classes - 1:
