@@ -385,19 +385,19 @@ def test_top_k_multiclass(k, preds, target, average, expected):
     )
 
 
-# def test_top_k_ignore_index_multiclass():
-#     """Test that top_k argument works together with ignore_index."""
-#     preds_without = torch.randn(10, 3).softmax(dim=-1)
-#     target_without = torch.randint(3, (10,))
-#     preds_with = torch.cat([preds_without, torch.randn(10, 3).softmax(dim=-1)], 0)
-#     target_with = torch.cat([target_without, -100 * torch.ones(10)], 0).long()
+def test_top_k_ignore_index_multiclass():
+    """Test that top_k argument works together with ignore_index."""
+    preds_without = torch.randn(10, 3).softmax(dim=-1)
+    target_without = torch.randint(3, (10,))
+    preds_with = torch.cat([preds_without, torch.randn(10, 3).softmax(dim=-1)], 0)
+    target_with = torch.cat([target_without, -100 * torch.ones(10)], 0).long()
 
-#     res_without = multiclass_stat_scores(preds_without, target_without, num_classes=3, average="micro", top_k=2)
-#     res_with = multiclass_stat_scores(
-#         preds_with, target_with, num_classes=3, average="micro", top_k=2, ignore_index=-100
-#     )
+    res_without = multiclass_stat_scores(preds_without, target_without, num_classes=3, average="micro", top_k=2)
+    res_with = multiclass_stat_scores(
+        preds_with, target_with, num_classes=3, average="micro", top_k=2, ignore_index=-100
+    )
 
-#     assert torch.allclose(res_without, res_with)
+    assert torch.allclose(res_without, res_with)
 
 
 def test_multiclass_overflow():
