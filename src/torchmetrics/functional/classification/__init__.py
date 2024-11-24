@@ -71,11 +71,18 @@ from torchmetrics.functional.classification.jaccard import (
     multiclass_jaccard_index,
     multilabel_jaccard_index,
 )
+from torchmetrics.functional.classification.logauc import binary_logauc, logauc, multiclass_logauc, multilabel_logauc
 from torchmetrics.functional.classification.matthews_corrcoef import (
     binary_matthews_corrcoef,
     matthews_corrcoef,
     multiclass_matthews_corrcoef,
     multilabel_matthews_corrcoef,
+)
+from torchmetrics.functional.classification.negative_predictive_value import (
+    binary_negative_predictive_value,
+    multiclass_negative_predictive_value,
+    multilabel_negative_predictive_value,
+    negative_predictive_value,
 )
 from torchmetrics.functional.classification.precision_fixed_recall import (
     binary_precision_at_fixed_recall,
@@ -234,4 +241,12 @@ __all__ = [
     "demographic_parity",
     "equal_opportunity",
     "precision_at_fixed_recall",
+    "binary_logauc",
+    "multiclass_logauc",
+    "multilabel_logauc",
+    "logauc",
+    "binary_negative_predictive_value",
+    "multiclass_negative_predictive_value",
+    "multilabel_negative_predictive_value",
+    "negative_predictive_value",
 ]

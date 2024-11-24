@@ -57,11 +57,18 @@ from torchmetrics.classification.jaccard import (
     MulticlassJaccardIndex,
     MultilabelJaccardIndex,
 )
+from torchmetrics.classification.logauc import BinaryLogAUC, LogAUC, MulticlassLogAUC, MultilabelLogAUC
 from torchmetrics.classification.matthews_corrcoef import (
     BinaryMatthewsCorrCoef,
     MatthewsCorrCoef,
     MulticlassMatthewsCorrCoef,
     MultilabelMatthewsCorrCoef,
+)
+from torchmetrics.classification.negative_predictive_value import (
+    BinaryNegativePredictiveValue,
+    MulticlassNegativePredictiveValue,
+    MultilabelNegativePredictiveValue,
+    NegativePredictiveValue,
 )
 from torchmetrics.classification.precision_fixed_recall import (
     BinaryPrecisionAtFixedRecall,
@@ -217,4 +224,12 @@ __all__ = [
     "MulticlassSensitivityAtSpecificity",
     "MultilabelSensitivityAtSpecificity",
     "SensitivityAtSpecificity",
+    "BinaryLogAUC",
+    "LogAUC",
+    "MulticlassLogAUC",
+    "MultilabelLogAUC",
+    "BinaryNegativePredictiveValue",
+    "MulticlassNegativePredictiveValue",
+    "MultilabelNegativePredictiveValue",
+    "NegativePredictiveValue",
 ]

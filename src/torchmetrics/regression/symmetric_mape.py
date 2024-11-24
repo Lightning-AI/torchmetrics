@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor, tensor
 
@@ -41,7 +42,7 @@ class SymmetricMeanAbsolutePercentageError(Metric):
 
     As output of ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``smape`` (:class:`~torch.Tensor`): A tensor with non-negative floating point smape value between 0 and 1
+    - ``smape`` (:class:`~torch.Tensor`): A tensor with non-negative floating point smape value between 0 and 2
 
     Args:
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
@@ -60,6 +61,7 @@ class SymmetricMeanAbsolutePercentageError(Metric):
     higher_is_better: bool = False
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
+    plot_upper_bound: float = 2.0
 
     sum_abs_per_error: Tensor
     total: Tensor

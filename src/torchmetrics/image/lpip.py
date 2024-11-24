@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, ClassVar, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, ClassVar, Optional, Union
 
 import torch
 from torch import Tensor
@@ -47,11 +48,9 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     Both input image patches are expected to have shape ``(N, 3, H, W)``. The minimum size of `H, W` depends on the
     chosen backbone (see `net_type` arg).
 
-    .. note:: using this metrics requires you to have ``torchvision`` package installed. Either install as
+    .. hint::
+        Using this metrics requires you to have ``torchvision`` package installed. Either install as
         ``pip install torchmetrics[image]`` or ``pip install torchvision``.
-
-    .. note:: this metric is not scriptable when using ``torch<1.8``. Please update your pytorch installation
-        if this is a issue.
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -100,7 +99,7 @@ class LearnedPerceptualImagePatchSimilarity(Metric):
     feature_network: str = "net"
 
     # due to the use of named tuple in the backbone the net variable cannot be scripted
-    __jit_ignored_attributes__: ClassVar[List[str]] = ["net"]
+    __jit_ignored_attributes__: ClassVar[list[str]] = ["net"]
 
     def __init__(
         self,

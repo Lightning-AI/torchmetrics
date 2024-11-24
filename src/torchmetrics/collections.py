@@ -13,8 +13,9 @@
 # limitations under the License.
 # this is just a bypass for this module name collision with built-in one
 from collections import OrderedDict
+from collections.abc import Hashable, Iterable, Iterator, Mapping, Sequence
 from copy import deepcopy
-from typing import Any, Dict, Hashable, Iterable, Iterator, List, Optional, Sequence, Tuple, Union
+from typing import Any, ClassVar, Dict, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -29,6 +30,30 @@ from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MetricCollection.plot", "MetricCollection.plot_all"]
+
+
+def _remove_prefix(string: str, prefix: str) -> str:
+    """Patch for older version with missing method `removeprefix`.
+
+    >>> _remove_prefix("prefix_string", "prefix_")
+    'string'
+    >>> _remove_prefix("not_prefix_string", "prefix_")
+    'not_prefix_string'
+
+    """
+    return string[len(prefix) :] if string.startswith(prefix) else string
+
+
+def _remove_suffix(string: str, suffix: str) -> str:
+    """Patch for older version with missing method `removesuffix`.
+
+    >>> _remove_suffix("string_suffix", "_suffix")
+    'string'
+    >>> _remove_suffix("string_suffix_missing", "_suffix")
+    'string_suffix_missing'
+
+    """
+    return string[: -len(suffix)] if string.endswith(suffix) else string
 
 
 class MetricCollection(ModuleDict):
@@ -59,7 +84,7 @@ class MetricCollection(ModuleDict):
             this argument is ``True`` which enables this feature. Set this argument to `False` for disabling
             this behaviour. Can also be set to a list of lists of metrics for setting the compute groups yourself.
 
-    .. note::
+    .. tip::
         The compute groups feature can significantly speedup the calculation of metrics under the right conditions.
         First, the feature is only available when calling the ``update`` method and not when calling ``forward`` method
         due to the internal logic of ``forward`` preventing this. Secondly, since we compute groups share metric
@@ -67,7 +92,7 @@ class MetricCollection(ModuleDict):
         reference and a copy of states are instead returned in this case (reference will be reestablished on the next
         call to ``update``).
 
-    .. note::
+    .. important::
         Metric collections can be nested at initialization (see last example) but the output of the collection will
         still be a single flatten dictionary combining the prefix and postfix arguments from the nested collection.
 
@@ -166,16 +191,17 @@ class MetricCollection(ModuleDict):
 
     """
 
-    _modules: Dict[str, Metric]  # type: ignore[assignment]
+    _modules: dict[str, Metric]  # type: ignore[assignment]
     _groups: Dict[int, List[str]]
+    __jit_unused_properties__: ClassVar[list[str]] = ["metric_state"]
 
     def __init__(
         self,
-        metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]],
+        metrics: Union[Metric, Sequence[Metric], dict[str, Metric]],
         *additional_metrics: Metric,
         prefix: Optional[str] = None,
         postfix: Optional[str] = None,
-        compute_groups: Union[bool, List[List[str]]] = True,
+        compute_groups: Union[bool, list[list[str]]] = True,
     ) -> None:
         super().__init__()
 
@@ -188,12 +214,12 @@ class MetricCollection(ModuleDict):
         self.add_metrics(metrics, *additional_metrics)
 
     @property
-    def metric_state(self) -> Dict[str, Dict[str, Any]]:
+    def metric_state(self) -> dict[str, dict[str, Any]]:
         """Get the current state of the metric."""
         return {k: m.metric_state for k, m in self.items(keep_base=False, copy_state=False)}
 
     @torch.jit.unused
-    def forward(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
+    def forward(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
         """Call forward for each metric sequentially.
 
         Positional arguments (args) will be passed to every metric in the collection, while keyword arguments (kwargs)
@@ -316,13 +342,13 @@ class MetricCollection(ModuleDict):
                     mi._update_count = deepcopy(m0._update_count) if copy else m0._update_count
         self._state_is_copy = copy
 
-    def compute(self) -> Dict[str, Any]:
+    def compute(self) -> dict[str, Any]:
         """Compute the result for each metric in the collection."""
         return self._compute_and_reduce("compute")
 
     def _compute_and_reduce(
         self, method_name: Literal["compute", "forward"], *args: Any, **kwargs: Any
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Compute result from collection and reduce into a single dictionary.
 
         Args:
@@ -396,7 +422,7 @@ class MetricCollection(ModuleDict):
             m.persistent(mode)
 
     def add_metrics(
-        self, metrics: Union[Metric, Sequence[Metric], Dict[str, Metric]], *additional_metrics: Metric
+        self, metrics: Union[Metric, Sequence[Metric], dict[str, Metric]], *additional_metrics: Metric
     ) -> None:
         """Add new metrics to Metric Collection."""
         if isinstance(metrics, Metric):
@@ -499,11 +525,12 @@ class MetricCollection(ModuleDict):
         name = base if self.prefix is None else self.prefix + base
         return name if self.postfix is None else name + self.postfix
 
-    def _to_renamed_ordered_dict(self) -> OrderedDict:
-        od = OrderedDict()
+    def _to_renamed_dict(self) -> Mapping[str, Metric]:
+        # self._modules changed from OrderedDict to dict as of PyTorch 2.5.0
+        dict_modules = OrderedDict() if isinstance(self._modules, OrderedDict) else {}
         for k, v in self._modules.items():
-            od[self._set_name(k)] = v
-        return od
+            dict_modules[self._set_name(k)] = v
+        return dict_modules
 
     def __iter__(self) -> Iterator[Hashable]:
         """Return an iterator over the keys of the MetricDict."""
@@ -519,9 +546,9 @@ class MetricCollection(ModuleDict):
         """
         if keep_base:
             return self._modules.keys()
-        return self._to_renamed_ordered_dict().keys()
+        return self._to_renamed_dict().keys()
 
-    def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[Tuple[str, Metric]]:
+    def items(self, keep_base: bool = False, copy_state: bool = True) -> Iterable[tuple[str, Metric]]:
         r"""Return an iterable of the ModuleDict key/value pairs.
 
         Args:
@@ -533,7 +560,7 @@ class MetricCollection(ModuleDict):
         self._compute_groups_create_state_ref(copy_state)
         if keep_base:
             return self._modules.items()
-        return self._to_renamed_ordered_dict().items()
+        return self._to_renamed_dict().items()
 
     def values(self, copy_state: bool = True) -> Iterable[Metric]:
         """Return an iterable of the ModuleDict values.
@@ -557,9 +584,9 @@ class MetricCollection(ModuleDict):
         """
         self._compute_groups_create_state_ref(copy_state)
         if self.prefix:
-            key = key.removeprefix(self.prefix)
+            key = _remove_prefix(key, self.prefix)
         if self.postfix:
-            key = key.removesuffix(self.postfix)
+            key = _remove_suffix(key, self.postfix)
         return self._modules[key]
 
     @staticmethod
@@ -590,7 +617,7 @@ class MetricCollection(ModuleDict):
 
     def plot(
         self,
-        val: Optional[Union[Dict, Sequence[Dict]]] = None,
+        val: Optional[Union[dict, Sequence[dict]]] = None,
         ax: Optional[Union[_AX_TYPE, Sequence[_AX_TYPE]]] = None,
         together: bool = False,
     ) -> Sequence[_PLOT_OUT_TYPE]:

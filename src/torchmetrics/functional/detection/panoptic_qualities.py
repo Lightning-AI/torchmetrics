@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Collection
+from collections.abc import Collection
 
 import torch
 from torch import Tensor
@@ -25,10 +25,6 @@ from torchmetrics.functional.detection._panoptic_quality_common import (
     _prepocess_inputs,
     _validate_inputs,
 )
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_12
-
-if not _TORCH_GREATER_EQUAL_1_12:
-    __doctest_skip__ = ["panoptic_quality", "modified_panoptic_quality"]
 
 
 def panoptic_quality(
@@ -152,9 +148,6 @@ def panoptic_quality(
                 [1.0000, 1.0000, 1.0000]], dtype=torch.float64)
 
     """
-    if not _TORCH_GREATER_EQUAL_1_12:
-        raise RuntimeError("Panoptic Quality metric requires PyTorch 1.12 or later")
-
     things, stuffs = _parse_categories(things, stuffs)
     _validate_inputs(preds, target)
     void_color = _get_void_color(things, stuffs)

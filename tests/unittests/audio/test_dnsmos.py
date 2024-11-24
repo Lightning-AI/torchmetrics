@@ -13,7 +13,7 @@
 # limitations under the License.
 import os
 from functools import partial
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import numpy as np
 import pytest
@@ -43,7 +43,7 @@ else:
     class InferenceSession:  # type:ignore
         """Dummy InferenceSession."""
 
-        def __init__(self, **kwargs: Dict[str, Any]) -> None: ...
+        def __init__(self, **kwargs: dict[str, Any]) -> None: ...
 
 
 SAMPLING_RATE = 16000
@@ -82,7 +82,7 @@ class _ComputeScore:
 
         return sig_poly, bak_poly, ovr_poly
 
-    def __call__(self, aud, input_fs, is_personalized) -> Dict[str, Any]:
+    def __call__(self, aud, input_fs, is_personalized) -> dict[str, Any]:
         fs = SAMPLING_RATE
         audio = librosa.resample(aud, orig_sr=input_fs, target_sr=fs) if input_fs != fs else aud
         actual_audio_len = len(audio)
@@ -143,7 +143,7 @@ def _reference_metric_batch(
     personalized: bool,
     device: Optional[str] = None,  # for tester
     reduce_mean: bool = False,
-    **kwargs: Dict[str, Any],  # for tester
+    **kwargs: dict[str, Any],  # for tester
 ):
     # download onnx first
     _load_session(f"{DNSMOS_DIR}/{'p' if personalized else ''}DNSMOS/sig_bak_ovr.onnx", torch.device("cpu"))
@@ -170,7 +170,7 @@ def _reference_metric_batch(
     return score.reshape(*shape[:-1], 4).reshape(shape[:-1] + (4,)).numpy()
 
 
-def _dnsmos_cheat(preds, target, **kwargs: Dict[str, Any]):
+def _dnsmos_cheat(preds, target, **kwargs: dict[str, Any]):
     # cheat the MetricTester as the deep_noise_suppression_mean_opinion_score doesn't need target
     return deep_noise_suppression_mean_opinion_score(preds, **kwargs)
 

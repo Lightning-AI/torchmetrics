@@ -36,5 +36,5 @@ if package_available("pytest") and package_available("doctest"):
     def pytest_collect_file(parent: Path, path: Path) -> Optional[DoctestModule]:
         """Collect doctests and add the reset_random_seed fixture."""
         if path.ext == ".py":
-            return DoctestModule.from_parent(parent, fspath=path)
+            return DoctestModule.from_parent(parent, path=Path(path))
         return None

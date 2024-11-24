@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Union
 
 import torch
 from torch import Tensor
@@ -22,7 +23,7 @@ from torchmetrics.utilities.checks import _check_same_shape
 ALLOWED_MULTIOUTPUT = ("raw_values", "uniform_average", "variance_weighted")
 
 
-def _explained_variance_update(preds: Tensor, target: Tensor) -> Tuple[int, Tensor, Tensor, Tensor, Tensor]:
+def _explained_variance_update(preds: Tensor, target: Tensor) -> tuple[int, Tensor, Tensor, Tensor, Tensor]:
     """Update and returns variables required to compute Explained Variance. Checks for same shape of input tensors.
 
     Args:

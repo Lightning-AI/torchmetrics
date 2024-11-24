@@ -19,13 +19,9 @@ import sys
 from lightning_utilities.core.imports import RequirementCache
 
 _PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-_TORCH_LOWER_2_0 = RequirementCache("torch<2.0.0")
-_TORCH_GREATER_EQUAL_1_11 = RequirementCache("torch>=1.11.0")
-_TORCH_GREATER_EQUAL_1_12 = RequirementCache("torch>=1.12.0")
-_TORCH_GREATER_EQUAL_1_13 = RequirementCache("torch>=1.13.0")
-_TORCH_GREATER_EQUAL_2_0 = RequirementCache("torch>=2.0.0")
 _TORCH_GREATER_EQUAL_2_1 = RequirementCache("torch>=2.1.0")
 _TORCH_GREATER_EQUAL_2_2 = RequirementCache("torch>=2.2.0")
+_TORCH_GREATER_EQUAL_2_5 = RequirementCache("torch>=2.5.0")
 _TORCHMETRICS_GREATER_EQUAL_1_6 = RequirementCache("torchmetrics>=1.7.0")
 
 _NLTK_AVAILABLE = RequirementCache("nltk")
@@ -37,8 +33,6 @@ _TORCH_FIDELITY_AVAILABLE = RequirementCache("torch_fidelity")
 _LPIPS_AVAILABLE = RequirementCache("lpips")
 _PYCOCOTOOLS_AVAILABLE = RequirementCache("pycocotools")
 _TORCHVISION_AVAILABLE = RequirementCache("torchvision")
-_TORCHVISION_GREATER_EQUAL_0_8 = RequirementCache("torchvision>=0.8.0")
-_TORCHVISION_GREATER_EQUAL_0_13 = RequirementCache("torchvision>=0.13.0")
 _TQDM_AVAILABLE = RequirementCache("tqdm")
 _TRANSFORMERS_AVAILABLE = RequirementCache("transformers")
 _TRANSFORMERS_GREATER_EQUAL_4_4 = RequirementCache("transformers>=4.4.0")
@@ -46,7 +40,6 @@ _TRANSFORMERS_GREATER_EQUAL_4_10 = RequirementCache("transformers>=4.10.0")
 _PESQ_AVAILABLE = RequirementCache("pesq")
 _GAMMATONE_AVAILABLE = RequirementCache("gammatone")
 _TORCHAUDIO_AVAILABLE = RequirementCache("torchaudio")
-_TORCHAUDIO_GREATER_EQUAL_0_10 = RequirementCache("torchaudio>=0.10.0")
 _REGEX_AVAILABLE = RequirementCache("regex")
 _PYSTOI_AVAILABLE = RequirementCache("pystoi")
 _REQUESTS_AVAILABLE = RequirementCache("requests")
@@ -66,5 +59,6 @@ _IPADIC_AVAILABLE = RequirementCache("ipadic")
 _SENTENCEPIECE_AVAILABLE = RequirementCache("sentencepiece")
 _SCIPI_AVAILABLE = RequirementCache("scipy")
 _SKLEARN_GREATER_EQUAL_1_3 = RequirementCache("scikit-learn>=1.3.0")
+_PYTDC_AVAILABLE = RequirementCache("pyTDC")
 
 _LATEX_AVAILABLE: bool = shutil.which("latex") is not None

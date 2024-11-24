@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, List, Optional, Tuple, Type, Union
+from typing import Any, Callable, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -79,7 +79,7 @@ class _AbstractStatScores(Metric):
             self.tn += tn
             self.fn += fn
 
-    def _final_state(self) -> Tuple[Tensor, Tensor, Tensor, Tensor]:
+    def _final_state(self) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """Aggregate states that are lists and return final states."""
         tp = dim_zero_cat(self.tp)
         fp = dim_zero_cat(self.fp)
@@ -526,7 +526,7 @@ class StatScores(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls: Type["StatScores"],
+        cls: type["StatScores"],
         task: Literal["binary", "multiclass", "multilabel"],
         threshold: float = 0.5,
         num_classes: Optional[int] = None,

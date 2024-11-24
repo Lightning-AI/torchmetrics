@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from functools import partial
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 import torch
@@ -20,7 +20,6 @@ from srmrpy import srmr as srmrpy_srmr
 from torch import Tensor
 from torchmetrics.audio.srmr import SpeechReverberationModulationEnergyRatio
 from torchmetrics.functional.audio.srmr import speech_reverberation_modulation_energy_ratio
-from torchmetrics.utilities.imports import _TORCHAUDIO_GREATER_EQUAL_0_10
 
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
@@ -31,7 +30,7 @@ preds = torch.rand(2, 2, 8000)
 
 
 def _reference_srmr_batch(
-    preds: Tensor, target: Tensor, fs: int, fast: bool, norm: bool, reduce_mean: bool = False, **kwargs: Dict[str, Any]
+    preds: Tensor, target: Tensor, fs: int, fast: bool, norm: bool, reduce_mean: bool = False, **kwargs: dict[str, Any]
 ):
     # shape: preds [BATCH_SIZE, Time]
     shape = preds.shape
@@ -52,7 +51,7 @@ def _reference_srmr_batch(
     return srmr
 
 
-def _speech_reverberation_modulation_energy_ratio_cheat(preds, target, **kwargs: Dict[str, Any]):
+def _speech_reverberation_modulation_energy_ratio_cheat(preds, target, **kwargs: dict[str, Any]):
     # cheat the MetricTester as the speech_reverberation_modulation_energy_ratio doesn't need target
     return speech_reverberation_modulation_energy_ratio(preds, **kwargs)
 
@@ -63,8 +62,6 @@ class _SpeechReverberationModulationEnergyRatioCheat(SpeechReverberationModulati
         super().update(preds=preds)
 
 
-# FIXME: bring compatibility with torchaudio 0.10+
-@pytest.mark.skipif(not _TORCHAUDIO_GREATER_EQUAL_0_10, reason="torchaudio>=0.10.0 is required")
 @pytest.mark.parametrize(
     "preds, fs, fast, norm",
     [

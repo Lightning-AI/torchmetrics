@@ -58,7 +58,7 @@ def _reference_sklearn_recall_at_fixed_precision_binary(preds, target, min_preci
     target = target.flatten().numpy()
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return _recall_at_precision_x_multilabel(preds, target, min_precision)
 
 
@@ -173,7 +173,7 @@ def _reference_sklearn_recall_at_fixed_precision_multiclass(preds, target, min_p
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
 
     recall, thresholds = [], []
     for i in range(NUM_CLASSES):
