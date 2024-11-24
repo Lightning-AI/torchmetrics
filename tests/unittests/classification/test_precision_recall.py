@@ -216,7 +216,9 @@ def _reference_sklearn_precision_recall_multiclass(
             target,
             preds,
             average=average,
-            labels=valid_labels if average in ("macro", "weighted") else None,
+            labels=valid_labels
+            if average in ("macro", "weighted")
+            else (list(range(num_classes)) if average is None else None),
             zero_division=zero_division,
         )
 
@@ -241,7 +243,9 @@ def _reference_sklearn_precision_recall_multiclass(
                 true,
                 pred,
                 average=average,
-                labels=valid_labels if average in ("macro", "weighted") else None,
+                labels=valid_labels
+                if average in ("macro", "weighted")
+                else (list(range(num_classes)) if average is None else None),
                 zero_division=zero_division,
             )
         res.append(0.0 if np.isnan(r).any() else r)
