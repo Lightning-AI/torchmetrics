@@ -67,8 +67,8 @@ def _adjust_weights_safe_divide(
     tp: Tensor,
     fp: Tensor,
     fn: Tensor,
-    ignore_index: Optional[int] = None,
     top_k: int = 1,
+    ignore_index: Optional[int] = None,
 ) -> Tensor:
     if average is None or average == "none":
         return score
