@@ -202,6 +202,10 @@ def _reference_sklearn_precision_recall_multiclass(
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, 1)
 
+    valid_labels = list(range(NUM_CLASSES))
+    if ignore_index is not None:
+        valid_labels = [label for label in valid_labels if label != ignore_index]
+
     if multidim_average == "global":
         preds = preds.numpy().flatten()
         target = target.numpy().flatten()
@@ -210,7 +214,7 @@ def _reference_sklearn_precision_recall_multiclass(
             target,
             preds,
             average=average,
-            labels=list(range(NUM_CLASSES)) if average is None else None,
+            labels=valid_labels if average in ("macro", "weighted") else None,
             zero_division=zero_division,
         )
 
@@ -235,7 +239,7 @@ def _reference_sklearn_precision_recall_multiclass(
                 true,
                 pred,
                 average=average,
-                labels=list(range(NUM_CLASSES)) if average is None else None,
+                labels=valid_labels if average in ("macro", "weighted") else None,
                 zero_division=zero_division,
             )
         res.append(0.0 if np.isnan(r).any() else r)
