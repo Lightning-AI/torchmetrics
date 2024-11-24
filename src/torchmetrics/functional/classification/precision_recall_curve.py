@@ -184,12 +184,12 @@ def _binary_precision_recall_curve_format(
 
     # "sigmoid_cpu" not implemented for 'Half'
     if preds.dtype != torch.float16 or preds.device != torch.device("cpu"):
-      out_of_bounds = (preds < 0) | (preds > 1)
-      out_of_bounds = out_of_bounds.any()
-      preds = torch.where(out_of_bounds, preds.sigmoid(), preds)
+        out_of_bounds = (preds < 0) | (preds > 1)
+        out_of_bounds = out_of_bounds.any()
+        preds = torch.where(out_of_bounds, preds.sigmoid(), preds)
     else:
-      if not torch.all((preds >= 0) * (preds <= 1)):
-          preds = preds.sigmoid()
+        if not torch.all((preds >= 0) * (preds <= 1)):
+            preds = preds.sigmoid()
 
     thresholds = _adjust_threshold_arg(thresholds, preds.device)
     return preds, target, thresholds
@@ -770,12 +770,12 @@ def _multilabel_precision_recall_curve_format(
 
     # "sigmoid_cpu" not implemented for 'Half'
     if preds.dtype != torch.float16 or preds.device != torch.device("cpu"):
-      out_of_bounds = (preds < 0) | (preds > 1)
-      out_of_bounds = out_of_bounds.any()
-      preds = torch.where(out_of_bounds, preds.sigmoid(), preds)
+        out_of_bounds = (preds < 0) | (preds > 1)
+        out_of_bounds = out_of_bounds.any()
+        preds = torch.where(out_of_bounds, preds.sigmoid(), preds)
     else:
-      if not torch.all((preds >= 0) * (preds <= 1)):
-          preds = preds.sigmoid()
+        if not torch.all((preds >= 0) * (preds <= 1)):
+            preds = preds.sigmoid()
 
     thresholds = _adjust_threshold_arg(thresholds, preds.device)
     if ignore_index is not None and thresholds is not None:
