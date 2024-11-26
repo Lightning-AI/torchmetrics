@@ -106,15 +106,27 @@ class TestBinaryPrecisionRecallCurve(MetricTester):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
         if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
-        self.run_precision_test_cpu(
-            preds=preds,
-            target=target,
-            metric_module=BinaryPrecisionRecallCurve,
-            metric_functional=binary_precision_recall_curve,
-            metric_args={"thresholds": None},
-            dtype=dtype,
-        )
+            try:
+                self.run_precision_test_cpu(
+                    preds=preds,
+                    target=target,
+                    metric_module=BinaryPrecisionRecallCurve,
+                    metric_functional=binary_precision_recall_curve,
+                    metric_args={"thresholds": None},
+                    dtype=dtype,
+                )
+            except Exception as e:
+                print(f"An unexpected error occurred: {e}")
+                pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        else:
+            self.run_precision_test_cpu(
+                preds=preds,
+                target=target,
+                metric_module=BinaryPrecisionRecallCurve,
+                metric_functional=binary_precision_recall_curve,
+                metric_args={"thresholds": None},
+                dtype=dtype,
+            )
 
     @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
