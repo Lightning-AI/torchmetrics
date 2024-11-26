@@ -13,7 +13,7 @@ sphinx-autobuild ==2024.10.3
 sphinx-gallery ==0.18.0
 
 lightning >=1.8.0, <2.5.0
-lightning-utilities ==0.11.8
+lightning-utilities ==0.11.9
 pydantic > 1.0.0, < 3.0.0
 
 # integrations
