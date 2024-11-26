@@ -371,6 +371,16 @@ def test_raises_error_on_too_many_classes(preds, target, ignore_index, error_mes
     ],
 )
 def test_refine_preds_oh(top_k, expected_result):
+    """Test the refine_preds_oh function.
+
+    This function tests the behavior of the refine_preds_oh function with various top_k values
+    and checks if the output matches the expected one-hot encoded results.
+
+    Args:
+        top_k: The number of top predictions to consider.
+        expected_result: The expected one-hot encoded tensor result after refinement.
+
+    """
     preds = torch.tensor([
         [[0.2917], [0.0682], [0.6401]],
         [[0.2582], [0.0614], [0.0704]],
