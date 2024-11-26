@@ -29,7 +29,7 @@ from torchmetrics.functional.classification.stat_scores import (
     binary_stat_scores,
     multiclass_stat_scores,
     multilabel_stat_scores,
-    refine_preds_oh
+    refine_preds_oh,
 )
 from torchmetrics.metric import Metric
 
@@ -361,6 +361,7 @@ def test_raises_error_on_too_many_classes(preds, target, ignore_index, error_mes
     with pytest.raises(RuntimeError, match=error_message):
         multiclass_stat_scores(preds, target, num_classes=NUM_CLASSES, ignore_index=ignore_index)
 
+
 @pytest.mark.parametrize(
     ("top_k", "expected_result"),
     [
@@ -374,26 +375,22 @@ def test_refine_preds_oh(top_k, expected_result):
         [[0.2917], [0.0682], [0.6401]],
         [[0.2582], [0.0614], [0.0704]],
         [[0.0725], [0.6015], [0.3260]],
-        [[0.4650], [0.2448], [0.2902]]
+        [[0.4650], [0.2448], [0.2902]],
     ])
 
-    preds_oh = torch.tensor([
-        [[1, 0, 1]],
-        [[1, 0, 1]],
-        [[0, 1, 1]],
-        [[1, 0, 1]]
-    ], dtype=torch.int32)
+    preds_oh = torch.tensor([[[1, 0, 1]], [[1, 0, 1]], [[0, 1, 1]], [[1, 0, 1]]], dtype=torch.int32)
 
     target = torch.tensor([0, 1, 1, 2])
-    
+
     result = refine_preds_oh(preds, preds_oh, target, top_k)
     assert torch.equal(result, expected_result), (
-        f"Test failed for top_k={top_k}. "
-        f"Expected result: {expected_result}, but got: {result}"
+        f"Test failed for top_k={top_k}. " f"Expected result: {expected_result}, but got: {result}"
     )
+
 
 _mc_k_target = torch.tensor([0, 1, 2])
 _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
+
 
 @pytest.mark.parametrize(
     ("k", "preds", "target", "average", "expected"),
