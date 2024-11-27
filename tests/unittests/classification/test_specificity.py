@@ -391,8 +391,8 @@ def test_top_k(k: int, preds: Tensor, target: Tensor, average: str, expected_spe
     class_metric = MulticlassSpecificity(top_k=k, average=average, num_classes=3)
     class_metric.update(preds, target)
 
-    assert torch.equal(class_metric.compute(), expected_spec, atol=1e-4, rtol=1e-4)
-    assert torch.equal(
+    assert torch.allclose(class_metric.compute(), expected_spec, atol=1e-4, rtol=1e-4)
+    assert torch.allclose(
         multiclass_specificity(preds, target, top_k=k, average=average, num_classes=3),
         expected_spec,
         atol=1e-4,
