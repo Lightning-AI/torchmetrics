@@ -18,6 +18,7 @@ import pytest
 import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
+from torch import Tensor
 from torchmetrics.classification.specificity import (
     BinarySpecificity,
     MulticlassSpecificity,
@@ -385,13 +386,13 @@ _mc_k_preds2 = torch.tensor([
         (3, _mc_k_preds2, _mc_k_target2, "none", torch.tensor([1.0, 1.0, 1.0])),
     ],
 )
-def test_top_k(k: int, preds: torch.Tensor, target: torch.Tensor, average: str, expected_spec: torch.Tensor):
+def test_top_k(k: int, preds: Tensor, target: Tensor, average: str, expected_spec: Tensor):
     """A simple test to check that top_k works as expected."""
     class_metric = MulticlassSpecificity(top_k=k, average=average, num_classes=3)
     class_metric.update(preds, target)
 
-    assert torch.allclose(class_metric.compute(), expected_spec)
-    assert torch.allclose(multiclass_specificity(preds, target, top_k=k, average=average, num_classes=3), expected_spec)
+    assert torch.equal(class_metric.compute(), expected_spec)
+    assert torch.equal(multiclass_specificity(preds, target, top_k=k, average=average, num_classes=3), expected_spec)
 
 
 def _reference_specificity_multilabel_global(preds, target, ignore_index, average):
