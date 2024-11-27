@@ -438,8 +438,8 @@ def test_top_k_multiclass(k, preds, target, average, expected):
     class_metric = MulticlassStatScores(top_k=k, average=average, num_classes=3)
     class_metric.update(preds, target)
 
-    assert torch.allclose(class_metric.compute(), expected.T)
-    assert torch.allclose(multiclass_stat_scores(preds, target, top_k=k, average=average, num_classes=3), expected.T)
+    assert torch.equal(class_metric.compute(), expected.T)
+    assert torch.equal(multiclass_stat_scores(preds, target, top_k=k, average=average, num_classes=3), expected.T)
 
 
 def test_top_k_ignore_index_multiclass():
