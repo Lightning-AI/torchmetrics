@@ -401,16 +401,36 @@ def test_refine_preds_oh(top_k, expected_result):
 _mc_k_target = torch.tensor([0, 1, 2])
 _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
 
+_mc_k_target2 = torch.tensor([0, 1, 2, 0])
+_mc_k_preds2 = torch.tensor([
+    [0.1, 0.2, 0.7],
+    [0.4, 0.4, 0.2],
+    [0.3, 0.3, 0.4],
+    [0.3, 0.3, 0.4],
+])
+
 
 @pytest.mark.parametrize(
     ("k", "preds", "target", "average", "expected"),
     [
         (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor([2, 1, 5, 1, 3])),
-        (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor([3, 3, 3, 0, 3])),
+        # (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor([3, 3, 3, 0, 3])),
         (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor([3, 0, 6, 0, 3])),
         (1, _mc_k_preds, _mc_k_target, None, torch.tensor([[0, 1, 1], [0, 1, 0], [2, 1, 2], [1, 0, 0], [1, 1, 1]])),
-        (2, _mc_k_preds, _mc_k_target, None, torch.tensor([[1, 1, 1], [1, 1, 1], [1, 1, 1], [0, 0, 0], [1, 1, 1]])),
+        # (2, _mc_k_preds, _mc_k_target, None, torch.tensor([[1, 1, 1], [1, 1, 1], [1, 1, 1], [0, 0, 0], [1, 1, 1]])),
         (2, _mc_k_preds, _mc_k_target, None, torch.tensor([[1, 1, 1], [0, 0, 0], [2, 2, 2], [0, 0, 0], [1, 1, 1]])),
+        (1, _mc_k_preds2, _mc_k_target2, "macro", torch.tensor([0.3333, 1.0000, 1.6667, 1.0000, 1.3333])),
+        (2, _mc_k_preds2, _mc_k_target2, "macro", torch.tensor([1.0000, 0.3333, 2.3333, 0.3333, 1.3333])),
+        (3, _mc_k_preds2, _mc_k_target2, "macro", torch.tensor([1.3333, 0.0000, 2.6667, 0.0000, 1.3333])),
+        (1, _mc_k_preds2, _mc_k_target2, "micro", torch.tensor([1, 3, 5, 3, 4])),
+        (2, _mc_k_preds2, _mc_k_target2, "micro", torch.tensor([3, 1, 7, 1, 4])),
+        (3, _mc_k_preds2, _mc_k_target2, "micro", torch.tensor([4, 0, 8, 0, 4])),
+        (1, _mc_k_preds2, _mc_k_target2, "weighted", torch.tensor([0.2500, 1.0000, 1.5000, 1.2500, 1.5000])),
+        (2, _mc_k_preds2, _mc_k_target2, "weighted", torch.tensor([1.0000, 0.2500, 2.2500, 0.5000, 1.5000])),
+        (3, _mc_k_preds2, _mc_k_target2, "weighted", torch.tensor([1.5000, 0.0000, 2.5000, 0.0000, 1.5000])),
+        (1, _mc_k_preds2, _mc_k_target2, None, torch.tensor([[0, 0, 1], [1, 0, 2], [1, 3, 1], [2, 1, 0], [2, 1, 1]])),
+        (2, _mc_k_preds2, _mc_k_target2, None, torch.tensor([[1, 1, 1], [0, 0, 1], [2, 3, 2], [1, 0, 0], [2, 1, 1]])),
+        (3, _mc_k_preds2, _mc_k_target2, None, torch.tensor([[2, 1, 1], [0, 0, 0], [2, 3, 3], [0, 0, 0], [2, 1, 1]])),
     ],
 )
 def test_top_k_multiclass(k, preds, target, average, expected):

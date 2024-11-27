@@ -376,7 +376,19 @@ class TestMulticlassFBetaScore(MetricTester):
 
 
 _mc_k_target = torch.tensor([0, 1, 2])
-_mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
+_mc_k_preds = torch.tensor([
+    [0.35, 0.4, 0.25],
+    [0.1, 0.5, 0.4],
+    [0.2, 0.1, 0.7],
+])
+
+_mc_k_target2 = torch.tensor([0, 1, 2, 0])
+_mc_k_preds2 = torch.tensor([
+    [0.1, 0.2, 0.7],
+    [0.4, 0.4, 0.2],
+    [0.3, 0.3, 0.4],
+    [0.3, 0.3, 0.4],
+])
 
 
 @pytest.mark.parametrize(
@@ -391,6 +403,32 @@ _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]]
     [
         (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor(2 / 3), torch.tensor(2 / 3)),
         (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor(1.0), torch.tensor(1.0)),
+        (1, _mc_k_preds2, _mc_k_target2, "micro", torch.tensor(0.25), torch.tensor(0.25)),
+        (2, _mc_k_preds2, _mc_k_target2, "micro", torch.tensor(0.75), torch.tensor(0.75)),
+        (3, _mc_k_preds2, _mc_k_target2, "micro", torch.tensor(1.0), torch.tensor(1.0)),
+        (1, _mc_k_preds2, _mc_k_target2, "macro", torch.tensor(0.2381), torch.tensor(0.1667)),
+        (2, _mc_k_preds2, _mc_k_target2, "macro", torch.tensor(0.7963), torch.tensor(0.7778)),
+        (3, _mc_k_preds2, _mc_k_target2, "macro", torch.tensor(1.0), torch.tensor(1.0)),
+        (1, _mc_k_preds2, _mc_k_target2, "weighted", torch.tensor(0.1786), torch.tensor(0.1250)),
+        (2, _mc_k_preds2, _mc_k_target2, "weighted", torch.tensor(0.7361), torch.tensor(0.7500)),
+        (3, _mc_k_preds2, _mc_k_target2, "weighted", torch.tensor(1.0), torch.tensor(1.0)),
+        (
+            1,
+            _mc_k_preds2,
+            _mc_k_target2,
+            "none",
+            torch.tensor([0.0000, 0.0000, 0.7143]),
+            torch.tensor([0.0000, 0.0000, 0.5000]),
+        ),
+        (
+            2,
+            _mc_k_preds2,
+            _mc_k_target2,
+            "none",
+            torch.tensor([0.5556, 1.0000, 0.8333]),
+            torch.tensor([0.6667, 1.0000, 0.6667]),
+        ),
+        (3, _mc_k_preds2, _mc_k_target2, "none", torch.tensor([1.0, 1.0, 1.0]), torch.tensor([1.0, 1.0, 1.0])),
     ],
 )
 def test_top_k(
@@ -403,7 +441,7 @@ def test_top_k(
     expected_fbeta: Tensor,
     expected_f1: Tensor,
 ):
-    """A simple test to check that top_k works as expected."""
+    """A comprehensive test to check that top_k works as expected."""
     class_metric = metric_class(top_k=k, average=average, num_classes=3)
     class_metric.update(preds, target)
 
