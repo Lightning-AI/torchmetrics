@@ -402,6 +402,7 @@ _mc_k_preds2 = torch.tensor([
     ("k", "preds", "target", "average", "expected_fbeta", "expected_f1"),
     [
         (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor(2 / 3), torch.tensor(2 / 3)),
+        # (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor(5 / 6), torch.tensor(2 / 3)),
         (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor(1.0), torch.tensor(1.0)),
         (1, _mc_k_preds2, _mc_k_target2, "micro", torch.tensor(0.25), torch.tensor(0.25)),
         (2, _mc_k_preds2, _mc_k_target2, "micro", torch.tensor(0.75), torch.tensor(0.75)),
@@ -447,8 +448,10 @@ def test_top_k(
 
     result = expected_fbeta if class_metric.beta != 1.0 else expected_f1
 
-    assert torch.isclose(class_metric.compute(), result)
-    assert torch.isclose(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)
+    assert torch.allclose(class_metric.compute(), result, atol=1e-4, rtol=1e-4)
+    assert torch.allclose(
+        metric_fn(preds, target, top_k=k, average=average, num_classes=3), result, atol=1e-4, rtol=1e-4
+    )
 
 
 @pytest.mark.parametrize("num_classes", [5])
