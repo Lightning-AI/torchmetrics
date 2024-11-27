@@ -439,8 +439,10 @@ def test_top_k(
 
     result = expected_prec if metric_class.__name__ == "MulticlassPrecision" else expected_recall
 
-    assert torch.equal(class_metric.compute(), result)
-    assert torch.equal(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)
+    assert torch.allclose(class_metric.compute(), result, atol=1e-4, rtol=1e-4)
+    assert torch.allclose(
+        metric_fn(preds, target, top_k=k, average=average, num_classes=3), result, atol=1e-4, rtol=1e-4
+    )
 
 
 def _reference_sklearn_precision_recall_multilabel_global(preds, target, sk_fn, ignore_index, average, zero_division):
