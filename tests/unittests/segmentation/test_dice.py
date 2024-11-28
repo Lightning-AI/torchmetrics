@@ -108,6 +108,7 @@ class TestDiceScore(MetricTester):
             },
         )
 
+
 @pytest.mark.parametrize("compute_groups", [True, False])
 def test_dice_score_metric_collection(compute_groups: bool, num_batches: int = 4):
     """Test that the metric works within a metric collection with and without compute groups."""
@@ -125,11 +126,10 @@ def test_dice_score_metric_collection(compute_groups: bool, num_batches: int = 4
                 num_classes=NUM_CLASSES,
                 average="weighted",
             ),
-
         },
         compute_groups=compute_groups,
     )
-    
+
     for _ in range(num_batches):
         metric_collection.update(_inputs1.preds, _inputs1.target)
     result = metric_collection.compute()
