@@ -236,11 +236,11 @@ def _multiclass_stat_scores_arg_validation(
     - ``zero_division`` has to be 0 or 1
 
     """
-    if not isinstance(num_classes, int) or num_classes < 2:
+    if num_classes is not None and (not isinstance(num_classes, int) or num_classes < 2):
         raise ValueError(f"Expected argument `num_classes` to be an integer larger than 1, but got {num_classes}")
     if not isinstance(top_k, int) and top_k < 1:
         raise ValueError(f"Expected argument `top_k` to be an integer larger than or equal to 1, but got {top_k}")
-    if top_k > num_classes:
+    if top_k > (num_classes if num_classes is not None else 1):
         raise ValueError(
             f"Expected argument `top_k` to be smaller or equal to `num_classes` but got {top_k} and {num_classes}"
         )
@@ -399,9 +399,9 @@ def _multiclass_stat_scores_update(
             preds = preds[idx]
             target = target[idx]
         tp = (preds == target).sum()
+        tn = (preds == target).sum()
         fp = (preds != target).sum()
         fn = (preds != target).sum()
-        tn = num_classes * preds.numel() - (fp + fn + tp)
     else:
         preds = preds.flatten()
         target = target.flatten()
