@@ -13,17 +13,17 @@ concurrency:
 
 jobs:
   check-code:
-    uses: Lightning-AI/utilities/.github/workflows/check-typing.yml@v0.11.8
+    uses: Lightning-AI/utilities/.github/workflows/check-typing.yml@v0.11.9
     with:
       actions-ref: v0.11.8
       extra-typing: "typing"
 
   check-schema:
-    uses: Lightning-AI/utilities/.github/workflows/check-schema.yml@v0.11.8
+    uses: Lightning-AI/utilities/.github/workflows/check-schema.yml@v0.11.9
 
   check-package:
     if: github.event.pull_request.draft == false
-    uses: Lightning-AI/utilities/.github/workflows/check-package.yml@v0.11.8
+    uses: Lightning-AI/utilities/.github/workflows/check-package.yml@v0.11.9
     with:
       actions-ref: v0.11.8
       artifact-name: dist-packages-${{ github.sha }}
@@ -35,7 +35,7 @@ jobs:
         }
 
   check-md-links:
-    uses: Lightning-AI/utilities/.github/workflows/check-md-links.yml@v0.11.8
+    uses: Lightning-AI/utilities/.github/workflows/check-md-links.yml@v0.11.9
     with:
       base-branch: master
       config-file: ".github/markdown-links-config.json"
