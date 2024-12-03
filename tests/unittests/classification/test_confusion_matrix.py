@@ -243,28 +243,28 @@ class TestMulticlassConfusionMatrix(MetricTester):
     ("preds", "target", "ignore_index", "error_message"),
     [
         (
-                torch.randint(NUM_CLASSES + 1, (100,)),
-                torch.randint(NUM_CLASSES, (100,)),
-                None,
-                f"Detected more unique values in `preds` than expected. Expected only {NUM_CLASSES}.*",
+            torch.randint(NUM_CLASSES + 1, (100,)),
+            torch.randint(NUM_CLASSES, (100,)),
+            None,
+            f"Detected more unique values in `preds` than expected. Expected only {NUM_CLASSES}.*",
         ),
         (
-                torch.randint(NUM_CLASSES, (100,)),
-                torch.randint(NUM_CLASSES + 1, (100,)),
-                None,
-                f"Detected more unique values in `target` than expected. Expected only {NUM_CLASSES}.*",
+            torch.randint(NUM_CLASSES, (100,)),
+            torch.randint(NUM_CLASSES + 1, (100,)),
+            None,
+            f"Detected more unique values in `target` than expected. Expected only {NUM_CLASSES}.*",
         ),
         (
-                torch.randint(NUM_CLASSES + 2, (100,)),
-                torch.randint(NUM_CLASSES, (100,)),
-                1,
-                f"Detected more unique values in `preds` than expected. Expected only {NUM_CLASSES + 1}.*",
+            torch.randint(NUM_CLASSES + 2, (100,)),
+            torch.randint(NUM_CLASSES, (100,)),
+            1,
+            f"Detected more unique values in `preds` than expected. Expected only {NUM_CLASSES + 1}.*",
         ),
         (
-                torch.randint(NUM_CLASSES, (100,)),
-                torch.randint(NUM_CLASSES + 2, (100,)),
-                1,
-                f"Detected more unique values in `target` than expected. Expected only {NUM_CLASSES + 1}.*",
+            torch.randint(NUM_CLASSES, (100,)),
+            torch.randint(NUM_CLASSES + 2, (100,)),
+            1,
+            f"Detected more unique values in `target` than expected. Expected only {NUM_CLASSES + 1}.*",
         ),
     ],
 )
@@ -412,8 +412,8 @@ def test_warning_on_nan():
     target = torch.randint(3, size=(20,))
 
     with pytest.warns(
-            UserWarning,
-            match=".* NaN values found in confusion matrix have been replaced with zeros.",
+        UserWarning,
+        match=".* NaN values found in confusion matrix have been replaced with zeros.",
     ):
         multiclass_confusion_matrix(preds, target, num_classes=5, normalize="true")
 
