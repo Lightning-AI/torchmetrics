@@ -270,7 +270,7 @@ def plot_confusion_matrix(
     fig, axs = plt.subplots(nrows=rows, ncols=cols, constrained_layout=True) if ax is None else (ax.get_figure(), ax)
     axs = trim_axs(axs, nb)
     for i in range(nb):
-        ax = axs[i] if rows != 1 or cols != 1 else axs
+        ax = axs[i] if (rows != 1 or cols != 1) else axs
         if fig_label is not None:
             ax.set_title(f"Label {fig_label[i]}", fontsize=15)
         im = ax.imshow(confmat[i].cpu().detach() if confmat.ndim == 3 else confmat.cpu().detach(), cmap=cmap)
