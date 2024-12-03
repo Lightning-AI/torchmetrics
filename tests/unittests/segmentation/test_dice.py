@@ -106,3 +106,18 @@ class TestDiceScore(MetricTester):
                 "input_format": input_format,
             },
         )
+
+
+@pytest.mark.parametrize("average", ["micro", "macro", "weighted", None])
+def test_corner_case_no_overlap(average):
+    """Check that if no overlap and intersection between target and preds, the dice score is 0.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2851
+
+    """
+    target = torch.full((4, 4, 128, 128), 0, dtype=torch.int8)
+    preds = torch.full((4, 4, 128, 128), 0, dtype=torch.int8)
+    target[0, 0] = 1
+    preds[0, 0] = 1
+    dice = DiceScore(num_classes=3, average=average, include_background=False)
+    assert dice(preds, target) == 0.0
