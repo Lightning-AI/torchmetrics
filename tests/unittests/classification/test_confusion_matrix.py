@@ -392,6 +392,22 @@ class TestMultilabelConfusionMatrix(MetricTester):
             dtype=dtype,
         )
 
+    def test_multilabel_confusion_matrix_plot(self, inputs):
+        """Test multilabel cm plots."""
+        multi_label_confusion_matrix = MultilabelConfusionMatrix(num_labels=2)
+        preds = target = torch.ones(1, 2).int()
+        multi_label_confusion_matrix.update(preds, target)
+        fig, ax = multi_label_confusion_matrix.plot()
+        assert fig is not None
+        assert ax is not None
+
+        multi_label_confusion_matrix = MultilabelConfusionMatrix(num_labels=NUM_CLASSES)
+        preds = target = torch.ones(1, NUM_CLASSES).int()
+        multi_label_confusion_matrix.update(preds, target)
+        fig, ax = multi_label_confusion_matrix.plot()
+        assert fig is not None
+        assert ax is not None
+
 
 def test_warning_on_nan():
     """Test that a warning is given if division by zero happens during normalization of confusion matrix."""
