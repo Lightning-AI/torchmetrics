@@ -369,7 +369,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
 
         if (preds < 0).any() and dtype == torch.half:
             pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
-        self.run_plot_test_cpu(
+        self.run_precision_test_cpu(
             preds=preds,
             target=target,
             metric_module=MultilabelConfusionMatrix,
@@ -397,13 +397,16 @@ class TestMultilabelConfusionMatrix(MetricTester):
         multi_label_confusion_matrix = MultilabelConfusionMatrix(num_labels=2)
         preds = target = torch.ones(1, 2).int()
         multi_label_confusion_matrix.update(preds, target)
-        multi_label_confusion_matrix.plot()
+        fig, ax = multi_label_confusion_matrix.plot()
+        assert fig is not None
+        assert ax is not None
 
         multi_label_confusion_matrix = MultilabelConfusionMatrix(num_labels=NUM_CLASSES)
         preds = target = torch.ones(1, NUM_CLASSES).int()
-        print(preds.shape, target.shape)
         multi_label_confusion_matrix.update(preds, target)
-        multi_label_confusion_matrix.plot()
+        fig, ax = multi_label_confusion_matrix.plot()
+        assert fig is not None
+        assert ax is not None
 
 
 def test_warning_on_nan():
