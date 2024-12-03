@@ -78,6 +78,10 @@ def _dice_score_compute(
     support: Optional[Tensor] = None,
 ) -> Tensor:
     """Compute the Dice score from the numerator and denominator."""
+    # If both numerator and denominator are 0, the dice score is 0
+    if torch.all(numerator == 0) and torch.all(denominator == 0):
+        return torch.tensor(0.0, device=numerator.device, dtype=torch.float)
+
     if average == "micro":
         numerator = torch.sum(numerator, dim=-1)
         denominator = torch.sum(denominator, dim=-1)
