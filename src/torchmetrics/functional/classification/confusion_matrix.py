@@ -18,6 +18,7 @@ from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
+from torchmetrics.utilities.compute import normalize_logits_if_needed
 from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.prints import rank_zero_warn
@@ -137,9 +138,7 @@ def _binary_confusion_matrix_format(
         target = target[idx]
 
     if preds.is_floating_point():
-        if not torch.all((preds >= 0) * (preds <= 1)):
-            # preds is logits, convert with sigmoid
-            preds = preds.sigmoid()
+        preds = normalize_logits_if_needed(preds, "sigmoid")
         if convert_to_labels:
             preds = preds > threshold
 
@@ -491,8 +490,7 @@ def _multilabel_confusion_matrix_format(
 
     """
     if preds.is_floating_point():
-        if not torch.all((preds >= 0) * (preds <= 1)):
-            preds = preds.sigmoid()
+        preds = normalize_logits_if_needed(preds, "sigmoid")
         if should_threshold:
             preds = preds > threshold
     preds = torch.movedim(preds, 1, -1).reshape(-1, num_labels)

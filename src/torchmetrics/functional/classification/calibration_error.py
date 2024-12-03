@@ -23,6 +23,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multiclass_confusion_matrix_format,
     _multiclass_confusion_matrix_tensor_validation,
 )
+from torchmetrics.utilities.compute import normalize_logits_if_needed
 from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
 
@@ -239,8 +240,7 @@ def _multiclass_calibration_error_update(
     preds: Tensor,
     target: Tensor,
 ) -> tuple[Tensor, Tensor]:
-    if not torch.all((preds >= 0) * (preds <= 1)):
-        preds = preds.softmax(1)
+    preds = normalize_logits_if_needed(preds, "softmax")
     confidences, predictions = preds.max(dim=1)
     accuracies = predictions.eq(target)
     return confidences.float(), accuracies.float()
