@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
+- Added `zero_division` argument to `DiceScore` in segmentation package ([#2860](https://github.com/PyTorchLightning/metrics/pull/2860))
 
 
 ### Changed
