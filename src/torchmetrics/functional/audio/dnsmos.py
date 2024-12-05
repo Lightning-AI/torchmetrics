@@ -102,15 +102,16 @@ def _load_session(
         opts.intra_op_num_threads = num_threads
 
     if device.type != "cpu":
+        providers = []
         if "CUDAExecutionProvider" in get_available_providers():  # win or linux with cuda
             providers = ["CUDAExecutionProvider", "CPUExecutionProvider"]
-            provider_options = [{"device_id": device.index}, {}]
-            return InferenceSession(path, providers=providers, provider_options=provider_options, sess_options=opts)
-        if "CoreMLExecutionProvider" in get_available_providers():  # macos with coreml
+        elif "CoreMLExecutionProvider" in get_available_providers():  # macos with coreml
             providers = ["CoreMLExecutionProvider", "CPUExecutionProvider"]
-            provider_options = [{"device_id": device.index}, {}]
-            return InferenceSession(path, providers=providers, provider_options=provider_options, sess_options=opts)
-        raise NotImplementedError("No GPU or CoreML provider found, reverting to CPU.")
+        if not providers:
+            raise NotImplementedError("No GPU or CoreML provider found, reverting to CPU.")
+        return InferenceSession(
+            path, providers=providers, provider_options=[{"device_id": device.index}, {}], sess_options=opts
+        )
     return InferenceSession(path, providers=["CPUExecutionProvider"], sess_options=opts)
 
 
