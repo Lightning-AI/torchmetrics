@@ -87,7 +87,7 @@ def _adjust_weights_safe_divide(
             weights[tp + fp + fn == 0 if top_k == 1 else tp + fn == 0] = 0.0
 
     if ignore_index is not None and 0 <= ignore_index < len(score):
-        weights[ignore_index] = 0.0
+        weights[..., ignore_index] = 0.0
 
     return _safe_divide(weights * score, weights.sum(-1, keepdim=True)).sum(-1)
 
