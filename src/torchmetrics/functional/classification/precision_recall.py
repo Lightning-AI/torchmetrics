@@ -250,11 +250,11 @@ def multiclass_precision(
         fp,
         tn,
         fn,
-        ignore_index=ignore_index,
         average=average,
         multidim_average=multidim_average,
         top_k=top_k,
         zero_division=zero_division,
+        ignore_index=ignore_index,
     )
 
 
@@ -561,11 +561,11 @@ def multiclass_recall(
         fp,
         tn,
         fn,
-        ignore_index=ignore_index,
         average=average,
         multidim_average=multidim_average,
         top_k=top_k,
         zero_division=zero_division,
+        ignore_index=ignore_index,
     )
 
 
@@ -675,11 +675,11 @@ def multilabel_recall(
         fp,
         tn,
         fn,
-        ignore_index=ignore_index,
         average=average,
         multidim_average=multidim_average,
         multilabel=True,
         zero_division=zero_division,
+        ignore_index=ignore_index,
     )
 
 
