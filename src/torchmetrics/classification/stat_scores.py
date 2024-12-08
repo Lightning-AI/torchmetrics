@@ -340,8 +340,9 @@ class MulticlassStatScores(_AbstractStatScores):
                 preds, target, self.num_classes, self.multidim_average, self.ignore_index
             )
         preds, target = _multiclass_stat_scores_format(preds, target, self.top_k)
+        num_classes = self.num_classes if self.num_classes is not None else 1
         tp, fp, tn, fn = _multiclass_stat_scores_update(
-            preds, target, self.num_classes, self.top_k, self.average, self.multidim_average, self.ignore_index
+            preds, target, num_classes, self.top_k, self.average, self.multidim_average, self.ignore_index
         )
         self._update_state(tp, fp, tn, fn)
 
