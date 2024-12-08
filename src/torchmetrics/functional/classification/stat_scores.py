@@ -401,10 +401,7 @@ def _multiclass_stat_scores_update(
         tp = (preds == target).sum()
         fp = (preds != target).sum()
         fn = (preds != target).sum()
-        if num_classes is None:
-            tn = (preds == target).sum()
-        else:
-            tn = num_classes * preds.numel() - (fp + fn + tp)
+        tn = (preds == target).sum() if num_classes is None else num_classes * preds.numel() - (fp + fn + tp)
     else:
         preds = preds.flatten()
         target = target.flatten()
