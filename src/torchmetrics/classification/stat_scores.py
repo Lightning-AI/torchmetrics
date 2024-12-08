@@ -330,7 +330,7 @@ class MulticlassStatScores(_AbstractStatScores):
         self.zero_division = zero_division
 
         self._create_state(
-            size=1 if (average == "micro" and top_k == 1) else num_classes, multidim_average=multidim_average
+            size=1 if (average == "micro" and top_k == 1) else (num_classes or 1), multidim_average=multidim_average
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:

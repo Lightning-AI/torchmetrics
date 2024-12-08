@@ -219,7 +219,7 @@ def binary_stat_scores(
 
 
 def _multiclass_stat_scores_arg_validation(
-    num_classes: int,
+    num_classes: Optional[int],
     top_k: int = 1,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
@@ -261,7 +261,7 @@ def _multiclass_stat_scores_arg_validation(
 def _multiclass_stat_scores_tensor_validation(
     preds: Tensor,
     target: Tensor,
-    num_classes: int,
+    num_classes: Optional[int],
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
 ) -> None:
@@ -279,7 +279,7 @@ def _multiclass_stat_scores_tensor_validation(
     if preds.ndim == target.ndim + 1:
         if not preds.is_floating_point():
             raise ValueError("If `preds` have one dimension more than `target`, `preds` should be a float tensor.")
-        if preds.shape[1] != num_classes:
+        if num_classes is not None and preds.shape[1] != num_classes:
             raise ValueError(
                 "If `preds` have one dimension more than `target`, `preds.shape[1]` should be"
                 " equal to number of classes."
