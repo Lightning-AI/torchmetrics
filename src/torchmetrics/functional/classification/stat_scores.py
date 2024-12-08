@@ -344,7 +344,7 @@ def _multiclass_stat_scores_format(
 def _multiclass_stat_scores_update(
     preds: Tensor,
     target: Tensor,
-    num_classes: int,
+    num_classes: Optional[int],
     top_k: int = 1,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
@@ -399,9 +399,12 @@ def _multiclass_stat_scores_update(
             preds = preds[idx]
             target = target[idx]
         tp = (preds == target).sum()
-        tn = (preds == target).sum()
         fp = (preds != target).sum()
         fn = (preds != target).sum()
+        if num_classes is None:
+            tn = (preds == target).sum()
+        else:
+            tn = num_classes * preds.numel() - (fp + fn + tp)
     else:
         preds = preds.flatten()
         target = target.flatten()
