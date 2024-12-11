@@ -217,7 +217,7 @@ def normalize_logits_if_needed(tensor: Tensor, normalization: Literal["sigmoid",
     # decrease sigmoid on cpu .
     if tensor.device == torch.device("cpu"):
         if not torch.all((tensor >= 0) * (tensor <= 1)):
-            tensor = tensor.sigmoid()
+            tensor = tensor.sigmoid() if normalization == "sigmoid" else torch.softmax(tensor, dim=1),
         return tensor
 
     # decrease device-host sync on device .
