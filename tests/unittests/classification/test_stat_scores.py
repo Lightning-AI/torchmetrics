@@ -29,7 +29,7 @@ from torchmetrics.functional.classification.stat_scores import (
     binary_stat_scores,
     multiclass_stat_scores,
     multilabel_stat_scores,
-    refine_preds_oh,
+    _refine_preds_oh,
 )
 from torchmetrics.metric import Metric
 
@@ -371,9 +371,9 @@ def test_raises_error_on_too_many_classes(preds, target, ignore_index, error_mes
     ],
 )
 def test_refine_preds_oh(top_k, expected_result):
-    """Test the refine_preds_oh function.
+    """Test the _refine_preds_oh function.
 
-    This function tests the behavior of the refine_preds_oh function with various top_k values
+    This function tests the behavior of the _refine_preds_oh function with various top_k values
     and checks if the output matches the expected one-hot encoded results.
 
     Args:
@@ -392,7 +392,7 @@ def test_refine_preds_oh(top_k, expected_result):
 
     target = torch.tensor([0, 1, 1, 2])
 
-    result = refine_preds_oh(preds, preds_oh, target, top_k)
+    result = _refine_preds_oh(preds, preds_oh, target, top_k)
     assert torch.equal(result, expected_result), (
         f"Test failed for top_k={top_k}. " f"Expected result: {expected_result}, but got: {result}"
     )
