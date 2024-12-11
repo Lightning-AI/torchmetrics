@@ -341,7 +341,7 @@ def _multiclass_stat_scores_format(
     return preds, target
 
 
-def refine_preds_oh(preds: Tensor, preds_oh: Tensor, target: Tensor, top_k: int) -> Tensor:
+def _refine_preds_oh(preds: Tensor, preds_oh: Tensor, target: Tensor, top_k: int) -> Tensor:
     """Refines prediction one-hot encodings by replacing entries with target one-hot when there's an intersection.
 
     When no intersection is found between the top-k predictions and target, uses the top-1 prediction.
@@ -396,7 +396,7 @@ def _multiclass_stat_scores_update(
 
         if top_k > 1:
             preds_oh = torch.movedim(select_topk(preds, topk=top_k, dim=1), 1, -1)
-            preds_oh = refine_preds_oh(preds, preds_oh, target, top_k)
+            preds_oh = _refine_preds_oh(preds, preds_oh, target, top_k)
         else:
             preds_oh = torch.nn.functional.one_hot(
                 preds.long(), num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
