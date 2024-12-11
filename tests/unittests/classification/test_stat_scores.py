@@ -26,10 +26,10 @@ from torchmetrics.classification.stat_scores import (
     StatScores,
 )
 from torchmetrics.functional.classification.stat_scores import (
+    _refine_preds_oh,
     binary_stat_scores,
     multiclass_stat_scores,
     multilabel_stat_scores,
-    _refine_preds_oh,
 )
 from torchmetrics.metric import Metric
 
