@@ -30,6 +30,7 @@ from torchmetrics.functional.classification.ranking import (
     multilabel_ranking_average_precision,
     multilabel_ranking_loss,
 )
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
@@ -117,8 +118,8 @@ class TestMultilabelRanking(MetricTester):
     def test_multilabel_ranking_dtype_cpu(self, inputs, metric, functional_metric, ref_metric, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         if dtype == torch.half and functional_metric == multilabel_ranking_average_precision:
             pytest.xfail(
                 reason="multilabel_ranking_average_precision requires torch.unique which is not implemented for half"
