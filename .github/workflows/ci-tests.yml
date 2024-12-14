@@ -99,9 +99,9 @@ jobs:
           pytorch-version: ${{ matrix.pytorch-version }}
           pypi-dir: ${{ env.PYPI_CACHE_DIR }}
 
-      #- name: Switch to PT test URL
-      #  if: ${{ matrix.pytorch-version == '2.X.0' }}
-      #  run: echo 'PIP_EXTRA_INDEX_URL=--extra-index-url https://download.pytorch.org/whl/test/cpu/' >> $GITHUB_ENV
+      - name: Switch to PT test URL
+        if: ${{ matrix.pytorch-version == '2.6.0' }}
+        run: echo 'PIP_EXTRA_INDEX_URL=--extra-index-url https://download.pytorch.org/whl/test/cpu/' >> $GITHUB_ENV
       - name: Install pkg
         timeout-minutes: 25
         run: |
