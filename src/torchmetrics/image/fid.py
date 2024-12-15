@@ -324,7 +324,7 @@ class FrechetInceptionDistance(Metric):
                 )
 
             self.inception = NoTrainInceptionV3(
-                name="inception-v3-compat", 
+                name="inception-v3-compat",
                 features_list=[str(feature)],
                 feature_extractor_weights_path=feature_extractor_weights_path,
             )
