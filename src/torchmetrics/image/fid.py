@@ -300,7 +300,7 @@ class FrechetInceptionDistance(Metric):
         reset_real_features: bool = True,
         normalize: bool = False,
         input_img_size: tuple[int, int, int] = (3, 299, 299),
-        feature_extractor_weights_path: Optional[str] = None
+        feature_extractor_weights_path: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -324,7 +324,7 @@ class FrechetInceptionDistance(Metric):
                 )
 
             self.inception = NoTrainInceptionV3(
-                name="inception-v3-compat", 
+                name="inception-v3-compat",
                 features_list=[str(feature)],
                 feature_extractor_weights_path=feature_extractor_weights_path,
             )
