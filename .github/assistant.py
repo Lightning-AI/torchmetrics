@@ -164,9 +164,9 @@ class AssistantCLI:
     @staticmethod
     def move_new_packages(dir_cache: str, dir_local: str, dir_staging: str) -> None:
         """Move unique packages from local folder to staging."""
-        assert os.path.isdir(dir_cache), f"Missing folder with saved packages: '{dir_cache}'"
-        assert os.path.isdir(dir_local), f"Missing folder with local packages: '{dir_local}'"
-        assert os.path.isdir(dir_staging), f"Missing folder for staging: '{dir_staging}'"
+        assert os.path.isdir(dir_cache), f"Missing folder with saved packages: '{dir_cache}'"  # noqa: S101
+        assert os.path.isdir(dir_local), f"Missing folder with local packages: '{dir_local}'"  # noqa: S101
+        assert os.path.isdir(dir_staging), f"Missing folder for staging: '{dir_staging}'"  # noqa: S101
 
         import shutil
 

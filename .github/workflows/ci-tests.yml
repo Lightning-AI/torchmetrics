@@ -211,7 +211,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: update cashing
-        if: github.event_name != 'pull_request'
+        # if: github.event_name != 'pull_request'  # fixme
         continue-on-error: true
         uses: ./.github/actions/push-caches
         with:
@@ -234,7 +234,6 @@ jobs:
         run: sleep 90
 
   merge-artifacts:
-    runs-on: ubuntu-latest
     needs: pytester
     if: success()
     uses: ./.github/workflows/_merge-artifacts.yml
