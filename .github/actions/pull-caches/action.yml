@@ -21,10 +21,12 @@ inputs:
   cache-torch-HF:
     description: "cache torch and HF"
     required: false
+    type: boolean
     default: true
   cache-references:
     description: "cache metrics references"
     required: false
+    type: boolean
     default: false
 
 runs:
