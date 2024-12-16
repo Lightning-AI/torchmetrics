@@ -17,6 +17,7 @@ import pytest
 import torch
 from sklearn.metrics import f1_score
 from torch import tensor
+from torchmetrics import MetricCollection
 from torchmetrics.functional.segmentation.dice import dice_score
 from torchmetrics.segmentation.dice import DiceScore
 
@@ -149,3 +150,32 @@ def test_zero_division(zero_division, average):
     assert torch.allclose(
         score, res_dict[average][zero_division], atol=1e-4, equal_nan=True
     ), f"Expected {res_dict[average][zero_division]} but got {score}"
+
+
+@pytest.mark.parametrize("compute_groups", [True, False])
+def test_dice_score_metric_collection(compute_groups: bool, num_batches: int = 4):
+    """Test that the metric works within a metric collection with and without compute groups."""
+    metric_collection = MetricCollection(
+        metrics={
+            "DiceScore (micro)": DiceScore(
+                num_classes=NUM_CLASSES,
+                average="micro",
+            ),
+            "DiceScore (macro)": DiceScore(
+                num_classes=NUM_CLASSES,
+                average="macro",
+            ),
+            "DiceScore (weighted)": DiceScore(
+                num_classes=NUM_CLASSES,
+                average="weighted",
+            ),
+        },
+        compute_groups=compute_groups,
+    )
+
+    for _ in range(num_batches):
+        metric_collection.update(_inputs1.preds, _inputs1.target)
+    result = metric_collection.compute()
+
+    assert isinstance(result, dict)
+    assert len(set(metric_collection.keys()) - set(result.keys())) == 0

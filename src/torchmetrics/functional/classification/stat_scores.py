@@ -291,7 +291,7 @@ def _multiclass_stat_scores_tensor_validation(
             )
         if multidim_average != "global" and preds.ndim < 3:
             raise ValueError(
-                "If `preds` have one dimension more than `target`, the shape of `preds` should "
+                "If `preds` have one dimension more than `target`, the shape of `preds` should be"
                 " at least 3D when multidim_average is set to `samplewise`"
             )
 
@@ -303,7 +303,7 @@ def _multiclass_stat_scores_tensor_validation(
             )
         if multidim_average != "global" and preds.ndim < 2:
             raise ValueError(
-                "When `preds` and `target` have the same shape, the shape of `preds` should "
+                "When `preds` and `target` have the same shape, the shape of `preds` should be"
                 " at least 2D when multidim_average is set to `samplewise`"
             )
     else:

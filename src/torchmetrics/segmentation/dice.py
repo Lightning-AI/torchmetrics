@@ -135,8 +135,7 @@ class DiceScore(Metric):
         )
         self.numerator.append(numerator)
         self.denominator.append(denominator)
-        if self.average == "weighted":
-            self.support.append(support)
+        self.support.append(support)
 
     def compute(self) -> Tensor:
         """Computes the Dice Score."""
