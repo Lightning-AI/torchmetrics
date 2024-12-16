@@ -20,6 +20,9 @@ defaults:
   run:
     shell: bash
 
+env:
+  PYPI_CACHE_DIR: "_ci-cache_PyPI"
+
 jobs:
   check-diff:
     if: github.event.pull_request.draft == false
@@ -59,7 +62,6 @@ jobs:
           #- { os: "windows-2022", python-version: "3.11", pytorch-version: "2.5.0" }
     env:
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
-      PYPI_CACHE_DIR: "_ci-cache_PyPI"
       TOKENIZERS_PARALLELISM: false
       TEST_DIRS: ${{ needs.check-diff.outputs.test-dirs }}
       PIP_EXTRA_INDEX_URL: "--find-links https://download.pytorch.org/whl/cpu/torch_stable.html"
@@ -98,6 +100,7 @@ jobs:
           requires: ${{ matrix.requires }}
           pytorch-version: ${{ matrix.pytorch-version }}
           pypi-dir: ${{ env.PYPI_CACHE_DIR }}
+          cache-references: true
 
       #- name: Switch to PT test URL
       #  if: ${{ matrix.pytorch-version == '2.X.0' }}
@@ -201,7 +204,7 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: tests/coverage.xml
+          file: "tests/coverage.xml"
           flags: cpu,${{ runner.os }},python${{ matrix.python-version }},torch${{ steps.info.outputs.TORCH }}
           env_vars: OS,PYTHON
           name: codecov-umbrella
@@ -213,6 +216,8 @@ jobs:
         uses: ./.github/actions/push-caches
         with:
           pypi-dir: ${{ env.PYPI_CACHE_DIR }}
+          cache-artifact-appendix: ${{ github.run_id }}-${{ strategy.job-index }}
+          cache-references: true
 
   testing-guardian:
     runs-on: ubuntu-latest
@@ -227,3 +232,12 @@ jobs:
         if: contains(fromJSON('["cancelled", "skipped"]'), needs.pytester.result)
         timeout-minutes: 1
         run: sleep 90
+
+  merge-artifacts:
+    runs-on: ubuntu-latest
+    needs: pytester
+    if: success()
+    uses: ./.github/workflows/_merge-artifacts.yml
+    with:
+      pypi-dir: ${{ env.PYPI_CACHE_DIR }}
+      cache-artifact-appendix: ${{ github.run_id }}-${{ strategy.job-index }}
