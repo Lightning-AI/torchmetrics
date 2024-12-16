@@ -233,10 +233,10 @@ jobs:
         timeout-minutes: 1
         run: sleep 90
 
-  merge-artifacts:
+  merge-pkg-artifacts:
     needs: pytester
     if: success()
-    uses: ./.github/workflows/_merge-artifacts.yml
+    uses: ./.github/workflows/_merge_cache.yml
     with:
       pypi-dir: ${{ env.PYPI_CACHE_DIR }}
       cache-artifact-appendix: ${{ github.run_id }}-${{ strategy.job-index }}
