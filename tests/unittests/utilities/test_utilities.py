@@ -31,7 +31,7 @@ from torchmetrics.utilities.data import (
 )
 from torchmetrics.utilities.distributed import class_reduce, reduce
 from torchmetrics.utilities.exceptions import TorchMetricsUserWarning
-from torchmetrics.utilities.imports import _TORCH_LESS_THAN_2_6, _TORCH_GREATER_EQUAL_2_2
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_2, _TORCH_LESS_THAN_2_6
 
 
 def test_prints():
@@ -171,11 +171,14 @@ def test_recursive_allclose(inputs, expected):
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU")
-@pytest.mark.xfail(sys.platform != "win32" and _TORCH_LESS_THAN_2_6, reason="test will only fail on non-windows systems")
+@pytest.mark.xfail(
+    sys.platform != "win32" and _TORCH_LESS_THAN_2_6, reason="test will only fail on non-windows systems"
+)
 def test_cumsum_still_not_supported(use_deterministic_algorithms):
     """Make sure that cumsum on GPU and deterministic mode still fails.
 
     If this test begins to pass, it means newer Pytorch versions support this and we can drop internal support.
+
     """
     with pytest.raises(RuntimeError, match="cumsum_cuda_kernel does not have a deterministic implementation.*"):
         torch.arange(10).float().cuda().cumsum(0)
