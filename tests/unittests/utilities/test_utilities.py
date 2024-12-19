@@ -16,6 +16,7 @@ import sys
 import numpy as np
 import pytest
 import torch
+from lightning_utilities.test.warning import no_warning_call
 from torch import tensor
 from torchmetrics.regression import MeanSquaredError, PearsonCorrCoef
 from torchmetrics.utilities import check_forward_full_state_property, rank_zero_debug, rank_zero_info, rank_zero_warn
@@ -190,15 +191,16 @@ def test_custom_cumsum(use_deterministic_algorithms):
     # check that cumsum works as expected on non-default cuda device
     device = torch.device("cuda:1") if torch.cuda.device_count() > 1 else torch.device("cuda:0")
     x = torch.arange(100).float().to(device)
-    if sys.platform != "win32" and _TORCH_LESS_THAN_2_6 and torch.are_deterministic_algorithms_enabled():
-        with pytest.warns(
+    with (
+        pytest.warns(
             TorchMetricsUserWarning, match="You are trying to use a metric in deterministic mode on GPU that.*"
-        ):
-            res = _cumsum(x, dim=0).cpu()
-    else:
-        res = _cumsum(x, dim=0).cpu()
-    res2 = np.cumsum(x.cpu(), axis=0)
-    assert torch.allclose(res, res2)
+        )
+        if sys.platform != "win32" and _TORCH_LESS_THAN_2_6 and torch.are_deterministic_algorithms_enabled()
+        else no_warning_call()
+    ):
+        ours = _cumsum(x, dim=0)
+    ref_np = np.cumsum(x.cpu(), axis=0)
+    assert torch.allclose(ours.cpu(), ref_np)
 
 
 def _reference_topk(x, dim, k):
