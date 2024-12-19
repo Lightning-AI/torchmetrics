@@ -116,12 +116,12 @@ class CLIPScore(Metric):
         self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
-    def update(self, images: Union[Tensor, List[Tensor]], text: Union[str, List[str]]) -> None:
+    def update(self, source: Union[Tensor, List[Tensor], List[str], str],target: Union[Tensor, List[Tensor], List[str], str]) -> None:
         """Update CLIP score on a batch of images and text.
 
         Args:
-            images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors
-            text: Either a single caption or a list of captions
+            source: Source input (images(Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors) or text(Either a single caption or a list of captions))
+            target: Target input (images(Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors) or text(Either a single caption or a list of captions))
 
         Raises:
             ValueError:
@@ -130,7 +130,7 @@ class CLIPScore(Metric):
                 If the number of images and captions do not match
 
         """
-        score, n_samples = _clip_score_update(images, text, self.model, self.processor)
+        score, n_samples = _clip_score_update(source, target, self.model, self.processor)
         self.score += score.sum(0)
         self.n_samples += n_samples
 

@@ -40,54 +40,108 @@ else:
     _CLIPModel = None
     _CLIPProcessor = None
 
+def _detect_modality(input_data: Union[Tensor, List[Tensor], List[str], str]) -> Literal["image", "text"]:
+    """Automatically detect the modality of the input data.
+    
+    Args:
+        input_data: Input data that can be either image tensors or text strings
+        
+    Returns:
+        str: Either "image" or "text"
+        
+    Raises:
+        ValueError: If the modality cannot be determined
+    """
+    if isinstance(input_data, Tensor):
+        if input_data.ndim == 3:  # Single image: [C, H, W]
+            return "image"
+        elif input_data.ndim == 4:  # Batch of images: [B, C, H, W]
+            return "image"
+    elif isinstance(input_data, list):
+        if len(input_data) == 0:
+            raise ValueError("Empty input list")
+        # Check first element
+        if isinstance(input_data[0], Tensor):
+            if input_data[0].ndim == 3:  # [C, H, W]
+                return "image"
+        elif isinstance(input_data[0], str):
+            return "text"
+    elif isinstance(input_data, str):
+        return "text"
+    
+    raise ValueError(
+        f"Could not automatically determine modality for input_data"
+    )
+
+def _process_data(data, modality):
+    """Helper function to process both source and target data"""
+    if modality == "image":
+        if not isinstance(data, list):
+            if isinstance(data, Tensor) and data.ndim == 3:
+                data = [data]
+        else:
+            data = list(data)
+        if not all(i.ndim == 3 for i in data):
+            raise ValueError("Expected all images to be 3d but found image that has either more or less")
+    else:  # text
+        if not isinstance(data, list):
+            data = [data]
+    return data
+
+def _get_features(data, modality, device, model, processor):
+    if modality == "image":
+        processed = processor(images=[i.cpu() for i in data], return_tensors="pt", padding=True)
+        features = model.get_image_features(processed["pixel_values"].to(device))
+    else:
+        processed = processor(text=data, return_tensors="pt", padding=True)
+        max_position_embeddings = model.config.text_config.max_position_embeddings
+        if processed["attention_mask"].shape[-1] > max_position_embeddings:
+            rank_zero_warn(
+                f"Encountered caption longer than {max_position_embeddings=}. Will truncate captions to this length."
+                "If longer captions are needed, initialize argument `model_name_or_path` with a model that supports"
+                "longer sequences",
+                UserWarning,
+            )
+            processed["attention_mask"] = processed["attention_mask"][..., :max_position_embeddings]
+            processed["input_ids"] = processed["input_ids"][..., :max_position_embeddings]
+        features = model.get_text_features(
+            processed["input_ids"].to(device),
+            processed["attention_mask"].to(device)
+        )
+        
+    return features
 
 def _clip_score_update(
-    images: Union[Tensor, List[Tensor]],
-    text: Union[str, List[str]],
+    source: Union[Tensor, List[Tensor], List[str], str],
+    target: Union[Tensor, List[Tensor], List[str], str],
     model: _CLIPModel,
     processor: _CLIPProcessor,
-) -> Tuple[Tensor, int]:
-    if not isinstance(images, list):
-        if images.ndim == 3:
-            images = [images]
-    else:  # unwrap into list
-        images = list(images)
+) -> tuple[Tensor, int]:    
+    source_modality = _detect_modality(source)
+    target_modality = _detect_modality(target)
 
-    if not all(i.ndim == 3 for i in images):
-        raise ValueError("Expected all images to be 3d but found image that has either more or less")
+    source_data = _process_data(source, source_modality)
+    target_data = _process_data(target, target_modality)
 
-    if not isinstance(text, list):
-        text = [text]
-
-    if len(text) != len(images):
+    # Verify matching lengths
+    if len(source_data) != len(target_data):
         raise ValueError(
-            f"Expected the number of images and text examples to be the same but got {len(images)} and {len(text)}"
+            f"Expected the number of source and target examples to be the same but got {len(source_data)} and {len(target_data)}"
         )
-    device = images[0].device
-    processed_input = processor(text=text, images=[i.cpu() for i in images], return_tensors="pt", padding=True)
 
-    img_features = model.get_image_features(processed_input["pixel_values"].to(device))
-    img_features = img_features / img_features.norm(p=2, dim=-1, keepdim=True)
+    device = (source[0].device if source_modality == "image" else 
+             target[0].device if target_modality == "image" else 
+             torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+    model = model.to(device)
 
-    max_position_embeddings = model.config.text_config.max_position_embeddings
-    if processed_input["attention_mask"].shape[-1] > max_position_embeddings:
-        rank_zero_warn(
-            f"Encountered caption longer than {max_position_embeddings=}. Will truncate captions to this length."
-            "If longer captions are needed, initialize argument `model_name_or_path` with a model that supports"
-            "longer sequences",
-            UserWarning,
-        )
-        processed_input["attention_mask"] = processed_input["attention_mask"][..., :max_position_embeddings]
-        processed_input["input_ids"] = processed_input["input_ids"][..., :max_position_embeddings]
+    source_features = _get_features(source_data, source_modality, device, model, processor)
+    target_features = _get_features(target_data, target_modality, device, model, processor)
+    source_features = source_features / source_features.norm(p=2, dim=-1, keepdim=True)
+    target_features = target_features / target_features.norm(p=2, dim=-1, keepdim=True)
 
-    txt_features = model.get_text_features(
-        processed_input["input_ids"].to(device), processed_input["attention_mask"].to(device)
-    )
-    txt_features = txt_features / txt_features.norm(p=2, dim=-1, keepdim=True)
-
-    # cosine similarity between feature vectors
-    score = 100 * (img_features * txt_features).sum(axis=-1)
-    return score, len(text)
+    # Calculate cosine similarity
+    score = 100 * (source_features * target_features).sum(axis=-1)
+    return score, len(source_data)
 
 
 def _get_clip_model_and_processor(
@@ -113,8 +167,8 @@ def _get_clip_model_and_processor(
 
 
 def clip_score(
-    images: Union[Tensor, List[Tensor]],
-    text: Union[str, List[str]],
+    source: Union[Tensor, List[Tensor], List[str], str],
+    target: Union[Tensor, List[Tensor], List[str], str],
     model_name_or_path: Literal[
         "openai/clip-vit-base-patch16",
         "openai/clip-vit-base-patch32",
@@ -138,8 +192,8 @@ def clip_score(
     .. note:: Metric is not scriptable
 
     Args:
-        images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors
-        text: Either a single caption or a list of captions
+        source: Source input (images(Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors) or text(Either a single caption or a list of captions))
+        target: Target input (images(Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors) or text(Either a single caption or a list of captions))
         model_name_or_path: string indicating the version of the CLIP model to use. Available models are
             `"openai/clip-vit-base-patch16"`, `"openai/clip-vit-base-patch32"`, `"openai/clip-vit-large-patch14-336"`
             and `"openai/clip-vit-large-patch14"`,
@@ -160,7 +214,6 @@ def clip_score(
 
     """
     model, processor = _get_clip_model_and_processor(model_name_or_path)
-    device = images.device if isinstance(images, Tensor) else images[0].device
-    score, _ = _clip_score_update(images, text, model.to(device), processor)
+    score, _ = _clip_score_update(source, target, model, processor)
     score = score.mean(0)
     return torch.max(score, torch.zeros_like(score))
