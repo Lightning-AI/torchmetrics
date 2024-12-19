@@ -23,6 +23,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     _multiclass_confusion_matrix_format,
     _multiclass_confusion_matrix_tensor_validation,
 )
+from torchmetrics.utilities.compute import normalize_logits_if_needed
 from torchmetrics.utilities.data import to_onehot
 from torchmetrics.utilities.enums import ClassificationTaskNoMultilabel
 
@@ -153,9 +154,7 @@ def _multiclass_hinge_loss_update(
     squared: bool,
     multiclass_mode: Literal["crammer-singer", "one-vs-all"] = "crammer-singer",
 ) -> tuple[Tensor, Tensor]:
-    if not torch.all((preds >= 0) * (preds <= 1)):
-        preds = preds.softmax(1)
-
+    preds = normalize_logits_if_needed(preds, "softmax")
     target = to_onehot(target, max(2, preds.shape[1])).bool()
     if multiclass_mode == "crammer-singer":
         margin = preds[target]
