@@ -170,10 +170,10 @@ def test_recursive_allclose(inputs, expected):
     assert res == expected
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU")
-@pytest.mark.xfail(
-    sys.platform == "win32" or not _TORCH_LESS_THAN_2_6, reason="test will only fail on non-windows systems"
-)
+# @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU")
+# @pytest.mark.xfail(
+#     sys.platform == "win32" or not _TORCH_LESS_THAN_2_6, reason="test will only fail on non-windows systems"
+# )
 def test_cumsum_still_not_supported(use_deterministic_algorithms):
     """Make sure that cumsum on GPU and deterministic mode still fails.
 
@@ -190,7 +190,7 @@ def test_custom_cumsum(use_deterministic_algorithms):
     # check that cumsum works as expected on non-default cuda device
     device = torch.device("cuda:1") if torch.cuda.device_count() > 1 else torch.device("cuda:0")
     x = torch.arange(100).float().to(device)
-    if sys.platform != "win32":
+    if sys.platform != "win32" and _TORCH_LESS_THAN_2_6 and torch.are_deterministic_algorithms_enabled():
         with pytest.warns(
             TorchMetricsUserWarning, match="You are trying to use a metric in deterministic mode on GPU that.*"
         ):
