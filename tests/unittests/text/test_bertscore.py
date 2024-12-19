@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+from collections.abc import Sequence
 from functools import partial
-from typing import Sequence
 
 import pytest
 from torch import Tensor
@@ -174,10 +174,7 @@ class TestBERTScore(TextTester):
 
 @skip_on_connection_issues()
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
-@pytest.mark.parametrize(
-    "idf",
-    [(False,), (True,)],
-)
+@pytest.mark.parametrize("idf", [True, False])
 def test_bertscore_sorting(idf: bool):
     """Test that BERTScore is invariant to the order of the inputs."""
     short = "Short text"
@@ -191,3 +188,20 @@ def test_bertscore_sorting(idf: bool):
 
     # First index should be the self-comparison - sorting by length should not shuffle this
     assert score["f1"][0] > score["f1"][1]
+
+
+@skip_on_connection_issues()
+@pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_4, reason="test requires transformers>4.4")
+@pytest.mark.parametrize("truncation", [True, False])
+def test_bertscore_truncation(truncation: bool):
+    """Test that BERTScore truncation works as expected."""
+    pred = ["abc " * 2000]
+    gt = ["def " * 2000]
+    bert_score = BERTScore(truncation=truncation)
+
+    if truncation:
+        res = bert_score(pred, gt)
+        assert res["f1"] > 0.0
+    else:
+        with pytest.raises(RuntimeError, match="The expanded size of the tensor.*must match.*"):
+            bert_score(pred, gt)

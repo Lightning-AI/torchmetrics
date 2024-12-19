@@ -33,12 +33,20 @@ from torchmetrics.classification import (
     MultilabelAveragePrecision,
 )
 from torchmetrics.utilities.checks import _allclose_recursive
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_0
 
 from unittests._helpers import seed_all
 from unittests._helpers.testers import DummyMetricDiff, DummyMetricMultiOutputDict, DummyMetricSum
 
 seed_all(42)
+
+
+def test_metric_collection_jit_script():
+    """Test that the MetricCollection can be scripted and jitted."""
+    m1 = DummyMetricSum()
+    m2 = DummyMetricDiff()
+    metric_collection = MetricCollection([m1, m2])
+    scripted = torch.jit.script(metric_collection)
+    assert isinstance(scripted, torch.jit.ScriptModule)
 
 
 def test_metric_collection(tmpdir):
@@ -151,7 +159,6 @@ def test_metric_collection_args_kwargs(tmpdir):
     assert metric_collection["DummyMetricDiff"].x == -20
 
 
-@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_0, reason="Test requires torch 2.0 or higher")
 @pytest.mark.parametrize(
     ("prefix", "postfix"),
     [

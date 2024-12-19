@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 
@@ -64,7 +65,7 @@ class DunnIndex(Metric):
 
     is_differentiable: bool = True
     higher_is_better: bool = True
-    full_state_update: bool = True
+    full_state_update: bool = False
     plot_lower_bound: float = 0.0
     data: List[Tensor]
     labels: List[Tensor]
@@ -121,7 +122,7 @@ class DunnIndex(Metric):
             >>> metric = DunnIndex(p=2)
             >>> values = [ ]
             >>> for _ in range(10):
-            ...     values.append(metric(torch.randn(10, 3), torch.randint(0, 2, (10,))))
+            ...     values.append(metric(torch.randn(50, 3), torch.randint(0, 2, (50,))))
             >>> fig_, ax_ = metric.plot(values)
 
         """

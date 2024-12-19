@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -110,7 +111,8 @@ class MeanIoU(Metric):
         self.input_format = input_format
 
         num_classes = num_classes - 1 if not include_background else num_classes
-        self.add_state("score", default=torch.zeros(num_classes if per_class else 1), dist_reduce_fx="mean")
+        self.add_state("score", default=torch.zeros(num_classes if per_class else 1), dist_reduce_fx="sum")
+        self.add_state("num_batches", default=torch.tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the state with the new data."""
@@ -119,10 +121,11 @@ class MeanIoU(Metric):
         )
         score = _mean_iou_compute(intersection, union, per_class=self.per_class)
         self.score += score.mean(0) if self.per_class else score.mean()
+        self.num_batches += 1
 
     def compute(self) -> Tensor:
-        """Update the state with the new data."""
-        return self.score  # / self.num_batches
+        """Compute the final Mean Intersection over Union (mIoU)."""
+        return self.score / self.num_batches
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.

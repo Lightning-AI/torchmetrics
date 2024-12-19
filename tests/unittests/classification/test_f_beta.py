@@ -63,14 +63,14 @@ def _reference_sklearn_fbeta_score_binary(preds, target, sk_fn, ignore_index, mu
         preds = (preds >= THRESHOLD).astype(np.uint8)
 
     if multidim_average == "global":
-        target, preds = remove_ignore_index(target, preds, ignore_index)
+        target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
         return sk_fn(target, preds, zero_division=zero_division)
 
     res = []
     for pred, true in zip(preds, target):
         pred = pred.flatten()
         true = true.flatten()
-        true, pred = remove_ignore_index(true, pred, ignore_index)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
         res.append(sk_fn(true, pred, zero_division=zero_division))
     return np.stack(res)
 
@@ -205,7 +205,7 @@ def _reference_sklearn_fbeta_score_multiclass(
     if multidim_average == "global":
         preds = preds.numpy().flatten()
         target = target.numpy().flatten()
-        target, preds = remove_ignore_index(target, preds, ignore_index)
+        target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
         return sk_fn(
             target,
             preds,
@@ -220,7 +220,7 @@ def _reference_sklearn_fbeta_score_multiclass(
     for pred, true in zip(preds, target):
         pred = pred.flatten()
         true = true.flatten()
-        true, pred = remove_ignore_index(true, pred, ignore_index)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
 
         if len(pred) == 0 and average == "weighted":
             # The result of sk_fn([], [], labels=None, average="weighted", zero_division=zero_division)
@@ -417,13 +417,13 @@ def _reference_sklearn_fbeta_score_multilabel_global(preds, target, sk_fn, ignor
     if average == "micro":
         preds = preds.flatten()
         target = target.flatten()
-        target, preds = remove_ignore_index(target, preds, ignore_index)
+        target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
         return sk_fn(target, preds, zero_division=zero_division)
 
     fbeta_score, weights = [], []
     for i in range(preds.shape[1]):
         pred, true = preds[:, i].flatten(), target[:, i].flatten()
-        true, pred = remove_ignore_index(true, pred, ignore_index)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
         fbeta_score.append(sk_fn(true, pred, zero_division=zero_division))
         confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
         weights.append(confmat[1, 1] + confmat[1, 0])
@@ -446,7 +446,7 @@ def _reference_sklearn_fbeta_score_multilabel_local(preds, target, sk_fn, ignore
     for i in range(preds.shape[0]):
         if average == "micro":
             pred, true = preds[i].flatten(), target[i].flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
+            true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
             fbeta_score.append(sk_fn(true, pred, zero_division=zero_division))
             confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
             weights.append(confmat[1, 1] + confmat[1, 0])
@@ -454,7 +454,7 @@ def _reference_sklearn_fbeta_score_multilabel_local(preds, target, sk_fn, ignore
             scores, w = [], []
             for j in range(preds.shape[1]):
                 pred, true = preds[i, j], target[i, j]
-                true, pred = remove_ignore_index(true, pred, ignore_index)
+                true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
                 scores.append(sk_fn(true, pred, zero_division=zero_division))
                 confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
                 w.append(confmat[1, 1] + confmat[1, 0])

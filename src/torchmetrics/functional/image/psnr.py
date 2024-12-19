@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -58,8 +58,8 @@ def _psnr_compute(
 def _psnr_update(
     preds: Tensor,
     target: Tensor,
-    dim: Optional[Union[int, Tuple[int, ...]]] = None,
-) -> Tuple[Tensor, Tensor]:
+    dim: Optional[Union[int, tuple[int, ...]]] = None,
+) -> tuple[Tensor, Tensor]:
     """Update and return variables required to compute peak signal-to-noise ratio.
 
     Args:
@@ -69,6 +69,11 @@ def _psnr_update(
             Default is None meaning scores will be reduced across all dimensions.
 
     """
+    if not preds.is_floating_point():
+        preds = preds.to(torch.float32)
+    if not target.is_floating_point():
+        target = target.to(torch.float32)
+
     if dim is None:
         sum_squared_error = torch.sum(torch.pow(preds - target, 2))
         num_obs = tensor(target.numel(), device=target.device)
@@ -90,10 +95,10 @@ def _psnr_update(
 def peak_signal_noise_ratio(
     preds: Tensor,
     target: Tensor,
-    data_range: Optional[Union[float, Tuple[float, float]]] = None,
+    data_range: Optional[Union[float, tuple[float, float]]] = None,
     base: float = 10.0,
     reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-    dim: Optional[Union[int, Tuple[int, ...]]] = None,
+    dim: Optional[Union[int, tuple[int, ...]]] = None,
 ) -> Tensor:
     """Compute the peak signal-to-noise ratio.
 
@@ -129,8 +134,8 @@ def peak_signal_noise_ratio(
         >>> peak_signal_noise_ratio(pred, target)
         tensor(2.5527)
 
-    .. note::
-        Half precision is only support on GPU for this metric
+    .. attention::
+        Half precision is only support on GPU for this metric.
 
     """
     if dim is None and reduction != "elementwise_mean":

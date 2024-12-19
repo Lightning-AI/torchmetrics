@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import TYPE_CHECKING, List, Tuple, Union
+from typing import TYPE_CHECKING, List, Union
 
 import torch
 from torch import Tensor
@@ -112,6 +112,7 @@ def _get_features(data, modality, device, model, processor):
     return features
 
 def _clip_score_update(
+
     source: Union[Tensor, List[Tensor], List[str], str],
     target: Union[Tensor, List[Tensor], List[str], str],
     model: _CLIPModel,
@@ -119,6 +120,7 @@ def _clip_score_update(
 ) -> tuple[Tensor, int]:    
     source_modality = _detect_modality(source)
     target_modality = _detect_modality(target)
+
 
     source_data = _process_data(source, source_modality)
     target_data = _process_data(target, target_modality)
@@ -151,7 +153,7 @@ def _get_clip_model_and_processor(
         "openai/clip-vit-large-patch14-336",
         "openai/clip-vit-large-patch14",
     ] = "openai/clip-vit-large-patch14",
-) -> Tuple[_CLIPModel, _CLIPProcessor]:
+) -> tuple[_CLIPModel, _CLIPProcessor]:
     if _TRANSFORMERS_GREATER_EQUAL_4_10:
         from transformers import CLIPModel as _CLIPModel
         from transformers import CLIPProcessor as _CLIPProcessor
@@ -169,6 +171,7 @@ def _get_clip_model_and_processor(
 def clip_score(
     source: Union[Tensor, List[Tensor], List[str], str],
     target: Union[Tensor, List[Tensor], List[str], str],
+
     model_name_or_path: Literal[
         "openai/clip-vit-base-patch16",
         "openai/clip-vit-base-patch32",
@@ -189,7 +192,8 @@ def clip_score(
     textual CLIP embedding :math:`E_C` for an caption :math:`C`. The score is bound between 0 and 100 and the closer
     to 100 the better.
 
-    .. note:: Metric is not scriptable
+    .. caution::
+        Metric is not scriptable
 
     Args:
         source: Source input (images(Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors) or text(Either a single caption or a list of captions))

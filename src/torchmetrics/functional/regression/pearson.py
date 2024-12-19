@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
-from typing import Tuple
 
 import torch
 from torch import Tensor
@@ -32,7 +31,7 @@ def _pearson_corrcoef_update(
     corr_xy: Tensor,
     num_prior: Tensor,
     num_outputs: int,
-) -> Tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor, Tensor]:
     """Update and returns variables required to compute Pearson Correlation Coefficient.
 
     Check for same shape of input tensors.
@@ -92,9 +91,10 @@ def _pearson_corrcoef_compute(
         nb: number of observations
 
     """
-    var_x /= nb - 1
-    var_y /= nb - 1
-    corr_xy /= nb - 1
+    # prevent overwrite the inputs
+    var_x = var_x / (nb - 1)
+    var_y = var_y / (nb - 1)
+    corr_xy = corr_xy / (nb - 1)
     # if var_x, var_y is float16 and on cpu, make it bfloat16 as sqrt is not supported for float16
     # on cpu, remove this after https://github.com/pytorch/pytorch/issues/54774 is fixed
     if var_x.dtype == torch.float16 and var_x.device == torch.device("cpu"):

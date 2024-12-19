@@ -18,9 +18,10 @@ import builtins
 import functools
 import inspect
 from abc import ABC, abstractmethod
+from collections.abc import Generator, Sequence
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, ClassVar, Dict, Generator, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, ClassVar, List, Optional, Union
 
 import torch
 from lightning_utilities import apply_to_collection
@@ -52,36 +53,39 @@ class Metric(Module, ABC):
     """Base class for all metrics present in the Metrics API.
 
     This class is inherited by all metrics and implements the following functionality:
-    1. Handles the transfer of metric states to correct device
-    2. Handles the synchronization of metric states across processes
 
-    The three core methods of the base class are
-    * ``add_state()``
-    * ``forward()``
-    * ``reset()``
+        1. Handles the transfer of metric states to the correct device.
+        2. Handles the synchronization of metric states across processes.
+        3. Provides properties and methods to control the overall behavior of the metric and its states.
 
-    which should almost never be overwritten by child classes. Instead, the following methods should be overwritten
-    * ``update()``
-    * ``compute()``
-
+    The three core methods of the base class are: ``add_state()``, ``forward()`` and ``reset()`` which should almost
+    never be overwritten by child classes. Instead, the following methods should be overwritten ``update()`` and
+    ``compute()``.
 
     Args:
         kwargs: additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-            - compute_on_cpu: If metric state should be stored on CPU during computations. Only works for list states.
-            - dist_sync_on_step: If metric state should synchronize on ``forward()``. Default is ``False``
-            - process_group: The process group on which the synchronization is called. Default is the world.
-            - dist_sync_fn: Function that performs the allgather option on the metric state. Default is an custom
-              implementation that calls ``torch.distributed.all_gather`` internally.
-            - distributed_available_fn: Function that checks if the distributed backend is available. Defaults to a
-              check of ``torch.distributed.is_available()`` and ``torch.distributed.is_initialized()``.
-            - sync_on_compute: If metric state should synchronize when ``compute`` is called. Default is ``True``
-            - compute_with_cache: If results from ``compute`` should be cached. Default is ``True``
+            - **compute_on_cpu**:
+                If metric state should be stored on CPU during computations. Only works for list states.
+            - **dist_sync_on_step**:
+                If metric state should synchronize on ``forward()``. Default is ``False``.
+            - **process_group**:
+                The process group on which the synchronization is called. Default is the world.
+            - **dist_sync_fn**:
+                Function that performs the allgather option on the metric state. Default is a custom
+                implementation that calls ``torch.distributed.all_gather`` internally.
+            - **distributed_available_fn**:
+                Function that checks if the distributed backend is available. Defaults to a
+                check of ``torch.distributed.is_available()`` and ``torch.distributed.is_initialized()``.
+            - **sync_on_compute**:
+                If metric state should synchronize when ``compute`` is called. Default is ``True``.
+            - **compute_with_cache**:
+                If results from ``compute`` should be cached. Default is ``True``.
 
     """
 
-    __jit_ignored_attributes__: ClassVar[List[str]] = ["device"]
-    __jit_unused_properties__: ClassVar[List[str]] = [
+    __jit_ignored_attributes__: ClassVar[list[str]] = ["device"]
+    __jit_unused_properties__: ClassVar[list[str]] = [
         "is_differentiable",
         "higher_is_better",
         "plot_lower_bound",
@@ -162,13 +166,13 @@ class Metric(Module, ABC):
         self._dtype_convert = False
 
         # initialize state
-        self._defaults: Dict[str, Union[List, Tensor]] = {}
-        self._persistent: Dict[str, bool] = {}
-        self._reductions: Dict[str, Union[str, Callable[..., Any], None]] = {}
+        self._defaults: dict[str, Union[list, Tensor]] = {}
+        self._persistent: dict[str, bool] = {}
+        self._reductions: dict[str, Union[str, Callable[..., Any], None]] = {}
 
         # state management
         self._is_synced = False
-        self._cache: Optional[Dict[str, Union[List[Tensor], Tensor]]] = None
+        self._cache: Optional[dict[str, Union[List[Tensor], Tensor]]] = None
 
     @property
     def _update_called(self) -> bool:
@@ -190,7 +194,7 @@ class Metric(Module, ABC):
         return self._update_count
 
     @property
-    def metric_state(self) -> Dict[str, Union[List[Tensor], Tensor]]:
+    def metric_state(self) -> dict[str, Union[List[Tensor], Tensor]]:
         """Get the current state of the metric."""
         return {attr: getattr(self, attr) for attr in self._defaults}
 
@@ -222,7 +226,7 @@ class Metric(Module, ABC):
             persistent (Optional): whether the state will be saved as part of the modules ``state_dict``.
                 Default is ``False``.
 
-        Note:
+        .. note::
             Setting ``dist_reduce_fx`` to None will return the metric state synchronized across different processes.
             However, there won't be any reduction function applied to the synchronized metric state.
 
@@ -236,11 +240,11 @@ class Metric(Module, ABC):
             - If the metric state is a ``list``, the synced value will be a ``list`` containing the
               combined elements from all processes.
 
-        Note:
+        .. important::
             When passing a custom function to ``dist_reduce_fx``, expect the synchronized metric state to follow
             the format discussed in the above note.
 
-        Note:
+        .. caution::
             The values inserted into a list state are deleted whenever :meth:`~Metric.reset` is called. This allows
             device memory to be automatically reallocated, but may produce unexpected effects when referencing list
             states. To retain such values after :meth:`~Metric.reset` is called, you must first copy them to another
@@ -284,7 +288,7 @@ class Metric(Module, ABC):
         """Aggregate and evaluate batch input directly.
 
         Serves the dual purpose of both computing the metric on the current batch of inputs but also add the batch
-        statistics to the overall accumululating metric state. Input arguments are the exact same as corresponding
+        statistics to the overall accumulating metric state. Input arguments are the exact same as corresponding
         ``update`` method. The returned output is the exact same as the output of ``compute``.
 
         Args:
@@ -361,7 +365,7 @@ class Metric(Module, ABC):
     def _forward_reduce_state_update(self, *args: Any, **kwargs: Any) -> Any:
         """Forward computation using single call to `update`.
 
-        This can be done when the global metric state is a sinple reduction of batch states. This can be unsafe for
+        This can be done when the global metric state is a simple reduction of batch states. This can be unsafe for
         certain metric cases but is also the fastest way to both accumulate globally and compute locally.
 
         """
@@ -398,7 +402,68 @@ class Metric(Module, ABC):
 
         return batch_val
 
-    def _reduce_states(self, incoming_state: Dict[str, Any]) -> None:
+    def merge_state(self, incoming_state: Union[dict[str, Any], "Metric"]) -> None:
+        """Merge incoming metric state to the current state of the metric.
+
+        Args:
+            incoming_state:
+                either a dict containing a metric state similar to the metric itself or an instance of the
+                metric class.
+
+        Raises:
+            ValueError:
+                If the incoming state is neither a dict nor an instance of the metric class.
+            RuntimeError:
+                If the metric has ``full_state_update=True`` or ``dist_sync_on_step=True``. In these cases, the metric
+                cannot be merged with another metric state in a simple way. The user should overwrite the method in the
+                metric class to handle the merge operation.
+            ValueError:
+                If the incoming state is a metric instance but the class is different from the current metric class.
+
+        Example with a metric instance:
+
+            >>> from torchmetrics.aggregation import SumMetric
+            >>> metric1 = SumMetric()
+            >>> metric2 = SumMetric()
+            >>> metric1.update(1)
+            >>> metric2.update(2)
+            >>> metric1.merge_state(metric2)
+            >>> metric1.compute()
+            tensor(3.)
+
+        Example with a dict:
+
+            >>> from torchmetrics.aggregation import SumMetric
+            >>> metric = SumMetric()
+            >>> metric.update(1)
+            >>> # SumMetric has one state variable called `sum_value`
+            >>> metric.merge_state({"sum_value": torch.tensor(2)})
+            >>> metric.compute()
+            tensor(3.)
+
+        """
+        if not isinstance(incoming_state, (dict, Metric)):
+            raise ValueError(
+                f"Expected incoming state to be a dict or an instance of Metric but got {type(incoming_state)}"
+            )
+
+        if self.full_state_update or self.full_state_update is None or self.dist_sync_on_step:
+            raise RuntimeError(
+                "``merge_state`` is not supported for metrics with ``full_state_update=True`` or "
+                "``dist_sync_on_step=True``. Please overwrite the merge_state method in the metric class."
+            )
+
+        if isinstance(incoming_state, Metric):
+            this_class = self.__class__
+            if not isinstance(incoming_state, this_class):
+                raise ValueError(
+                    f"Expected incoming state to be an instance of {this_class.__name__} but got {type(incoming_state)}"
+                )
+            incoming_state = incoming_state.metric_state
+
+        self._reduce_states(incoming_state)
+
+    def _reduce_states(self, incoming_state: dict[str, Any]) -> None:
         """Add an incoming metric state to the current state of the metric.
 
         Args:
@@ -407,6 +472,8 @@ class Metric(Module, ABC):
         """
         for attr in self._defaults:
             local_state = getattr(self, attr)
+            if attr not in incoming_state:
+                raise ValueError(f"Expected state variable {attr} to be present in incoming state {incoming_state}")
             global_state = incoming_state[attr]
             reduce_fn = self._reductions[attr]
             if reduce_fn == dim_zero_sum:
@@ -659,7 +726,7 @@ class Metric(Module, ABC):
 
     def _plot(
         self,
-        val: Optional[Union[Tensor, Sequence[Tensor], Dict[str, Tensor], Sequence[Dict[str, Tensor]]]] = None,
+        val: Optional[Union[Tensor, Sequence[Tensor], dict[str, Tensor], Sequence[dict[str, Tensor]]]] = None,
         ax: Optional[_AX_TYPE] = None,
     ) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.
@@ -710,7 +777,7 @@ class Metric(Module, ABC):
         """Make a copy of the metric."""
         return deepcopy(self)
 
-    def __getstate__(self) -> Dict[str, Any]:
+    def __getstate__(self) -> dict[str, Any]:
         """Get the current state, including all metric states, for the metric.
 
         Used for loading and saving a metric.
@@ -719,7 +786,7 @@ class Metric(Module, ABC):
         # ignore update and compute functions for pickling
         return {k: v for k, v in self.__dict__.items() if k not in ["update", "compute", "_update_signature"]}
 
-    def __setstate__(self, state: Dict[str, Any]) -> None:
+    def __setstate__(self, state: dict[str, Any]) -> None:
         """Set the state of the metric, based on a input state.
 
         Used for loading and saving a metric.
@@ -802,7 +869,7 @@ class Metric(Module, ABC):
         """Overwrite `_apply` function such that we can also move metric states to the correct device.
 
         This method is called by the base ``nn.Module`` class whenever `.to`, `.cuda`, `.float`, `.half` etc. methods
-        are called. Dtype conversion is garded and will only happen through the special `set_dtype` method.
+        are called. Dtype conversion is guarded and will only happen through the special `set_dtype` method.
 
         Args:
             fn: the function to apply
@@ -857,10 +924,10 @@ class Metric(Module, ABC):
 
     def state_dict(  # type: ignore[override]  # todo
         self,
-        destination: Optional[Dict[str, Any]] = None,
+        destination: Optional[dict[str, Any]] = None,
         prefix: str = "",
         keep_vars: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get the current state of metric as an dictionary.
 
         Args:
@@ -871,7 +938,7 @@ class Metric(Module, ABC):
                 If set to ``True``, detaching will not be performed.
 
         """
-        destination: Dict[str, Union[torch.Tensor, List, Any]] = super().state_dict(
+        destination: dict[str, Union[torch.Tensor, list, Any]] = super().state_dict(
             destination=destination,  # type: ignore[arg-type]
             prefix=prefix,
             keep_vars=keep_vars,
@@ -889,9 +956,9 @@ class Metric(Module, ABC):
             destination[prefix + key] = deepcopy(current_val)
         return destination
 
-    def _copy_state_dict(self) -> Dict[str, Union[Tensor, List[Any]]]:
+    def _copy_state_dict(self) -> dict[str, Union[Tensor, list[Any]]]:
         """Copy the current state values."""
-        cache: Dict[str, Union[Tensor, List[Any]]] = {}
+        cache: dict[str, Union[Tensor, list[Any]]] = {}
         for attr in self._defaults:
             current_value = getattr(self, attr)
 
@@ -910,9 +977,9 @@ class Metric(Module, ABC):
         prefix: str,
         local_metadata: dict,
         strict: bool,
-        missing_keys: List[str],
-        unexpected_keys: List[str],
-        error_msgs: List[str],
+        missing_keys: list[str],
+        unexpected_keys: list[str],
+        error_msgs: list[str],
     ) -> None:
         """Load metric states from state_dict."""
         for key in self._defaults:
@@ -923,7 +990,7 @@ class Metric(Module, ABC):
             state_dict, prefix, local_metadata, True, missing_keys, unexpected_keys, error_msgs
         )
 
-    def _filter_kwargs(self, **kwargs: Any) -> Dict[str, Any]:
+    def _filter_kwargs(self, **kwargs: Any) -> dict[str, Any]:
         """Filter kwargs such that they match the update signature of the metric."""
         # filter all parameters based on update signature except those of
         # types `VAR_POSITIONAL` for `* args` and `VAR_KEYWORD` for `** kwargs`
@@ -1106,7 +1173,7 @@ class Metric(Module, ABC):
         """Construct compositional metric using the get item operator."""
         return CompositionalMetric(lambda x: x[idx], self, None)
 
-    def __getnewargs__(self) -> Tuple:
+    def __getnewargs__(self) -> tuple:
         """Needed method for construction of new metrics __new__ method."""
         return tuple(
             Metric.__str__(self),
@@ -1166,7 +1233,7 @@ class CompositionalMetric(Metric):
         """
 
     def update(self, *args: Any, **kwargs: Any) -> None:
-        """Redirect the call to the input which the conposition was formed from."""
+        """Redirect the call to the input which the composition was formed from."""
         if isinstance(self.metric_a, Metric):
             self.metric_a.update(*args, **self.metric_a._filter_kwargs(**kwargs))
 
@@ -1174,7 +1241,7 @@ class CompositionalMetric(Metric):
             self.metric_b.update(*args, **self.metric_b._filter_kwargs(**kwargs))
 
     def compute(self) -> Any:
-        """Redirect the call to the input which the conposition was formed from."""
+        """Redirect the call to the input which the composition was formed from."""
         # also some parsing for kwargs?
         val_a = self.metric_a.compute() if isinstance(self.metric_a, Metric) else self.metric_a
         val_b = self.metric_b.compute() if isinstance(self.metric_b, Metric) else self.metric_b
@@ -1216,7 +1283,7 @@ class CompositionalMetric(Metric):
         return self._forward_cache
 
     def reset(self) -> None:
-        """Redirect the call to the input which the conposition was formed from."""
+        """Redirect the call to the input which the composition was formed from."""
         if isinstance(self.metric_a, Metric):
             self.metric_a.reset()
 

@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Tuple
 
 import torch
 from torch import Tensor
@@ -25,7 +24,7 @@ def _image_gradients_validate(img: Tensor) -> None:
         raise RuntimeError(f"The `img` expects a 4D tensor but got {img.ndim}D tensor")
 
 
-def _compute_image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
+def _compute_image_gradients(img: Tensor) -> tuple[Tensor, Tensor]:
     """Compute image gradients (dy/dx) for a given image."""
     batch_size, channels, height, width = img.shape
 
@@ -43,7 +42,7 @@ def _compute_image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
     return dy, dx
 
 
-def image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
+def image_gradients(img: Tensor) -> tuple[Tensor, Tensor]:
     """Compute `Gradient Computation of Image`_ of a given image using finite difference.
 
     Args:
@@ -70,7 +69,8 @@ def image_gradients(img: Tensor) -> Tuple[Tensor, Tensor]:
                 [5., 5., 5., 5., 5.],
                 [0., 0., 0., 0., 0.]])
 
-    .. note:: The implementation follows the 1-step finite difference method as followed
+    .. note::
+           The implementation follows the 1-step finite difference method as followed
            by the TF implementation. The values are organized such that the gradient of
            [I(x+1, y)-[I(x, y)]] are at the (x, y) location
 

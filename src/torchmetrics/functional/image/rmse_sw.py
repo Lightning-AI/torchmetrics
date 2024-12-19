@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 import torch
 from torch import Tensor
@@ -28,7 +28,7 @@ def _rmse_sw_update(
     rmse_val_sum: Optional[Tensor],
     rmse_map: Optional[Tensor],
     total_images: Optional[Tensor],
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor]:
     """Calculate the sum of RMSE values and RMSE map for the batch of examples and update intermediate states.
 
     Args:
@@ -89,7 +89,7 @@ def _rmse_sw_update(
 
 def _rmse_sw_compute(
     rmse_val_sum: Optional[Tensor], rmse_map: Tensor, total_images: Tensor
-) -> Tuple[Optional[Tensor], Tensor]:
+) -> tuple[Optional[Tensor], Tensor]:
     """Compute RMSE from the aggregated RMSE value. Optionally also computes the mean value for RMSE map.
 
     Args:
@@ -104,13 +104,14 @@ def _rmse_sw_compute(
     """
     rmse = rmse_val_sum / total_images if rmse_val_sum is not None else None
     if rmse_map is not None:
-        rmse_map /= total_images
+        # prevent overwrite the inputs
+        rmse_map = rmse_map / total_images
     return rmse, rmse_map
 
 
 def root_mean_squared_error_using_sliding_window(
     preds: Tensor, target: Tensor, window_size: int = 8, return_rmse_map: bool = False
-) -> Union[Optional[Tensor], Tuple[Optional[Tensor], Tensor]]:
+) -> Union[Optional[Tensor], tuple[Optional[Tensor], Tensor]]:
     """Compute Root Mean Squared Error (RMSE) using sliding window.
 
     Args:

@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -22,7 +23,6 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.data import dim_zero_cat
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
-from torchmetrics.utilities.prints import rank_zero_warn
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["KLDivergence.plot"]
@@ -47,14 +47,6 @@ class KLDivergence(Metric):
 
     - ``kl_divergence`` (:class:`~torch.Tensor`): A tensor with the KL divergence
 
-    .. warning::
-        The input order and naming in metric ``KLDivergence`` is set to be deprecated in v1.4 and changed in v1.5.
-        Input argument ``p`` will be renamed to ``target`` and will be moved to be the second argument of the metric.
-        Input argument ``q`` will be renamed to ``preds`` and will be moved to the first argument of the metric.
-        Thus, ``KLDivergence(p, q)`` will equal ``KLDivergence(target=q, preds=p)`` in the future to be consistent
-        with the rest of ``torchmetrics``. From v1.4 the two new arguments will be added as keyword arguments and
-        from v1.5 the two old arguments will be removed.
-
     Args:
         log_prob: bool indicating if input is log-probabilities or probabilities. If given as probabilities,
             will normalize to make sure the distributes sum to 1.
@@ -73,8 +65,8 @@ class KLDivergence(Metric):
         ValueError:
             If ``reduction`` is not one of ``'mean'``, ``'sum'``, ``'none'`` or ``None``.
 
-    .. note::
-        Half precision is only support on GPU for this metric
+    .. attention::
+        Half precision is only support on GPU for this metric.
 
     Example:
         >>> from torch import tensor
@@ -102,15 +94,6 @@ class KLDivergence(Metric):
         reduction: Literal["mean", "sum", "none", None] = "mean",
         **kwargs: Any,
     ) -> None:
-        rank_zero_warn(
-            "The input order and naming in metric `KLDivergence` is set to be deprecated in v1.4 and changed in v1.5."
-            "Input argument `p` will be renamed to `target` and will be moved to be the second argument of the metric."
-            "Input argument `q` will be renamed to `preds` and will be moved to the first argument of the metric."
-            "Thus, `KLDivergence(p, q)` will equal `KLDivergence(target=q, preds=p)` in the future to be consistent"
-            " with the rest of torchmetrics. From v1.4 the two new arguments will be added as keyword arguments and"
-            " from v1.5 the two old arguments will be removed.",
-            DeprecationWarning,
-        )
         super().__init__(**kwargs)
         if not isinstance(log_prob, bool):
             raise TypeError(f"Expected argument `log_prob` to be bool but got {log_prob}")

@@ -14,9 +14,10 @@
 import multiprocessing
 import os
 import sys
+from collections.abc import Mapping, Sequence
 from functools import partial
 from time import perf_counter
-from typing import Any, Callable, Dict, Mapping, Optional, Sequence, Tuple, no_type_check
+from typing import Any, Callable, Optional, no_type_check
 from unittest.mock import Mock
 
 import torch
@@ -70,7 +71,7 @@ def _basic_input_validation(
         raise ValueError("If you set `multiclass=False` and `preds` are integers, then `preds` should not exceed 1.")
 
 
-def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> Tuple[DataType, int]:
+def _check_shape_and_type_consistency(preds: Tensor, target: Tensor) -> tuple[DataType, int]:
     """Check that the shape and type of inputs are consistent with each other.
 
     The input types needs to be one of allowed input types (see the documentation of docstring of
@@ -301,7 +302,7 @@ def _check_classification_inputs(
 def _input_squeeze(
     preds: Tensor,
     target: Tensor,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Remove excess dimensions."""
     if preds.shape[0] == 1:
         preds, target = preds.squeeze().unsqueeze(0), target.squeeze().unsqueeze(0)
@@ -318,7 +319,7 @@ def _input_format_classification(
     num_classes: Optional[int] = None,
     multiclass: Optional[bool] = None,
     ignore_index: Optional[int] = None,
-) -> Tuple[Tensor, Tensor, DataType]:
+) -> tuple[Tensor, Tensor, DataType]:
     """Convert preds and target tensors into common format.
 
     Preds and targets are supposed to fall into one of these categories (and are
@@ -460,7 +461,7 @@ def _input_format_classification_one_hot(
     target: Tensor,
     threshold: float = 0.5,
     multilabel: bool = False,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Convert preds and target tensors into one hot spare label tensors.
 
     Args:
@@ -508,7 +509,7 @@ def _check_retrieval_functional_inputs(
     preds: Tensor,
     target: Tensor,
     allow_non_binary_target: bool = False,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Check ``preds`` and ``target`` tensors are of the same shape and of the correct data type.
 
     Args:
@@ -541,7 +542,7 @@ def _check_retrieval_inputs(
     target: Tensor,
     allow_non_binary_target: bool = False,
     ignore_index: Optional[int] = None,
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor]:
     """Check ``indexes``, ``preds`` and ``target`` tensors are of the same shape and of the correct data type.
 
     Args:
@@ -588,7 +589,7 @@ def _check_retrieval_target_and_prediction_types(
     preds: Tensor,
     target: Tensor,
     allow_non_binary_target: bool = False,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Check ``preds`` and ``target`` tensors are of the same shape and of the correct data type.
 
     Args:
@@ -633,8 +634,8 @@ def _allclose_recursive(res1: Any, res2: Any, atol: float = 1e-6) -> bool:
 @no_type_check
 def check_forward_full_state_property(
     metric_class: Metric,
-    init_args: Optional[Dict[str, Any]] = None,
-    input_args: Optional[Dict[str, Any]] = None,
+    init_args: Optional[dict[str, Any]] = None,
+    input_args: Optional[dict[str, Any]] = None,
     num_update_to_compare: Sequence[int] = [10, 100, 1000],
     reps: int = 5,
 ) -> None:

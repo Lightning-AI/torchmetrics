@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 import torch
 from torch import Tensor
@@ -54,7 +55,8 @@ class CLIPScore(Metric):
     textual CLIP embedding :math:`E_C` for an caption :math:`C`. The score is bound between 0 and 100 and the closer
     to 100 the better.
 
-    .. note:: Metric is not scriptable
+    .. caution::
+        Metric is not scriptable
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -116,7 +118,9 @@ class CLIPScore(Metric):
         self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
+
     def update(self, source: Union[Tensor, List[Tensor], List[str], str],target: Union[Tensor, List[Tensor], List[str], str]) -> None:
+
         """Update CLIP score on a batch of images and text.
 
         Args:

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -93,7 +93,7 @@ def _compute_phi_squared_corrected(
     )
 
 
-def _compute_rows_and_cols_corrected(num_rows: int, num_cols: int, confmat_sum: Tensor) -> Tuple[Tensor, Tensor]:
+def _compute_rows_and_cols_corrected(num_rows: int, num_cols: int, confmat_sum: Tensor) -> tuple[Tensor, Tensor]:
     """Compute bias-corrected number of rows and columns."""
     rows_corrected = num_rows - (num_rows - 1) ** 2 / (confmat_sum - 1)
     cols_corrected = num_cols - (num_cols - 1) ** 2 / (confmat_sum - 1)
@@ -102,7 +102,7 @@ def _compute_rows_and_cols_corrected(num_rows: int, num_cols: int, confmat_sum: 
 
 def _compute_bias_corrected_values(
     phi_squared: Tensor, num_rows: int, num_cols: int, confmat_sum: Tensor
-) -> Tuple[Tensor, Tensor, Tensor]:
+) -> tuple[Tensor, Tensor, Tensor]:
     """Compute bias-corrected Phi Squared and number of rows and columns."""
     phi_squared_corrected = _compute_phi_squared_corrected(phi_squared, num_rows, num_cols, confmat_sum)
     rows_corrected, cols_corrected = _compute_rows_and_cols_corrected(num_rows, num_cols, confmat_sum)
@@ -114,7 +114,7 @@ def _handle_nan_in_data(
     target: Tensor,
     nan_strategy: Literal["replace", "drop"] = "replace",
     nan_replace_value: Optional[float] = 0.0,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Handle ``NaN`` values in input data.
 
     If ``nan_strategy = 'replace'``, all ``NaN`` values are replaced with ``nan_replace_value``.

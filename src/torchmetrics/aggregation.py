@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, Callable, Optional, Union
 
 import torch
 from torch import Tensor
@@ -55,7 +56,7 @@ class BaseAggregator(Metric):
     def __init__(
         self,
         fn: Union[Callable, str],
-        default_value: Union[Tensor, List],
+        default_value: Union[Tensor, list],
         nan_strategy: Union[str, float] = "error",
         state_name: str = "value",
         **kwargs: Any,
@@ -74,7 +75,7 @@ class BaseAggregator(Metric):
 
     def _cast_and_nan_check_input(
         self, x: Union[float, Tensor], weight: Optional[Union[float, Tensor]] = None
-    ) -> Tuple[Tensor, Tensor]:
+    ) -> tuple[Tensor, Tensor]:
         """Convert input ``x`` to a tensor and check for Nans."""
         if not isinstance(x, Tensor):
             x = torch.as_tensor(x, dtype=self.dtype, device=self.device)

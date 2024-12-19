@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -53,7 +53,7 @@ def _symmetric_toeplitz(vector: Tensor) -> Tensor:
     ).flip(dims=(-1,))
 
 
-def _compute_autocorr_crosscorr(target: Tensor, preds: Tensor, corr_len: int) -> Tuple[Tensor, Tensor]:
+def _compute_autocorr_crosscorr(target: Tensor, preds: Tensor, corr_len: int) -> tuple[Tensor, Tensor]:
     r"""Compute the auto correlation of `target` and the cross correlation of `target` and `preds`.
 
     This calculation is done using the fast Fourier transform (FFT). Let's denotes the symmetric Toeplitz metric of the

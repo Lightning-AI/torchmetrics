@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from functools import partial
-from typing import Dict, List, NamedTuple
+from typing import NamedTuple
 
 import pytest
 import torch
@@ -32,7 +32,7 @@ seed_all(42)
 
 class _Input(NamedTuple):
     preds: Tensor
-    target: List[Dict[str, Tensor]]
+    target: list[dict[str, Tensor]]
     ms: Tensor
     pan: Tensor
     pan_lr: Tensor

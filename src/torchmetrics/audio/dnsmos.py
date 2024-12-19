@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -54,11 +55,13 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
     - ``dnsmos`` (:class:`~torch.Tensor`): float tensor of DNSMOS values reduced across the batch
         with shape ``(...,4)`` indicating [p808_mos, mos_sig, mos_bak, mos_ovr] in the last dim.
 
-    .. note:: using this metric requires you to have ``librosa``, ``onnxruntime`` and ``requests`` installed.
+    .. hint::
+        Using this metric requires you to have ``librosa``, ``onnxruntime`` and ``requests`` installed.
         Install as ``pip install torchmetrics['audio']`` or alternatively `pip install librosa onnxruntime-gpu requests`
         (if you do not have GPU enabled machine install `onnxruntime` instead of `onnxruntime-gpu`)
 
-    .. note:: the ``forward`` and ``compute`` methods in this class return a reduced DNSMOS value
+    .. caution::
+        The ``forward`` and ``compute`` methods in this class return a reduced DNSMOS value
         for a batch. To obtain the DNSMOS value for each sample, you may use the functional counterpart in
         :func:`~torchmetrics.functional.audio.dnsmos.deep_noise_suppression_mean_opinion_score`.
 
