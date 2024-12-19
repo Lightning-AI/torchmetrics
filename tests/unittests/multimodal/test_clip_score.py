@@ -119,10 +119,13 @@ class TestCLIPScore(MetricTester):
         metric = CLIPScore(model_name_or_path=model_name_or_path)
         with pytest.raises(ValueError) as exc_info:
             metric(torch.randint(255, (64, 64)), "28-year-old chef found dead in San Francisco mall")
-        assert any(msg in str(exc_info.value) for msg in [
-        "Expected all images to be 3d but found image that has either more or less",
-        "Could not automatically determine modality for input_data"
-        ]), f"Got unexpected error message: {str(exc_info.value)}"
+        assert any(
+            msg in str(exc_info.value)
+            for msg in [
+                "Expected all images to be 3d but found image that has either more or less",
+                "Could not automatically determine modality for input_data",
+            ]
+        ), f"Got unexpected error message: {exc_info.value!s}"
 
     @skip_on_connection_issues()
     def test_plot_method(self, inputs, model_name_or_path):
