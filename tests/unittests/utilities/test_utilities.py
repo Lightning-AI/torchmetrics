@@ -171,10 +171,10 @@ def test_recursive_allclose(inputs, expected):
     assert res == expected
 
 
-# @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU")
-# @pytest.mark.xfail(
-#     sys.platform == "win32" or not _TORCH_LESS_THAN_2_6, reason="test will only fail on non-windows systems"
-# )
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU")
+@pytest.mark.xfail(
+    sys.platform == "win32" or not _TORCH_LESS_THAN_2_6, reason="test will only fail on non-windows systems"
+)
 def test_cumsum_still_not_supported(use_deterministic_algorithms):
     """Make sure that cumsum on GPU and deterministic mode still fails.
 
