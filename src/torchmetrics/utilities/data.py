@@ -20,7 +20,7 @@ from lightning_utilities import apply_to_collection
 from torch import Tensor
 
 from torchmetrics.utilities.exceptions import TorchMetricsUserWarning
-from torchmetrics.utilities.imports import _XLA_AVAILABLE, _TORCH_LESS_THAN_2_6
+from torchmetrics.utilities.imports import _TORCH_LESS_THAN_2_6, _XLA_AVAILABLE
 from torchmetrics.utilities.prints import rank_zero_warn
 
 METRIC_EPS = 1e-6
