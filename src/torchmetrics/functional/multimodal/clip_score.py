@@ -165,7 +165,7 @@ def _clip_score_update(
         target_data = _process_image_data(target)
     else:
         target_data = _process_text_data(target)
-    
+
     # Verify matching lengths
     if len(source_data) != len(target_data):
         raise ValueError(
