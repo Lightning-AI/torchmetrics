@@ -72,22 +72,39 @@ def _detect_modality(input_data: Union[Tensor, List[Tensor], List[str], str]) ->
     raise ValueError("Could not automatically determine modality for input_data")
 
 
-def _process_data(
-    data: Union[Tensor, List[Tensor], List[str], str], modality: Literal["image", "text"]
-) -> List[Union[Tensor, str]]:
-    """Helper function to process both source and target data."""
-    if modality == "image":
-        if not isinstance(data, list) and isinstance(data, Tensor) and data.ndim == 3:
-            data = [data]
-        elif isinstance(data, list):
-            data = list(data)
-        if not all(isinstance(i, Tensor) and i.ndim == 3 for i in data):
-            raise ValueError("Expected all images to be 3d but found image that has either more or less")
-    else:  # text
-        if not isinstance(data, list):
-            data = [data]
-    return data
+# def _process_data(
+#     data: Union[Tensor, List[Tensor], List[str], str], modality: Literal["image", "text"]
+# ) -> List[Union[Tensor, str]]:
+#     """Helper function to process both source and target data."""
+#     if modality == "image":
+#         if not isinstance(data, list) and isinstance(data, Tensor) and data.ndim == 3:
+#             data = [data]
+#         elif isinstance(data, list):
+#             data = list(data)
+#         if not all(isinstance(i, Tensor) and i.ndim == 3 for i in data):
+#             raise ValueError("Expected all images to be 3d but found image that has either more or less")
+#     else:  # text
+#         if not isinstance(data, list):
+#             data = [data]
+#     return data
 
+def _process_image_data(images: Union[Tensor, List[Tensor]]) -> List[Tensor]:
+    """Helper function to process image data."""
+    if not isinstance(images, list):
+        if images.ndim == 3:
+            images = [images]
+    else:  # unwrap into list
+        images = list(images)
+
+    if not all(i.ndim == 3 for i in images):
+        raise ValueError("Expected all images to be 3d but found image that has either more or less")
+    return images
+
+def _process_text_data(texts: Union[str, List[str]]) -> List[str]:
+    """Helper function to process text data."""
+    if not isinstance(texts, list):
+        texts = [texts]
+    return texts
 
 def _get_features(
     data: List[Union[Tensor, str]],
@@ -139,8 +156,12 @@ def _clip_score_update(
     source_modality = _detect_modality(source)
     target_modality = _detect_modality(target)
 
-    source_data = _process_data(source, source_modality)
-    target_data = _process_data(target, target_modality)
+    processor_map = {
+        "image": _process_image_data,
+        "text": _process_text_data,
+    }
+    source_data = processor_map[source_modality](source)
+    target_data = processor_map[target_modality](target)
 
     # Verify matching lengths
     if len(source_data) != len(target_data):
