@@ -94,7 +94,7 @@ def _process_image_data(images: Union[Tensor, List[Tensor]]) -> List[Tensor]:
     if isinstance(images, Tensor):
         if images.ndim == 3:
             return [images]
-
+        raise ValueError("Expected all images to be 3d but found image that has either more or less")
     if not all(i.ndim == 3 for i in images):
         raise ValueError("Expected all images to be 3d but found image that has either more or less")
     return images
