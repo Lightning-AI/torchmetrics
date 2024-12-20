@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections.abc import Sequence
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -55,8 +54,7 @@ class CLIPScore(Metric):
     textual CLIP embedding :math:`E_C` for an caption :math:`C`. The score is bound between 0 and 100 and the closer
     to 100 the better.
 
-    .. caution::
-        Metric is not scriptable
+    .. note:: Metric is not scriptable
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
@@ -118,15 +116,16 @@ class CLIPScore(Metric):
         self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
-    def update(
-        self, source: Union[Tensor, List[Tensor], List[str], str], target: Union[Tensor, List[Tensor], List[str], str]
-    ) -> None:
+    def update(self, source: Union[Tensor, List[Tensor], List[str], str],target: Union[Tensor, List[Tensor], List[str], str]) -> None:
         """Update CLIP score on a batch of images and text.
 
         Args:
-            source: Source input (images(Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors) or text(Either a single caption or a list of captions))
-            target: Target input (images(Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors) or text(Either a single caption or a list of captions))
-
+            source: Source input. This can be:
+                - Images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors.
+                - Text: Either a single caption or a list of captions.
+            target: Target input. This can be:
+                - Images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors.
+                - Text: Either a single caption or a list of captions.
         Raises:
             ValueError:
                 If not all images have format [C, H, W]
