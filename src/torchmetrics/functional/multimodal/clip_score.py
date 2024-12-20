@@ -157,13 +157,15 @@ def _clip_score_update(
     source_modality = _detect_modality(source)
     target_modality = _detect_modality(target)
 
-    processor_map = {
-        "image": _process_image_data,
-        "text": _process_text_data,
-    }
-    source_data = processor_map[source_modality](source)
-    target_data = processor_map[target_modality](target)
-
+    if source_modality == "image":
+        source_data = _process_image_data(source)
+    else:
+        source_data = _process_text_data(source)
+    if target_modality == "image":
+        target_data = _process_image_data(target)
+    else:
+        target_data = _process_text_data(target)
+    
     # Verify matching lengths
     if len(source_data) != len(target_data):
         raise ValueError(
