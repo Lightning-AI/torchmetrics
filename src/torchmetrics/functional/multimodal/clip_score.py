@@ -80,9 +80,7 @@ def _process_data(
         if not isinstance(data, list):
             if isinstance(data, Tensor) and data.ndim == 3:
                 data = [data]
-        else:
-            data = list(data)
-        if not all(i.ndim == 3 for i in data):
+        if not all(isinstance(i, Tensor) and i.ndim == 3 for i in data):
             raise ValueError("Expected all images to be 3d but found image that has either more or less")
     else:  # text
         if not isinstance(data, list):
@@ -110,7 +108,9 @@ def _get_features(
 
     """
     if modality == "image":
-        processed = processor(images=[i.cpu() for i in data], return_tensors="pt", padding=True)
+        # Add type checking for images
+        image_data = [i for i in data if isinstance(i, Tensor)]
+        processed = processor(images=[i.cpu() for i in image_data], return_tensors="pt", padding=True)
         features = model.get_image_features(processed["pixel_values"].to(device))
     else:
         processed = processor(text=data, return_tensors="pt", padding=True)
@@ -147,13 +147,11 @@ def _clip_score_update(
             "Expected the number of source and target examples to be the same but got "
             f"{len(source_data)} and {len(target_data)}"
         )
-    device = (
-        source[0].device
-        if source_modality == "image"
-        else target[0].device
-        if target_modality == "image"
-        else torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    )
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if source_modality == "image" and isinstance(source_data[0], Tensor):
+       device = source_data[0].device
+    elif target_modality == "image" and isinstance(target_data[0], Tensor):
+       device = target_data[0].device
     model = model.to(device)
 
     source_features = _get_features(source_data, source_modality, device, model, processor)
