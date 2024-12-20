@@ -116,9 +116,7 @@ class CLIPScore(Metric):
         self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
-    def update(
-        self, source: Union[Tensor, List[Tensor], List[str], str], target: Union[Tensor, List[Tensor], List[str], str]
-    ) -> None:
+    def update(self, source: Union[Tensor, List[Tensor], List[str], str],target: Union[Tensor, List[Tensor], List[str], str]) -> None:
         """Update CLIP score on a batch of images and text.
 
         Args:
@@ -128,7 +126,6 @@ class CLIPScore(Metric):
             target: Target input. This can be:
                 - Images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors.
                 - Text: Either a single caption or a list of captions.
-
         Raises:
             ValueError:
                 If not all images have format [C, H, W]
