@@ -72,7 +72,9 @@ def _detect_modality(input_data: Union[Tensor, List[Tensor], List[str], str]) ->
     raise ValueError("Could not automatically determine modality for input_data")
 
 
-def _process_data(data, modality):
+def _process_data(
+    data: Union[Tensor, List[Tensor], List[str], str],
+    modality: Literal["image", "text"])-> List[Union[Tensor, str]]:
     """Helper function to process both source and target data."""
     if modality == "image":
         if not isinstance(data, list):
@@ -88,7 +90,23 @@ def _process_data(data, modality):
     return data
 
 
-def _get_features(data, modality, device, model, processor):
+def _get_features(
+   data: List[Union[Tensor, str]],
+   modality: Literal["image", "text"],
+   device: torch.device,
+   model: "_CLIPModel",
+   processor: "_CLIPProcessor"
+ -> Tensor:
+   """Get features from the CLIP model for either images or text.
+    Args:
+       data: List of input data (images or text)
+       modality: Type of input data ("image" or "text")
+       device: Device to run the model on
+       model: CLIP model instance
+       processor: CLIP processor instance
+    Returns:
+       Tensor of features from the CLIP model
+   """
     if modality == "image":
         processed = processor(images=[i.cpu() for i in data], return_tensors="pt", padding=True)
         features = model.get_image_features(processed["pixel_values"].to(device))
@@ -124,9 +142,9 @@ def _clip_score_update(
     # Verify matching lengths
     if len(source_data) != len(target_data):
         raise ValueError(
-            f"Expected the number of source and target examples to be the same but got {len(source_data)} and {len(target_data)}"
+            "Expected the number of source and target examples to be the same but got "
+            f"{len(source_data)} and {len(target_data)}"
         )
-
     device = (
         source[0].device
         if source_modality == "image"
