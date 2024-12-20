@@ -157,7 +157,7 @@ def _clip_score_update(
     source_modality = _detect_modality(source)
     target_modality = _detect_modality(target)
 
-    source_data = _process_image_data(source) if source_modality == "image" else _process_text_data(source) 
+    source_data = _process_image_data(source) if source_modality == "image" else _process_text_data(source)
     target_data = _process_image_data(target) if target_modality == "image" else _process_text_data(target)
 
     # Verify matching lengths
