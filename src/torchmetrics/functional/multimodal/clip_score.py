@@ -88,6 +88,7 @@ def _detect_modality(input_data: Union[Tensor, List[Tensor], List[str], str]) ->
 #             data = [data]
 #     return data
 
+
 def _process_image_data(images: Union[Tensor, List[Tensor]]) -> List[Tensor]:
     """Helper function to process image data."""
     if isinstance(images, Tensor):
@@ -98,11 +99,13 @@ def _process_image_data(images: Union[Tensor, List[Tensor]]) -> List[Tensor]:
         raise ValueError("Expected all images to be 3d but found image that has either more or less")
     return images
 
+
 def _process_text_data(texts: Union[str, List[str]]) -> List[str]:
     """Helper function to process text data."""
     if not isinstance(texts, list):
         texts = [texts]
     return texts
+
 
 def _get_features(
     data: List[Union[Tensor, str]],
