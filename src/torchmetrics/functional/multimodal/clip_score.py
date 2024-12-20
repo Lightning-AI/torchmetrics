@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, List, Union, cast
 
 import torch
 from torch import Tensor
@@ -157,8 +157,16 @@ def _clip_score_update(
     source_modality = _detect_modality(source)
     target_modality = _detect_modality(target)
 
-    source_data = _process_image_data(source) if source_modality == "image" else _process_text_data(source)
-    target_data = _process_image_data(target) if target_modality == "image" else _process_text_data(target)
+    source_data = (
+        _process_image_data(cast(Union[Tensor, List[Tensor]], source))
+        if source_modality == "image"
+        else _process_text_data(cast(Union[str, List[str]], source))
+    )
+    target_data = (
+        _process_image_data(cast(Union[Tensor, List[Tensor]], target))
+        if target_modality == "image"
+        else _process_text_data(cast(Union[str, List[str]], target))
+    )
 
     # Verify matching lengths
     if len(source_data) != len(target_data):
@@ -173,8 +181,8 @@ def _clip_score_update(
         device = target_data[0].device
     model = model.to(device)
 
-    source_features = _get_features(source_data, source_modality, device, model, processor)
-    target_features = _get_features(target_data, target_modality, device, model, processor)
+    source_features = _get_features(cast(List[Union[Tensor, str]], source_data), source_modality, device, model, processor)
+    target_features = _get_features(cast(List[Union[Tensor, str]], target_data), target_modality, device, model, processor)
     source_features = source_features / source_features.norm(p=2, dim=-1, keepdim=True)
     target_features = target_features / target_features.norm(p=2, dim=-1, keepdim=True)
 
