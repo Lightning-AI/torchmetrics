@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, List, Tuple, Union
 
 import torch
 from torch import Tensor
@@ -40,22 +40,22 @@ else:
     _CLIPModel = None
     _CLIPProcessor = None
 
-
 def _detect_modality(input_data: Union[Tensor, List[Tensor], List[str], str]) -> Literal["image", "text"]:
     """Automatically detect the modality of the input data.
-
+    
     Args:
         input_data: Input data that can be either image tensors or text strings
-
+        
     Returns:
         str: Either "image" or "text"
-
+        
     Raises:
         ValueError: If the modality cannot be determined
-
     """
     if isinstance(input_data, Tensor):
-        if input_data.ndim == 3 or input_data.ndim == 4:  # Single image: [C, H, W]
+        if input_data.ndim == 3:  # Single image: [C, H, W]
+            return "image"
+        elif input_data.ndim == 4:  # Batch of images: [B, C, H, W]
             return "image"
     elif isinstance(input_data, list):
         if len(input_data) == 0:
@@ -68,12 +68,13 @@ def _detect_modality(input_data: Union[Tensor, List[Tensor], List[str], str]) ->
             return "text"
     elif isinstance(input_data, str):
         return "text"
-
-    raise ValueError("Could not automatically determine modality for input_data")
-
+    
+    raise ValueError(
+        f"Could not automatically determine modality for input_data"
+    )
 
 def _process_data(data, modality):
-    """Helper function to process both source and target data."""
+    """Helper function to process both source and target data"""
     if modality == "image":
         if not isinstance(data, list):
             if isinstance(data, Tensor) and data.ndim == 3:
@@ -86,7 +87,6 @@ def _process_data(data, modality):
         if not isinstance(data, list):
             data = [data]
     return data
-
 
 def _get_features(data, modality, device, model, processor):
     if modality == "image":
@@ -104,17 +104,19 @@ def _get_features(data, modality, device, model, processor):
             )
             processed["attention_mask"] = processed["attention_mask"][..., :max_position_embeddings]
             processed["input_ids"] = processed["input_ids"][..., :max_position_embeddings]
-        features = model.get_text_features(processed["input_ids"].to(device), processed["attention_mask"].to(device))
-
+        features = model.get_text_features(
+            processed["input_ids"].to(device),
+            processed["attention_mask"].to(device)
+        )
+        
     return features
-
 
 def _clip_score_update(
     source: Union[Tensor, List[Tensor], List[str], str],
     target: Union[Tensor, List[Tensor], List[str], str],
     model: _CLIPModel,
     processor: _CLIPProcessor,
-) -> tuple[Tensor, int]:
+) -> tuple[Tensor, int]:    
     source_modality = _detect_modality(source)
     target_modality = _detect_modality(target)
 
@@ -127,13 +129,9 @@ def _clip_score_update(
             f"Expected the number of source and target examples to be the same but got {len(source_data)} and {len(target_data)}"
         )
 
-    device = (
-        source[0].device
-        if source_modality == "image"
-        else target[0].device
-        if target_modality == "image"
-        else torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    )
+    device = (source[0].device if source_modality == "image" else 
+             target[0].device if target_modality == "image" else 
+             torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
     model = model.to(device)
 
     source_features = _get_features(source_data, source_modality, device, model, processor)
@@ -153,7 +151,7 @@ def _get_clip_model_and_processor(
         "openai/clip-vit-large-patch14-336",
         "openai/clip-vit-large-patch14",
     ] = "openai/clip-vit-large-patch14",
-) -> tuple[_CLIPModel, _CLIPProcessor]:
+) -> Tuple[_CLIPModel, _CLIPProcessor]:
     if _TRANSFORMERS_GREATER_EQUAL_4_10:
         from transformers import CLIPModel as _CLIPModel
         from transformers import CLIPProcessor as _CLIPProcessor
@@ -191,15 +189,21 @@ def clip_score(
     textual CLIP embedding :math:`E_C` for an caption :math:`C`. The score is bound between 0 and 100 and the closer
     to 100 the better.
 
-    .. caution::
-        Metric is not scriptable
+    .. note:: Metric is not scriptable
 
     Args:
-        source: Source input (images(Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors) or text(Either a single caption or a list of captions))
-        target: Target input (images(Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors) or text(Either a single caption or a list of captions))
-        model_name_or_path: string indicating the version of the CLIP model to use. Available models are
-            `"openai/clip-vit-base-patch16"`, `"openai/clip-vit-base-patch32"`, `"openai/clip-vit-large-patch14-336"`
-            and `"openai/clip-vit-large-patch14"`,
+        source: Source input. This can be:
+            - Images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors.
+            - Text: Either a single caption or a list of captions.
+        target: Target input. This can be:
+            - Images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors.
+            - Text: Either a single caption or a list of captions.
+        model_name_or_path: String indicating the version of the CLIP model to use. Available models are:
+            - `"openai/clip-vit-base-patch16"`
+            - `"openai/clip-vit-base-patch32"`
+            - `"openai/clip-vit-large-patch14-336"`
+            - `"openai/clip-vit-large-patch14"`
+
 
     Raises:
         ModuleNotFoundError:
