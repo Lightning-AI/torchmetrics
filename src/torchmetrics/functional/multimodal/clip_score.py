@@ -77,9 +77,10 @@ def _process_data(
 ) -> List[Union[Tensor, str]]:
     """Helper function to process both source and target data."""
     if modality == "image":
-        if not isinstance(data, list):
-            if isinstance(data, Tensor) and data.ndim == 3:
-                data = [data]
+        if not isinstance(data, list) and isinstance(data, Tensor) and data.ndim == 3:
+            data = [data]
+        elif isinstance(data, list):
+            data = list(data)
         if not all(isinstance(i, Tensor) and i.ndim == 3 for i in data):
             raise ValueError("Expected all images to be 3d but found image that has either more or less")
     else:  # text
