@@ -95,9 +95,8 @@ def _get_features(
    modality: Literal["image", "text"],
    device: torch.device,
    model: "_CLIPModel",
-   processor: "_CLIPProcessor"
- -> Tensor:
-   """Get features from the CLIP model for either images or text.
+   processor: "_CLIPProcessor")-> Tensor:
+    """Get features from the CLIP model for either images or text.
     Args:
        data: List of input data (images or text)
        modality: Type of input data ("image" or "text")
@@ -106,7 +105,7 @@ def _get_features(
        processor: CLIP processor instance
     Returns:
        Tensor of features from the CLIP model
-   """
+    """
     if modality == "image":
         processed = processor(images=[i.cpu() for i in data], return_tensors="pt", padding=True)
         features = model.get_image_features(processed["pixel_values"].to(device))
