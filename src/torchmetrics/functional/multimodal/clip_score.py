@@ -73,8 +73,8 @@ def _detect_modality(input_data: Union[Tensor, List[Tensor], List[str], str]) ->
 
 
 def _process_data(
-    data: Union[Tensor, List[Tensor], List[str], str],
-    modality: Literal["image", "text"])-> List[Union[Tensor, str]]:
+    data: Union[Tensor, List[Tensor], List[str], str], modality: Literal["image", "text"]
+) -> List[Union[Tensor, str]]:
     """Helper function to process both source and target data."""
     if modality == "image":
         if not isinstance(data, list):
@@ -91,12 +91,14 @@ def _process_data(
 
 
 def _get_features(
-   data: List[Union[Tensor, str]],
-   modality: Literal["image", "text"],
-   device: torch.device,
-   model: "_CLIPModel",
-   processor: "_CLIPProcessor")-> Tensor:
+    data: List[Union[Tensor, str]],
+    modality: Literal["image", "text"],
+    device: torch.device,
+    model: "_CLIPModel",
+    processor: "_CLIPProcessor",
+) -> Tensor:
     """Get features from the CLIP model for either images or text.
+
     Args:
        data: List of input data (images or text)
        modality: Type of input data ("image" or "text")
@@ -105,6 +107,7 @@ def _get_features(
        processor: CLIP processor instance
     Returns:
        Tensor of features from the CLIP model
+
     """
     if modality == "image":
         processed = processor(images=[i.cpu() for i in data], return_tensors="pt", padding=True)
