@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import TYPE_CHECKING, List, Tuple, Union
+from typing import TYPE_CHECKING, List, Union
 
 import torch
 from torch import Tensor
@@ -173,7 +173,7 @@ def _get_clip_model_and_processor(
         "openai/clip-vit-large-patch14-336",
         "openai/clip-vit-large-patch14",
     ] = "openai/clip-vit-large-patch14",
-) -> Tuple[_CLIPModel, _CLIPProcessor]:
+) -> tuple[_CLIPModel, _CLIPProcessor]:
     if _TRANSFORMERS_GREATER_EQUAL_4_10:
         from transformers import CLIPModel as _CLIPModel
         from transformers import CLIPProcessor as _CLIPProcessor
