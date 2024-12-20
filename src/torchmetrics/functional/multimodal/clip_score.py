@@ -181,8 +181,12 @@ def _clip_score_update(
         device = target_data[0].device
     model = model.to(device)
 
-    source_features = _get_features(cast(List[Union[Tensor, str]], source_data), source_modality, device, model, processor)
-    target_features = _get_features(cast(List[Union[Tensor, str]], target_data), target_modality, device, model, processor)
+    source_features = _get_features(
+        cast(List[Union[Tensor, str]], source_data), source_modality, device, model, processor
+    )
+    target_features = _get_features(
+        cast(List[Union[Tensor, str]], target_data), target_modality, device, model, processor
+    )
     source_features = source_features / source_features.norm(p=2, dim=-1, keepdim=True)
     target_features = target_features / target_features.norm(p=2, dim=-1, keepdim=True)
 
