@@ -18,7 +18,7 @@ import pytest
 import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
-from torch import Tensor, tensor
+from torch import Tensor
 from torchmetrics.classification.specificity import (
     BinarySpecificity,
     MulticlassSpecificity,
@@ -355,15 +355,35 @@ class TestMulticlassSpecificity(MetricTester):
         )
 
 
-_mc_k_target = tensor([0, 1, 2])
-_mc_k_preds = tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
+_mc_k_target = torch.tensor([0, 1, 2])
+_mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
+
+_mc_k_target2 = torch.tensor([0, 1, 2, 0])
+_mc_k_preds2 = torch.tensor([
+    [0.1, 0.2, 0.7],
+    [0.4, 0.4, 0.2],
+    [0.3, 0.3, 0.4],
+    [0.3, 0.3, 0.4],
+])
 
 
 @pytest.mark.parametrize(
     ("k", "preds", "target", "average", "expected_spec"),
     [
-        (1, _mc_k_preds, _mc_k_target, "micro", tensor(5 / 6)),
-        (2, _mc_k_preds, _mc_k_target, "micro", tensor(1 / 2)),
+        (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor(5 / 6)),
+        (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor(1.0)),
+        (1, _mc_k_preds2, _mc_k_target2, "macro", torch.tensor(0.6111)),
+        (2, _mc_k_preds2, _mc_k_target2, "macro", torch.tensor(0.8889)),
+        (3, _mc_k_preds2, _mc_k_target2, "macro", torch.tensor(1.0)),
+        (1, _mc_k_preds2, _mc_k_target2, "micro", torch.tensor(0.6250)),
+        (2, _mc_k_preds2, _mc_k_target2, "micro", torch.tensor(0.8750)),
+        (3, _mc_k_preds2, _mc_k_target2, "micro", torch.tensor(1.0)),
+        (1, _mc_k_preds2, _mc_k_target2, "weighted", torch.tensor(0.5833)),
+        (2, _mc_k_preds2, _mc_k_target2, "weighted", torch.tensor(0.9167)),
+        (3, _mc_k_preds2, _mc_k_target2, "weighted", torch.tensor(1.0)),
+        (1, _mc_k_preds2, _mc_k_target2, "none", torch.tensor([0.5000, 1.0000, 0.3333])),
+        (2, _mc_k_preds2, _mc_k_target2, "none", torch.tensor([1.0000, 1.0000, 0.6667])),
+        (3, _mc_k_preds2, _mc_k_target2, "none", torch.tensor([1.0, 1.0, 1.0])),
     ],
 )
 def test_top_k(k: int, preds: Tensor, target: Tensor, average: str, expected_spec: Tensor):
@@ -371,8 +391,13 @@ def test_top_k(k: int, preds: Tensor, target: Tensor, average: str, expected_spe
     class_metric = MulticlassSpecificity(top_k=k, average=average, num_classes=3)
     class_metric.update(preds, target)
 
-    assert torch.equal(class_metric.compute(), expected_spec)
-    assert torch.equal(multiclass_specificity(preds, target, top_k=k, average=average, num_classes=3), expected_spec)
+    assert torch.allclose(class_metric.compute(), expected_spec, atol=1e-4, rtol=1e-4)
+    assert torch.allclose(
+        multiclass_specificity(preds, target, top_k=k, average=average, num_classes=3),
+        expected_spec,
+        atol=1e-4,
+        rtol=1e-4,
+    )
 
 
 def _reference_specificity_multilabel_global(preds, target, ignore_index, average):
