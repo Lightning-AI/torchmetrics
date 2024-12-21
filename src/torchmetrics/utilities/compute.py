@@ -16,6 +16,7 @@ from typing import Optional, Union
 import torch
 from torch import Tensor
 from typing_extensions import Literal
+
 from torchmetrics.utilities import rank_zero_warn
 
 
