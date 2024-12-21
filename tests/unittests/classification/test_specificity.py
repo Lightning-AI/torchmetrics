@@ -370,7 +370,7 @@ _mc_k_preds2 = torch.tensor([
     ("k", "preds", "target", "average", "expected_spec"),
     [
         (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor(5 / 6)),
-        # (2, _mc_k_preds, _mc_k_target, "micro", tensor(1 / 2)),
+        (2, _mc_k_preds, _mc_k_target, "micro", tensor(1 / 2)),
         (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor(1.0)),
         (1, _mc_k_preds2, _mc_k_target2, "macro", torch.tensor(0.6111)),
         (2, _mc_k_preds2, _mc_k_target2, "macro", torch.tensor(0.8889)),
