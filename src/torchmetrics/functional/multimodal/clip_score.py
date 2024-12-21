@@ -56,7 +56,7 @@ def _detect_modality(input_data: Union[Tensor, List[Tensor], List[str], str]) ->
     """
     if isinstance(input_data, Tensor):
         return "image"
-    
+
     if isinstance(input_data, list):
         if len(input_data) == 0:
             raise ValueError("Empty input list")
@@ -64,7 +64,7 @@ def _detect_modality(input_data: Union[Tensor, List[Tensor], List[str], str]) ->
             return "image"
         if isinstance(input_data[0], str):
             return "text"
-    
+
     if isinstance(input_data, str):
         return "text"
 
