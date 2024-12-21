@@ -51,22 +51,21 @@ def _detect_modality(input_data: Union[Tensor, List[Tensor], List[str], str]) ->
         str: Either "image" or "text"
 
     Raises:
-        ValueError: If the modality cannot be determined
+        ValueError: If the input_data is an empty list or modality cannot be determined
 
     """
     if isinstance(input_data, Tensor):
-        if input_data.ndim == 3 or input_data.ndim == 4:  # Single image: [C, H, W]
-            return "image"
-    elif isinstance(input_data, list):
+        return "image"
+    
+    if isinstance(input_data, list):
         if len(input_data) == 0:
             raise ValueError("Empty input list")
-        # Check first element
         if isinstance(input_data[0], Tensor):
-            if input_data[0].ndim == 3:  # [C, H, W]
-                return "image"
-        elif isinstance(input_data[0], str):
+            return "image"
+        if isinstance(input_data[0], str):
             return "text"
-    elif isinstance(input_data, str):
+    
+    if isinstance(input_data, str):
         return "text"
 
     raise ValueError("Could not automatically determine modality for input_data")
