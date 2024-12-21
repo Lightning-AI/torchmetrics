@@ -394,7 +394,7 @@ class TestMultilabelConfusionMatrix(MetricTester):
         )
 
     @pytest.mark.parametrize("num_labels", [2, NUM_CLASSES])
-    def test_multilabel_confusion_matrix_plot(self, num_labels):
+    def test_multilabel_confusion_matrix_plot(self, num_labels, inputs):
         """Test multilabel cm plots."""
         multi_label_confusion_matrix = MultilabelConfusionMatrix(num_labels=num_labels)
         preds = target = torch.ones(1, num_labels).int()
