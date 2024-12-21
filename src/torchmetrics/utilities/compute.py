@@ -15,6 +15,7 @@ from typing import Optional
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 
 def _safe_matmul(x: Tensor, y: Tensor) -> Tensor:
@@ -184,3 +185,45 @@ def interp(x: Tensor, xp: Tensor, fp: Tensor) -> Tensor:
     indices = torch.clamp(indices, 0, len(m) - 1)
 
     return m[indices] * x + b[indices]
+
+
+def normalize_logits_if_needed(tensor: Tensor, normalization: Literal["sigmoid", "softmax"]) -> Tensor:
+    """Normalize logits if needed.
+
+    If input tensor is outside the [0,1] we assume that logits are provided and apply the normalization.
+    Use torch.where to prevent device-host sync.
+
+    Args:
+        tensor: input tensor that may be logits or probabilities
+        normalization: normalization method, either 'sigmoid' or 'softmax'
+
+    Returns:
+        normalized tensor if needed
+
+    Example:
+        >>> import torch
+        >>> tensor = torch.tensor([-1.0, 0.0, 1.0])
+        >>> normalize_logits_if_needed(tensor, normalization="sigmoid")
+        tensor([0.2689, 0.5000, 0.7311])
+        >>> tensor = torch.tensor([[-1.0, 0.0, 1.0], [1.0, 0.0, -1.0]])
+        >>> normalize_logits_if_needed(tensor, normalization="softmax")
+        tensor([[0.0900, 0.2447, 0.6652],
+                [0.6652, 0.2447, 0.0900]])
+        >>> tensor = torch.tensor([0.0, 0.5, 1.0])
+        >>> normalize_logits_if_needed(tensor, normalization="sigmoid")
+        tensor([0.0000, 0.5000, 1.0000])
+
+    """
+    # decrease sigmoid on cpu .
+    if tensor.device == torch.device("cpu"):
+        if not torch.all((tensor >= 0) * (tensor <= 1)):
+            tensor = tensor.sigmoid() if normalization == "sigmoid" else torch.softmax(tensor, dim=1)
+        return tensor
+
+    # decrease device-host sync on device .
+    condition = ((tensor < 0) | (tensor > 1)).any()
+    return torch.where(
+        condition,
+        torch.sigmoid(tensor) if normalization == "sigmoid" else torch.softmax(tensor, dim=1),
+        tensor,
+    )
