@@ -393,6 +393,16 @@ class TestMultilabelConfusionMatrix(MetricTester):
             dtype=dtype,
         )
 
+    @pytest.mark.parametrize("num_labels", [2, NUM_CLASSES])
+    def test_multilabel_confusion_matrix_plot(self, num_labels, inputs):
+        """Test multilabel cm plots."""
+        multi_label_confusion_matrix = MultilabelConfusionMatrix(num_labels=num_labels)
+        preds = target = torch.ones(1, num_labels).int()
+        multi_label_confusion_matrix.update(preds, target)
+        fig, ax = multi_label_confusion_matrix.plot()
+        assert fig is not None
+        assert ax is not None
+
 
 def test_warning_on_nan():
     """Test that a warning is given if division by zero happens during normalization of confusion matrix."""
