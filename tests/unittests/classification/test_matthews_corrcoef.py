@@ -30,6 +30,7 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
     multilabel_matthews_corrcoef,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers import seed_all
@@ -105,8 +106,8 @@ class TestBinaryMatthewsCorrCoef(MetricTester):
     def test_binary_matthews_corrcoef_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -287,8 +288,8 @@ class TestMultilabelMatthewsCorrCoef(MetricTester):
     def test_multilabel_matthews_corrcoef_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
