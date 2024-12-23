@@ -71,23 +71,6 @@ def _detect_modality(input_data: Union[Tensor, List[Tensor], List[str], str]) ->
     raise ValueError("Could not automatically determine modality for input_data")
 
 
-# def _process_data(
-#     data: Union[Tensor, List[Tensor], List[str], str], modality: Literal["image", "text"]
-# ) -> List[Union[Tensor, str]]:
-#     """Helper function to process both source and target data."""
-#     if modality == "image":
-#         if not isinstance(data, list) and isinstance(data, Tensor) and data.ndim == 3:
-#             data = [data]
-#         elif isinstance(data, list):
-#             data = list(data)
-#         if not all(isinstance(i, Tensor) and i.ndim == 3 for i in data):
-#             raise ValueError("Expected all images to be 3d but found image that has either more or less")
-#     else:  # text
-#         if not isinstance(data, list):
-#             data = [data]
-#     return data
-
-
 def _process_image_data(images: Union[Tensor, List[Tensor]]) -> List[Tensor]:
     """Helper function to process image data."""
     if isinstance(images, Tensor):
