@@ -113,16 +113,14 @@ class TestCLIPScore(MetricTester):
         with pytest.raises(ValueError, match="Expected the number of source and target examples to be the same.*"):
             metric(torch.randint(255, (2, 3, 64, 64)), "28-year-old chef found dead in San Francisco mall")
 
-    # @skip_on_connection_issues()
-    # def test_error_on_wrong_image_format(self, inputs, model_name_or_path):
-    #     """Test that an error is raised if not all images are [c, h, w] format."""
-    #     metric = CLIPScore(model_name_or_path=model_name_or_path)
-    #     with pytest.raises(ValueError) as exc_info:
-    #         metric(torch.randint(255, (64, 64)), "28-year-old chef found dead in San Francisco mall")
-    #     assert any(msg in str(exc_info.value) for msg in [
-    #     "Expected all images to be 3d but found image that has either more or less",
-    #     "Could not automatically determine modality for input_data"
-    #     ]), f"Got unexpected error message: {str(exc_info.value)}"
+    @skip_on_connection_issues()
+    def test_error_on_wrong_image_format(self, inputs, model_name_or_path):
+        """Test that an error is raised if not all images are [c, h, w] format."""
+        metric = CLIPScore(model_name_or_path=model_name_or_path)
+        with pytest.raises(
+            ValueError, match="Expected all images to be 3d but found image that has either more or less"
+        ):
+            metric(torch.randint(255, (64, 64)), "28-year-old chef found dead in San Francisco mall")
 
     @skip_on_connection_issues()
     def test_plot_method(self, inputs, model_name_or_path):
