@@ -15,7 +15,6 @@ import contextlib
 import io
 import json
 from collections.abc import Sequence
-from types import ModuleType
 from typing import Any, Callable, ClassVar, List, Optional, Union
 
 import numpy as np
@@ -28,6 +27,7 @@ from typing_extensions import Literal
 from torchmetrics.detection.helpers import _fix_empty_tensors, _input_validator, _validate_iou_type_arg
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
+from torchmetrics.utilities.backends import _load_coco_backend_tools
 from torchmetrics.utilities.imports import (
     _FASTER_COCO_EVAL_AVAILABLE,
     _MATPLOTLIB_AVAILABLE,
@@ -46,32 +46,6 @@ if not (_PYCOCOTOOLS_AVAILABLE or _FASTER_COCO_EVAL_AVAILABLE):
         "MeanAveragePrecision.tm_to_coco",
         "MeanAveragePrecision.coco_to_tm",
     ]
-
-
-def _load_backend_tools(backend: Literal["pycocotools", "faster_coco_eval"]) -> tuple[object, object, ModuleType]:
-    """Load the backend tools for the given backend."""
-    if backend == "pycocotools":
-        if not _PYCOCOTOOLS_AVAILABLE:
-            raise ModuleNotFoundError(
-                "Backend `pycocotools` in metric `MeanAveragePrecision`  metric requires that `pycocotools` is"
-                " installed. Please install with `pip install pycocotools` or `pip install torchmetrics[detection]`"
-            )
-        import pycocotools.mask as mask_utils
-        from pycocotools.coco import COCO
-        from pycocotools.cocoeval import COCOeval
-
-        return COCO, COCOeval, mask_utils
-
-    if not _FASTER_COCO_EVAL_AVAILABLE:
-        raise ModuleNotFoundError(
-            "Backend `faster_coco_eval` in metric `MeanAveragePrecision`  metric requires that `faster-coco-eval` is"
-            " installed. Please install with `pip install faster-coco-eval`."
-        )
-    from faster_coco_eval import COCO
-    from faster_coco_eval import COCOeval_faster as COCOeval
-    from faster_coco_eval.core import mask as mask_utils
-
-    return COCO, COCOeval, mask_utils
 
 
 class MeanAveragePrecision(Metric):
@@ -460,19 +434,19 @@ class MeanAveragePrecision(Metric):
     @property
     def coco(self) -> object:
         """Returns the coco module for the given backend, done in this way to make metric picklable."""
-        coco, _, _ = _load_backend_tools(self.backend)
+        coco, _, _ = _load_coco_backend_tools(self.backend)
         return coco
 
     @property
     def cocoeval(self) -> object:
         """Returns the coco eval module for the given backend, done in this way to make metric picklable."""
-        _, cocoeval, _ = _load_backend_tools(self.backend)
+        _, cocoeval, _ = _load_coco_backend_tools(self.backend)
         return cocoeval
 
     @property
     def mask_utils(self) -> object:
         """Returns the mask utils object for the given backend, done in this way to make metric picklable."""
-        _, _, mask_utils = _load_backend_tools(self.backend)
+        _, _, mask_utils = _load_coco_backend_tools(self.backend)
         return mask_utils
 
     def update(self, preds: list[dict[str, Tensor]], target: list[dict[str, Tensor]]) -> None:
@@ -682,7 +656,7 @@ class MeanAveragePrecision(Metric):
 
         """
         iou_type = _validate_iou_type_arg(iou_type)  # type: ignore[arg-type]
-        coco, _, _ = _load_backend_tools(backend)
+        coco, _, _ = _load_coco_backend_tools(backend)
 
         with contextlib.redirect_stdout(io.StringIO()):
             gt = coco(coco_target)  # type: ignore[operator]
