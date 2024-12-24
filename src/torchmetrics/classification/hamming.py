@@ -224,7 +224,7 @@ class MulticlassHammingDistance(MulticlassStatScores):
         >>> preds = tensor([2, 1, 0, 1])
         >>> metric = MulticlassHammingDistance(num_classes=3)
         >>> metric(preds, target)
-        tensor(0.1667)
+        tensor(0.2500)
         >>> mchd = MulticlassHammingDistance(num_classes=3, average=None)
         >>> mchd(preds, target)
         tensor([0.5000, 0.0000, 0.0000])

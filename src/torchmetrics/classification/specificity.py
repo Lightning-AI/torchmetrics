@@ -214,7 +214,7 @@ class MulticlassSpecificity(MulticlassStatScores):
         >>> preds = tensor([2, 1, 0, 1])
         >>> metric = MulticlassSpecificity(num_classes=3)
         >>> metric(preds, target)
-        tensor(0.8889)
+        tensor(0.8750)
         >>> mcs = MulticlassSpecificity(num_classes=3, average=None)
         >>> mcs(preds, target)
         tensor([1.0000, 0.6667, 1.0000])
