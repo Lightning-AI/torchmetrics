@@ -239,7 +239,7 @@ class MulticlassAccuracy(MulticlassStatScores):
         >>> preds = tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> metric = MulticlassAccuracy(num_classes=3, multidim_average='samplewise')
         >>> metric(preds, target)
-        tensor([0.5000, 0.2778])
+        tensor([0.5000, 0.3333])
         >>> mca = MulticlassAccuracy(num_classes=3, multidim_average='samplewise', average=None)
         >>> mca(preds, target)
         tensor([[1.0000, 0.0000, 0.5000],
