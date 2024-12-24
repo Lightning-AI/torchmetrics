@@ -39,6 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `top_k` for `multiclassf1score` with one-hot encoding ([#2839](https://github.com/Lightning-AI/torchmetrics/issues/2839))
 
 
+- Fixed slow calculations of classification metrics with MPS ([#2876](https://github.com/Lightning-AI/torchmetrics/issues/2876))
+
 ---
 
 ## [1.6.0] - 2024-11-12
