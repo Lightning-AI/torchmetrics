@@ -13,7 +13,7 @@
 # limitations under the License.
 import inspect
 from functools import partial
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Optional
 from unittest import mock
 
 import numpy as np
@@ -26,6 +26,7 @@ from torch import Tensor
 from torchmetrics import Metric
 from torchmetrics.classification.group_fairness import BinaryFairness
 from torchmetrics.functional.classification.group_fairness import binary_fairness
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import THRESHOLD
 from unittests._helpers import seed_all
@@ -72,7 +73,7 @@ def _reference_fairlearn_binary(preds, target, groups, ignore_index):
     }
 
 
-def _assert_tensor(pl_result: Dict[str, Tensor], key: Optional[str] = None) -> None:
+def _assert_tensor(pl_result: dict[str, Tensor], key: Optional[str] = None) -> None:
     if isinstance(pl_result, dict) and key is None:
         for key, val in pl_result.items():
             assert isinstance(val, Tensor), f"{key!r} is not a Tensor!"
@@ -81,7 +82,7 @@ def _assert_tensor(pl_result: Dict[str, Tensor], key: Optional[str] = None) -> N
 
 
 def _assert_allclose(  # todo: unify with the general assert_allclose
-    pl_result: Dict[str, Tensor], sk_result: Dict[str, Tensor], atol: float = 1e-8, key: Optional[str] = None
+    pl_result: dict[str, Tensor], sk_result: dict[str, Tensor], atol: float = 1e-8, key: Optional[str] = None
 ) -> None:
     if isinstance(pl_result, dict) and key is None:
         for (pl_key, pl_val), (sk_key, sk_val) in zip(pl_result.items(), sk_result.items()):
@@ -282,8 +283,8 @@ class TestBinaryFairness(BinaryFairnessTester):
         """Test class implementation of metric."""
         preds, target, groups = inputs
 
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,

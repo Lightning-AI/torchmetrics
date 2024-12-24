@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Collection, Optional, Sequence, Union
+from collections.abc import Collection, Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -26,15 +27,11 @@ from torchmetrics.functional.detection._panoptic_quality_common import (
     _validate_inputs,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_GREATER_EQUAL_1_12
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["PanopticQuality.plot", "ModifiedPanopticQuality.plot"]
-
-
-if not _TORCH_GREATER_EQUAL_1_12:
-    __doctest_skip__ = ["PanopticQuality", "PanopticQuality.*", "ModifiedPanopticQuality", "ModifiedPanopticQuality.*"]
 
 
 class PanopticQuality(Metric):
@@ -166,9 +163,6 @@ class PanopticQuality(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        if not _TORCH_GREATER_EQUAL_1_12:
-            raise RuntimeError("Panoptic Quality metric requires PyTorch 1.12 or later")
-
         things, stuffs = _parse_categories(things, stuffs)
         self.things = things
         self.stuffs = stuffs

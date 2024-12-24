@@ -32,6 +32,7 @@ from torchmetrics.functional.classification.jaccard import (
     multilabel_jaccard_index,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
@@ -45,7 +46,7 @@ def _reference_sklearn_jaccard_index_binary(preds, target, ignore_index=None, ze
         if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_jaccard_index(y_true=target, y_pred=preds, zero_division=zero_division)
 
 
@@ -108,8 +109,8 @@ class TestBinaryJaccardIndex(MetricTester):
     def test_binary_jaccard_index_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -141,7 +142,7 @@ def _reference_sklearn_jaccard_index_multiclass(preds, target, ignore_index=None
         preds = np.argmax(preds, axis=1)
     preds = preds.flatten()
     target = target.flatten()
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     if average is None:
         return sk_jaccard_index(
             y_true=target, y_pred=preds, average=average, labels=list(range(NUM_CLASSES)), zero_division=zero_division
@@ -269,7 +270,7 @@ def _reference_sklearn_jaccard_index_multilabel(preds, target, ignore_index=None
     scores, weights = [], []
     for i in range(preds.shape[1]):
         pred, true = preds[:, i], target[:, i]
-        true, pred = remove_ignore_index(true, pred, ignore_index)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
         confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
         scores.append(sk_jaccard_index(true, pred, zero_division=zero_division))
         weights.append(confmat[1, 0] + confmat[1, 1])
@@ -355,8 +356,8 @@ class TestMultilabelJaccardIndex(MetricTester):
     def test_multilabel_jaccard_index_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,

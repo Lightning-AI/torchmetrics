@@ -24,6 +24,7 @@ from torchmetrics.classification.auroc import AUROC, BinaryAUROC, MulticlassAURO
 from torchmetrics.functional.classification.auroc import binary_auroc, multiclass_auroc, multilabel_auroc
 from torchmetrics.functional.classification.roc import binary_roc
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
@@ -38,7 +39,7 @@ def _reference_sklearn_auroc_binary(preds, target, max_fpr=None, ignore_index=No
     target = target.flatten().numpy()
     if not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_roc_auc_score(target, preds, max_fpr=max_fpr)
 
 
@@ -102,8 +103,8 @@ class TestBinaryAUROC(MetricTester):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
 
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -144,7 +145,7 @@ def _reference_sklearn_auroc_multiclass(preds, target, average="macro", ignore_i
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_roc_auc_score(target, preds, average=average, multi_class="ovr", labels=list(range(NUM_CLASSES)))
 
 

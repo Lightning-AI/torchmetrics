@@ -33,6 +33,7 @@ from torchmetrics.functional.classification.specificity_sensitivity import (
     multilabel_specificity_at_sensitivity,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
@@ -77,7 +78,7 @@ def _reference_sklearn_specificity_at_sensitivity_binary(preds, target, min_sens
     target = target.flatten().numpy()
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return _specificity_at_sensitivity_x_multilabel(preds, target, min_sensitivity)
 
 
@@ -148,8 +149,8 @@ class TestBinarySpecificityAtSensitivity(MetricTester):
     def test_binary_specificity_at_sensitivity_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -192,7 +193,7 @@ def _reference_sklearn_specificity_at_sensitivity_multiclass(preds, target, min_
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
 
     specificity, thresholds = [], []
     for i in range(NUM_CLASSES):

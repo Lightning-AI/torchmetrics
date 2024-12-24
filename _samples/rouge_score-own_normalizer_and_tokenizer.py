@@ -18,8 +18,8 @@ To run: python rouge_score-own_normalizer_and_tokenizer.py
 """
 
 import re
+from collections.abc import Sequence
 from pprint import pprint
-from typing import Sequence
 
 from torchmetrics.text.rouge import ROUGEScore
 

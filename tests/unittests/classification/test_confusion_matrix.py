@@ -30,6 +30,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     multilabel_confusion_matrix,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers import seed_all
@@ -46,7 +47,7 @@ def _reference_sklearn_confusion_matrix_binary(preds, target, normalize=None, ig
         if not ((preds > 0) & (preds < 1)).all():
             preds = sigmoid(preds)
         preds = (preds >= THRESHOLD).astype(np.uint8)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_confusion_matrix(y_true=target, y_pred=preds, labels=[0, 1], normalize=normalize)
 
 
@@ -114,8 +115,8 @@ class TestBinaryConfusionMatrix(MetricTester):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
 
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -147,7 +148,7 @@ def _reference_sklearn_confusion_matrix_multiclass(preds, target, normalize=None
         preds = np.argmax(preds, axis=1)
     preds = preds.flatten()
     target = target.flatten()
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_confusion_matrix(y_true=target, y_pred=preds, normalize=normalize, labels=list(range(NUM_CLASSES)))
 
 
@@ -298,7 +299,7 @@ def _reference_sklearn_confusion_matrix_multilabel(preds, target, normalize=None
     confmat = []
     for i in range(preds.shape[1]):
         pred, true = preds[:, i], target[:, i]
-        true, pred = remove_ignore_index(true, pred, ignore_index)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
         confmat.append(sk_confusion_matrix(true, pred, normalize=normalize, labels=[0, 1]))
     return np.stack(confmat, axis=0)
 
@@ -367,8 +368,8 @@ class TestMultilabelConfusionMatrix(MetricTester):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
 
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -391,6 +392,16 @@ class TestMultilabelConfusionMatrix(MetricTester):
             metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
             dtype=dtype,
         )
+
+    @pytest.mark.parametrize("num_labels", [2, NUM_CLASSES])
+    def test_multilabel_confusion_matrix_plot(self, num_labels, inputs):
+        """Test multilabel cm plots."""
+        multi_label_confusion_matrix = MultilabelConfusionMatrix(num_labels=num_labels)
+        preds = target = torch.ones(1, num_labels).int()
+        multi_label_confusion_matrix.update(preds, target)
+        fig, ax = multi_label_confusion_matrix.plot()
+        assert fig is not None
+        assert ax is not None
 
 
 def test_warning_on_nan():

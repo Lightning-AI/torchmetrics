@@ -33,6 +33,7 @@ from torchmetrics.functional.classification.average_precision import (
 )
 from torchmetrics.functional.classification.precision_recall_curve import binary_precision_recall_curve
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
@@ -47,7 +48,7 @@ def _reference_sklearn_avg_precision_binary(preds, target, ignore_index=None):
     target = target.flatten().numpy()
     if np.issubdtype(preds.dtype, np.floating) and not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     return sk_average_precision_score(target, preds)
 
 
@@ -106,8 +107,8 @@ class TestBinaryAveragePrecision(MetricTester):
     def test_binary_average_precision_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -156,7 +157,7 @@ def _reference_sklearn_avg_precision_multiclass(preds, target, average="macro", 
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
 
     res = []
     for i in range(NUM_CLASSES):

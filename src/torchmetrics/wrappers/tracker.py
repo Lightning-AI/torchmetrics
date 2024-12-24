@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from collections.abc import Sequence
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -103,10 +104,10 @@ class MetricTracker(ModuleList):
 
     """
 
-    maximize: Union[bool, List[bool]]
+    maximize: Union[bool, list[bool]]
 
     def __init__(
-        self, metric: Union[Metric, MetricCollection], maximize: Optional[Union[bool, List[bool]]] = True
+        self, metric: Union[Metric, MetricCollection], maximize: Optional[Union[bool, list[bool]]] = True
     ) -> None:
         super().__init__()
         if not isinstance(metric, (Metric, MetricCollection)):
@@ -219,10 +220,11 @@ class MetricTracker(ModuleList):
     ) -> Union[
         None,
         float,
-        Tuple[float, int],
-        Tuple[None, None],
-        Dict[str, Union[float, None]],
-        Tuple[Dict[str, Union[float, None]], Dict[str, Union[int, None]]],
+        Tensor,
+        tuple[Union[int, float, Tensor], Union[int, float, Tensor]],
+        tuple[None, None],
+        dict[str, Union[float, None]],
+        tuple[dict[str, Union[float, None]], dict[str, Union[int, None]]],
     ]:
         """Return the highest metric out of all tracked.
 
@@ -260,7 +262,7 @@ class MetricTracker(ModuleList):
         if isinstance(self._base_metric, Metric):
             fn = torch.max if self.maximize else torch.min
             try:
-                value, idx = fn(res, 0)  # type: ignore[call-overload]
+                value, idx = fn(res, 0)
                 if return_step:
                     return value.item(), idx.item()
                 return value.item()
@@ -277,11 +279,11 @@ class MetricTracker(ModuleList):
 
         else:  # this is a metric collection
             maximize = self.maximize if isinstance(self.maximize, list) else len(res) * [self.maximize]
-            value, idx = {}, {}
+            value, idx = {}, {}  # type: ignore[assignment]
             for i, (k, v) in enumerate(res.items()):
                 try:
                     fn = torch.max if maximize[i] else torch.min
-                    out = fn(v, 0)  # type: ignore[call-overload]
+                    out = fn(v, 0)
                     value[k], idx[k] = out[0].item(), out[1].item()
                 except (ValueError, RuntimeError) as error:  # noqa: PERF203 # todo
                     rank_zero_warn(
@@ -290,7 +292,7 @@ class MetricTracker(ModuleList):
                         "Returning `None` instead.",
                         UserWarning,
                     )
-                    value[k], idx[k] = None, None
+                    value[k], idx[k] = None, None  # type: ignore[assignment]
 
             if return_step:
                 return value, idx

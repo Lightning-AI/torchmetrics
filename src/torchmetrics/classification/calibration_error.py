@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Type, Union
+from collections.abc import Sequence
+from typing import Any, List, Optional, Union
 
 from torch import Tensor
 from typing_extensions import Literal
@@ -214,7 +215,7 @@ class MulticlassCalibrationError(Metric):
     - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and
       therefore only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
 
-    .. note::
+    .. tip::
        Additional dimension ``...`` will be flattened into the batch dimension.
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
@@ -370,7 +371,7 @@ class CalibrationError(_ClassificationTaskWrapper):
     """
 
     def __new__(  # type: ignore[misc]
-        cls: Type["CalibrationError"],
+        cls: type["CalibrationError"],
         task: Literal["binary", "multiclass"],
         n_bins: int = 15,
         norm: Literal["l1", "l2", "max"] = "l1",

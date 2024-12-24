@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Literal, Optional, Tuple, Union
+from typing import Any, Literal, Optional, Union
 
 from torch import Tensor, nn
 
@@ -23,9 +23,9 @@ from torchmetrics.functional.image.perceptual_path_length import (
     perceptual_path_length,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_0, _TORCHVISION_AVAILABLE
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
-if not _TORCHVISION_AVAILABLE or not _TORCH_GREATER_EQUAL_2_0:
+if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["PerceptualPathLength"]
 
 
@@ -51,7 +51,8 @@ class PerceptualPathLength(Metric):
     if `conditional=False`, and `forward(z: Tensor, labels: Tensor) -> Tensor` if `conditional=True`. The returned
     tensor should have shape `(num_samples, C, H, W)` and be scaled to the range [0, 255].
 
-    .. note:: using this metric with the default feature extractor requires that ``torchvision`` is installed.
+    .. hint::
+        Using this metric with the default feature extractor requires that ``torchvision`` is installed.
         Either install as ``pip install torchmetrics[image]`` or ``pip install torchvision``
 
     As input to ``forward`` and ``update`` the metric accepts the following input
@@ -165,7 +166,7 @@ class PerceptualPathLength(Metric):
         _validate_generator_model(generator, self.conditional)
         self.generator = generator
 
-    def compute(self) -> Tuple[Tensor, Tensor, Tensor]:
+    def compute(self) -> tuple[Tensor, Tensor, Tensor]:
         """Compute the perceptual path length."""
         return perceptual_path_length(
             generator=self.generator,

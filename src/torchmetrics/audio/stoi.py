@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 from torch import Tensor, tensor
 
@@ -50,7 +51,8 @@ class ShortTimeObjectiveIntelligibility(Metric):
 
     - ``stoi`` (:class:`~torch.Tensor`): float scalar tensor
 
-    .. note:: using this metrics requires you to have ``pystoi`` install. Either install as ``pip install
+    .. hint::
+        Using this metrics requires you to have ``pystoi`` install. Either install as ``pip install
         torchmetrics[audio]`` or ``pip install pystoi``.
 
     Args:

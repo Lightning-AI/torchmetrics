@@ -2,11 +2,12 @@
 import glob
 import os
 import re
+from collections.abc import Iterable, Iterator
 from functools import partial
 from importlib.util import module_from_spec, spec_from_file_location
 from itertools import chain
 from pathlib import Path
-from typing import Any, Iterable, Iterator, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 from pkg_resources import Requirement, yield_lines
 from setuptools import find_packages, setup
@@ -97,7 +98,7 @@ def _parse_requirements(strs: Union[str, Iterable[str]]) -> Iterator[_Requiremen
 
 def _load_requirements(
     path_dir: str, file_name: str = "base.txt", unfreeze: bool = not _FREEZE_REQUIREMENTS
-) -> List[str]:
+) -> list[str]:
     """Load requirements from a file.
 
     >>> _load_requirements(_PATH_REQUIRE)
@@ -161,7 +162,7 @@ LONG_DESCRIPTION = _load_readme_description(
 BASE_REQUIREMENTS = _load_requirements(path_dir=_PATH_REQUIRE, file_name="base.txt")
 
 
-def _prepare_extras(skip_pattern: str = "^_", skip_files: Tuple[str] = ("base.txt",)) -> dict:
+def _prepare_extras(skip_pattern: str = "^_", skip_files: tuple[str] = ("base.txt",)) -> dict:
     """Preparing extras for the package listing requirements.
 
     Args:
@@ -215,7 +216,7 @@ if __name__ == "__main__":
         include_package_data=True,
         zip_safe=False,
         keywords=["deep learning", "machine learning", "pytorch", "metrics", "AI"],
-        python_requires=">=3.8",
+        python_requires=">=3.9",
         setup_requires=[],
         install_requires=BASE_REQUIREMENTS,
         extras_require=_prepare_extras(),
@@ -245,5 +246,6 @@ if __name__ == "__main__":
             "Programming Language :: Python :: 3.9",
             "Programming Language :: Python :: 3.10",
             "Programming Language :: Python :: 3.11",
+            "Programming Language :: Python :: 3.12",
         ],
     )

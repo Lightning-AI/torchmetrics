@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from collections.abc import Sequence
 from copy import deepcopy
-from typing import Any, Dict, Optional, Sequence, Union
+from typing import Any, Optional, Union
 
 import torch
 from lightning_utilities import apply_to_collection
@@ -145,7 +146,7 @@ class BootStrapper(WrapperMetric):
             new_kwargs = apply_to_collection(kwargs, Tensor, torch.index_select, dim=0, index=sample_idx)
             self.metrics[idx].update(*new_args, **new_kwargs)
 
-    def compute(self) -> Dict[str, Tensor]:
+    def compute(self) -> dict[str, Tensor]:
         """Compute the bootstrapped metric values.
 
         Always returns a dict of tensors, which can contain the following keys: ``mean``, ``std``, ``quantile`` and

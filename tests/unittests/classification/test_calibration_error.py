@@ -29,7 +29,7 @@ from torchmetrics.functional.classification.calibration_error import (
     multiclass_calibration_error,
 )
 from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_1_13
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
@@ -44,7 +44,7 @@ def _reference_netcal_binary_calibration_error(preds, target, n_bins, norm, igno
     target = target.numpy().flatten()
     if not ((preds > 0) & (preds < 1)).all():
         preds = sigmoid(preds)
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     metric = ECE if norm == "l1" else MCE
     return metric(n_bins).measure(preds, target)
 
@@ -113,10 +113,8 @@ class TestBinaryCalibrationError(MetricTester):
     def test_binary_calibration_error_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_13:
-            pytest.xfail(reason="torch.linspace in metric not supported before pytorch v1.13 for cpu + half")
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -129,8 +127,6 @@ class TestBinaryCalibrationError(MetricTester):
     @pytest.mark.parametrize("dtype", [torch.half, torch.double])
     def test_binary_calibration_error_dtype_gpu(self, inputs, dtype):
         """Test dtype support of the metric on GPU."""
-        if dtype == torch.half and not _TORCH_GREATER_EQUAL_1_13:
-            pytest.xfail(reason="torch.searchsorted in metric not supported before pytorch v1.13 for gpu + half")
         preds, target = inputs
         self.run_precision_test_gpu(
             preds=preds,
@@ -154,7 +150,7 @@ def _reference_netcal_multiclass_calibration_error(preds, target, n_bins, norm, 
     if not ((preds > 0) & (preds < 1)).all():
         preds = softmax(preds, 1)
     preds = np.moveaxis(preds, 1, -1).reshape((-1, preds.shape[1]))
-    target, preds = remove_ignore_index(target, preds, ignore_index)
+    target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
     metric = ECE if norm == "l1" else MCE
     return metric(n_bins).measure(preds, target)
 

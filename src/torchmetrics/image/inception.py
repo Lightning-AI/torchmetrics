@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Tuple, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor
@@ -49,7 +50,8 @@ class InceptionScore(Metric):
     ``normalize`` is set to ``False`` images are expected to have dtype uint8 and take values in the ``[0, 255]``
     range. All images will be resized to 299 x 299 which is the size of the original training data.
 
-    .. note:: using this metric with the default feature extractor requires that ``torch-fidelity``
+    .. hint::
+        Using this metric with the default feature extractor requires that ``torch-fidelity``
         is installed. Either install as ``pip install torchmetrics[image]`` or
         ``pip install torch-fidelity``
 
@@ -100,7 +102,7 @@ class InceptionScore(Metric):
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
 
-    features: List
+    features: list
     inception: Module
     feature_network: str = "inception"
 
@@ -150,7 +152,7 @@ class InceptionScore(Metric):
         features = self.inception(imgs)
         self.features.append(features)
 
-    def compute(self) -> Tuple[Tensor, Tensor]:
+    def compute(self) -> tuple[Tensor, Tensor]:
         """Compute metric."""
         features = dim_zero_cat(self.features)
         # random permute the features

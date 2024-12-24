@@ -11,7 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -34,7 +35,7 @@ class PeakSignalNoiseRatioWithBlockedEffect(Metric):
     Where :math:`\text{MSE}` denotes the `mean-squared-error`_ function. This metric is a modified version of PSNR that
     better supports evaluation of images with blocked artifacts, that oftens occur in compressed images.
 
-    .. note::
+    .. attention::
         Metric only supports grayscale images. If you have RGB images, please convert them to grayscale first.
 
     As input to ``forward`` and ``update`` the metric accepts the following input

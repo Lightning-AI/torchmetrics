@@ -40,6 +40,7 @@ from torchmetrics.functional.classification.f_beta import (
     multilabel_fbeta_score,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers import seed_all
@@ -63,14 +64,14 @@ def _reference_sklearn_fbeta_score_binary(preds, target, sk_fn, ignore_index, mu
         preds = (preds >= THRESHOLD).astype(np.uint8)
 
     if multidim_average == "global":
-        target, preds = remove_ignore_index(target, preds, ignore_index)
+        target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
         return sk_fn(target, preds, zero_division=zero_division)
 
     res = []
     for pred, true in zip(preds, target):
         pred = pred.flatten()
         true = true.flatten()
-        true, pred = remove_ignore_index(true, pred, ignore_index)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
         res.append(sk_fn(true, pred, zero_division=zero_division))
     return np.stack(res)
 
@@ -171,8 +172,8 @@ class TestBinaryFBetaScore(MetricTester):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
 
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -205,7 +206,7 @@ def _reference_sklearn_fbeta_score_multiclass(
     if multidim_average == "global":
         preds = preds.numpy().flatten()
         target = target.numpy().flatten()
-        target, preds = remove_ignore_index(target, preds, ignore_index)
+        target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
         return sk_fn(
             target,
             preds,
@@ -220,7 +221,7 @@ def _reference_sklearn_fbeta_score_multiclass(
     for pred, true in zip(preds, target):
         pred = pred.flatten()
         true = true.flatten()
-        true, pred = remove_ignore_index(true, pred, ignore_index)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
 
         if len(pred) == 0 and average == "weighted":
             # The result of sk_fn([], [], labels=None, average="weighted", zero_division=zero_division)
@@ -349,8 +350,8 @@ class TestMulticlassFBetaScore(MetricTester):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
 
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -376,7 +377,19 @@ class TestMulticlassFBetaScore(MetricTester):
 
 
 _mc_k_target = torch.tensor([0, 1, 2])
-_mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]])
+_mc_k_preds = torch.tensor([
+    [0.35, 0.4, 0.25],
+    [0.1, 0.5, 0.4],
+    [0.2, 0.1, 0.7],
+])
+
+_mc_k_target2 = torch.tensor([0, 1, 2, 0])
+_mc_k_preds2 = torch.tensor([
+    [0.1, 0.2, 0.7],
+    [0.4, 0.4, 0.2],
+    [0.3, 0.3, 0.4],
+    [0.3, 0.3, 0.4],
+])
 
 
 @pytest.mark.parametrize(
@@ -390,7 +403,33 @@ _mc_k_preds = torch.tensor([[0.35, 0.4, 0.25], [0.1, 0.5, 0.4], [0.2, 0.1, 0.7]]
     ("k", "preds", "target", "average", "expected_fbeta", "expected_f1"),
     [
         (1, _mc_k_preds, _mc_k_target, "micro", torch.tensor(2 / 3), torch.tensor(2 / 3)),
-        (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor(5 / 6), torch.tensor(2 / 3)),
+        (2, _mc_k_preds, _mc_k_target, "micro", torch.tensor(1.0), torch.tensor(1.0)),
+        (1, _mc_k_preds2, _mc_k_target2, "micro", torch.tensor(0.25), torch.tensor(0.25)),
+        (2, _mc_k_preds2, _mc_k_target2, "micro", torch.tensor(0.75), torch.tensor(0.75)),
+        (3, _mc_k_preds2, _mc_k_target2, "micro", torch.tensor(1.0), torch.tensor(1.0)),
+        (1, _mc_k_preds2, _mc_k_target2, "macro", torch.tensor(0.2381), torch.tensor(0.1667)),
+        (2, _mc_k_preds2, _mc_k_target2, "macro", torch.tensor(0.7963), torch.tensor(0.7778)),
+        (3, _mc_k_preds2, _mc_k_target2, "macro", torch.tensor(1.0), torch.tensor(1.0)),
+        (1, _mc_k_preds2, _mc_k_target2, "weighted", torch.tensor(0.1786), torch.tensor(0.1250)),
+        (2, _mc_k_preds2, _mc_k_target2, "weighted", torch.tensor(0.7361), torch.tensor(0.7500)),
+        (3, _mc_k_preds2, _mc_k_target2, "weighted", torch.tensor(1.0), torch.tensor(1.0)),
+        (
+            1,
+            _mc_k_preds2,
+            _mc_k_target2,
+            "none",
+            torch.tensor([0.0000, 0.0000, 0.7143]),
+            torch.tensor([0.0000, 0.0000, 0.5000]),
+        ),
+        (
+            2,
+            _mc_k_preds2,
+            _mc_k_target2,
+            "none",
+            torch.tensor([0.5556, 1.0000, 0.8333]),
+            torch.tensor([0.6667, 1.0000, 0.6667]),
+        ),
+        (3, _mc_k_preds2, _mc_k_target2, "none", torch.tensor([1.0, 1.0, 1.0]), torch.tensor([1.0, 1.0, 1.0])),
     ],
 )
 def test_top_k(
@@ -403,27 +442,86 @@ def test_top_k(
     expected_fbeta: Tensor,
     expected_f1: Tensor,
 ):
-    """A simple test to check that top_k works as expected."""
+    """A comprehensive test to check that top_k works as expected."""
     class_metric = metric_class(top_k=k, average=average, num_classes=3)
     class_metric.update(preds, target)
 
     result = expected_fbeta if class_metric.beta != 1.0 else expected_f1
 
-    assert torch.isclose(class_metric.compute(), result)
-    assert torch.isclose(metric_fn(preds, target, top_k=k, average=average, num_classes=3), result)
+    assert torch.allclose(class_metric.compute(), result, atol=1e-4, rtol=1e-4)
+    assert torch.allclose(
+        metric_fn(preds, target, top_k=k, average=average, num_classes=3), result, atol=1e-4, rtol=1e-4
+    )
+
+
+@pytest.mark.parametrize("num_classes", [5])
+def test_multiclassf1score_with_top_k(num_classes):
+    """Test that F1 score increases monotonically with top_k and equals 1 when top_k equals num_classes.
+
+    Args:
+        num_classes: Number of classes in the classification task.
+
+    The test verifies two properties:
+    1. F1 score increases or stays the same as top_k increases
+    2. F1 score equals 1 when top_k equals num_classes
+
+    """
+    preds = torch.randn(200, num_classes).softmax(dim=-1)
+    target = torch.randint(num_classes, (200,))
+
+    previous_score = 0.0
+    for k in range(1, num_classes + 1):
+        f1_score = MulticlassF1Score(num_classes=num_classes, top_k=k, average="macro")
+        score = f1_score(preds, target)
+
+        assert score >= previous_score, f"F1 score did not increase for top_k={k}"
+        previous_score = score
+
+        if k == num_classes:
+            assert torch.isclose(
+                score, torch.tensor(1.0)
+            ), f"F1 score is not 1 for top_k={k} when num_classes={num_classes}"
+
+
+def test_multiclass_f1_score_top_k_equivalence():
+    """Issue: https://github.com/Lightning-AI/torchmetrics/issues/1653.
+
+    Test that top-k F1 score is equivalent to corrected top-1 F1 score.
+    """
+    num_classes = 5
+
+    preds = torch.randn(200, num_classes).softmax(dim=-1)
+    target = torch.randint(num_classes, (200,))
+
+    f1_val_top3 = MulticlassF1Score(num_classes=num_classes, top_k=3, average="macro")
+    f1_val_top1 = MulticlassF1Score(num_classes=num_classes, top_k=1, average="macro")
+
+    pred_top_3 = torch.argsort(preds, dim=1, descending=True)[:, :3]
+    pred_top_1 = pred_top_3[:, 0]
+
+    target_in_top3 = (target.unsqueeze(1) == pred_top_3).any(dim=1)
+
+    pred_corrected_top3 = torch.where(target_in_top3, target, pred_top_1)
+
+    score_top3 = f1_val_top3(preds, target)
+    score_corrected = f1_val_top1(pred_corrected_top3, target)
+
+    assert torch.isclose(
+        score_top3, score_corrected
+    ), f"Top-3 F1 score ({score_top3}) does not match corrected top-1 F1 score ({score_corrected})"
 
 
 def _reference_sklearn_fbeta_score_multilabel_global(preds, target, sk_fn, ignore_index, average, zero_division):
     if average == "micro":
         preds = preds.flatten()
         target = target.flatten()
-        target, preds = remove_ignore_index(target, preds, ignore_index)
+        target, preds = remove_ignore_index(target=target, preds=preds, ignore_index=ignore_index)
         return sk_fn(target, preds, zero_division=zero_division)
 
     fbeta_score, weights = [], []
     for i in range(preds.shape[1]):
         pred, true = preds[:, i].flatten(), target[:, i].flatten()
-        true, pred = remove_ignore_index(true, pred, ignore_index)
+        true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
         fbeta_score.append(sk_fn(true, pred, zero_division=zero_division))
         confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
         weights.append(confmat[1, 1] + confmat[1, 0])
@@ -446,7 +544,7 @@ def _reference_sklearn_fbeta_score_multilabel_local(preds, target, sk_fn, ignore
     for i in range(preds.shape[0]):
         if average == "micro":
             pred, true = preds[i].flatten(), target[i].flatten()
-            true, pred = remove_ignore_index(true, pred, ignore_index)
+            true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
             fbeta_score.append(sk_fn(true, pred, zero_division=zero_division))
             confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
             weights.append(confmat[1, 1] + confmat[1, 0])
@@ -454,7 +552,7 @@ def _reference_sklearn_fbeta_score_multilabel_local(preds, target, sk_fn, ignore
             scores, w = [], []
             for j in range(preds.shape[1]):
                 pred, true = preds[i, j], target[i, j]
-                true, pred = remove_ignore_index(true, pred, ignore_index)
+                true, pred = remove_ignore_index(target=true, preds=pred, ignore_index=ignore_index)
                 scores.append(sk_fn(true, pred, zero_division=zero_division))
                 confmat = sk_confusion_matrix(true, pred, labels=[0, 1])
                 w.append(confmat[1, 1] + confmat[1, 0])
@@ -608,8 +706,8 @@ class TestMultilabelFBetaScore(MetricTester):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
 
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,

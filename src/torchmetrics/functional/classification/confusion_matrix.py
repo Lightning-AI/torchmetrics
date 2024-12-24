@@ -11,13 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Tuple
+from typing import Optional
 
 import torch
 from torch import Tensor
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape
+from torchmetrics.utilities.compute import normalize_logits_if_needed
 from torchmetrics.utilities.data import _bincount
 from torchmetrics.utilities.enums import ClassificationTask
 from torchmetrics.utilities.prints import rank_zero_warn
@@ -121,7 +122,7 @@ def _binary_confusion_matrix_format(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     convert_to_labels: bool = True,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
     - Remove all datapoints that should be ignored
@@ -137,9 +138,7 @@ def _binary_confusion_matrix_format(
         target = target[idx]
 
     if preds.is_floating_point():
-        if not torch.all((preds >= 0) * (preds <= 1)):
-            # preds is logits, convert with sigmoid
-            preds = preds.sigmoid()
+        preds = normalize_logits_if_needed(preds, "sigmoid")
         if convert_to_labels:
             preds = preds > threshold
 
@@ -300,7 +299,7 @@ def _multiclass_confusion_matrix_format(
     target: Tensor,
     ignore_index: Optional[int] = None,
     convert_to_labels: bool = True,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
     - Applies argmax if preds have one more dimension than target
@@ -482,7 +481,7 @@ def _multilabel_confusion_matrix_format(
     threshold: float = 0.5,
     ignore_index: Optional[int] = None,
     should_threshold: bool = True,
-) -> Tuple[Tensor, Tensor]:
+) -> tuple[Tensor, Tensor]:
     """Convert all input to label format.
 
     - If preds tensor is floating point, applies sigmoid if pred tensor not in [0,1] range
@@ -491,8 +490,7 @@ def _multilabel_confusion_matrix_format(
 
     """
     if preds.is_floating_point():
-        if not torch.all((preds >= 0) * (preds <= 1)):
-            preds = preds.sigmoid()
+        preds = normalize_logits_if_needed(preds, "sigmoid")
         if should_threshold:
             preds = preds > threshold
     preds = torch.movedim(preds, 1, -1).reshape(-1, num_labels)

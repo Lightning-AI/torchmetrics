@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from collections.abc import Sequence
 from functools import partial
-from typing import Any, Optional, Sequence, Tuple, Union
+from typing import Any, Optional, Union
 
 import torch
 from torch import Tensor, tensor
@@ -86,10 +87,10 @@ class PeakSignalNoiseRatio(Metric):
 
     def __init__(
         self,
-        data_range: Optional[Union[float, Tuple[float, float]]] = None,
+        data_range: Optional[Union[float, tuple[float, float]]] = None,
         base: float = 10.0,
         reduction: Literal["elementwise_mean", "sum", "none", None] = "elementwise_mean",
-        dim: Optional[Union[int, Tuple[int, ...]]] = None,
+        dim: Optional[Union[int, tuple[int, ...]]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)

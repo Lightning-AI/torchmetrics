@@ -28,9 +28,17 @@ from torchmetrics.utilities.imports import (
     _ONNXRUNTIME_AVAILABLE,
     _PESQ_AVAILABLE,
     _PYSTOI_AVAILABLE,
+    _REQUESTS_AVAILABLE,
+    _SCIPI_AVAILABLE,
     _TORCHAUDIO_AVAILABLE,
-    _TORCHAUDIO_GREATER_EQUAL_0_10,
 )
+
+if _SCIPI_AVAILABLE:
+    import scipy.signal
+
+    # back compatibility patch due to SMRMpy using scipy.signal.hamming
+    if not hasattr(scipy.signal, "hamming"):
+        scipy.signal.hamming = scipy.signal.windows.hamming
 
 __all__ = [
     "PermutationInvariantTraining",
@@ -52,7 +60,7 @@ if _PYSTOI_AVAILABLE:
 
     __all__ += ["ShortTimeObjectiveIntelligibility"]
 
-if _GAMMATONE_AVAILABLE and _TORCHAUDIO_AVAILABLE and _TORCHAUDIO_GREATER_EQUAL_0_10:
+if _GAMMATONE_AVAILABLE and _TORCHAUDIO_AVAILABLE:
     from torchmetrics.audio.srmr import SpeechReverberationModulationEnergyRatio
 
     __all__ += ["SpeechReverberationModulationEnergyRatio"]
@@ -61,3 +69,8 @@ if _LIBROSA_AVAILABLE and _ONNXRUNTIME_AVAILABLE:
     from torchmetrics.audio.dnsmos import DeepNoiseSuppressionMeanOpinionScore
 
     __all__ += ["DeepNoiseSuppressionMeanOpinionScore"]
+
+if _LIBROSA_AVAILABLE and _REQUESTS_AVAILABLE:
+    from torchmetrics.audio.nisqa import NonIntrusiveSpeechQualityAssessment
+
+    __all__ += ["NonIntrusiveSpeechQualityAssessment"]

@@ -24,10 +24,9 @@ from torchmetrics.functional.detection.ciou import complete_intersection_over_un
 from torchmetrics.functional.detection.diou import distance_intersection_over_union
 from torchmetrics.functional.detection.giou import generalized_intersection_over_union
 from torchmetrics.functional.detection.iou import intersection_over_union
-from torchmetrics.utilities.imports import _TORCHVISION_GREATER_EQUAL_0_13
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
-# todo: check if some older versions have these functions too?
-if _TORCHVISION_GREATER_EQUAL_0_13:
+if _TORCHVISION_AVAILABLE:
     from torchvision.ops import box_iou as tv_iou
     from torchvision.ops import complete_box_iou as tv_ciou
     from torchvision.ops import distance_box_iou as tv_diou
@@ -63,6 +62,8 @@ def _tv_wrapper_class(preds, target, base_fn, respect_labels, iou_threshold, cla
     base_name = {tv_ciou: "ciou", tv_diou: "diou", tv_giou: "giou", tv_iou: "iou"}[base_fn]
 
     result = {f"{base_name}": score.cpu()}
+    if torch.isnan(score):
+        result.update({f"{base_name}": torch.tensor(0.0)})
     if class_metrics:
         for cl in torch.cat(classes).unique().tolist():
             class_score, numel = 0, 0
@@ -71,7 +72,6 @@ def _tv_wrapper_class(preds, target, base_fn, respect_labels, iou_threshold, cla
                 class_score += masked_s[masked_s != -1].sum()
                 numel += masked_s[masked_s != -1].numel()
             result.update({f"{base_name}/cl_{cl}": class_score.cpu() / numel})
-
     return result
 
 
@@ -184,7 +184,6 @@ def _add_noise(x, scale=10):
         (GeneralizedIntersectionOverUnion, generalized_intersection_over_union, tv_giou),
     ],
 )
-@pytest.mark.skipif(not _TORCHVISION_GREATER_EQUAL_0_13, reason="test requires torchvision >= 0.13")
 class TestIntersectionMetrics(MetricTester):
     """Tester class for the different intersection metrics."""
 
@@ -327,6 +326,69 @@ class TestIntersectionMetrics(MetricTester):
 
         with pytest.raises(ValueError, match="Expected target to be of shape.*"):
             functional_metric(torch.randn(25, 4), torch.randn(25, 25))
+
+    def test_corner_case_only_one_empty_prediction(self, class_metric, functional_metric, reference_metric):
+        """Test that the metric does not crash when there is only one empty prediction."""
+        target = [
+            {
+                "boxes": torch.tensor([
+                    [8.0000, 70.0000, 76.0000, 110.0000],
+                    [247.0000, 131.0000, 315.0000, 175.0000],
+                    [361.0000, 177.0000, 395.0000, 203.0000],
+                ]),
+                "labels": torch.tensor([0, 0, 0]),
+            }
+        ]
+        preds = [
+            {
+                "boxes": torch.empty(size=(0, 4)),
+                "labels": torch.tensor([], dtype=torch.int64),
+                "scores": torch.tensor([]),
+            }
+        ]
+
+        metric = class_metric()
+        metric.update(preds, target)
+        res = metric.compute()
+        for val in res.values():
+            assert val == torch.tensor(0.0)
+
+    def test_empty_preds_and_target(self, class_metric, functional_metric, reference_metric):
+        """Check that for either empty preds and targets that the metric returns 0 in these cases before averaging."""
+        x = [
+            {
+                "boxes": torch.empty(size=(0, 4), dtype=torch.float32),
+                "labels": torch.tensor([], dtype=torch.long),
+            },
+            {
+                "boxes": torch.FloatTensor([[0.1, 0.1, 0.2, 0.2], [0.3, 0.3, 0.4, 0.4]]),
+                "labels": torch.LongTensor([1, 2]),
+            },
+        ]
+
+        y = [
+            {
+                "boxes": torch.FloatTensor([[0.1, 0.1, 0.2, 0.2], [0.3, 0.3, 0.4, 0.4]]),
+                "labels": torch.LongTensor([1, 2]),
+                "scores": torch.FloatTensor([0.9, 0.8]),
+            },
+            {
+                "boxes": torch.FloatTensor([[0.1, 0.1, 0.2, 0.2], [0.3, 0.3, 0.4, 0.4]]),
+                "labels": torch.LongTensor([1, 2]),
+                "scores": torch.FloatTensor([0.9, 0.8]),
+            },
+        ]
+        metric = class_metric()
+        metric.update(x, y)
+        res = metric.compute()
+        for val in res.values():
+            assert val == torch.tensor(0.5)
+
+        metric = class_metric()
+        metric.update(y, x)
+        res = metric.compute()
+        for val in res.values():
+            assert val == torch.tensor(0.5)
 
 
 def test_corner_case():
