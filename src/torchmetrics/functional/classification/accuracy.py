@@ -234,7 +234,7 @@ def multiclass_accuracy(
         >>> target = tensor([2, 1, 0, 0])
         >>> preds = tensor([2, 1, 0, 1])
         >>> multiclass_accuracy(preds, target, num_classes=3)
-        tensor(0.8333)
+        tensor(0.7500)
         >>> multiclass_accuracy(preds, target, num_classes=3, average=None)
         tensor([0.5000, 1.0000, 1.0000])
 
@@ -246,7 +246,7 @@ def multiclass_accuracy(
         ...                 [0.71, 0.09, 0.20],
         ...                 [0.05, 0.82, 0.13]])
         >>> multiclass_accuracy(preds, target, num_classes=3)
-        tensor(0.8333)
+        tensor(0.7500)
         >>> multiclass_accuracy(preds, target, num_classes=3, average=None)
         tensor([0.5000, 1.0000, 1.0000])
 
@@ -255,7 +255,7 @@ def multiclass_accuracy(
         >>> target = tensor([[[0, 1], [2, 1], [0, 2]], [[1, 1], [2, 0], [1, 2]]])
         >>> preds = tensor([[[0, 2], [2, 0], [0, 1]], [[2, 2], [2, 1], [1, 0]]])
         >>> multiclass_accuracy(preds, target, num_classes=3, multidim_average='samplewise')
-        tensor([0.5000, 0.2778])
+        tensor([0.5000, 0.3333])
         >>> multiclass_accuracy(preds, target, num_classes=3, multidim_average='samplewise', average=None)
         tensor([[1.0000, 0.0000, 0.5000],
                 [0.0000, 0.3333, 0.5000]])
