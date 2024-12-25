@@ -135,7 +135,7 @@ class CocoBackend:
 
     """
 
-    def __init__(self, backend: str) -> None:
+    def __init__(self, backend: Literal["pycocotools", "faster_coco_eval"]) -> None:
         if backend not in ("pycocotools", "faster_coco_eval"):
             raise ValueError(
                 f"Expected argument `backend` to be one of ('pycocotools', 'faster_coco_eval') but got {backend}"
@@ -162,16 +162,16 @@ class CocoBackend:
 
     def _get_coco_datasets(
         self,
-        groundtruth_labels: Optional[List[Tensor]] = None,
-        groundtruth_box: Optional[List[Tensor]] = None,
-        groundtruth_mask: Optional[List[Tensor]] = None,
-        groundtruth_crowds: Optional[List[Tensor]] = None,
-        groundtruth_area: Optional[List[Tensor]] = None,
-        detection_labels: Optional[List[Tensor]] = None,
-        detection_box: Optional[List[Tensor]] = None,
-        detection_mask: Optional[List[Tensor]] = None,
-        detection_scores: Optional[List[Tensor]] = None,
-        iou_type: Union[Literal["bbox", "segm"], list[str]] = "bbox",
+        groundtruth_labels: List[Tensor],
+        groundtruth_box: List[Tensor],
+        groundtruth_mask: List[Tensor],
+        groundtruth_crowds: List[Tensor],
+        groundtruth_area: List[Tensor],
+        detection_labels: List[Tensor],
+        detection_box: List[Tensor],
+        detection_mask: List[Tensor],
+        detection_scores: List[Tensor],
+        iou_type: tuple[str] = ("bbox",),
         average: Literal["macro", "micro"] = "micro",
     ) -> tuple[object, object]:
         """Returns the coco datasets for the target and the predictions."""
@@ -236,7 +236,7 @@ class CocoBackend:
     def coco_to_tm(
         coco_preds: str,
         coco_target: str,
-        iou_type: Union[Literal["bbox", "segm"], list[str]] = "bbox",
+        iou_type: tuple[str] = ("bbox",),
         backend: Literal["pycocotools", "faster_coco_eval"] = "pycocotools",
     ) -> tuple[list[dict[str, Tensor]], list[dict[str, Tensor]]]:
         """Utility function for converting .json coco format files to the input format of the mAP metric.
@@ -266,7 +266,7 @@ class CocoBackend:
             ... )  # doctest: +SKIP
 
         """
-        iou_type = _validate_iou_type_arg(iou_type)  # type: ignore[arg-type]
+        iou_type = _validate_iou_type_arg(iou_type)
         coco, _, _ = _load_coco_backend_tools(backend)
 
         with contextlib.redirect_stdout(io.StringIO()):
@@ -346,17 +346,17 @@ class CocoBackend:
 
     def tm_to_coco(
         self,
-        groundtruth_labels: Optional[List[Tensor]] = None,
-        groundtruth_box: Optional[List[Tensor]] = None,
-        groundtruth_mask: Optional[List[Tensor]] = None,
-        groundtruth_crowds: Optional[List[Tensor]] = None,
-        groundtruth_area: Optional[List[Tensor]] = None,
-        detection_labels: Optional[List[Tensor]] = None,
-        detection_box: Optional[List[Tensor]] = None,
-        detection_mask: Optional[List[Tensor]] = None,
-        detection_scores: Optional[List[Tensor]] = None,
+        groundtruth_labels: List[Tensor],
+        groundtruth_box: List[Tensor],
+        groundtruth_mask: List[Tensor],
+        groundtruth_crowds: List[Tensor],
+        groundtruth_area: List[Tensor],
+        detection_labels: List[Tensor],
+        detection_box: List[Tensor],
+        detection_mask: List[Tensor],
+        detection_scores: List[Tensor],
         name: str = "tm_map_input",
-        iou_type: Union[Literal["bbox", "segm"], list[str]] = "bbox",
+        iou_type: tuple[str] = ("bbox",),
     ) -> None:
         """Utility function for converting the input for mAP metric to coco format and saving it to a json file.
 
@@ -442,13 +442,13 @@ class CocoBackend:
     def _get_coco_format(
         self,
         labels: List[Tensor],
+        all_labels: List[Tensor],
         boxes: Optional[List[Tensor]] = None,
         masks: Optional[List[Tensor]] = None,
         scores: Optional[List[Tensor]] = None,
         crowds: Optional[List[Tensor]] = None,
         area: Optional[List[Tensor]] = None,
-        all_labels: Optional[List[Tensor]] = None,
-        iou_type: Union[Literal["bbox", "segm"], list[str]] = "bbox",
+        iou_type: tuple[str] = ("bbox",),
     ) -> dict:
         """Transforms and returns all cached targets or predictions in COCO format.
 

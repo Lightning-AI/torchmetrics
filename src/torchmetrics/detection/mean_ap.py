@@ -472,7 +472,7 @@ class MeanAveragePrecision(Metric):
         self,
         coco_preds: str,
         coco_target: str,
-        iou_type: Union[Literal["bbox", "segm"], list[str]] = "bbox",
+        iou_type: tuple[str] = ("bbox",),
         backend: Literal["pycocotools", "faster_coco_eval"] = "pycocotools",
     ) -> tuple[list[dict[str, Tensor]], list[dict[str, Tensor]]]:
         """Utility function for converting .json coco format files to the input format of this metric.
