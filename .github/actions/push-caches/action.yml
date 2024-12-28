@@ -56,7 +56,7 @@ runs:
       if: inputs.cache-artifact-appendix != ''
       run: |
         mkdir -p _pip-staging
-        python python .github/assistant.py move_new_packages \
+        python .github/assistant.py move_new_packages \
           --dir-cache="${{ inputs.pypi-dir }}" \
           --dir_local="_pip-wheels" \
           --dir_staging="_pip-staging"
