@@ -30,6 +30,7 @@ from torchmetrics.functional.classification.confusion_matrix import (
     multilabel_confusion_matrix,
 )
 from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers import seed_all
@@ -114,8 +115,8 @@ class TestBinaryConfusionMatrix(MetricTester):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
 
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -367,8 +368,8 @@ class TestMultilabelConfusionMatrix(MetricTester):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
 
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,
@@ -391,6 +392,16 @@ class TestMultilabelConfusionMatrix(MetricTester):
             metric_args={"num_labels": NUM_CLASSES, "threshold": THRESHOLD},
             dtype=dtype,
         )
+
+    @pytest.mark.parametrize("num_labels", [2, NUM_CLASSES])
+    def test_multilabel_confusion_matrix_plot(self, num_labels, inputs):
+        """Test multilabel cm plots."""
+        multi_label_confusion_matrix = MultilabelConfusionMatrix(num_labels=num_labels)
+        preds = target = torch.ones(1, num_labels).int()
+        multi_label_confusion_matrix.update(preds, target)
+        fig, ax = multi_label_confusion_matrix.plot()
+        assert fig is not None
+        assert ax is not None
 
 
 def test_warning_on_nan():
