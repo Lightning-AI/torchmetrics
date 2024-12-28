@@ -64,7 +64,7 @@ jobs:
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
       TOKENIZERS_PARALLELISM: false
       TEST_DIRS: ${{ needs.check-diff.outputs.test-dirs }}
-      PIP_EXTRA_INDEX_URL: "--find-links https://download.pytorch.org/whl/cpu/torch_stable.html"
+      PIP_EXTRA_INDEX_URL: "--find-links=https://download.pytorch.org/whl/cpu/torch_stable.html"
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that macOS jobs take much more than orger OS
@@ -110,7 +110,7 @@ jobs:
         run: |
           pip --version
           pip install -e . -U "setuptools==69.5.1" -r requirements/_doctest.txt \
-            $PIP_EXTRA_INDEX_URL --find-links $PYPI_CACHE_DIR
+            $PIP_EXTRA_INDEX_URL --find-links="$PYPI_CACHE_DIR"
           pip list
 
       - name: DocTests
@@ -129,7 +129,7 @@ jobs:
               python adjust-torch-versions.py $fpath
           done
           pip install --requirement requirements/_devel.txt -U \
-            $PIP_EXTRA_INDEX_URL --find-links $PYPI_CACHE_DIR
+            $PIP_EXTRA_INDEX_URL --find-links="$PYPI_CACHE_DIR"
           pip list
 
       - name: set special vars for PR
@@ -204,7 +204,7 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: "tests/coverage.xml"
+          files: "tests/coverage.xml"
           flags: cpu,${{ runner.os }},python${{ matrix.python-version }},torch${{ steps.info.outputs.TORCH }}
           env_vars: OS,PYTHON
           name: codecov-umbrella

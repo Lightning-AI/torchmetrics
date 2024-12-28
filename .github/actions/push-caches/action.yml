@@ -47,7 +47,7 @@ runs:
       if: inputs.cache-artifact-appendix != ''
       run: |
         pip wheel -r requirements/_devel.txt --prefer-binary \
-          --wheel-dir=.pip-wheels \
+          --wheel-dir=_pip-wheels \
           -f ${{ inputs.torch-url }} -f ${{ inputs.pypi-dir }}
         ls -lh _pip-wheels
       shell: bash
