@@ -65,7 +65,7 @@ jobs:
       TOKENIZERS_PARALLELISM: false
       TEST_DIRS: ${{ needs.check-diff.outputs.test-dirs }}
       PIP_EXTRA_INDEX_URL: "--find-links=https://download.pytorch.org/whl/cpu/torch_stable.html"
-      UNITTEST_TIMEOUT: ""  # by default, it is not set
+      UNITTEST_TIMEOUT: "" # by default, it is not set
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that macOS jobs take much more than orger OS
