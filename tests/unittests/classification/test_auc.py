@@ -19,6 +19,7 @@ import pytest
 from sklearn.metrics import auc as _sk_auc
 from torch import Tensor, tensor
 from torchmetrics.utilities.compute import auc
+
 from unittests import NUM_BATCHES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
