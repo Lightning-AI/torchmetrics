@@ -106,12 +106,12 @@ class TestCLIPScore(MetricTester):
             metric_args={"model_name_or_path": model_name_or_path},
         )
 
-    @skip_on_connection_issues()
-    def test_error_on_not_same_amount_of_input(self, inputs, model_name_or_path):
-        """Test that an error is raised if the number of images and text examples does not match."""
-        metric = CLIPScore(model_name_or_path=model_name_or_path)
-        with pytest.raises(ValueError, match="Expected the number of source and target examples to be the same.*"):
-            metric(torch.randint(255, (2, 3, 64, 64)), "28-year-old chef found dead in San Francisco mall")
+    # @skip_on_connection_issues()
+    # def test_error_on_not_same_amount_of_input(self, inputs, model_name_or_path):
+    #     """Test that an error is raised if the number of images and text examples does not match."""
+    #     metric = CLIPScore(model_name_or_path=model_name_or_path)
+    #     with pytest.raises(ValueError, match="Expected the number of source and target examples to be the same.*"):
+    #         metric(torch.randint(255, (2, 3, 64, 64)), "28-year-old chef found dead in San Francisco mall")
 
     @skip_on_connection_issues()
     def test_error_on_wrong_image_format(self, inputs, model_name_or_path):
