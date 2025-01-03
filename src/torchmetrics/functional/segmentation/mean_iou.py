@@ -110,8 +110,6 @@ def mean_iou(
     _mean_iou_validate_args(num_classes, include_background, per_class, input_format)
     intersection, union = _mean_iou_update(preds, target, num_classes, include_background, input_format)
     score = _mean_iou_compute(intersection, union)
-    score[torch.isnan(score)] = 0.0  # Handle division by zero like reference
     valid_classes = union > 0
-    score = (score * valid_classes).sum(dim=0)
-    num_batches = valid_classes.sum(dim=0)
-    return score / num_batches if per_class else (score / num_batches).mean()
+    score = score * valid_classes
+    return score if per_class else score[valid_classes].mean(dim=-1)
