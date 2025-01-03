@@ -112,4 +112,4 @@ def mean_iou(
     score = _mean_iou_compute(intersection, union)
     valid_classes = union > 0
     score = score * valid_classes
-    return score if per_class else score[valid_classes].mean(dim=-1)
+    return score if per_class else score.sum(dim=-1) / valid_classes.sum(dim=-1)
