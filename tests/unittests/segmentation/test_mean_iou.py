@@ -22,7 +22,7 @@ from torchmetrics.segmentation.mean_iou import MeanIoU
 
 from unittests import NUM_CLASSES
 from unittests._helpers.testers import MetricTester
-from unittests.segmentation.inputs import _inputs1, _inputs2, _inputs3
+from unittests.segmentation.inputs import _inputs1, _inputs2, _inputs3  #  , _inputs5
 
 
 def _reference_mean_iou(
@@ -90,7 +90,10 @@ class TestMeanIoU(MetricTester):
             target=target,
             metric_functional=mean_iou,
             reference_metric=partial(
-                _reference_mean_iou, input_format=input_format, include_background=include_background, reduce=False
+                _reference_mean_iou,
+                input_format=input_format,
+                include_background=include_background,
+                reduce=False,
             ),
             metric_args={
                 "num_classes": NUM_CLASSES,
