@@ -9,8 +9,8 @@ ALLOW_SKIP_IF_BAD_CONNECTION = os.getenv("ALLOW_SKIP_IF_BAD_CONNECTION", "0") ==
 _ERROR_CONNECTION_MESSAGE_PATTERNS = (
     "We couldn't connect to",
     "Connection error",
-    "Can't load",
-    "`nltk` resource `punkt` is",
+    # "Can't load",  # fixme: this hided breaking change in transformers, so make it more specific
+    # "`nltk` resource `punkt` is",  # todo: this is not intuitive ahy this is a connection issue
 )
 
 
