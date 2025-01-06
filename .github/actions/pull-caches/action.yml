@@ -18,6 +18,14 @@ inputs:
     description: cache restore/dump key
     required: false
     default: "pypi-packages"
+  cache-torch-HF:
+    description: "cache torch and HF"
+    required: false
+    default: "true"
+  cache-references:
+    description: "cache metrics references"
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
@@ -67,6 +75,7 @@ runs:
       shell: bash
 
     - name: Cache Torch & HF
+      if: inputs.cache-torch-HF == 'true' # since the input is string
       continue-on-error: true
       uses: actions/cache/restore@v3
       with:
@@ -75,6 +84,7 @@ runs:
         key: ci-caches
 
     - name: Restored Torch & HF
+      if: inputs.cache-torch-HF == 'true' # since the input is string
       run: |
         mkdir -p $CACHES_DIR
         pip install -q py-tree
@@ -83,7 +93,7 @@ runs:
 
     - name: Cache References
       # do not use this cache for dispatch and crone, to enable rebuild caches if needed
-      if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule'
+      if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule' && inputs.cache-references == 'true'
       continue-on-error: true
       uses: actions/cache/restore@v3
       with:
@@ -91,6 +101,7 @@ runs:
         key: cache-references
 
     - name: Restored References
+      if: inputs.cache-references == 'true' # since the input is string
       continue-on-error: true
       working-directory: tests/
       run: |
