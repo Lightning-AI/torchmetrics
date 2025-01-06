@@ -179,6 +179,23 @@ class AssistantCLI:
             raise ValueError(f"Missing following paths: {not_exists}")
         return " ".join(test_modules)
 
+    @staticmethod
+    def move_new_packages(dir_cache: str, dir_local: str, dir_staging: str) -> None:
+        """Move unique packages from local folder to staging."""
+        assert os.path.isdir(dir_cache), f"Missing folder with saved packages: '{dir_cache}'"  # noqa: S101
+        assert os.path.isdir(dir_local), f"Missing folder with local packages: '{dir_local}'"  # noqa: S101
+        assert os.path.isdir(dir_staging), f"Missing folder for staging: '{dir_staging}'"  # noqa: S101
+
+        import shutil
+
+        for pkg in os.listdir(dir_local):
+            if not os.path.isfile(pkg):
+                continue
+            if pkg in os.listdir(dir_cache):
+                continue
+            logging.info(f"Moving '{pkg}' to staging...")
+            shutil.move(os.path.join(dir_cache, pkg), os.path.join(dir_staging, pkg))
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
