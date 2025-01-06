@@ -27,7 +27,6 @@ jobs:
           set -e
           echo $PR_NUMBER
           pip install -q -U packaging fire pyGithub pyopenssl
-          # python .github/assistant.py changed-domains $PR_NUMBER
           echo "focus=$(python .github/assistant.py changed-domains $PR_NUMBER)" >> $GITHUB_OUTPUT
 
       - run: echo "${{ steps.diff-domains.outputs.focus }}"
