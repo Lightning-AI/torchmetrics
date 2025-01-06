@@ -95,7 +95,7 @@ runs:
 
     - name: Cache References
       # do not use this cache for dispatch and crone, to enable rebuild caches if needed
-      if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule' && inputs.cache-refereces
+      if: github.event_name != 'workflow_dispatch' && github.event_name != 'schedule' && inputs.cache-references
       continue-on-error: true
       uses: actions/cache/restore@v3
       with:

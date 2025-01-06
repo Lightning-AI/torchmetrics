@@ -21,12 +21,10 @@ inputs:
   cache-torch-HF:
     description: "cache torch and HF"
     required: false
-    type: boolean
     default: true
   cache-references:
     description: "cache metrics references"
     required: false
-    type: boolean
     default: false
 
 runs:
@@ -72,12 +70,12 @@ runs:
         retention-days: 1
 
     - name: Post Torch & HF
-      if: inputs.cache-torch-HF
+      if: inputs.cache-torch-HF == 'true'  # since the input is string
       run: py-tree $CACHES_DIR
       shell: bash
 
     - name: Cache Torch & HF
-      if: inputs.cache-torch-HF
+      if: inputs.cache-torch-HF == 'true'  # since the input is string
       continue-on-error: true
       uses: actions/cache/save@v3
       with:
@@ -86,7 +84,7 @@ runs:
         key: ci-caches
 
     - name: Cache references
-      if: inputs.cache-references
+      if: inputs.cache-references == 'true'  # since the input is string
       continue-on-error: true
       uses: actions/cache/save@v3
       with:
@@ -95,6 +93,6 @@ runs:
         key: cache-references
 
     - name: Post References
-      if: inputs.cache-references
+      if: inputs.cache-references == 'true'  # since the input is string
       run: py-tree tests/_cache-references/ --show_hidden
       shell: bash

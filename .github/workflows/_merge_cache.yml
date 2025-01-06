@@ -37,6 +37,8 @@ jobs:
 
       - name: show 📦
         run: |
+          # create the directory if it doesn't exist - no artifact were found
+          mkdir -p _local-packages
           ls -lh _local-packages
           ls -lh ${{ inputs.pypi-dir }}
       - name: Move collected 📦
