@@ -20,7 +20,7 @@ from typing import Optional, Union
 
 import fire
 from packaging.version import parse
-from pkg_resources import parse_requirements
+
 
 _REQUEST_TIMEOUT = 10
 _PATH_ROOT = os.path.dirname(os.path.dirname(__file__))
@@ -58,6 +58,9 @@ class AssistantCLI:
         >>> AssistantCLI.set_min_torch_by_python("../requirements/base.txt")
 
         """
+        # ToDo: `pkg_resources` is deprecates and shall be updated
+        from pkg_resources import parse_requirements
+
         py_ver = f"{sys.version_info.major}.{sys.version_info.minor}"
         if py_ver not in LUT_PYTHON_TORCH:
             return
