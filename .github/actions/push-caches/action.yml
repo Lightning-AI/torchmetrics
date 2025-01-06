@@ -95,7 +95,7 @@ runs:
         path: tests/_cache-references
         key: cache-references
 
-    - name: Post References
-      if: inputs.cache-references == 'true' # since the input is string
-      run: py-tree tests/_cache-references/ --show_hidden
-      shell: bash
+    #- name: Post References
+    #  if: inputs.cache-references == 'true' # since the input is string
+    #  run: py-tree tests/_cache-references/ --show_hidden
+    #  shell: bash
