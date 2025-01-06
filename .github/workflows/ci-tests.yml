@@ -212,8 +212,8 @@ jobs:
           fail_ci_if_error: false
 
       - name: update cashing
-        # if: github.event_name != 'pull_request'  # fixme
-        # continue-on-error: true  # fixme
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
         uses: ./.github/actions/push-caches
         with:
           pypi-dir: ${{ env.PYPI_CACHE_DIR }}
