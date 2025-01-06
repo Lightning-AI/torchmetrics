@@ -111,7 +111,7 @@ jobs:
           zip ${{ github.ref_name }}.zip -r html/
           gsutil cp ${{ github.ref_name }}.zip ${GCP_TARGET}
 
-      - name: Set PyTorch version
+      - name: Inject version selector
         working-directory: docs/build
         run: |
           pip install -q wget
