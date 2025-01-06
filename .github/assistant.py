@@ -19,7 +19,6 @@ import sys
 from typing import Optional, Union
 
 import fire
-from numba.cuda.mathimpl import fname32
 from packaging.version import parse
 
 _REQUEST_TIMEOUT = 10
@@ -161,7 +160,9 @@ class AssistantCLI:
 
         # filter only package files and skip inits
         _is_in_test = lambda fname: fname.startswith("tests")
-        _filter_pkg = lambda fname: _is_in_test(fname) or (fname.startswith("src/torchmetrics") and "__init__.py" not in fname)
+        _filter_pkg = lambda fname: _is_in_test(fname) or (
+            fname.startswith("src/torchmetrics") and "__init__.py" not in fname
+        )
         files_pkg = [fn for fn in files if _filter_pkg(fn)]
         if not files_pkg:
             return _return_all
