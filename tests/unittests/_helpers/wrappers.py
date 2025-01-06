@@ -10,7 +10,6 @@ _ERROR_CONNECTION_MESSAGE_PATTERNS = (
     "We couldn't connect to",
     "Connection error",
     "Can't load",
-    "`nltk` resource `punkt` is",
 )
 
 

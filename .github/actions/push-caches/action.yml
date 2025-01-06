@@ -14,6 +14,18 @@ inputs:
     description: location to pull PyTorch from
     required: false
     default: "https://download.pytorch.org/whl/cpu/torch_stable.html"
+  cache-artifact-appendix:
+    description: "unique name or running index"
+    required: false
+    default: ""
+  cache-torch-HF:
+    description: "cache torch and HF"
+    required: false
+    default: "true"
+  cache-references:
+    description: "cache metrics references"
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
@@ -23,66 +35,50 @@ runs:
       shell: bash
 
     - name: Freeze local emv.
+      if: inputs.cache-artifact-appendix != ''
       run: |
         pip freeze > requirements.dump
         cat requirements.dump
       shell: bash
 
-    #- name: Filter self pkg
-    #  run: |
-    #    import os
-    #    fp = 'requirements.dump'
-    #    with open(fp) as fopen:
-    #      lines = [ln.strip() for ln in fopen.readlines()]
-    #    lines = [ln.split('+')[0] for ln in lines if '-e ' not in ln]
-    #    with open(fp, 'w') as fwrite:
-    #      fwrite.writelines([ln + os.linesep for ln in lines])
-    #  shell: python
-
     - name: Dump wheels
+      if: inputs.cache-artifact-appendix != ''
       run: |
         pip wheel -r requirements/_devel.txt --prefer-binary \
-          --wheel-dir=.pip-wheels \
+          --wheel-dir=_pip-wheels \
           -f ${{ inputs.torch-url }} -f ${{ inputs.pypi-dir }}
-        ls -lh .pip-wheels
+        ls -lh _pip-wheels
       shell: bash
 
-    - name: Cache pull packages
-      uses: actions/cache/restore@v3
-      with:
-        enableCrossOsArchive: true
-        path: ${{ inputs.pypi-dir }}
-        key: ${{ inputs.pypi-key }}
-
-    - name: Find diff
-      id: wheels-diff
+    - name: Move new packages to staging
+      if: inputs.cache-artifact-appendix != ''
       run: |
-        import os, glob
-        wheels = [os.path.basename(p) for p in glob.glob(".pip-wheels/*")]
-        pkgs = [os.path.basename(p) for p in glob.glob("${{ inputs.pypi-dir }}/*")]
-        diff = [w for w in wheels if w not in pkgs]
-        print(diff)
-        with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-            print(f'count-new={len(diff)}', file=fh)
-      shell: python
-
-    - run: cp .pip-wheels/* ${{ inputs.pypi-dir }}
-      if: ${{ steps.wheels-diff.outputs.count-new != 0 }}
+        mkdir -p _pip-staging
+        python .github/assistant.py move_new_packages \
+          --dir-cache="${{ inputs.pypi-dir }}" \
+          --dir_local="_pip-wheels" \
+          --dir_staging="_pip-staging"
+        ls -lh _pip-staging/
+        # count files in the staging dir
+        file_count=$(ls -1 "_pip-staging/" | wc -l)
+        echo "NUM_PACKAGES=$file_count" >> $GITHUB_ENV
       shell: bash
 
-    - name: Cache push packages
-      if: ${{ steps.wheels-diff.outputs.count-new != 0 }}
-      uses: actions/cache/save@v3
+    - name: Upload new packages
+      if: inputs.cache-artifact-appendix != '' && env.NUM_PACKAGES != 0
+      uses: actions/upload-artifact@v4
       with:
-        enableCrossOsArchive: true
-        path: ${{ inputs.pypi-dir }}
-        key: ${{ inputs.pypi-key }}
+        name: ${{ inputs.pypi-key }}-run-${{ inputs.cache-artifact-appendix }}
+        path: _pip-staging
+        retention-days: 1
 
     - name: Post Torch & HF
+      if: inputs.cache-torch-HF == 'true' # since the input is string
       run: py-tree $CACHES_DIR
       shell: bash
 
     - name: Cache Torch & HF
+      if: inputs.cache-torch-HF == 'true' # since the input is string
       continue-on-error: true
       uses: actions/cache/save@v3
       with:
@@ -91,6 +87,7 @@ runs:
         key: ci-caches
 
     - name: Cache references
+      if: inputs.cache-references == 'true' # since the input is string
       continue-on-error: true
       uses: actions/cache/save@v3
       with:
@@ -98,6 +95,8 @@ runs:
         path: tests/_cache-references
         key: cache-references
 
-    - name: Post References
-      run: py-tree tests/_cache-references/ --show_hidden
-      shell: bash
+    #- name: Post References
+    #  # This print taken soo many lines, so it is commented out
+    #  if: inputs.cache-references == 'true' # since the input is string
+    #  run: py-tree tests/_cache-references/ --show_hidden
+    #  shell: bash
