@@ -1,0 +1,57 @@
+name: Collect new packages and upload cache
+
+on:
+  workflow_call:
+    inputs:
+      pypi-key:
+        description: cache restore/dump key
+        required: false
+        type: string
+        default: "pypi-packages"
+      pypi-dir:
+        description: location of local PyPI cache
+        required: false
+        type: string
+        default: "_ci-cache_PyPI"
+      cache-artifact-appendix:
+        description: "unique name for the job"
+        required: true
+        type: string
+
+jobs:
+  merge-caches:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download 📥 artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ${{ inputs.pypi-key }}-run-${{ inputs.cache-artifact-appendix }}*
+          merge-multiple: true
+          path: _local-packages
+      - name: Cache pull packages
+        uses: actions/cache/restore@v3
+        with:
+          enableCrossOsArchive: true
+          path: ${{ inputs.pypi-dir }}
+          key: ${{ inputs.pypi-key }}
+
+      - name: show 📦
+        run: |
+          # create the directory if it doesn't exist - no artifact were found
+          mkdir -p _local-packages
+          ls -lh _local-packages
+          ls -lh ${{ inputs.pypi-dir }}
+          # count files in the staging dir
+          file_count=$(ls -1 "_local-packages/" | wc -l)
+          echo "NUM_PACKAGES=$file_count" >> $GITHUB_ENV
+      - name: Move collected 📦
+        if: env.NUM_PACKAGES != 0
+        run: mv _local-packages/* ${{ inputs.pypi-dir }}
+
+      - name: Cache push packages
+        if: env.NUM_PACKAGES != 0
+        uses: actions/cache/save@v3
+        with:
+          enableCrossOsArchive: true
+          path: ${{ inputs.pypi-dir }}
+          key: ${{ inputs.pypi-key }}
