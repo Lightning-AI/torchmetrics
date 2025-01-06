@@ -21,7 +21,6 @@ from typing import Optional, Union
 import fire
 from packaging.version import parse
 
-
 _REQUEST_TIMEOUT = 10
 _PATH_ROOT = os.path.dirname(os.path.dirname(__file__))
 _PKG_WIDE_SUBPACKAGES = ("utilities", "helpers")
