@@ -41,10 +41,15 @@ jobs:
           mkdir -p _local-packages
           ls -lh _local-packages
           ls -lh ${{ inputs.pypi-dir }}
+          # count files in the staging dir
+          file_count=$(ls -1 "_local-packages/" | wc -l)
+          echo "NUM_PACKAGES=$file_count" >> $GITHUB_ENV
       - name: Move collected 📦
+        if: env.NUM_PACKAGES != 0
         run: mv _local-packages/* ${{ inputs.pypi-dir }}
 
       - name: Cache push packages
+        if: env.NUM_PACKAGES != 0
         uses: actions/cache/save@v3
         with:
           enableCrossOsArchive: true
