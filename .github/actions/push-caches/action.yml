@@ -59,10 +59,13 @@ runs:
           --dir_local="_pip-wheels" \
           --dir_staging="_pip-staging"
         ls -lh _pip-staging/
+        # count files in the staging dir
+        file_count=$(ls -1 "_pip-staging/" | wc -l)
+        echo "NUM_PACKAGES=$file_count" >> $GITHUB_ENV
       shell: bash
 
     - name: Upload new packages
-      if: inputs.cache-artifact-appendix != ''
+      if: inputs.cache-artifact-appendix != '' && env.NUM_PACKAGES != 0
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.pypi-key }}-run-${{ inputs.cache-artifact-appendix }}
