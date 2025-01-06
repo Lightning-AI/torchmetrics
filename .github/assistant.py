@@ -139,7 +139,9 @@ class AssistantCLI:
         files_req = [fn for fn in files if fn.startswith("requirements")]
         req_domains = [fn.split("/")[1] for fn in files_req]
         # cleaning up determining domains
-        req_domains = set([req.replace(".txt", "").replace("_test", "") for req in req_domains if not req.endswith("_")])
+        req_domains = set([
+            req.replace(".txt", "").replace("_test", "") for req in req_domains if not req.endswith("_")
+        ])
         # if you touch base, you need to run everything
         if "base" in req_domains:
             return _return_all
