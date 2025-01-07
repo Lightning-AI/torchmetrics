@@ -37,7 +37,7 @@ seed_everything(42)
 
 
 class DiffMetric(SumMetric):
-    """DiffMetric inherited from `SumMetric` by overidding its `update` method."""
+    """DiffMetric inherited from `SumMetric` by overriding its `update` method."""
 
     def update(self, value):
         """Update state."""

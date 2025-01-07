@@ -81,7 +81,7 @@ def _wrap_reduction(x, y, sk_fn, reduction):
     [
         pytest.param(pairwise_cosine_similarity, cosine_similarity, id="cosine"),
         pytest.param(pairwise_euclidean_distance, euclidean_distances, id="euclidean"),
-        pytest.param(pairwise_manhattan_distance, manhattan_distances, id="manhatten"),
+        pytest.param(pairwise_manhattan_distance, manhattan_distances, id="manhattan"),
         pytest.param(pairwise_linear_similarity, linear_kernel, id="linear"),
         pytest.param(
             partial(pairwise_minkowski_distance, exponent=3),
