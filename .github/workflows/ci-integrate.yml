@@ -36,7 +36,7 @@ jobs:
           - { python-version: "3.10", requires: "latest", os: "ubuntu-22.04" }
           # - { python-version: "3.10", requires: "latest", os: "macOS-14" } # M1 machine # todo: crashing for MPS out of memory
     env:
-      PYTORCH_URL: "http://download.pytorch.org/whl/cpu/"
+      PYTORCH_URL: "https://download.pytorch.org/whl/cpu/"
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
       PYPI_CACHE: "_ci-cache_PyPI"
 
