@@ -73,10 +73,12 @@ def _detect_modality(input_data: Union[Tensor, List[Tensor], List[str], str]) ->
 
 def _process_image_data(images: Union[Tensor, List[Tensor]]) -> List[Tensor]:
     """Helper function to process image data."""
-    if isinstance(images, Tensor):
+    if not isinstance(images, list):
         if images.ndim == 3:
-            return [images]
-        raise ValueError("Expected all images to be 3d but found image that has either more or less")
+            images = [images]
+    else:  # unwrap into list
+        images = list(images)
+
     if not all(i.ndim == 3 for i in images):
         raise ValueError("Expected all images to be 3d but found image that has either more or less")
     return images
