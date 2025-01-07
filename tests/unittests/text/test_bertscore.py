@@ -17,11 +17,11 @@ from functools import partial
 
 import pytest
 from torch import Tensor
+from typing_extensions import Literal
+
 from torchmetrics.functional.text.bert import bert_score
 from torchmetrics.text.bert import BERTScore
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
-from typing_extensions import Literal
-
 from unittests._helpers import skip_on_connection_issues
 from unittests.text._helpers import TextTester
 from unittests.text._inputs import _inputs_single_reference

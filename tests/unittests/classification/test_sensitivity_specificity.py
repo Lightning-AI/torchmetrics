@@ -20,6 +20,7 @@ import torch
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import roc_curve as sk_roc_curve
+
 from torchmetrics.classification.sensitivity_specificity import (
     BinarySensitivityAtSpecificity,
     MulticlassSensitivityAtSpecificity,
@@ -34,7 +35,6 @@ from torchmetrics.functional.classification.sensitivity_specificity import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _SKLEARN_GREATER_EQUAL_1_3, _TORCH_GREATER_EQUAL_2_1
-
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index

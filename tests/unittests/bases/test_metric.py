@@ -24,12 +24,12 @@ import pytest
 import torch
 from torch import Tensor, tensor
 from torch.nn import Module, Parameter
+
 from torchmetrics.aggregation import MeanMetric, SumMetric
 from torchmetrics.classification import BinaryAccuracy
 from torchmetrics.clustering import AdjustedRandScore
 from torchmetrics.image import StructuralSimilarityIndexMeasure
 from torchmetrics.regression import PearsonCorrCoef, R2Score
-
 from unittests._helpers import seed_all
 from unittests._helpers.testers import DummyListMetric, DummyMetric, DummyMetricMultiOutput, DummyMetricSum
 

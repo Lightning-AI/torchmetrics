@@ -17,9 +17,9 @@ from typing import Any
 import pytest
 import torch
 from monai.metrics.hausdorff_distance import compute_hausdorff_distance as monai_hausdorff_distance
+
 from torchmetrics.functional.segmentation.hausdorff_distance import hausdorff_distance
 from torchmetrics.segmentation.hausdorff_distance import HausdorffDistance
-
 from unittests import NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

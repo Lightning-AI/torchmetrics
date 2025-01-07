@@ -19,13 +19,13 @@ from sklearn.metrics.cluster import contingency_matrix as sklearn_contingency_ma
 from sklearn.metrics.cluster import entropy as sklearn_entropy
 from sklearn.metrics.cluster import pair_confusion_matrix as sklearn_pair_confusion_matrix
 from sklearn.metrics.cluster._supervised import _generalized_average as sklearn_generalized_average
+
 from torchmetrics.functional.clustering.utils import (
     calculate_contingency_matrix,
     calculate_entropy,
     calculate_generalized_mean,
     calculate_pair_cluster_confusion_matrix,
 )
-
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 

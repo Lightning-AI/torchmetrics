@@ -40,7 +40,7 @@ rank_zero_only.rank = getattr(rank_zero_only, "rank", int(os.environ.get("LOCAL_
 
 
 def _warn(*args: Any, **kwargs: Any) -> None:
-    warnings.warn(*args, **kwargs)  # noqa: B028
+    warnings.warn(*args, **kwargs)
 
 
 def _info(*args: Any, **kwargs: Any) -> None:

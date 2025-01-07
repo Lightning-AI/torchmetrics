@@ -17,4 +17,4 @@ if _TRANSFORMERS_GREATER_EQUAL_4_10:
     from torchmetrics.functional.multimodal.clip_iqa import clip_image_quality_assessment
     from torchmetrics.functional.multimodal.clip_score import clip_score
 
-    __all__ = ["clip_score", "clip_image_quality_assessment"]
+    __all__ = ["clip_image_quality_assessment", "clip_score"]

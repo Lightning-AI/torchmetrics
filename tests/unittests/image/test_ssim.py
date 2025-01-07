@@ -19,9 +19,9 @@ import torch
 from pytorch_msssim import ssim
 from skimage.metrics import structural_similarity
 from torch import Tensor
+
 from torchmetrics.functional import structural_similarity_index_measure
 from torchmetrics.image import StructuralSimilarityIndexMeasure
-
 from unittests import NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

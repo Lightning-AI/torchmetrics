@@ -19,6 +19,7 @@ import torch
 from netcal.metrics import ECE, MCE
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
+
 from torchmetrics.classification.calibration_error import (
     BinaryCalibrationError,
     CalibrationError,
@@ -30,7 +31,6 @@ from torchmetrics.functional.classification.calibration_error import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
-
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index

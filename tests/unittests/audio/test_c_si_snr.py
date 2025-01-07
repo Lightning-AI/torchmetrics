@@ -15,9 +15,9 @@
 import pytest
 import torch
 from scipy.io import wavfile
+
 from torchmetrics.audio import ComplexScaleInvariantSignalNoiseRatio
 from torchmetrics.functional.audio import complex_scale_invariant_signal_noise_ratio
-
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

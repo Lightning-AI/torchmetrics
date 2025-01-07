@@ -17,9 +17,9 @@ import numpy as np
 import pytest
 import torch
 from scipy.spatial import procrustes as scipy_procrustes
+
 from torchmetrics.functional.shape.procrustes import procrustes_disparity
 from torchmetrics.shape.procrustes import ProcrustesDisparity
-
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
