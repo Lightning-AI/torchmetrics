@@ -1,5 +1,6 @@
 import pytest
 import torch
+
 from torchmetrics import MetricCollection
 from torchmetrics.classification import MulticlassAccuracy, MulticlassF1Score, MulticlassRecall
 from torchmetrics.clustering import CalinskiHarabaszScore

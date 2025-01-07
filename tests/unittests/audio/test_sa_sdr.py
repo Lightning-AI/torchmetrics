@@ -16,13 +16,13 @@ from functools import partial
 import pytest
 import torch
 from torch import Tensor
+
 from torchmetrics.audio import SourceAggregatedSignalDistortionRatio
 from torchmetrics.functional.audio import (
     scale_invariant_signal_distortion_ratio,
     signal_noise_ratio,
     source_aggregated_signal_distortion_ratio,
 )
-
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

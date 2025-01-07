@@ -19,6 +19,7 @@ import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from sklearn.metrics import jaccard_score as sk_jaccard_index
+
 from torchmetrics.classification.jaccard import (
     BinaryJaccardIndex,
     JaccardIndex,
@@ -33,7 +34,6 @@ from torchmetrics.functional.classification.jaccard import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
-
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
 from unittests.classification._inputs import _binary_cases, _multiclass_cases, _multilabel_cases

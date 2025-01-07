@@ -25,12 +25,12 @@ from lightning_utilities import apply_to_collection
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from torch import IntTensor, Tensor
+
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.utilities.imports import (
     _FASTER_COCO_EVAL_AVAILABLE,
     _PYCOCOTOOLS_AVAILABLE,
 )
-
 from unittests._helpers.testers import MetricTester
 from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL
 

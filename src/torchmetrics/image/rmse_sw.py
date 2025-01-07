@@ -72,7 +72,7 @@ class RootMeanSquaredErrorUsingSlidingWindow(Metric):
         **kwargs: dict[str, Any],
     ) -> None:
         super().__init__(**kwargs)
-        if not isinstance(window_size, int) or isinstance(window_size, int) and window_size < 1:
+        if not isinstance(window_size, int) or (isinstance(window_size, int) and window_size < 1):
             raise ValueError("Argument `window_size` is expected to be a positive integer.")
         self.window_size = window_size
 

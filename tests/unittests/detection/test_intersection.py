@@ -16,6 +16,7 @@ from functools import partial
 import pytest
 import torch
 from torch import IntTensor, Tensor
+
 from torchmetrics.detection.ciou import CompleteIntersectionOverUnion
 from torchmetrics.detection.diou import DistanceIntersectionOverUnion
 from torchmetrics.detection.giou import GeneralizedIntersectionOverUnion

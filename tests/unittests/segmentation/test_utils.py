@@ -21,6 +21,7 @@ from scipy.ndimage import binary_erosion as scibinary_erosion
 from scipy.ndimage import distance_transform_cdt as scidistance_transform_cdt
 from scipy.ndimage import distance_transform_edt as scidistance_transform_edt
 from scipy.ndimage import generate_binary_structure as scigenerate_binary_structure
+
 from torchmetrics.functional.segmentation.utils import (
     binary_erosion,
     distance_transform,

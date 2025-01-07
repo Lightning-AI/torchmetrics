@@ -3,6 +3,7 @@
 from functools import partial
 
 import pytest
+
 from torchmetrics import (
     BLEUScore,
     CharErrorRate,

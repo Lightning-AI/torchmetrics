@@ -132,11 +132,24 @@ class AssistantCLI:
         if not files:
             logging.debug("Only integrations was changed so not reason for deep testing...")
             return _return_empty
+
         # filter only docs files
         files_docs = [fn for fn in files if fn.startswith("docs")]
         if len(files) == len(files_docs):
             logging.debug("Only docs was changed so not reason for deep testing...")
             return _return_empty
+
+        files_markdown = [fn for fn in files if fn.endswith(".md")]
+        if len(files) == len(files_markdown):
+            logging.debug("Only markdown files was changed so not reason for deep testing...")
+            return _return_empty
+
+        # filter only testing files which are not specific tests so for example configurations or helper tools
+        files_testing = [fn for fn in files if fn.startswith("tests") and not fn.endswith(".md") and "test_" not in fn]
+        if files_testing:
+            logging.debug("Some testing files was changed -> rather test everything...")
+            return _return_all
+
         # files in requirements folder
         files_req = [fn for fn in files if fn.startswith("requirements")]
         req_domains = [fn.split("/")[1] for fn in files_req]
@@ -147,19 +160,21 @@ class AssistantCLI:
             return _return_all
 
         # filter only package files and skip inits
-        _is_in_test = lambda fn: fn.startswith("tests")
-        _filter_pkg = lambda fn: _is_in_test(fn) or (fn.startswith("src/torchmetrics") and "__init__.py" not in fn)
+        _is_in_test = lambda fname: fname.startswith("tests")
+        _filter_pkg = lambda fname: _is_in_test(fname) or (
+            fname.startswith("src/torchmetrics") and "__init__.py" not in fname
+        )
         files_pkg = [fn for fn in files if _filter_pkg(fn)]
         if not files_pkg:
             return _return_all
 
         # parse domains
-        def _crop_path(fname: str, paths: list[str]) -> str:
+        def _crop_path(fname: str, paths: tuple[str] = ("src/torchmetrics/", "tests/unittests/", "functional/")) -> str:
             for p in paths:
                 fname = fname.replace(p, "")
             return fname
 
-        files_pkg = [_crop_path(fn, ["src/torchmetrics/", "tests/unittests/", "functional/"]) for fn in files_pkg]
+        files_pkg = [_crop_path(fn) for fn in files_pkg]
         # filter domain names
         tm_modules = [fn.split("/")[0] for fn in files_pkg if "/" in fn]
         # filter general (used everywhere) sub-packages
@@ -178,6 +193,23 @@ class AssistantCLI:
         if not_exists:
             raise ValueError(f"Missing following paths: {not_exists}")
         return " ".join(test_modules)
+
+    @staticmethod
+    def move_new_packages(dir_cache: str, dir_local: str, dir_staging: str) -> None:
+        """Move unique packages from local folder to staging."""
+        assert os.path.isdir(dir_cache), f"Missing folder with saved packages: '{dir_cache}'"  # noqa: S101
+        assert os.path.isdir(dir_local), f"Missing folder with local packages: '{dir_local}'"  # noqa: S101
+        assert os.path.isdir(dir_staging), f"Missing folder for staging: '{dir_staging}'"  # noqa: S101
+
+        import shutil
+
+        for pkg in os.listdir(dir_local):
+            if not os.path.isfile(pkg):
+                continue
+            if pkg in os.listdir(dir_cache):
+                continue
+            logging.info(f"Moving '{pkg}' to staging...")
+            shutil.move(os.path.join(dir_cache, pkg), os.path.join(dir_staging, pkg))
 
 
 if __name__ == "__main__":

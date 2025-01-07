@@ -15,6 +15,7 @@ import numpy as np
 import torch
 from matplotlib.table import Table
 from skimage.data import astronaut, cat, coffee
+
 from torchmetrics.multimodal import CLIPScore
 
 # %%
