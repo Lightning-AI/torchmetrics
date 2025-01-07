@@ -14,10 +14,10 @@
 import pytest
 import torch
 from aeon.performance_metrics.clustering import clustering_accuracy_score
+
 from torchmetrics.clustering.cluster_accuracy import ClusterAccuracy
 from torchmetrics.functional.clustering.cluster_accuracy import cluster_accuracy
 from torchmetrics.utilities.imports import _TORCH_LINEAR_ASSIGNMENT_AVAILABLE
-
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
