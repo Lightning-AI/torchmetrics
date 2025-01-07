@@ -21,10 +21,10 @@ import torch
 from lightning_utilities import apply_to_collection
 from sklearn.metrics import mean_squared_error, precision_score, recall_score
 from torch import Tensor
+
 from torchmetrics.classification import MulticlassF1Score, MulticlassPrecision, MulticlassRecall
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
 from torchmetrics.wrappers.bootstrapping import BootStrapper, _bootstrap_sampler
-
 from unittests._helpers import seed_all
 
 seed_all(42)

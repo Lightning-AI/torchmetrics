@@ -12,8 +12,9 @@ Since Perplexity measures token probabilities, it is not suitable for evaluating
 # Here's a hypothetical Python example demonstrating the usage of Perplexity to evaluate a generative language model
 
 import torch
-from torchmetrics.text import Perplexity
 from transformers import AutoModelWithLMHead, AutoTokenizer
+
+from torchmetrics.text import Perplexity
 
 # %%
 # Load the GPT-2 model and tokenizer

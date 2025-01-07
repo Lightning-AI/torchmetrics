@@ -21,6 +21,7 @@ from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from sklearn.metrics import f1_score as sk_f1_score
 from sklearn.metrics import fbeta_score as sk_fbeta_score
 from torch import Tensor
+
 from torchmetrics.classification.f_beta import (
     BinaryF1Score,
     BinaryFBetaScore,
@@ -41,7 +42,6 @@ from torchmetrics.functional.classification.f_beta import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
-
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
@@ -478,9 +478,9 @@ def test_multiclassf1score_with_top_k(num_classes):
         previous_score = score
 
         if k == num_classes:
-            assert torch.isclose(
-                score, torch.tensor(1.0)
-            ), f"F1 score is not 1 for top_k={k} when num_classes={num_classes}"
+            assert torch.isclose(score, torch.tensor(1.0)), (
+                f"F1 score is not 1 for top_k={k} when num_classes={num_classes}"
+            )
 
 
 def test_multiclass_f1_score_top_k_equivalence():
@@ -506,9 +506,9 @@ def test_multiclass_f1_score_top_k_equivalence():
     score_top3 = f1_val_top3(preds, target)
     score_corrected = f1_val_top1(pred_corrected_top3, target)
 
-    assert torch.isclose(
-        score_top3, score_corrected
-    ), f"Top-3 F1 score ({score_top3}) does not match corrected top-1 F1 score ({score_corrected})"
+    assert torch.isclose(score_top3, score_corrected), (
+        f"Top-3 F1 score ({score_top3}) does not match corrected top-1 F1 score ({score_corrected})"
+    )
 
 
 def _reference_sklearn_fbeta_score_multilabel_global(preds, target, sk_fn, ignore_index, average, zero_division):

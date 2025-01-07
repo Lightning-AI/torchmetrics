@@ -23,9 +23,9 @@ import pytest
 import torch
 from lightning_utilities import apply_to_collection
 from torch import Tensor, tensor
+
 from torchmetrics import Metric
 from torchmetrics.utilities.data import _flatten
-
 from unittests import NUM_PROCESSES, _reference_cachier
 
 
@@ -146,7 +146,7 @@ def _class_test(
     # check that metric can be cloned
     clone = metric.clone()
     assert clone is not metric, "Clone is not a different object than the metric"
-    assert type(clone) == type(metric), "Type of clone did not match metric type"
+    assert type(clone) == type(metric), "Type of clone did not match metric type"  # noqa: E721
 
     # move to device
     metric = metric.to(device)

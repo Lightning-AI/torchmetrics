@@ -107,7 +107,7 @@ def binary_jaccard_index(
 ) -> Tensor:
     r"""Calculate the Jaccard index for binary tasks.
 
-    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    The `Jaccard index`_ (also known as the intersection over union or jaccard similarity coefficient) is an statistic
     that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
     intersection divided by the union of the sample sets:
 
@@ -179,7 +179,7 @@ def multiclass_jaccard_index(
 ) -> Tensor:
     r"""Calculate the Jaccard index for multiclass tasks.
 
-    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    The `Jaccard index`_ (also known as the intersection over union or jaccard similarity coefficient) is an statistic
     that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
     intersection divided by the union of the sample sets:
 
@@ -264,7 +264,7 @@ def multilabel_jaccard_index(
 ) -> Tensor:
     r"""Calculate the Jaccard index for multilabel tasks.
 
-    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    The `Jaccard index`_ (also known as the intersection over union or jaccard similarity coefficient) is an statistic
     that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
     intersection divided by the union of the sample sets:
 
@@ -337,7 +337,7 @@ def jaccard_index(
 ) -> Tensor:
     r"""Calculate the Jaccard index.
 
-    The `Jaccard index`_ (also known as the intersetion over union or jaccard similarity coefficient) is an statistic
+    The `Jaccard index`_ (also known as the intersection over union or jaccard similarity coefficient) is an statistic
     that can be used to determine the similarity and diversity of a sample set. It is defined as the size of the
     intersection divided by the union of the sample sets:
 

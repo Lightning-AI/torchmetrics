@@ -18,10 +18,10 @@ import numpy as np
 import pytest
 import torch
 from skimage.metrics import peak_signal_noise_ratio as skimage_peak_signal_noise_ratio
+
 from torchmetrics.functional import peak_signal_noise_ratio
 from torchmetrics.image import PeakSignalNoiseRatio
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
-
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

@@ -25,13 +25,13 @@ from torchmetrics.utilities.prints import rank_zero_debug, rank_zero_info, rank_
 __all__ = [
     "check_forward_full_state_property",
     "class_reduce",
-    "reduce",
-    "rank_zero_debug",
-    "rank_zero_info",
-    "rank_zero_warn",
     "dim_zero_cat",
     "dim_zero_max",
     "dim_zero_mean",
     "dim_zero_min",
     "dim_zero_sum",
+    "rank_zero_debug",
+    "rank_zero_info",
+    "rank_zero_warn",
+    "reduce",
 ]

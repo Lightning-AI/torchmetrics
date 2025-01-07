@@ -112,8 +112,7 @@ class MetricTracker(ModuleList):
         super().__init__()
         if not isinstance(metric, (Metric, MetricCollection)):
             raise TypeError(
-                "Metric arg need to be an instance of a torchmetrics"
-                f" `Metric` or `MetricCollection` but got {metric}"
+                f"Metric arg need to be an instance of a torchmetrics `Metric` or `MetricCollection` but got {metric}"
             )
         self._base_metric = metric
 

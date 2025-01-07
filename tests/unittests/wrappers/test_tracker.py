@@ -16,6 +16,7 @@ import warnings
 
 import pytest
 import torch
+
 from torchmetrics import Metric, MetricCollection
 from torchmetrics.classification import (
     MulticlassAccuracy,
@@ -26,7 +27,6 @@ from torchmetrics.classification import (
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
 from torchmetrics.utilities.imports import _TORCHMETRICS_GREATER_EQUAL_1_6
 from torchmetrics.wrappers import MetricTracker, MultioutputWrapper
-
 from unittests._helpers import seed_all
 
 seed_all(42)

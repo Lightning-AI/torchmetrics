@@ -17,12 +17,12 @@ from typing import Optional
 import pytest
 from scipy.spatial.distance import dice as sc_dice
 from torch import Tensor, tensor
+
 from torchmetrics.classification import Dice
 from torchmetrics.functional import dice
 from torchmetrics.functional.classification.stat_scores import _del_column
 from torchmetrics.utilities.checks import _input_format_classification
 from torchmetrics.utilities.enums import DataType
-
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 from unittests.classification._inputs import _input_binary, _input_binary_logits, _input_binary_prob

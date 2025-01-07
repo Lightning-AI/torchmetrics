@@ -18,9 +18,9 @@ from typing import NamedTuple
 import pytest
 import torch
 from torch import Tensor
+
 from torchmetrics.functional.image.qnr import quality_with_no_reference
 from torchmetrics.image.qnr import QualityWithNoReference
-
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

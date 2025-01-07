@@ -9,8 +9,9 @@ A major difference with Perplexity comes from the fact that ROUGE evaluates actu
 # %%
 # Here's a hypothetical Python example demonstrating the usage of unigram ROUGE F-score to evaluate a generative language model:
 
-from torchmetrics.text import ROUGEScore
 from transformers import AutoTokenizer, pipeline
+
+from torchmetrics.text import ROUGEScore
 
 pipe = pipeline("text-generation", model="openai-community/gpt2")
 tokenizer = AutoTokenizer.from_pretrained("openai-community/gpt2")
