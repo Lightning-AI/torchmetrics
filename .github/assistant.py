@@ -144,7 +144,8 @@ class AssistantCLI:
             logging.debug("Only markdown files was changed so not reason for deep testing...")
             return _return_empty
 
-        files_testing = [fn for fn in files if fn.startswith("tests") and "test_" not in fn]
+        # filter only testing files which are not specific tests so for example configurations or helper tools
+        files_testing = [fn for fn in files if fn.startswith("tests") and not fn.endswith(".md") and "test_" not in fn]
         if files_testing:
             logging.debug("Some testing files was changed -> rather test everything...")
             return _return_all
