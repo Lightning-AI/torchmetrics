@@ -18,7 +18,7 @@ defaults:
 
 env:
   FREEZE_REQUIREMENTS: "1"
-  TORCH_URL: "http://download.pytorch.org/whl/cpu/"
+  TORCH_URL: "https://download.pytorch.org/whl/cpu/"
   PYPI_CACHE: "_ci-cache_PyPI"
   PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
   TOKENIZERS_PARALLELISM: false
