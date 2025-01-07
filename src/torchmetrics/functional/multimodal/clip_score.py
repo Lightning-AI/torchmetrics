@@ -104,6 +104,7 @@ def _get_features(
        device: Device to run the model on
        model: CLIP model instance
        processor: CLIP processor instance
+
     Returns:
        Tensor of features from the CLIP model
 
@@ -112,8 +113,8 @@ def _get_features(
         # Add type checking for images
         image_data = [i for i in data if isinstance(i, Tensor)]
         processed = processor(images=[i.cpu() for i in image_data], return_tensors="pt", padding=True)
-        features = model.get_image_features(processed["pixel_values"].to(device))
-    else:
+        return model.get_image_features(processed["pixel_values"].to(device))
+    if modality == "text":
         processed = processor(text=data, return_tensors="pt", padding=True)
         max_position_embeddings = model.config.text_config.max_position_embeddings
         if processed["attention_mask"].shape[-1] > max_position_embeddings:
@@ -126,8 +127,8 @@ def _get_features(
             processed["attention_mask"] = processed["attention_mask"][..., :max_position_embeddings]
             processed["input_ids"] = processed["input_ids"][..., :max_position_embeddings]
         features = model.get_text_features(processed["input_ids"].to(device), processed["attention_mask"].to(device))
-
-    return features
+        return features
+    raise ValueError(f"invalid modality {modality}")
 
 
 def _clip_score_update(
