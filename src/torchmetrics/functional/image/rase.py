@@ -90,7 +90,7 @@ def relative_average_spectral_error(preds: Tensor, target: Tensor, window_size: 
         ValueError: If ``window_size`` is not a positive integer.
 
     """
-    if not isinstance(window_size, int) or isinstance(window_size, int) and window_size < 1:
+    if not isinstance(window_size, int) or (isinstance(window_size, int) and window_size < 1):
         raise ValueError("Argument `window_size` is expected to be a positive integer.")
 
     img_shape = target.shape[1:]  # [num_channels, width, height]

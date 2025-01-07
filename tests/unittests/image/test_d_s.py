@@ -21,10 +21,10 @@ import torch
 from scipy.ndimage import uniform_filter
 from skimage.transform import resize
 from torch import Tensor
+
 from torchmetrics.functional.image.d_s import spatial_distortion_index
 from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.image.d_s import SpatialDistortionIndex
-
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

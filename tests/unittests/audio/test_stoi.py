@@ -18,9 +18,9 @@ import torch
 from pystoi import stoi as stoi_backend
 from scipy.io import wavfile
 from torch import Tensor
+
 from torchmetrics.audio import ShortTimeObjectiveIntelligibility
 from torchmetrics.functional.audio import short_time_objective_intelligibility
-
 from unittests import _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

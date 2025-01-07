@@ -32,9 +32,9 @@ __all__ = [
     "FeatureShare",
     "LambdaInputTransformer",
     "MetricInputTransformer",
+    "MetricTracker",
     "MinMaxMetric",
     "MultioutputWrapper",
     "MultitaskWrapper",
-    "MetricTracker",
     "Running",
 ]

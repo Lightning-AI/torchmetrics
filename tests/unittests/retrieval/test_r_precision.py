@@ -16,10 +16,10 @@ from typing import Callable, Union
 import numpy as np
 import pytest
 from torch import Tensor
-from torchmetrics.functional.retrieval.r_precision import retrieval_r_precision
-from torchmetrics.retrieval.r_precision import RetrievalRPrecision
 from typing_extensions import Literal
 
+from torchmetrics.functional.retrieval.r_precision import retrieval_r_precision
+from torchmetrics.retrieval.r_precision import RetrievalRPrecision
 from unittests._helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,

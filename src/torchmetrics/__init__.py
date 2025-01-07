@@ -169,6 +169,7 @@ from torchmetrics.wrappers import (  # noqa: E402
 
 __all__ = [
     "AUROC",
+    "ROC",
     "Accuracy",
     "AveragePrecision",
     "BLEUScore",
@@ -229,7 +230,6 @@ __all__ = [
     "PrecisionAtFixedRecall",
     "PrecisionRecallCurve",
     "R2Score",
-    "ROC",
     "Recall",
     "RecallAtFixedPrecision",
     "RelativeAverageSpectralError",

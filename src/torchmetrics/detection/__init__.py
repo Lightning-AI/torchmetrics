@@ -24,9 +24,9 @@ if _TORCHVISION_AVAILABLE:
     from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
     __all__ += [
-        "MeanAveragePrecision",
-        "GeneralizedIntersectionOverUnion",
-        "IntersectionOverUnion",
         "CompleteIntersectionOverUnion",
         "DistanceIntersectionOverUnion",
+        "GeneralizedIntersectionOverUnion",
+        "IntersectionOverUnion",
+        "MeanAveragePrecision",
     ]

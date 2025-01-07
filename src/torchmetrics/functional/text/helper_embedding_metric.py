@@ -143,7 +143,7 @@ def _get_progress_bar(dataloader: DataLoader, verbose: bool = False) -> Union[Da
     """Wrap dataloader in progressbar if asked for.
 
     Function will return either the dataloader itself when `verbose = False`, or it wraps the dataloader with
-    `tqdm.auto.tqdm`, when `verbose = True` to display a progress bar during the embbeddings calculation.
+    `tqdm.auto.tqdm`, when `verbose = True` to display a progress bar during the embeddings calculation.
 
     """
     import tqdm
