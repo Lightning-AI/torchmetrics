@@ -71,7 +71,7 @@ def _detect_modality(input_data: Union[Tensor, List[Tensor], List[str], str]) ->
     raise ValueError("Could not automatically determine modality for input_data")
 
 
-def _process_image_data(images: Union[Tensor, List[Tensor]]) ->  Union[Tensor, List[Tensor]]:
+def _process_image_data(images: Union[Tensor, List[Tensor]]) -> Union[Tensor, List[Tensor]]:
     """Helper function to process image data."""
     if not isinstance(images, list):
         if images.ndim == 3:
