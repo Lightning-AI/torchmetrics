@@ -16,9 +16,9 @@ from itertools import combinations
 
 import numpy as np
 import pytest
+
 from torchmetrics.clustering.dunn_index import DunnIndex
 from torchmetrics.functional.clustering.dunn_index import dunn_index
-
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 from unittests.clustering._inputs import (

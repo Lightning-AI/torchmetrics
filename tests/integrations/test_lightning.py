@@ -25,14 +25,13 @@ else:
     from pytorch_lightning import LightningModule, Trainer, seed_everything
     from pytorch_lightning.loggers import CSVLogger
 
+from integrations.lightning.boring_model import BoringModel
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import SumMetric
 from torchmetrics.classification import BinaryAccuracy, BinaryAveragePrecision, MulticlassAccuracy
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
 from torchmetrics.utilities.prints import rank_zero_only
 from torchmetrics.wrappers import ClasswiseWrapper, MinMaxMetric, MultitaskWrapper
-
-from integrations.lightning.boring_model import BoringModel
 
 seed_everything(42)
 

@@ -16,10 +16,10 @@ from functools import partial
 import pytest
 import torch
 from sklearn.metrics import f1_score
+
 from torchmetrics import MetricCollection
 from torchmetrics.functional.segmentation.dice import dice_score
 from torchmetrics.segmentation.dice import DiceScore
-
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

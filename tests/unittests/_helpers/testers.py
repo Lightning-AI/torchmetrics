@@ -23,9 +23,9 @@ import pytest
 import torch
 from lightning_utilities import apply_to_collection
 from torch import Tensor, tensor
+
 from torchmetrics import Metric
 from torchmetrics.utilities.data import _flatten
-
 from unittests import NUM_PROCESSES, _reference_cachier
 
 

@@ -16,9 +16,9 @@ from functools import partial
 import pytest
 import torch
 from sklearn.metrics import adjusted_mutual_info_score as sklearn_ami
+
 from torchmetrics.clustering.adjusted_mutual_info_score import AdjustedMutualInfoScore
 from torchmetrics.functional.clustering.adjusted_mutual_info_score import adjusted_mutual_info_score
-
 from unittests import BATCH_SIZE, NUM_CLASSES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

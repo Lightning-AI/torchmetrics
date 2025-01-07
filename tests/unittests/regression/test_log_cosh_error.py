@@ -16,9 +16,9 @@ from functools import partial
 import numpy as np
 import pytest
 import torch
+
 from torchmetrics.functional.regression.log_cosh import log_cosh_error
 from torchmetrics.regression.log_cosh import LogCoshError
-
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

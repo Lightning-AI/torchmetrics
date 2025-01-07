@@ -41,13 +41,13 @@ if _SCIPI_AVAILABLE:
         scipy.signal.hamming = scipy.signal.windows.hamming
 
 __all__ = [
+    "ComplexScaleInvariantSignalNoiseRatio",
     "PermutationInvariantTraining",
     "ScaleInvariantSignalDistortionRatio",
-    "SignalDistortionRatio",
-    "SourceAggregatedSignalDistortionRatio",
     "ScaleInvariantSignalNoiseRatio",
+    "SignalDistortionRatio",
     "SignalNoiseRatio",
-    "ComplexScaleInvariantSignalNoiseRatio",
+    "SourceAggregatedSignalDistortionRatio",
 ]
 
 if _PESQ_AVAILABLE:

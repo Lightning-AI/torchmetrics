@@ -15,6 +15,7 @@ import time
 
 import pytest
 import torch
+
 from torchmetrics import MetricCollection
 from torchmetrics.image import (
     FrechetInceptionDistance,
@@ -111,12 +112,12 @@ def test_memory():
     feature_share = FeatureShare([fid, inception, kid]).cuda()
     memory_after_fs = torch.cuda.memory_allocated()
 
-    assert (
-        memory_after_fs > base_memory
-    ), "The memory usage should be higher after initializing the feature share wrapper."
-    assert (
-        memory_after_fs < memory_before_fs
-    ), "The memory usage should be higher after initializing the feature share wrapper."
+    assert memory_after_fs > base_memory, (
+        "The memory usage should be higher after initializing the feature share wrapper."
+    )
+    assert memory_after_fs < memory_before_fs, (
+        "The memory usage should be higher after initializing the feature share wrapper."
+    )
 
     img1 = torch.randint(255, (50, 3, 220, 220), dtype=torch.uint8).to("cuda")
     img2 = torch.randint(255, (50, 3, 220, 220), dtype=torch.uint8).to("cuda")

@@ -24,6 +24,7 @@ from sklearn.metrics.pairwise import (
     pairwise_distances,
 )
 from torch import Tensor
+
 from torchmetrics.functional import (
     pairwise_cosine_similarity,
     pairwise_euclidean_distance,
@@ -31,7 +32,6 @@ from torchmetrics.functional import (
     pairwise_manhattan_distance,
     pairwise_minkowski_distance,
 )
-
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

@@ -16,10 +16,10 @@ from typing import Callable, Optional, Union
 import numpy as np
 import pytest
 from torch import Tensor
-from torchmetrics.functional.retrieval.recall import retrieval_recall
-from torchmetrics.retrieval.recall import RetrievalRecall
 from typing_extensions import Literal
 
+from torchmetrics.functional.retrieval.recall import retrieval_recall
+from torchmetrics.retrieval.recall import RetrievalRecall
 from unittests._helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,

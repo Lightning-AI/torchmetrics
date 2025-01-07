@@ -17,9 +17,9 @@ from typing import Any
 import pytest
 from nltk.translate.bleu_score import SmoothingFunction, corpus_bleu
 from torch import tensor
+
 from torchmetrics.functional.text.bleu import bleu_score
 from torchmetrics.text.bleu import BLEUScore
-
 from unittests.text._helpers import TextTester
 from unittests.text._inputs import _inputs_multiple_references
 
