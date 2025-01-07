@@ -136,7 +136,7 @@ def root_mean_squared_error_using_sliding_window(
         ValueError: If ``window_size`` is not a positive integer.
 
     """
-    if not isinstance(window_size, int) or isinstance(window_size, int) and window_size < 1:
+    if not isinstance(window_size, int) or (isinstance(window_size, int) and window_size < 1):
         raise ValueError("Argument `window_size` is expected to be a positive integer.")
 
     rmse_val_sum, rmse_map, total_images = _rmse_sw_update(

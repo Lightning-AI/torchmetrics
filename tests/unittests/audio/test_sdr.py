@@ -19,9 +19,9 @@ import torch
 from mir_eval.separation import bss_eval_sources
 from scipy.io import wavfile
 from torch import Tensor
+
 from torchmetrics.audio import SignalDistortionRatio
 from torchmetrics.functional import signal_distortion_ratio
-
 from unittests import _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

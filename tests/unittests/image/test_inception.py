@@ -18,9 +18,9 @@ import pytest
 import torch
 from torch.nn import Module
 from torch.utils.data import Dataset
+
 from torchmetrics.image.inception import InceptionScore
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
-
 from unittests._helpers import seed_all
 
 seed_all(42)
@@ -41,9 +41,9 @@ def test_no_train():
     model = MyModel()
     model.train()
     assert model.training
-    assert (
-        not model.metric.inception.training
-    ), "InceptionScore metric was changed to training mode which should not happen"
+    assert not model.metric.inception.training, (
+        "InceptionScore metric was changed to training mode which should not happen"
+    )
 
 
 @pytest.mark.skipif(not _TORCH_FIDELITY_AVAILABLE, reason="metric requires torch-fidelity")

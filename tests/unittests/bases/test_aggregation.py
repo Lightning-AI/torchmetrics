@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 import torch
+
 from torchmetrics.aggregation import CatMetric, MaxMetric, MeanMetric, MinMetric, SumMetric
 from torchmetrics.collections import MetricCollection
-
 from unittests import BATCH_SIZE, NUM_BATCHES
 from unittests._helpers.testers import MetricTester
 

@@ -18,6 +18,7 @@ import pytest
 import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import matthews_corrcoef as sk_matthews_corrcoef
+
 from torchmetrics.classification.matthews_corrcoef import (
     BinaryMatthewsCorrCoef,
     MatthewsCorrCoef,
@@ -31,7 +32,6 @@ from torchmetrics.functional.classification.matthews_corrcoef import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
-
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index

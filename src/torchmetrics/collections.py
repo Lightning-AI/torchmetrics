@@ -311,7 +311,7 @@ class MetricCollection(ModuleDict):
             state1 = getattr(metric1, key)
             state2 = getattr(metric2, key)
 
-            if type(state1) != type(state2):
+            if type(state1) != type(state2):  # noqa: E721
                 return False
 
             if isinstance(state1, Tensor) and isinstance(state2, Tensor):
