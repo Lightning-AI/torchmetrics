@@ -15,9 +15,9 @@ from functools import partial
 
 import pytest
 from nltk.metrics.distance import edit_distance as nltk_edit_distance
+
 from torchmetrics.functional.text.edit import edit_distance
 from torchmetrics.text.edit import EditDistance
-
 from unittests.text._helpers import TextTester
 from unittests.text._inputs import _inputs_single_reference
 

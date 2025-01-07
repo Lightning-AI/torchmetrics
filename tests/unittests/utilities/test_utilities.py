@@ -16,7 +16,9 @@ import sys
 import numpy as np
 import pytest
 import torch
+from lightning_utilities.test.warning import no_warning_call
 from torch import tensor
+
 from torchmetrics.regression import MeanSquaredError, PearsonCorrCoef
 from torchmetrics.utilities import check_forward_full_state_property, rank_zero_debug, rank_zero_info, rank_zero_warn
 from torchmetrics.utilities.checks import _allclose_recursive
@@ -31,7 +33,7 @@ from torchmetrics.utilities.data import (
 )
 from torchmetrics.utilities.distributed import class_reduce, reduce
 from torchmetrics.utilities.exceptions import TorchMetricsUserWarning
-from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_2
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_2, _TORCH_LESS_THAN_2_6
 
 
 def test_prints():
@@ -171,9 +173,11 @@ def test_recursive_allclose(inputs, expected):
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires GPU")
-@pytest.mark.xfail(sys.platform == "win32", reason="test will only fail on non-windows systems")
+@pytest.mark.xfail(
+    sys.platform == "win32" or not _TORCH_LESS_THAN_2_6, reason="test will only fail on non-windows systems"
+)
 def test_cumsum_still_not_supported(use_deterministic_algorithms):
-    """Make sure that cumsum on gpu and deterministic mode still fails.
+    """Make sure that cumsum on GPU and deterministic mode still fails.
 
     If this test begins to pass, it means newer Pytorch versions support this and we can drop internal support.
 
@@ -188,15 +192,16 @@ def test_custom_cumsum(use_deterministic_algorithms):
     # check that cumsum works as expected on non-default cuda device
     device = torch.device("cuda:1") if torch.cuda.device_count() > 1 else torch.device("cuda:0")
     x = torch.arange(100).float().to(device)
-    if sys.platform != "win32":
-        with pytest.warns(
+    with (
+        pytest.warns(
             TorchMetricsUserWarning, match="You are trying to use a metric in deterministic mode on GPU that.*"
-        ):
-            res = _cumsum(x, dim=0).cpu()
-    else:
-        res = _cumsum(x, dim=0).cpu()
-    res2 = np.cumsum(x.cpu(), axis=0)
-    assert torch.allclose(res, res2)
+        )
+        if sys.platform != "win32" and _TORCH_LESS_THAN_2_6 and torch.are_deterministic_algorithms_enabled()
+        else no_warning_call()
+    ):
+        ours = _cumsum(x, dim=0)
+    ref_np = np.cumsum(x.cpu(), axis=0)
+    assert torch.allclose(ours.cpu(), ref_np)
 
 
 def _reference_topk(x, dim, k):

@@ -13,6 +13,7 @@
 # limitations under the License.
 import pytest
 import torch
+
 from torchmetrics.classification import MulticlassAccuracy
 
 

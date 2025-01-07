@@ -19,11 +19,11 @@ import torch_fidelity
 from torch import nn
 from torch_fidelity.sample_similarity_lpips import SampleSimilarityLPIPS
 from torch_fidelity.utils import batch_interp
+
 from torchmetrics.functional.image.lpips import _LPIPS
 from torchmetrics.functional.image.perceptual_path_length import _interpolate, perceptual_path_length
 from torchmetrics.image.perceptual_path_length import PerceptualPathLength
 from torchmetrics.utilities.imports import _TORCH_FIDELITY_AVAILABLE
-
 from unittests._helpers import seed_all, skip_on_running_out_of_memory
 
 seed_all(42)

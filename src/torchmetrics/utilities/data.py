@@ -20,7 +20,7 @@ from lightning_utilities import apply_to_collection
 from torch import Tensor
 
 from torchmetrics.utilities.exceptions import TorchMetricsUserWarning
-from torchmetrics.utilities.imports import _XLA_AVAILABLE
+from torchmetrics.utilities.imports import _TORCH_LESS_THAN_2_6, _XLA_AVAILABLE
 from torchmetrics.utilities.prints import rank_zero_warn
 
 METRIC_EPS = 1e-6
@@ -199,7 +199,7 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
     if minlength is None:
         minlength = len(torch.unique(x))
 
-    if torch.are_deterministic_algorithms_enabled() or _XLA_AVAILABLE and x.is_mps:
+    if torch.are_deterministic_algorithms_enabled() or _XLA_AVAILABLE or x.is_mps:
         mesh = torch.arange(minlength, device=x.device).repeat(len(x), 1)
         return torch.eq(x.reshape(-1, 1), mesh).sum(dim=0)
 
@@ -207,11 +207,13 @@ def _bincount(x: Tensor, minlength: Optional[int] = None) -> Tensor:
 
 
 def _cumsum(x: Tensor, dim: Optional[int] = 0, dtype: Optional[torch.dtype] = None) -> Tensor:
-    if torch.are_deterministic_algorithms_enabled() and x.is_cuda and x.is_floating_point() and sys.platform != "win32":
+    """Implement custom cumulative summation for Torch versions which does not support it natively."""
+    is_cuda_fp_deterministic = torch.are_deterministic_algorithms_enabled() and x.is_cuda and x.is_floating_point()
+    if _TORCH_LESS_THAN_2_6 and is_cuda_fp_deterministic and sys.platform != "win32":
         rank_zero_warn(
-            "You are trying to use a metric in deterministic mode on GPU that uses `torch.cumsum`, which is currently "
-            "not supported. The tensor will be copied to the CPU memory to compute it and then copied back to GPU. "
-            "Expect some slowdowns.",
+            "You are trying to use a metric in deterministic mode on GPU that uses `torch.cumsum`, which is currently"
+            " not supported. The tensor will be copied to the CPU memory to compute it and then copied back to GPU."
+            " Expect some slowdowns.",
             TorchMetricsUserWarning,
         )
         return x.cpu().cumsum(dim=dim, dtype=dtype).to(x.device)

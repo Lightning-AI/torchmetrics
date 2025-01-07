@@ -30,7 +30,7 @@ We provide the remaining interface, such as ``reset()`` that will make sure to c
 states that have been added using ``add_state``. You should therefore not implement ``reset()`` yourself, only in rare
 cases where not all the state variables should be reset to their default value. Adding metric states with ``add_state``
 will make sure that states are correctly synchronized in distributed settings (DDP). To see how metric states are
-synchronized across distributed processes, refer to :meth:`~torchmetrics.Metric.add_state()` docs from the base
+synchronized across distributed processes, refer to :meth:`~torchmetrics.Metric.add_state` docs from the base
 :class:`~torchmetrics.Metric` class.
 
 Below is a basic implementation of a custom accuracy metric. In the ``__init__`` method we add the metric states

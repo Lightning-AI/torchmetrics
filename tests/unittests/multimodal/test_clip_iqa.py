@@ -21,11 +21,11 @@ import pytest
 import torch
 from PIL import Image
 from torch import Tensor
+from torchvision.transforms import PILToTensor
+
 from torchmetrics.functional.multimodal.clip_iqa import clip_image_quality_assessment
 from torchmetrics.multimodal.clip_iqa import CLIPImageQualityAssessment
 from torchmetrics.utilities.imports import _PIQ_GREATER_EQUAL_0_8, _TRANSFORMERS_GREATER_EQUAL_4_10
-from torchvision.transforms import PILToTensor
-
 from unittests._helpers import skip_on_connection_issues
 from unittests._helpers.testers import MetricTester
 from unittests.image import _SAMPLE_IMAGE

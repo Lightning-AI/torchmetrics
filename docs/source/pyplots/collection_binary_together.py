@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import torch
+
 import torchmetrics
 
 N = 10
