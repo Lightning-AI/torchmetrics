@@ -18,10 +18,10 @@ import pytest
 import torch
 from sklearn.metrics import ndcg_score
 from torch import Tensor
-from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg
-from torchmetrics.retrieval.ndcg import RetrievalNormalizedDCG
 from typing_extensions import Literal
 
+from torchmetrics.functional.retrieval.ndcg import retrieval_normalized_dcg
+from torchmetrics.retrieval.ndcg import RetrievalNormalizedDCG
 from unittests._helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,

@@ -17,9 +17,9 @@ from functools import partial
 import pytest
 import torch
 from monai.metrics.meaniou import compute_iou
+
 from torchmetrics.functional.segmentation.mean_iou import mean_iou
 from torchmetrics.segmentation.mean_iou import MeanIoU
-
 from unittests import NUM_CLASSES
 from unittests._helpers.testers import MetricTester
 from unittests.segmentation.inputs import _inputs1, _inputs2, _inputs3

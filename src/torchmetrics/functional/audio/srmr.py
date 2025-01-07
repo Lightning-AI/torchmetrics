@@ -211,7 +211,7 @@ def speech_reverberation_modulation_energy_ratio(
         This implementation is experimental, and might not be consistent with the matlab
         implementation `SRMRToolbox`_, especially the fast implementation.
         The slow versions, a) fast=False, norm=False, max_cf=128, b) fast=False, norm=True, max_cf=30, have
-        a relatively small inconsistence.
+        a relatively small inconsistency.
 
     Returns:
         Scalar tensor with srmr value with shape ``(...)``

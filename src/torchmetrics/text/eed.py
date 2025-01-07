@@ -86,7 +86,7 @@ class ExtendedEditDistance(Metric):
 
         # input validation for parameters
         for param_name, param in zip(["alpha", "rho", "deletion", "insertion"], [alpha, rho, deletion, insertion]):
-            if not isinstance(param, float) or isinstance(param, float) and param < 0:
+            if not isinstance(param, float) or (isinstance(param, float) and param < 0):
                 raise ValueError(f"Parameter `{param_name}` is expected to be a non-negative float.")
 
         self.alpha = alpha

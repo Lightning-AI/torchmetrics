@@ -65,8 +65,7 @@ class BaseAggregator(Metric):
         allowed_nan_strategy = ("error", "warn", "ignore")
         if nan_strategy not in allowed_nan_strategy and not isinstance(nan_strategy, float):
             raise ValueError(
-                f"Arg `nan_strategy` should either be a float or one of {allowed_nan_strategy}"
-                f" but got {nan_strategy}."
+                f"Arg `nan_strategy` should either be a float or one of {allowed_nan_strategy} but got {nan_strategy}."
             )
 
         self.nan_strategy = nan_strategy

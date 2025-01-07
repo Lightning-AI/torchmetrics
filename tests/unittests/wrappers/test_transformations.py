@@ -15,11 +15,11 @@ from typing import ClassVar
 
 import pytest
 from torch import Tensor
+
 from torchmetrics.aggregation import MeanMetric
 from torchmetrics.classification import BinaryAccuracy
 from torchmetrics.retrieval import RetrievalMAP
 from torchmetrics.wrappers import BinaryTargetTransformer, LambdaInputTransformer, MetricInputTransformer
-
 from unittests._helpers import seed_all
 
 seed_all(42)

@@ -21,8 +21,8 @@ import numpy as np
 import pytest
 import torch
 from torch import Tensor
-from torchmetrics import Metric
 
+from torchmetrics import Metric
 from unittests import NUM_PROCESSES, USE_PYTEST_POOL, _reference_cachier
 from unittests._helpers import seed_all
 from unittests._helpers.testers import (
