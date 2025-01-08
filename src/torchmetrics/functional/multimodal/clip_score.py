@@ -88,7 +88,7 @@ def _process_text_data(texts: Union[str, List[str]]) -> List[str]:
 
 def _get_features(
     data: List[Union[Tensor, str]],
-    modality: Literal["image", "text"],
+    modality: str,
     device: torch.device,
     model: "_CLIPModel",
     processor: "_CLIPProcessor",
@@ -104,6 +104,9 @@ def _get_features(
 
     Returns:
        Tensor of features from the CLIP model
+
+    Raises:
+        ValueError: If modality is not "image" or "text"
 
     """
     if modality == "image":
