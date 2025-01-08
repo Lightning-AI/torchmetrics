@@ -44,8 +44,8 @@ class CLIPScore(Metric):
     r"""Calculates `CLIP Score`_ which is a text-to-image similarity metric.
 
     CLIP Score is a reference free metric that can be used to evaluate the correlation between a generated caption for
-    an image and the actual content of the image. It has been found to be highly correlated with human judgement. The
-    metric is defined as:
+    an image and the actual content of the image, as well as the similarity between texts or images. It has been found
+    to be highly correlated with human judgement. The metric is defined as:
 
     .. math::
         \text{CLIPScore(I, C)} = max(100 * cos(E_I, E_C), 0)
@@ -54,15 +54,33 @@ class CLIPScore(Metric):
     textual CLIP embedding :math:`E_C` for an caption :math:`C`. The score is bound between 0 and 100 and the closer
     to 100 the better.
 
+    Additionally, the CLIP Score can be calculated for the same modalities:
+
+    .. math::
+        \text{CLIPScore(I_1, I_2)} = max(100 * cos(E_{I_1}, E_{I_2}), 0)
+
+    where :math:`E_{I_1}` and :math:`E_{I_2}` are the visual embeddings for images :math:`I_1` and :math:`I_2`.
+
+    .. math::
+        \text{CLIPScore(T_1, T_2)} = max(100 * cos(E_{T_1}, E_{T_2}), 0)
+
+    where :math:`E_{T_1}` and :math:`E_{T_2}` are the textual embeddings for texts :math:`T_1` and :math:`T_2`.
+
     .. caution::
         Metric is not scriptable
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``images`` (:class:`~torch.Tensor` or list of tensors): tensor with images feed to the feature extractor with. If
-        a single tensor it should have shape ``(N, C, H, W)``. If a list of tensors, each tensor should have shape
-        ``(C, H, W)``. ``C`` is the number of channels, ``H`` and ``W`` are the height and width of the image.
-    - ``text`` (:class:`~str` or :class:`~list` of :class:`~str`): text to compare with the images, one for each image.
+    - source: Source input. This can be:
+        - Images: (:class:`~torch.Tensor` or list of tensors): tensor with images feed to the feature extractor with. If
+            a single tensor it should have shape ``(N, C, H, W)``. If a list of tensors, each tensor should have shape
+            ``(C, H, W)``. ``C`` is the number of channels, ``H`` and ``W`` are the height and width of the image.
+        - Text: (:class:`~str` or :class:`~list` of :class:`~str`): text to compare with the images, one for each image.
+    - target: Target input. This can be:
+        - Images: (:class:`~torch.Tensor` or list of tensors): tensor with images feed to the feature extractor with. If
+            a single tensor it should have shape ``(N, C, H, W)``. If a list of tensors, each tensor should have shape
+            ``(C, H, W)``. ``C`` is the number of channels, ``H`` and ``W`` are the height and width of the image.
+        - Text: (:class:`~str` or :class:`~list` of :class:`~str`): text to compare with the images, one for each image.
 
     As output of `forward` and `compute` the metric returns the following output
 

@@ -207,11 +207,11 @@ def clip_score(
         "openai/clip-vit-large-patch14",
     ] = "openai/clip-vit-large-patch14",
 ) -> Tensor:
-    r"""Calculate `CLIP Score`_ which is a text-to-image similarity metric.
+    r"""Calculates `CLIP Score`_ which is a text-to-image similarity metric.
 
     CLIP Score is a reference free metric that can be used to evaluate the correlation between a generated caption for
-    an image and the actual content of the image. It has been found to be highly correlated with human judgement. The
-    metric is defined as:
+    an image and the actual content of the image, as well as the similarity between texts or images. It has been found
+    to be highly correlated with human judgement. The metric is defined as:
 
     .. math::
         \text{CLIPScore(I, C)} = max(100 * cos(E_I, E_C), 0)
@@ -219,6 +219,18 @@ def clip_score(
     which corresponds to the cosine similarity between visual `CLIP`_ embedding :math:`E_i` for an image :math:`i` and
     textual CLIP embedding :math:`E_C` for an caption :math:`C`. The score is bound between 0 and 100 and the closer
     to 100 the better.
+
+    Additionally, the CLIP Score can be calculated for the same modalities:
+
+    .. math::
+        \text{CLIPScore(I_1, I_2)} = max(100 * cos(E_{I_1}, E_{I_2}), 0)
+
+    where :math:`E_{I_1}` and :math:`E_{I_2}` are the visual embeddings for images :math:`I_1` and :math:`I_2`.
+
+    .. math::
+        \text{CLIPScore(T_1, T_2)} = max(100 * cos(E_{T_1}, E_{T_2}), 0)
+
+    where :math:`E_{T_1}` and :math:`E_{T_2}` are the textual embeddings for texts :math:`T_1` and :math:`T_2`.
 
     .. note:: Metric is not scriptable
 
