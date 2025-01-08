@@ -55,12 +55,12 @@ class _GroupInput(NamedTuple):
 __all__ = [
     "BATCH_SIZE",
     "EXTRA_DIM",
-    "_Input",
-    "_GroupInput",
     "NUM_BATCHES",
     "NUM_CLASSES",
     "NUM_PROCESSES",
     "THRESHOLD",
     "USE_PYTEST_POOL",
+    "_GroupInput",
+    "_Input",
     "setup_ddp",
 ]

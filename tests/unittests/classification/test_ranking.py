@@ -20,6 +20,7 @@ from scipy.special import expit as sigmoid
 from sklearn.metrics import coverage_error as sk_coverage_error
 from sklearn.metrics import label_ranking_average_precision_score as sk_label_ranking
 from sklearn.metrics import label_ranking_loss as sk_label_ranking_loss
+
 from torchmetrics.classification.ranking import (
     MultilabelCoverageError,
     MultilabelRankingAveragePrecision,
@@ -31,7 +32,6 @@ from torchmetrics.functional.classification.ranking import (
     multilabel_ranking_loss,
 )
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
-
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index

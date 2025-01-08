@@ -17,9 +17,9 @@ import pytest
 import torch
 from sklearn.metrics import mean_tweedie_deviance
 from torch import Tensor
+
 from torchmetrics.functional.regression.tweedie_deviance import tweedie_deviance_score
 from torchmetrics.regression.tweedie_deviance import TweedieDevianceScore
-
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

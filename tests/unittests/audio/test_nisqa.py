@@ -18,9 +18,9 @@ from typing import Any
 import pytest
 import torch
 from torch import Tensor
+
 from torchmetrics.audio.nisqa import NonIntrusiveSpeechQualityAssessment
 from torchmetrics.functional.audio.nisqa import non_intrusive_speech_quality_assessment
-
 from unittests._helpers.testers import MetricTester
 
 # reference values below were calculated using the method described in https://github.com/gabrielmittag/NISQA/blob/master/README.md

@@ -14,9 +14,9 @@
 import pytest
 import torch
 from sklearn.metrics import rand_score as sklearn_rand_score
+
 from torchmetrics.clustering.rand_score import RandScore
 from torchmetrics.functional.clustering.rand_score import rand_score
-
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 from unittests.clustering._inputs import _float_inputs_extrinsic, _single_target_extrinsic1, _single_target_extrinsic2
