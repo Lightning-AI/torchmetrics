@@ -97,7 +97,7 @@ def _get_features(
 
     Args:
        data: List of input data (images or text)
-       modality: Type of input data ("image" or "text")
+       modality: String indicating the type of input data (must be either "image" or "text")
        device: Device to run the model on
        model: CLIP model instance
        processor: CLIP processor instance
