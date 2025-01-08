@@ -147,9 +147,9 @@ def test_zero_division(zero_division, average):
         },
     }
 
-    assert torch.allclose(
-        score, res_dict[average][zero_division], atol=1e-4, equal_nan=True
-    ), f"Expected {res_dict[average][zero_division]} but got {score}"
+    assert torch.allclose(score, res_dict[average][zero_division], atol=1e-4, equal_nan=True), (
+        f"Expected {res_dict[average][zero_division]} but got {score}"
+    )
 
 
 @pytest.mark.parametrize("compute_groups", [True, False])
