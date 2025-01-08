@@ -17,10 +17,10 @@ import numpy as np
 import pytest
 from sklearn.metrics import average_precision_score as sk_average_precision_score
 from torch import Tensor
-from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
-from torchmetrics.retrieval.average_precision import RetrievalMAP
 from typing_extensions import Literal
 
+from torchmetrics.functional.retrieval.average_precision import retrieval_average_precision
+from torchmetrics.retrieval.average_precision import RetrievalMAP
 from unittests._helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,

@@ -6,8 +6,9 @@ BERTScore is a text generation metric to compute the similarity between a genera
 Let's consider a use case in natural language processing where BERTScore is used to evaluate the quality of a text generation model. In this case we are imaging that we are developing a automated news summarization system. The goal is to create concise summaries of news articles that accurately capture the key points of the original articles. To evaluate the performance of your summarization system, you need a metric that can compare the generated summaries to human-written summaries. This is where the BERTScore can be used.
 """
 
-from torchmetrics.text import BERTScore, ROUGEScore
 from transformers import AutoTokenizer, pipeline
+
+from torchmetrics.text import BERTScore, ROUGEScore
 
 pipe = pipeline("text-generation", model="openai-community/gpt2")
 tokenizer = AutoTokenizer.from_pretrained("openai-community/gpt2")

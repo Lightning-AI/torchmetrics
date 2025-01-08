@@ -19,6 +19,7 @@ import pytest
 import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
+
 from torchmetrics.classification.stat_scores import (
     BinaryStatScores,
     MulticlassStatScores,
@@ -33,7 +34,6 @@ from torchmetrics.functional.classification.stat_scores import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
-
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
@@ -395,7 +395,7 @@ def test_refine_preds_oh(top_k, expected_result):
 
     result = _refine_preds_oh(preds, preds_oh, target, top_k)
     assert torch.equal(result, expected_result), (
-        f"Test failed for top_k={top_k}. " f"Expected result: {expected_result}, but got: {result}"
+        f"Test failed for top_k={top_k}. Expected result: {expected_result}, but got: {result}"
     )
 
 

@@ -16,10 +16,10 @@ from typing import Callable, Optional, Union
 import numpy as np
 import pytest
 from torch import Tensor
-from torchmetrics.functional.retrieval.precision import retrieval_precision
-from torchmetrics.retrieval.precision import RetrievalPrecision
 from typing_extensions import Literal
 
+from torchmetrics.functional.retrieval.precision import retrieval_precision
+from torchmetrics.retrieval.precision import RetrievalPrecision
 from unittests._helpers import seed_all
 from unittests.retrieval.helpers import (
     RetrievalMetricTester,
@@ -50,7 +50,7 @@ def _precision_at_k(target: np.ndarray, preds: np.ndarray, top_k: Optional[int] 
     assert target.shape == preds.shape
     assert len(target.shape) == 1  # works only with single dimension inputs
 
-    if top_k is None or adaptive_k and top_k > len(preds):
+    if top_k is None or (adaptive_k and top_k > len(preds)):
         top_k = len(preds)
 
     if target.sum() > 0:

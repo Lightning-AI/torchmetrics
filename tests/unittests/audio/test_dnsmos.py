@@ -19,6 +19,7 @@ import numpy as np
 import pytest
 import torch
 from torch import Tensor
+
 from torchmetrics.audio.dnsmos import DeepNoiseSuppressionMeanOpinionScore
 from torchmetrics.functional.audio.dnsmos import (
     DNSMOS_DIR,
@@ -30,7 +31,6 @@ from torchmetrics.utilities.imports import (
     _ONNXRUNTIME_AVAILABLE,
     _REQUESTS_AVAILABLE,
 )
-
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 

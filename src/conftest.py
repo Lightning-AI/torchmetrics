@@ -11,7 +11,7 @@ if package_available("pytest") and package_available("doctest"):
     MANUAL_SEED = doctest.register_optionflag("MANUAL_SEED")
 
     @pytest.fixture(autouse=True)
-    def reset_random_seed(seed: int = 42) -> None:  # noqa: PT004
+    def reset_random_seed(seed: int = 42) -> None:
         """Reset the random seed before running each doctest."""
         import random
 

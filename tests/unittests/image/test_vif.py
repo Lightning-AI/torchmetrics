@@ -16,9 +16,9 @@ import numpy as np
 import pytest
 import torch
 from sewar.full_ref import vifp
+
 from torchmetrics.functional.image.vif import visual_information_fidelity
 from torchmetrics.image.vif import VisualInformationFidelity
-
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

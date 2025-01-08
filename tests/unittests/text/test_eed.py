@@ -16,9 +16,9 @@ from functools import partial
 
 import pytest
 from torch import Tensor, tensor
+
 from torchmetrics.functional.text.eed import extended_edit_distance
 from torchmetrics.text.eed import ExtendedEditDistance
-
 from unittests.text._helpers import TextTester
 from unittests.text._inputs import _inputs_single_reference, _inputs_single_sentence_multiple_references
 
