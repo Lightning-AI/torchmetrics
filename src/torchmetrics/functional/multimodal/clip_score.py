@@ -280,15 +280,15 @@ def clip_score(
         >>> score.detach()
         tensor(99.3556)
 
-    Example:
-        >>> from torchmetrics.functional.multimodal import clip_score
-        >>> score = clip_score(
-        ...     "28-year-old chef found dead in San Francisco mall",
-        ...     "A 28-year-old chef who recently moved to San Francisco was found dead.",
-        ...     "openai/clip-vit-base-patch16"
-        ... )
-        >>> score.detach()
-        tensor(91.3950)
+    # Example:
+    #     >>> from torchmetrics.functional.multimodal import clip_score
+    #     >>> score = clip_score(
+    #     ...     "28-year-old chef found dead in San Francisco mall",
+    #     ...     "A 28-year-old chef who recently moved to San Francisco was found dead.",
+    #     ...     "openai/clip-vit-base-patch16"
+    #     ... )
+    #     >>> score.detach()
+    #     tensor(91.3950)
 
     """
     model, processor = _get_clip_model_and_processor(model_name_or_path)

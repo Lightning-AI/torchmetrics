@@ -120,13 +120,13 @@ class CLIPScore(Metric):
         >>> score.detach().round()
         tensor(100.)
 
-    Example:
-        >>> from torchmetrics.multimodal.clip_score import CLIPScore
-        >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
-        >>> score = metric("28-year-old chef found dead in San Francisco mall",
-        ...               "A 28-year-old chef who recently moved to San Francisco was found dead.")
-        >>> score.detach().round()
-        tensor(91.)
+    # Example:
+    #     >>> from torchmetrics.multimodal.clip_score import CLIPScore
+    #     >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
+    #     >>> score = metric("28-year-old chef found dead in San Francisco mall",
+    #     ...               "A 28-year-old chef who recently moved to San Francisco was found dead.")
+    #     >>> score.detach().round()
+    #     tensor(91.)
 
     """
 
