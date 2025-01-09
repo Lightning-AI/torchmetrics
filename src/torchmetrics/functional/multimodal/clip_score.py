@@ -259,7 +259,10 @@ def clip_score(
             If the number of images and captions do not match
 
     Example:
+        >>> import torch
         >>> from torchmetrics.functional.multimodal import clip_score
+        >>> torch.manual_seed(42)
+        >>> torch.cuda.manual_seed_all(42)
         >>> score = clip_score(torch.randint(255, (3, 224, 224)), "a photo of a cat", "openai/clip-vit-base-patch16")
         >>> score.detach()
         tensor(24.4255)
