@@ -156,7 +156,7 @@ def _clip_score_update(
             f"{len(source_data)} and {len(target_data)}"
         )
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cpu")
     if source_modality == "image" and isinstance(source_data[0], Tensor):
         device = source_data[0].device
     elif target_modality == "image" and isinstance(target_data[0], Tensor):
