@@ -266,7 +266,6 @@ def clip_score(
         tensor(24.4255)
 
     Example:
-        >>> import torch
         >>> from torchmetrics.functional.multimodal import clip_score
         >>> image1 = torch.randint(255, (3, 224, 224), generator=torch.Generator().manual_seed(42))
         >>> image2 = torch.randint(255, (3, 224, 224), generator=torch.Generator().manual_seed(43))

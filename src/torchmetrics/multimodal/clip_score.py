@@ -101,7 +101,6 @@ class CLIPScore(Metric):
             If transformers package is not installed or version is lower than 4.10.0
 
     Example:
-        >>> from torch import randint
         >>> from torchmetrics.multimodal.clip_score import CLIPScore
         >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
         >>> image = torch.randint(255, (3, 224, 224), generator=torch.Generator().manual_seed(42))
@@ -110,7 +109,6 @@ class CLIPScore(Metric):
         tensor(24.)
 
     Example:
-        >>> import torch
         >>> from torchmetrics.multimodal.clip_score import CLIPScore
         >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
         >>> image1 = torch.randint(255, (3, 224, 224), generator=torch.Generator().manual_seed(42))
