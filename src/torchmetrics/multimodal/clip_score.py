@@ -104,9 +104,10 @@ class CLIPScore(Metric):
         >>> from torch import randint
         >>> from torchmetrics.multimodal.clip_score import CLIPScore
         >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
-        >>> score = metric(randint(255, (3, 224, 224)), "a photo of a cat")
+        >>> image = torch.randint(255, (3, 224, 224), generator=torch.Generator().manual_seed(42))
+        >>> score = metric(image, "a photo of a cat")
         >>> score.detach().round()
-        tensor(25.)
+        tensor(24.)
 
     Example:
         >>> import torch
