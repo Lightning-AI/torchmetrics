@@ -158,9 +158,9 @@ def _clip_score_update(
 
     device = (
         source_data[0].device
-        if source_modality == "image"
+        if source_modality == "image" and isinstance(source_data[0], Tensor)
         else target_data[0].device
-        if target_modality == "image"
+        if target_modality == "image" and isinstance(target_data[0], Tensor)
         else torch.device("cuda" if torch.cuda.is_available() else "cpu")
     )
     model = model.to(device)
