@@ -156,11 +156,11 @@ def _clip_score_update(
             f"{len(source_data)} and {len(target_data)}"
         )
 
-    device = torch.device("cpu")
-    if source_modality == "image" and isinstance(source_data[0], Tensor):
-        device = source_data[0].device
-    elif target_modality == "image" and isinstance(target_data[0], Tensor):
-        device = target_data[0].device
+    device = (
+        source_data[0].device if source_modality == "image" 
+        else target_data[0].device if target_modality == "image"
+        else torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    )
     model = model.to(device)
 
     source_features = _get_features(
@@ -174,6 +174,7 @@ def _clip_score_update(
 
     # Calculate cosine similarity
     score = 100 * (source_features * target_features).sum(axis=-1)
+    score = score.cpu() if source_modality == "text" and target_modality == "text" else score
     return score, len(source_data)
 
 
