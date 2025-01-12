@@ -235,6 +235,8 @@ def _multiclass_stat_scores_arg_validation(
     - ``zero_division`` has to be 0 or 1
 
     """
+    if num_classes is None and average != "micro":
+        raise ValueError(f"Argument `num_classes` can only be `None` for `average='micro'`, but got `average={average}`.")
     if num_classes is not None and (not isinstance(num_classes, int) or num_classes < 2):
         raise ValueError(f"Expected argument `num_classes` to be an integer larger than 1, but got {num_classes}")
     if not isinstance(top_k, int) and top_k < 1:
