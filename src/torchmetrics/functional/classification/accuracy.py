@@ -166,7 +166,7 @@ def binary_accuracy(
 def multiclass_accuracy(
     preds: Tensor,
     target: Tensor,
-    num_classes: int,
+    num_classes: Optional[int] = None,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     top_k: int = 1,
     multidim_average: Literal["global", "samplewise"] = "global",
@@ -266,7 +266,7 @@ def multiclass_accuracy(
         _multiclass_stat_scores_tensor_validation(preds, target, num_classes, multidim_average, ignore_index)
     preds, target = _multiclass_stat_scores_format(preds, target, top_k)
     tp, fp, tn, fn = _multiclass_stat_scores_update(
-        preds, target, num_classes, top_k, average, multidim_average, ignore_index
+        preds, target, num_classes or 1, top_k, average, multidim_average, ignore_index
     )
     return _accuracy_reduce(tp, fp, tn, fn, average=average, multidim_average=multidim_average, top_k=top_k)
 
