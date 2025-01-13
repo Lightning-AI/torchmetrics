@@ -626,6 +626,12 @@ def test_corner_cases():
     res = metric(preds, target)
     assert res == 1.0
 
+    metric_micro1 = MulticlassAccuracy(num_classes=None, average="micro", ignore_index=0)
+    metric_micro2 = MulticlassAccuracy(num_classes=3, average="micro", ignore_index=0)
+    res1 = metric_micro1(preds, target)
+    res2 = metric_micro2(preds, target)
+    assert res1 == res2
+
 
 @pytest.mark.parametrize(
     ("metric", "kwargs"),
