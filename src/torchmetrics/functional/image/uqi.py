@@ -39,8 +39,7 @@ def _uqi_update(preds: Tensor, target: Tensor) -> tuple[Tensor, Tensor]:
     _check_same_shape(preds, target)
     if len(preds.shape) != 4:
         raise ValueError(
-            "Expected `preds` and `target` to have BxCxHxW shape."
-            f" Got preds: {preds.shape} and target: {target.shape}."
+            f"Expected `preds` and `target` to have BxCxHxW shape. Got preds: {preds.shape} and target: {target.shape}."
         )
     return preds, target
 

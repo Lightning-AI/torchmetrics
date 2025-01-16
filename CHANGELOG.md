@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Make `num_classes` optional for classification in case of micro averaging ([#2841](https://github.com/PyTorchLightning/metrics/pull/2841))
+
+
 - Enabled specifying weights path for FID ([#2867](https://github.com/PyTorchLightning/metrics/pull/2867))
 
 
@@ -839,7 +842,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `PearsonCorrcoef`
   * `SpearmanCorrcoef`
 - Removed deprecated functions, and warnings in detection and pairwise ([#804](https://github.com/Lightning-AI/metrics/pull/804))
-  * `MAP` and `functional.pairwise.manhatten`
+  * `MAP` and `functional.pairwise.manhattan`
 - Removed deprecated functions, and warnings in Audio ([#805](https://github.com/Lightning-AI/metrics/pull/805))
   * `PESQ` and `functional.audio.pesq`
   * `PIT` and `functional.audio.pit`
@@ -1029,7 +1032,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `pairwise_cosine_similarity`
   - `pairwise_euclidean_distance`
   - `pairwise_linear_similarity`
-  - `pairwise_manhatten_distance`
+  - `pairwise_manhattan_distance`
 
 ### Changed
 

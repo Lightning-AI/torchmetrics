@@ -16,9 +16,9 @@ from functools import partial
 
 import pytest
 import torch
+
 from torchmetrics.functional.nominal.cramers import cramers_v, cramers_v_matrix
 from torchmetrics.nominal.cramers import CramersV
-
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests._helpers.testers import MetricTester
 
@@ -43,7 +43,7 @@ _input_logits = _Input(
 )
 
 
-@pytest.fixture()
+@pytest.fixture
 def cramers_matrix_input():
     """Define input in matrix format for the metric."""
     matrix = torch.cat(

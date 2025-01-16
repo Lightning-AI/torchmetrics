@@ -95,13 +95,13 @@ class BaseMetricResults(dict):
 class MAPMetricResults(BaseMetricResults):
     """Class to wrap the final mAP results."""
 
-    __slots__ = ("map", "map_50", "map_75", "map_small", "map_medium", "map_large", "classes")
+    __slots__ = ("classes", "map", "map_50", "map_75", "map_large", "map_medium", "map_small")
 
 
 class MARMetricResults(BaseMetricResults):
     """Class to wrap the final mAR results."""
 
-    __slots__ = ("mar_1", "mar_10", "mar_100", "mar_small", "mar_medium", "mar_large")
+    __slots__ = ("mar_1", "mar_10", "mar_100", "mar_large", "mar_medium", "mar_small")
 
 
 class COCOMetricResults(BaseMetricResults):
@@ -111,17 +111,17 @@ class COCOMetricResults(BaseMetricResults):
         "map",
         "map_50",
         "map_75",
-        "map_small",
-        "map_medium",
         "map_large",
+        "map_medium",
+        "map_per_class",
+        "map_small",
         "mar_1",
         "mar_10",
         "mar_100",
-        "mar_small",
-        "mar_medium",
-        "mar_large",
-        "map_per_class",
         "mar_100_per_class",
+        "mar_large",
+        "mar_medium",
+        "mar_small",
     )
 
 

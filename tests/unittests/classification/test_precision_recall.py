@@ -21,6 +21,7 @@ from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from sklearn.metrics import precision_score as sk_precision_score
 from sklearn.metrics import recall_score as sk_recall_score
 from torch import Tensor, tensor
+
 from torchmetrics.classification.precision_recall import (
     BinaryPrecision,
     BinaryRecall,
@@ -41,7 +42,6 @@ from torchmetrics.functional.classification.precision_recall import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
-
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index

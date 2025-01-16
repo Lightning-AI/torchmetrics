@@ -108,8 +108,7 @@ def _r2_score_compute(
     if adjusted != 0:
         if adjusted > num_obs - 1:
             rank_zero_warn(
-                "More independent regressions than data points in"
-                " adjusted r2 score. Falls back to standard r2 score.",
+                "More independent regressions than data points in adjusted r2 score. Falls back to standard r2 score.",
                 UserWarning,
             )
         elif adjusted == num_obs - 1:

@@ -307,7 +307,7 @@ class MulticlassStatScores(_AbstractStatScores):
 
     def __init__(
         self,
-        num_classes: int,
+        num_classes: Optional[int] = None,
         top_k: int = 1,
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         multidim_average: Literal["global", "samplewise"] = "global",
@@ -330,7 +330,7 @@ class MulticlassStatScores(_AbstractStatScores):
         self.zero_division = zero_division
 
         self._create_state(
-            size=1 if (average == "micro" and top_k == 1) else num_classes, multidim_average=multidim_average
+            size=1 if (average == "micro" and top_k == 1) else (num_classes or 1), multidim_average=multidim_average
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:
@@ -340,8 +340,9 @@ class MulticlassStatScores(_AbstractStatScores):
                 preds, target, self.num_classes, self.multidim_average, self.ignore_index
             )
         preds, target = _multiclass_stat_scores_format(preds, target, self.top_k)
+        num_classes = self.num_classes if self.num_classes is not None else 1
         tp, fp, tn, fn = _multiclass_stat_scores_update(
-            preds, target, self.num_classes, self.top_k, self.average, self.multidim_average, self.ignore_index
+            preds, target, num_classes, self.top_k, self.average, self.multidim_average, self.ignore_index
         )
         self._update_state(tp, fp, tn, fn)
 

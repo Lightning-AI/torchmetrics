@@ -18,8 +18,9 @@ import sys
 from typing import Optional
 
 import lai_sphinx_theme
-import torchmetrics
 from lightning_utilities.docs.formatting import _linkcode_resolve, _transform_changelog
+
+import torchmetrics
 
 _PATH_HERE = os.path.abspath(os.path.dirname(__file__))
 _PATH_ROOT = os.path.realpath(os.path.join(_PATH_HERE, "..", ".."))
