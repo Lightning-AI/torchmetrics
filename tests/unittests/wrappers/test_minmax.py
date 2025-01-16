@@ -18,10 +18,10 @@ from typing import Any
 import pytest
 import torch
 from torch import Tensor
+
 from torchmetrics.classification import BinaryAccuracy, BinaryConfusionMatrix, MulticlassAccuracy
 from torchmetrics.regression import MeanSquaredError
 from torchmetrics.wrappers import MinMaxMetric
-
 from unittests import BATCH_SIZE, NUM_BATCHES, NUM_CLASSES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

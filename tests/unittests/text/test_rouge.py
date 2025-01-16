@@ -20,11 +20,11 @@ from typing import Callable, Union
 import pytest
 import torch
 from torch import Tensor
+from typing_extensions import Literal
+
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.text.rouge import ROUGEScore
 from torchmetrics.utilities.imports import _NLTK_AVAILABLE, _ROUGE_SCORE_AVAILABLE
-from typing_extensions import Literal
-
 from unittests._helpers import skip_on_connection_issues
 from unittests.text._helpers import TextTester
 from unittests.text._inputs import _Input, _inputs_multiple_references, _inputs_single_sentence_single_reference
@@ -322,6 +322,6 @@ def test_rouge_score_accumulate_best(preds, references, expected_scores):
 
     # Assert each expected score
     for key in expected_scores:
-        assert torch.isclose(
-            result[key], torch.tensor(expected_scores[key])
-        ), f"Expected {expected_scores[key]} for {key}, but got {result[key]}"
+        assert torch.isclose(result[key], torch.tensor(expected_scores[key])), (
+            f"Expected {expected_scores[key]} for {key}, but got {result[key]}"
+        )

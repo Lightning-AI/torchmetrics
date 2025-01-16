@@ -19,6 +19,7 @@ import torch
 from netcal.metrics import ECE, MCE
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
+
 from torchmetrics.classification.calibration_error import (
     BinaryCalibrationError,
     CalibrationError,
@@ -29,7 +30,7 @@ from torchmetrics.functional.classification.calibration_error import (
     multiclass_calibration_error,
 )
 from torchmetrics.metric import Metric
-
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
@@ -112,8 +113,8 @@ class TestBinaryCalibrationError(MetricTester):
     def test_binary_calibration_error_dtype_cpu(self, inputs, dtype):
         """Test dtype support of the metric on CPU."""
         preds, target = inputs
-        if (preds < 0).any() and dtype == torch.half:
-            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision")
+        if not _TORCH_GREATER_EQUAL_2_1 and (preds < 0).any() and dtype == torch.half:
+            pytest.xfail(reason="torch.sigmoid in metric does not support cpu + half precision for torch<2.1")
         self.run_precision_test_cpu(
             preds=preds,
             target=target,

@@ -20,6 +20,9 @@ defaults:
   run:
     shell: bash
 
+env:
+  PYPI_CACHE_DIR: "_ci-cache_PyPI"
+
 jobs:
   check-diff:
     if: github.event.pull_request.draft == false
@@ -54,15 +57,15 @@ jobs:
           - { os: "windows-2022", python-version: "3.10", pytorch-version: "2.0.1" }
           - { os: "windows-2022", python-version: "3.12", pytorch-version: "2.5.0" }
           # Future released version
-          #- { os: "ubuntu-22.04", python-version: "3.11", pytorch-version: "2.5.0" }
-          #- { os: "macOS-14", python-version: "3.11", pytorch-version: "2.5.0" }
-          #- { os: "windows-2022", python-version: "3.11", pytorch-version: "2.5.0" }
+          - { os: "ubuntu-22.04", python-version: "3.11", pytorch-version: "2.6.0" }
+          - { os: "macOS-14", python-version: "3.11", pytorch-version: "2.6.0" }
+          - { os: "windows-2022", python-version: "3.11", pytorch-version: "2.6.0" }
     env:
       FREEZE_REQUIREMENTS: ${{ ! (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release/')) }}
-      PYPI_CACHE_DIR: "_ci-cache_PyPI"
       TOKENIZERS_PARALLELISM: false
       TEST_DIRS: ${{ needs.check-diff.outputs.test-dirs }}
-      PIP_EXTRA_INDEX_URL: "--find-links https://download.pytorch.org/whl/cpu/torch_stable.html"
+      PIP_EXTRA_INDEX_URL: "--extra-index-url=https://download.pytorch.org/whl/cpu/"
+      UNITTEST_TIMEOUT: "" # by default, it is not set
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     # seems that macOS jobs take much more than orger OS
@@ -98,16 +101,17 @@ jobs:
           requires: ${{ matrix.requires }}
           pytorch-version: ${{ matrix.pytorch-version }}
           pypi-dir: ${{ env.PYPI_CACHE_DIR }}
+          cache-references: true
 
-      #- name: Switch to PT test URL
-      #  if: ${{ matrix.pytorch-version == '2.X.0' }}
-      #  run: echo 'PIP_EXTRA_INDEX_URL=--extra-index-url https://download.pytorch.org/whl/test/cpu/' >> $GITHUB_ENV
+      - name: Switch to PT test URL
+        if: ${{ matrix.pytorch-version == '2.6.0' }}
+        run: echo 'PIP_EXTRA_INDEX_URL=--extra-index-url https://download.pytorch.org/whl/test/cpu/' >> $GITHUB_ENV
       - name: Install pkg
         timeout-minutes: 25
         run: |
           pip --version
           pip install -e . -U "setuptools==69.5.1" -r requirements/_doctest.txt \
-            $PIP_EXTRA_INDEX_URL --find-links $PYPI_CACHE_DIR
+            $PIP_EXTRA_INDEX_URL --find-links="$PYPI_CACHE_DIR"
           pip list
 
       - name: DocTests
@@ -126,7 +130,7 @@ jobs:
               python adjust-torch-versions.py $fpath
           done
           pip install --requirement requirements/_devel.txt -U \
-            $PIP_EXTRA_INDEX_URL --find-links $PYPI_CACHE_DIR
+            $PIP_EXTRA_INDEX_URL --find-links="$PYPI_CACHE_DIR"
           pip list
 
       - name: set special vars for PR
@@ -198,10 +202,10 @@ jobs:
       - name: Upload coverage to Codecov
         # skip for PR if there is nothing to test, note that outside PR there is default 'unittests'
         if: ${{ env.TEST_DIRS != '' }}
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: tests/coverage.xml
+          files: "tests/coverage.xml"
           flags: cpu,${{ runner.os }},python${{ matrix.python-version }},torch${{ steps.info.outputs.TORCH }}
           env_vars: OS,PYTHON
           name: codecov-umbrella
@@ -213,6 +217,8 @@ jobs:
         uses: ./.github/actions/push-caches
         with:
           pypi-dir: ${{ env.PYPI_CACHE_DIR }}
+          cache-artifact-appendix: ${{ github.run_id }}-${{ strategy.job-index }}
+          cache-references: true
 
   testing-guardian:
     runs-on: ubuntu-latest
@@ -227,3 +233,11 @@ jobs:
         if: contains(fromJSON('["cancelled", "skipped"]'), needs.pytester.result)
         timeout-minutes: 1
         run: sleep 90
+
+  merge-pkg-artifacts:
+    needs: pytester
+    if: success()
+    uses: ./.github/workflows/_merge_cache.yml
+    with:
+      pypi-dir: "_ci-cache_PyPI"
+      cache-artifact-appendix: ${{ github.run_id }}-${{ strategy.job-index }}

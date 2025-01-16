@@ -68,6 +68,7 @@ from torchmetrics.classification import (  # noqa: E402
     HammingDistance,
     HingeLoss,
     JaccardIndex,
+    LogAUC,
     MatthewsCorrCoef,
     NegativePredictiveValue,
     Precision,
@@ -168,6 +169,7 @@ from torchmetrics.wrappers import (  # noqa: E402
 
 __all__ = [
     "AUROC",
+    "ROC",
     "Accuracy",
     "AveragePrecision",
     "BLEUScore",
@@ -196,6 +198,7 @@ __all__ = [
     "JaccardIndex",
     "KLDivergence",
     "KendallRankCorrCoef",
+    "LogAUC",
     "LogCoshError",
     "MatchErrorRate",
     "MatthewsCorrCoef",
@@ -227,7 +230,6 @@ __all__ = [
     "PrecisionAtFixedRecall",
     "PrecisionRecallCurve",
     "R2Score",
-    "ROC",
     "Recall",
     "RecallAtFixedPrecision",
     "RelativeAverageSpectralError",

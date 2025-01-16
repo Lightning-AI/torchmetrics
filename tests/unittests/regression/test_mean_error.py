@@ -25,6 +25,7 @@ from sklearn.metrics import mean_squared_error as sk_mean_squared_error
 from sklearn.metrics import mean_squared_log_error as sk_mean_squared_log_error
 from sklearn.metrics._regression import _check_reg_targets
 from sklearn.utils import check_consistent_length
+
 from torchmetrics.functional import (
     mean_absolute_error,
     mean_absolute_percentage_error,
@@ -43,7 +44,6 @@ from torchmetrics.regression import (
 )
 from torchmetrics.regression.nrmse import NormalizedRootMeanSquaredError
 from torchmetrics.regression.symmetric_mape import SymmetricMeanAbsolutePercentageError
-
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

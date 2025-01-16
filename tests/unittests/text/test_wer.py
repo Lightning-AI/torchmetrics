@@ -14,9 +14,9 @@
 from typing import Union
 
 import pytest
+
 from torchmetrics.functional.text.wer import word_error_rate
 from torchmetrics.text.wer import WordErrorRate
-
 from unittests.text._helpers import TextTester
 from unittests.text._inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
 

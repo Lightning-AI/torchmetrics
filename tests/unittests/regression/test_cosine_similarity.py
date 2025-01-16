@@ -17,9 +17,9 @@ import numpy as np
 import pytest
 import torch
 from sklearn.metrics.pairwise import cosine_similarity as sk_cosine
+
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.regression.cosine_similarity import CosineSimilarity
-
 from unittests import BATCH_SIZE, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

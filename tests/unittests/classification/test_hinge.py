@@ -20,10 +20,10 @@ from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import hinge_loss as sk_hinge
 from sklearn.preprocessing import OneHotEncoder
+
 from torchmetrics.classification.hinge import BinaryHingeLoss, HingeLoss, MulticlassHingeLoss
 from torchmetrics.functional.classification.hinge import binary_hinge_loss, multiclass_hinge_loss
 from torchmetrics.metric import Metric
-
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index

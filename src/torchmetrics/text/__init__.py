@@ -29,15 +29,15 @@ from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_4
 
 __all__ = [
     "BLEUScore",
-    "CharErrorRate",
     "CHRFScore",
+    "CharErrorRate",
     "EditDistance",
     "ExtendedEditDistance",
     "MatchErrorRate",
     "Perplexity",
     "ROUGEScore",
-    "SacreBLEUScore",
     "SQuAD",
+    "SacreBLEUScore",
     "TranslationEditRate",
     "WordErrorRate",
     "WordInfoLost",

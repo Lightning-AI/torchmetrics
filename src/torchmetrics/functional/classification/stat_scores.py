@@ -18,6 +18,7 @@ from torch import Tensor, tensor
 from typing_extensions import Literal
 
 from torchmetrics.utilities.checks import _check_same_shape, _input_format_classification
+from torchmetrics.utilities.compute import normalize_logits_if_needed
 from torchmetrics.utilities.data import _bincount, select_topk
 from torchmetrics.utilities.enums import AverageMethod, ClassificationTask, DataType, MDMCAverageMethod
 
@@ -105,9 +106,7 @@ def _binary_stat_scores_format(
 
     """
     if preds.is_floating_point():
-        if not torch.all((preds >= 0) * (preds <= 1)):
-            # preds is logits, convert with sigmoid
-            preds = preds.sigmoid()
+        preds = normalize_logits_if_needed(preds, "sigmoid")
         preds = preds > threshold
 
     preds = preds.reshape(preds.shape[0], -1)
@@ -219,7 +218,7 @@ def binary_stat_scores(
 
 
 def _multiclass_stat_scores_arg_validation(
-    num_classes: int,
+    num_classes: Optional[int],
     top_k: int = 1,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
     multidim_average: Literal["global", "samplewise"] = "global",
@@ -236,11 +235,15 @@ def _multiclass_stat_scores_arg_validation(
     - ``zero_division`` has to be 0 or 1
 
     """
-    if not isinstance(num_classes, int) or num_classes < 2:
+    if num_classes is None and average != "micro":
+        raise ValueError(
+            f"Argument `num_classes` can only be `None` for `average='micro'`, but got `average={average}`."
+        )
+    if num_classes is not None and (not isinstance(num_classes, int) or num_classes < 2):
         raise ValueError(f"Expected argument `num_classes` to be an integer larger than 1, but got {num_classes}")
     if not isinstance(top_k, int) and top_k < 1:
         raise ValueError(f"Expected argument `top_k` to be an integer larger than or equal to 1, but got {top_k}")
-    if top_k > num_classes:
+    if top_k > (num_classes if num_classes is not None else 1):
         raise ValueError(
             f"Expected argument `top_k` to be smaller or equal to `num_classes` but got {top_k} and {num_classes}"
         )
@@ -261,7 +264,7 @@ def _multiclass_stat_scores_arg_validation(
 def _multiclass_stat_scores_tensor_validation(
     preds: Tensor,
     target: Tensor,
-    num_classes: int,
+    num_classes: Optional[int],
     multidim_average: Literal["global", "samplewise"] = "global",
     ignore_index: Optional[int] = None,
 ) -> None:
@@ -279,7 +282,7 @@ def _multiclass_stat_scores_tensor_validation(
     if preds.ndim == target.ndim + 1:
         if not preds.is_floating_point():
             raise ValueError("If `preds` have one dimension more than `target`, `preds` should be a float tensor.")
-        if preds.shape[1] != num_classes:
+        if num_classes is not None and preds.shape[1] != num_classes:
             raise ValueError(
                 "If `preds` have one dimension more than `target`, `preds.shape[1]` should be"
                 " equal to number of classes."
@@ -291,7 +294,7 @@ def _multiclass_stat_scores_tensor_validation(
             )
         if multidim_average != "global" and preds.ndim < 3:
             raise ValueError(
-                "If `preds` have one dimension more than `target`, the shape of `preds` should "
+                "If `preds` have one dimension more than `target`, the shape of `preds` should be"
                 " at least 3D when multidim_average is set to `samplewise`"
             )
 
@@ -303,7 +306,7 @@ def _multiclass_stat_scores_tensor_validation(
             )
         if multidim_average != "global" and preds.ndim < 2:
             raise ValueError(
-                "When `preds` and `target` have the same shape, the shape of `preds` should "
+                "When `preds` and `target` have the same shape, the shape of `preds` should be"
                 " at least 2D when multidim_average is set to `samplewise`"
             )
     else:
@@ -311,15 +314,15 @@ def _multiclass_stat_scores_tensor_validation(
             "Either `preds` and `target` both should have the (same) shape (N, ...), or `target` should be (N, ...)"
             " and `preds` should be (N, C, ...)."
         )
-
-    check_value = num_classes if ignore_index is None else num_classes + 1
-    for t, name in ((target, "target"),) + ((preds, "preds"),) if not preds.is_floating_point() else ():  # noqa: RUF005
-        num_unique_values = len(torch.unique(t, dim=None))
-        if num_unique_values > check_value:
-            raise RuntimeError(
-                f"Detected more unique values in `{name}` than expected. Expected only {check_value} but found"
-                f" {num_unique_values} in `{name}`. Found values: {torch.unique(t, dim=None)}."
-            )
+    if num_classes is not None:
+        check_value = num_classes if ignore_index is None else num_classes + 1
+        for t, name in ((target, "target"),) + ((preds, "preds"),) if not preds.is_floating_point() else ():  # noqa: RUF005
+            num_unique_values = len(torch.unique(t, dim=None))
+            if num_unique_values > check_value:
+                raise RuntimeError(
+                    f"Detected more unique values in `{name}` than expected. Expected only {check_value} but found"
+                    f" {num_unique_values} in `{name}`. Found values: {torch.unique(t, dim=None)}."
+                )
 
 
 def _multiclass_stat_scores_format(
@@ -339,6 +342,30 @@ def _multiclass_stat_scores_format(
     preds = preds.reshape(*preds.shape[:2], -1) if top_k != 1 else preds.reshape(preds.shape[0], -1)
     target = target.reshape(target.shape[0], -1)
     return preds, target
+
+
+def _refine_preds_oh(preds: Tensor, preds_oh: Tensor, target: Tensor, top_k: int) -> Tensor:
+    """Refines prediction one-hot encodings by replacing entries with target one-hot when there's an intersection.
+
+    When no intersection is found between the top-k predictions and target, uses the top-1 prediction.
+
+    Args:
+        preds: Original prediction tensor with probabilities/logits
+        preds_oh: Current one-hot encoded predictions from top-k selection
+        target: Target tensor with class indices
+        top_k: Number of top predictions to consider
+
+    Returns:
+        Refined one-hot encoded predictions tensor
+
+    """
+    preds = preds.squeeze()
+    target = target.squeeze()
+    top_k_indices = torch.topk(preds, k=top_k, dim=1).indices
+    top_1_indices = top_k_indices[:, 0]
+    target_in_topk = torch.any(top_k_indices == target.unsqueeze(1), dim=1)
+    result = torch.where(target_in_topk, target, top_1_indices)
+    return torch.zeros_like(preds_oh, dtype=torch.int32).scatter_(-1, result.unsqueeze(1).unsqueeze(1), 1)
 
 
 def _multiclass_stat_scores_update(
@@ -372,13 +399,16 @@ def _multiclass_stat_scores_update(
 
         if top_k > 1:
             preds_oh = torch.movedim(select_topk(preds, topk=top_k, dim=1), 1, -1)
+            preds_oh = _refine_preds_oh(preds, preds_oh, target, top_k)
         else:
             preds_oh = torch.nn.functional.one_hot(
                 preds.long(), num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
             )
+
         target_oh = torch.nn.functional.one_hot(
             target.long(), num_classes + 1 if ignore_index is not None and not ignore_in else num_classes
         )
+
         if ignore_index is not None:
             if 0 <= ignore_index <= num_classes - 1:
                 target_oh[target == ignore_index, :] = -1
@@ -659,8 +689,7 @@ def _multilabel_stat_scores_format(
 
     """
     if preds.is_floating_point():
-        if not torch.all((preds >= 0) * (preds <= 1)):
-            preds = preds.sigmoid()
+        preds = normalize_logits_if_needed(preds, "sigmoid")
         preds = preds > threshold
     preds = preds.reshape(*preds.shape[:2], -1)
     target = target.reshape(*target.shape[:2], -1)

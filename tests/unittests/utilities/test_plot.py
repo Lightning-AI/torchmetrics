@@ -21,6 +21,7 @@ import numpy as np
 import pytest
 import torch
 from torch import tensor
+
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import MaxMetric, MeanMetric, MinMetric, SumMetric
 from torchmetrics.audio import (
@@ -47,6 +48,7 @@ from torchmetrics.classification import (
     BinaryHammingDistance,
     BinaryHingeLoss,
     BinaryJaccardIndex,
+    BinaryLogAUC,
     BinaryMatthewsCorrCoef,
     BinaryPrecision,
     BinaryPrecisionRecallCurve,
@@ -66,6 +68,7 @@ from torchmetrics.classification import (
     MulticlassHammingDistance,
     MulticlassHingeLoss,
     MulticlassJaccardIndex,
+    MulticlassLogAUC,
     MulticlassMatthewsCorrCoef,
     MulticlassPrecision,
     MulticlassPrecisionRecallCurve,
@@ -80,6 +83,7 @@ from torchmetrics.classification import (
     MultilabelFBetaScore,
     MultilabelHammingDistance,
     MultilabelJaccardIndex,
+    MultilabelLogAUC,
     MultilabelMatthewsCorrCoef,
     MultilabelPrecision,
     MultilabelPrecisionRecallCurve,
@@ -383,6 +387,19 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             _multilabel_rand_input,
             _multilabel_randint_input,
             id="multilabel specificity",
+        ),
+        pytest.param(BinaryLogAUC, _rand_input, _binary_randint_input, id="binary log auc"),
+        pytest.param(
+            partial(MulticlassLogAUC, num_classes=3),
+            _multiclass_randn_input,
+            _multiclass_randint_input,
+            id="multiclass log auc",
+        ),
+        pytest.param(
+            partial(MultilabelLogAUC, num_labels=3),
+            _multilabel_rand_input,
+            _multilabel_randint_input,
+            id="multilabel log auc",
         ),
         pytest.param(
             partial(MultilabelCoverageError, num_labels=3),
