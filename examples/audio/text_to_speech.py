@@ -12,8 +12,9 @@ By ranking the PESQ scores, we identify which synthetic speaker sounds most natu
 import numpy as np
 import torch
 from IPython.display import Audio
-from torchmetrics.audio import PerceptualEvaluationSpeechQuality
 from transformers import pipeline
+
+from torchmetrics.audio import PerceptualEvaluationSpeechQuality
 
 # Set seed for reproducibility
 torch.manual_seed(42)
