@@ -3,7 +3,6 @@
 
 # this need to be the same as used inside speechmetrics
 pesq >=0.0.4, <0.0.5
-numpy <2.0  # strict, for compatibility reasons
 pystoi >=0.4.0, <0.5.0
 torchaudio >=2.0.1, <2.7.0
 gammatone >=1.0.0, <1.1.0
