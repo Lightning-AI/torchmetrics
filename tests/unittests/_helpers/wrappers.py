@@ -1,6 +1,7 @@
 import os
 from functools import wraps
 from typing import Any, Callable, Optional
+from urllib.error import HTTPError
 
 import pytest
 
@@ -47,6 +48,10 @@ def skip_on_connection_issues(reason: str = "Unable to load checkpoints from Hug
 
             try:
                 return function(*args, **kwargs)
+            except HTTPError as ex:
+                if ex.code != 504:  # HTTP Error 504: Gateway Time-out
+                    raise ex
+                pytest.skip(reason)
             except URLError as ex:
                 if "Error 403: Forbidden" not in str(ex) or not ALLOW_SKIP_IF_BAD_CONNECTION:
                     raise ex
