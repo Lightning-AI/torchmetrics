@@ -26,10 +26,10 @@ seed_all(42)
 
 def _reference_jiwer_mer(preds: Union[str, list[str]], target: Union[str, list[str]]):
     try:
-        from jiwer import compute_measures
+        from jiwer import mer
     except ImportError:
         pytest.skip("test requires jiwer package to be installed")
-    return compute_measures(target, preds)["mer"]
+    return mer(target, preds)
 
 
 @pytest.mark.parametrize(
