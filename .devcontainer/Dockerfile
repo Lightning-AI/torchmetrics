@@ -10,8 +10,6 @@ RUN if [ "${NODE_VERSION}" != "none" ]; then \
       su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; \
     fi
 
-RUN pip3 install --upgrade pip
-
 COPY requirements/ /tmp/pip-tmp/requirements/
 RUN \
     pip3 install awscli && \
