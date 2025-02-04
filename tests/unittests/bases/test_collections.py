@@ -760,22 +760,18 @@ def test_collection_update():
         "bleu-4": BLEUScore(4),
     })
 
-    preds = ['the cat is on the mat']
-    target = [['there is a cat on the mat', 'a cat is on the mat']]
+    preds = ["the cat is on the mat"]
+    target = [["there is a cat on the mat", "a cat is on the mat"]]
 
     scores.update(preds, target)
     actual = scores.compute()
 
     expected = {
-        'bleu-1': torch.tensor(0.8333),
-        'bleu-2': torch.tensor(0.8165), 
-        'bleu-3': torch.tensor(0.7937), 
-        'bleu-4': torch.tensor(0.7598)
+        "bleu-1": torch.tensor(0.8333),
+        "bleu-2": torch.tensor(0.8165),
+        "bleu-3": torch.tensor(0.7937),
+        "bleu-4": torch.tensor(0.7598),
     }
 
     for k, v in expected.items():
-        torch.testing.assert_close(actual=actual.get(k),
-                                    expected=v,
-                                    rtol=1e-4,
-                                    atol=1e-4)
-
+        torch.testing.assert_close(actual=actual.get(k), expected=v, rtol=1e-4, atol=1e-4)
