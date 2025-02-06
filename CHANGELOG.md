@@ -44,6 +44,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed slow calculations of classification metrics with MPS ([#2876](https://github.com/Lightning-AI/torchmetrics/issues/2876))
 
+
+- Fixed `MetricCollection.update` gives identical results ([#2944](https://github.com/Lightning-AI/torchmetrics/issues/2944))
+
+
 ---
 
 ## [1.6.0] - 2024-11-12
