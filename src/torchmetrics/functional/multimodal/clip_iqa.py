@@ -329,3 +329,13 @@ def clip_image_quality_assessment(
         anchors = _clip_iqa_get_anchor_vectors(model_name_or_path, model, processor, prompts_list, device)
         img_features = _clip_iqa_update(model_name_or_path, images, model, processor, data_range, device)
         return _clip_iqa_compute(img_features, anchors, prompts_names)
+
+if TYPE_CHECKING:
+    from typing import Any, cast
+    images = cast(Any, None)
+    from functools import partial
+    f = partial(clip_image_quality_assessment, images=images)
+    f(prompts=("colorfullness",))
+    f(prompts=("quality", "brightness", "noisiness"),)
+    f(prompts=("quality", "brightness", "noisiness", "colorfullness"),)
+    f(prompts=(("Photo of a cat", "Photo of a dog"), "quality", ("Colorful photo", "Black and white photo")))

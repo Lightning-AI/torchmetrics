@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, List, Literal, Optional, TYPE_CHECKING, Union
 
 import torch
 from torch import Tensor
@@ -259,3 +259,12 @@ class CLIPImageQualityAssessment(Metric):
 
         """
         return self._plot(val, ax)
+
+if TYPE_CHECKING:
+    from typing import cast
+    images = cast(Any, None)
+    f = CLIPImageQualityAssessment
+    f(prompts=("colorfullness",))
+    f(prompts=("quality", "brightness", "noisiness"),)
+    f(prompts=("quality", "brightness", "noisiness", "colorfullness"),)
+    f(prompts=(("Photo of a cat", "Photo of a dog"), "quality", ("Colorful photo", "Black and white photo")))
