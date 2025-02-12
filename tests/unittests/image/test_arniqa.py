@@ -15,12 +15,12 @@ from functools import partial
 
 import pytest
 import torch
-from torch import Tensor
 import torchvision.transforms as transforms
+from torch import Tensor
 
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 from torchmetrics.functional.image.arniqa import arniqa
 from torchmetrics.image.arniqa import ARNIQA
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 
@@ -47,12 +47,11 @@ def _arniqa_wrapped(preds, target, regressor_dataset="koniq10k", normalize=True)
     return arniqa(preds, regressor_dataset, normalize=normalize)
 
 
-def _reference_arniqa(
-    img: Tensor, target: Tensor, regressor_dataset: str, reduction: str = "mean"
-) -> Tensor:
+def _reference_arniqa(img: Tensor, target: Tensor, regressor_dataset: str, reduction: str = "mean") -> Tensor:
     """Comparison function (based on ARNIQA official repo (https://github.com/miccunifi/ARNIQA)) for tm implementation."""
-    model = torch.hub.load(repo_or_dir="miccunifi/ARNIQA", source="github", model="ARNIQA",
-                           regressor_dataset=regressor_dataset)
+    model = torch.hub.load(
+        repo_or_dir="miccunifi/ARNIQA", source="github", model="ARNIQA", regressor_dataset=regressor_dataset
+    )
     model.eval()
 
     h, w = img.shape[-2:]
@@ -101,9 +100,7 @@ class TestARNIQA(MetricTester):
 
     def test_arniqa_differentiability(self):
         """Test the differentiability of the metric, according to its `is_differentiable` attribute."""
-        self.run_differentiability_test(
-            preds=_input_img, target=_input_img, metric_module=ARNIQATesterClass
-        )
+        self.run_differentiability_test(preds=_input_img, target=_input_img, metric_module=ARNIQATesterClass)
 
     # ARNIQA half + cpu does not work due to missing support in torch.min for older version of torch
     def test_arniqa_half_cpu(self):

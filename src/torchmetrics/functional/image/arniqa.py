@@ -17,17 +17,16 @@
 # Copyright (c) 2024, Lorenzo Agnolucci, Leonardo Galteri, Marco Bertini, Alberto Del Bimbo
 # All rights reserved.
 # License under Apache-2.0 License
-from typing import Union
 import warnings
+from typing import Union
 
 import torch
-from torch import Tensor, nn
 import torch.nn.functional as F
 import torchvision
+from torch import Tensor, nn
 from typing_extensions import Literal
 
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
-
 
 _available_regressor_datasets = {
     "kadid10k": (1, 5),
@@ -46,7 +45,9 @@ class _ARNIQA(nn.Module):
 
     Args:
         regressor_dataset: dataset used for training the regressor, choose between [``koniq10k``, ``kadid10k``]
+
     """
+
     def __init__(self, regressor_dataset: str = "koniq10k") -> None:
         super().__init__()
 
@@ -58,15 +59,16 @@ class _ARNIQA(nn.Module):
 
         valid_regressor_dataset = ("kadid10k", "koniq10k")
         if regressor_dataset not in valid_regressor_dataset:
-            raise ValueError(f"Argument `regressor_dataset` must be one of {valid_regressor_dataset},"
-                             f" but got {regressor_dataset}.")
+            raise ValueError(
+                f"Argument `regressor_dataset` must be one of {valid_regressor_dataset}, but got {regressor_dataset}."
+            )
 
         self.regressor_dataset = regressor_dataset
         self.imagenet_norm_mean = [0.485, 0.456, 0.406]
         self.imagenet_norm_std = [0.229, 0.224, 0.225]
 
         encoder = torchvision.models.resnet50()
-        self.feat_dim = encoder.fc.in_features      # get dimensions of the last layer of the encoder
+        self.feat_dim = encoder.fc.in_features  # get dimensions of the last layer of the encoder
         encoder = nn.Sequential(*list(encoder.children())[:-1])  # remove the fully connected layer
         self.encoder = encoder
         self.regressor = nn.Linear(self.feat_dim * 2, 1)
@@ -82,28 +84,32 @@ class _ARNIQA(nn.Module):
 
     def _load_weights(self) -> None:
         """Loads the weights of the encoder and regressor."""
-        encoder_state_dict = torch.hub.load_state_dict_from_url(f"{_base_url}/ARNIQA.pth", progress=True,
-                                                                map_location="cpu")
-        filtered_encoder_state_dict = {k.replace("model.", ""): v for k, v in encoder_state_dict.items()
-                                       if "projector" not in k}
+        encoder_state_dict = torch.hub.load_state_dict_from_url(
+            f"{_base_url}/ARNIQA.pth", progress=True, map_location="cpu"
+        )
+        filtered_encoder_state_dict = {
+            k.replace("model.", ""): v for k, v in encoder_state_dict.items() if "projector" not in k
+        }
         self.encoder.load_state_dict(filtered_encoder_state_dict, strict=True)
 
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=UserWarning, module="torch.serialization")
             regressor_state_dict = torch.hub.load_state_dict_from_url(
-                f"{_base_url}/regressor_{self.regressor_dataset}.pth",
-                progress=True, map_location="cpu").state_dict()
+                f"{_base_url}/regressor_{self.regressor_dataset}.pth", progress=True, map_location="cpu"
+            ).state_dict()
             # Rename the keys to match the regressor's state_dict
             regressor_state_dict["weight"] = regressor_state_dict.pop("weights")
             regressor_state_dict["bias"] = regressor_state_dict.pop("biases").unsqueeze(0)
             self.regressor.load_state_dict(regressor_state_dict, strict=True)
 
     def _preprocess_input(self, img: Tensor, normalize: bool = False) -> tuple[Tensor, Tensor]:
-        """Preprocesses the input to the model. Obtains the half-scale version of the input image and applies
-         normalization if needed.
+        """Preprocesses the input to the model.
+
+        Obtains the half-scale version of the input image and applies normalization if needed.
+
         """
         h, w = img.shape[-2:]
-        img_ds = torchvision.transforms.Resize((h // 2, w // 2))(img)       # get the half-scale version of the image
+        img_ds = torchvision.transforms.Resize((h // 2, w // 2))(img)  # get the half-scale version of the image
         if normalize:
             img = torchvision.transforms.Normalize(mean=self.imagenet_norm_mean, std=self.imagenet_norm_std)(img)
             img_ds = torchvision.transforms.Normalize(mean=self.imagenet_norm_mean, std=self.imagenet_norm_std)(img_ds)
@@ -141,29 +147,35 @@ class _NoTrainArniqa(_ARNIQA):
         """Force network to always be in evaluation mode."""
         return super().train(False)
 
+
 def _arniqa_update(img: Tensor, model: nn.Module, normalize: bool) -> tuple[Tensor, Union[int, Tensor]]:
     # Check that the input image is valid
     if not (img.ndim == 4 and img.shape[1] == 3):
         raise ValueError(f"Input image must have shape [N, 3, H, W]. Got input with shape {img.shape}.")
     if not (img.max() <= 1.0 and img.min() >= 0.0) and normalize:
-        raise ValueError(f"Input image values must be in the [0, 1] range when normalize==True. Got input with values"
-                         f" in range {img.min()} and {img.max()}.")
+        raise ValueError(
+            f"Input image values must be in the [0, 1] range when normalize==True. Got input with values"
+            f" in range {img.min()} and {img.max()}."
+        )
 
-    with torch.amp.autocast(device_type=img.device.type, dtype=img.dtype,
-                            enabled=False if (img.dtype == torch.float32 and img.device.type == "cpu") else True):
+    with torch.amp.autocast(
+        device_type=img.device.type,
+        dtype=img.dtype,
+        enabled=False if (img.dtype == torch.float32 and img.device.type == "cpu") else True,
+    ):
         loss = model(img, normalize=normalize).squeeze()
     return loss, img.shape[0]
 
 
-def _arniqa_compute(scores: Tensor, num_scores: Union[Tensor, int], reduction: Literal["sum", "mean", "none"] = "mean")\
-        -> Tensor:
+def _arniqa_compute(
+    scores: Tensor, num_scores: Union[Tensor, int], reduction: Literal["sum", "mean", "none"] = "mean"
+) -> Tensor:
     sum_scores = scores.sum()
     if reduction == "none":
         return scores
-    elif reduction == "mean":
+    if reduction == "mean":
         return sum_scores / num_scores
-    else:
-        return sum_scores
+    return sum_scores
 
 
 def arniqa(
