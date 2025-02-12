@@ -89,7 +89,9 @@ def _get_clip_iqa_model_and_processor(
     return _get_clip_model_and_processor(model_name_or_path)
 
 
-def _clip_iqa_format_prompts(prompts: tuple[Union[str, tuple[str, str]], ...] = ("quality",)) -> tuple[list[str], list[str]]:
+def _clip_iqa_format_prompts(
+    prompts: tuple[Union[str, tuple[str, str]], ...] = ("quality",),
+) -> tuple[list[str], list[str]]:
     """Converts the provided keywords into a list of prompts for the model to calculate the anchor vectors.
 
     Args:
@@ -330,12 +332,19 @@ def clip_image_quality_assessment(
         img_features = _clip_iqa_update(model_name_or_path, images, model, processor, data_range, device)
         return _clip_iqa_compute(img_features, anchors, prompts_names)
 
+
 if TYPE_CHECKING:
     from typing import Any, cast
+
     images = cast(Any, None)
     from functools import partial
+
     f = partial(clip_image_quality_assessment, images=images)
     f(prompts=("colorfullness",))
-    f(prompts=("quality", "brightness", "noisiness"),)
-    f(prompts=("quality", "brightness", "noisiness", "colorfullness"),)
+    f(
+        prompts=("quality", "brightness", "noisiness"),
+    )
+    f(
+        prompts=("quality", "brightness", "noisiness", "colorfullness"),
+    )
     f(prompts=(("Photo of a cat", "Photo of a dog"), "quality", ("Colorful photo", "Black and white photo")))
