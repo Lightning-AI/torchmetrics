@@ -34,6 +34,7 @@ from torchmetrics.functional.image.uqi import universal_image_quality_index
 from torchmetrics.functional.image.vif import visual_information_fidelity
 
 __all__ = [
+    "arniqa",
     "error_relative_global_dimensionless_synthesis",
     "image_gradients",
     "learned_perceptual_image_patch_similarity",
@@ -52,5 +53,4 @@ __all__ = [
     "total_variation",
     "universal_image_quality_index",
     "visual_information_fidelity",
-    "arniqa",
 ]
