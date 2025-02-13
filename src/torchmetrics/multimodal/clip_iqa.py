@@ -262,8 +262,6 @@ class CLIPImageQualityAssessment(Metric):
 
 
 if TYPE_CHECKING:
-    from typing import cast
-
     f = CLIPImageQualityAssessment
     f(prompts=("colorfullness",))
     f(
