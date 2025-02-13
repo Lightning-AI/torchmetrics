@@ -335,9 +335,9 @@ def clip_image_quality_assessment(
 
 if TYPE_CHECKING:
     from typing import Any, cast
+    from functools import partial
 
     images = cast(Any, None)
-    from functools import partial
 
     f = partial(clip_image_quality_assessment, images=images)
     f(prompts=("colorfullness",))
