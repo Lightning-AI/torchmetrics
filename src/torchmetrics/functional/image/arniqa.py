@@ -105,8 +105,10 @@ class _ARNIQA(nn.Module):
             self.regressor.load_state_dict(regressor_state_dict, strict=True)
 
     def _preprocess_input(self, img: Tensor, normalize: bool = False) -> tuple[Tensor, Tensor]:
-        """Preprocesses the input to the model. Obtains the half-scale version of the input image and applies
-         normalization if needed.
+        """Preprocesses the input to the model.
+
+        Obtains the half-scale version of the input image and applies normalization if needed.
+
         """
         h, w = img.shape[-2:]
         img_ds = torchvision.transforms.Resize((h // 2, w // 2))(img)  # get the half-scale version of the image
