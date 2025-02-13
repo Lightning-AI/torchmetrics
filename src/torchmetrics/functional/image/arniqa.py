@@ -29,10 +29,12 @@ from typing_extensions import Literal
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
 
-_available_regressor_datasets = {
+_AVAILABLE_REGRESSOR_DATASETS = {
     "kadid10k": (1, 5),
     "koniq10k": (1, 100),
 }
+
+_TYPE_REGRESSOR_DATASET = Literal["kadid10k", "koniq10k"]
 
 _base_url = "https://github.com/miccunifi/ARNIQA/releases/download/weights"
 
@@ -47,7 +49,7 @@ class _ARNIQA(nn.Module):
     Args:
         regressor_dataset: dataset used for training the regressor, choose between [``koniq10k``, ``kadid10k``]
     """
-    def __init__(self, regressor_dataset: str = "koniq10k") -> None:
+    def __init__(self, regressor_dataset: _TYPE_REGRESSOR_DATASET = "koniq10k") -> None:
         super().__init__()
 
         if not _TORCHVISION_AVAILABLE:
@@ -56,9 +58,9 @@ class _ARNIQA(nn.Module):
                 " Either install as `pip install torchmetrics[image]` or `pip install torchvision`."
             )
 
-        valid_regressor_dataset = ("kadid10k", "koniq10k")
-        if regressor_dataset not in valid_regressor_dataset:
-            raise ValueError(f"Argument `regressor_dataset` must be one of {valid_regressor_dataset},"
+        valid_regressor_datasets = _AVAILABLE_REGRESSOR_DATASETS.keys()
+        if regressor_dataset not in valid_regressor_datasets:
+            raise ValueError(f"Argument `regressor_dataset` must be one of {valid_regressor_datasets},"
                              f" but got {regressor_dataset}.")
 
         self.regressor_dataset = regressor_dataset
@@ -72,13 +74,13 @@ class _ARNIQA(nn.Module):
         self.regressor = nn.Linear(self.feat_dim * 2, 1)
         self._load_weights()
 
-        self.encoder.eval()
-        self.regressor.eval()
+        def _freeze(module):
+            module.eval()
+            for p in module.parameters():
+                p.requires_grad = False
 
-        for p in self.encoder.parameters():
-            p.requires_grad = False
-        for p in self.regressor.parameters():
-            p.requires_grad = False
+        _freeze(self.encoder)
+        _freeze(self.regressor)
 
     def _load_weights(self) -> None:
         """Loads the weights of the encoder and regressor."""
@@ -111,7 +113,7 @@ class _ARNIQA(nn.Module):
 
     def _scale_score(self, score: Tensor) -> Tensor:
         """Scales the quality score to be in the [0, 1] range, where higher is better."""
-        min_score, max_score = _available_regressor_datasets[self.regressor_dataset]
+        min_score, max_score = _AVAILABLE_REGRESSOR_DATASETS[self.regressor_dataset]
         return (score - min_score) / (max_score - min_score)
 
     def forward(self, img: Tensor, normalize: bool = False) -> Tensor:
@@ -129,9 +131,7 @@ class _ARNIQA(nn.Module):
 
         # Get the quality score
         score = self.regressor(f)
-        score = self._scale_score(score)
-
-        return score
+        return self._scale_score(score)
 
 
 class _NoTrainArniqa(_ARNIQA):
@@ -150,7 +150,7 @@ def _arniqa_update(img: Tensor, model: nn.Module, normalize: bool) -> tuple[Tens
                          f" in range {img.min()} and {img.max()}.")
 
     with torch.amp.autocast(device_type=img.device.type, dtype=img.dtype,
-                            enabled=False if (img.dtype == torch.float32 and img.device.type == "cpu") else True):
+                            enabled=not (img.dtype == torch.float32 and img.device.type == "cpu")):
         loss = model(img, normalize=normalize).squeeze()
     return loss, img.shape[0]
 
@@ -168,7 +168,7 @@ def _arniqa_compute(scores: Tensor, num_scores: Union[Tensor, int], reduction: L
 
 def arniqa(
     img: Tensor,
-    regressor_dataset: Literal["kadid10k", "koniq10k"] = "koniq10k",
+    regressor_dataset: _TYPE_REGRESSOR_DATASET = "koniq10k",
     reduction: Literal["sum", "mean", "none"] = "mean",
     normalize: bool = True,
 ) -> Tensor:

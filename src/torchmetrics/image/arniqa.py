@@ -18,7 +18,8 @@ import torch
 from torch import Tensor
 from typing_extensions import Literal
 
-from torchmetrics.functional.image.arniqa import _ARNIQA, _arniqa_compute, _arniqa_update, _NoTrainArniqa
+from torchmetrics.functional.image.arniqa import (_ARNIQA, _arniqa_compute, _arniqa_update, _NoTrainArniqa,
+                                                  _TYPE_REGRESSOR_DATASET)
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_AVAILABLE
@@ -125,7 +126,7 @@ class ARNIQA(Metric):
 
     def __init__(
         self,
-        regressor_dataset: Literal["kadid10k", "koniq10k"] = "koniq10k",
+        regressor_dataset: _TYPE_REGRESSOR_DATASET = "koniq10k",
         reduction: Literal["sum", "mean", "none"] = "mean",
         normalize: bool = True,
         **kwargs: Any,
