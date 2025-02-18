@@ -107,9 +107,7 @@ class FeatureShare(MetricCollection):
                 " else it cannot be shared."
             ) from err
         except TypeError as err:
-            raise TypeError(
-                "The `feature_network` attribute must be a string representing the network name."
-            ) from err
+            raise TypeError("The `feature_network` attribute must be a string representing the network name.") from err
         cached_net = NetworkCache(network_to_share, max_size=max_cache_size)
 
         # set the cached network to all metrics
@@ -121,9 +119,7 @@ class FeatureShare(MetricCollection):
                     f" else it cannot be shared. Failed on metric {metric_name}."
                 )
             if not isinstance(metric.feature_network, str):
-                raise TypeError(
-                    f"Metric {metric_name}'s `feature_network` attribute must be a string."
-                )
+                raise TypeError(f"Metric {metric_name}'s `feature_network` attribute must be a string.")
 
             # check if its the same network as the first metric
             if str(getattr(metric, metric.feature_network)) != str(network_to_share):
