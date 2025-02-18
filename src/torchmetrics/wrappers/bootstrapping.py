@@ -122,6 +122,7 @@ class BootStrapper(WrapperMetric):
                 f" but received {sampling_strategy}"
             )
         self.sampling_strategy = sampling_strategy
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Update the state of the base metric.
