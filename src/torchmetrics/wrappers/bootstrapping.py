@@ -32,7 +32,7 @@ if not _MATPLOTLIB_AVAILABLE:
 def _bootstrap_sampler(
     size: int,
     sampling_strategy: str = "poisson",
-) -> Tensor:
+) -> torch.Tensor:
     """Resample a tensor along its first dimension with replacement.
 
     Args:
