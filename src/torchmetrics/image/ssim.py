@@ -148,6 +148,8 @@ class StructuralSimilarityIndexMeasure(Metric):
             similarity = similarity_pack
 
         if self.return_contrast_sensitivity or self.return_full_image:
+            if not isinstance(self.image_return, list):
+                self.image_return = list(self.image_return)
             self.image_return.append(image)
 
         if self.reduction in ("elementwise_mean", "sum"):
