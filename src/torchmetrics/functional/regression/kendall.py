@@ -211,9 +211,19 @@ def _calculate_p_value(
         t_value = 3 * con_min_dis_pairs / torch.sqrt(t_value_denominator_base / 2)
     else:
         m = n_total * (n_total - 1)
-        t_value_denominator: Tensor = (t_value_denominator_base - (preds_ties_p2 if preds_ties_p2 is not None else 0) - (target_ties_p2 if target_ties_p2 is not None else 0)) / 18
-        t_value_denominator += (2 * (preds_ties if preds_ties is not None else 0) * (target_ties if target_ties is not None else 0)) / m  # type: ignore
-        t_value_denominator += (preds_ties_p1 if preds_ties_p1 is not None else 0) * (target_ties_p1 if target_ties_p1 is not None else 0) / (9 * m * (n_total - 2))  # type: ignore
+        t_value_denominator: Tensor = (
+            t_value_denominator_base
+            - (preds_ties_p2 if preds_ties_p2 is not None else 0)
+            - (target_ties_p2 if target_ties_p2 is not None else 0)
+        ) / 18
+        t_value_denominator += (
+            2 * (preds_ties if preds_ties is not None else 0) * (target_ties if target_ties is not None else 0)
+        ) / m  # type: ignore
+        t_value_denominator += (
+            (preds_ties_p1 if preds_ties_p1 is not None else 0)
+            * (target_ties_p1 if target_ties_p1 is not None else 0)
+            / (9 * m * (n_total - 2))
+        )  # type: ignore
         t_value = con_min_dis_pairs / torch.sqrt(t_value_denominator)
 
     if alternative == _TestAlternative.TWO_SIDED:
