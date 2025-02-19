@@ -143,10 +143,16 @@ class MulticlassExactMatch(Metric):
 
         correct, total = _multiclass_exact_match_update(preds, target, self.multidim_average, self.ignore_index)
         if self.multidim_average == "samplewise":
-            self.correct.append(correct)
+            if isinstance(self.correct, list):
+                self.correct.append(correct)
+            else:
+                self.correct = [correct]  # Ensure it's a list
             self.total = total
         else:
-            self.correct += correct
+            if isinstance(self.correct, Tensor):
+                self.correct += correct
+            else:
+                self.correct = correct  # Ensure it's a Tensor
             self.total += total
 
     def compute(self) -> Tensor:
