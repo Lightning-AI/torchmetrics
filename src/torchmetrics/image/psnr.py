@@ -138,7 +138,9 @@ class PeakSignalNoiseRatio(Metric):
                 self.max_target = torch.maximum(target.max(), self.max_target)
 
             if not isinstance(self.sum_squared_error, Tensor):
-                raise TypeError(f"Expected `self.sum_squared_error` to be a Tensor, but got {type(self.sum_squared_error)}")
+                raise TypeError(
+                    f"Expected `self.sum_squared_error` to be a Tensor, but got {type(self.sum_squared_error)}"
+                )
             if not isinstance(self.total, Tensor):
                 raise TypeError(f"Expected `self.total` to be a Tensor, but got {type(self.total)}")
 
@@ -146,7 +148,9 @@ class PeakSignalNoiseRatio(Metric):
             self.total += num_obs
         else:
             if not isinstance(self.sum_squared_error, list):
-                raise TypeError(f"Expected `self.sum_squared_error` to be a list, but got {type(self.sum_squared_error)}")
+                raise TypeError(
+                    f"Expected `self.sum_squared_error` to be a list, but got {type(self.sum_squared_error)}"
+                )
             if not isinstance(self.total, list):
                 raise TypeError(f"Expected `self.total` to be a list, but got {type(self.total)}")
             self.sum_squared_error.append(sum_squared_error)
