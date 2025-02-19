@@ -154,7 +154,10 @@ class StructuralSimilarityIndexMeasure(Metric):
             self.similarity += similarity.sum()
             self.total += preds.shape[0]
         else:
-            self.similarity.append(similarity)
+            if isinstance(self.similarity, list):
+                self.similarity.append(similarity)
+            else:
+                raise TypeError("Expected `self.similarity` to be a list when reduction='none'.")
 
     def compute(self) -> Union[Tensor, tuple[Tensor, Tensor]]:
         """Compute SSIM over state."""
