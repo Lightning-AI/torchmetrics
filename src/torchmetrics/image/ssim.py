@@ -170,14 +170,23 @@ class StructuralSimilarityIndexMeasure(Metric):
     def compute(self) -> Union[Tensor, tuple[Tensor, Tensor]]:
         """Compute SSIM over state."""
         if self.reduction == "elementwise_mean":
-            similarity = self.similarity / self.total
+            if isinstance(self.similarity, Tensor):
+                similarity = self.similarity / self.total  # Ensure Tensor division
+            else:
+                raise TypeError("Expected `self.similarity` to be a Tensor for elementwise_mean reduction.")
         elif self.reduction == "sum":
             similarity = self.similarity
         else:
-            similarity = dim_zero_cat(self.similarity)
+            if isinstance(self.similarity, list):
+                similarity = dim_zero_cat(self.similarity)  # Concatenate list of Tensors
+            else:
+                raise TypeError("Expected `self.similarity` to be a list for reduction='none'.")
 
         if self.return_contrast_sensitivity or self.return_full_image:
-            image_return = dim_zero_cat(self.image_return)
+            if isinstance(self.image_return, list):
+                image_return = dim_zero_cat(self.image_return)  # Concatenate list of Tensors
+            else:
+                raise TypeError("Expected `self.image_return` to be a list when returning images.")
             return similarity, image_return
 
         return similarity
@@ -370,8 +379,12 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         )
 
         if self.reduction in ("none", None):
+            if not isinstance(self.similarity, list):
+                raise TypeError("Expected `self.similarity` to be a list for reduction='none'.")
             self.similarity.append(similarity)
         else:
+            if not isinstance(self.similarity, Tensor):
+                raise TypeError("Expected `self.similarity` to be a Tensor for elementwise_mean or sum reduction.")
             self.similarity += similarity.sum()
 
         self.total += preds.shape[0]
@@ -379,10 +392,19 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
     def compute(self) -> Tensor:
         """Compute MS-SSIM over state."""
         if self.reduction in ("none", None):
-            return dim_zero_cat(self.similarity)
+            if isinstance(self.similarity, list):
+                return dim_zero_cat(self.similarity)
+            else:
+                raise TypeError("Expected `self.similarity` to be a list for reduction='none'.")
         if self.reduction == "sum":
-            return self.similarity
-        return self.similarity / self.total
+            if isinstance(self.similarity, Tensor):
+                return self.similarity
+            else:
+                raise TypeError("Expected `self.similarity` to be a Tensor for sum reduction.")
+        if isinstance(self.similarity, Tensor) and isinstance(self.total, Tensor):
+            return self.similarity / self.total
+        else:
+            raise TypeError("Expected `self.similarity` and `self.total` to be Tensors for elementwise_mean reduction.")
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
