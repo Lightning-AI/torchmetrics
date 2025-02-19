@@ -142,8 +142,12 @@ class BootStrapper(WrapperMetric):
             sample_idx = _bootstrap_sampler(size, sampling_strategy=self.sampling_strategy).to(self.device)
             if sample_idx.numel() == 0:
                 continue
-            new_args = apply_to_collection(args, Tensor, lambda x, si=sample_idx: torch.index_select(x, dim=0, index=si))
-            new_kwargs = apply_to_collection(kwargs, Tensor, lambda x, si=sample_idx: torch.index_select(x, dim=0, index=si))
+            new_args = apply_to_collection(
+                args, Tensor, lambda x, si=sample_idx: torch.index_select(x, dim=0, index=si)
+            )
+            new_kwargs = apply_to_collection(
+                kwargs, Tensor, lambda x, si=sample_idx: torch.index_select(x, dim=0, index=si)
+            )
 
             self.metrics[idx].update(*new_args, **new_kwargs)
 
