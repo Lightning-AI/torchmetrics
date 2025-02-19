@@ -121,10 +121,10 @@ class MultilabelCoverageError(Metric):
         """Compute metric."""
         if not isinstance(self.measure, Tensor):
             raise TypeError(f"Expected 'self.measure' to be of type Tensor, but got {type(self.measure)}.")
-        if not isinstance(self.total, int):
-            raise TypeError(f"Expected 'self.total' to be of type int, but got {type(self.total)}.")
+        if not isinstance(self.total, Tensor):
+            raise TypeError(f"Expected 'self.total' to be of type Tensor, but got {type(self.total)}.")
 
-        return _ranking_reduce(self.measure, self.total)
+        return _ranking_reduce(self.measure, int(self.total.item()))
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -251,10 +251,10 @@ class MultilabelRankingAveragePrecision(Metric):
         """Compute metric."""
         if not isinstance(self.measure, Tensor):
             raise TypeError(f"Expected 'self.measure' to be of type Tensor, but got {type(self.measure)}.")
-        if not isinstance(self.total, int):
-            raise TypeError(f"Expected 'self.total' to be of type int, but got {type(self.total)}.")
+        if not isinstance(self.total, Tensor):
+            raise TypeError(f"Expected 'self.total' to be of type Tensor, but got {type(self.total)}.")
 
-        return _ranking_reduce(self.measure, self.total)
+        return _ranking_reduce(self.measure, int(self.total.item()))
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -383,10 +383,10 @@ class MultilabelRankingLoss(Metric):
         """Compute metric."""
         if not isinstance(self.measure, Tensor):
             raise TypeError(f"Expected 'self.measure' to be of type Tensor, but got {type(self.measure)}.")
-        if not isinstance(self.total, int):
-            raise TypeError(f"Expected 'self.total' to be of type int, but got {type(self.total)}.")
+        if not isinstance(self.total, Tensor):
+            raise TypeError(f"Expected 'self.total' to be of type Tensor, but got {type(self.total)}.")
 
-        return _ranking_reduce(self.measure, self.total)
+        return _ranking_reduce(self.measure, int(self.total.item()))
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
