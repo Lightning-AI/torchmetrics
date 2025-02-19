@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Union, cast
 
 import torch
 from torch import Tensor
@@ -148,8 +148,7 @@ class StructuralSimilarityIndexMeasure(Metric):
             similarity = similarity_pack
 
         if self.return_contrast_sensitivity or self.return_full_image:
-            if not isinstance(self.image_return, list):
-                self.image_return = list(self.image_return)
+            self.image_return = cast(list, self.image_return)  
             self.image_return.append(image)
 
         if self.reduction in ("elementwise_mean", "sum"):
