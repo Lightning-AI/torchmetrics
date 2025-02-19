@@ -389,7 +389,7 @@ class MeanAveragePrecision(Metric):
             if isinstance(current_val, Sequence):
                 for cur_v in current_val:
                     # Cannot handle RLE as Tensor
-                    if not isinstance(cur_v, tuple):
+                    if isinstance(cur_v, torch.Tensor):
                         cur_v = cur_v.to("cpu")
                     current_to_cpu.append(cur_v)
             setattr(self, key, current_to_cpu)

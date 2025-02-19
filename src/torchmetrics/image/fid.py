@@ -333,7 +333,12 @@ class FrechetInceptionDistance(Metric):
             self.inception = feature
             self.used_custom_model = True
             if hasattr(self.inception, "num_features"):
-                num_features = self.inception.num_features
+                if isinstance(self.inception.num_features, int):  
+                    num_features = self.inception.num_features
+                elif isinstance(self.inception.num_features, Tensor): 
+                    num_features = self.inception.num_features.item()  
+                else:
+                    raise TypeError("Expected `self.inception.num_features` to be of type int or Tensor.")
             else:
                 if self.normalize:
                     dummy_image = torch.rand(1, *input_img_size, dtype=torch.float32)
