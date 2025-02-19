@@ -137,7 +137,7 @@ class BootStrapper(WrapperMetric):
             size = next(iter(kwargs_sizes.values()))
         else:
             raise ValueError("None of the input contained tensors, so could not determine the sampling size")
-        
+
         try:
             device = next(iter(self.metrics[0].parameters())).device
         except StopIteration:
