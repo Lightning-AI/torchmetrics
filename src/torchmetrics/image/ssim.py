@@ -176,7 +176,7 @@ class StructuralSimilarityIndexMeasure(Metric):
         elif self.reduction == "sum":
             if not isinstance(self.similarity, Tensor):
                 raise TypeError("Expected `self.similarity` to be a Tensor for sum reduction.")
-            similarity = self.similarity  
+            similarity = self.similarity
         else:
             if isinstance(self.similarity, list):
                 similarity = dim_zero_cat(self.similarity)  # Concatenate list of Tensors
