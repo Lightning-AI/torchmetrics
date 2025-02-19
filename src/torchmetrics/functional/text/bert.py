@@ -397,11 +397,10 @@ def bert_score(
                 )
         else:
             rank_zero_warn(
-                f"Model config does not have `num_hidden_layers` as an integer attribute. Unable to validate `num_layers`."
+                "Model config does not have `num_hidden_layers` as an integer attribute. Unable to validate `num_layers`."
             )
     except AttributeError:
         rank_zero_warn("It was not possible to retrieve the parameter `num_layers` from the model specification.")
-        
 
     _are_empty_lists = all(isinstance(text, list) and len(text) == 0 for text in (preds, target))
     _are_valid_lists = all(

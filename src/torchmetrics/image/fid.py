@@ -333,10 +333,10 @@ class FrechetInceptionDistance(Metric):
             self.inception = feature
             self.used_custom_model = True
             if hasattr(self.inception, "num_features"):
-                if isinstance(self.inception.num_features, int):  
+                if isinstance(self.inception.num_features, int):
                     num_features = self.inception.num_features
-                elif isinstance(self.inception.num_features, Tensor): 
-                    num_features = self.inception.num_features.item()  
+                elif isinstance(self.inception.num_features, Tensor):
+                    num_features = self.inception.num_features.item()
                 else:
                     raise TypeError("Expected `self.inception.num_features` to be of type int or Tensor.")
             else:
