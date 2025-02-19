@@ -170,12 +170,13 @@ class StructuralSimilarityIndexMeasure(Metric):
     def compute(self) -> Union[Tensor, tuple[Tensor, Tensor]]:
         """Compute SSIM over state."""
         if self.reduction == "elementwise_mean":
-            if isinstance(self.similarity, Tensor):
-                similarity = self.similarity / self.total  # Ensure Tensor division
-            else:
+            if not isinstance(self.similarity, Tensor):
                 raise TypeError("Expected `self.similarity` to be a Tensor for elementwise_mean reduction.")
+            similarity = self.similarity / self.total  # Ensure Tensor division
         elif self.reduction == "sum":
-            similarity = self.similarity
+            if not isinstance(self.similarity, Tensor):
+                raise TypeError("Expected `self.similarity` to be a Tensor for sum reduction.")
+            similarity = self.similarity  
         else:
             if isinstance(self.similarity, list):
                 similarity = dim_zero_cat(self.similarity)  # Concatenate list of Tensors
@@ -387,7 +388,9 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
                 raise TypeError("Expected `self.similarity` to be a Tensor for elementwise_mean or sum reduction.")
             self.similarity += similarity.sum()
 
-        self.total += preds.shape[0]
+        if not isinstance(self.total, Tensor):
+            raise TypeError("Expected `self.total` to be a Tensor.")
+        self.total += torch.tensor(preds.shape[0], dtype=self.total.dtype, device=self.total.device)
 
     def compute(self) -> Tensor:
         """Compute MS-SSIM over state."""
