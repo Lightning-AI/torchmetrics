@@ -218,12 +218,12 @@ def _calculate_p_value(
         ) / 18
         t_value_denominator += (
             2 * (preds_ties if preds_ties is not None else 0) * (target_ties if target_ties is not None else 0)
-        ) / m  
+        ) / m
         t_value_denominator += (
             (preds_ties_p1 if preds_ties_p1 is not None else 0)
             * (target_ties_p1 if target_ties_p1 is not None else 0)
             / (9 * m * (n_total - 2))
-        )  
+        )
         t_value = con_min_dis_pairs / torch.sqrt(t_value_denominator)
 
     if alternative == _TestAlternative.TWO_SIDED:
