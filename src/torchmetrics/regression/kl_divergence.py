@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Optional, Union, List, cast
+from typing import Any, List, Optional, Union, cast
 
 import torch
 from torch import Tensor
@@ -122,7 +122,11 @@ class KLDivergence(Metric):
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        measures: Tensor = dim_zero_cat(cast(List[Tensor], self.measures)) if self.reduction in ["none", None] else cast(Tensor, self.measures)
+        measures: Tensor = (
+            dim_zero_cat(cast(List[Tensor], self.measures))
+            if self.reduction in ["none", None]
+            else cast(Tensor, self.measures)
+        )
         return _kld_compute(measures, self.total, self.reduction)
 
     def plot(
