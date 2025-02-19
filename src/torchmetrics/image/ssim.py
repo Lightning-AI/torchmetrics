@@ -394,17 +394,14 @@ class MultiScaleStructuralSimilarityIndexMeasure(Metric):
         if self.reduction in ("none", None):
             if isinstance(self.similarity, list):
                 return dim_zero_cat(self.similarity)
-            else:
-                raise TypeError("Expected `self.similarity` to be a list for reduction='none'.")
+            raise TypeError("Expected `self.similarity` to be a list for reduction='none'.")
         if self.reduction == "sum":
             if isinstance(self.similarity, Tensor):
                 return self.similarity
-            else:
-                raise TypeError("Expected `self.similarity` to be a Tensor for sum reduction.")
+            raise TypeError("Expected `self.similarity` to be a Tensor for sum reduction.")
         if isinstance(self.similarity, Tensor) and isinstance(self.total, Tensor):
             return self.similarity / self.total
-        else:
-            raise TypeError("Expected `self.similarity` and `self.total` to be Tensors for elementwise_mean reduction.")
+        raise TypeError("Expected `self.similarity` and `self.total` to be Tensors for elementwise_mean reduction.")
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
