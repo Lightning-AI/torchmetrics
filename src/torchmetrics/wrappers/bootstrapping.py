@@ -122,7 +122,6 @@ class BootStrapper(WrapperMetric):
                 f" but received {sampling_strategy}"
             )
         self.sampling_strategy = sampling_strategy
-        self._bootstrap_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Update the state of the base metric.
@@ -138,9 +137,14 @@ class BootStrapper(WrapperMetric):
             size = next(iter(kwargs_sizes.values()))
         else:
             raise ValueError("None of the input contained tensors, so could not determine the sampling size")
+        
+        try:
+            device = next(iter(self.metrics[0].parameters())).device
+        except StopIteration:
+            device = torch.device("cpu")
 
         for idx in range(self.num_bootstraps):
-            sample_idx = _bootstrap_sampler(size, sampling_strategy=self.sampling_strategy).to(self._bootstrap_device)
+            sample_idx = _bootstrap_sampler(size, sampling_strategy=self.sampling_strategy).to(device)
             if sample_idx.numel() == 0:
                 continue
             new_args = apply_to_collection(args, Tensor, torch.index_select, dim=0, index=sample_idx)
