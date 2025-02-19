@@ -148,12 +148,19 @@ class StructuralSimilarityIndexMeasure(Metric):
             similarity = similarity_pack
 
         if self.return_contrast_sensitivity or self.return_full_image:
-            self.image_return = cast(list, self.image_return)
+            if not isinstance(self.image_return, list):
+                raise TypeError("Expected `self.image_return` to be a list when returning images.")
             self.image_return.append(image)
 
         if self.reduction in ("elementwise_mean", "sum"):
-            self.similarity += similarity.sum()
-            self.total += preds.shape[0]
+            if isinstance(self.similarity, torch.Tensor):  # Ensure it's a Tensor
+                self.similarity += similarity.sum()
+            else:
+                raise TypeError("Expected `self.similarity` to be a Tensor for reductions.")
+            if isinstance(self.total, torch.Tensor):
+                self.total += preds.shape[0]
+            else:
+                raise TypeError("Expected `self.total` to be a Tensor.")
         else:
             if isinstance(self.similarity, list):
                 self.similarity.append(similarity)
