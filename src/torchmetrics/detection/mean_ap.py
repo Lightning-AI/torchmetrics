@@ -393,10 +393,9 @@ class MeanAveragePrecision(Metric):
             )
 
         if not _TORCHVISION_AVAILABLE:
-            iou_type = str(self._iou_type) if not isinstance(self._iou_type, str) else self._iou_type
             raise ModuleNotFoundError(
-                f"Metric {iou_type.upper()} requires that torchvision is installed. "
-                "Please install with `pip install torchmetrics[detection]`."
+                f"Metric `{self._iou_type}` requires that `torchvision` is installed."
+                " Please install with `pip install torchmetrics[detection]`."
             )
 
         allowed_box_formats = ("xyxy", "xywh", "cxcywh")
