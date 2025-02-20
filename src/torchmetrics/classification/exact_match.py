@@ -21,10 +21,13 @@ from typing_extensions import Literal
 from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.functional.classification.exact_match import (
     _exact_match_reduce,
+    _multiclass_exact_match_update,
     _multilabel_exact_match_update,
 )
 from torchmetrics.functional.classification.stat_scores import (
     _multiclass_stat_scores_arg_validation,
+    _multiclass_stat_scores_format,
+    _multiclass_stat_scores_tensor_validation,
     _multilabel_stat_scores_arg_validation,
     _multilabel_stat_scores_format,
     _multilabel_stat_scores_tensor_validation,
@@ -131,15 +134,14 @@ class MulticlassExactMatch(Metric):
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:
-        """Update state with predictions and targets."""
+        """Update metric states with predictions and targets."""
         if self.validate_args:
-            _multilabel_stat_scores_tensor_validation(
-                preds, target, self.num_labels, self.multidim_average, self.ignore_index
+            _multiclass_stat_scores_tensor_validation(
+                preds, target, self.num_classes, self.multidim_average, self.ignore_index
             )
-        preds, target = _multilabel_stat_scores_format(
-            preds, target, self.num_labels, self.threshold, self.ignore_index
-        )
-        correct, total = _multilabel_exact_match_update(preds, target, self.num_labels, self.multidim_average)
+        preds, target = _multiclass_stat_scores_format(preds, target, 1)
+
+        correct, total = _multiclass_exact_match_update(preds, target, self.multidim_average, self.ignore_index)
         if self.multidim_average == "samplewise":
             if isinstance(self.correct, list):
                 self.correct.append(correct)
