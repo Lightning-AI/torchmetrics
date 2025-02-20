@@ -318,16 +318,30 @@ class MultilabelExactMatch(Metric):
         )
         correct, total = _multilabel_exact_match_update(preds, target, self.num_labels, self.multidim_average)
         if self.multidim_average == "samplewise":
-            self.correct.append(correct)
-            self.total = total
+            if isinstance(self.correct, list):
+                self.correct.append(correct)
+            else:
+                raise TypeError("Expected `self.correct` to be a list in samplewise mode.")
+
+            self.total += total
         else:
-            self.correct += correct
+            if isinstance(self.correct, Tensor):
+                self.correct += correct
+            else:
+                raise TypeError("Expected `self.correct` to be a tensor in global mode.")
+
             self.total += total
 
     def compute(self) -> Tensor:
         """Compute metric."""
         correct = dim_zero_cat(self.correct) if isinstance(self.correct, list) else self.correct
-        return _exact_match_reduce(correct, self.total)
+        total = self.total
+
+        # Validate that `correct` and `total` are tensors
+        if not isinstance(correct, Tensor) or not isinstance(total, Tensor):
+            raise TypeError("Expected `correct` and `total` to be tensors after processing.")
+
+        return _exact_match_reduce(correct, total)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
