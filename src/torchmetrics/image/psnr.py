@@ -137,9 +137,22 @@ class PeakSignalNoiseRatio(Metric):
                 self.min_target = torch.minimum(target.min(), self.min_target)
                 self.max_target = torch.maximum(target.max(), self.max_target)
 
+            if not isinstance(self.sum_squared_error, Tensor):
+                raise TypeError(
+                    f"Expected `self.sum_squared_error` to be a Tensor, but got {type(self.sum_squared_error)}"
+                )
+            if not isinstance(self.total, Tensor):
+                raise TypeError(f"Expected `self.total` to be a Tensor, but got {type(self.total)}")
+
             self.sum_squared_error += sum_squared_error
             self.total += num_obs
         else:
+            if not isinstance(self.sum_squared_error, list):
+                raise TypeError(
+                    f"Expected `self.sum_squared_error` to be a list, but got {type(self.sum_squared_error)}"
+                )
+            if not isinstance(self.total, list):
+                raise TypeError(f"Expected `self.total` to be a list, but got {type(self.total)}")
             self.sum_squared_error.append(sum_squared_error)
             self.total.append(num_obs)
 
@@ -147,12 +160,28 @@ class PeakSignalNoiseRatio(Metric):
         """Compute peak signal-to-noise ratio over state."""
         data_range = self.data_range if self.data_range is not None else self.max_target - self.min_target
 
+        # Ensure sum_squared_error and total are Tensors
         if self.dim is None:
-            sum_squared_error = self.sum_squared_error
-            total = self.total
+            if isinstance(self.sum_squared_error, torch.Tensor) and isinstance(self.total, torch.Tensor):
+                sum_squared_error = self.sum_squared_error
+                total = self.total
+            else:
+                raise TypeError("Expected Tensors for sum_squared_error and total when dim is None.")
         else:
-            sum_squared_error = torch.cat([values.flatten() for values in self.sum_squared_error])
-            total = torch.cat([values.flatten() for values in self.total])
+            # Validate that sum_squared_error and total are iterable and contain Tensors
+            if hasattr(self.sum_squared_error, "__iter__") and all(
+                isinstance(values, torch.Tensor) for values in self.sum_squared_error
+            ):
+                sum_squared_error = torch.cat([values.flatten() for values in self.sum_squared_error])
+            else:
+                raise TypeError("Expected an iterable of Tensors in sum_squared_error when dim is specified.")
+
+            if hasattr(self.total, "__iter__") and all(isinstance(values, torch.Tensor) for values in self.total):
+                total = torch.cat([values.flatten() for values in self.total])
+            else:
+                raise TypeError("Expected an iterable of Tensors in total when dim is specified.")
+
+        # Call _psnr_compute with guaranteed Tensors
         return _psnr_compute(sum_squared_error, total, data_range, base=self.base, reduction=self.reduction)
 
     def plot(

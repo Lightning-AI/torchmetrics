@@ -105,6 +105,7 @@ class MetricTracker(ModuleList):
     """
 
     maximize: Union[bool, list[bool]]
+    _base_metric: Union[Metric, MetricCollection]
 
     def __init__(
         self, metric: Union[Metric, MetricCollection], maximize: Optional[Union[bool, list[bool]]] = True
@@ -167,16 +168,22 @@ class MetricTracker(ModuleList):
     def forward(self, *args: Any, **kwargs: Any) -> None:
         """Call forward of the current metric being tracked."""
         self._check_for_increment("forward")
+        if not isinstance(self[-1], (Metric, MetricCollection)):
+            raise TypeError(f"Expected the last item to be a Metric or MetricCollection, but got {type(self[-1])}.")
         return self[-1](*args, **kwargs)
 
     def update(self, *args: Any, **kwargs: Any) -> None:
         """Update the current metric being tracked."""
         self._check_for_increment("update")
+        if not isinstance(self[-1], (Metric, MetricCollection)):
+            raise TypeError(f"Expected the last item to be a Metric or MetricCollection, but got {type(self[-1])}.")
         self[-1].update(*args, **kwargs)
 
     def compute(self) -> Any:
         """Call compute of the current metric being tracked."""
         self._check_for_increment("compute")
+        if not isinstance(self[-1], (Metric, MetricCollection)):
+            raise TypeError(f"Expected the last item to be a Metric or MetricCollection, but got {type(self[-1])}.")
         return self[-1].compute()
 
     def compute_all(self) -> Any:
@@ -207,11 +214,15 @@ class MetricTracker(ModuleList):
 
     def reset(self) -> None:
         """Reset the current metric being tracked."""
+        if not isinstance(self[-1], (Metric, MetricCollection)):
+            raise TypeError(f"Expected the last item to be a Metric or MetricCollection, but got {type(self[-1])}.")
         self[-1].reset()
 
     def reset_all(self) -> None:
         """Reset all metrics being tracked."""
         for metric in self:
+            if not isinstance(metric, (Metric, MetricCollection)):
+                raise TypeError(f"Expected all metrics to be Metric or MetricCollection, but got {type(metric)}.")
             metric.reset()
 
     def best_metric(
