@@ -133,7 +133,9 @@ class MulticlassExactMatch(Metric):
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
         if self.validate_args:
-            num_labels = int(self.num_labels) if isinstance(self.num_labels, (int, float)) else int(self.num_labels.item())
+            num_labels = (
+                int(self.num_labels) if isinstance(self.num_labels, (int, float)) else int(self.num_labels.item())
+            )
             _multilabel_stat_scores_tensor_validation(
                 preds, target, num_labels, self.multidim_average, self.ignore_index
             )
