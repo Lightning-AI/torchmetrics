@@ -160,16 +160,26 @@ class PeakSignalNoiseRatio(Metric):
         """Compute peak signal-to-noise ratio over state."""
         data_range = self.data_range if self.data_range is not None else self.max_target - self.min_target
 
+        # Ensure sum_squared_error and total are Tensors
         if self.dim is None:
-            if not isinstance(self.sum_squared_error, Tensor) or not isinstance(self.total, Tensor):
-                raise TypeError("Expected `sum_squared_error` and `total` to be Tensors.")
-            sum_squared_error = self.sum_squared_error
-            total = self.total
+            if isinstance(self.sum_squared_error, torch.Tensor) and isinstance(self.total, torch.Tensor):
+                sum_squared_error = self.sum_squared_error
+                total = self.total
+            else:
+                raise TypeError("Expected Tensors for sum_squared_error and total when dim is None.")
         else:
-            if not isinstance(self.sum_squared_error, list) or not isinstance(self.total, list):
-                raise TypeError("Expected `sum_squared_error` and `total` to be lists of Tensors.")
-            sum_squared_error = torch.cat([values.flatten() for values in self.sum_squared_error])
-            total = torch.cat([values.flatten() for values in self.total])
+            # Flatten and concatenate only if items are Tensors
+            if all(isinstance(values, torch.Tensor) for values in self.sum_squared_error):
+                sum_squared_error = torch.cat([values.flatten() for values in self.sum_squared_error])
+            else:
+                raise TypeError("Expected Tensors in sum_squared_error when dim is specified.")
+
+            if all(isinstance(values, torch.Tensor) for values in self.total):
+                total = torch.cat([values.flatten() for values in self.total])
+            else:
+                raise TypeError("Expected Tensors in total when dim is specified.")
+
+        # Call _psnr_compute with guaranteed Tensors
         return _psnr_compute(sum_squared_error, total, data_range, base=self.base, reduction=self.reduction)
 
     def plot(
