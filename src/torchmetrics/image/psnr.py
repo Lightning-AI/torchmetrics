@@ -173,7 +173,7 @@ class PeakSignalNoiseRatio(Metric):
                 total = torch.cat([values.flatten() for values in self.total])
             else:
                 raise TypeError("Expected Tensors for sum_squared_error and total")
- 
+
         # Call _psnr_compute with guaranteed Tensors
         return _psnr_compute(sum_squared_error, total, data_range, base=self.base, reduction=self.reduction)
 
