@@ -323,14 +323,20 @@ class MultilabelExactMatch(Metric):
             else:
                 raise TypeError("Expected `self.correct` to be a list in samplewise mode.")
 
-            self.total += total
+            if isinstance(self.total, Tensor):
+                self.total += total
+            else:
+                raise TypeError("Expected `self.total` to be a Tensor in samplewise mode.")
         else:
             if isinstance(self.correct, Tensor):
                 self.correct += correct
             else:
                 raise TypeError("Expected `self.correct` to be a tensor in global mode.")
 
-            self.total += total
+            if isinstance(self.total, Tensor):
+                self.total += total
+            else:
+                raise TypeError("Expected `self.total` to be a Tensor in samplewise mode.")
 
     def compute(self) -> Tensor:
         """Compute metric."""
