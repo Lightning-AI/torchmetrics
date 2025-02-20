@@ -168,8 +168,8 @@ class PeakSignalNoiseRatio(Metric):
             else:
                 raise TypeError("Expected Tensors for sum_squared_error and total when dim is None.")
         else:
-            sum_squared_error_list = self.sum_squared_error.cast(torch.float).flatten().tolist()
-            total_list = self.total.cast(torch.float).flatten().tolist()
+            sum_squared_error_list = self.sum_squared_error.to(torch.float).flatten().tolist()
+            total_list = self.total.to(torch.float).flatten().tolist()
             sum_squared_error = torch.cat([values.flatten() for values in sum_squared_error_list])
             total = torch.cat([values.flatten() for values in total_list])
 
