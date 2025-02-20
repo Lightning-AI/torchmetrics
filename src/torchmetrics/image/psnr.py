@@ -161,20 +161,16 @@ class PeakSignalNoiseRatio(Metric):
         data_range = self.data_range if self.data_range is not None else self.max_target - self.min_target
 
         # Ensure sum_squared_error and total are Tensors
-        if self.dim is None:
-            if isinstance(self.sum_squared_error, torch.Tensor) and isinstance(self.total, torch.Tensor):
+        if isinstance(self.sum_squared_error, torch.Tensor) and isinstance(self.total, torch.Tensor):
+            if self.dim is None:
                 sum_squared_error = self.sum_squared_error
                 total = self.total
             else:
-                raise TypeError("Expected Tensors for sum_squared_error and total")
-        else:
-            if isinstance(self.sum_squared_error, torch.Tensor) and isinstance(self.total, torch.Tensor):
                 sum_squared_error = torch.cat([values.flatten() for values in self.sum_squared_error])
                 total = torch.cat([values.flatten() for values in self.total])
-            else:
-                raise TypeError("Expected Tensors for sum_squared_error and total")
+        else:
+            raise TypeError("Expected Tensors for sum_squared_error and total")
 
-        # Call _psnr_compute with guaranteed Tensors
         return _psnr_compute(sum_squared_error, total, data_range, base=self.base, reduction=self.reduction)
 
     def plot(
