@@ -140,15 +140,13 @@ class BootStrapper(WrapperMetric):
 
         for idx in range(self.num_bootstraps):
             sample_idx = _bootstrap_sampler(size, sampling_strategy=self.sampling_strategy).to(self.device)
+            if not isinstance(sample_idx, torch.Tensor):
+                raise ValueError(f"Expected `_bootstrap_sampler` to return a Tensor, but got {type(sample_idx)}")
+
             if sample_idx.numel() == 0:
                 continue
-            new_args = apply_to_collection(
-                args, Tensor, lambda x, si=sample_idx: torch.index_select(x, dim=0, index=si)
-            )
-            new_kwargs = apply_to_collection(
-                kwargs, Tensor, lambda x, si=sample_idx: torch.index_select(x, dim=0, index=si)
-            )
-
+            new_args = apply_to_collection(args, Tensor, torch.index_select, dim=0, index=sample_idx)
+            new_kwargs = apply_to_collection(kwargs, Tensor, torch.index_select, dim=0, index=sample_idx)
             self.metrics[idx].update(*new_args, **new_kwargs)
 
     def compute(self) -> dict[str, Tensor]:
