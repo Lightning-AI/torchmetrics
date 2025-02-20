@@ -168,20 +168,20 @@ class PeakSignalNoiseRatio(Metric):
             else:
                 raise TypeError("Expected Tensors for sum_squared_error and total when dim is None.")
         else:
-            # Flatten and concatenate only if items are Tensors
-            if all(isinstance(values, torch.Tensor) for values in self.sum_squared_error):
+            # Validate that sum_squared_error and total are iterable and contain Tensors
+            if hasattr(self.sum_squared_error, "__iter__") and all(isinstance(values, torch.Tensor) for values in self.sum_squared_error):
                 sum_squared_error = torch.cat([values.flatten() for values in self.sum_squared_error])
             else:
-                raise TypeError("Expected Tensors in sum_squared_error when dim is specified.")
+                raise TypeError("Expected an iterable of Tensors in sum_squared_error when dim is specified.")
 
-            if all(isinstance(values, torch.Tensor) for values in self.total):
+            if hasattr(self.total, "__iter__") and all(isinstance(values, torch.Tensor) for values in self.total):
                 total = torch.cat([values.flatten() for values in self.total])
             else:
-                raise TypeError("Expected Tensors in total when dim is specified.")
+                raise TypeError("Expected an iterable of Tensors in total when dim is specified.")
 
         # Call _psnr_compute with guaranteed Tensors
         return _psnr_compute(sum_squared_error, total, data_range, base=self.base, reduction=self.reduction)
-
+    
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
     ) -> _PLOT_OUT_TYPE:
