@@ -21,13 +21,10 @@ from typing_extensions import Literal
 from torchmetrics.classification.base import _ClassificationTaskWrapper
 from torchmetrics.functional.classification.exact_match import (
     _exact_match_reduce,
-    _multiclass_exact_match_update,
     _multilabel_exact_match_update,
 )
 from torchmetrics.functional.classification.stat_scores import (
     _multiclass_stat_scores_arg_validation,
-    _multiclass_stat_scores_format,
-    _multiclass_stat_scores_tensor_validation,
     _multilabel_stat_scores_arg_validation,
     _multilabel_stat_scores_format,
     _multilabel_stat_scores_tensor_validation,
@@ -132,7 +129,6 @@ class MulticlassExactMatch(Metric):
             torch.zeros(1, dtype=torch.long),
             dist_reduce_fx="sum" if self.multidim_average == "global" else "mean",
         )
-
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update state with predictions and targets."""
