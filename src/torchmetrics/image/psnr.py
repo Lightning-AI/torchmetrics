@@ -168,18 +168,19 @@ class PeakSignalNoiseRatio(Metric):
             else:
                 raise TypeError("Expected Tensors for sum_squared_error and total when dim is None.")
         else:
-            # Validate that sum_squared_error and total are iterable and contain Tensors
-            if hasattr(self.sum_squared_error, "__iter__") and all(
-                isinstance(values, torch.Tensor) for values in self.sum_squared_error
-            ):
-                sum_squared_error = torch.cat([values.flatten() for values in self.sum_squared_error])
-            else:
-                raise TypeError("Expected an iterable of Tensors in sum_squared_error when dim is specified.")
+            if isinstance(self.sum_squared_error, list):
+                self.sum_squared_error = torch.cat([values.flatten() for values in self.sum_squared_error])
+            if isinstance(self.total, list):
+                self.total = torch.cat([values.flatten() for values in self.total])
 
-            if hasattr(self.total, "__iter__") and all(isinstance(values, torch.Tensor) for values in self.total):
-                total = torch.cat([values.flatten() for values in self.total])
-            else:
-                raise TypeError("Expected an iterable of Tensors in total when dim is specified.")
+            sum_squared_error = self.sum_squared_error
+            total = self.total
+
+            # Ensure proper types
+            if not isinstance(sum_squared_error, torch.Tensor):
+                raise TypeError(f"Expected sum_squared_error to be a Tensor but got {type(sum_squared_error)}")
+            if not isinstance(total, torch.Tensor):
+                raise TypeError(f"Expected total to be a Tensor but got {type(total)}")
 
         # Call _psnr_compute with guaranteed Tensors
         return _psnr_compute(sum_squared_error, total, data_range, base=self.base, reduction=self.reduction)
