@@ -149,7 +149,7 @@ class MulticlassExactMatch(Metric):
 
             if not isinstance(self.total, Tensor):
                 raise TypeError("Expected `self.total` to be a Tensor in samplewise mode.")
-            self.total += total
+            self.total = total
         else:
             if not isinstance(self.correct, Tensor):
                 raise TypeError("Expected `self.correct` to be a tensor in global mode.")
@@ -333,7 +333,7 @@ class MultilabelExactMatch(Metric):
 
             if not isinstance(self.total, Tensor):
                 raise TypeError("Expected `self.total` to be a Tensor in samplewise mode.")
-            self.total += total
+            self.total = total
         else:
             if not isinstance(self.correct, Tensor):
                 raise TypeError("Expected `self.correct` to be a tensor in global mode.")
