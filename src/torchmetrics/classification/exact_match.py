@@ -97,6 +97,7 @@ class MulticlassExactMatch(Metric):
         tensor([1., 0.])
 
     """
+
     total: Tensor
     is_differentiable: bool = False
     higher_is_better: bool = True
@@ -277,6 +278,7 @@ class MultilabelExactMatch(Metric):
         tensor([0., 0.])
 
     """
+
     total: Tensor
     is_differentiable: bool = False
     higher_is_better: bool = True
