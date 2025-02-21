@@ -123,7 +123,7 @@ class BootStrapper(WrapperMetric):
             )
         self.sampling_strategy = sampling_strategy
 
-    def update(self, *args: Any, **kwargs: Any) -> None:
+    def update(self, *args: Any, **kwargs: Any) -> None: # type: ignore
         """Update the state of the base metric.
 
         Any tensor passed in will be bootstrapped along dimension 0.
@@ -144,12 +144,8 @@ class BootStrapper(WrapperMetric):
                 continue
             new_args = apply_to_collection(args, (torch.Tensor,), torch.index_select, dim=0, index=sample_idx)
             new_kwargs = apply_to_collection(kwargs, (torch.Tensor,), torch.index_select, dim=0, index=sample_idx)
-            if isinstance(self.metrics[idx], Metric):
-                self.metrics[idx].update(*new_args, **new_kwargs)
-            else:
-                raise TypeError(
-                    f"Expected self.metrics[{idx}] to be an instance of Metric, but got {type(self.metrics[idx])}"
-                )
+            self.metrics[idx].update(*new_args, **new_kwargs)
+        
 
     def compute(self) -> dict[str, Tensor]:
         """Compute the bootstrapped metric values.
