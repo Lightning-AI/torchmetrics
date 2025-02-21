@@ -162,13 +162,12 @@ class MulticlassExactMatch(Metric):
     def compute(self) -> Tensor:
         """Compute metric."""
         correct = dim_zero_cat(self.correct) if isinstance(self.correct, list) else self.correct
-        total = self.total
 
         # Validate that `correct` and `total` are tensors
-        if not isinstance(correct, Tensor) or not isinstance(total, Tensor):
+        if not isinstance(correct, Tensor) or not isinstance(self.total, Tensor):
             raise TypeError("Expected `correct` and `total` to be tensors after processing.")
 
-        return _exact_match_reduce(correct, total)
+        return _exact_match_reduce(correct, self.total)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -347,13 +346,12 @@ class MultilabelExactMatch(Metric):
     def compute(self) -> Tensor:
         """Compute metric."""
         correct = dim_zero_cat(self.correct) if isinstance(self.correct, list) else self.correct
-        total = self.total
 
         # Validate that `correct` and `total` are tensors
-        if not isinstance(correct, Tensor) or not isinstance(total, Tensor):
+        if not isinstance(correct, Tensor) or not isinstance(self.total, Tensor):
             raise TypeError("Expected `correct` and `total` to be tensors after processing.")
 
-        return _exact_match_reduce(correct, total)
+        return _exact_match_reduce(correct, self.total)
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

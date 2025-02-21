@@ -153,19 +153,16 @@ class StructuralSimilarityIndexMeasure(Metric):
             self.image_return.append(image)
 
         if self.reduction in ("elementwise_mean", "sum"):
-            if isinstance(self.similarity, torch.Tensor):  # Ensure it's a Tensor
-                self.similarity += similarity.sum()
-            else:
+            if not isinstance(self.similarity, torch.Tensor):  # Ensure it's a Tensor
                 raise TypeError("Expected `self.similarity` to be a Tensor for reductions.")
-            if isinstance(self.total, torch.Tensor):
-                self.total += preds.shape[0]
-            else:
+            self.similarity += similarity.sum()
+            if not isinstance(self.total, torch.Tensor):
                 raise TypeError("Expected `self.total` to be a Tensor.")
+            self.total += preds.shape[0]
         else:
-            if isinstance(self.similarity, list):
-                self.similarity.append(similarity)
-            else:
+            if not isinstance(self.similarity, list):
                 raise TypeError("Expected `self.similarity` to be a list when reduction='none'.")
+            self.similarity.append(similarity)
 
     def compute(self) -> Union[Tensor, tuple[Tensor, Tensor]]:
         """Compute SSIM over state."""
