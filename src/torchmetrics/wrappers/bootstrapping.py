@@ -130,7 +130,7 @@ class BootStrapper(WrapperMetric):
 
         """
         args_sizes = apply_to_collection(args, torch.Tensor, len)
-        kwargs_sizes = apply_to_collection(kwargs,torch.Tensor, len)
+        kwargs_sizes = apply_to_collection(kwargs, torch.Tensor, len)
         if len(args_sizes) > 0:
             size = args_sizes[0]
         elif len(kwargs_sizes) > 0:
