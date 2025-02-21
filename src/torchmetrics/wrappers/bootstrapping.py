@@ -147,8 +147,9 @@ class BootStrapper(WrapperMetric):
             if isinstance(self.metrics[idx], Metric):
                 self.metrics[idx].update(*new_args, **new_kwargs)
             else:
-                raise TypeError(f"Expected self.metrics[{idx}] to be an instance of Metric, but got {type(self.metrics[idx])}")
-            
+                raise TypeError(
+                    f"Expected self.metrics[{idx}] to be an instance of Metric, but got {type(self.metrics[idx])}"
+                )
 
     def compute(self) -> dict[str, Tensor]:
         """Compute the bootstrapped metric values.
