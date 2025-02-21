@@ -174,7 +174,7 @@ class StructuralSimilarityIndexMeasure(Metric):
                 similarity = self.similarity / self.total
             else:
                 raise TypeError(
-                    "Expected `self.similarity`and `self.total` to be a Tensor for elementwise_mean reduction."
+                    "Expected `self.similarity`and `self.total` to be of type Tensor for elementwise_mean reduction."
                 )
         elif self.reduction == "sum":
             if not isinstance(self.similarity, Tensor):
