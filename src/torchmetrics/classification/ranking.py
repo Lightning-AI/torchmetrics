@@ -108,12 +108,23 @@ class MultilabelCoverageError(Metric):
             preds, target, self.num_labels, threshold=0.0, ignore_index=self.ignore_index, should_threshold=False
         )
         measure, num_elements = _multilabel_coverage_error_update(preds, target)
+
+        if not isinstance(self.measure, Tensor):
+            raise TypeError(f"Expected 'self.measure' to be of type Tensor, but got {type(self.measure)}.")
+        if not isinstance(self.total, Tensor):
+            raise TypeError(f"Expected 'self.total' to be of type Tensor, but got {type(self.total)}.")
+
         self.measure += measure
         self.total += num_elements
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return _ranking_reduce(self.measure, self.total)
+        if not isinstance(self.measure, Tensor):
+            raise TypeError(f"Expected 'self.measure' to be of type Tensor, but got {type(self.measure)}.")
+        if not isinstance(self.total, Tensor):
+            raise TypeError(f"Expected 'self.total' to be of type Tensor, but got {type(self.total)}.")
+
+        return _ranking_reduce(self.measure, int(self.total.item()))
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -227,13 +238,23 @@ class MultilabelRankingAveragePrecision(Metric):
         preds, target = _multilabel_confusion_matrix_format(
             preds, target, self.num_labels, threshold=0.0, ignore_index=self.ignore_index, should_threshold=False
         )
+        if not isinstance(self.measure, Tensor):
+            raise TypeError(f"Expected 'self.measure' to be of type Tensor, but got {type(self.measure)}.")
+        if not isinstance(self.total, Tensor):
+            raise TypeError(f"Expected 'self.total' to be of type Tensor, but got {type(self.total)}.")
+
         measure, num_elements = _multilabel_ranking_average_precision_update(preds, target)
         self.measure += measure
         self.total += num_elements
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return _ranking_reduce(self.measure, self.total)
+        if not isinstance(self.measure, Tensor):
+            raise TypeError(f"Expected 'self.measure' to be of type Tensor, but got {type(self.measure)}.")
+        if not isinstance(self.total, Tensor):
+            raise TypeError(f"Expected 'self.total' to be of type Tensor, but got {type(self.total)}.")
+
+        return _ranking_reduce(self.measure, int(self.total.item()))
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
@@ -349,13 +370,23 @@ class MultilabelRankingLoss(Metric):
         preds, target = _multilabel_confusion_matrix_format(
             preds, target, self.num_labels, threshold=0.0, ignore_index=self.ignore_index, should_threshold=False
         )
+        if not isinstance(self.measure, Tensor):
+            raise TypeError(f"Expected 'self.measure' to be of type Tensor, but got {type(self.measure)}.")
+        if not isinstance(self.total, Tensor):
+            raise TypeError(f"Expected 'self.total' to be of type Tensor, but got {type(self.total)}.")
+
         measure, num_elements = _multilabel_ranking_loss_update(preds, target)
         self.measure += measure
         self.total += num_elements
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        return _ranking_reduce(self.measure, self.total)
+        if not isinstance(self.measure, Tensor):
+            raise TypeError(f"Expected 'self.measure' to be of type Tensor, but got {type(self.measure)}.")
+        if not isinstance(self.total, Tensor):
+            raise TypeError(f"Expected 'self.total' to be of type Tensor, but got {type(self.total)}.")
+
+        return _ranking_reduce(self.measure, int(self.total.item()))
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None

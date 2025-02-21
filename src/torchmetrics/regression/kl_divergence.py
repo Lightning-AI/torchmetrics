@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections.abc import Sequence
-from typing import Any, Optional, Union
+from typing import Any, List, Optional, Union, cast
 
 import torch
 from torch import Tensor
@@ -84,6 +84,7 @@ class KLDivergence(Metric):
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
 
+    measures: Union[Tensor, List[Tensor]]
     total: Tensor
     # FIXME: Apply once minimal torch is 1.10. For torch<=1.9, jit does not support Union types
     # measures: Union[Tensor, List[Tensor]]
@@ -114,14 +115,18 @@ class KLDivergence(Metric):
         """Update metric states with predictions and targets."""
         measures, total = _kld_update(p, q, self.log_prob)
         if self.reduction is None or self.reduction == "none":
-            self.measures.append(measures)
+            cast(List[Tensor], self.measures).append(measures)
         else:
-            self.measures += measures.sum()
+            self.measures = cast(Tensor, self.measures) + measures.sum()
             self.total += total
 
     def compute(self) -> Tensor:
         """Compute metric."""
-        measures: Tensor = dim_zero_cat(self.measures) if self.reduction in ["none", None] else self.measures
+        measures: Tensor = (
+            dim_zero_cat(cast(List[Tensor], self.measures))
+            if self.reduction in ["none", None]
+            else cast(Tensor, self.measures)
+        )
         return _kld_compute(measures, self.total, self.reduction)
 
     def plot(

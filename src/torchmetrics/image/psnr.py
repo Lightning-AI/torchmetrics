@@ -137,9 +137,22 @@ class PeakSignalNoiseRatio(Metric):
                 self.min_target = torch.minimum(target.min(), self.min_target)
                 self.max_target = torch.maximum(target.max(), self.max_target)
 
+            if not isinstance(self.sum_squared_error, Tensor):
+                raise TypeError(
+                    f"Expected `self.sum_squared_error` to be a Tensor, but got {type(self.sum_squared_error)}"
+                )
+            if not isinstance(self.total, Tensor):
+                raise TypeError(f"Expected `self.total` to be a Tensor, but got {type(self.total)}")
+
             self.sum_squared_error += sum_squared_error
             self.total += num_obs
         else:
+            if not isinstance(self.sum_squared_error, list):
+                raise TypeError(
+                    f"Expected `self.sum_squared_error` to be a list, but got {type(self.sum_squared_error)}"
+                )
+            if not isinstance(self.total, list):
+                raise TypeError(f"Expected `self.total` to be a list, but got {type(self.total)}")
             self.sum_squared_error.append(sum_squared_error)
             self.total.append(num_obs)
 
@@ -147,12 +160,20 @@ class PeakSignalNoiseRatio(Metric):
         """Compute peak signal-to-noise ratio over state."""
         data_range = self.data_range if self.data_range is not None else self.max_target - self.min_target
 
-        if self.dim is None:
+        if isinstance(self.sum_squared_error, torch.Tensor):
             sum_squared_error = self.sum_squared_error
-            total = self.total
+        elif isinstance(self.sum_squared_error, list):
+            sum_squared_error = torch.cat([value.flatten() for value in self.sum_squared_error])
         else:
-            sum_squared_error = torch.cat([values.flatten() for values in self.sum_squared_error])
-            total = torch.cat([values.flatten() for values in self.total])
+            raise TypeError("Expected sum_squared_error to be a Tensor or a list of Tensors")
+
+        if isinstance(self.total, torch.Tensor):
+            total = self.total
+        elif isinstance(self.total, list):
+            total = torch.cat([value.flatten() for value in self.total])
+        else:
+            raise TypeError("Expected total to be a Tensor or a list of Tensors")
+
         return _psnr_compute(sum_squared_error, total, data_range, base=self.base, reduction=self.reduction)
 
     def plot(
