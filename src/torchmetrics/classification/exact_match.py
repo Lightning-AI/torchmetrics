@@ -97,7 +97,7 @@ class MulticlassExactMatch(Metric):
         tensor([1., 0.])
 
     """
-
+    total: Tensor
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -149,7 +149,7 @@ class MulticlassExactMatch(Metric):
 
             if not isinstance(self.total, Tensor):
                 raise TypeError("Expected `self.total` to be a Tensor in samplewise mode.")
-            self.total = torch.as_tensor(total, dtype=self.total.dtype, device=self.total.device)
+            self.total = total
         else:
             if not isinstance(self.correct, Tensor):
                 raise TypeError("Expected `self.correct` to be a tensor in global mode.")
@@ -277,7 +277,7 @@ class MultilabelExactMatch(Metric):
         tensor([0., 0.])
 
     """
-
+    total: Tensor
     is_differentiable: bool = False
     higher_is_better: bool = True
     full_state_update: bool = False
@@ -333,7 +333,7 @@ class MultilabelExactMatch(Metric):
 
             if not isinstance(self.total, Tensor):
                 raise TypeError("Expected `self.total` to be a Tensor in samplewise mode.")
-            self.total = torch.as_tensor(total, dtype=self.total.dtype, device=self.total.device)
+            self.total = total
         else:
             if not isinstance(self.correct, Tensor):
                 raise TypeError("Expected `self.correct` to be a tensor in global mode.")
