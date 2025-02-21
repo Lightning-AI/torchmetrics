@@ -145,7 +145,7 @@ class MulticlassExactMatch(Metric):
         if self.multidim_average == "samplewise":
             if not isinstance(self.correct, list):
                 raise TypeError("Expected `self.correct` to be a list in samplewise mode.")
-            self.correct.append(correct)        
+            self.correct.append(correct)
 
             if not isinstance(self.total, Tensor):
                 raise TypeError("Expected `self.total` to be a Tensor in samplewise mode.")
@@ -154,12 +154,10 @@ class MulticlassExactMatch(Metric):
             if not isinstance(self.correct, Tensor):
                 raise TypeError("Expected `self.correct` to be a tensor in global mode.")
             self.correct += correct
-                
 
             if not isinstance(self.total, Tensor):
                 raise TypeError("Expected `self.total` to be a Tensor in samplewise mode.")
             self.total += total
-                
 
     def compute(self) -> Tensor:
         """Compute metric."""
