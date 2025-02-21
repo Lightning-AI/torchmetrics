@@ -123,14 +123,14 @@ class BootStrapper(WrapperMetric):
             )
         self.sampling_strategy = sampling_strategy
 
-    def update(self, *args: Any, **kwargs: Any) -> None:  # type: ignore
+    def update(self, *args: Any, **kwargs: Any) -> None:  
         """Update the state of the base metric.
 
         Any tensor passed in will be bootstrapped along dimension 0.
 
         """
-        args_sizes = apply_to_collection(args, (torch.Tensor,), len)
-        kwargs_sizes = apply_to_collection(kwargs, (torch.Tensor,), len)
+        args_sizes = apply_to_collection(args, torch.Tensor, len)
+        kwargs_sizes = apply_to_collection(kwargs, torch.Tensor, len)
         if len(args_sizes) > 0:
             size = args_sizes[0]
         elif len(kwargs_sizes) > 0:
@@ -142,9 +142,9 @@ class BootStrapper(WrapperMetric):
             sample_idx = _bootstrap_sampler(size, sampling_strategy=self.sampling_strategy).to(self.device)
             if sample_idx.numel() == 0:
                 continue
-            new_args = apply_to_collection(args, (torch.Tensor,), torch.index_select, dim=0, index=sample_idx)
-            new_kwargs = apply_to_collection(kwargs, (torch.Tensor,), torch.index_select, dim=0, index=sample_idx)
-            self.metrics[idx].update(*new_args, **new_kwargs)
+            new_args = apply_to_collection(args, torch.Tensor, torch.index_select, dim=0, index=sample_idx)
+            new_kwargs = apply_to_collection(kwargs, torch.Tensor, torch.index_select, dim=0, index=sample_idx)
+            self.metrics[idx].update(*new_args, **new_kwargs) # type: ignore[operator]
 
     def compute(self) -> dict[str, Tensor]:
         """Compute the bootstrapped metric values.
