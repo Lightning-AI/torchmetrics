@@ -144,7 +144,7 @@ class BootStrapper(WrapperMetric):
                 continue
             new_args = apply_to_collection(args, torch.Tensor, torch.index_select, dim=0, index=sample_idx)
             new_kwargs = apply_to_collection(kwargs, torch.Tensor, torch.index_select, dim=0, index=sample_idx)
-            self.metrics[idx].update(*new_args, **new_kwargs)  # type: ignore[operator]
+            self.metrics[idx].update(*new_args, **new_kwargs)  # type: ignore[operator]  # needed for mypy
 
     def compute(self) -> dict[str, Tensor]:
         """Compute the bootstrapped metric values.
