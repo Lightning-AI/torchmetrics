@@ -13,7 +13,7 @@
 # limitations under the License.
 import logging
 from collections.abc import Sequence
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, List, Literal, Optional, Union
 
 import numpy as np
 import torch
@@ -35,7 +35,7 @@ if not _TORCHVISION_AVAILABLE or not _PYCOCOTOOLS_AVAILABLE:
 log = logging.getLogger(__name__)
 
 
-def compute_area(inputs: list[Any], iou_type: str = "bbox") -> Tensor:
+def compute_area(inputs: list[Any], iou_type: Literal["bbox", "segm"] = "bbox") -> Tensor:
     """Compute area of input depending on the specified iou_type.
 
     Default output for empty input is :class:`~torch.Tensor`
@@ -59,7 +59,7 @@ def compute_area(inputs: list[Any], iou_type: str = "bbox") -> Tensor:
 def compute_iou(
     det: list[Any],
     gt: list[Any],
-    iou_type: str = "bbox",
+    iou_type: Literal["bbox", "segm"] = "bbox",
 ) -> Tensor:
     """Compute IOU between detections and ground-truth using the specified iou_type."""
     from torchvision.ops import box_iou
@@ -315,7 +315,7 @@ class MeanAveragePrecision(Metric):
     def __init__(
         self,
         box_format: str = "xyxy",
-        iou_type: str = "bbox",
+        iou_type: Literal["bbox", "segm"] = "bbox",
         iou_thresholds: Optional[list[float]] = None,
         rec_thresholds: Optional[list[float]] = None,
         max_detection_thresholds: Optional[list[int]] = None,
