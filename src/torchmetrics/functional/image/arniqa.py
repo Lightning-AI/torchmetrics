@@ -21,7 +21,6 @@ import warnings
 from typing import Union
 
 import torch
-import torch.nn.functional as F
 import torchvision
 from torch import Tensor, nn
 from typing_extensions import Literal
@@ -76,7 +75,7 @@ class _ARNIQA(nn.Module):
         self.regressor = nn.Linear(self.feat_dim * 2, 1)
         self._load_weights()
 
-        def _freeze(module):
+        def _freeze(module: nn.Module) -> None:
             module.eval()
             for p in module.parameters():
                 p.requires_grad = False
@@ -129,10 +128,10 @@ class _ARNIQA(nn.Module):
         # Extract features from full- and half-scale images
         img_f = self.encoder(img)
         img_f = img_f.view(-1, self.feat_dim)
-        img_f = F.normalize(img_f, dim=1)
+        img_f = normalize(img_f, dim=1)
         img_ds_f = self.encoder(img_ds)
         img_ds_f = img_ds_f.view(-1, self.feat_dim)
-        img_ds_f = F.normalize(img_ds_f, dim=1)
+        img_ds_f = normalize(img_ds_f, dim=1)
         f = torch.hstack((img_f, img_ds_f))
 
         # Get the quality score
@@ -149,6 +148,14 @@ class _NoTrainArniqa(_ARNIQA):
 
 
 def _arniqa_update(img: Tensor, model: nn.Module, normalize: bool) -> tuple[Tensor, Union[int, Tensor]]:
+    """Update step for arniqa metric.
+
+    Args:
+        img: the input image
+        model: the ARNIQA model
+        normalize: boolean indicating whether the input image is normalized
+
+    """
     # Check that the input image is valid
     if not (img.ndim == 4 and img.shape[1] == 3):
         raise ValueError(f"Input image must have shape [N, 3, H, W]. Got input with shape {img.shape}.")
@@ -170,6 +177,7 @@ def _arniqa_update(img: Tensor, model: nn.Module, normalize: bool) -> tuple[Tens
 def _arniqa_compute(
     scores: Tensor, num_scores: Union[Tensor, int], reduction: Literal["sum", "mean", "none"] = "mean"
 ) -> Tensor:
+    """Compute step for arniqa metric."""
     sum_scores = scores.sum()
     if reduction == "none":
         return scores
@@ -184,30 +192,34 @@ def arniqa(
     reduction: Literal["sum", "mean", "none"] = "mean",
     normalize: bool = True,
 ) -> Tensor:
-    """`ARNIQA`_ is a No-Reference Image Quality Assessment metric that predicts the technical quality of an image with
+    """ARNIQA: leArning distoRtion maNifold for Image Quality Assessment metric.
+
+    `ARNIQA`_ is a No-Reference Image Quality Assessment metric that predicts the technical quality of an image with
     a high correlation with human opinions.
 
     ARNIQA consists of an encoder and a regressor. The encoder is a ResNet-50 model trained in a self-supervised way to
-    model the image distortion manifold to generate similar representation for images with similar distortions, regardless
-    of the image content. The regressor is a linear model trained on IQA datasets using the ground-truth quality scores.
-    ARNIQA extracts the features from the full- and half-scale versions of the input image and then outputs a quality score
-    in the [0, 1] range, where higher is better.
+    model the image distortion manifold to generate similar representation for images with similar distortions,
+    regardless of the image content. The regressor is a linear model trained on IQA datasets using the ground-truth
+    quality scores. ARNIQA extracts the features from the full- and half-scale versions of the input image and then
+    outputs a quality score in the [0, 1] range, where higher is better.
 
     The input image is expected to have shape ``(N, 3, H, W)``. The image should be in the [0, 1] range if `normalize`
     is set to ``True``, otherwise it should be normalized with the ImageNet mean and standard deviation.
 
-    .. hint::
+    .. note::
         Using this metric requires you to have ``torchvision`` package installed. Either install as
         ``pip install torchmetrics[image]`` or ``pip install torchvision``.
 
     Args:
         img: the input image
-        regressor_dataset: dataset used for training the regressor. Choose between [``koniq10k``, ``kadid10k``]. ``koniq10k``
-            corresponds to the `KonIQ-10k`_ dataset, which consists of real-world images with authentic distortions.
-            ``kadid10k`` corresponds to the `KADID-10k`_ dataset, which consists of images with synthetically generated distortions.
+        regressor_dataset: dataset used for training the regressor. Choose between [``koniq10k``, ``kadid10k``].
+            ``koniq10k`` corresponds to the `KonIQ-10k`_ dataset, which consists of real-world images with authentic
+            distortions. ``kadid10k`` corresponds to the `KADID-10k`_ dataset, which consists of images with
+            synthetically generated distortions.
         reduction: indicates how to reduce over the batch dimension. Choose between [``sum``, ``mean``, ``none``].
         normalize: by default this is ``True`` meaning that the input is expected to be in the [0, 1] range. If set
-            to ``False`` will instead expect input to be already normalized with the ImageNet mean and standard deviation.
+            to ``False`` will instead expect input to be already normalized with the ImageNet mean and standard
+            deviation.
 
     Returns:
         A tensor in the [0, 1] range, where higher is better, representing the ARNIQA score of the input image. If
