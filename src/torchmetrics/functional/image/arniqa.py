@@ -172,8 +172,11 @@ def _arniqa_update(
             f" in range {img.min()} and {img.max()}."
         )
 
-    with torch.amp.autocast(device_type=img.device.type, dtype=img.dtype, enabled=autocast):
-        loss = model(img, normalize=normalize).squeeze()
+    if autocast:
+        with torch.amp.autocast(device_type=img.device.type, dtype=img.dtype):
+            loss = model(img, normalize=normalize).squeeze()
+    else:
+        loss = model.to(dtype=img.dtype)(img, normalize=normalize).squeeze()
     return loss, img.shape[0]
 
 
