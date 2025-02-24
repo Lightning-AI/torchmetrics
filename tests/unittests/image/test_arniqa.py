@@ -48,7 +48,7 @@ def _arniqa_wrapped(preds, target, regressor_dataset="koniq10k", normalize=True)
 
 
 def _reference_arniqa(img: Tensor, target: Tensor, regressor_dataset: str, reduction: str = "mean") -> Tensor:
-    """Comparison function (based on ARNIQA official repo (https://github.com/miccunifi/ARNIQA)) for tm implementation."""
+    """Comparison function (from ARNIQA official repo (https://github.com/miccunifi/ARNIQA)) for tm implementation."""
     model = torch.hub.load(
         repo_or_dir="miccunifi/ARNIQA", source="github", model="ARNIQA", regressor_dataset=regressor_dataset
     )
