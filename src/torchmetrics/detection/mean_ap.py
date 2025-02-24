@@ -186,7 +186,7 @@ class MeanAveragePrecision(Metric):
 
         iou_type:
             Type of input (either masks or bounding-boxes) used for computing IOU. Supported IOU types are
-            ``"bbox"`` or ``"segm"`` or both as a tuple.
+            ``"bbox"``, ``"segm"``  or both as a tuple or ``"keypoints"``.
         iou_thresholds:
             IoU thresholds for evaluation. If set to ``None`` it corresponds to the stepped range ``[0.5,...,0.95]``
             with step ``0.05``. Else provide a list of floats.
@@ -232,7 +232,7 @@ class MeanAveragePrecision(Metric):
         ValueError:
             If ``box_format`` is not one of ``"xyxy"``, ``"xywh"`` or ``"cxcywh"``
         ValueError:
-            If ``iou_type`` is not one of ``"bbox"`` or ``"segm"``
+            If ``iou_type`` is not one of ``"bbox"``, ``"segm"`` or ``"keypoints"``
         ValueError:
             If ``iou_thresholds`` is not None or a list of floats
         ValueError:
@@ -346,10 +346,12 @@ class MeanAveragePrecision(Metric):
 
     detection_box: List[Tensor]
     detection_mask: List[Tensor]
+    detection_keypoints: List[Tensor]
     detection_scores: List[Tensor]
     detection_labels: List[Tensor]
     groundtruth_box: List[Tensor]
     groundtruth_mask: List[Tensor]
+    groundtruth_keypoints: List[Tensor]
     groundtruth_labels: List[Tensor]
     groundtruth_crowds: List[Tensor]
     groundtruth_area: List[Tensor]
@@ -373,7 +375,7 @@ class MeanAveragePrecision(Metric):
     def __init__(
         self,
         box_format: Literal["xyxy", "xywh", "cxcywh"] = "xyxy",
-        iou_type: Union[Literal["bbox", "segm"], tuple[str]] = "bbox",
+        iou_type: Union[Literal["bbox", "segm", "keypoints"], tuple[str, str]] = "bbox",
         iou_thresholds: Optional[list[float]] = None,
         rec_thresholds: Optional[list[float]] = None,
         max_detection_thresholds: Optional[list[int]] = None,
@@ -450,10 +452,12 @@ class MeanAveragePrecision(Metric):
 
         self.add_state("detection_box", default=[], dist_reduce_fx=None)
         self.add_state("detection_mask", default=[], dist_reduce_fx=None)
+        self.add_state("detection_keypoints", default=[], dist_reduce_fx=None)
         self.add_state("detection_scores", default=[], dist_reduce_fx=None)
         self.add_state("detection_labels", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_box", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_mask", default=[], dist_reduce_fx=None)
+        self.add_state("groundtruth_keypoints", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_labels", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_crowds", default=[], dist_reduce_fx=None)
         self.add_state("groundtruth_area", default=[], dist_reduce_fx=None)
@@ -501,20 +505,26 @@ class MeanAveragePrecision(Metric):
         _input_validator(preds, target, iou_type=self.iou_type)  # type: ignore[arg-type]
 
         for item in preds:
-            bbox_detection, mask_detection = self._get_safe_item_values(item, warn=self.warn_on_many_detections)
+            bbox_detection, mask_detection, keypoints_detection = self._get_safe_item_values(
+                item, warn=self.warn_on_many_detections
+            )
             if bbox_detection is not None:
                 self.detection_box.append(bbox_detection)
             if mask_detection is not None:
                 self.detection_mask.append(mask_detection)  # type: ignore[arg-type]
+            if keypoints_detection is not None:
+                self.detection_keypoints.append(keypoints_detection)
             self.detection_labels.append(item["labels"])
             self.detection_scores.append(item["scores"])
 
         for item in target:
-            bbox_groundtruth, mask_groundtruth = self._get_safe_item_values(item)
+            bbox_groundtruth, mask_groundtruth, keypoints_groundtruth = self._get_safe_item_values(item)
             if bbox_groundtruth is not None:
                 self.groundtruth_box.append(bbox_groundtruth)
             if mask_groundtruth is not None:
                 self.groundtruth_mask.append(mask_groundtruth)  # type: ignore[arg-type]
+            if keypoints_groundtruth is not None:
+                self.groundtruth_keypoints.append(keypoints_groundtruth)
             self.groundtruth_labels.append(item["labels"])
             self.groundtruth_crowds.append(item.get("iscrowd", torch.zeros_like(item["labels"])))
             self.groundtruth_area.append(item.get("area", torch.zeros_like(item["labels"])))
@@ -527,6 +537,9 @@ class MeanAveragePrecision(Metric):
         with contextlib.redirect_stdout(io.StringIO()):
             for i_type in self.iou_type:
                 prefix = "" if len(self.iou_type) == 1 else f"{i_type}_"
+                stats_len = (
+                    12 if set(self.iou_type).intersection(("bbox", "mask")) else 10
+                )  # https://github.com/ppwwyyxx/cocoapi/blob/master/PythonAPI/pycocotools/cocoeval.py#L473
                 if len(self.iou_type) > 1:
                     # the area calculation is different for bbox and segm and therefore to get the small, medium and
                     # large values correct we need to dynamically change the area attribute of the annotations
@@ -534,7 +547,9 @@ class MeanAveragePrecision(Metric):
                         anno["area"] = anno[f"area_{i_type}"]
 
                 if len(coco_preds.imgs) == 0 or len(coco_target.imgs) == 0:
-                    result_dict.update(self._coco_stats_to_tensor_dict(12 * [-1.0], prefix=prefix))
+                    result_dict.update(
+                        self._coco_stats_to_tensor_dict(stats_len * [-1.0], prefix=prefix, iou_type=self.iou_type)
+                    )
                 else:
                     coco_eval = self.cocoeval(coco_target, coco_preds, iouType=i_type)  # type: ignore[operator]
                     coco_eval.params.iouThrs = np.array(self.iou_thresholds, dtype=np.float64)
@@ -614,6 +629,7 @@ class MeanAveragePrecision(Metric):
             labels=groundtruth_labels,
             boxes=self.groundtruth_box if len(self.groundtruth_box) > 0 else None,
             masks=self.groundtruth_mask if len(self.groundtruth_mask) > 0 else None,
+            keypoints=self.groundtruth_keypoints if len(self.groundtruth_keypoints) > 0 else None,
             crowds=self.groundtruth_crowds,
             area=self.groundtruth_area,
         )
@@ -621,6 +637,7 @@ class MeanAveragePrecision(Metric):
             labels=detection_labels,
             boxes=self.detection_box if len(self.detection_box) > 0 else None,
             masks=self.detection_mask if len(self.detection_mask) > 0 else None,
+            keypoints=self.detection_keypoints if len(self.detection_keypoints) > 0 else None,
             scores=self.detection_scores,
         )
 
@@ -633,26 +650,40 @@ class MeanAveragePrecision(Metric):
     def _coco_stats_to_tensor_dict(self, stats: list[float], prefix: str) -> dict[str, Tensor]:
         """Converts the output of COCOeval.stats to a dict of tensors."""
         mdt = self.max_detection_thresholds
+
+        if set(self.iou_type).intersection(("mask", "bbox")):
+            return {
+                f"{prefix}map": torch.tensor([stats[0]], dtype=torch.float32),
+                f"{prefix}map_50": torch.tensor([stats[1]], dtype=torch.float32),
+                f"{prefix}map_75": torch.tensor([stats[2]], dtype=torch.float32),
+                f"{prefix}map_small": torch.tensor([stats[3]], dtype=torch.float32),
+                f"{prefix}map_medium": torch.tensor([stats[4]], dtype=torch.float32),
+                f"{prefix}map_large": torch.tensor([stats[5]], dtype=torch.float32),
+                f"{prefix}mar_{mdt[0]}": torch.tensor([stats[6]], dtype=torch.float32),
+                f"{prefix}mar_{mdt[1]}": torch.tensor([stats[7]], dtype=torch.float32),
+                f"{prefix}mar_{mdt[2]}": torch.tensor([stats[8]], dtype=torch.float32),
+                f"{prefix}mar_small": torch.tensor([stats[9]], dtype=torch.float32),
+                f"{prefix}mar_medium": torch.tensor([stats[10]], dtype=torch.float32),
+                f"{prefix}mar_large": torch.tensor([stats[11]], dtype=torch.float32),
+            }
         return {
             f"{prefix}map": torch.tensor([stats[0]], dtype=torch.float32),
             f"{prefix}map_50": torch.tensor([stats[1]], dtype=torch.float32),
             f"{prefix}map_75": torch.tensor([stats[2]], dtype=torch.float32),
-            f"{prefix}map_small": torch.tensor([stats[3]], dtype=torch.float32),
-            f"{prefix}map_medium": torch.tensor([stats[4]], dtype=torch.float32),
-            f"{prefix}map_large": torch.tensor([stats[5]], dtype=torch.float32),
-            f"{prefix}mar_{mdt[0]}": torch.tensor([stats[6]], dtype=torch.float32),
-            f"{prefix}mar_{mdt[1]}": torch.tensor([stats[7]], dtype=torch.float32),
-            f"{prefix}mar_{mdt[2]}": torch.tensor([stats[8]], dtype=torch.float32),
-            f"{prefix}mar_small": torch.tensor([stats[9]], dtype=torch.float32),
-            f"{prefix}mar_medium": torch.tensor([stats[10]], dtype=torch.float32),
-            f"{prefix}mar_large": torch.tensor([stats[11]], dtype=torch.float32),
+            f"{prefix}map_medium": torch.tensor([stats[3]], dtype=torch.float32),
+            f"{prefix}map_large": torch.tensor([stats[4]], dtype=torch.float32),
+            f"{prefix}mar": torch.tensor([stats[5]], dtype=torch.float32),
+            f"{prefix}mar_50": torch.tensor([stats[6]], dtype=torch.float32),
+            f"{prefix}mar_75": torch.tensor([stats[7]], dtype=torch.float32),
+            f"{prefix}mar_medium": torch.tensor([stats[8]], dtype=torch.float32),
+            f"{prefix}mar_large": torch.tensor([stats[9]], dtype=torch.float32),
         }
 
     @staticmethod
     def coco_to_tm(
         coco_preds: str,
         coco_target: str,
-        iou_type: Union[Literal["bbox", "segm"], list[str]] = "bbox",
+        iou_type: Union[Literal["bbox", "segm", "keypoints"], list[str]] = "bbox",
         backend: Literal["pycocotools", "faster_coco_eval"] = "pycocotools",
     ) -> tuple[list[dict[str, Tensor]], list[dict[str, Tensor]]]:
         """Utility function for converting .json coco format files to the input format of this metric.
@@ -663,7 +694,8 @@ class MeanAveragePrecision(Metric):
         Args:
             coco_preds: Path to the json file containing the predictions in coco format
             coco_target: Path to the json file containing the targets in coco format
-            iou_type: Type of input, either `bbox` for bounding boxes or `segm` for segmentation masks
+            iou_type: Type of input, either `bbox` for bounding boxes, `segm` for segmentation masks or `keypoints`
+                for pose estimation tasks
             backend: Backend to use for the conversion. Either `pycocotools` or `faster_coco_eval`.
 
         Returns:
@@ -704,11 +736,18 @@ class MeanAveragePrecision(Metric):
                     target[t["image_id"]]["boxes"] = []
                 if "segm" in iou_type:
                     target[t["image_id"]]["masks"] = []
+                if "keypoints" in iou_type:
+                    target[t["image_id"]]["keypoints"] = []
+                    target[t["image_id"]]["num_keypoints"] = []
 
             if "bbox" in iou_type:
                 target[t["image_id"]]["boxes"].append(t["bbox"])
             if "segm" in iou_type:
                 target[t["image_id"]]["masks"].append(gt.annToMask(t))
+            if "keypoints" in iou_type:
+                target[t["image_id"]]["keypoints"].append(t["keypoints"])
+                target[t["image_id"]]["num_keypoints"].append(t["num_keypoints"])
+
             target[t["image_id"]]["labels"].append(t["category_id"])
             target[t["image_id"]]["iscrowd"].append(t["iscrowd"])
             target[t["image_id"]]["area"].append(t["area"])
@@ -721,10 +760,14 @@ class MeanAveragePrecision(Metric):
                     preds[p["image_id"]]["boxes"] = []
                 if "segm" in iou_type:
                     preds[p["image_id"]]["masks"] = []
+                if "keypoints" in iou_type:
+                    preds[p["image_id"]]["keypoints"] = []
             if "bbox" in iou_type:
                 preds[p["image_id"]]["boxes"].append(p["bbox"])
             if "segm" in iou_type:
                 preds[p["image_id"]]["masks"].append(gt.annToMask(p))
+            if "keypoints" in iou_type:
+                preds[p["image_id"]]["keypoints"].append(p["keypoints"])
             preds[p["image_id"]]["scores"].append(p["score"])
             preds[p["image_id"]]["labels"].append(p["category_id"])
         for k in target:  # add empty predictions for images without predictions
@@ -734,6 +777,8 @@ class MeanAveragePrecision(Metric):
                     preds[k]["boxes"] = []
                 if "segm" in iou_type:
                     preds[k]["masks"] = []
+                if "keypoints" in iou_type:
+                    preds[k]["keypoints"] = []
 
         batched_preds, batched_target = [], []
         for key in target:
@@ -745,6 +790,8 @@ class MeanAveragePrecision(Metric):
                 bp["boxes"] = torch.tensor(np.array(preds[key]["boxes"]), dtype=torch.float32)
             if "segm" in iou_type:
                 bp["masks"] = torch.tensor(np.array(preds[key]["masks"]), dtype=torch.uint8)
+            if "keypoints" in iou_type:
+                bp["keypoints"] = torch.tensor(np.array(preds[key]["keypoints"]), dtype=torch.float32)
             batched_preds.append(bp)
 
             bt = {
@@ -756,6 +803,9 @@ class MeanAveragePrecision(Metric):
                 bt["boxes"] = torch.tensor(target[key]["boxes"], dtype=torch.float32)
             if "segm" in iou_type:
                 bt["masks"] = torch.tensor(np.array(target[key]["masks"]), dtype=torch.uint8)
+            if "keypoints" in iou_type:
+                bt["keypoints"] = torch.tensor(target[key]["keypoints"], dtype=torch.float32)
+                bt["num_keypoints"] = torch.tensor(target[key]["num_keypoints"], dtype=torch.float32)
             batched_target.append(bt)
 
         return batched_preds, batched_target
@@ -795,6 +845,7 @@ class MeanAveragePrecision(Metric):
             labels=self.groundtruth_labels,
             boxes=self.groundtruth_box if len(self.groundtruth_box) > 0 else None,
             masks=self.groundtruth_mask if len(self.groundtruth_mask) > 0 else None,
+            keypoints=self.groundtruth_keypoints if len(self.groundtruth_keypoints) > 0 else None,
             crowds=self.groundtruth_crowds,
             area=self.groundtruth_area,
         )
@@ -802,6 +853,7 @@ class MeanAveragePrecision(Metric):
             labels=self.detection_labels,
             boxes=self.detection_box if len(self.detection_box) > 0 else None,
             masks=self.detection_mask if len(self.detection_mask) > 0 else None,
+            keypoints=self.detection_keypoints if len(self.detection_keypoints) > 0 else None,
             scores=self.detection_scores,
         )
         if "segm" in self.iou_type:
@@ -840,7 +892,7 @@ class MeanAveragePrecision(Metric):
         """
         from torchvision.ops import box_convert
 
-        output = [None, None]
+        output = [None, None, None]
         if "bbox" in self.iou_type:
             boxes = _fix_empty_tensors(item["boxes"])
             if boxes.numel() > 0:
@@ -852,6 +904,9 @@ class MeanAveragePrecision(Metric):
                 rle = self.mask_utils.encode(np.asfortranarray(i))
                 masks.append((tuple(rle["size"]), rle["counts"]))
             output[1] = tuple(masks)  # type: ignore[call-overload]
+        if "keypoints" in self.iou_type:
+            output[2] = _fix_empty_tensors(item["keypoints"])
+
         if warn and (
             (output[0] is not None and len(output[0]) > self.max_detection_thresholds[-1])
             or (output[1] is not None and len(output[1]) > self.max_detection_thresholds[-1])
@@ -870,6 +925,7 @@ class MeanAveragePrecision(Metric):
         labels: List[Tensor],
         boxes: Optional[List[Tensor]] = None,
         masks: Optional[List[Tensor]] = None,
+        keypoints: Optional[List[Tensor]] = None,
         scores: Optional[List[Tensor]] = None,
         crowds: Optional[List[Tensor]] = None,
         area: Optional[List[Tensor]] = None,
@@ -892,6 +948,9 @@ class MeanAveragePrecision(Metric):
                 image_masks = masks[image_id]
                 if len(image_masks) == 0 and boxes is None:
                     continue
+            if keypoints is not None:
+                image_keypoints_s = keypoints[image_id]
+                image_keypoints_s = image_keypoints_s.cpu().tolist()
             image_labels = image_labels.cpu().tolist()  # type: ignore[assignment]
 
             images.append({"id": image_id})
@@ -904,10 +963,31 @@ class MeanAveragePrecision(Metric):
                 if masks is not None and len(image_masks) > 0:
                     image_mask = image_masks[k]
                     image_mask = {"size": image_mask[0], "counts": image_mask[1]}
+                if keypoints is not None:
+                    image_keypoints = image_keypoints_s[k]
+                    image_len_keypoints = len(image_keypoints_s[k]) // 3
+
+                    # compute the bounding box
+                    if np.any(image_keypoints[::3]):
+                        kps = torch.tensor(image_keypoints).reshape(-1, 3)
+                        kps = kps[kps[:, 2] > 0]  # use only points with visible-flag
+                        kps = kps[:, :2]  # strip visible-flag
+                        xyxy_box = kps.quantile(
+                            torch.tensor([0, 1.0]), axis=0
+                        )  # get min, max for each dimension to get bbox corners
+                        image_box = torch.cat([xyxy_box[0], xyxy_box[1] - xyxy_box[0]]).tolist()
+                    else:
+                        image_box = [0, 0, 0, 0]
 
                 if "bbox" in self.iou_type and len(image_box) != 4:
                     raise ValueError(
                         f"Invalid input box of sample {image_id}, element {k} (expected 4 values, got {len(image_box)})"
+                    )
+
+                if "keypoints" in self.iou_type and (len(image_keypoints) % 3):
+                    raise ValueError(
+                        f"Invalid input keypoints of sample {image_id}, element {k} (expected"
+                        f"array of keypoints of length not divisible by 3 (x, y, _vis), got {len(image_keypoints)})"
                     )
 
                 if not isinstance(image_label, int):
@@ -921,12 +1001,15 @@ class MeanAveragePrecision(Metric):
                 if area is not None and area[image_id][k].cpu().tolist() > 0:  # type: ignore[operator]
                     area_stat = area[image_id][k].cpu().tolist()
                 else:
-                    area_stat = (
-                        self.mask_utils.area(image_mask) if "segm" in self.iou_type else image_box[2] * image_box[3]
-                    )
-                    if len(self.iou_type) > 1:
+                    if "segm" in self.iou_type:
+                        area_stat = self.mask_utils.area(image_mask)
+                    elif set(self.iou_type).intersection(("bbox", "keypoints")):
+                        area_stat = image_box[2] * image_box[3]
+
+                    if set(self.iou_type).intersection(("segm", "bbox")):
                         area_stat_box = image_box[2] * image_box[3]
                         area_stat_mask = self.mask_utils.area(image_mask)
+                        # TODO
 
                 annotation = {
                     "id": annotation_id,
@@ -943,6 +1026,10 @@ class MeanAveragePrecision(Metric):
                     annotation["bbox"] = image_box
                 if masks is not None:
                     annotation["segmentation"] = image_mask
+                if keypoints is not None:
+                    annotation["keypoints"] = image_keypoints
+                    annotation["num_keypoints"] = image_len_keypoints
+                    annotation["bbox"] = image_box
 
                 if scores is not None:
                     score = scores[image_id][k].cpu().tolist()

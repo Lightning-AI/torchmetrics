@@ -20,14 +20,14 @@ from torch import Tensor
 def _input_validator(
     preds: Sequence[dict[str, Tensor]],
     targets: Sequence[dict[str, Tensor]],
-    iou_type: Union[Literal["bbox", "segm"], tuple[Literal["bbox", "segm"]]] = "bbox",
+    iou_type: Union[Literal["bbox", "segm", "keypoints"], tuple[Literal["bbox", "segm", "keypoints"]]] = "bbox",
     ignore_score: bool = False,
 ) -> None:
     """Ensure the correct input format of `preds` and `targets`."""
     if isinstance(iou_type, str):
         iou_type = (iou_type,)
 
-    name_map = {"bbox": "boxes", "segm": "masks"}
+    name_map = {"bbox": "boxes", "segm": "masks", "keypoints": "keypoints"}
     if any(tp not in name_map for tp in iou_type):
         raise Exception(f"IOU type {iou_type} is not supported")
     item_val_name = [name_map[tp] for tp in iou_type]
@@ -89,10 +89,10 @@ def _fix_empty_tensors(boxes: Tensor) -> Tensor:
 
 
 def _validate_iou_type_arg(
-    iou_type: Union[Literal["bbox", "segm"], tuple[str]] = "bbox",
+    iou_type: Union[Literal["bbox", "segm", "keypoints"], tuple[str, str]] = "bbox",
 ) -> tuple[str]:
     """Validate that iou type argument is correct."""
-    allowed_iou_types = ("segm", "bbox")
+    allowed_iou_types = ("segm", "bbox", "keypoints")
     if isinstance(iou_type, str):
         iou_type = (iou_type,)
     if any(tp not in allowed_iou_types for tp in iou_type):
