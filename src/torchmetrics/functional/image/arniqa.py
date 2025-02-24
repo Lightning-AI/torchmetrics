@@ -23,6 +23,7 @@ from typing import Union
 import torch
 import torchvision
 from torch import Tensor, nn
+from torch.nn.functional import normalize as normalize_fn
 from typing_extensions import Literal
 
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
@@ -128,10 +129,10 @@ class _ARNIQA(nn.Module):
         # Extract features from full- and half-scale images
         img_f = self.encoder(img)
         img_f = img_f.view(-1, self.feat_dim)
-        img_f = normalize(img_f, dim=1)
+        img_f = normalize_fn(img_f, dim=1)
         img_ds_f = self.encoder(img_ds)
         img_ds_f = img_ds_f.view(-1, self.feat_dim)
-        img_ds_f = normalize(img_ds_f, dim=1)
+        img_ds_f = normalize_fn(img_ds_f, dim=1)
         f = torch.hstack((img_f, img_ds_f))
 
         # Get the quality score
