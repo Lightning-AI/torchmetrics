@@ -132,13 +132,14 @@ class MaxMetric(BaseAggregator):
             - ``'error'``: if any `nan` values are encountered will give a RuntimeError
             - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
+            - ``'disable'``: disable all `nan` checks
             - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore``, ``disable`` or a float
 
     Example:
         >>> from torch import tensor
@@ -156,7 +157,7 @@ class MaxMetric(BaseAggregator):
 
     def __init__(
         self,
-        nan_strategy: Union[str, float] = "warn",
+        nan_strategy: Union[Literal["error", "warn", "ignore", "disable"], float] = "warn",
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -237,13 +238,14 @@ class MinMetric(BaseAggregator):
             - ``'error'``: if any `nan` values are encountered will give a RuntimeError
             - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
+            - ``'disable'``: disable all `nan` checks
             - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore``, ``disable`` or a float
 
     Example:
         >>> from torch import tensor
@@ -261,7 +263,7 @@ class MinMetric(BaseAggregator):
 
     def __init__(
         self,
-        nan_strategy: Union[str, float] = "warn",
+        nan_strategy: Union[Literal["error", "warn", "ignore", "disable"], float] = "warn",
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -342,13 +344,14 @@ class SumMetric(BaseAggregator):
             - ``'error'``: if any `nan` values are encountered will give a RuntimeError
             - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
+            - ``'disable'``: disable all `nan` checks
             - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore``, ``disable`` or a float
 
     Example:
         >>> from torch import tensor
@@ -365,7 +368,7 @@ class SumMetric(BaseAggregator):
 
     def __init__(
         self,
-        nan_strategy: Union[str, float] = "warn",
+        nan_strategy: Union[Literal["error", "warn", "ignore", "disable"], float] = "warn",
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -447,13 +450,14 @@ class CatMetric(BaseAggregator):
             - ``'error'``: if any `nan` values are encountered will give a RuntimeError
             - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
+            - ``'disable'``: disable all `nan` checks
             - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore``, ``disable`` or a float
 
     Example:
         >>> from torch import tensor
@@ -470,7 +474,7 @@ class CatMetric(BaseAggregator):
 
     def __init__(
         self,
-        nan_strategy: Union[str, float] = "warn",
+        nan_strategy: Union[Literal["error", "warn", "ignore", "disable"], float] = "warn",
         **kwargs: Any,
     ) -> None:
         super().__init__("cat", [], nan_strategy, **kwargs)
@@ -509,17 +513,18 @@ class MeanMetric(BaseAggregator):
     - ``agg`` (:class:`~torch.Tensor`): scalar float tensor with aggregated (weighted) mean over all inputs received
 
     Args:
-       nan_strategy: options:
+        nan_strategy: options:
             - ``'error'``: if any `nan` values are encountered will give a RuntimeError
             - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
+            - ``'disable'``: disable all `nan` checks
             - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore``, ``disable`` or a float
 
     Example:
         >>> from torchmetrics.aggregation import MeanMetric
@@ -535,7 +540,7 @@ class MeanMetric(BaseAggregator):
 
     def __init__(
         self,
-        nan_strategy: Union[str, float] = "warn",
+        nan_strategy: Union[Literal["error", "warn", "ignore", "disable"], float] = "warn",
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -636,18 +641,18 @@ class RunningMean(Running):
     - ``agg`` (:class:`~torch.Tensor`): scalar float tensor with aggregated sum over all inputs received
 
     Args:
-        window: The size of the running window.
         nan_strategy: options:
             - ``'error'``: if any `nan` values are encountered will give a RuntimeError
             - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
+            - ``'disable'``: disable all `nan` checks
             - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore``, ``disable`` or a float
 
     Example:
         >>> from torch import tensor
@@ -670,7 +675,7 @@ class RunningMean(Running):
     def __init__(
         self,
         window: int = 5,
-        nan_strategy: Union[str, float] = "warn",
+        nan_strategy: Union[Literal["error", "warn", "ignore", "disable"], float] = "warn",
         **kwargs: Any,
     ) -> None:
         super().__init__(base_metric=MeanMetric(nan_strategy=nan_strategy, **kwargs), window=window)
@@ -698,13 +703,14 @@ class RunningSum(Running):
             - ``'error'``: if any `nan` values are encountered will give a RuntimeError
             - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
+            - ``'disable'``: disable all `nan` checks
             - a float: if a float is provided will impute any `nan` values with this value
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
         ValueError:
-            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore`` or a float
+            If ``nan_strategy`` is not one of ``error``, ``warn``, ``ignore``, ``disable`` or a float
 
     Example:
         >>> from torch import tensor
@@ -727,7 +733,7 @@ class RunningSum(Running):
     def __init__(
         self,
         window: int = 5,
-        nan_strategy: Union[str, float] = "warn",
+        nan_strategy: Union[Literal["error", "warn", "ignore", "disable"], float] = "warn",
         **kwargs: Any,
     ) -> None:
         super().__init__(base_metric=SumMetric(nan_strategy=nan_strategy, **kwargs), window=window)
