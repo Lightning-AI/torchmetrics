@@ -28,8 +28,8 @@ from typing_extensions import Literal
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
 if _TORCHVISION_AVAILABLE:
-    from torchvision.models import resnet50
     from torchvision import transforms
+    from torchvision.models import resnet50
 
 _AVAILABLE_REGRESSOR_DATASETS = {
     "kadid10k": (1, 5),
