@@ -32,7 +32,7 @@ from torchmetrics.utilities.imports import (
     _PYCOCOTOOLS_AVAILABLE,
 )
 from unittests._helpers.testers import MetricTester
-from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL
+from unittests.detection import _DETECTION_BBOX, _DETECTION_OKS, _DETECTION_OKS_VAL, _DETECTION_SEGM, _DETECTION_VAL
 
 
 def _skip_if_faster_coco_eval_missing(backend):
@@ -48,9 +48,12 @@ def _generate_coco_inputs(iou_type):
     and should therefore correspond directly to the result on the webpage
 
     """
-    batched_preds, batched_target = MeanAveragePrecision.coco_to_tm(
-        _DETECTION_BBOX if iou_type == "bbox" else _DETECTION_SEGM, _DETECTION_VAL, iou_type
-    )
+    data_sources = {
+        "bbox": (_DETECTION_BBOX, _DETECTION_VAL),
+        "segm": (_DETECTION_SEGM, _DETECTION_VAL),
+        "keypoints": (_DETECTION_OKS, _DETECTION_OKS_VAL),
+    }
+    batched_preds, batched_target = MeanAveragePrecision.coco_to_tm(*data_sources[iou_type], iou_type)
 
     # create 10 batches of 10 preds/targets each
     batched_preds = [batched_preds[10 * i : 10 * (i + 1)] for i in range(10)]
@@ -60,16 +63,22 @@ def _generate_coco_inputs(iou_type):
 
 _coco_bbox_input = _generate_coco_inputs("bbox")
 _coco_segm_input = _generate_coco_inputs("segm")
+_coco_keypoints_input = _generate_coco_inputs("keypoints")
 
 
 @pytest.mark.skipif(
     not _PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 and pycocotools is installed"
 )
-@pytest.mark.parametrize("iou_type", ["bbox", "segm"])
+@pytest.mark.parametrize("iou_type", ["bbox", "segm", "keypoints"])
 @pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
 def test_tm_to_coco(tmpdir, iou_type, backend):
     """Test that the conversion from TM to COCO format works."""
-    preds, target = _coco_bbox_input if iou_type == "bbox" else _coco_segm_input
+    data_inputs = {
+        "bbox": _coco_bbox_input,
+        "segm": _coco_segm_input,
+        "keypoints": _coco_keypoints_input,
+    }
+    preds, target = data_inputs[iou_type]
     metric = MeanAveragePrecision(iou_type=iou_type, backend=backend, box_format="xywh")
     for bp, bt in zip(preds, target):
         metric.update(bp, bt)
@@ -88,39 +97,61 @@ def test_tm_to_coco(tmpdir, iou_type, backend):
     for sample1 in preds:
         sample_found = False
         for sample2 in preds_2:
-            if iou_type == "segm":
+            if iou_type == "segm":  # noqa: SIM102
                 if sample1["masks"].shape == sample2["masks"].shape and torch.allclose(
                     sample1["masks"], sample2["masks"]
                 ):
                     sample_found = True
-            else:
+            if iou_type == "bbox":  # noqa: SIM102
                 if sample1["boxes"].shape == sample2["boxes"].shape and torch.allclose(
                     sample1["boxes"], sample2["boxes"]
                 ):
                     sample_found = True
+            if iou_type == "keypoints":  # noqa: SIM102
+                if sample1["keypoints"].shape == sample2["keypoints"].shape and torch.allclose(
+                    sample1["keypoints"], sample2["keypoints"]
+                ):
+                    sample_found = True
+
         assert sample_found, "preds not found"
 
     for sample1 in target:
         sample_found = False
         for sample2 in target_2:
-            if iou_type == "segm":
+            if iou_type == "segm":  # noqa: SIM102
                 if sample1["masks"].shape == sample2["masks"].shape and torch.allclose(
                     sample1["masks"], sample2["masks"]
                 ):
                     sample_found = True
-            else:
+            if iou_type == "bbox":  # noqa: SIM102
                 if sample1["boxes"].shape == sample2["boxes"].shape and torch.allclose(
                     sample1["boxes"], sample2["boxes"]
                 ):
                     sample_found = True
+            if iou_type == "keypoints":  # noqa: SIM102
+                if sample1["keypoints"].shape == sample2["keypoints"].shape and torch.allclose(
+                    sample1["keypoints"], sample2["keypoints"]
+                ):
+                    sample_found = True
+
         assert sample_found, "target not found"
 
 
 def _compare_against_coco_fn(preds, target, iou_type, iou_thresholds=None, rec_thresholds=None, class_metrics=True):
     """Taken from https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoEvalDemo.ipynb."""
     with contextlib.redirect_stdout(io.StringIO()):
-        gt = COCO(_DETECTION_VAL)
-        dt = gt.loadRes(_DETECTION_BBOX) if iou_type == "bbox" else gt.loadRes(_DETECTION_SEGM)
+        gt_data_sources = {
+            "bbox": _DETECTION_VAL,
+            "segm": _DETECTION_VAL,
+            "keypoints": _DETECTION_OKS_VAL,
+        }
+        gt = COCO(gt_data_sources[iou_type])
+        dt_data_sources = {
+            "bbox": _DETECTION_BBOX,
+            "segm": _DETECTION_SEGM,
+            "keypoints": _DETECTION_OKS,
+        }
+        dt = gt.loadRes(dt_data_sources[iou_type])
 
         coco_eval = COCOeval(gt, dt, iou_type)
         if iou_thresholds is not None:
@@ -155,29 +186,42 @@ def _compare_against_coco_fn(preds, target, iou_type, iou_thresholds=None, rec_t
         map_per_class_values = torch.Tensor(map_per_class_list)
         mar_100_per_class_values = torch.Tensor(mar_100_per_class_list)
 
+    if iou_type in ("bbox", "segm"):
+        return {
+            "map": Tensor([global_stats[0]]),
+            "map_50": Tensor([global_stats[1]]),
+            "map_75": Tensor([global_stats[2]]),
+            "map_small": Tensor([global_stats[3]]),
+            "map_medium": Tensor([global_stats[4]]),
+            "map_large": Tensor([global_stats[5]]),
+            "mar_1": Tensor([global_stats[6]]),
+            "mar_10": Tensor([global_stats[7]]),
+            "mar_100": Tensor([global_stats[8]]),
+            "mar_small": Tensor([global_stats[9]]),
+            "mar_medium": Tensor([global_stats[10]]),
+            "mar_large": Tensor([global_stats[11]]),
+            "map_per_class": map_per_class_values,
+            "mar_100_per_class": mar_100_per_class_values,
+            "classes": classes,
+        }
     return {
         "map": Tensor([global_stats[0]]),
         "map_50": Tensor([global_stats[1]]),
         "map_75": Tensor([global_stats[2]]),
-        "map_small": Tensor([global_stats[3]]),
-        "map_medium": Tensor([global_stats[4]]),
-        "map_large": Tensor([global_stats[5]]),
-        "mar_1": Tensor([global_stats[6]]),
-        "mar_10": Tensor([global_stats[7]]),
-        "mar_100": Tensor([global_stats[8]]),
-        "mar_small": Tensor([global_stats[9]]),
-        "mar_medium": Tensor([global_stats[10]]),
-        "mar_large": Tensor([global_stats[11]]),
-        "map_per_class": map_per_class_values,
-        "mar_100_per_class": mar_100_per_class_values,
-        "classes": classes,
+        "map_medium": Tensor([global_stats[3]]),
+        "map_large": Tensor([global_stats[4]]),
+        "mar": Tensor([global_stats[5]]),
+        "mar_50": Tensor([global_stats[6]]),
+        "mar_75": Tensor([global_stats[7]]),
+        "mar_medium": Tensor([global_stats[8]]),
+        "mar_large": Tensor([global_stats[9]]),
     }
 
 
 @pytest.mark.skipif(
     not _PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 and pycocotools is installed"
 )
-@pytest.mark.parametrize("iou_type", ["bbox", "segm"])
+@pytest.mark.parametrize("iou_type", ["bbox", "segm", "keypoints"])
 @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
 @pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
 class TestMAPUsingCOCOReference(MetricTester):
@@ -189,7 +233,12 @@ class TestMAPUsingCOCOReference(MetricTester):
         """Test modular implementation for correctness."""
         _skip_if_faster_coco_eval_missing(backend)
 
-        preds, target = _coco_bbox_input if iou_type == "bbox" else _coco_segm_input
+        data_inputs = {
+            "bbox": _coco_bbox_input,
+            "segm": _coco_segm_input,
+            "keypoints": _coco_keypoints_input,
+        }
+        preds, target = data_inputs[iou_type]
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -221,7 +270,12 @@ class TestMAPUsingCOCOReference(MetricTester):
 
         """
         _skip_if_faster_coco_eval_missing(backend)
-        preds, target = _coco_bbox_input if iou_type == "bbox" else _coco_segm_input
+        data_inputs = {
+            "bbox": _coco_bbox_input,
+            "segm": _coco_segm_input,
+            "keypoints": _coco_keypoints_input,
+        }
+        preds, target = data_inputs[iou_type]
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
