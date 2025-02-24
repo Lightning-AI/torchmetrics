@@ -21,12 +21,15 @@ import warnings
 from typing import Union
 
 import torch
-import torchvision
 from torch import Tensor, nn
 from torch.nn.functional import normalize as normalize_fn
 from typing_extensions import Literal
 
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
+
+if _TORCHVISION_AVAILABLE:
+    from torchvision.models import resnet50
+    from torchvision import transforms
 
 _AVAILABLE_REGRESSOR_DATASETS = {
     "kadid10k": (1, 5),
@@ -69,7 +72,7 @@ class _ARNIQA(nn.Module):
         self.imagenet_norm_mean = [0.485, 0.456, 0.406]
         self.imagenet_norm_std = [0.229, 0.224, 0.225]
 
-        encoder = torchvision.models.resnet50()
+        encoder = resnet50()
         self.feat_dim = encoder.fc.in_features  # get dimensions of the last layer of the encoder
         encoder = nn.Sequential(*list(encoder.children())[:-1])  # remove the fully connected layer
         self.encoder = encoder
@@ -111,10 +114,10 @@ class _ARNIQA(nn.Module):
 
         """
         h, w = img.shape[-2:]
-        img_ds = torchvision.transforms.Resize((h // 2, w // 2))(img)  # get the half-scale version of the image
+        img_ds = transforms.Resize((h // 2, w // 2))(img)  # get the half-scale version of the image
         if normalize:
-            img = torchvision.transforms.Normalize(mean=self.imagenet_norm_mean, std=self.imagenet_norm_std)(img)
-            img_ds = torchvision.transforms.Normalize(mean=self.imagenet_norm_mean, std=self.imagenet_norm_std)(img_ds)
+            img = transforms.Normalize(mean=self.imagenet_norm_mean, std=self.imagenet_norm_std)(img)
+            img_ds = transforms.Normalize(mean=self.imagenet_norm_mean, std=self.imagenet_norm_std)(img_ds)
         return img, img_ds
 
     def _scale_score(self, score: Tensor) -> Tensor:
