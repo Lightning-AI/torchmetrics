@@ -33,6 +33,7 @@ from torchmetrics.classification import (
     MultilabelAUROC,
     MultilabelAveragePrecision,
 )
+from torchmetrics.text import BLEUScore
 from torchmetrics.utilities.checks import _allclose_recursive
 from unittests._helpers import seed_all
 from unittests._helpers.testers import DummyMetricDiff, DummyMetricMultiOutputDict, DummyMetricSum
@@ -751,9 +752,7 @@ def test_collection_update():
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/2916
 
     """
-    from torchmetrics.text import BLEUScore
-
-    scores = MetricCollection({
+    metrics = MetricCollection({
         "bleu-1": BLEUScore(1),
         "bleu-2": BLEUScore(2),
         "bleu-3": BLEUScore(3),
@@ -763,8 +762,8 @@ def test_collection_update():
     preds = ["the cat is on the mat"]
     target = [["there is a cat on the mat", "a cat is on the mat"]]
 
-    scores.update(preds, target)
-    actual = scores.compute()
+    metrics.update(preds, target)
+    actual = metrics.compute()
 
     expected = {
         "bleu-1": torch.tensor(0.8333),
