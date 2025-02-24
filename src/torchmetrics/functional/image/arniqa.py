@@ -25,7 +25,7 @@ from torch import Tensor, nn
 from torch.nn.functional import normalize as normalize_fn
 from typing_extensions import Literal
 
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_2, _TORCHVISION_AVAILABLE
 
 if _TORCHVISION_AVAILABLE:
     from torchvision import transforms
@@ -175,8 +175,10 @@ def _arniqa_update(
     if autocast:
         with torch.amp.autocast(device_type=img.device.type, dtype=img.dtype):
             loss = model(img, normalize=normalize).squeeze()
-    else:
+    elif _TORCH_GREATER_EQUAL_2_2:  # RuntimeError: "slow_conv2d_cpu" not implemented for 'Half'
         loss = model.to(dtype=img.dtype)(img, normalize=normalize).squeeze()
+    else:
+        loss = model(img.to(dtype=model.dtype), normalize=normalize).squeeze()
     return loss, img.shape[0]
 
 
