@@ -537,6 +537,7 @@ class MeanMetric(BaseAggregator):
     """
 
     mean_value: Tensor
+    weight: Tensor
 
     def __init__(
         self,

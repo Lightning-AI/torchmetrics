@@ -35,12 +35,16 @@ jobs:
           path: ${{ inputs.pypi-dir }}
           key: ${{ inputs.pypi-key }}
 
+      - name: show pulled caches
+        continue-on-error: true
+        run: ls -lh ${{ inputs.pypi-dir }}
+
       - name: show 📦
         run: |
           # create the directory if it doesn't exist - no artifact were found
           mkdir -p _local-packages
           ls -lh _local-packages
-          ls -lh ${{ inputs.pypi-dir }}
+          mkdir -p ${{ inputs.pypi-dir }}
           # count files in the staging dir
           file_count=$(ls -1 "_local-packages/" | wc -l)
           echo "NUM_PACKAGES=$file_count" >> $GITHUB_ENV
