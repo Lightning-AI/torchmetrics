@@ -81,6 +81,7 @@ class ARNIQA(Metric):
         normalize: by default this is ``True`` meaning that the input is expected to be in the [0, 1] range. If set
             to ``False`` will instead expect input to be already normalized with the ImageNet mean and standard
             deviation.
+        autocast: if ``True``, metric will convert model to mixed precision before running forward pass.
         kwargs: additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -136,6 +137,7 @@ class ARNIQA(Metric):
         regressor_dataset: _TYPE_REGRESSOR_DATASET = "koniq10k",
         reduction: Literal["sum", "mean", "none"] = "mean",
         normalize: bool = True,
+        autocast: bool = False,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -150,13 +152,14 @@ class ARNIQA(Metric):
         if not isinstance(normalize, bool):
             raise ValueError(f"Argument `normalize` should be a bool but got {normalize}")
         self.normalize = normalize
+        self.autocast = autocast
 
         self.add_state("sum_scores", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("num_scores", torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, img: Tensor) -> None:
         """Update internal states with arniqa score."""
-        loss, num_scores = _arniqa_update(img, model=self.model, normalize=self.normalize)
+        loss, num_scores = _arniqa_update(img, model=self.model, normalize=self.normalize, autocast=self.autocast)
         self.sum_scores += loss.sum()
         self.num_scores += num_scores
 

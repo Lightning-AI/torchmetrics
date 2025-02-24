@@ -28,8 +28,8 @@ from typing_extensions import Literal
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
 if _TORCHVISION_AVAILABLE:
-    from torchvision.models import resnet50
     from torchvision import transforms
+    from torchvision.models import resnet50
 
 _AVAILABLE_REGRESSOR_DATASETS = {
     "kadid10k": (1, 5),
@@ -151,13 +151,16 @@ class _NoTrainArniqa(_ARNIQA):
         return super().train(False)
 
 
-def _arniqa_update(img: Tensor, model: nn.Module, normalize: bool) -> tuple[Tensor, Union[int, Tensor]]:
-    """Update step for arniqa metric.
+def _arniqa_update(
+    img: Tensor, model: nn.Module, normalize: bool, autocast: bool = False
+) -> tuple[Tensor, Union[int, Tensor]]:
+    """Update step for ARNIQA metric.
 
     Args:
         img: the input image
-        model: the ARNIQA model
+        model: the pre-trained model
         normalize: boolean indicating whether the input image is normalized
+        autocast: boolean indicating whether to use automatic mixed precision
 
     """
     # Check that the input image is valid
@@ -169,11 +172,7 @@ def _arniqa_update(img: Tensor, model: nn.Module, normalize: bool) -> tuple[Tens
             f" in range {img.min()} and {img.max()}."
         )
 
-    with torch.amp.autocast(
-        device_type=img.device.type,
-        dtype=img.dtype,
-        enabled=not (img.dtype == torch.float32 and img.device.type == "cpu"),
-    ):
+    with torch.amp.autocast(device_type=img.device.type, dtype=img.dtype, enabled=autocast):
         loss = model(img, normalize=normalize).squeeze()
     return loss, img.shape[0]
 
@@ -181,7 +180,7 @@ def _arniqa_update(img: Tensor, model: nn.Module, normalize: bool) -> tuple[Tens
 def _arniqa_compute(
     scores: Tensor, num_scores: Union[Tensor, int], reduction: Literal["sum", "mean", "none"] = "mean"
 ) -> Tensor:
-    """Compute step for arniqa metric."""
+    """Compute step for ARNIQA metric."""
     sum_scores = scores.sum()
     if reduction == "none":
         return scores
@@ -195,6 +194,7 @@ def arniqa(
     regressor_dataset: _TYPE_REGRESSOR_DATASET = "koniq10k",
     reduction: Literal["sum", "mean", "none"] = "mean",
     normalize: bool = True,
+    autocast: bool = False,
 ) -> Tensor:
     """ARNIQA: leArning distoRtion maNifold for Image Quality Assessment metric.
 
@@ -222,6 +222,7 @@ def arniqa(
         normalize: by default this is ``True`` meaning that the input is expected to be in the [0, 1] range. If set
             to ``False`` will instead expect input to be already normalized with the ImageNet mean and standard
             deviation.
+        autocast: boolean indicating whether to use automatic mixed precision
 
     Returns:
         A tensor in the [0, 1] range, where higher is better, representing the ARNIQA score of the input image. If
@@ -270,5 +271,5 @@ def arniqa(
         raise ValueError(f"Argument `normalize` should be a bool but got {normalize}")
 
     model = _NoTrainArniqa(regressor_dataset=regressor_dataset).to(device=img.device, dtype=img.dtype)
-    loss, num_scores = _arniqa_update(img, model, normalize)
+    loss, num_scores = _arniqa_update(img, model, normalize=normalize, autocast=autocast)
     return _arniqa_compute(loss, num_scores, reduction)
