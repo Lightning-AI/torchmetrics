@@ -16,6 +16,7 @@ from typing import Any, Callable, Optional, Union
 
 import torch
 from torch import Tensor
+from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
@@ -38,6 +39,7 @@ class BaseAggregator(Metric):
             - ``'error'``: if any `nan` values are encountered will give a RuntimeError
             - ``'warn'``: if any `nan` values are encountered will give a warning and continue
             - ``'ignore'``: all `nan` values are silently removed
+            - ``'disable'``: disable all `nan` checks
             - a float: if a float is provided will impute any `nan` values with this value
 
         state_name: name of the metric state
@@ -57,7 +59,7 @@ class BaseAggregator(Metric):
         self,
         fn: Union[Callable, str],
         default_value: Union[Tensor, list],
-        nan_strategy: Union[str, float] = "error",
+        nan_strategy: Union[Literal["error", "warn", "ignore", "disable"], float] = "error",
         state_name: str = "value",
         **kwargs: Any,
     ) -> None:
