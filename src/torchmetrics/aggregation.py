@@ -552,7 +552,7 @@ class MeanMetric(BaseAggregator):
         )
         self.add_state("weight", default=torch.tensor(0.0, dtype=torch.get_default_dtype()), dist_reduce_fx="sum")
 
-    def update(self, value: Union[float, Tensor], weight: Union[float, Tensor] = None) -> None:
+    def update(self, value: Union[float, Tensor], weight: Union[float, Tensor, None] = None) -> None:
         """Update state with data.
 
         Args:
