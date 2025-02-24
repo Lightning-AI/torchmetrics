@@ -174,12 +174,12 @@ def _arniqa_update(
 
     if autocast:
         with torch.amp.autocast(device_type=img.device.type, dtype=img.dtype):
-            loss = model(img, normalize=normalize).squeeze()
+            loss = model(img, normalize=normalize)
     elif _TORCH_GREATER_EQUAL_2_2:  # RuntimeError: "slow_conv2d_cpu" not implemented for 'Half'
-        loss = model.to(dtype=img.dtype)(img, normalize=normalize).squeeze()
-    else:
-        loss = model(img.to(dtype=model.dtype), normalize=normalize).squeeze()
-    return loss, img.shape[0]
+        loss = model.to(dtype=img.dtype)(img, normalize=normalize)
+    else: # disable any float16 computation
+        loss = model(img.to(dtype=torch.float32), normalize=normalize)
+    return loss.squeeze(), img.shape[0]
 
 
 def _arniqa_compute(
