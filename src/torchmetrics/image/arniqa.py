@@ -45,19 +45,19 @@ else:
 
 
 class ARNIQA(Metric):
-    """`ARNIQA`_ is a No-Reference Image Quality Assessment metric that predicts the technical quality of an image with
-    a high correlation with human opinions.
+    """ARNIQA: leArning distoRtion maNifold for Image Quality Assessment metric.
 
-    ARNIQA consists of an encoder and a regressor. The encoder is a ResNet-50 model trained in a self-supervised way to
-    model the image distortion manifold to generate similar representation for images with similar distortions, regardless
-    of the image content. The regressor is a linear model trained on IQA datasets using the ground-truth quality scores.
-    ARNIQA extracts the features from the full- and half-scale versions of the input image and then outputs a quality score
-    in the [0, 1] range, where higher is better.
+    `ARNIQA`_ is a No-Reference Image Quality Assessment metric that predicts the technical quality of an image with
+    a high correlation with human opinions. ARNIQA consists of an encoder and a regressor. The encoder is a ResNet-50
+    model trained in a self-supervised way to model the image distortion manifold to generate similar representation for
+    images with similar distortions, regardless of the image content. The regressor is a linear model trained on IQA
+    datasets using the ground-truth quality scores. ARNIQA extracts the features from the full- and half-scale versions
+    of the input image and then outputs a quality score in the [0, 1] range, where higher is better.
 
     The input image is expected to have shape ``(N, 3, H, W)``. The image should be in the [0, 1] range if `normalize`
     is set to ``True``, otherwise it should be normalized with the ImageNet mean and standard deviation.
 
-    .. hint::
+    .. note::
         Using this metric requires you to have ``torchvision`` package installed. Either install as
         ``pip install torchmetrics[image]`` or ``pip install torchvision``.
 
@@ -73,12 +73,14 @@ class ARNIQA(Metric):
 
     Args:
         img: the input image
-        regressor_dataset: dataset used for training the regressor. Choose between [``koniq10k``, ``kadid10k``]. ``koniq10k``
-            corresponds to the `KonIQ-10k`_ dataset, which consists of real-world images with authentic distortions.
-            ``kadid10k`` corresponds to the `KADID-10k`_ dataset, which consists of images with synthetically generated distortions.
+        regressor_dataset: dataset used for training the regressor. Choose between [``koniq10k``, ``kadid10k``].
+            ``koniq10k`` corresponds to the `KonIQ-10k`_ dataset, which consists of real-world images with authentic
+            distortions. ``kadid10k`` corresponds to the `KADID-10k`_ dataset, which consists of images with
+            synthetically generated distortions.
         reduction: indicates how to reduce over the batch dimension. Choose between [``sum``, ``mean``, ``none``].
         normalize: by default this is ``True`` meaning that the input is expected to be in the [0, 1] range. If set
-            to ``False`` will instead expect input to be already normalized with the ImageNet mean and standard deviation.
+            to ``False`` will instead expect input to be already normalized with the ImageNet mean and standard
+            deviation.
         kwargs: additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
     Raises:
@@ -126,7 +128,7 @@ class ARNIQA(Metric):
     plot_upper_bound: float = 1.0
 
     sum_scores: Tensor
-    total: Tensor
+    num_scores: Tensor
     feature_network: str = "model"
 
     def __init__(
