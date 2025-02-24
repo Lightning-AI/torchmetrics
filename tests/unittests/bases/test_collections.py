@@ -33,6 +33,7 @@ from torchmetrics.classification import (
     MultilabelAUROC,
     MultilabelAveragePrecision,
 )
+from torchmetrics.text import BLEUScore
 from torchmetrics.utilities.checks import _allclose_recursive
 from unittests._helpers import seed_all
 from unittests._helpers.testers import DummyMetricDiff, DummyMetricMultiOutputDict, DummyMetricSum
@@ -743,3 +744,33 @@ def test_with_custom_prefix_postfix():
     # Print the calculated metrics
     assert "my_prefix/accuracy/my_postfix" in res
     assert "my_prefix/precision/my_postfix" in res
+
+
+def test_collection_update():
+    """Test that metric collection updates metrics.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2916
+
+    """
+    metrics = MetricCollection({
+        "bleu-1": BLEUScore(1),
+        "bleu-2": BLEUScore(2),
+        "bleu-3": BLEUScore(3),
+        "bleu-4": BLEUScore(4),
+    })
+
+    preds = ["the cat is on the mat"]
+    target = [["there is a cat on the mat", "a cat is on the mat"]]
+
+    metrics.update(preds, target)
+    actual = metrics.compute()
+
+    expected = {
+        "bleu-1": torch.tensor(0.8333),
+        "bleu-2": torch.tensor(0.8165),
+        "bleu-3": torch.tensor(0.7937),
+        "bleu-4": torch.tensor(0.7598),
+    }
+
+    for k, v in expected.items():
+        torch.testing.assert_close(actual=actual.get(k), expected=v, rtol=1e-4, atol=1e-4)

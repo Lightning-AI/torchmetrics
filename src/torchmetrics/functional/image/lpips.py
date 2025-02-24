@@ -226,6 +226,9 @@ def _resize_tensor(x: Tensor, size: int = 64) -> Tensor:
 class ScalingLayer(nn.Module):
     """Scaling layer."""
 
+    shift: Tensor
+    scale: Tensor
+
     def __init__(self) -> None:
         super().__init__()
         self.register_buffer("shift", torch.Tensor([-0.030, -0.088, -0.188])[None, :, None, None], persistent=False)
