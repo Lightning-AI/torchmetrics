@@ -177,7 +177,7 @@ def _arniqa_update(
             loss = model(img, normalize=normalize)
     elif _TORCH_GREATER_EQUAL_2_2:  # RuntimeError: "slow_conv2d_cpu" not implemented for 'Half'
         loss = model.to(dtype=img.dtype)(img, normalize=normalize)
-    else: # disable any float16 computation
+    else:  # disable any float16 computation
         loss = model(img.to(dtype=torch.float32), normalize=normalize)
     return loss.squeeze(), img.shape[0]
 
