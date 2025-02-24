@@ -954,7 +954,11 @@ class MeanAveragePrecision(Metric):
                 annotations.append(annotation)
                 annotation_id += 1
 
-        classes = [{"id": i, "name": str(i)} for i in self._get_classes()]
+        classes = (
+            [{"id": i, "name": str(i)} for i in self._get_classes()]
+            if self.average != "micro"
+            else [{"id": 0, "name": "0"}]
+        )
         return {"images": images, "annotations": annotations, "categories": classes}
 
     def plot(
