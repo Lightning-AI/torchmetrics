@@ -497,7 +497,7 @@ class MeanAveragePrecision(Metric):
                 If any score is not type float and of length 1
 
         """
-        _input_validator(preds, target, iou_type=self.iou_type)  # type: ignore[arg-type]
+        _input_validator(preds, target, iou_type=self.iou_type)
 
         for item in preds:
             bbox_detection, mask_detection = self._get_safe_item_values(item, warn=self.warn_on_many_detections)
@@ -681,7 +681,7 @@ class MeanAveragePrecision(Metric):
             ... )  # doctest: +SKIP
 
         """
-        iou_type = _validate_iou_type_arg(iou_type)  # type: ignore[arg-type]
+        iou_type = _validate_iou_type_arg(iou_type)
         coco, _, _ = _load_backend_tools(backend)
 
         with contextlib.redirect_stdout(io.StringIO()):

@@ -367,7 +367,7 @@ class MeanAveragePrecision(Metric):
 
     def update(self, preds: list[dict[str, Tensor]], target: list[dict[str, Tensor]]) -> None:
         """Update state with predictions and targets."""
-        _input_validator(preds, target, iou_type=self.iou_type)  # type: ignore[arg-type]
+        _input_validator(preds, target, iou_type=self.iou_type)
 
         for item in preds:
             detections = self._get_safe_item_values(item)
