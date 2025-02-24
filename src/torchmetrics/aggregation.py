@@ -103,7 +103,8 @@ class BaseAggregator(Metric):
                         raise ValueError(f"`nan_strategy` shall be float but you pass {self.nan_strategy}")
                     x[nans | nans_weight] = self.nan_strategy
                     weight[nans | nans_weight] = 1
-
+        else:
+            weight = torch.ones_like(x)
         return x.to(self.dtype), weight.to(self.dtype)
 
     def update(self, value: Union[float, Tensor]) -> None:
