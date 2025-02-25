@@ -373,7 +373,7 @@ class MeanAveragePrecision(Metric):
     def __init__(
         self,
         box_format: Literal["xyxy", "xywh", "cxcywh"] = "xyxy",
-        iou_type: Union[Literal["bbox", "segm"], tuple[str]] = "bbox",
+        iou_type: Union[Literal["bbox", "segm"], tuple[Literal["bbox", "segm"], ...]] = "bbox",
         iou_thresholds: Optional[list[float]] = None,
         rec_thresholds: Optional[list[float]] = None,
         max_detection_thresholds: Optional[list[int]] = None,
@@ -391,9 +391,10 @@ class MeanAveragePrecision(Metric):
                 " Please install with `pip install pycocotools` or `pip install faster-coco-eval` or"
                 " `pip install torchmetrics[detection]`."
             )
+
         if not _TORCHVISION_AVAILABLE:
             raise ModuleNotFoundError(
-                f"Metric `{self._iou_type.upper()}` requires that `torchvision` is installed."
+                f"Metric `{self._iou_type}` requires that `torchvision` is installed."
                 " Please install with `pip install torchmetrics[detection]`."
             )
 
@@ -497,7 +498,7 @@ class MeanAveragePrecision(Metric):
                 If any score is not type float and of length 1
 
         """
-        _input_validator(preds, target, iou_type=self.iou_type)  # type: ignore[arg-type]
+        _input_validator(preds, target, iou_type=self.iou_type)
 
         for item in preds:
             bbox_detection, mask_detection = self._get_safe_item_values(item, warn=self.warn_on_many_detections)
@@ -653,7 +654,7 @@ class MeanAveragePrecision(Metric):
     def coco_to_tm(
         coco_preds: str,
         coco_target: str,
-        iou_type: Union[Literal["bbox", "segm"], list[str]] = "bbox",
+        iou_type: Union[Literal["bbox", "segm"], tuple[Literal["bbox", "segm"], ...]] = "bbox",
         backend: Literal["pycocotools", "faster_coco_eval"] = "pycocotools",
     ) -> tuple[list[dict[str, Tensor]], list[dict[str, Tensor]]]:
         """Utility function for converting .json coco format files to the input format of this metric.
@@ -683,7 +684,7 @@ class MeanAveragePrecision(Metric):
             ... )  # doctest: +SKIP
 
         """
-        iou_type = _validate_iou_type_arg(iou_type)  # type: ignore[arg-type]
+        iou_type = _validate_iou_type_arg(iou_type)
         coco, _, _ = _load_backend_tools(backend)
 
         with contextlib.redirect_stdout(io.StringIO()):
