@@ -249,7 +249,6 @@ def arniqa(
             If the input image values are not in the [0, 1] range when ``normalize`` is set to ``True``
 
     Examples:
-
         >>> from torch import rand
         >>> from torchmetrics.functional.image.arniqa import arniqa
         >>> img = rand(8, 3, 224, 224)
