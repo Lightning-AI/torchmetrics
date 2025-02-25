@@ -250,3 +250,24 @@ class TestDNSMOS(MetricTester):
             ),
             metric_args={"fs": fs, "personalized": personalized, "device": device},
         )
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+def test_cache_arg():
+    """Test the cache_session argument.
+
+    If this is set to False, the onnx sessions should be not be cached.
+
+    """
+
+    def mem():
+        return torch.cuda.memory_allocated() / 1024**2
+
+    enhanced = torch.nn.utils.rnn.pad_sequence(
+        [torch.randn(1, torch.randint(48000, 160000, (1,))) for _ in range(8)], batch_first=True
+    ).to("cuda")
+
+    before_iter = mem()
+    for _ in range(10):
+        deep_noise_suppression_mean_opinion_score(enhanced, fs=16_000, personalized=False, cache_session=False)
+        assert before_iter * 1.05 >= mem(), "memory increased too much above base level"
