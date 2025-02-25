@@ -27,13 +27,13 @@ from torchmetrics.functional.image.arniqa import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_AVAILABLE
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCH_GREATER_EQUAL_2_2, _TORCHVISION_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["ARNIQA.plot"]
 
-if _TORCHVISION_AVAILABLE:
+if _TORCH_GREATER_EQUAL_2_2 and _TORCHVISION_AVAILABLE:
 
     def _download_arniqa() -> None:
         _ARNIQA(regressor_dataset="koniq10k")
@@ -98,24 +98,22 @@ class ARNIQA(Metric):
         ValueError:
             If the input image values are not in the [0, 1] range when ``normalize`` is set to ``True``
 
-    Example::
-        Non-normalized input:
+    Examples:
 
         >>> from torch import rand
         >>> from torchmetrics.image.arniqa import ARNIQA
         >>> img = rand(8, 3, 224, 224)
+        >>> # Non-normalized input
         >>> metric = ARNIQA(regressor_dataset='koniq10k', normalize=True)
         >>> metric(img)
-        tensor(0.4875)
-
-    Example::
-        Normalized input:
+        tensor(0.5308):
 
         >>> from torch import rand
         >>> from torchmetrics.image.arniqa import ARNIQA
         >>> from torchvision.transforms import Normalize
         >>> img = rand(8, 3, 224, 224)
         >>> img = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])(img)
+        >>> # Normalized input
         >>> metric = ARNIQA(regressor_dataset='koniq10k', normalize=False)
         >>> metric(img)
         tensor(0.4875)
@@ -141,6 +139,15 @@ class ARNIQA(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
+
+        if not _TORCH_GREATER_EQUAL_2_2:  # ToDo: RuntimeError: "slow_conv2d_cpu" not implemented for 'Half'
+            raise RuntimeError("ARNIQA metric requires PyTorch >= 2.2.0")
+
+        if not _TORCHVISION_AVAILABLE:
+            raise ModuleNotFoundError(
+                "ARNIQA metric requires that torchvision is installed."
+                " Either install as `pip install torchmetrics[image]` or `pip install torchvision`."
+            )
 
         self.model = _NoTrainArniqa(regressor_dataset=regressor_dataset)
 

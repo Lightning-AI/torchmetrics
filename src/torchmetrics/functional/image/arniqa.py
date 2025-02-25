@@ -41,7 +41,7 @@ _TYPE_REGRESSOR_DATASET = Literal["kadid10k", "koniq10k"]
 _base_url = "https://github.com/miccunifi/ARNIQA/releases/download/weights"
 
 
-if not _TORCHVISION_AVAILABLE:
+if not (_TORCH_GREATER_EQUAL_2_2 and _TORCHVISION_AVAILABLE):
     __doctest_skip__ = ["arniqa"]
 
 
@@ -55,6 +55,9 @@ class _ARNIQA(nn.Module):
 
     def __init__(self, regressor_dataset: _TYPE_REGRESSOR_DATASET = "koniq10k") -> None:
         super().__init__()
+
+        if not _TORCH_GREATER_EQUAL_2_2:  # ToDo: RuntimeError: "slow_conv2d_cpu" not implemented for 'Half'
+            raise RuntimeError("ARNIQA metric requires PyTorch >= 2.2.0")
 
         if not _TORCHVISION_AVAILABLE:
             raise ModuleNotFoundError(
@@ -175,10 +178,8 @@ def _arniqa_update(
     if autocast:
         with torch.amp.autocast(device_type=img.device.type, dtype=img.dtype):
             loss = model(img, normalize=normalize)
-    elif _TORCH_GREATER_EQUAL_2_2:  # RuntimeError: "slow_conv2d_cpu" not implemented for 'Half'
+    else:
         loss = model.to(dtype=img.dtype)(img, normalize=normalize)
-    else: # disable any float16 computation
-        loss = model(img.to(dtype=torch.float32), normalize=normalize)
     return loss.squeeze(), img.shape[0]
 
 
@@ -247,23 +248,22 @@ def arniqa(
         ValueError:
             If the input image values are not in the [0, 1] range when ``normalize`` is set to ``True``
 
-    Example::
-        Non-normalized input:
+    Examples:
 
         >>> from torch import rand
         >>> from torchmetrics.functional.image.arniqa import arniqa
         >>> img = rand(8, 3, 224, 224)
+        >>> # Non-normalized input
         >>> arniqa(img, regressor_dataset='koniq10k', normalize=True)
-        tensor(0.4875)
+        tensor(0.5308)
 
-    Example::
-        Normalized input:
 
         >>> from torch import rand
         >>> from torchmetrics.functional.image.arniqa import arniqa
         >>> from torchvision.transforms import Normalize
         >>> img = rand(8, 3, 224, 224)
         >>> img = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])(img)
+        >>> # Normalized input
         >>> arniqa(img, regressor_dataset='koniq10k', normalize=False)
         tensor(0.4875)
 
