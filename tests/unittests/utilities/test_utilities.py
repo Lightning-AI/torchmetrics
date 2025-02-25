@@ -237,5 +237,5 @@ def test_half_precision_top_k_cpu_raises_error():
 
     """
     x = torch.randn(100, 10, dtype=torch.half)
-    with pytest.raises(RuntimeError, match="\"topk_cpu\" not implemented for 'Half'"):
+    with pytest.raises(RuntimeError, match="`topk_cpu` not implemented for 'Half'"):
         torch.topk(x, k=3, dim=1)

@@ -99,7 +99,6 @@ class ARNIQA(Metric):
             If the input image values are not in the [0, 1] range when ``normalize`` is set to ``True``
 
     Examples:
-
         >>> from torch import rand
         >>> from torchmetrics.image.arniqa import ARNIQA
         >>> img = rand(8, 3, 224, 224)

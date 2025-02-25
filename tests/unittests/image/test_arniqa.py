@@ -20,7 +20,7 @@ from torch import Tensor
 
 from torchmetrics.functional.image.arniqa import arniqa
 from torchmetrics.image.arniqa import ARNIQA
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_2, _TORCHVISION_AVAILABLE
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 
@@ -67,6 +67,7 @@ def _reference_arniqa(img: Tensor, target: Tensor, regressor_dataset: str, reduc
     return res.sum()
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_2, reason="`slow_conv2d_cpu` does not support cpu + half precision")
 @pytest.mark.skipif(not _TORCHVISION_AVAILABLE, reason="test requires that torchvision is installed")
 class TestARNIQA(MetricTester):
     """Test class for `ARNIQA` metric."""
