@@ -616,12 +616,14 @@ class MeanAveragePrecision(Metric):
             masks=self.groundtruth_mask if len(self.groundtruth_mask) > 0 else None,
             crowds=self.groundtruth_crowds,
             area=self.groundtruth_area,
+            average=average,
         )
         coco_preds.dataset = self._get_coco_format(
             labels=detection_labels,
             boxes=self.detection_box if len(self.detection_box) > 0 else None,
             masks=self.detection_mask if len(self.detection_mask) > 0 else None,
             scores=self.detection_scores,
+            average=average,
         )
 
         with contextlib.redirect_stdout(io.StringIO()):
@@ -873,6 +875,7 @@ class MeanAveragePrecision(Metric):
         scores: Optional[List[Tensor]] = None,
         crowds: Optional[List[Tensor]] = None,
         area: Optional[List[Tensor]] = None,
+        average: Literal["macro", "micro"] = "macro",
     ) -> dict:
         """Transforms and returns all cached targets or predictions in COCO format.
 
@@ -955,7 +958,9 @@ class MeanAveragePrecision(Metric):
                 annotations.append(annotation)
                 annotation_id += 1
 
-        classes = [{"id": i, "name": str(i)} for i in self._get_classes()]
+        classes = (
+            [{"id": i, "name": str(i)} for i in self._get_classes()] if average != "micro" else [{"id": 0, "name": "0"}]
+        )
         return {"images": images, "annotations": annotations, "categories": classes}
 
     def plot(
