@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--
+- Added `disable` option to `nan_strategy` in basic aggregation metrics ([#2943](https://github.com/PyTorchLightning/metrics/pull/2943))
 
 
 ### Changed
@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix `MeanAveragePrecision` for `average="micro"` when 0 label is not present ([#2968](https://github.com/PyTorchLightning/metrics/pull/2968))
+
+
+- Fixed `MetricCollection.update` gives identical results ([#2944](https://github.com/Lightning-AI/torchmetrics/issues/2944))
 
 
 ---
