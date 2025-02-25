@@ -105,7 +105,7 @@ class ARNIQA(Metric):
         >>> # Non-normalized input
         >>> metric = ARNIQA(regressor_dataset='koniq10k', normalize=True)
         >>> metric(img)
-        tensor(0.5308):
+        tensor(0.5308)
 
         >>> from torch import rand
         >>> from torchmetrics.image.arniqa import ARNIQA
@@ -115,7 +115,7 @@ class ARNIQA(Metric):
         >>> # Normalized input
         >>> metric = ARNIQA(regressor_dataset='koniq10k', normalize=False)
         >>> metric(img)
-        tensor(0.4875)
+        tensor(0.5065)
 
     """
 

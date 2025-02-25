@@ -264,7 +264,7 @@ def arniqa(
         >>> img = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])(img)
         >>> # Normalized input
         >>> arniqa(img, regressor_dataset='koniq10k', normalize=False)
-        tensor(0.4875)
+        tensor(0.5065)
 
     """
     valid_reduction = ("mean", "sum", "none")
