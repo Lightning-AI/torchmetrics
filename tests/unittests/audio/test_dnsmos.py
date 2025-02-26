@@ -263,11 +263,9 @@ def test_cache_arg():
     def mem():
         return torch.cuda.memory_allocated() / 1024**2
 
-    enhanced = torch.nn.utils.rnn.pad_sequence(
-        [torch.randn(1, torch.randint(48000, 160000, (1,))) for _ in range(8)], batch_first=True
-    ).to("cuda")
-
     before_iter = mem()
-    for _ in range(10):
-        deep_noise_suppression_mean_opinion_score(enhanced, fs=16_000, personalized=False, cache_session=False)
-        assert before_iter * 1.05 >= mem(), "memory increased too much above base level"
+    for _ in range(5):
+        deep_noise_suppression_mean_opinion_score(
+            preds.to("cuda"), fs=16_000, personalized=False, device="cuda", cache_session=False
+        )
+        assert before_iter >= mem(), "memory increased too much above base level"
