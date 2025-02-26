@@ -71,6 +71,9 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
         device: the device used for calculating DNSMOS, can be cpu or cuda:n, where n is the index of gpu.
             If None is given, then the device of input is used.
         num_threads: number of threads to use for onnxruntime CPU inference.
+        cache_session: whether to cache the onnx session. By default this is true, meaning that repeated calls to this
+            method is faster than if this was set to False, the consequence is that the session will be cached in
+            memory until the process is terminated.
 
     Raises:
         ModuleNotFoundError:

@@ -213,7 +213,9 @@ def deep_noise_suppression_mean_opinion_score(
         device: the device used for calculating DNSMOS, can be cpu or cuda:n, where n is the index of gpu.
             If None is given, then the device of input is used.
         num_threads: the number of threads to use for cpu inference. Defaults to None.
-        cache_session: whether to cache the onnx session. Defaults to True.
+        cache_session: whether to cache the onnx session. By default this is true, meaning that repeated calls to this
+            method is faster than if this was set to False, the consequence is that the session will be cached in
+            memory until the process is terminated.
 
     Returns:
         Float tensor with shape ``(...,4)`` of DNSMOS values per sample, i.e. [p808_mos, mos_sig, mos_bak, mos_ovr]
