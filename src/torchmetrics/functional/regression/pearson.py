@@ -119,7 +119,7 @@ def _pearson_corrcoef_compute(
             (corr_xy[valid_mask] / (var_x[valid_mask] * var_y[valid_mask]).sqrt()).squeeze().to(corrcoef.dtype)
         )
         corrcoef = torch.clamp(corrcoef, -1.0, 1.0)
-    return corrcoef
+    return corrcoef.squeeze()
 
 
 def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:

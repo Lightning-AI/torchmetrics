@@ -188,7 +188,7 @@ def test_overwrite_reference_inputs():
     assert torch.isclose(pearson.compute(), correlation)
 
 
-def test_cornercases():
+def test_corner_cases():
     """Test corner cases with zero variances.
 
     See issue: https://github.com/Lightning-AI/torchmetrics/issues/2920
