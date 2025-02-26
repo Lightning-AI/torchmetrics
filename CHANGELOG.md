@@ -33,6 +33,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `MetricCollection.update` gives identical results ([#2944](https://github.com/Lightning-AI/torchmetrics/issues/2944))
 
 
+- Fixed missing `kwargs` in `PIT` metric for permutation wise mode ([#2977](https://github.com/Lightning-AI/torchmetrics/pull/2977))
+
+
 ---
 
 ## [1.6.1] - 2024-12-24
