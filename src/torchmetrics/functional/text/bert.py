@@ -389,10 +389,16 @@ def bert_score(
     model.to(device)
 
     try:
-        if num_layers and num_layers > model.config.num_hidden_layers:
-            raise ValueError(
-                f"num_layers={num_layers} is forbidden for {model_name_or_path}."
-                f" Please use num_layers <= {model.config.num_hidden_layers}"
+        if hasattr(model.config, "num_hidden_layers") and isinstance(model.config.num_hidden_layers, int):
+            if num_layers and num_layers > model.config.num_hidden_layers:
+                raise ValueError(
+                    f"num_layers={num_layers} is forbidden for {model_name_or_path}."
+                    f" Please use num_layers <= {model.config.num_hidden_layers}"
+                )
+        else:
+            rank_zero_warn(
+                "Model config does not have `num_hidden_layers` as an integer attribute. "
+                "Unable to validate `num_layers`."
             )
     except AttributeError:
         rank_zero_warn("It was not possible to retrieve the parameter `num_layers` from the model specification.")
