@@ -10,13 +10,13 @@
 TorchMetrics in PyTorch Lightning
 #################################
 
-TorchMetrics was originally created as part of `PyTorch Lightning <https://github.com/Lightning-AI/pytorch-lightning>`_, a powerful deep learning research
-framework designed for scaling models without boilerplate.
+TorchMetrics was originally created as part of `PyTorch Lightning <https://github.com/Lightning-AI/pytorch-lightning>`_,
+a powerful deep learning research framework designed for scaling models without boilerplate.
 
 .. caution::
 
     TorchMetrics always offers compatibility with the last 2 major PyTorch Lightning versions, but we recommend always
-    keeping both frameworks up-to-date for the best experience.
+    keeping both frameworks up to date for the best experience.
 
 While TorchMetrics was built to be used with native PyTorch, using TorchMetrics with Lightning offers additional benefits:
 
@@ -25,7 +25,7 @@ While TorchMetrics was built to be used with native PyTorch, using TorchMetrics 
 * Native support for logging metrics in Lightning using
   `self.log <https://lightning.ai/docs/pytorch/stable/extensions/logging.html#logging-from-a-lightningmodule>`_ inside
   your LightningModule.
-* The ``.reset()`` method of the metric will automatically be called at the end of an epoch.
+* The ``.reset()`` method of the metric will automatically be called at the end of an epoch.
 
 The example below shows how to use a metric in your `LightningModule <https://lightning.ai/docs/pytorch/stable/common/lightning_module.html>`_:
 
@@ -43,21 +43,17 @@ The example below shows how to use a metric in your `LightningModule <https://li
             ...
             # log step metric
             self.accuracy(preds, y)
-            self.log('train_acc_step', self.accuracy)
+            self.log('train_acc_step', self.accuracy, on_epoch=True)
             ...
 
-        def on_train_epoch_end(self):
-            # log epoch metric
-            self.log('train_acc_epoch', self.accuracy)
-
 Metric logging in Lightning happens through the ``self.log`` or ``self.log_dict`` method. Both methods only support the
-logging of *scalar-tensors*. While the vast majority of metrics in torchmetrics returns a scalar tensor, some metrics
+logging of *scalar-tensors*. While the vast majority of metrics in TorchMetrics return a scalar tensor, some metrics
 such as :class:`~torchmetrics.classification.confusion_matrix.ConfusionMatrix`,
 :class:`~torchmetrics.classification.roc.ROC`,
 :class:`~torchmetrics.detection.mean_ap.MeanAveragePrecision`, :class:`~torchmetrics.text.rouge.ROUGEScore` return
-outputs that are non-scalar tensors (often dicts or list of tensors) and should therefore be dealt with separately.
-For info about the return type and shape please look at the documentation for the ``compute`` method for each metric
-you want to log.
+outputs that are non-scalar tensors (often dictionaries or lists of tensors) and should therefore be dealt with
+separately. For info about the return type and shape please look at the documentation for the ``compute`` method for
+each metric you want to log.
 
 ********************
 Logging TorchMetrics
@@ -66,7 +62,7 @@ Logging TorchMetrics
 Logging metrics can be done in two ways: either logging the metric object directly or the computed metric values.
 When :class:`~torchmetrics.Metric` objects, which return a scalar tensor are logged directly in Lightning using the
 LightningModule `self.log <https://lightning.ai/docs/pytorch/stable/extensions/logging.html#logging-from-a-lightningmodule>`_
-method, Lightning will log the metric based on ``on_step`` and ``on_epoch`` flags present in ``self.log(...)``. If
+method, Lightning will log the metric based on the ``on_step`` and ``on_epoch`` flags present in ``self.log(...)``. If
 ``on_epoch`` is True, the logger automatically logs the end of epoch metric value by calling ``.compute()``.
 
 .. caution::
