@@ -36,6 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `DiceScore` when there is zero overlap between predictions and targets ([#2860](https://github.com/PyTorchLightning/metrics/pull/2860))
 
 
+- Fixed cornercase in `PearsonCorrCoef` when input is constant ([#2975](https://github.com/PyTorchLightning/metrics/pull/2975))
+
+
 - Fixed `MetricCollection.update` gives identical results ([#2944](https://github.com/Lightning-AI/torchmetrics/issues/2944))
 
 
