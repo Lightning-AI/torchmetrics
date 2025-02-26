@@ -182,14 +182,15 @@ class BinaryPrecisionRecallCurve(Metric):
                 )
 
             state = (torch.cat(self.preds), torch.cat(self.target))
+            # Clear the lists after concatenation to prevent memory growth
             self.preds.clear()
             self.target.clear()
             return _binary_precision_recall_curve_compute(state, None)
-
+        
+        # Handle thresholded case
         state = self.confmat
-        precision, recall, thresholds = _binary_precision_recall_curve_compute(state, self.thresholds)
-        self.confmat.zero_()
-        return precision, recall, thresholds if thresholds is not None else torch.zeros(0)
+        self.confmat.zero_()  # Clear the confusion matrix
+        return _binary_precision_recall_curve_compute(state, self.thresholds)
 
     def plot(
         self,
