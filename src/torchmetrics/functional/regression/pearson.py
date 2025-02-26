@@ -106,12 +106,20 @@ def _pearson_corrcoef_compute(
         rank_zero_warn(
             "The variance of predictions or target is close to zero. This can cause instability in Pearson correlation"
             "coefficient, leading to wrong results. Consider re-scaling the input if possible or computing using a"
-            f"larger dtype (currently using {var_x.dtype}).",
+            f"larger dtype (currently using {var_x.dtype}). Setting the correlation coefficient to nan.",
             UserWarning,
         )
 
-    corrcoef = (corr_xy / (var_x * var_y).sqrt()).squeeze()
-    return torch.clamp(corrcoef, -1.0, 1.0)
+    zero_var_mask = (var_x < bound) | (var_y < bound)
+    corrcoef = torch.full_like(corr_xy, float("nan"), device=corr_xy.device, dtype=corr_xy.dtype)
+    valid_mask = ~zero_var_mask
+
+    if valid_mask.any():
+        corrcoef[valid_mask] = (
+            (corr_xy[valid_mask] / (var_x[valid_mask] * var_y[valid_mask]).sqrt()).squeeze().to(corrcoef.dtype)
+        )
+        corrcoef = torch.clamp(corrcoef, -1.0, 1.0)
+    return corrcoef
 
 
 def pearson_corrcoef(preds: Tensor, target: Tensor) -> Tensor:
