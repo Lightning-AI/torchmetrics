@@ -186,3 +186,16 @@ def test_overwrite_reference_inputs():
         pearson.compute()
 
     assert torch.isclose(pearson.compute(), correlation)
+
+
+def test_cornercases():
+    """Test corner cases with zero variances.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2920
+
+    """
+    y_pred = torch.tensor([[-0.1816, 0.6568, 0.9788, -0.1425], [-0.4111, 0.3940, 1.4834, 0.1322]])
+    y_true = torch.tensor([[4.0268, 5.9401, 1.0000, 1.0000], [6.4956, 5.6684, 1.0000, 1.0000]])
+    pearson_corr = PearsonCorrCoef(num_outputs=4)
+    result = pearson_corr(y_pred, y_true)
+    assert torch.allclose(result, torch.tensor([-1.0, 1.0, float("nan"), float("nan")]), equal_nan=True)
