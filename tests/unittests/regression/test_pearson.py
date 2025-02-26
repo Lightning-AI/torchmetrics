@@ -19,6 +19,7 @@ from scipy.stats import pearsonr
 
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.regression.pearson import PearsonCorrCoef, _final_aggregation
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_5
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
@@ -98,6 +99,7 @@ class TestPearsonCorrCoef(MetricTester):
             metric_functional=pearson_corrcoef,
         )
 
+    @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_5, reason="Requires torch>=2.5.0")
     def test_pearson_corrcoef_half_cpu(self, preds, target):
         """Test dtype support of the metric on CPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
