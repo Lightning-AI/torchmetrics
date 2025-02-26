@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--
+- Fixed cornercase in `PearsonCorrCoef` when input is constant ([#2975](https://github.com/PyTorchLightning/metrics/pull/2975))
 
 
 ---
