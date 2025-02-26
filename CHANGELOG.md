@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `zero_division` argument to `DiceScore` in segmentation package ([#2860](https://github.com/PyTorchLightning/metrics/pull/2860))
 
 
+- Added `ARNIQA` metric to image domain ([#2953](https://github.com/PyTorchLightning/metrics/pull/2953))
+
+
 - Added `disable` option to `nan_strategy` in basic aggregation metrics ([#2943](https://github.com/PyTorchLightning/metrics/pull/2943))
 
 
