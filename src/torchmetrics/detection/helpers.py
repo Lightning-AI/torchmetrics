@@ -38,7 +38,7 @@ if not (_PYCOCOTOOLS_AVAILABLE or _FASTER_COCO_EVAL_AVAILABLE):
 def _input_validator(
     preds: Sequence[dict[str, Tensor]],
     targets: Sequence[dict[str, Tensor]],
-    iou_type: Union[Literal["bbox", "segm"], tuple[Literal["bbox", "segm"]]] = "bbox",
+    iou_type: Union[Literal["bbox", "segm"], tuple[Literal["bbox", "segm"], ...]] = "bbox",
     ignore_score: bool = False,
 ) -> None:
     """Ensure the correct input format of `preds` and `targets`."""
@@ -107,8 +107,8 @@ def _fix_empty_tensors(boxes: Tensor) -> Tensor:
 
 
 def _validate_iou_type_arg(
-    iou_type: Union[Literal["bbox", "segm"], tuple[str]] = "bbox",
-) -> tuple[str]:
+    iou_type: Union[Literal["bbox", "segm"], tuple[Literal["bbox", "segm"], ...]] = "bbox",
+) -> tuple[Literal["bbox", "segm"], ...]:
     """Validate that iou type argument is correct."""
     allowed_iou_types = ("segm", "bbox")
     if isinstance(iou_type, str):
