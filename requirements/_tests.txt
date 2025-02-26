@@ -12,7 +12,7 @@ pytest-timeout ==2.3.1
 pytest-xdist ==3.6.1
 phmdoctest ==1.4.0
 
-psutil ==6.*
+psutil ==7.*
 pyGithub >2.0.0, <2.7.0
 fire ==0.7.*
 
