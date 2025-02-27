@@ -19,6 +19,7 @@ from scipy.stats import pearsonr
 
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.regression.pearson import PearsonCorrCoef, _final_aggregation
+from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_5
 from unittests import BATCH_SIZE, EXTRA_DIM, NUM_BATCHES, _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
@@ -98,6 +99,7 @@ class TestPearsonCorrCoef(MetricTester):
             metric_functional=pearson_corrcoef,
         )
 
+    @pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_5, reason="Requires torch>=2.5.0")
     def test_pearson_corrcoef_half_cpu(self, preds, target):
         """Test dtype support of the metric on CPU."""
         num_outputs = EXTRA_DIM if preds.ndim == 3 else 1
@@ -186,3 +188,16 @@ def test_overwrite_reference_inputs():
         pearson.compute()
 
     assert torch.isclose(pearson.compute(), correlation)
+
+
+def test_corner_cases():
+    """Test corner cases with zero variances.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2920
+
+    """
+    y_pred = torch.tensor([[-0.1816, 0.6568, 0.9788, -0.1425], [-0.4111, 0.3940, 1.4834, 0.1322]])
+    y_true = torch.tensor([[4.0268, 5.9401, 1.0000, 1.0000], [6.4956, 5.6684, 1.0000, 1.0000]])
+    pearson_corr = PearsonCorrCoef(num_outputs=4)
+    result = pearson_corr(y_pred, y_true)
+    assert torch.allclose(result, torch.tensor([-1.0, 1.0, float("nan"), float("nan")]), equal_nan=True)
