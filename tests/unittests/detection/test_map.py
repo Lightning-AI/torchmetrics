@@ -868,12 +868,20 @@ class TestMapProperties:
         should be the same regardless of average argument.
 
         """
-        if class_metrics:
-            _preds = _inputs["preds"]
-            _target = _inputs["target"]
-        else:
-            _preds = apply_to_collection(deepcopy(_inputs["preds"]), IntTensor, lambda x: torch.ones_like(x))
-            _target = apply_to_collection(deepcopy(_inputs["target"]), IntTensor, lambda x: torch.ones_like(x))
+        _preds = deepcopy(_inputs["preds"])
+        _target = deepcopy(_inputs["target"])
+
+        # move all labels by 2 to make sure code still works if zero class not in class labels
+        for target in _target:
+            for batch_idx in range(len(target)):
+                target[batch_idx]["labels"] = target[batch_idx]["labels"] + 2
+        for preds in _preds:
+            for batch_idx in range(len(preds)):
+                preds[batch_idx]["labels"] = preds[batch_idx]["labels"] + 2
+
+        if not class_metrics:
+            _preds = apply_to_collection(deepcopy(_preds), IntTensor, lambda x: torch.ones_like(x))
+            _target = apply_to_collection(deepcopy(_target), IntTensor, lambda x: torch.ones_like(x))
 
         metric_micro = MeanAveragePrecision(average="micro", class_metrics=class_metrics, backend=backend)
         metric_micro.update(deepcopy(_inputs["preds"][0]), deepcopy(_inputs["target"][0]))
