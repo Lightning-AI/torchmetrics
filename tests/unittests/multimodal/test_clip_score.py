@@ -62,7 +62,9 @@ def _reference_clip_score(preds, target, model_name_or_path):
     return logits_per_image.diag().mean().detach()
 
 
-@pytest.mark.parametrize("model_name_or_path", ["openai/clip-vit-base-patch32"])
+@pytest.mark.parametrize(
+    "model_name_or_path", ["openai/clip-vit-base-patch32", "jinaai/jina-clip-v2", "zer0int/LongCLIP-L-Diffusers"]
+)
 @pytest.mark.parametrize("inputs", [_random_input])
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_10, reason="test requires transformers>=4.10")
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
