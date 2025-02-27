@@ -23,7 +23,7 @@ from unittests._helpers.testers import MetricTester
 from unittests.clustering._inputs import _float_inputs_extrinsic, _single_target_extrinsic1, _single_target_extrinsic2
 
 if _AEON_AVAILABLE:
-    from aeon.performance_metrics.clustering import clustering_accuracy_score
+    from aeon.benchmarking.metrics.clustering import clustering_accuracy_score
 else:
     clustering_accuracy_score = None
 seed_all(42)
