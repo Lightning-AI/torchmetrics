@@ -179,7 +179,7 @@ def permutation_invariant_training(
         )
         ptarget = target.repeat_interleave(repeats=perm_num, dim=0)
         # shape of metric_of_ps [batch_size*perm_num] or [batch_size*perm_num, spk_num]
-        metric_of_ps = metric_func(ppreds, ptarget)
+        metric_of_ps = metric_func(ppreds, ptarget, **kwargs)
         metric_of_ps = torch.mean(metric_of_ps.reshape(batch_size, len(perms), -1), dim=-1)
         # find the best metric and best permutation
         best_metric, best_indexes = eval_op(metric_of_ps, dim=1)
