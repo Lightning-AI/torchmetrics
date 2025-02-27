@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `ClusterAccuracy` metric to cluster package ([#2777](https://github.com/Lightning-AI/torchmetrics/pull/2777))
 
 
+- Added `cache_session` to `DNSMOS` metric to control caching behavior ([#2974](https://github.com/PyTorchLightning/metrics/pull/2974))
+
+
 - Added `ARNIQA` metric to image domain ([#2953](https://github.com/PyTorchLightning/metrics/pull/2953))
 
 
@@ -40,6 +43,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 - Fixed `MetricCollection.update` gives identical results ([#2944](https://github.com/Lightning-AI/torchmetrics/issues/2944))
+
+
+- Fixed missing `kwargs` in `PIT` metric for permutation wise mode ([#2977](https://github.com/Lightning-AI/torchmetrics/pull/2977))
 
 
 ---
