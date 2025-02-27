@@ -131,6 +131,8 @@ jobs:
           done
           pip install --requirement requirements/_devel.txt -U \
             $PIP_EXTRA_INDEX_URL --find-links="$PYPI_CACHE_DIR"
+          pip install --requirement requirements/clustering.txt -U \
+            $PIP_EXTRA_INDEX_URL --find-links="$PYPI_CACHE_DIR"  # separate install to avoid conflicts
           pip list
 
       - name: set special vars for PR
