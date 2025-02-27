@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `cache_session` to `DNSMOS` metric to control caching behavior ([#2974](https://github.com/PyTorchLightning/metrics/pull/2974))
+
+
 - Added `disable` option to `nan_strategy` in basic aggregation metrics ([#2943](https://github.com/PyTorchLightning/metrics/pull/2943))
 
 
