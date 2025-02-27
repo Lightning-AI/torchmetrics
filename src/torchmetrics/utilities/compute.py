@@ -70,7 +70,7 @@ def _safe_divide(
     """
     num = num if num.is_floating_point() else num.float()
     denom = denom if denom.is_floating_point() else denom.float()
-    if isinstance(zero_division, float) or zero_division == "warn":
+    if isinstance(zero_division, (float, int)) or zero_division == "warn":
         if zero_division == "warn" and torch.any(denom == 0):
             rank_zero_warn("Detected zero division in _safe_divide. Setting 0/0 to 0.0")
         zero_division = 0.0 if zero_division == "warn" else zero_division
