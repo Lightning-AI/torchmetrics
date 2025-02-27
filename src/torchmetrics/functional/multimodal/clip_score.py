@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import TYPE_CHECKING, List, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, List, Union, cast
 
 import torch
 from torch import Tensor
+from torchvision.transforms.functional import to_pil_image
 from typing_extensions import Literal
 
 from torchmetrics.utilities import rank_zero_warn
@@ -186,14 +187,45 @@ def _get_clip_model_and_processor(
         "openai/clip-vit-base-patch32",
         "openai/clip-vit-large-patch14-336",
         "openai/clip-vit-large-patch14",
+        "jinaai/jina-clip-v2",
+        "zer0int/LongCLIP-L-Diffusers",
+        "zer0int/LongCLIP-GmP-ViT-L-14",
     ] = "openai/clip-vit-large-patch14",
 ) -> tuple[_CLIPModel, _CLIPProcessor]:
     if _TRANSFORMERS_GREATER_EQUAL_4_10:
+        from transformers import AutoModel, AutoProcessor
+        from transformers import CLIPConfig as _CLIPConfig
         from transformers import CLIPModel as _CLIPModel
         from transformers import CLIPProcessor as _CLIPProcessor
 
-        model = _CLIPModel.from_pretrained(model_name_or_path)
-        processor = _CLIPProcessor.from_pretrained(model_name_or_path)
+        if "openai" in model_name_or_path:
+            model = _CLIPModel.from_pretrained(model_name_or_path)
+            processor = _CLIPProcessor.from_pretrained(model_name_or_path)
+        elif "jinaai" in model_name_or_path:
+            model = AutoModel.from_pretrained(model_name_or_path, trust_remote_code=True)
+
+            class JinaProcessorWrapper:
+                def __init__(self, processor: _CLIPProcessor) -> None:
+                    self.processor = processor
+
+                def __call__(self, *args: Any, **kwargs: Any) -> Any:
+                    # Check if 'images' is in kwargs and convert tensors to PIL images if needed
+                    if "images" in kwargs:
+                        kwargs["images"] = [
+                            to_pil_image(img.cpu()) if isinstance(img, Tensor) else img for img in kwargs["images"]
+                        ]
+                    return self.processor(*args, **kwargs)
+
+            processor = JinaProcessorWrapper(
+                processor=AutoProcessor.from_pretrained(model_name_or_path, trust_remote_code=True)
+            )
+        elif "zer0int" in model_name_or_path:
+            config = _CLIPConfig.from_pretrained(model_name_or_path)
+            config.text_config.max_position_embeddings = 248
+            model = _CLIPModel.from_pretrained(model_name_or_path, config=config)
+            processor = _CLIPProcessor.from_pretrained(model_name_or_path, padding="max_length", max_length=248)
+        else:
+            raise ValueError(f"Invalid model_name_or_path {model_name_or_path}. Not supported by `clip_score` metric.")
         return model, processor
 
     raise ModuleNotFoundError(
@@ -205,11 +237,17 @@ def _get_clip_model_and_processor(
 def clip_score(
     source: Union[Tensor, List[Tensor], List[str], str],
     target: Union[Tensor, List[Tensor], List[str], str],
-    model_name_or_path: Literal[
-        "openai/clip-vit-base-patch16",
-        "openai/clip-vit-base-patch32",
-        "openai/clip-vit-large-patch14-336",
-        "openai/clip-vit-large-patch14",
+    model_name_or_path: Union[
+        Literal[
+            "openai/clip-vit-base-patch16",
+            "openai/clip-vit-base-patch32",
+            "openai/clip-vit-large-patch14-336",
+            "openai/clip-vit-large-patch14",
+            "jinaai/jina-clip-v2",
+            "zer0int/LongCLIP-L-Diffusers",
+            "zer0int/LongCLIP-GmP-ViT-L-14",
+        ],
+        Callable[[], tuple[_CLIPModel, _CLIPProcessor]],
     ] = "openai/clip-vit-large-patch14",
 ) -> Tensor:
     r"""Calculates `CLIP Score`_ which is a text-to-image similarity metric.
@@ -251,7 +289,11 @@ def clip_score(
             - `"openai/clip-vit-base-patch32"`
             - `"openai/clip-vit-large-patch14-336"`
             - `"openai/clip-vit-large-patch14"`
+            - `"jinaai/jina-clip-v2"`
+            - `"zer0int/LongCLIP-L-Diffusers"`
+            - `"zer0int/LongCLIP-GmP-ViT-L-14"`
 
+            Alternatively, a callable that returns a tuple of CLIP model and processor instances can be passed.
 
     Raises:
         ModuleNotFoundError:
@@ -287,7 +329,10 @@ def clip_score(
         tensor(91.3950)
 
     """
-    model, processor = _get_clip_model_and_processor(model_name_or_path)
+    if callable(model_name_or_path):
+        model, processor = model_name_or_path()
+    else:
+        model, processor = _get_clip_model_and_processor(model_name_or_path)
     score, _ = _clip_score_update(source, target, model, processor)
     score = score.mean(0)
     return torch.max(score, torch.zeros_like(score))
