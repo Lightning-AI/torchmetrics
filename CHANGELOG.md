@@ -36,6 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed `DiceScore` when there is zero overlap between predictions and targets ([#2860](https://github.com/PyTorchLightning/metrics/pull/2860))
 
 
+- Fix `MeanAveragePrecision` for `average="micro"` when 0 label is not present ([#2968](https://github.com/PyTorchLightning/metrics/pull/2968))
+
+
 - Fixed cornercase in `PearsonCorrCoef` when input is constant ([#2975](https://github.com/PyTorchLightning/metrics/pull/2975))
 
 
