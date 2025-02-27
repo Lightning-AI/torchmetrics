@@ -6,7 +6,6 @@
 
 # add extra requirements
 -r audio.txt
--r clustering.txt
 -r detection.txt
 -r image.txt
 -r text.txt
