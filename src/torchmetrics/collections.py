@@ -211,7 +211,7 @@ class MetricCollection(ModuleDict):
         self._enable_compute_groups = compute_groups
         self._groups_checked: bool = False
         self._state_is_copy: bool = False
-        self._groups: Dict[int, List[str]] = {}
+        self._groups: Dict[int, Sequence[str]] = {}
         self.add_metrics(metrics, *additional_metrics)
 
     @property
