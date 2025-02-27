@@ -212,7 +212,8 @@ def _get_clip_model_and_processor(
                     # Check if 'images' is in kwargs and convert tensors to PIL images if needed
                     if "images" in kwargs:
                         kwargs["images"] = [
-                            to_pil_image(img.cpu()) if isinstance(img, Tensor) else img for img in kwargs["images"]
+                            to_pil_image(img.permute(2, 0, 1).cpu()) if isinstance(img, Tensor) else img
+                            for img in kwargs["images"]
                         ]
                     return self.processor(*args, **kwargs)
 
