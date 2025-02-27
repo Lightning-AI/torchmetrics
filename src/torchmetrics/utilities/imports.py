@@ -61,5 +61,6 @@ _SENTENCEPIECE_AVAILABLE = RequirementCache("sentencepiece")
 _SCIPI_AVAILABLE = RequirementCache("scipy")
 _SKLEARN_GREATER_EQUAL_1_3 = RequirementCache("scikit-learn>=1.3.0")
 _TORCH_LINEAR_ASSIGNMENT_AVAILABLE = RequirementCache("torch_linear_assignment")
+_AEON_AVAILABLE = RequirementCache("aeon")
 _PYTDC_AVAILABLE = RequirementCache("pyTDC")
 _LATEX_AVAILABLE: bool = shutil.which("latex") is not None

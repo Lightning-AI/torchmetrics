@@ -13,20 +13,24 @@
 # limitations under the License.
 import pytest
 import torch
-from aeon.performance_metrics.clustering import clustering_accuracy_score
 
 from torchmetrics.clustering.cluster_accuracy import ClusterAccuracy
 from torchmetrics.functional.clustering.cluster_accuracy import cluster_accuracy
-from torchmetrics.utilities.imports import _TORCH_LINEAR_ASSIGNMENT_AVAILABLE
+from torchmetrics.utilities.imports import _AEON_AVAILABLE, _TORCH_LINEAR_ASSIGNMENT_AVAILABLE
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 from unittests.clustering._inputs import _float_inputs_extrinsic, _single_target_extrinsic1, _single_target_extrinsic2
 
+if _AEON_AVAILABLE:
+    from aeon.performance_metrics.clustering import clustering_accuracy_score
+else:
+    clustering_accuracy_score = None
 seed_all(42)
 
 
 @pytest.mark.skipif(not _TORCH_LINEAR_ASSIGNMENT_AVAILABLE, reason="test requires torch linear assignment package")
+@pytest.mark.skipif(not _AEON_AVAILABLE, reason="test requires aeon package")
 @pytest.mark.parametrize(
     "preds, target",
     [
