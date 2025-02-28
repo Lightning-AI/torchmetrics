@@ -519,11 +519,11 @@ class MetricCollection(ModuleDict):
                             f" Please make sure that {self._enable_compute_groups} matches {self.keys(keep_base=True)}"
                         )
             # add metrics not specified in compute groups as their own group
-            already_in_group = _flatten(self._groups.values())
+            already_in_group = _flatten(self._groups.values())  # type: ignore
             counter = len(self._groups)
             for k in self.keys(keep_base=True):
                 if k not in already_in_group:
-                    self._groups[counter] = [k]
+                    self._groups[counter] = [k]  # type: ignore
                     counter += 1
             self._groups_checked = True
         else:
