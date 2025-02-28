@@ -142,6 +142,68 @@ def test_final_aggregation_function(shapes):
     assert all(out.ndim == input_fn().ndim - 1 for out in output)
 
 
+def test_final_aggregation_no_inplace_change():
+    """Test that final aggregation function does not change the input tensors in place."""
+    n_devices = 2
+    n_outputs = 100
+    n_repeats = 2
+
+    mean_x = torch.randn(n_devices, n_outputs)
+    mean_y = torch.randn(n_devices, n_outputs)
+    var_x = torch.randn(n_devices, n_outputs)
+    var_y = torch.randn(n_devices, n_outputs)
+    corr_xy = torch.randn(n_devices, n_outputs)
+    n_total = torch.randint(1, 100, (n_devices, n_outputs))
+
+    _mean_x = mean_x.clone()
+    _mean_y = mean_y.clone()
+    _var_x = var_x.clone()
+    _var_y = var_y.clone()
+    _corr_xy = corr_xy.clone()
+    _n_total = n_total.clone()
+
+    for _ in range(n_repeats):
+        _final_aggregation(_mean_x, _mean_y, _var_x, _var_y, _corr_xy, _n_total)
+
+    assert torch.allclose(_mean_x, mean_x), f"Mean X drift: mean={(_mean_x - mean_x).abs().mean().item()}"
+    assert torch.allclose(_mean_y, mean_y), f"Mean Y drift: mean={(_mean_y - mean_y).abs().mean().item()}"
+    assert torch.allclose(_var_x, var_x), f"Var X drift: mean={(_var_x - var_x).abs().mean().item()}"
+    assert torch.allclose(_var_y, var_y), f"Var Y drift: mean={(_var_y - var_y).abs().mean().item()}"
+    assert torch.allclose(_corr_xy, corr_xy), f"Corr XY drift: mean={(_corr_xy - corr_xy).abs().mean().item()}"
+    assert torch.allclose(_n_total, n_total), f"N Total drift: mean={(_n_total - n_total).abs().mean().item()}"
+
+
+def test_final_aggregation_with_empty_devices():
+    """Test that final aggregation function can handle the case where some devices have no data."""
+    n_devices = 4
+    n_outputs = 5
+    mean_x = torch.randn(n_devices, n_outputs)
+    mean_y = torch.randn(n_devices, n_outputs)
+    var_x = torch.randn(n_devices, n_outputs)
+    var_y = torch.randn(n_devices, n_outputs)
+    corr_xy = torch.randn(n_devices, n_outputs)
+    n_total = torch.randint(1, 100, (n_devices, n_outputs))
+
+    for x in [mean_x, mean_y, var_x, var_y, corr_xy, n_total]:
+        x[:2] = 0
+
+    # Current
+    mean_x_cur, mean_y_cur, var_x_cur, var_y_cur, corr_xy_cur, n_total_cur = _final_aggregation(
+        mean_x, mean_y, var_x, var_y, corr_xy, n_total
+    )
+    # Expected
+    mean_x_exp, mean_y_exp, var_x_exp, var_y_exp, corr_xy_exp, n_total_exp = _final_aggregation(
+        mean_x[2:], mean_y[2:], var_x[2:], var_y[2:], corr_xy[2:], n_total[2:]
+    )
+
+    assert torch.allclose(mean_x_cur, mean_x_exp), f"mean_x: {mean_x_cur} (expected: {mean_x_exp})"
+    assert torch.allclose(mean_y_cur, mean_y_exp), f"mean_y: {mean_y_cur} (expected: {mean_y_exp})"
+    assert torch.allclose(var_x_cur, var_x_exp), f"var_x: {var_x_cur} (expected: {var_x_exp})"
+    assert torch.allclose(var_y_cur, var_y_exp), f"var_y: {var_y_cur} (expected: {var_y_exp})"
+    assert torch.allclose(corr_xy_cur, corr_xy_exp), f"corr_xy: {corr_xy_cur} (expected: {corr_xy_exp})"
+    assert torch.allclose(n_total_cur, n_total_exp), f"n_total: {n_total_cur} (expected: {n_total_exp})"
+
+
 @pytest.mark.parametrize(("dtype", "scale"), [(torch.float16, 1e-4), (torch.float32, 1e-8), (torch.float64, 1e-16)])
 def test_pearsons_warning_on_small_input(dtype, scale):
     """Check that a user warning is raised for small input."""
