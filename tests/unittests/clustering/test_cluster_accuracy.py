@@ -16,7 +16,7 @@ import torch
 
 from torchmetrics.clustering.cluster_accuracy import ClusterAccuracy
 from torchmetrics.functional.clustering.cluster_accuracy import cluster_accuracy
-from torchmetrics.utilities.imports import _AEON_AVAILABLE, _TORCH_LINEAR_ASSIGNMENT_AVAILABLE
+from torchmetrics.utilities.imports import _AEON_AVAILABLE, _TORCH_GREATER_EQUAL_2_1, _TORCH_LINEAR_ASSIGNMENT_AVAILABLE
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
@@ -29,6 +29,7 @@ else:
 seed_all(42)
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_1, reason="test requires PyTorch 2.1 or higher")
 @pytest.mark.skipif(not _TORCH_LINEAR_ASSIGNMENT_AVAILABLE, reason="test requires torch linear assignment package")
 @pytest.mark.skipif(not _AEON_AVAILABLE, reason="test requires aeon package")
 @pytest.mark.parametrize(
@@ -64,6 +65,7 @@ class TestAdjustedMutualInfoScore(MetricTester):
         )
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_1, reason="test requires PyTorch 2.1 or higher")
 @pytest.mark.skipif(not _TORCH_LINEAR_ASSIGNMENT_AVAILABLE, reason="test requires torch linear assignment package")
 def test_cluster_accuracy_sanity_check():
     """Check that metric works with the simplest possible inputs."""
@@ -74,6 +76,7 @@ def test_cluster_accuracy_sanity_check():
     assert torch.allclose(res, torch.tensor(1.0))
 
 
+@pytest.mark.skipif(not _TORCH_GREATER_EQUAL_2_1, reason="test requires PyTorch 2.1 or higher")
 @pytest.mark.skipif(not _TORCH_LINEAR_ASSIGNMENT_AVAILABLE, reason="test requires torch linear assignment package")
 def test_cluster_accuracy_functional_raises_invalid_task():
     """Check that metric rejects continuous-valued inputs."""
