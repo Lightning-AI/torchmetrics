@@ -49,7 +49,9 @@ def skip_on_connection_issues(reason: str = "Unable to load checkpoints from Hug
             try:
                 return function(*args, **kwargs)
             except HTTPError as ex:
-                if ex.code != 504:  # HTTP Error 504: Gateway Time-out
+                # HTTP Error 504: Gateway Time-out
+                # HTTP Error 403: rate limit exceeded
+                if ex.code not in (403, 504):
                     raise ex
                 pytest.skip(reason)
             except URLError as ex:
