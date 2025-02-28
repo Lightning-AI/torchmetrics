@@ -54,6 +54,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed missing `kwargs` in `PIT` metric for permutation wise mode ([#2977](https://github.com/Lightning-AI/torchmetrics/pull/2977))
 
 
+- Fixed multiple errors in the `_final_aggregation` function for `PearsonCorrCoef` ([#2980](https://github.com/Lightning-AI/torchmetrics/pull/2980))
+
+
 ---
 
 ## [1.6.1] - 2024-12-24
