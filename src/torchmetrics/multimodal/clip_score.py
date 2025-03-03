@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, Callable, List, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -26,6 +26,10 @@ from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["CLIPScore.plot"]
 
+if TYPE_CHECKING and _TRANSFORMERS_GREATER_EQUAL_4_10:
+    from transformers import CLIPModel as _CLIPModel
+    from transformers import CLIPProcessor as _CLIPProcessor
+
 if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_GREATER_EQUAL_4_10:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
@@ -38,6 +42,8 @@ if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_GREATER_EQUAL_4_10:
         __doctest_skip__ = ["CLIPScore", "CLIPScore.plot"]
 else:
     __doctest_skip__ = ["CLIPScore", "CLIPScore.plot"]
+    _CLIPModel = None
+    _CLIPProcessor = None
 
 
 class CLIPScore(Metric):
