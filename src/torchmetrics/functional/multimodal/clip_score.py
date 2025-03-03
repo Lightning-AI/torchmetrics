@@ -278,6 +278,11 @@ def clip_score(
 
     .. note:: Metric is not scriptable
 
+    .. note::
+        The default CLIP and processor used in this implementation has a maximum sequence length of 77 for text
+        inputs. If you need to process longer captions, you can use the `zer0int/LongCLIP-L-Diffusers` model which
+        has a maximum sequence length of 248.
+
     Args:
         source: Source input. This can be:
             - Images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors.

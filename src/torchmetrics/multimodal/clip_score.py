@@ -69,6 +69,11 @@ class CLIPScore(Metric):
     .. caution::
         Metric is not scriptable
 
+    .. note::
+        The default CLIP and processor used in this implementation has a maximum sequence length of 77 for text
+        inputs. If you need to process longer captions, you can use the `zer0int/LongCLIP-L-Diffusers` model which
+        has a maximum sequence length of 248.
+
     As input to ``forward`` and ``update`` the metric accepts the following input
 
     - source: Source input. This can be:
