@@ -173,10 +173,7 @@ class CLIPScore(Metric):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        if callable(model_name_or_path):
-            self.model, self.processor = model_name_or_path()
-        else:
-            self.model, self.processor = _get_clip_model_and_processor(model_name_or_path)
+        self.model, self.processor = _get_clip_model_and_processor(model_name_or_path)
         self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 

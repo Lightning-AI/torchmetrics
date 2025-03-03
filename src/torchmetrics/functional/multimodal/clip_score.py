@@ -194,6 +194,9 @@ def _get_clip_model_and_processor(
         "zer0int/LongCLIP-GmP-ViT-L-14",
     ] = "openai/clip-vit-large-patch14",
 ) -> tuple[_CLIPModel, _CLIPProcessor]:
+    if callable(model_name_or_path):
+        return model_name_or_path()
+
     if _TRANSFORMERS_GREATER_EQUAL_4_10:
         from transformers import AutoModel, AutoProcessor
         from transformers import CLIPConfig as _CLIPConfig
@@ -340,10 +343,7 @@ def clip_score(
         tensor(91.3950)
 
     """
-    if callable(model_name_or_path):
-        model, processor = model_name_or_path()
-    else:
-        model, processor = _get_clip_model_and_processor(model_name_or_path)
+    model, processor = _get_clip_model_and_processor(model_name_or_path)
     score, _ = _clip_score_update(source, target, model, processor)
     score = score.mean(0)
     return torch.max(score, torch.zeros_like(score))

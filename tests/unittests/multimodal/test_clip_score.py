@@ -24,6 +24,7 @@ from transformers import CLIPProcessor as _CLIPProcessor
 
 from torchmetrics.functional.multimodal.clip_score import (
     _detect_modality,
+    _get_clip_model_and_processor,
     _process_image_data,
     _process_text_data,
     clip_score,
@@ -54,19 +55,23 @@ _random_input = _InputImagesCaptions(
 
 
 def _reference_clip_score(preds, target, model_name_or_path):
-    processor = _CLIPProcessor.from_pretrained(model_name_or_path)
-    model = _CLIPModel.from_pretrained(model_name_or_path)
+    """Reference implementation for CLIP score.
+
+    This uses the forward methods instead of the individual get_image_features and get_text_features methods.
+
+    """
+    model, processor = _get_clip_model_and_processor(model_name_or_path)
     inputs = processor(text=target, images=[p.cpu() for p in preds], return_tensors="pt", padding=True)
     outputs = model(**inputs)
     logits_per_image = outputs.logits_per_image
     return logits_per_image.diag().mean().detach()
 
 
-def custom_clip_processor_model() -> None:
+def _custom_clip_processor_model():
     """Simulate the user providing a custom CLIP processor and model."""
     processor = _CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
     model = _CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
-    return processor, model
+    return model, processor
 
 
 @pytest.mark.parametrize(
@@ -75,7 +80,7 @@ def custom_clip_processor_model() -> None:
         "openai/clip-vit-base-patch32",
         "jinaai/jina-clip-v2",
         "zer0int/LongCLIP-L-Diffusers",
-        custom_clip_processor_model,
+        _custom_clip_processor_model,
     ],
 )
 @pytest.mark.parametrize("inputs", [_random_input])
