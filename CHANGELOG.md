@@ -12,6 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `ClusterAccuracy` metric to cluster package ([#2777](https://github.com/Lightning-AI/torchmetrics/pull/2777))
+
+
+- Added `zero_division` argument to `DiceScore` in segmentation package ([#2860](https://github.com/PyTorchLightning/metrics/pull/2860))
+
+
+- Added `cache_session` to `DNSMOS` metric to control caching behavior ([#2974](https://github.com/PyTorchLightning/metrics/pull/2974))
+
+
 - Added `ARNIQA` metric to image domain ([#2953](https://github.com/PyTorchLightning/metrics/pull/2953))
 
 
@@ -30,7 +39,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed `DiceScore` when there is zero overlap between predictions and targets ([#2860](https://github.com/PyTorchLightning/metrics/pull/2860))
+
+
+- Fix `MeanAveragePrecision` for `average="micro"` when 0 label is not present ([#2968](https://github.com/PyTorchLightning/metrics/pull/2968))
+
+
+- Fixed cornercase in `PearsonCorrCoef` when input is constant ([#2975](https://github.com/PyTorchLightning/metrics/pull/2975))
+
+
 - Fixed `MetricCollection.update` gives identical results ([#2944](https://github.com/Lightning-AI/torchmetrics/issues/2944))
+
+
+- Fixed missing `kwargs` in `PIT` metric for permutation wise mode ([#2977](https://github.com/Lightning-AI/torchmetrics/pull/2977))
+
+
+- Fixed multiple errors in the `_final_aggregation` function for `PearsonCorrCoef` ([#2980](https://github.com/Lightning-AI/torchmetrics/pull/2980))
 
 
 ---
