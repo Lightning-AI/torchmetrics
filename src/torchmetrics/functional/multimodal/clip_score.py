@@ -117,16 +117,17 @@ def _get_features(
         return model.get_image_features(processed["pixel_values"].to(device))
     if modality == "text":
         processed = processor(text=data, return_tensors="pt", padding=True)
-        max_position_embeddings = model.config.text_config.max_position_embeddings
-        if processed["attention_mask"].shape[-1] > max_position_embeddings:
-            rank_zero_warn(
-                f"Encountered caption longer than {max_position_embeddings=}. Will truncate captions to this length."
-                "If longer captions are needed, initialize argument `model_name_or_path` with a model that supports"
-                "longer sequences",
-                UserWarning,
-            )
-            processed["attention_mask"] = processed["attention_mask"][..., :max_position_embeddings]
-            processed["input_ids"] = processed["input_ids"][..., :max_position_embeddings]
+        if hasattr(model.config, "text_config") and hasattr(model.config.text_config, "max_position_embeddings"):
+            max_position_embeddings = model.config.text_config.max_position_embeddings
+            if processed["attention_mask"].shape[-1] > max_position_embeddings:
+                rank_zero_warn(
+                    f"Encountered caption longer than {max_position_embeddings=}. Will truncate captions to this"
+                    "length. If longer captions are needed, initialize argument `model_name_or_path` with a model that"
+                    "supports longer sequences.",
+                    UserWarning,
+                )
+                processed["attention_mask"] = processed["attention_mask"][..., :max_position_embeddings]
+                processed["input_ids"] = processed["input_ids"][..., :max_position_embeddings]
         return model.get_text_features(processed["input_ids"].to(device), processed["attention_mask"].to(device))
     raise ValueError(f"invalid modality {modality}")
 
@@ -137,6 +138,7 @@ def _clip_score_update(
     model: _CLIPModel,
     processor: _CLIPProcessor,
 ) -> tuple[Tensor, int]:
+    """Update function for CLIP Score."""
     source_modality = _detect_modality(source)
     target_modality = _detect_modality(target)
 

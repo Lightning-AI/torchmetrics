@@ -62,8 +62,21 @@ def _reference_clip_score(preds, target, model_name_or_path):
     return logits_per_image.diag().mean().detach()
 
 
+def custom_clip_processor_model() -> None:
+    """Simulate the user providing a custom CLIP processor and model."""
+    processor = _CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+    model = _CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+    return processor, model
+
+
 @pytest.mark.parametrize(
-    "model_name_or_path", ["openai/clip-vit-base-patch32", "jinaai/jina-clip-v2", "zer0int/LongCLIP-L-Diffusers"]
+    "model_name_or_path",
+    [
+        "openai/clip-vit-base-patch32",
+        "jinaai/jina-clip-v2",
+        "zer0int/LongCLIP-L-Diffusers",
+        custom_clip_processor_model,
+    ],
 )
 @pytest.mark.parametrize("inputs", [_random_input])
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_10, reason="test requires transformers>=4.10")
