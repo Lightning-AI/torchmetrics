@@ -184,15 +184,18 @@ def _clip_score_update(
 
 
 def _get_clip_model_and_processor(
-    model_name_or_path: Literal[
-        "openai/clip-vit-base-patch16",
-        "openai/clip-vit-base-patch32",
-        "openai/clip-vit-large-patch14-336",
-        "openai/clip-vit-large-patch14",
-        "jinaai/jina-clip-v2",
-        "zer0int/LongCLIP-L-Diffusers",
-        "zer0int/LongCLIP-GmP-ViT-L-14",
-    ] = "openai/clip-vit-large-patch14",
+    model_name_or_path: Union[
+        Literal[
+            "openai/clip-vit-base-patch16",
+            "openai/clip-vit-base-patch32",
+            "openai/clip-vit-large-patch14-336",
+            "openai/clip-vit-large-patch14",
+            "jinaai/jina-clip-v2",
+            "zer0int/LongCLIP-L-Diffusers",
+            "zer0int/LongCLIP-GmP-ViT-L-14",
+        ],
+        Callable[[], tuple[_CLIPModel, _CLIPProcessor]],
+    ],
 ) -> tuple[_CLIPModel, _CLIPProcessor]:
     if callable(model_name_or_path):
         return model_name_or_path()

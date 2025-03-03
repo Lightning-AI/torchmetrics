@@ -9,6 +9,7 @@ The benefit of CLIPScore is that it does not require reference captions for eval
 
 # %%
 # Here's a hypothetical Python example demonstrating the usage of the CLIPScore metric to evaluate image captions:
+import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -40,9 +41,6 @@ captions = [
 
 models = [
     "openai/clip-vit-base-patch16",
-    # "openai/clip-vit-base-patch32",
-    # "openai/clip-vit-large-patch14-336",
-    "openai/clip-vit-large-patch14",
     "jinaai/jina-clip-v2",
     "zer0int/LongCLIP-L-Diffusers",
 ]
@@ -89,4 +87,4 @@ def update(num: int) -> tuple:
     return ax_img, ax_table
 
 
-# ani = animation.FuncAnimation(fig, update, frames=len(score_results), interval=3000)
+ani = animation.FuncAnimation(fig, update, frames=len(score_results), interval=3000)
