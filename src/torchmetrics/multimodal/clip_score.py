@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any, Callable, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -93,6 +93,14 @@ class CLIPScore(Metric):
             - `"openai/clip-vit-base-patch32"`
             - `"openai/clip-vit-large-patch14-336"`
             - `"openai/clip-vit-large-patch14"`
+            - `"jinaai/jina-clip-v2"`
+            - `"zer0int/LongCLIP-L-Diffusers"`
+            - `"zer0int/LongCLIP-GmP-ViT-L-14"`
+
+            Alternatively, a callable function that returns a tuple of CLIP compatible model and processor instances
+            can be passed in. By compatible, we mean that the processors `__call__` method should accept a list of
+            strings and list of images and that the model should have a `get_image_features` and `get_text_features`
+            methods.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -139,16 +147,25 @@ class CLIPScore(Metric):
 
     def __init__(
         self,
-        model_name_or_path: Literal[
-            "openai/clip-vit-base-patch16",
-            "openai/clip-vit-base-patch32",
-            "openai/clip-vit-large-patch14-336",
-            "openai/clip-vit-large-patch14",
+        model_name_or_path: Union[
+            Literal[
+                "openai/clip-vit-base-patch16",
+                "openai/clip-vit-base-patch32",
+                "openai/clip-vit-large-patch14-336",
+                "openai/clip-vit-large-patch14",
+                "jinaai/jina-clip-v2",
+                "zer0int/LongCLIP-L-Diffusers",
+                "zer0int/LongCLIP-GmP-ViT-L-14",
+            ],
+            Callable[[], tuple[_CLIPModel, _CLIPProcessor]],
         ] = "openai/clip-vit-large-patch14",
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        self.model, self.processor = _get_clip_model_and_processor(model_name_or_path)
+        if callable(model_name_or_path):
+            self.model, self.processor = model_name_or_path()
+        else:
+            self.model, self.processor = _get_clip_model_and_processor(model_name_or_path)
         self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 

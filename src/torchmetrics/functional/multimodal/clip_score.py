@@ -294,7 +294,10 @@ def clip_score(
             - `"zer0int/LongCLIP-L-Diffusers"`
             - `"zer0int/LongCLIP-GmP-ViT-L-14"`
 
-            Alternatively, a callable that returns a tuple of CLIP model and processor instances can be passed.
+            Alternatively, a callable function that returns a tuple of CLIP compatible model and processor instances
+            can be passed in. By compatible, we mean that the processors `__call__` method should accept a list of
+            strings and list of images and that the model should have a `get_image_features` and `get_text_features`
+            methods.
 
     Raises:
         ModuleNotFoundError:
