@@ -15,7 +15,6 @@ from typing import TYPE_CHECKING, Any, Callable, List, Union, cast
 
 import torch
 from torch import Tensor
-from torchvision.transforms.functional import to_pil_image
 from typing_extensions import Literal
 
 from torchmetrics.utilities import rank_zero_warn
@@ -210,6 +209,8 @@ def _get_clip_model_and_processor(
             model = _CLIPModel.from_pretrained(model_name_or_path)
             processor = _CLIPProcessor.from_pretrained(model_name_or_path)
         elif "jinaai" in model_name_or_path:
+            from torchvision.transforms.functional import to_pil_image
+
             model = AutoModel.from_pretrained(model_name_or_path, trust_remote_code=True)
 
             class JinaProcessorWrapper:
