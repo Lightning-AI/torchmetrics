@@ -16,13 +16,15 @@ import logging
 import os
 import re
 import sys
+from pathlib import Path
 from typing import Optional, Union
 
 import fire
 from packaging.version import parse
 
 _REQUEST_TIMEOUT = 10
-_PATH_ROOT = os.path.dirname(os.path.dirname(__file__))
+_PATH_REPO_ROOT = Path(__file__).resolve().parent.parent
+_PATH_DIR_TESTS = _PATH_REPO_ROOT / "tests"
 _PKG_WIDE_SUBPACKAGES = ("utilities", "helpers")
 LUT_PYTHON_TORCH = {
     "3.8": "1.4",
@@ -30,7 +32,7 @@ LUT_PYTHON_TORCH = {
     "3.10": "1.11",
     "3.11": "1.13",
 }
-_path_root = lambda *ds: os.path.join(_PATH_ROOT, *ds)
+_path_root = lambda *ds: os.path.join(_PATH_REPO_ROOT, *ds)
 REQUIREMENTS_FILES = (*glob.glob(_path_root("requirements", "*.txt")), _path_root("requirements.txt"))
 
 
@@ -190,10 +192,17 @@ class AssistantCLI:
         if as_list:  # keep only unique
             return list(test_modules)
 
-        test_modules = [f"unittests/{md}" for md in set(test_modules)]
-        not_exists = [p for p in test_modules if os.path.exists(p)]
+        test_modules = [os.path.join("unittests", fp) for fp in set(test_modules)]
+        # filter only existing modules
+        not_exists = [fp for fp in test_modules if not (_PATH_DIR_TESTS / fp).exists()]
         if not_exists:
-            raise ValueError(f"Missing following paths: {not_exists}")
+            logging.debug(f"Missing following paths: {not_exists}")
+        # filter only existing path in repo
+        test_modules = [fp for fp in test_modules if (_PATH_DIR_TESTS / fp).exists()]
+        if not test_modules:
+            logging.debug("No tests were changed -> rather test everything...")
+            return _return_all
+
         return " ".join(test_modules)
 
     @staticmethod
