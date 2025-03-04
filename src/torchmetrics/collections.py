@@ -24,7 +24,7 @@ from typing_extensions import Literal
 
 from torchmetrics.metric import Metric
 from torchmetrics.utilities import rank_zero_warn
-from torchmetrics.utilities.data import _flatten_dict, allclose
+from torchmetrics.utilities.data import _flatten, _flatten_dict, allclose
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 
@@ -90,7 +90,9 @@ class MetricCollection(ModuleDict):
         due to the internal logic of ``forward`` preventing this. Secondly, since we compute groups share metric
         states by reference, calling ``.items()``, ``.values()`` etc. on the metric collection will break this
         reference and a copy of states are instead returned in this case (reference will be reestablished on the next
-        call to ``update``).
+        call to ``update``). Do note that for the time being that if you are manually specifying compute groups in
+        nested collections, these are not compatible with the compute groups of the parent collection and will be
+        overridden.
 
     .. important::
         Metric collections can be nested at initialization (see last example) but the output of the collection will
@@ -192,7 +194,6 @@ class MetricCollection(ModuleDict):
     """
 
     _modules: dict[str, Metric]  # type: ignore[assignment]
-    _groups: Dict[int, List[str]]
     __jit_unused_properties__: ClassVar[list[str]] = ["metric_state"]
 
     def __init__(
@@ -210,7 +211,7 @@ class MetricCollection(ModuleDict):
         self._enable_compute_groups = compute_groups
         self._groups_checked: bool = False
         self._state_is_copy: bool = False
-
+        self._groups: Dict[int, list[str]] = {}
         self.add_metrics(metrics, *additional_metrics)
 
     @property
@@ -314,11 +315,19 @@ class MetricCollection(ModuleDict):
             if type(state1) != type(state2):  # noqa: E721
                 return False
 
-            if isinstance(state1, Tensor) and isinstance(state2, Tensor):
-                return state1.shape == state2.shape and allclose(state1, state2)
+            if (
+                isinstance(state1, Tensor)
+                and isinstance(state2, Tensor)
+                and not (state1.shape == state2.shape and allclose(state1, state2))
+            ):
+                return False
 
-            if isinstance(state1, list) and isinstance(state2, list):
-                return all(s1.shape == s2.shape and allclose(s1, s2) for s1, s2 in zip(state1, state2))
+            if (
+                isinstance(state1, list)
+                and isinstance(state2, list)
+                and not (all(s1.shape == s2.shape and allclose(s1, s2) for s1, s2 in zip(state1, state2)))
+            ):
+                return False
 
         return True
 
@@ -330,7 +339,7 @@ class MetricCollection(ModuleDict):
                 of just passed by reference
 
         """
-        if not self._state_is_copy:
+        if not self._state_is_copy and self._groups_checked:
             for cg in self._groups.values():
                 m0 = getattr(self, cg[0])
                 for i in range(1, len(cg)):
@@ -487,7 +496,6 @@ class MetricCollection(ModuleDict):
                 "Unknown input to MetricCollection. Expected, `Metric`, `MetricCollection` or `dict`/`sequence` of the"
                 f" previous, but got {metrics}"
             )
-
         self._groups_checked = False
         if self._enable_compute_groups:
             self._init_compute_groups()
@@ -510,9 +518,15 @@ class MetricCollection(ModuleDict):
                             f"Input {metric} in `compute_groups` argument does not match a metric in the collection."
                             f" Please make sure that {self._enable_compute_groups} matches {self.keys(keep_base=True)}"
                         )
+            # add metrics not specified in compute groups as their own group
+            already_in_group = _flatten(self._groups.values())  # type: ignore
+            counter = len(self._groups)
+            for k in self.keys(keep_base=True):
+                if k not in already_in_group:
+                    self._groups[counter] = [k]  # type: ignore
+                    counter += 1
             self._groups_checked = True
         else:
-            # Initialize all metrics as their own compute group
             self._groups = {i: [str(k)] for i, k in enumerate(self.keys(keep_base=True))}
 
     @property
