@@ -36,8 +36,8 @@ CURRENT_PORT = START_PORT
 USE_PYTEST_POOL = os.getenv("USE_PYTEST_POOL", "0") == "1"
 
 
-@pytest.fixture()
-def use_deterministic_algorithms():  # noqa: PT004
+@pytest.fixture
+def use_deterministic_algorithms():
     """Set deterministic algorithms for the test."""
     torch.use_deterministic_algorithms(True)
     yield

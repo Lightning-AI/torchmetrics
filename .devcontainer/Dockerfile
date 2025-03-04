@@ -19,7 +19,7 @@ RUN \
     pip3 --disable-pip-version-check --no-cache-dir install \
       -r /tmp/pip-tmp/requirements/_devel.txt \
       -r /tmp/pip-tmp/requirements/_docs.txt \
-      --find-links="https://download.pytorch.org/whl/cpu/torch_stable.html" \
+      --extra-index-url="https://download.pytorch.org/whl/cpu/" \
       --find-links="dist/" && \
     rm -rf /tmp/pip-tmp
 

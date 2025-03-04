@@ -14,9 +14,9 @@
 from typing import Union
 
 import pytest
+
 from torchmetrics.functional.text.mer import match_error_rate
 from torchmetrics.text.mer import MatchErrorRate
-
 from unittests._helpers import seed_all
 from unittests.text._helpers import TextTester
 from unittests.text._inputs import _inputs_error_rate_batch_size_1, _inputs_error_rate_batch_size_2
@@ -26,10 +26,10 @@ seed_all(42)
 
 def _reference_jiwer_mer(preds: Union[str, list[str]], target: Union[str, list[str]]):
     try:
-        from jiwer import compute_measures
+        from jiwer import mer
     except ImportError:
         pytest.skip("test requires jiwer package to be installed")
-    return compute_measures(target, preds)["mer"]
+    return mer(target, preds)
 
 
 @pytest.mark.parametrize(

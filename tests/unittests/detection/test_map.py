@@ -25,12 +25,12 @@ from lightning_utilities import apply_to_collection
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from torch import IntTensor, Tensor
+
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.utilities.imports import (
     _FASTER_COCO_EVAL_AVAILABLE,
     _PYCOCOTOOLS_AVAILABLE,
 )
-
 from unittests._helpers.testers import MetricTester
 from unittests.detection import _DETECTION_BBOX, _DETECTION_SEGM, _DETECTION_VAL
 
@@ -62,7 +62,9 @@ _coco_bbox_input = _generate_coco_inputs("bbox")
 _coco_segm_input = _generate_coco_inputs("segm")
 
 
-@pytest.mark.skipif(_PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 and pycocotools is installed")
+@pytest.mark.skipif(
+    not _PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 and pycocotools is installed"
+)
 @pytest.mark.parametrize("iou_type", ["bbox", "segm"])
 @pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
 def test_tm_to_coco(tmpdir, iou_type, backend):
@@ -172,7 +174,9 @@ def _compare_against_coco_fn(preds, target, iou_type, iou_thresholds=None, rec_t
     }
 
 
-@pytest.mark.skipif(_PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 and pycocotools is installed")
+@pytest.mark.skipif(
+    not _PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 and pycocotools is installed"
+)
 @pytest.mark.parametrize("iou_type", ["bbox", "segm"])
 @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
 @pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
@@ -447,7 +451,9 @@ def _generate_random_segm_input(device, batch_size=2, num_preds_size=10, num_gt_
     return preds, targets
 
 
-@pytest.mark.skipif(_PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 is installed")
+@pytest.mark.skipif(
+    not _PYCOCOTOOLS_AVAILABLE, reason="test requires that torchvision=>0.8.0 and pycocotools is installed"
+)
 @pytest.mark.parametrize(
     "backend",
     [
@@ -862,12 +868,20 @@ class TestMapProperties:
         should be the same regardless of average argument.
 
         """
-        if class_metrics:
-            _preds = _inputs["preds"]
-            _target = _inputs["target"]
-        else:
-            _preds = apply_to_collection(deepcopy(_inputs["preds"]), IntTensor, lambda x: torch.ones_like(x))
-            _target = apply_to_collection(deepcopy(_inputs["target"]), IntTensor, lambda x: torch.ones_like(x))
+        _preds = deepcopy(_inputs["preds"])
+        _target = deepcopy(_inputs["target"])
+
+        # move all labels by 2 to make sure code still works if zero class not in class labels
+        for target in _target:
+            for batch_idx in range(len(target)):
+                target[batch_idx]["labels"] = target[batch_idx]["labels"] + 2
+        for preds in _preds:
+            for batch_idx in range(len(preds)):
+                preds[batch_idx]["labels"] = preds[batch_idx]["labels"] + 2
+
+        if not class_metrics:
+            _preds = apply_to_collection(deepcopy(_preds), IntTensor, lambda x: torch.ones_like(x))
+            _target = apply_to_collection(deepcopy(_target), IntTensor, lambda x: torch.ones_like(x))
 
         metric_micro = MeanAveragePrecision(average="micro", class_metrics=class_metrics, backend=backend)
         metric_micro.update(deepcopy(_inputs["preds"][0]), deepcopy(_inputs["target"][0]))

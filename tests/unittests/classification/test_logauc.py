@@ -18,6 +18,7 @@ import pytest
 import torch
 from scipy.special import expit as sigmoid
 from scipy.special import softmax
+
 from torchmetrics.utilities.imports import _PYTDC_AVAILABLE
 
 if _PYTDC_AVAILABLE:
@@ -28,7 +29,6 @@ from torchmetrics.functional.classification.logauc import binary_logauc, multicl
 from torchmetrics.functional.classification.roc import binary_roc
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
-
 from unittests import NUM_CLASSES
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index

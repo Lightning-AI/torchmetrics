@@ -19,6 +19,7 @@ import numpy as np
 import pytest
 import torch
 from torch import Tensor
+
 from torchmetrics.audio.dnsmos import DeepNoiseSuppressionMeanOpinionScore
 from torchmetrics.functional.audio.dnsmos import (
     DNSMOS_DIR,
@@ -30,7 +31,6 @@ from torchmetrics.utilities.imports import (
     _ONNXRUNTIME_AVAILABLE,
     _REQUESTS_AVAILABLE,
 )
-
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 
@@ -250,3 +250,22 @@ class TestDNSMOS(MetricTester):
             ),
             metric_args={"fs": fs, "personalized": personalized, "device": device},
         )
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
+def test_cache_arg():
+    """Test the cache_session argument.
+
+    If this is set to False, the onnx sessions should be not be cached.
+
+    """
+
+    def mem():
+        return torch.cuda.memory_allocated() / 1024**2
+
+    before_iter = mem()
+    for _ in range(5):
+        deep_noise_suppression_mean_opinion_score(
+            preds.to("cuda"), fs=16_000, personalized=False, device="cuda", cache_session=False
+        )
+        assert before_iter >= mem(), "memory increased too much above base level"

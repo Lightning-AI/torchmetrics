@@ -306,8 +306,7 @@ class Metric(Module, ABC):
         # check if states are already synced
         if self._is_synced:
             raise TorchMetricsUserError(
-                "The Metric shouldn't be synced when performing ``forward``. "
-                "HINT: Did you forget to call ``unsync`` ?."
+                "The Metric shouldn't be synced when performing ``forward``. HINT: Did you forget to call ``unsync`` ?."
             )
 
         if self.full_state_update or self.full_state_update is None or self.dist_sync_on_step:

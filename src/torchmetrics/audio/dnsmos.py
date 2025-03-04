@@ -71,6 +71,9 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
         device: the device used for calculating DNSMOS, can be cpu or cuda:n, where n is the index of gpu.
             If None is given, then the device of input is used.
         num_threads: number of threads to use for onnxruntime CPU inference.
+        cache_session: whether to cache the onnx session. By default this is true, meaning that repeated calls to this
+            method is faster than if this was set to False, the consequence is that the session will be cached in
+            memory until the process is terminated.
 
     Raises:
         ModuleNotFoundError:
@@ -100,6 +103,7 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
         personalized: bool,
         device: Optional[str] = None,
         num_threads: Optional[int] = None,
+        cache_sessions: bool = True,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -108,11 +112,17 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
                 "DNSMOS metric requires that librosa, onnxruntime and requests are installed."
                 " Install as `pip install librosa onnxruntime-gpu requests`."
             )
-
+        if fs <= 0 or not isinstance(fs, int):
+            raise ValueError("Argument `fs` must be a positive integer.")
         self.fs = fs
+
+        if not isinstance(personalized, bool):
+            raise ValueError("Argument `personalized` must be a boolean.")
         self.personalized = personalized
+
         self.cal_device = device
         self.num_threads = num_threads
+        self.cache_sessions = cache_sessions
 
         self.add_state("sum_dnsmos", default=tensor([0, 0, 0, 0], dtype=torch.float64), dist_reduce_fx="sum")
         self.add_state("total", default=tensor(0), dist_reduce_fx="sum")
@@ -120,11 +130,12 @@ class DeepNoiseSuppressionMeanOpinionScore(Metric):
     def update(self, preds: Tensor) -> None:
         """Update state with predictions."""
         metric_batch = deep_noise_suppression_mean_opinion_score(
-            preds,
-            self.fs,
-            self.personalized,
-            self.cal_device,
-            self.num_threads,
+            preds=preds,
+            fs=self.fs,
+            personalized=self.personalized,
+            device=self.cal_device,
+            num_threads=self.num_threads,
+            cache_session=self.cache_sessions,
         ).to(self.sum_dnsmos.device)
 
         self.sum_dnsmos += metric_batch.reshape(-1, 4).sum(dim=0)

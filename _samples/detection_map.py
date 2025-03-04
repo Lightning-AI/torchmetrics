@@ -14,6 +14,7 @@
 """An example of how the predictions and target should be defined for the MAP object detection metric."""
 
 from torch import BoolTensor, IntTensor, Tensor
+
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 # Preds should be a list of elements, where each element is a dict

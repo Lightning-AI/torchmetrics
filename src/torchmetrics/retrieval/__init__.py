@@ -31,7 +31,7 @@ __all__ = [
     "RetrievalNormalizedDCG",
     "RetrievalPrecision",
     "RetrievalPrecisionRecallCurve",
+    "RetrievalRPrecision",
     "RetrievalRecall",
     "RetrievalRecallAtFixedPrecision",
-    "RetrievalRPrecision",
 ]

@@ -32,22 +32,22 @@ from torchmetrics.utilities.imports import (
 )
 
 __all__ = [
-    "SpectralDistortionIndex",
-    "SpatialDistortionIndex",
     "ErrorRelativeGlobalDimensionlessSynthesis",
+    "MemorizationInformedFrechetInceptionDistance",
+    "MultiScaleStructuralSimilarityIndexMeasure",
     "PeakSignalNoiseRatio",
     "PeakSignalNoiseRatioWithBlockedEffect",
+    "QualityWithNoReference",
     "RelativeAverageSpectralError",
     "RootMeanSquaredErrorUsingSlidingWindow",
+    "SpatialCorrelationCoefficient",
+    "SpatialDistortionIndex",
     "SpectralAngleMapper",
-    "MultiScaleStructuralSimilarityIndexMeasure",
-    "MemorizationInformedFrechetInceptionDistance",
+    "SpectralDistortionIndex",
     "StructuralSimilarityIndexMeasure",
+    "TotalVariation",
     "UniversalImageQualityIndex",
     "VisualInformationFidelity",
-    "TotalVariation",
-    "SpatialCorrelationCoefficient",
-    "QualityWithNoReference",
 ]
 
 if _TORCH_FIDELITY_AVAILABLE:

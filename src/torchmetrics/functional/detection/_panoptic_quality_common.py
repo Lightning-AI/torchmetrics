@@ -112,8 +112,7 @@ def _validate_inputs(preds: Tensor, target: torch.Tensor) -> None:
         )
     if preds.dim() < 3:
         raise ValueError(
-            "Expected argument `preds` to have at least one spatial dimension (B, *spatial_dims, 2), "
-            f"got {preds.shape}"
+            f"Expected argument `preds` to have at least one spatial dimension (B, *spatial_dims, 2), got {preds.shape}"
         )
     if preds.shape[-1] != 2:
         raise ValueError(
