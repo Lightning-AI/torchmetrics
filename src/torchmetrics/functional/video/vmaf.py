@@ -16,6 +16,8 @@ import vmaf_torch
 from einops import rearrange
 from torch import Tensor
 
+from torchmetrics.utilities.imports import _TORCH_VMAF_AVAILABLE
+
 
 def calculate_luma(video: Tensor) -> Tensor:
     """Calculate the luma component of a video tensor."""
@@ -58,6 +60,9 @@ def video_multi_method_assessment_fusion(
         torch.tensor([0.0, 0.0])
 
     """
+    if not _TORCH_VMAF_AVAILABLE:
+        raise RuntimeError("vmaf-torch is not installed. Please install with `pip install torchmetrics[video]`.")
+
     orig_dtype = preds.dtype
     device = preds.device
 
