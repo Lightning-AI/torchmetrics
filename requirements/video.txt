@@ -1,0 +1,1 @@
+vmaf_torch @ git+https://github.com/alvitrioliks/VMAF-torch
