@@ -33,6 +33,7 @@ from torchmetrics.classification import (
     MultilabelAUROC,
     MultilabelAveragePrecision,
 )
+from torchmetrics.regression import PearsonCorrCoef
 from torchmetrics.text import BLEUScore
 from torchmetrics.utilities.checks import _allclose_recursive
 from unittests._helpers import seed_all
@@ -796,3 +797,39 @@ def test_collection_update():
 
     for k, v in expected.items():
         torch.testing.assert_close(actual=actual.get(k), expected=v, rtol=1e-4, atol=1e-4)
+
+
+def test_collection_state_being_re_established_after_copy():
+    """Check that shared metrics states when using compute groups are re-established after a copy.
+
+    See issue: https://github.com/Lightning-AI/torchmetrics/issues/2896
+
+    """
+    m1, m2 = PearsonCorrCoef(), PearsonCorrCoef()
+    m12 = MetricCollection({"m1": m1, "m2": m2}, compute_groups=True)
+    x1, y1 = torch.randn(100), torch.randn(100)
+    m12.update(x1, y1)
+    assert m12.compute_groups == {0: ["m1", "m2"]}
+
+    # Check that the states are pointing to the same location
+    assert not m12._state_is_copy
+    assert m12.m1.mean_x.data_ptr() == m12.m2.mean_x.data_ptr(), "States should point to the same location"
+
+    # Break the references between the states
+    _ = m12.items()
+    assert m12._state_is_copy
+    assert m12.m1.mean_x.data_ptr() != m12.m2.mean_x.data_ptr(), "States should not point to the same location"
+
+    # Update should restore the references between the states
+    x2, y2 = torch.randn(100), torch.randn(100)
+
+    m12.update(x2, y2)
+    assert not m12._state_is_copy
+    assert m12.m1.mean_x.data_ptr() == m12.m2.mean_x.data_ptr(), "States should point to the same location"
+
+    x3, y3 = torch.randn(100), torch.randn(100)
+    m12.update(x3, y3)
+
+    assert not m12._state_is_copy
+    assert m12.m1.mean_x.data_ptr() == m12.m2.mean_x.data_ptr(), "States should point to the same location"
+    assert m12._equal_metric_states(m12.m1, m12.m2)
