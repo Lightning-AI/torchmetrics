@@ -71,16 +71,33 @@ class CLIPScore(Metric):
 
     As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - source: Source input. This can be:
-        - Images: (:class:`~torch.Tensor` or list of tensors): tensor with images feed to the feature extractor with. If
-            a single tensor it should have shape ``(N, C, H, W)``. If a list of tensors, each tensor should have shape
-            ``(C, H, W)``. ``C`` is the number of channels, ``H`` and ``W`` are the height and width of the image.
-        - Text: (:class:`~str` or :class:`~list` of :class:`~str`): text to compare with the images, one for each image.
-    - target: Target input. This can be:
-        - Images: (:class:`~torch.Tensor` or list of tensors): tensor with images feed to the feature extractor with. If
-            a single tensor it should have shape ``(N, C, H, W)``. If a list of tensors, each tensor should have shape
-            ``(C, H, W)``. ``C`` is the number of channels, ``H`` and ``W`` are the height and width of the image.
-        - Text: (:class:`~str` or :class:`~list` of :class:`~str`): text to compare with the images, one for each image.
+    - source: Source input.
+
+        This can be:
+
+        - Images: ``Tensor`` or list of ``Tensor``
+
+            If a single tensor, it should have shape ``(N, C, H, W)``.
+            If a list of tensors, each tensor should have shape ``(C, H, W)``.
+            ``C`` is the number of channels, ``H`` and ``W`` are the height and width of the image.
+
+        - Text: ``str`` or list of ``str``
+
+            Either a single caption or a list of captions.
+
+    - target: Target input.
+
+        This can be:
+
+        - Images: ``Tensor`` or list of ``Tensor``
+
+            If a single tensor, it should have shape ``(N, C, H, W)``.
+            If a list of tensors, each tensor should have shape ``(C, H, W)``.
+            ``C`` is the number of channels, ``H`` and ``W`` are the height and width of the image.
+
+        - Text: ``str`` or list of ``str``
+
+            Either a single caption or a list of captions.
 
     As output of `forward` and `compute` the metric returns the following output
 
