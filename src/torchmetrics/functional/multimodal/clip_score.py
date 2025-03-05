@@ -110,8 +110,7 @@ def _get_features(
 
     """
     if modality == "image":
-        # Add type checking for images
-        image_data = [i for i in data if isinstance(i, Tensor)]
+        image_data = [i for i in data if isinstance(i, Tensor)]  # Add type checking for images
         processed = processor(images=[i.cpu() for i in image_data], return_tensors="pt", padding=True)
         return model.get_image_features(processed["pixel_values"].to(device))
     if modality == "text":

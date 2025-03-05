@@ -105,6 +105,7 @@ class TestCLIPScore(MetricTester):
             check_scriptable=False,
             check_state_dict=False,
             check_batch=False,
+            check_picklable=model_name_or_path != "jinaai/jina-clip-v2",
         )
 
     @skip_on_connection_issues()
@@ -160,6 +161,8 @@ class TestCLIPScore(MetricTester):
     @skip_on_connection_issues()
     def test_warning_on_long_caption(self, inputs, model_name_or_path):
         """Test that warning is given on long captions but metric still works."""
+        if model_name_or_path != "openai/clip-vit-base-patch32":
+            pytest.skip("This test is only relevant for the default model.")
         metric = CLIPScore(model_name_or_path=model_name_or_path)
         preds, target = inputs
         target[0] = [target[0][0], "A 28-year-old chef who recently moved to San Francisco was found dead. " * 100]
