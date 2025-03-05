@@ -247,10 +247,7 @@ class MetricCollection(ModuleDict):
                 # only update the first member
                 m0 = getattr(self, cg[0])
                 m0.update(*args, **m0._filter_kwargs(**kwargs))
-            if self._state_is_copy:
-                # If we have deep copied state in between updates, reestablish link
-                self._compute_groups_create_state_ref()
-                self._state_is_copy = False
+            self._compute_groups_create_state_ref()
         else:  # the first update always do per metric to form compute groups
             for m in self.values(copy_state=False):
                 m_kwargs = m._filter_kwargs(**kwargs)
@@ -339,16 +336,15 @@ class MetricCollection(ModuleDict):
                 of just passed by reference
 
         """
-        if not self._state_is_copy and self._groups_checked:
-            for cg in self._groups.values():
-                m0 = getattr(self, cg[0])
-                for i in range(1, len(cg)):
-                    mi = getattr(self, cg[i])
-                    for state in m0._defaults:
-                        m0_state = getattr(m0, state)
-                        # Determine if we just should set a reference or a full copy
-                        setattr(mi, state, deepcopy(m0_state) if copy else m0_state)
-                    mi._update_count = deepcopy(m0._update_count) if copy else m0._update_count
+        for cg in self._groups.values():
+            m0 = getattr(self, cg[0])
+            for i in range(1, len(cg)):
+                mi = getattr(self, cg[i])
+                for state in m0._defaults:
+                    m0_state = getattr(m0, state)
+                    # Determine if we just should set a reference or a full copy
+                    setattr(mi, state, deepcopy(m0_state) if copy else m0_state)
+                mi._update_count = deepcopy(m0._update_count) if copy else m0._update_count
         self._state_is_copy = copy
 
     def compute(self) -> dict[str, Any]:
