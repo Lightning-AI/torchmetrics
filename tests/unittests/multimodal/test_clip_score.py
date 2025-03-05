@@ -175,32 +175,64 @@ class TestCLIPScore(MetricTester):
     @skip_on_connection_issues()
     def test_clip_score_image_to_image(self, inputs, model_name_or_path):
         """Test CLIP score for image-to-image comparison."""
+        expected = {
+            "openai/clip-vit-base-patch32": 96.0,
+            "jinaai/jina-clip-v2": 88.0,
+            "zer0int/LongCLIP-L-Diffusers": 98.0,
+            "_custom_clip_processor_model": 96.0,
+        }
         metric = CLIPScore(model_name_or_path=model_name_or_path)
         preds, _ = inputs
         score = metric(preds[0][0], preds[0][1])
-        assert score.detach().round() == torch.tensor(96.0)
+        assert score.detach().round() == torch.tensor(
+            expected[model_name_or_path if not callable(model_name_or_path) else "_custom_clip_processor_model"]
+        )
 
     @skip_on_connection_issues()
     def test_clip_score_text_to_text(self, inputs, model_name_or_path):
         """Test CLIP score for text-to-text comparison."""
+        expected = {
+            "openai/clip-vit-base-patch32": 65.0,
+            "jinaai/jina-clip-v2": 49.0,
+            "zer0int/LongCLIP-L-Diffusers": 44.0,
+            "_custom_clip_processor_model": 65.0,
+        }
         metric = CLIPScore(model_name_or_path=model_name_or_path)
         _, target = inputs
         score = metric(target[0][0], target[0][1])
-        assert score.detach().round() == torch.tensor(65.0)
+        assert score.detach().round() == torch.tensor(
+            expected[model_name_or_path if not callable(model_name_or_path) else "_custom_clip_processor_model"]
+        )
 
     @skip_on_connection_issues()
     def test_clip_score_functional_image_to_image(self, inputs, model_name_or_path):
         """Test functional implementation of image-to-image CLIP score."""
+        expected = {
+            "openai/clip-vit-base-patch32": 96.0,
+            "jinaai/jina-clip-v2": 88.0,
+            "zer0int/LongCLIP-L-Diffusers": 98.0,
+            "_custom_clip_processor_model": 96.0,
+        }
         preds, _ = inputs
         score = clip_score(preds[0][0], preds[0][1], model_name_or_path=model_name_or_path)
-        assert score.detach().round() == torch.tensor(96.0)
+        assert score.detach().round() == torch.tensor(
+            expected[model_name_or_path if not callable(model_name_or_path) else "_custom_clip_processor_model"]
+        )
 
     @skip_on_connection_issues()
     def test_clip_score_functional_text_to_text(self, inputs, model_name_or_path):
         """Test functional implementation of text-to-text CLIP score."""
+        expected = {
+            "openai/clip-vit-base-patch32": 65.0,
+            "jinaai/jina-clip-v2": 49.0,
+            "zer0int/LongCLIP-L-Diffusers": 44.0,
+            "_custom_clip_processor_model": 65.0,
+        }
         _, target = inputs
         score = clip_score(target[0][0], target[0][1], model_name_or_path=model_name_or_path)
-        assert score.detach().round() == torch.tensor(65.0)
+        assert score.detach().round() == torch.tensor(
+            expected[model_name_or_path if not callable(model_name_or_path) else "_custom_clip_processor_model"]
+        )
 
 
 @pytest.mark.parametrize(
