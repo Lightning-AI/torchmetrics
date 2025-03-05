@@ -12,19 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from torch import Tensor
-from torchmetrics.metric import Metric
 from vmaf_torch.vmaf import VMAF as VMAF_torch
 
-class VMAF(Metric):
-    """
-    
-    
+from torchmetrics.metric import Metric
 
-    .. note::
-        This implementation requires you to have vmaf-torch installed: https://github.com/alvitrioliks/VMAF-torch.
-        Install either by cloning the repository and running `pip install .` or with `pip install torchmetrics[video]`.
-    
+
+class VMAF(Metric):
+    """.. note::
+    This implementation requires you to have vmaf-torch installed: https://github.com/alvitrioliks/VMAF-torch.
+    Install either by cloning the repository and running `pip install .` or with `pip install torchmetrics[video]`.
+
     """
+
     def __init__(self):
         super().__init__()
         self.backend = VMAF_torch()
