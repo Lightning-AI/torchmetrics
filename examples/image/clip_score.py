@@ -41,8 +41,7 @@ captions = [
 
 models = [
     "openai/clip-vit-base-patch16",
-    "jinaai/jina-clip-v2",
-    "zer0int/LongCLIP-L-Diffusers",
+    # "zer0int/LongCLIP-L-Diffusers",
 ]
 
 # %%
