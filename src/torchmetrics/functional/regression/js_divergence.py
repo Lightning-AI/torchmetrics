@@ -95,7 +95,7 @@ def jensen_shannon_divergence(
         >>> p = tensor([[0.36, 0.48, 0.16]])
         >>> q = tensor([[1/3, 1/3, 1/3]])
         >>> jensen_shannon_divergence(p, q)
-        tensor(0.0853)
+        tensor(0.0225)
 
     """
     measures, total = _jsd_update(p, q, log_prob)

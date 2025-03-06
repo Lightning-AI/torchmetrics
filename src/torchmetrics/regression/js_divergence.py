@@ -76,7 +76,7 @@ class JensenShannonDivergence(Metric):
         >>> q = tensor([[0.3, 0.7], [0.4, 0.6], [0.5, 0.5]])
         >>> js_div = JensenShannonDivergence()
         >>> js_div(p, q)
-        tensor(0.0833)
+        tensor(0.0259)
 
     """
 
