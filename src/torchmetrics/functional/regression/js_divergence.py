@@ -43,8 +43,8 @@ def _jsd_update(p: Tensor, q: Tensor, log_prob: bool) -> tuple[Tensor, int]:
             q, mean, log_prob=log_prob, reduction=None
         )
     else:
-        p = p / p.sum(axis=-1, keepdim=True)
-        q = q / q.sum(axis=-1, keepdim=True)
+        p = p / p.sum(axis=-1, keepdim=True)  # type: ignore[call-overload]
+        q = q / q.sum(axis=-1, keepdim=True)  # type: ignore[call-overload]
         mean = (p + q) / 2
         measures = 0.5 * kl_divergence(p, mean, log_prob=log_prob, reduction=None) + 0.5 * kl_divergence(
             q, mean, log_prob=log_prob, reduction=None
