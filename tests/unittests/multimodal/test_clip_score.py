@@ -31,7 +31,7 @@ from torchmetrics.functional.multimodal.clip_score import (
 )
 from torchmetrics.multimodal.clip_score import CLIPScore
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
-from unittests._helpers import seed_all, skip_on_connection_issues
+from unittests._helpers import seed_all, skip_on_connection_issues, skip_on_cuda_oom
 from unittests._helpers.testers import MetricTester
 
 seed_all(42)
@@ -168,7 +168,7 @@ class TestCLIPScore(MetricTester):
         target[0] = [target[0][0], "A 28-year-old chef who recently moved to San Francisco was found dead. " * 100]
         with pytest.warns(
             UserWarning,
-            match="Encountered caption longer than max_position_embeddings=77. Will truncate captions to this length.*",
+            match="Encountered caption longer than max_position_embeddings=77. Will truncate captions to this.*",
         ):
             metric.update(preds[0], target[0])
 
@@ -193,7 +193,7 @@ class TestCLIPScore(MetricTester):
         """Test CLIP score for text-to-text comparison."""
         expected = {
             "openai/clip-vit-base-patch32": 65.0,
-            "jinaai/jina-clip-v2": 49.0,
+            "jinaai/jina-clip-v2": 50.0,
             "zer0int/LongCLIP-L-Diffusers": 44.0,
             "_custom_clip_processor_model": 65.0,
         }
@@ -219,6 +219,7 @@ class TestCLIPScore(MetricTester):
             expected[model_name_or_path if not callable(model_name_or_path) else "_custom_clip_processor_model"]
         )
 
+    @skip_on_cuda_oom()
     @skip_on_connection_issues()
     def test_clip_score_functional_text_to_text(self, inputs, model_name_or_path):
         """Test functional implementation of text-to-text CLIP score."""

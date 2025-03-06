@@ -41,6 +41,24 @@ else:
     _CLIPProcessor = None
 
 
+class JinaProcessorWrapper:
+    """Wrapper class to convert tensors to PIL images if needed for Jina CLIP model."""
+
+    def __init__(self, processor: _CLIPProcessor) -> None:
+        self.processor = processor
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        """Wrap the processor's __call__ method to convert tensors to PIL images if needed."""
+        # Check if 'images' is in kwargs and convert tensors to PIL images if needed
+        from torchvision.transforms.functional import to_pil_image
+
+        if "images" in kwargs:
+            kwargs["images"] = [
+                to_pil_image(img.permute(2, 0, 1).cpu()) if isinstance(img, Tensor) else img for img in kwargs["images"]
+            ]
+        return self.processor(*args, **kwargs)
+
+
 def _detect_modality(input_data: Union[Tensor, List[Tensor], List[str], str]) -> Literal["image", "text"]:
     """Automatically detect the modality of the input data.
 
@@ -208,23 +226,7 @@ def _get_clip_model_and_processor(
             model = _CLIPModel.from_pretrained(model_name_or_path)
             processor = _CLIPProcessor.from_pretrained(model_name_or_path)
         elif "jinaai" in model_name_or_path:
-            from torchvision.transforms.functional import to_pil_image
-
             model = AutoModel.from_pretrained(model_name_or_path, trust_remote_code=True)
-
-            class JinaProcessorWrapper:
-                def __init__(self, processor: _CLIPProcessor) -> None:
-                    self.processor = processor
-
-                def __call__(self, *args: Any, **kwargs: Any) -> Any:
-                    # Check if 'images' is in kwargs and convert tensors to PIL images if needed
-                    if "images" in kwargs:
-                        kwargs["images"] = [
-                            to_pil_image(img.permute(2, 0, 1).cpu()) if isinstance(img, Tensor) else img
-                            for img in kwargs["images"]
-                        ]
-                    return self.processor(*args, **kwargs)
-
             processor = JinaProcessorWrapper(
                 processor=AutoProcessor.from_pretrained(model_name_or_path, trust_remote_code=True)
             )
