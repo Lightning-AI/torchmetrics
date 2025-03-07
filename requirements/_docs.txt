@@ -18,16 +18,17 @@ pydantic > 1.0.0, < 3.0.0
 
 # integrations
 -r _integrate.txt
--r visual.txt
 -r audio.txt
+-r clustering.txt
 -r detection.txt
 -r image.txt
 -r multimodal.txt
 -r text.txt
+-r visual.txt
 
 # Gallery extra requirements
 # --------------------------
 # todo: until this has resolution - https://github.com/sphinx-gallery/sphinx-gallery/issues/1290
 # Image
 scikit-image ~=0.22; python_version < "3.10"
-scikit-image ~=0.19; python_version > "3.9"  # we do not use `> =` because of oldest replcement
+scikit-image ~=0.25; python_version > "3.9"  # we do not use `> =` because of oldest replcement

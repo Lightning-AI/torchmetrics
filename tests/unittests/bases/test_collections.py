@@ -573,6 +573,28 @@ def test_compute_group_define_by_user():
     assert m.compute()
 
 
+def test_compute_group_define_by_user_outside_specs():
+    """Check that user can provide compute groups with missing metrics in the specs."""
+    m = MetricCollection(
+        MulticlassConfusionMatrix(3),
+        MulticlassRecall(3),
+        MulticlassPrecision(3),
+        MulticlassAccuracy(3),
+        compute_groups=[["MulticlassRecall", "MulticlassPrecision"]],
+    )
+    assert m._groups_checked
+    assert m.compute_groups == {
+        0: ["MulticlassRecall", "MulticlassPrecision"],
+        1: ["MulticlassConfusionMatrix"],
+        2: ["MulticlassAccuracy"],
+    }
+
+    preds = torch.randn(10, 3).softmax(dim=-1)
+    target = torch.randint(3, (10,))
+    m.update(preds, target)
+    assert m.compute()
+
+
 def test_classwise_wrapper_compute_group():
     """Check that user can provide compute groups."""
     classwise_accuracy = ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None), prefix="accuracy")
