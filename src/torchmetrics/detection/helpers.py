@@ -379,6 +379,7 @@ class CocoBackend:
             detection_scores: List of tensors containing the confidence scores for predictions
             name: Name of the output file, which will be appended with "_preds.json" and "_target.json"
             iou_type: Type of IoU calculation to use. Can be either "bbox" for bounding box or "segm" for segmentation
+            average: Type of averaging to use. Can be either "macro" or "micro"
 
         Example:
             >>> from torch import tensor
