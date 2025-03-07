@@ -69,3 +69,25 @@ def skip_on_connection_issues(reason: str = "Unable to load checkpoints from Hug
         return run_test
 
     return test_decorator
+
+
+def skip_on_cuda_oom(reason: str = "Skipping test due to CUDA Out of Memory (OOM) error."):
+    """Skip tests that fail due to CUDA Out of Memory (OOM) errors.
+
+    The test runs normally if no OOM error arises, but is marked as skipped otherwise.
+
+    """
+
+    def test_decorator(function: Callable) -> Callable:
+        @wraps(function)
+        def run_test(*args: Any, **kwargs: Any) -> Optional[Any]:
+            try:
+                return function(*args, **kwargs)
+            except RuntimeError as ex:
+                if "CUDA out of memory" not in str(ex):
+                    raise ex
+                pytest.skip(reason)
+
+        return run_test
+
+    return test_decorator

@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `ARNIQA` metric to image domain ([#2953](https://github.com/PyTorchLightning/metrics/pull/2953))
 
 
+- Added support for more models and processors in `CLIPScore` ([#2978](https://github.com/PyTorchLightning/metrics/pull/2978))
+
+
 ### Changed
 
 -
