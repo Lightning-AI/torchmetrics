@@ -15,6 +15,7 @@ from torchmetrics.functional.regression.concordance import concordance_corrcoef
 from torchmetrics.functional.regression.cosine_similarity import cosine_similarity
 from torchmetrics.functional.regression.csi import critical_success_index
 from torchmetrics.functional.regression.explained_variance import explained_variance
+from torchmetrics.functional.regression.js_divergence import jensen_shannon_divergence
 from torchmetrics.functional.regression.kendall import kendall_rank_corrcoef
 from torchmetrics.functional.regression.kl_divergence import kl_divergence
 from torchmetrics.functional.regression.log_cosh import log_cosh_error
@@ -37,6 +38,7 @@ __all__ = [
     "cosine_similarity",
     "critical_success_index",
     "explained_variance",
+    "jensen_shannon_divergence",
     "kendall_rank_corrcoef",
     "kl_divergence",
     "log_cosh_error",
