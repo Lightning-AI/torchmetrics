@@ -196,6 +196,7 @@ class CocoBackend:
             area=groundtruth_area,
             iou_type=iou_type,
             all_labels=all_labels,
+            average=average,
         )
         coco_preds.dataset = self._get_coco_format(
             labels=detection_labels,
@@ -204,6 +205,7 @@ class CocoBackend:
             scores=detection_scores,
             iou_type=iou_type,
             all_labels=all_labels,
+            average=average,
         )
 
         with contextlib.redirect_stdout(io.StringIO()):
@@ -357,6 +359,7 @@ class CocoBackend:
         detection_scores: List[Tensor],
         name: str = "tm_map_input",
         iou_type: tuple[str] = ("bbox",),
+        average: Literal["macro", "micro"] = "micro",
     ) -> None:
         """Utility function for converting the input for mAP metric to coco format and saving it to a json file.
 
@@ -410,6 +413,7 @@ class CocoBackend:
             crowds=groundtruth_crowds,
             area=groundtruth_area,
             all_labels=all_labels,
+            average=average,
         )
         preds_dataset = self._get_coco_format(
             labels=detection_labels,
@@ -417,6 +421,7 @@ class CocoBackend:
             masks=detection_mask if len(detection_mask) > 0 else None,
             scores=detection_scores,
             all_labels=all_labels,
+            average=average,
         )
         if "segm" in iou_type:
             # the rle masks needs to be decoded to be written to a file
@@ -449,6 +454,7 @@ class CocoBackend:
         crowds: Optional[List[Tensor]] = None,
         area: Optional[List[Tensor]] = None,
         iou_type: tuple[str] = ("bbox",),
+        average: Literal["macro", "micro"] = "micro",
     ) -> dict:
         """Transforms and returns all cached targets or predictions in COCO format.
 
@@ -529,5 +535,7 @@ class CocoBackend:
                 annotations.append(annotation)
                 annotation_id += 1
 
-        classes = [{"id": i, "name": str(i)} for i in all_labels]
+        classes = (
+            [{"id": i, "name": str(i)} for i in self._get_classes()] if average != "micro" else [{"id": 0, "name": "0"}]
+        )
         return {"images": images, "annotations": annotations, "categories": classes}
