@@ -33,8 +33,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import inspect
 import os
-import sys
 from typing import Optional
 
 import numpy as np
@@ -111,7 +111,8 @@ class DISTSNetwork(torch.nn.Module):
         self.alpha.data.normal_(0.1, 0.01)
         self.beta.data.normal_(0.1, 0.01)
         if load_weights:
-            weights = torch.load(os.path.join(sys.prefix, "weights.pt"))
+            path = os.path.abspath(os.path.join(inspect.getfile(self.__init__), "..", "dists_models/weights.pt"))
+            weights = torch.load(path)
             self.alpha.data = weights["alpha"]
             self.beta.data = weights["beta"]
 
