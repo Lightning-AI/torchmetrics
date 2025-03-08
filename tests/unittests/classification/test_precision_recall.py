@@ -445,6 +445,81 @@ def test_top_k(
     )
 
 
+@pytest.mark.parametrize("num_classes", [5])
+def test_multiclass_precision_recall_with_top_k(num_classes):
+    """Test that Precision and Recall increase monotonically with top_k and equal 1 when top_k equals num_classes.
+
+    Args:
+        num_classes: Number of classes in the classification task.
+
+    The test verifies two properties:
+    1. Precision and Recall increases or stays the same as top_k increases
+    2. Precision and Recall equals 1 when top_k equals num_classes
+
+    """
+    preds = torch.randn(200, num_classes).softmax(dim=-1)
+    target = torch.randint(num_classes, (200,))
+
+    previous_precision = 0.0
+    for k in range(1, num_classes + 1):
+        precision_score = MulticlassPrecision(num_classes=num_classes, top_k=k, average="macro")
+        precision = precision_score(preds, target)
+
+        assert precision >= previous_precision, f"Precision did not increase for top_k={k}"
+        previous_precision = precision
+
+        if k == num_classes:
+            assert torch.isclose(precision, torch.tensor(1.0)), (
+                f"Precision is not 1 for top_k={k} when num_classes={num_classes}"
+            )
+
+    previous_recall = 0.0
+    for k in range(1, num_classes + 1):
+        recall_score = MulticlassRecall(num_classes=num_classes, top_k=k, average="macro")
+        recall = recall_score(preds, target)
+
+        assert recall >= previous_recall, f"Recall did not increase for top_k={k}"
+        previous_recall = recall
+
+        if k == num_classes:
+            assert torch.isclose(recall, torch.tensor(1.0)), (
+                f"Recall is not 1 for top_k={k} when num_classes={num_classes}"
+            )
+
+
+@pytest.mark.parametrize(("num_classes", "k"), [(5, 3), (10, 5)])
+def test_multiclass_precision_recall_top_k_equivalence(num_classes, k):
+    """Test that top-k Precision and Recall scores are equivalent to corrected top-1 scores."""
+    preds = torch.randn(200, num_classes).softmax(dim=-1)
+    target = torch.randint(num_classes, (200,))
+
+    precision_top_k = MulticlassPrecision(num_classes=num_classes, top_k=k, average="macro")
+    precision_top_1 = MulticlassPrecision(num_classes=num_classes, top_k=1, average="macro")
+
+    recall_top_k = MulticlassRecall(num_classes=num_classes, top_k=k, average="macro")
+    recall_top_1 = MulticlassRecall(num_classes=num_classes, top_k=1, average="macro")
+
+    pred_top_k = torch.argsort(preds, dim=1, descending=True)[:, :k]
+    pred_top_1 = pred_top_k[:, 0]
+    target_in_top_k = (target.unsqueeze(1) == pred_top_k).any(dim=1)
+    pred_corrected_top_k = torch.where(target_in_top_k, target, pred_top_1)
+
+    precision_score_top_k = precision_top_k(preds, target)
+    precision_score_corrected = precision_top_1(pred_corrected_top_k, target)
+
+    recall_score_top_k = recall_top_k(preds, target)
+    recall_score_corrected = recall_top_1(pred_corrected_top_k, target)
+
+    assert torch.isclose(precision_score_top_k, precision_score_corrected), (
+        f"Top-{k} Precision ({precision_score_top_k}) does not match "
+        f"corrected top-1 Precision ({precision_score_corrected})"
+    )
+
+    assert torch.isclose(recall_score_top_k, recall_score_corrected), (
+        f"Top-{k} Recall ({recall_score_top_k}) does not match corrected top-1 Recall ({recall_score_corrected})"
+    )
+
+
 def _reference_sklearn_precision_recall_multilabel_global(preds, target, sk_fn, ignore_index, average, zero_division):
     if average == "micro":
         preds = preds.flatten()
