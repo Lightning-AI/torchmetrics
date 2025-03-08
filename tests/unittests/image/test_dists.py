@@ -20,11 +20,8 @@ from torch import Tensor
 
 from torchmetrics.functional.image.dists import deep_image_structure_and_texture_similarity
 from torchmetrics.image.dists import DeepImageStructureAndTextureSimilarity
-from torchmetrics.metric import Metric
-from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
-from DISTS_pytorch import DISTS as reference_dists
 
 seed_all(42)
 
@@ -39,12 +36,13 @@ _inputs = _Input(
     img2=torch.rand(4, 2, 3, 50, 50),
 )
 
+
 def _reference_dists(preds: Tensor, target: Tensor, reduction: str) -> Tensor:
     try:
         from DISTS_pytorch import DISTS as reference_dists
     except ImportError:
         pytest.skip("test requires DISTS_pytorch package to be installed")
-    
+
     ref = reference_dists()
     res = ref(preds, target).detach().cpu().numpy()
     if reduction == "mean":
@@ -92,9 +90,13 @@ class TestDISTS(MetricTester):
         )
 
     def test_dists_half_cpu(self):
-        """Test for half + cpu support"""
-        self.run_precision_test_cpu(preds=_inputs.img1, target=_inputs.img2, metric_module=DeepImageStructureAndTextureSimilarity)
-    
+        """Test for half + cpu support."""
+        self.run_precision_test_cpu(
+            preds=_inputs.img1, target=_inputs.img2, metric_module=DeepImageStructureAndTextureSimilarity
+        )
+
     def test_dists_half_gpu(self):
-        """Test for half + gpu support"""
-        self.run_precision_test_gpu(preds=_inputs.img1, target=_inputs.img2, metric_module=DeepImageStructureAndTextureSimilarity)
+        """Test for half + gpu support."""
+        self.run_precision_test_gpu(
+            preds=_inputs.img1, target=_inputs.img2, metric_module=DeepImageStructureAndTextureSimilarity
+        )

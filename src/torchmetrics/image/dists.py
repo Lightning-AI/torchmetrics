@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Literal, Sequence, Union
-from torchmetrics.metric import Metric
+from typing import Literal, Optional, Sequence, Union
+
 from torch import Tensor
-from torchmetrics.functional.image.dists import _dists_compute, _dists_update
-from torchmetrics.utilities.checks import _SKIP_SLOW_DOCTEST, _try_proceed_with_timeout
-from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE, _TORCHVISION_AVAILABLE
+
+from torchmetrics.metric import Metric
+from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 
 if not _MATPLOTLIB_AVAILABLE:
@@ -25,7 +25,6 @@ if not _MATPLOTLIB_AVAILABLE:
 
 class DeepImageStructureAndTextureSimilarity(Metric):
     """Calculates Deep Image Structure and Texture Similarity (DISTS) score."""
-
 
     is_differentiable: bool = True
     higher_is_better: bool = False
@@ -37,11 +36,9 @@ class DeepImageStructureAndTextureSimilarity(Metric):
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the metric state."""
-        pass
 
     def compute(self) -> Tensor:
         """Computes the DISTS score."""
-        pass
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
