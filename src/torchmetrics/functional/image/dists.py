@@ -169,12 +169,33 @@ def _dists_compute(scores: Tensor, reduction: Optional[Literal["sum", "mean", "n
         return scores.sum()
     if reduction == "mean":
         return scores.mean()
-    return scores
+    if reduction is None or reduction == "none":
+        return scores
+    raise ValueError(f"Argument {reduction} is not valid. Choose 'sum', 'mean' or 'none'., but got {reduction}")
 
 
 def deep_image_structure_and_texture_similarity(
     preds: Tensor, target: Tensor, reduction: Optional[Literal["sum", "mean", "none"]] = None
 ) -> Tensor:
-    """Calculates Deep Image Structure and Texture Similarity (DISTS) score."""
+    """Calculates `Deep Image Structure and Texture Similarity`_ (DISTS) score.
+    
+    Args:
+        preds: Predicted image tensor.
+        target: Target image tensor.
+        reduction: Reduction method for the output.
+
+    Returns:
+        DISTS Similarity score between the two images.
+
+    Example:
+        >>> from torch import rand
+        >>> preds = rand(5, 3, 256, 256)
+        >>> target = rand(5, 3, 256, 256)
+        >>> deep_image_structure_and_texture_similarity(preds, target)
+        tensor([0.1285, 0.1344, 0.1356, 0.1277, 0.1276], grad_fn=<RsubBackward1>)
+        >>> deep_image_structure_and_texture_similarity(preds, target, reduction='mean')
+        tensor(0.1308, grad_fn=<MeanBackward0>)
+    
+    """
     scores = _dists_update(preds, target)
     return _dists_compute(scores, reduction)

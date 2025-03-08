@@ -181,5 +181,6 @@
 .. _Log AUC: https://pubmed.ncbi.nlm.nih.gov/20735049/
 .. _Negative Predictive Value: https://en.wikipedia.org/wiki/Positive_and_negative_predictive_values
 .. _ARNIQA: https://arxiv.org/abs/2310.14918
+.. _Deep Image Structure and Texture Similarity: https://ieeexplore.ieee.org/abstract/document/9298952
 .. _KonIQ-10k: https://database.mmsp-kn.de/koniq-10k-database.html
 .. _KADID-10k: https://database.mmsp-kn.de/kadid-10k-database.html
