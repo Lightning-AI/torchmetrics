@@ -476,7 +476,7 @@ class RecallAtFixedPrecision(_ClassificationTaskWrapper):
     a given precision level.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryRecallAtFixedPrecision`,
     :class:`~torchmetrics.classification.MulticlassRecallAtFixedPrecision` and
     :class:`~torchmetrics.classification.MultilabelRecallAtFixedPrecision` for the specific details of each argument

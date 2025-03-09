@@ -731,7 +731,7 @@ def fbeta_score(
         {(\beta^2 * \text{precision}) + \text{recall}}
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_fbeta_score`,
     :func:`~torchmetrics.functional.classification.multiclass_fbeta_score` and
     :func:`~torchmetrics.functional.classification.multilabel_fbeta_score` for the specific
@@ -806,7 +806,7 @@ def f1_score(
         F_{1} = 2\frac{\text{precision} * \text{recall}}{(\text{precision}) + \text{recall}}
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_f1_score`,
     :func:`~torchmetrics.functional.classification.multiclass_f1_score` and
     :func:`~torchmetrics.functional.classification.multilabel_f1_score` for the specific

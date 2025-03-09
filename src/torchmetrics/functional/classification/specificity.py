@@ -357,7 +357,7 @@ def specificity(
     false positives respecitively.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_specificity`,
     :func:`~torchmetrics.functional.classification.multiclass_specificity` and
     :func:`~torchmetrics.functional.classification.multilabel_specificity` for the specific

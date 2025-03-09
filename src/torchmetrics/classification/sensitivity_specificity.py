@@ -337,7 +337,7 @@ class SensitivityAtSpecificity(_ClassificationTaskWrapper):
     find the sensitivity for a given specificity level.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinarySensitivityAtSpecificity`,
     :class:`~torchmetrics.classification.MulticlassSensitivityAtSpecificity` and
     :class:`~torchmetrics.classification.MultilabelSensitivityAtSpecificity` for the specific details of each argument

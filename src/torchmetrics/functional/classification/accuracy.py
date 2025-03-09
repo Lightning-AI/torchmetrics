@@ -394,7 +394,7 @@ def accuracy(
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_accuracy`,
     :func:`~torchmetrics.functional.classification.multiclass_accuracy` and
     :func:`~torchmetrics.functional.classification.multilabel_accuracy` for the specific details of

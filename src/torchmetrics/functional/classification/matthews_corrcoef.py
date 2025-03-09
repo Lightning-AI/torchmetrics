@@ -261,7 +261,7 @@ def matthews_corrcoef(
     This metric measures the general correlation or quality of a classification.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_matthews_corrcoef`,
     :func:`~torchmetrics.functional.classification.multiclass_matthews_corrcoef` and
     :func:`~torchmetrics.functional.classification.multilabel_matthews_corrcoef` for

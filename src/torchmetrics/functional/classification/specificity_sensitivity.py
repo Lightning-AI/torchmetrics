@@ -457,7 +457,7 @@ def specificity_at_sensitivity(
     the find the specificity for a given sensitivity level.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_specificity_at_sensitivity`,
     :func:`~torchmetrics.functional.classification.multiclass_specificity_at_sensitivity` and
     :func:`~torchmetrics.functional.classification.multilabel_specificity_at_sensitivity` for the specific details of

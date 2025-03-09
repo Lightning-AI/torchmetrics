@@ -468,7 +468,7 @@ class LogAUC(_ClassificationTaskWrapper):
     is of high importance.
 
     This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryLogAUC`, :class:`~torchmetrics.classification.MulticlassLogAUC` and
     :class:`~torchmetrics.classification.MultilabelLogAUC` for the specific details of each argument influence and
     examples.

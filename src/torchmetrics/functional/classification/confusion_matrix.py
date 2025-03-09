@@ -608,7 +608,7 @@ def confusion_matrix(
     r"""Compute the `confusion matrix`_.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_confusion_matrix`,
     :func:`~torchmetrics.functional.classification.multiclass_confusion_matrix` and
     :func:`~torchmetrics.functional.classification.multilabel_confusion_matrix` for

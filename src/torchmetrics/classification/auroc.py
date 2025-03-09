@@ -482,7 +482,7 @@ class AUROC(_ClassificationTaskWrapper):
     corresponds to random guessing.
 
     This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryAUROC`, :class:`~torchmetrics.classification.MulticlassAUROC` and
     :class:`~torchmetrics.classification.MultilabelAUROC` for the specific details of each argument influence and
     examples.

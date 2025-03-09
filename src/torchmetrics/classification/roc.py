@@ -512,7 +512,7 @@ class ROC(_ClassificationTaskWrapper):
     different thresholds, such that the tradeoff between the two values can be seen.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryROC`,
     :class:`~torchmetrics.classification.MulticlassROC` and
     :class:`~torchmetrics.classification.MultilabelROC` for the specific details of each argument
