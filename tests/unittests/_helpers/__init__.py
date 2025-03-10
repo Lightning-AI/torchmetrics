@@ -16,7 +16,7 @@ import random
 import numpy
 import torch
 
-from unittests._helpers.wrappers import skip_on_connection_issues, skip_on_running_out_of_memory
+from unittests._helpers.wrappers import skip_on_connection_issues, skip_on_cuda_oom, skip_on_running_out_of_memory
 
 
 def seed_all(seed):
@@ -27,4 +27,4 @@ def seed_all(seed):
     torch.cuda.manual_seed_all(seed)
 
 
-__all__ = ["seed_all", "skip_on_connection_issues", "skip_on_running_out_of_memory"]
+__all__ = ["seed_all", "skip_on_connection_issues", "skip_on_cuda_oom", "skip_on_running_out_of_memory"]
