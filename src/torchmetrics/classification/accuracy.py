@@ -468,7 +468,7 @@ class Accuracy(_ClassificationTaskWrapper):
     Where :math:`y` is a tensor of target values, and :math:`\hat{y}` is a tensor of predictions.
 
     This module is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryAccuracy`, :class:`~torchmetrics.classification.MulticlassAccuracy` and
     :class:`~torchmetrics.classification.MultilabelAccuracy` for the specific details of each argument influence and
     examples.
