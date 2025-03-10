@@ -74,7 +74,7 @@
 .. _Aggregate the statistics from multiple devices: https://stackoverflow.com/questions/68395368/estimate-running-correlation-on-multiple-nodes
 .. _Pearson Correlation Coefficient: https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
 .. _Python ROUGE Implementation: https://pypi.org/project/rouge-score/
-.. _Scikit_Learn-Ranking.py: https: //github.com/scikit-learn/scikit-learn/blob/master/sklearn/metrics/_ranking.py
+.. _Scikit_Learn-Ranking.py: https://github.com/scikit-learn/scikit-learn/blob/master/sklearn/metrics/_ranking.py
 .. _Verified Uncertainty Calibration: https://arxiv.org/abs/1909.10155
 .. _SQuAD Metric: https://arxiv.org/abs/1606.05250
 .. _chrF score: https://aclanthology.org/W15-3049
@@ -125,7 +125,6 @@
 .. _Complex scale-invariant signal-to-noise ratio: https://arxiv.org/abs/2011.09162
 .. _Signal-to-noise ratio: https://arxiv.org/abs/1811.02508
 .. _Speech-to-Reverberation Modulation Energy Ratio: https://ieeexplore.ieee.org/abstract/document/5547575
-.. _SRMRToolbox: https://github.com/MuSAELab/SRMRToolbox
 .. _SRMRpy: https://github.com/jfsantos/SRMRpy
 .. _Permutation invariant training: https://arxiv.org/abs/1607.00325
 .. _ranking ref1: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
