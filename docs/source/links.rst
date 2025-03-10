@@ -136,7 +136,7 @@
 .. _inception ref2: https://arxiv.org/abs/1706.08500
 .. _kid ref1: https://arxiv.org/abs/1801.01401
 .. _kid ref2: https://arxiv.org/abs/1706.08500
-.. _Spectral Angle Mapper: https://ntrs.nasa.gov/citations/19940012238
+.. _Spectral Angle Mapper: https://www.semanticscholar.org/paper/Discrimination-among-semi-arid-landscape-endmembers-Yuhas-Goetz/4dacd52af0ec8b2b5c0445ce91ecbfc1780001b2
 .. _Multilabel coverage error: https://link.springer.com/chapter/10.1007/978-0-387-09823-4_34
 .. _Panoptic Quality: https://arxiv.org/abs/1801.00868
 .. _torchmetrics mAP example: https://github.com/Lightning-AI/torchmetrics/blob/master/_samples/detection_map.py
