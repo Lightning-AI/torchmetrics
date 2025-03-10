@@ -492,7 +492,7 @@ class AveragePrecision(_ClassificationTaskWrapper):
     equivalent to the area under the precision-recall curve (AUPRC).
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryAveragePrecision`,
     :class:`~torchmetrics.classification.MulticlassAveragePrecision` and
     :class:`~torchmetrics.classification.MultilabelAveragePrecision` for the specific details of each argument
