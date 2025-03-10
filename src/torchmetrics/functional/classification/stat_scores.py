@@ -1123,7 +1123,7 @@ def stat_scores(
     r"""Compute the number of true positives, false positives, true negatives, false negatives and the support.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_stat_scores`,
     :func:`~torchmetrics.functional.classification.multiclass_stat_scores` and
     :func:`~torchmetrics.functional.classification.multilabel_stat_scores` for the specific

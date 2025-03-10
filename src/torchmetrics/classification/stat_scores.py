@@ -74,10 +74,10 @@ class _AbstractStatScores(Metric):
             self.tn.append(tn)  # type: ignore[union-attr]
             self.fn.append(fn)  # type: ignore[union-attr]
         else:
-            self.tp += tp
-            self.fp += fp
-            self.tn += tn
-            self.fn += fn
+            self.tp = self.tp + tp if not isinstance(self.tp, list) else [*self.tp, tp]
+            self.fp = self.fp + fp if not isinstance(self.fp, list) else [*self.fp, fp]
+            self.tn = self.tn + tn if not isinstance(self.tn, list) else [*self.tn, tn]
+            self.fn = self.fn + fn if not isinstance(self.fn, list) else [*self.fn, fn]
 
     def _final_state(self) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """Aggregate states that are lists and return final states."""
@@ -506,7 +506,7 @@ class StatScores(_ClassificationTaskWrapper):
     r"""Compute the number of true positives, false positives, true negatives, false negatives and the support.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryStatScores`, :class:`~torchmetrics.classification.MulticlassStatScores`
     and :class:`~torchmetrics.classification.MultilabelStatScores` for the specific details of each argument influence
     and examples.

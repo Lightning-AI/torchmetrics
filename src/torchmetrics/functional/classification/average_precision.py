@@ -429,7 +429,7 @@ def average_precision(
     equivalent to the area under the precision-recall curve (AUPRC).
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_average_precision`,
     :func:`~torchmetrics.functional.classification.multiclass_average_precision` and
     :func:`~torchmetrics.functional.classification.multilabel_average_precision`
