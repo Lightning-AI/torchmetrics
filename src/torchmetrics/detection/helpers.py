@@ -171,7 +171,7 @@ class CocoBackend:
         detection_box: List[Tensor],
         detection_mask: List[Tensor],
         detection_scores: List[Tensor],
-        iou_type: tuple[str] = ("bbox",),
+        iou_type: Union[Literal["bbox", "segm"], tuple[Literal["bbox", "segm"], ...]] = ("bbox",),
         average: Literal["macro", "micro"] = "micro",
     ) -> tuple[object, object]:
         """Returns the coco datasets for the target and the predictions."""
@@ -238,7 +238,7 @@ class CocoBackend:
     def coco_to_tm(
         coco_preds: str,
         coco_target: str,
-        iou_type: tuple[str] = ("bbox",),
+        iou_type: Union[Literal["bbox", "segm"], tuple[Literal["bbox", "segm"], ...]] = ("bbox",),
         backend: Literal["pycocotools", "faster_coco_eval"] = "pycocotools",
     ) -> tuple[list[dict[str, Tensor]], list[dict[str, Tensor]]]:
         """Utility function for converting .json coco format files to the input format of the mAP metric.
@@ -358,7 +358,7 @@ class CocoBackend:
         detection_mask: List[Tensor],
         detection_scores: List[Tensor],
         name: str = "tm_map_input",
-        iou_type: tuple[str] = ("bbox",),
+        iou_type: Union[Literal["bbox", "segm"], tuple[Literal["bbox", "segm"], ...]] = ("bbox",),
         average: Literal["macro", "micro"] = "micro",
     ) -> None:
         """Utility function for converting the input for mAP metric to coco format and saving it to a json file.
@@ -457,7 +457,7 @@ class CocoBackend:
         scores: Optional[List[Tensor]] = None,
         crowds: Optional[List[Tensor]] = None,
         area: Optional[List[Tensor]] = None,
-        iou_type: tuple[str] = ("bbox",),
+        iou_type: Union[Literal["bbox", "segm"], tuple[Literal["bbox", "segm"], ...]] = ("bbox",),
         average: Literal["macro", "micro"] = "micro",
     ) -> dict:
         """Transforms and returns all cached targets or predictions in COCO format.

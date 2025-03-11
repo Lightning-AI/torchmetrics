@@ -363,7 +363,7 @@ class MeanAveragePrecision(Metric):
             )
         if not _TORCHVISION_AVAILABLE:
             raise ModuleNotFoundError(
-                f"Metric `{self._iou_type.upper()}` requires that `torchvision` is installed."
+                f"Metric `{self._iou_type}` requires that `torchvision` is installed."
                 " Please install with `pip install torchmetrics[detection]`."
             )
 
@@ -472,7 +472,7 @@ class MeanAveragePrecision(Metric):
         self,
         coco_preds: str,
         coco_target: str,
-        iou_type: tuple[str] = ("bbox",),
+        iou_type: Union[Literal["bbox", "segm"], tuple[Literal["bbox", "segm"], ...]] = ("bbox",),
         backend: Literal["pycocotools", "faster_coco_eval"] = "pycocotools",
     ) -> tuple[list[dict[str, Tensor]], list[dict[str, Tensor]]]:
         """Utility function for converting .json coco format files to the input format of this metric.
@@ -526,7 +526,7 @@ class MeanAveragePrecision(Metric):
                 If any score is not type float and of length 1
 
         """
-        _input_validator(preds, target, iou_type=self.iou_type)  # type: ignore[arg-type]
+        _input_validator(preds, target, iou_type=self.iou_type)
 
         for item in preds:
             bbox_detection, mask_detection = self._get_safe_item_values(item, warn=self.warn_on_many_detections)
