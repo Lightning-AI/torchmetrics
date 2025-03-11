@@ -414,6 +414,7 @@ class CocoBackend:
             crowds=groundtruth_crowds,
             area=groundtruth_area,
             all_labels=all_labels,
+            iou_type=iou_type,
             average=average,
         )
         preds_dataset = self._get_coco_format(
@@ -422,6 +423,7 @@ class CocoBackend:
             masks=detection_mask if len(detection_mask) > 0 else None,
             scores=detection_scores,
             all_labels=all_labels,
+            iou_type=iou_type,
             average=average,
         )
         if "segm" in iou_type:
@@ -435,6 +437,7 @@ class CocoBackend:
                 function=lambda x: int(x),
             )
             target_dataset = apply_to_collection(target_dataset, dtype=bytes, function=lambda x: x.decode("utf-8"))
+            target_dataset = apply_to_collection(target_dataset, dtype=np.uint32, function=lambda x: int(x))
 
         preds_json = json.dumps(preds_dataset["annotations"], indent=4)
         target_json = json.dumps(target_dataset, indent=4)
@@ -536,7 +539,5 @@ class CocoBackend:
                 annotations.append(annotation)
                 annotation_id += 1
 
-        classes = (
-            [{"id": i, "name": str(i)} for i in self._get_classes()] if average != "micro" else [{"id": 0, "name": "0"}]
-        )
+        classes = [{"id": i, "name": str(i)} for i in all_labels] if average != "micro" else [{"id": 0, "name": "0"}]
         return {"images": images, "annotations": annotations, "categories": classes}
