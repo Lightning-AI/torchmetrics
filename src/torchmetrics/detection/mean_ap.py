@@ -495,7 +495,7 @@ class MeanAveragePrecision(Metric):
             >>> # Example files can be found at
             >>> # https://github.com/cocodataset/cocoapi/tree/master/results
             >>> from torchmetrics.detection import MeanAveragePrecision
-            >>> preds, target = MeanAveragePrecision.coco_to_tm(
+            >>> preds, target = MeanAveragePrecision().coco_to_tm(
             ...   "instances_val2014_fakebbox100_results.json",
             ...   "val2014_fake_eval_res.txt.json"
             ...   iou_type="bbox"

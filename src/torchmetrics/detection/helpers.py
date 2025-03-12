@@ -15,6 +15,7 @@ import contextlib
 import io
 import json
 from collections.abc import Sequence
+from types import ModuleType
 from typing import List, Literal, Optional, Union
 
 import numpy as np
@@ -22,7 +23,6 @@ import torch
 from lightning_utilities import apply_to_collection
 from torch import Tensor
 
-from torchmetrics.utilities.backends import _load_coco_backend_tools
 from torchmetrics.utilities.imports import (
     _FASTER_COCO_EVAL_AVAILABLE,
     _PYCOCOTOOLS_AVAILABLE,
@@ -118,6 +118,32 @@ def _validate_iou_type_arg(
             f"Expected argument `iou_type` to be one of {allowed_iou_types} or a tuple of, but got {iou_type}"
         )
     return iou_type
+
+
+def _load_coco_backend_tools(backend: Literal["pycocotools", "faster_coco_eval"]) -> tuple[object, object, ModuleType]:
+    """Load the backend tools for the given backend."""
+    if backend == "pycocotools":
+        if not _PYCOCOTOOLS_AVAILABLE:
+            raise ModuleNotFoundError(
+                "Backend `pycocotools` in metric `MeanAveragePrecision`  metric requires that `pycocotools` is"
+                " installed. Please install with `pip install pycocotools` or `pip install torchmetrics[detection]`"
+            )
+        import pycocotools.mask as mask_utils
+        from pycocotools.coco import COCO
+        from pycocotools.cocoeval import COCOeval
+
+        return COCO, COCOeval, mask_utils
+
+    if not _FASTER_COCO_EVAL_AVAILABLE:
+        raise ModuleNotFoundError(
+            "Backend `faster_coco_eval` in metric `MeanAveragePrecision`  metric requires that `faster-coco-eval` is"
+            " installed. Please install with `pip install faster-coco-eval`."
+        )
+    from faster_coco_eval import COCO
+    from faster_coco_eval import COCOeval_faster as COCOeval
+    from faster_coco_eval.core import mask as mask_utils
+
+    return COCO, COCOeval, mask_utils
 
 
 class CocoBackend:
@@ -261,7 +287,7 @@ class CocoBackend:
             >>> # Example files can be found at
             >>> # https://github.com/cocodataset/cocoapi/tree/master/results
             >>> from torchmetrics.detection import MeanAveragePrecision
-            >>> preds, target = MeanAveragePrecision.coco_to_tm(
+            >>> preds, target = MeanAveragePrecision().coco_to_tm(
             ...   "instances_val2014_fakebbox100_results.json",
             ...   "val2014_fake_eval_res.txt.json"
             ...   iou_type="bbox"
