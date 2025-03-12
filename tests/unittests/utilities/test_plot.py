@@ -126,6 +126,7 @@ from torchmetrics.regression import (
     ConcordanceCorrCoef,
     CosineSimilarity,
     ExplainedVariance,
+    JensenShannonDivergence,
     KendallRankCorrCoef,
     KLDivergence,
     LogCoshError,
@@ -478,6 +479,12 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
         pytest.param(KendallRankCorrCoef, _rand_input, _rand_input, id="kendall rank corr coef"),
         pytest.param(
             KLDivergence,
+            lambda: torch.randn(10, 3).softmax(dim=-1),
+            lambda: torch.randn(10, 3).softmax(dim=-1),
+            id="kl divergence",
+        ),
+        pytest.param(
+            JensenShannonDivergence,
             lambda: torch.randn(10, 3).softmax(dim=-1),
             lambda: torch.randn(10, 3).softmax(dim=-1),
             id="kl divergence",
