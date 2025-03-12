@@ -78,7 +78,7 @@ def _custom_clip_processor_model():
     "model_name_or_path",
     [
         "openai/clip-vit-base-patch32",
-        "jinaai/jina-clip-v2",
+        # "jinaai/jina-clip-v2",  # TODO: this can be enabled on CI with large GPU
         "zer0int/LongCLIP-L-Diffusers",
         _custom_clip_processor_model,
     ],
@@ -93,8 +93,6 @@ class TestCLIPScore(MetricTester):
     @skip_on_connection_issues()
     def test_clip_score(self, inputs, model_name_or_path, ddp):
         """Test class implementation of metric."""
-        if model_name_or_path != "openai/clip-vit-base-patch32":
-            pytest.skip("This test is only relevant for the default model.")
         # images are preds and targets are captions
         preds, target = inputs
         self.run_class_metric_test(
@@ -113,8 +111,6 @@ class TestCLIPScore(MetricTester):
     @skip_on_connection_issues()
     def test_clip_score_functional(self, inputs, model_name_or_path):
         """Test functional implementation of metric."""
-        if model_name_or_path != "openai/clip-vit-base-patch32":
-            pytest.skip("This test is only relevant for the default model.")
         preds, target = inputs
         self.run_functional_metric_test(
             preds=preds,
