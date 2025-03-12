@@ -24,13 +24,14 @@ from transformers import CLIPProcessor as _CLIPProcessor
 
 from torchmetrics.functional.multimodal.clip_score import (
     _detect_modality,
+    _get_clip_model_and_processor,
     _process_image_data,
     _process_text_data,
     clip_score,
 )
 from torchmetrics.multimodal.clip_score import CLIPScore
 from torchmetrics.utilities.imports import _TRANSFORMERS_GREATER_EQUAL_4_10
-from unittests._helpers import seed_all, skip_on_connection_issues
+from unittests._helpers import seed_all, skip_on_connection_issues, skip_on_cuda_oom
 from unittests._helpers.testers import MetricTester
 
 seed_all(42)
@@ -54,15 +55,34 @@ _random_input = _InputImagesCaptions(
 
 
 def _reference_clip_score(preds, target, model_name_or_path):
-    processor = _CLIPProcessor.from_pretrained(model_name_or_path)
-    model = _CLIPModel.from_pretrained(model_name_or_path)
+    """Reference implementation for CLIP score.
+
+    This uses the forward methods instead of the individual get_image_features and get_text_features methods.
+
+    """
+    model, processor = _get_clip_model_and_processor(model_name_or_path)
     inputs = processor(text=target, images=[p.cpu() for p in preds], return_tensors="pt", padding=True)
     outputs = model(**inputs)
     logits_per_image = outputs.logits_per_image
     return logits_per_image.diag().mean().detach()
 
 
-@pytest.mark.parametrize("model_name_or_path", ["openai/clip-vit-base-patch32"])
+def _custom_clip_processor_model():
+    """Simulate the user providing a custom CLIP processor and model."""
+    processor = _CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+    model = _CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+    return model, processor
+
+
+@pytest.mark.parametrize(
+    "model_name_or_path",
+    [
+        "openai/clip-vit-base-patch32",
+        # "jinaai/jina-clip-v2",  # TODO: this can be enabled on CI with large GPU
+        "zer0int/LongCLIP-L-Diffusers",
+        _custom_clip_processor_model,
+    ],
+)
 @pytest.mark.parametrize("inputs", [_random_input])
 @pytest.mark.skipif(not _TRANSFORMERS_GREATER_EQUAL_4_10, reason="test requires transformers>=4.10")
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="test requires cuda")
@@ -85,6 +105,7 @@ class TestCLIPScore(MetricTester):
             check_scriptable=False,
             check_state_dict=False,
             check_batch=False,
+            check_picklable=model_name_or_path != "jinaai/jina-clip-v2",
         )
 
     @skip_on_connection_issues()
@@ -140,44 +161,79 @@ class TestCLIPScore(MetricTester):
     @skip_on_connection_issues()
     def test_warning_on_long_caption(self, inputs, model_name_or_path):
         """Test that warning is given on long captions but metric still works."""
+        if model_name_or_path != "openai/clip-vit-base-patch32":
+            pytest.skip("This test is only relevant for the default model.")
         metric = CLIPScore(model_name_or_path=model_name_or_path)
         preds, target = inputs
         target[0] = [target[0][0], "A 28-year-old chef who recently moved to San Francisco was found dead. " * 100]
         with pytest.warns(
             UserWarning,
-            match="Encountered caption longer than max_position_embeddings=77. Will truncate captions to this length.*",
+            match="Encountered caption longer than max_position_embeddings=77. Will truncate captions to this.*",
         ):
             metric.update(preds[0], target[0])
 
     @skip_on_connection_issues()
     def test_clip_score_image_to_image(self, inputs, model_name_or_path):
         """Test CLIP score for image-to-image comparison."""
+        expected = {
+            "openai/clip-vit-base-patch32": 96.0,
+            "jinaai/jina-clip-v2": 88.0,
+            "zer0int/LongCLIP-L-Diffusers": 98.0,
+            "_custom_clip_processor_model": 96.0,
+        }
         metric = CLIPScore(model_name_or_path=model_name_or_path)
         preds, _ = inputs
         score = metric(preds[0][0], preds[0][1])
-        assert score.detach().round() == torch.tensor(96.0)
+        assert score.detach().round() == torch.tensor(
+            expected[model_name_or_path if not callable(model_name_or_path) else "_custom_clip_processor_model"]
+        )
 
     @skip_on_connection_issues()
     def test_clip_score_text_to_text(self, inputs, model_name_or_path):
         """Test CLIP score for text-to-text comparison."""
+        expected = {
+            "openai/clip-vit-base-patch32": 65.0,
+            "jinaai/jina-clip-v2": 50.0,
+            "zer0int/LongCLIP-L-Diffusers": 44.0,
+            "_custom_clip_processor_model": 65.0,
+        }
         metric = CLIPScore(model_name_or_path=model_name_or_path)
         _, target = inputs
         score = metric(target[0][0], target[0][1])
-        assert score.detach().round() == torch.tensor(65.0)
+        assert score.detach().round() == torch.tensor(
+            expected[model_name_or_path if not callable(model_name_or_path) else "_custom_clip_processor_model"]
+        )
 
     @skip_on_connection_issues()
     def test_clip_score_functional_image_to_image(self, inputs, model_name_or_path):
         """Test functional implementation of image-to-image CLIP score."""
+        expected = {
+            "openai/clip-vit-base-patch32": 96.0,
+            "jinaai/jina-clip-v2": 88.0,
+            "zer0int/LongCLIP-L-Diffusers": 98.0,
+            "_custom_clip_processor_model": 96.0,
+        }
         preds, _ = inputs
         score = clip_score(preds[0][0], preds[0][1], model_name_or_path=model_name_or_path)
-        assert score.detach().round() == torch.tensor(96.0)
+        assert score.detach().round() == torch.tensor(
+            expected[model_name_or_path if not callable(model_name_or_path) else "_custom_clip_processor_model"]
+        )
 
+    @skip_on_cuda_oom()
     @skip_on_connection_issues()
     def test_clip_score_functional_text_to_text(self, inputs, model_name_or_path):
         """Test functional implementation of text-to-text CLIP score."""
+        expected = {
+            "openai/clip-vit-base-patch32": 65.0,
+            "jinaai/jina-clip-v2": 49.0,
+            "zer0int/LongCLIP-L-Diffusers": 44.0,
+            "_custom_clip_processor_model": 65.0,
+        }
         _, target = inputs
         score = clip_score(target[0][0], target[0][1], model_name_or_path=model_name_or_path)
-        assert score.detach().round() == torch.tensor(65.0)
+        assert score.detach().round() == torch.tensor(
+            expected[model_name_or_path if not callable(model_name_or_path) else "_custom_clip_processor_model"]
+        )
 
 
 @pytest.mark.parametrize(
