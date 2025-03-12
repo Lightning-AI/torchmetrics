@@ -329,30 +329,35 @@ _ml_target = torch.randint(2, (10, 3))
     "metrics, expected, preds, target",
     [
         # single metric forms its own compute group
-        (MulticlassAccuracy(num_classes=3), {0: ["MulticlassAccuracy"]}, _mc_preds, _mc_target),
+        pytest.param(
+            MulticlassAccuracy(num_classes=3), {0: ["MulticlassAccuracy"]}, _mc_preds, _mc_target, id="single_metric"
+        ),
         # two metrics of same class forms a compute group
-        (
+        pytest.param(
             {"acc0": MulticlassAccuracy(num_classes=3), "acc1": MulticlassAccuracy(num_classes=3)},
             {0: ["acc0", "acc1"]},
             _mc_preds,
             _mc_target,
+            id="two_metrics_of_same_class",
         ),
         # two metrics from registry forms a compute group
-        (
+        pytest.param(
             [MulticlassPrecision(num_classes=3), MulticlassRecall(num_classes=3)],
             {0: ["MulticlassPrecision", "MulticlassRecall"]},
             _mc_preds,
             _mc_target,
+            id="two_metrics_from_registry",
         ),
         # two metrics from different classes gives two compute groups
-        (
+        pytest.param(
             [MulticlassConfusionMatrix(num_classes=3), MulticlassRecall(num_classes=3)],
             {0: ["MulticlassConfusionMatrix"], 1: ["MulticlassRecall"]},
             _mc_preds,
             _mc_target,
+            id="two_metrics_from_different_classes",
         ),
         # multi group multi metric
-        (
+        pytest.param(
             [
                 MulticlassConfusionMatrix(num_classes=3),
                 MulticlassCohenKappa(num_classes=3),
@@ -362,9 +367,10 @@ _ml_target = torch.randint(2, (10, 3))
             {0: ["MulticlassConfusionMatrix", "MulticlassCohenKappa"], 1: ["MulticlassRecall", "MulticlassPrecision"]},
             _mc_preds,
             _mc_target,
+            id="multi_group_multi_metric",
         ),
         # Complex example
-        (
+        pytest.param(
             {
                 "acc": MulticlassAccuracy(num_classes=3),
                 "acc2": MulticlassAccuracy(num_classes=3),
@@ -376,9 +382,10 @@ _ml_target = torch.randint(2, (10, 3))
             {0: ["acc", "acc2", "f1", "recall"], 1: ["acc3"], 2: ["confmat"]},
             _mc_preds,
             _mc_target,
+            id="complex_example",
         ),
         # With list states
-        (
+        pytest.param(
             [
                 MulticlassAUROC(num_classes=3, average="macro"),
                 MulticlassAveragePrecision(num_classes=3, average="macro"),
@@ -386,9 +393,10 @@ _ml_target = torch.randint(2, (10, 3))
             {0: ["MulticlassAUROC", "MulticlassAveragePrecision"]},
             _mc_preds,
             _mc_target,
+            id="with_list_states",
         ),
         # Nested collections
-        (
+        pytest.param(
             [
                 MetricCollection(
                     MultilabelAUROC(num_labels=3, average="micro"),
@@ -411,6 +419,7 @@ _ml_target = torch.randint(2, (10, 3))
             },
             _ml_preds,
             _ml_target,
+            id="nested_collections",
         ),
     ],
 )
