@@ -31,15 +31,21 @@ class _Input(NamedTuple):
     img2: Tensor
 
 
-_inputs = _Input(
+_input1 = _Input(
     img1=torch.rand(4, 2, 3, 50, 50),
     img2=torch.rand(4, 2, 3, 50, 50),
 )
 
+_input2 = _Input(
+    img1=torch.rand(4, 2, 3, 100, 100),
+    img2=torch.rand(4, 2, 3, 100, 100),
+)
+
 
 def _reference_dists(preds: Tensor, target: Tensor, reduction: str) -> Tensor:
+    """Compute DISTS using the reference implementation."""
     try:
-        from DISTS_pytorch import DISTS as reference_dists
+        from DISTS_pytorch import DISTS as reference_dists  # noqa: N811
     except ImportError:
         pytest.skip("test requires DISTS_pytorch package to be installed")
 
@@ -52,51 +58,49 @@ def _reference_dists(preds: Tensor, target: Tensor, reduction: str) -> Tensor:
     return res
 
 
+@pytest.mark.parametrize("inputs", [_input1, _input2])
 class TestDISTS(MetricTester):
     """Test class for `DISTS` metric."""
 
-    @pytest.mark.parametrize("reduction", ["mean", "sum", "none"])
     @pytest.mark.parametrize("ddp", [True, False])
-    def test_dists(self, reduction, ddp):
+    def test_dists(self, inputs: _Input, ddp: bool) -> None:
+        """Test modular implementation of metric."""
         self.run_class_metric_test(
             ddp=ddp,
-            preds=_inputs.img1,
-            target=_inputs.img2,
+            preds=inputs.img1,
+            target=inputs.img2,
             metric_class=DeepImageStructureAndTextureSimilarity,
-            sk_metric=partial(_reference_dists, reduction=reduction),
-            dist_sync_on_step=True,
-            metric_args={"reduction": reduction},
-            check_dist_sync_on_step=True,
-            check_batch=True,
+            reference_metric=partial(_reference_dists, reduction="mean"),
         )
 
-    def test_dists_functional(self):
+    @pytest.mark.parametrize("reduction", ["mean", "sum", "none"])
+    def test_dists_functional(self, inputs: _Input, reduction: str) -> None:
         """Test functional implementation of metric."""
         self.run_functional_metric_test(
-            preds=_inputs.img1,
-            target=_inputs.img2,
+            preds=inputs.img1,
+            target=inputs.img2,
             metric_functional=deep_image_structure_and_texture_similarity,
-            sk_metric=partial(_reference_dists, reduction="mean"),
-            metric_args={"reduction": "mean"},
+            reference_metric=partial(_reference_dists, reduction=reduction),
+            metric_args={"reduction": reduction},
         )
 
-    def test_dists_differentiability(self):
+    def test_dists_differentiability(self, inputs: _Input):
         """Test that the metric is differentiable."""
         self.run_differentiability_test(
-            preds=_inputs.img1,
-            target=_inputs.img2,
+            preds=inputs.img1,
+            target=inputs.img2,
             metric_module=DeepImageStructureAndTextureSimilarity,
             metric_functional=deep_image_structure_and_texture_similarity,
         )
 
-    def test_dists_half_cpu(self):
+    def test_dists_half_cpu(self, inputs: _Input):
         """Test for half + cpu support."""
         self.run_precision_test_cpu(
-            preds=_inputs.img1, target=_inputs.img2, metric_module=DeepImageStructureAndTextureSimilarity
+            preds=inputs.img1, target=inputs.img2, metric_module=DeepImageStructureAndTextureSimilarity
         )
 
-    def test_dists_half_gpu(self):
+    def test_dists_half_gpu(self, inputs: _Input):
         """Test for half + gpu support."""
         self.run_precision_test_gpu(
-            preds=_inputs.img1, target=_inputs.img2, metric_module=DeepImageStructureAndTextureSimilarity
+            preds=inputs.img1, target=inputs.img2, metric_module=DeepImageStructureAndTextureSimilarity
         )
