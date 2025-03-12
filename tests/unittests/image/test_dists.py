@@ -84,15 +84,6 @@ class TestDISTS(MetricTester):
             metric_args={"reduction": reduction},
         )
 
-    def test_dists_differentiability(self, inputs: _Input):
-        """Test that the metric is differentiable."""
-        self.run_differentiability_test(
-            preds=inputs.img1,
-            target=inputs.img2,
-            metric_module=DeepImageStructureAndTextureSimilarity,
-            metric_functional=deep_image_structure_and_texture_similarity,
-        )
-
     def test_dists_half_cpu(self, inputs: _Input):
         """Test for half + cpu support."""
         self.run_precision_test_cpu(

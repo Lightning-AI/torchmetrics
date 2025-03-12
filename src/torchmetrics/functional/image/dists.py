@@ -35,7 +35,7 @@
 # SOFTWARE.
 import inspect
 import os
-from typing import Optional
+from typing import List, Optional
 
 import numpy as np
 import torch
@@ -51,7 +51,7 @@ class L2pooling(nn.Module):
 
     filter: Tensor
 
-    def __init__(self, filter_size: int = 5, stride: int = 2, channels: Optional[int] = None) -> None:
+    def __init__(self, filter_size: int = 5, stride: int = 2, channels: int = 3) -> None:
         super().__init__()
         self.padding = (filter_size - 2) // 2
         self.stride = stride
@@ -59,7 +59,7 @@ class L2pooling(nn.Module):
         a = np.hanning(filter_size)[1:-1]
         g = torch.Tensor(a[:, None] * a[None, :])
         g = g / torch.sum(g)
-        self.register_buffer("filter", g[None, None, :, :].repeat((self.channels, 1, 1, 1)))
+        self.register_buffer("filter", g[None, None, :, :].repeat(self.channels, 1, 1, 1))
 
     def forward(self, tensor: Tensor) -> Tensor:
         """Forward pass of the layer."""
@@ -111,12 +111,12 @@ class DISTSNetwork(torch.nn.Module):
         self.alpha.data.normal_(0.1, 0.01)
         self.beta.data.normal_(0.1, 0.01)
         if load_weights:
-            path = os.path.abspath(os.path.join(inspect.getfile(self.__init__), "..", "dists_models/weights.pt"))
+            path = os.path.abspath(os.path.join(inspect.getfile(self.__init__), "..", "dists_models/weights.pt"))  # type: ignore
             weights = torch.load(path)
             self.alpha.data = weights["alpha"]
             self.beta.data = weights["beta"]
 
-    def forward_once(self, x: Tensor) -> Tensor:
+    def forward_once(self, x: Tensor) -> List[Tensor]:
         """Forward pass of the network."""
         h = (x - self.mean) / self.std
         h = self.stage1(h)
