@@ -26,7 +26,42 @@ if not _MATPLOTLIB_AVAILABLE:
 
 
 class DeepImageStructureAndTextureSimilarity(Metric):
-    """Calculates Deep Image Structure and Texture Similarity (DISTS) score."""
+    """Calculates Deep Image Structure and Texture Similarity (DISTS) score.
+
+    The metric is a full-reference image quality assessment (IQA) model that combines sensitivity to structural
+    distortions (e.g., artifacts due to noise, blur, or compression) with a tolerance of texture resampling
+    (exchanging the content of a texture region with a new sample of the same texture). The metric is based on
+    a convolutional neural network (CNN) that transforms the reference and distorted images to a new representation.
+    Within this representation, a set of measurements are developed that are sufficient to capture the appearance
+    of a variety of different visual distortions.
+
+    As input to ``forward`` and ``update`` the metric accepts the following input
+
+    - ``preds`` (:class:`~torch.Tensor`): tensor with images of shape ``(N, 3, H, W)``
+    - ``target`` (:class:`~torch.Tensor`): tensor with images of shape ``(N, 3, H, W)``
+
+    As output of `forward` and `compute` the metric returns the following output
+
+    - ``lpips`` (:class:`~torch.Tensor`): returns float scalar tensor with average LPIPS value over samples
+
+    Args:
+        reduction: specifies the reduction to apply to the output.
+        kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
+
+    Raises:
+        ValueError:
+            If `reduction` is not one of ["mean", "sum"]
+
+    Example:
+        >>> from torch import rand
+        >>> from torchmetrics.image.dists import DeepImageStructureAndTextureSimilarity
+        >>> metric = DeepImageStructureAndTextureSimilarity()
+        >>> preds = rand(10, 3, 100, 100)
+        >>> target = rand(10, 3, 100, 100)
+        >>> metric(preds, target)
+        tensor(0.1882, grad_fn=<CloneBackward0>)
+
+    """
 
     score: Tensor
     total: Tensor
@@ -77,8 +112,8 @@ class DeepImageStructureAndTextureSimilarity(Metric):
 
             >>> # Example plotting a single value
             >>> import torch
-            >>> from torchmetrics.image.lpip import DeepImageStructureAndTextureSimilarity
-            >>> metric = DeepImageStructureAndTextureSimilarity(net_type='squeeze')
+            >>> from torchmetrics.image.dists import DeepImageStructureAndTextureSimilarity
+            >>> metric = DeepImageStructureAndTextureSimilarity()
             >>> metric.update(torch.rand(10, 3, 100, 100), torch.rand(10, 3, 100, 100))
             >>> fig_, ax_ = metric.plot()
 
@@ -87,8 +122,8 @@ class DeepImageStructureAndTextureSimilarity(Metric):
 
             >>> # Example plotting multiple values
             >>> import torch
-            >>> from torchmetrics.image.lpip import DeepImageStructureAndTextureSimilarity
-            >>> metric = DeepImageStructureAndTextureSimilarity(net_type='squeeze')
+            >>> from torchmetrics.image.dists import DeepImageStructureAndTextureSimilarity
+            >>> metric = DeepImageStructureAndTextureSimilarity()
             >>> values = [ ]
             >>> for _ in range(3):
             ...     values.append(metric(torch.rand(10, 3, 100, 100), torch.rand(10, 3, 100, 100)))
