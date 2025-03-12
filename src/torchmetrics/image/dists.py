@@ -11,10 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Literal, Optional, Sequence, Union
+from typing import Any, Literal, Optional, Sequence, Union
 
+import torch
 from torch import Tensor
 
+from torchmetrics.functional.image.dists import _dists_update
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
@@ -26,19 +28,32 @@ if not _MATPLOTLIB_AVAILABLE:
 class DeepImageStructureAndTextureSimilarity(Metric):
     """Calculates Deep Image Structure and Texture Similarity (DISTS) score."""
 
+    score: Tensor
+    total: Tensor
+
     is_differentiable: bool = True
     higher_is_better: bool = False
     full_state_update: bool = False
     plot_lower_bound: float = 0.0
 
-    def __init__(self, reduction: Optional[Literal["mean", "sum", "none"]] = "mean") -> None:
-        super().__init__()
+    def __init__(self, reduction: Optional[Literal["mean", "sum"]] = "mean", **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        allowed_reductions = ("mean", "sum")
+        if reduction not in allowed_reductions:
+            raise ValueError(f"Argument `reduction` expected to be one of {allowed_reductions} but got {reduction}")
+        self.reduction = reduction
+        self.add_state("score", default=torch.tensor(0.0), dist_reduce_fx="sum")
+        self.add_state("total", default=torch.tensor(0.0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the metric state."""
+        scores = _dists_update(preds, target)
+        self.score += scores.sum()
+        self.total += preds.shape[0]
 
     def compute(self) -> Tensor:
         """Computes the DISTS score."""
+        return self.score / self.total if self.reduction == "mean" else self.score
 
     def plot(
         self, val: Optional[Union[Tensor, Sequence[Tensor]]] = None, ax: Optional[_AX_TYPE] = None
