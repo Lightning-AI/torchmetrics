@@ -444,7 +444,7 @@ def auroc(
     corresponds to random guessing.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :func:`~torchmetrics.functional.classification.binary_auroc`,
     :func:`~torchmetrics.functional.classification.multiclass_auroc` and
     :func:`~torchmetrics.functional.classification.multilabel_auroc` for the specific details of
