@@ -24,6 +24,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 from torchmetrics.utilities.prints import rank_zero_warn
+from torchmetrics.wrappers import ClasswiseWrapper
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MetricTracker.plot"]
@@ -269,7 +270,7 @@ class MetricTracker(ModuleList):
                 return None, None
             return None
 
-        if isinstance(self._base_metric, Metric):
+        if isinstance(self._base_metric, Metric) and not isinstance(self._base_metric, ClasswiseWrapper):
             fn = torch.max if self.maximize else torch.min
             try:
                 value, idx = fn(res, 0)
