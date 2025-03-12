@@ -140,7 +140,7 @@ class ClasswiseWrapper(WrapperMetric):
         self._update_count = 1
 
     @property
-    def higher_is_better(self) -> Optional[bool]:
+    def higher_is_better(self) -> Optional[bool]:  # type: ignore
         """Return if the metric is higher the better."""
         return self.metric.higher_is_better
 
