@@ -134,7 +134,10 @@ class MetricTracker(ModuleList):
                             f"The metric '{name}' in the MetricCollection does not have a 'higher_is_better' attribute."
                             " Please provide the `maximize` argument explicitly."
                         )
-                    self.maximize.append(m.higher_is_better)  # type: ignore[arg-type]  # this is false alarm
+                    m_higher_is_better = [m.higher_is_better]
+                    if isinstance(m, ClasswiseWrapper):
+                        m_higher_is_better *= m.metric.num_classes
+                    self.maximize.extend(m_higher_is_better)  # type: ignore[arg-type]  # this is false alarm
         else:
             rank_zero_warn(
                 "The default value for `maximize` will be changed from `True` to `None` in v1.7.0 of TorchMetrics,"
