@@ -247,10 +247,8 @@ class MetricCollection(ModuleDict):
                 # only update the first member
                 m0 = getattr(self, cg[0])
                 m0.update(*args, **m0._filter_kwargs(**kwargs))
-            if self._state_is_copy:
-                # If we have deep copied state in between updates, reestablish link
-                self._compute_groups_create_state_ref()
-                self._state_is_copy = False
+            self._state_is_copy = False
+            self._compute_groups_create_state_ref()
         else:  # the first update always do per metric to form compute groups
             for m in self.values(copy_state=False):
                 m_kwargs = m._filter_kwargs(**kwargs)
@@ -259,6 +257,7 @@ class MetricCollection(ModuleDict):
             if self._enable_compute_groups:
                 self._merge_compute_groups()
                 # create reference between states
+                self._state_is_copy = False
                 self._compute_groups_create_state_ref()
                 self._groups_checked = True
 
@@ -339,7 +338,7 @@ class MetricCollection(ModuleDict):
                 of just passed by reference
 
         """
-        if not self._state_is_copy and self._groups_checked:
+        if not self._state_is_copy:  # only create reference if not already copied
             for cg in self._groups.values():
                 m0 = getattr(self, cg[0])
                 for i in range(1, len(cg)):
