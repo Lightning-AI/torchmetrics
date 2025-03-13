@@ -42,8 +42,9 @@ import torch
 import torch.nn as nn
 from torch import Tensor
 from torch.nn.functional import conv2d
-from torchvision import models
 from typing_extensions import Literal
+
+from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
 
 class L2pooling(nn.Module):
@@ -78,6 +79,14 @@ class DISTSNetwork(torch.nn.Module):
 
     def __init__(self, load_weights: bool = True) -> None:
         super().__init__()
+
+        if _TORCHVISION_AVAILABLE:
+            from torchvision import models
+        else:
+            raise ImportError(
+                "DISTS requires torchvision to be installed. Please install it with `pip install torchvision`."
+            )
+
         vgg_pretrained_features = models.vgg16(pretrained=True).features
         self.stage1 = torch.nn.Sequential()
         self.stage2 = torch.nn.Sequential()
