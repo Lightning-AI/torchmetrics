@@ -90,6 +90,7 @@ class TestDISTS(MetricTester):
             preds=inputs.img1, target=inputs.img2, metric_module=DeepImageStructureAndTextureSimilarity
         )
 
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="Test requires GPU support")
     def test_dists_half_gpu(self, inputs: _Input):
         """Test for half + gpu support."""
         self.run_precision_test_gpu(
