@@ -24,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for more models and processors in `CLIPScore` ([#2978](https://github.com/PyTorchLightning/metrics/pull/2978))
 
 
+- Added `DeepImageStructureAndTextureSimilarity` to image package ([#2993](https://github.com/PyTorchLightning/metrics/pull/2993))
+
+
 ### Changed
 
 -
