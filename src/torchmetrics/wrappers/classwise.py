@@ -139,6 +139,11 @@ class ClasswiseWrapper(WrapperMetric):
 
         self._update_count = 1
 
+    @property
+    def higher_is_better(self) -> Optional[bool]:  # type: ignore
+        """Return if the metric is higher the better."""
+        return self.metric.higher_is_better
+
     def _filter_kwargs(self, **kwargs: Any) -> dict[str, Any]:
         """Filter kwargs for the metric."""
         return self.metric._filter_kwargs(**kwargs)

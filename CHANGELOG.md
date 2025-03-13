@@ -12,10 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `JensenShannonDivergence` metric to regression package ([#2992](https://github.com/Lightning-AI/torchmetrics/pull/2992))
+
+
 - Added `ClusterAccuracy` metric to cluster package ([#2777](https://github.com/Lightning-AI/torchmetrics/pull/2777))
 
 
 - Added `ARNIQA` metric to image domain ([#2953](https://github.com/PyTorchLightning/metrics/pull/2953))
+
+
+- Added support for more models and processors in `CLIPScore` ([#2978](https://github.com/PyTorchLightning/metrics/pull/2978))
 
 
 ### Changed
@@ -30,7 +36,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--
+- Fixed logic in how metric states referencing is handled in `MetricCollection` ([#2990](https://github.com/PyTorchLightning/metrics/pull/2990))
+
+
+- Fixed integration between classwise wrapper and metric tracker ([#3004](https://github.com/PyTorchLightning/metrics/pull/3004))
 
 
 ---
