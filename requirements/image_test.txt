@@ -8,4 +8,4 @@ sewar >=0.4.4, <=0.4.6
 numpy <2.3.0
 torch-fidelity @ git+https://github.com/toshas/torch-fidelity@master
 lpips <=0.1.4
-dists-pytorch
+dists-pytorch ==0.1
