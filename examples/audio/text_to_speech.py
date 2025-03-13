@@ -574,7 +574,7 @@ pesq_wb = PerceptualEvaluationSpeechQuality(16000, "wb")
 pesq_results = []
 audio_metadata = []
 
-for idx, (audio, sr) in enumerate(audio_fragments):
+for audio, _sr in audio_fragments:
     # Pad or truncate to match the target length
     audio_tensor = torch.tensor(audio[: len(target_audio)])
     if len(audio_tensor) < len(target_audio):
