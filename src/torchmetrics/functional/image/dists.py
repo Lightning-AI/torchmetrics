@@ -33,8 +33,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import inspect
-import os
+from pathlib import Path
 from typing import List, Optional
 
 import numpy as np
@@ -123,8 +122,10 @@ class DISTSNetwork(torch.nn.Module):
         self.alpha.data.normal_(0.1, 0.01)
         self.beta.data.normal_(0.1, 0.01)
         if load_weights:
-            path = os.path.abspath(os.path.join(inspect.getfile(self.__init__), "..", "dists_models/weights.pt"))  # type: ignore
-            weights = torch.load(path)
+            path_weight = Path(__file__).resolve().parent / "dists_models" / "weights.pt"
+            if not path_weight.exists():
+                raise FileNotFoundError(f"The weights file is not found in {path_weight}")
+            weights = torch.load(str(path_weight))
             self.alpha.data = weights["alpha"]
             self.beta.data = weights["beta"]
 
