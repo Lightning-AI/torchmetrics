@@ -46,6 +46,9 @@ from typing_extensions import Literal
 
 from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 
+if not _TORCHVISION_AVAILABLE:
+    __doctest_skip__ = ["deep_image_structure_and_texture_similarity"]
+
 
 class L2pooling(nn.Module):
     """L2 pooling layer."""
