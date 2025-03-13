@@ -48,6 +48,8 @@ from torchmetrics.utilities.imports import _TORCHVISION_AVAILABLE
 if not _TORCHVISION_AVAILABLE:
     __doctest_skip__ = ["deep_image_structure_and_texture_similarity"]
 
+_PATH_WEIGHT_DISTS = Path(__file__).resolve().parent / "dists_models" / "weights.pt"
+
 
 class L2pooling(nn.Module):
     """L2 pooling layer."""
@@ -85,7 +87,7 @@ class DISTSNetwork(torch.nn.Module):
         if _TORCHVISION_AVAILABLE:
             from torchvision import models
         else:
-            raise ImportError(
+            raise ModuleNotFoundError(
                 "DISTS requires torchvision to be installed. Please install it with `pip install torchvision`."
             )
 
@@ -122,10 +124,9 @@ class DISTSNetwork(torch.nn.Module):
         self.alpha.data.normal_(0.1, 0.01)
         self.beta.data.normal_(0.1, 0.01)
         if load_weights:
-            path_weight = Path(__file__).resolve().parent / "dists_models" / "weights.pt"
-            if not path_weight.exists():
-                raise FileNotFoundError(f"The weights file is not found in {path_weight}")
-            weights = torch.load(str(path_weight))
+            if not _PATH_WEIGHT_DISTS.exists():
+                raise FileNotFoundError(f"The weights file is not found in {_PATH_WEIGHT_DISTS}")
+            weights = torch.load(str(_PATH_WEIGHT_DISTS))
             self.alpha.data = weights["alpha"]
             self.beta.data = weights["beta"]
 

@@ -11,6 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
+import shutil
+import sys
 from functools import partial
 from typing import NamedTuple
 
@@ -18,7 +21,7 @@ import pytest
 import torch
 from torch import Tensor
 
-from torchmetrics.functional.image.dists import deep_image_structure_and_texture_similarity
+from torchmetrics.functional.image.dists import _PATH_WEIGHT_DISTS, deep_image_structure_and_texture_similarity
 from torchmetrics.image.dists import DeepImageStructureAndTextureSimilarity
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
@@ -48,6 +51,11 @@ def _reference_dists(preds: Tensor, target: Tensor, reduction: str) -> Tensor:
         from DISTS_pytorch import DISTS as reference_dists  # noqa: N811
     except ImportError:
         pytest.skip("test requires DISTS_pytorch package to be installed")
+
+    # copy the model weight to predefined path
+    predefined_path_weights = os.path.join(sys.prefix, "weights.pt")
+    if not os.path.isfile(predefined_path_weights):
+        shutil.copy(_PATH_WEIGHT_DISTS, predefined_path_weights)
 
     ref = reference_dists()
     res = ref(preds, target).detach().cpu().numpy()
