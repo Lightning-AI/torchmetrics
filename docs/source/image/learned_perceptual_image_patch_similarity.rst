@@ -12,7 +12,7 @@ Deep Image Structure And Texture Similarity (DISTS)
 Module Interface
 ________________
 
-.. autoclass:: torchmetrics.image.lpip.DeepImageStructureAndTextureSimilarity
+.. autoclass:: torchmetrics.image.dists.DeepImageStructureAndTextureSimilarity
     :exclude-members: update, compute
 
 Functional Interface
