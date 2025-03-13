@@ -8,23 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [UnReleased] - 2024-MM-DD
-
-### Added
-
--
-
-
-### Changed
-
--
+## [1.6.3] - 2024-03-13
 
 ### Fixed
 
 - Fixed logic in how metric states referencing is handled in `MetricCollection` ([#2990](https://github.com/PyTorchLightning/metrics/pull/2990))
-
-
-- Fixed integration between classwise wrapper and metric tracker ([#3004](https://github.com/PyTorchLightning/metrics/pull/3004))
+- Fixed integration between class-wise wrapper and metric tracker ([#3004](https://github.com/PyTorchLightning/metrics/pull/3004))
 
 
 ## [1.6.2] - 2024-02-28
