@@ -250,6 +250,7 @@ def test_tracker_futurewarning():
         MulticlassAccuracy(num_classes=10),
         MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
         ClasswiseWrapper(MulticlassAccuracy(num_classes=10, average=None)),
+        MetricCollection([ClasswiseWrapper(MulticlassAccuracy(num_classes=10, average=None))]),
     ],
 )
 def test_tracker_higher_is_better_integration(base_metric):
@@ -258,4 +259,10 @@ def test_tracker_higher_is_better_integration(base_metric):
     if isinstance(base_metric, Metric):
         assert tracker.maximize == base_metric.higher_is_better
     else:
-        assert tracker.maximize == [m.higher_is_better for m in base_metric.values()]
+        collection_higher_is_better = []
+        for m in base_metric.values():
+            if isinstance(m, ClasswiseWrapper):
+                collection_higher_is_better.extend([m.higher_is_better] * m.metric.num_classes)
+            else:
+                collection_higher_is_better.append(m.higher_is_better)
+        assert tracker.maximize == collection_higher_is_better
