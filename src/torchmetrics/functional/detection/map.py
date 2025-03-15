@@ -20,7 +20,6 @@ from typing import Any, Dict, List, Literal, Optional, Sequence, Set, Tuple, Uni
 import numpy as np
 import torch
 from torch import Tensor
-from torchvision.ops import box_convert
 
 from torchmetrics.detection.helpers import CocoBackend, _fix_empty_tensors
 
@@ -200,6 +199,8 @@ def _prepare_data(
     data: List[Dict[str, Any]], iou_type: Literal["bbox", "segm"], box_format: Literal["xyxy", "xywh", "cxcywh"]
 ) -> List[Dict[str, Any]]:
     """For each sample, set an image id and if using bbox mode, fix empty tensors and convert boxes to xywh."""
+    from torchvision.ops import box_convert
+
     for idx, sample in enumerate(data):
         if "image_id" not in sample:
             sample["image_id"] = idx
