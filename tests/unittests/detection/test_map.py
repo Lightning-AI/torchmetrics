@@ -17,6 +17,7 @@ import json
 from copy import deepcopy
 from functools import partial
 from itertools import product
+from typing import Any
 
 import numpy as np
 import pytest
@@ -27,6 +28,7 @@ from pycocotools.cocoeval import COCOeval
 from torch import IntTensor, Tensor
 
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
+from torchmetrics.functional.detection.map import mean_average_precision
 from torchmetrics.utilities.imports import (
     _FASTER_COCO_EVAL_AVAILABLE,
     _PYCOCOTOOLS_AVAILABLE,
@@ -947,3 +949,231 @@ class TestMapProperties:
             ValueError, match="When providing a list of max detection thresholds it should have length 3.*"
         ):
             MeanAveragePrecision(max_detection_thresholds=max_detection_thresholds, backend=backend)
+
+
+def compare_with_class(functional_result, preds, target, **kwargs: Any):
+    """Helper function to compare the functional output with the class-based implementation.
+
+    kwargs are passed along to instantiate MeanAveragePrecision.
+
+    """
+    map_metric = MeanAveragePrecision(**kwargs)
+    map_metric.update(preds, target)
+    class_result = map_metric.compute()
+    for key in class_result:
+        torch.testing.assert_close(functional_result[key], class_result[key])
+
+
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+@pytest.mark.parametrize("iou_type", ["bbox", "segm"])
+def test_mean_average_precision_iou_type_functional(backend, iou_type):
+    """Test that the functional API returns a valid dictionary with the expected keys."""
+    preds, target = _coco_bbox_input if iou_type == "bbox" else _coco_segm_input
+
+    preds_flat = [p for batch in preds for p in batch]
+    target_flat = [t for batch in target for t in batch]
+
+    functional_result = mean_average_precision(
+        preds_flat, target_flat, backend=backend, iou_type=iou_type, box_format="xywh"
+    )
+
+    compare_with_class(
+        functional_result, preds_flat, target_flat, backend=backend, iou_type=iou_type, box_format="xywh"
+    )
+
+    expected_keys = {
+        "map",
+        "map_50",
+        "map_75",
+        "map_small",
+        "map_medium",
+        "map_large",
+        "mar_1",
+        "mar_10",
+        "mar_100",
+        "mar_small",
+        "mar_medium",
+        "mar_large",
+    }
+    assert expected_keys.issubset(functional_result.keys())
+
+
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+def test_mean_average_precision_basic_functional(backend):
+    """Test basic functionality with nonempty inputs by comparing function and class outputs."""
+    preds = _inputs["preds"]
+    target = _inputs["target"]
+
+    preds_flat = [p for batch in preds for p in batch]
+    target_flat = [t for batch in target for t in batch]
+
+    functional_result = mean_average_precision(
+        preds_flat,
+        target_flat,
+        backend=backend,
+        iou_type="bbox",
+        box_format="xyxy",
+    )
+
+    compare_with_class(
+        functional_result,
+        preds_flat,
+        target_flat,
+        backend=backend,
+        iou_type="bbox",
+        box_format="xyxy",
+    )
+
+
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+def test_mean_average_precision_empty_preds_functional(backend):
+    """When there are no predictions at all but targets are available."""
+    preds = [{"boxes": Tensor([]), "scores": Tensor([]), "labels": torch.tensor([], dtype=torch.int64)}]
+    target = [{"boxes": Tensor([[214.15, 41.29, 562.41, 285.07]]), "labels": torch.tensor([4], dtype=torch.int64)}]
+
+    functional_result = mean_average_precision(preds, target, backend=backend, iou_type="bbox", box_format="xywh")
+    compare_with_class(functional_result, preds, target, backend=backend, iou_type="bbox", box_format="xywh")
+
+
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+def test_mean_average_precision_empty_targets_functional(backend):
+    """When there are no ground truths."""
+    preds = [
+        {
+            "boxes": Tensor([[214.15, 41.29, 562.41, 285.07]]),
+            "scores": Tensor([0.5]),
+            "labels": torch.tensor([4], dtype=torch.int64),
+        }
+    ]
+    target = [{"boxes": Tensor([]), "labels": torch.tensor([], dtype=torch.int64)}]
+
+    functional_result = mean_average_precision(preds, target, backend=backend, iou_type="bbox", box_format="xywh")
+    compare_with_class(functional_result, preds, target, backend=backend, iou_type="bbox", box_format="xywh")
+
+
+@pytest.mark.parametrize(
+    "box_format",
+    [
+        ("xyxy"),
+        ("xywh"),
+        ("cxcywh"),
+    ],
+)
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+def test_mean_average_precision_box_format_functional(box_format, backend):
+    """Test that providing different box formats leads to the expected results."""
+    predictions = [
+        {
+            "boxes": torch.tensor([[0.5, 0.5, 1, 1]]),
+            "scores": torch.tensor([1.0]),
+            "labels": torch.tensor([0], dtype=torch.int64),
+        }
+    ]
+    targets = [{"boxes": torch.tensor([[0, 0, 1, 1]]), "labels": torch.tensor([0], dtype=torch.int64)}]
+
+    functional_result = mean_average_precision(
+        predictions, targets, iou_thresholds=[0.3, 0.4], backend=backend, box_format=box_format, iou_type="bbox"
+    )
+    compare_with_class(
+        functional_result,
+        predictions,
+        targets,
+        iou_thresholds=[0.3, 0.4],
+        backend=backend,
+        box_format=box_format,
+        iou_type="bbox",
+    )
+
+
+@pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
+def test_mean_average_precision_custom_thresholds_functional(backend):
+    """Test that custom recall thresholds and a custom iou_thresholds."""
+    preds = _inputs["preds"]
+    target = _inputs["target"]
+    preds_flat = [p for batch in preds for p in batch]
+    target_flat = [t for batch in target for t in batch]
+
+    functional_result = mean_average_precision(
+        preds_flat,
+        target_flat,
+        iou_thresholds=[0.2, 0.7],
+        rec_thresholds=[0.25, 0.5, 0.75],
+        backend=backend,
+        box_format="xyxy",
+        iou_type="bbox",
+    )
+
+    compare_with_class(
+        functional_result,
+        preds_flat,
+        target_flat,
+        iou_thresholds=[0.2, 0.7],
+        rec_thresholds=[0.25, 0.5, 0.75],
+        backend=backend,
+        box_format="xyxy",
+        iou_type="bbox",
+    )
+
+
+def test_mean_average_precision_error_on_wrong_input_functional():
+    """Test that the functional API raises the expected errors when provided with inputs of the wrong type."""
+    with pytest.raises(ValueError, match="Expected argument `preds` to be of type Sequence"):
+        mean_average_precision(torch.tensor([]), [])
+    with pytest.raises(ValueError, match="Expected argument `target` to be of type Sequence"):
+        mean_average_precision([], torch.tensor([]))
+
+    # Missing keys in preds
+    with pytest.raises(ValueError, match="Expected key `boxes` in each dict in `preds`"):
+        mean_average_precision(
+            [{"scores": torch.tensor([]), "labels": torch.tensor([])}],
+            [{"boxes": torch.tensor([]), "labels": torch.tensor([])}],
+        )
+    with pytest.raises(ValueError, match="Expected key `scores` in each dict in `preds`"):
+        mean_average_precision(
+            [{"boxes": torch.tensor([]), "labels": torch.tensor([])}],
+            [{"boxes": torch.tensor([]), "labels": torch.tensor([])}],
+        )
+    with pytest.raises(ValueError, match="Expected key `labels` in each dict in `preds`"):
+        mean_average_precision(
+            [{"boxes": torch.tensor([]), "scores": torch.tensor([])}],
+            [{"boxes": torch.tensor([]), "labels": torch.tensor([])}],
+        )
+
+    # Missing keys in target
+    with pytest.raises(ValueError, match="Expected key `boxes` in each dict in `target`"):
+        mean_average_precision(
+            [{"boxes": torch.tensor([]), "scores": torch.tensor([]), "labels": torch.tensor([])}],
+            [{"labels": torch.tensor([])}],
+        )
+    with pytest.raises(ValueError, match="Expected key `labels` in each dict in `target`"):
+        mean_average_precision(
+            [{"boxes": torch.tensor([]), "scores": torch.tensor([]), "labels": torch.tensor([])}],
+            [{"boxes": torch.tensor([])}],
+        )
+
+    # Type checks for elements in preds and target.
+    with pytest.raises(ValueError, match="Expected `boxes` in `preds` to be of type Tensor"):
+        mean_average_precision(
+            [{"boxes": [], "scores": torch.tensor([]), "labels": torch.tensor([])}],
+            [{"boxes": torch.tensor([]), "labels": torch.tensor([])}],
+        )
+    with pytest.raises(ValueError, match="Expected `scores` in `preds` to be of type Tensor"):
+        mean_average_precision(
+            [{"boxes": torch.tensor([]), "scores": [], "labels": torch.tensor([])}],
+            [{"boxes": torch.tensor([]), "labels": torch.tensor([])}],
+        )
+    with pytest.raises(ValueError, match="Expected `labels` in `preds` to be of type Tensor"):
+        mean_average_precision(
+            [{"boxes": torch.tensor([]), "scores": torch.tensor([]), "labels": []}],
+            [{"boxes": torch.tensor([]), "labels": torch.tensor([])}],
+        )
+    with pytest.raises(ValueError, match="Expected `boxes` in `target` to be of type Tensor"):
+        mean_average_precision(
+            [{"boxes": torch.tensor([]), "scores": torch.tensor([]), "labels": torch.tensor([])}],
+            [{"boxes": [], "labels": torch.tensor([])}],
+        )
+    with pytest.raises(ValueError, match="Expected `labels` in `target` to be of type Tensor"):
+        mean_average_precision(
+            [{"boxes": torch.tensor([]), "scores": torch.tensor([]), "labels": torch.tensor([])}],
+            [{"boxes": torch.tensor([]), "labels": []}],
+        )
