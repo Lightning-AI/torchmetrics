@@ -27,9 +27,9 @@ if _TORCHVISION_AVAILABLE:
     from torchmetrics.functional.detection.map import mean_average_precision
 
     __all__ += [
-        "generalized_intersection_over_union",
-        "intersection_over_union",
         "complete_intersection_over_union",
         "distance_intersection_over_union",
         "mean_average_precision",
+        "generalized_intersection_over_union",
+        "intersection_over_union",
     ]

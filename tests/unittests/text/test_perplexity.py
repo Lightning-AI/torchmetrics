@@ -16,10 +16,10 @@ from functools import partial
 import pytest
 import torch
 from torch.nn import functional as F  # noqa: N812
+
 from torchmetrics.functional.text.perplexity import perplexity
 from torchmetrics.text.perplexity import Perplexity
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_2
-
 from unittests._helpers.testers import MetricTester
 from unittests.text._inputs import (
     MASK_INDEX,

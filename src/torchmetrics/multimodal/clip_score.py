@@ -11,8 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from collections.abc import Sequence
-from typing import Any, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Sequence, Union
 
 import torch
 from torch import Tensor
@@ -27,6 +26,10 @@ from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["CLIPScore.plot"]
 
+if TYPE_CHECKING and _TRANSFORMERS_GREATER_EQUAL_4_10:
+    from transformers import CLIPModel as _CLIPModel
+    from transformers import CLIPProcessor as _CLIPProcessor
+
 if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_GREATER_EQUAL_4_10:
     from transformers import CLIPModel as _CLIPModel
     from transformers import CLIPProcessor as _CLIPProcessor
@@ -39,14 +42,16 @@ if _SKIP_SLOW_DOCTEST and _TRANSFORMERS_GREATER_EQUAL_4_10:
         __doctest_skip__ = ["CLIPScore", "CLIPScore.plot"]
 else:
     __doctest_skip__ = ["CLIPScore", "CLIPScore.plot"]
+    _CLIPModel = None
+    _CLIPProcessor = None
 
 
 class CLIPScore(Metric):
     r"""Calculates `CLIP Score`_ which is a text-to-image similarity metric.
 
     CLIP Score is a reference free metric that can be used to evaluate the correlation between a generated caption for
-    an image and the actual content of the image. It has been found to be highly correlated with human judgement. The
-    metric is defined as:
+    an image and the actual content of the image, as well as the similarity between texts or images. It has been found
+    to be highly correlated with human judgement. The metric is defined as:
 
     .. math::
         \text{CLIPScore(I, C)} = max(100 * cos(E_I, E_C), 0)
@@ -55,15 +60,55 @@ class CLIPScore(Metric):
     textual CLIP embedding :math:`E_C` for an caption :math:`C`. The score is bound between 0 and 100 and the closer
     to 100 the better.
 
+    Additionally, the CLIP Score can be calculated for the same modalities:
+
+    .. math::
+        \text{CLIPScore(I_1, I_2)} = max(100 * cos(E_{I_1}, E_{I_2}), 0)
+
+    where :math:`E_{I_1}` and :math:`E_{I_2}` are the visual embeddings for images :math:`I_1` and :math:`I_2`.
+
+    .. math::
+        \text{CLIPScore(T_1, T_2)} = max(100 * cos(E_{T_1}, E_{T_2}), 0)
+
+    where :math:`E_{T_1}` and :math:`E_{T_2}` are the textual embeddings for texts :math:`T_1` and :math:`T_2`.
+
     .. caution::
         Metric is not scriptable
 
+    .. note::
+        The default CLIP and processor used in this implementation has a maximum sequence length of 77 for text
+        inputs. If you need to process longer captions, you can use the `zer0int/LongCLIP-L-Diffusers` model which
+        has a maximum sequence length of 248.
+
     As input to ``forward`` and ``update`` the metric accepts the following input
 
-    - ``images`` (:class:`~torch.Tensor` or list of tensors): tensor with images feed to the feature extractor with. If
-        a single tensor it should have shape ``(N, C, H, W)``. If a list of tensors, each tensor should have shape
-        ``(C, H, W)``. ``C`` is the number of channels, ``H`` and ``W`` are the height and width of the image.
-    - ``text`` (:class:`~str` or :class:`~list` of :class:`~str`): text to compare with the images, one for each image.
+    - source: Source input.
+
+        This can be:
+
+        - Images: ``Tensor`` or list of ``Tensor``
+
+            If a single tensor, it should have shape ``(N, C, H, W)``.
+            If a list of tensors, each tensor should have shape ``(C, H, W)``.
+            ``C`` is the number of channels, ``H`` and ``W`` are the height and width of the image.
+
+        - Text: ``str`` or list of ``str``
+
+            Either a single caption or a list of captions.
+
+    - target: Target input.
+
+        This can be:
+
+        - Images: ``Tensor`` or list of ``Tensor``
+
+            If a single tensor, it should have shape ``(N, C, H, W)``.
+            If a list of tensors, each tensor should have shape ``(C, H, W)``.
+            ``C`` is the number of channels, ``H`` and ``W`` are the height and width of the image.
+
+        - Text: ``str`` or list of ``str``
+
+            Either a single caption or a list of captions.
 
     As output of `forward` and `compute` the metric returns the following output
 
@@ -76,6 +121,14 @@ class CLIPScore(Metric):
             - `"openai/clip-vit-base-patch32"`
             - `"openai/clip-vit-large-patch14-336"`
             - `"openai/clip-vit-large-patch14"`
+            - `"jinaai/jina-clip-v2"`
+            - `"zer0int/LongCLIP-L-Diffusers"`
+            - `"zer0int/LongCLIP-GmP-ViT-L-14"`
+
+            Alternatively, a callable function that returns a tuple of CLIP compatible model and processor instances
+            can be passed in. By compatible, we mean that the processors `__call__` method should accept a list of
+            strings and list of images and that the model should have a `get_image_features` and `get_text_features`
+            methods.
 
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
@@ -84,12 +137,29 @@ class CLIPScore(Metric):
             If transformers package is not installed or version is lower than 4.10.0
 
     Example:
-        >>> from torch import randint
         >>> from torchmetrics.multimodal.clip_score import CLIPScore
         >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
-        >>> score = metric(randint(255, (3, 224, 224)), "a photo of a cat")
+        >>> image = torch.randint(255, (3, 224, 224), generator=torch.Generator().manual_seed(42))
+        >>> score = metric(image, "a photo of a cat")
         >>> score.detach().round()
-        tensor(25.)
+        tensor(24.)
+
+    Example:
+        >>> from torchmetrics.multimodal.clip_score import CLIPScore
+        >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
+        >>> image1 = torch.randint(255, (3, 224, 224), generator=torch.Generator().manual_seed(42))
+        >>> image2 = torch.randint(255, (3, 224, 224), generator=torch.Generator().manual_seed(43))
+        >>> score = metric(image1, image2)
+        >>> score.detach().round()
+        tensor(99.)
+
+    Example:
+        >>> from torchmetrics.multimodal.clip_score import CLIPScore
+        >>> metric = CLIPScore(model_name_or_path="openai/clip-vit-base-patch16")
+        >>> score = metric("28-year-old chef found dead in San Francisco mall",
+        ...               "A 28-year-old chef who recently moved to San Francisco was found dead.")
+        >>> score.detach().round()
+        tensor(91.)
 
     """
 
@@ -105,11 +175,17 @@ class CLIPScore(Metric):
 
     def __init__(
         self,
-        model_name_or_path: Literal[
-            "openai/clip-vit-base-patch16",
-            "openai/clip-vit-base-patch32",
-            "openai/clip-vit-large-patch14-336",
-            "openai/clip-vit-large-patch14",
+        model_name_or_path: Union[
+            Literal[
+                "openai/clip-vit-base-patch16",
+                "openai/clip-vit-base-patch32",
+                "openai/clip-vit-large-patch14-336",
+                "openai/clip-vit-large-patch14",
+                "jinaai/jina-clip-v2",
+                "zer0int/LongCLIP-L-Diffusers",
+                "zer0int/LongCLIP-GmP-ViT-L-14",
+            ],
+            Callable[[], tuple[_CLIPModel, _CLIPProcessor]],
         ] = "openai/clip-vit-large-patch14",
         **kwargs: Any,
     ) -> None:
@@ -118,12 +194,18 @@ class CLIPScore(Metric):
         self.add_state("score", torch.tensor(0.0), dist_reduce_fx="sum")
         self.add_state("n_samples", torch.tensor(0, dtype=torch.long), dist_reduce_fx="sum")
 
-    def update(self, images: Union[Tensor, List[Tensor]], text: Union[str, list[str]]) -> None:
+    def update(
+        self, source: Union[Tensor, List[Tensor], List[str], str], target: Union[Tensor, List[Tensor], List[str], str]
+    ) -> None:
         """Update CLIP score on a batch of images and text.
 
         Args:
-            images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors
-            text: Either a single caption or a list of captions
+            source: Source input. This can be:
+                - Images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors.
+                - Text: Either a single caption or a list of captions.
+            target: Target input. This can be:
+                - Images: Either a single [N, C, H, W] tensor or a list of [C, H, W] tensors.
+                - Text: Either a single caption or a list of captions.
 
         Raises:
             ValueError:
@@ -132,7 +214,7 @@ class CLIPScore(Metric):
                 If the number of images and captions do not match
 
         """
-        score, n_samples = _clip_score_update(images, text, self.model, self.processor)
+        score, n_samples = _clip_score_update(source, target, self.model, self.processor)
         self.score += score.sum(0)
         self.n_samples += n_samples
 

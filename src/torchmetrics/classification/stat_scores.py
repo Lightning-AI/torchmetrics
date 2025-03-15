@@ -74,10 +74,10 @@ class _AbstractStatScores(Metric):
             self.tn.append(tn)  # type: ignore[union-attr]
             self.fn.append(fn)  # type: ignore[union-attr]
         else:
-            self.tp += tp
-            self.fp += fp
-            self.tn += tn
-            self.fn += fn
+            self.tp = self.tp + tp if not isinstance(self.tp, list) else [*self.tp, tp]
+            self.fp = self.fp + fp if not isinstance(self.fp, list) else [*self.fp, fp]
+            self.tn = self.tn + tn if not isinstance(self.tn, list) else [*self.tn, tn]
+            self.fn = self.fn + fn if not isinstance(self.fn, list) else [*self.fn, fn]
 
     def _final_state(self) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """Aggregate states that are lists and return final states."""
@@ -307,7 +307,7 @@ class MulticlassStatScores(_AbstractStatScores):
 
     def __init__(
         self,
-        num_classes: int,
+        num_classes: Optional[int] = None,
         top_k: int = 1,
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "macro",
         multidim_average: Literal["global", "samplewise"] = "global",
@@ -330,7 +330,7 @@ class MulticlassStatScores(_AbstractStatScores):
         self.zero_division = zero_division
 
         self._create_state(
-            size=1 if (average == "micro" and top_k == 1) else num_classes, multidim_average=multidim_average
+            size=1 if (average == "micro" and top_k == 1) else (num_classes or 1), multidim_average=multidim_average
         )
 
     def update(self, preds: Tensor, target: Tensor) -> None:
@@ -340,8 +340,9 @@ class MulticlassStatScores(_AbstractStatScores):
                 preds, target, self.num_classes, self.multidim_average, self.ignore_index
             )
         preds, target = _multiclass_stat_scores_format(preds, target, self.top_k)
+        num_classes = self.num_classes if self.num_classes is not None else 1
         tp, fp, tn, fn = _multiclass_stat_scores_update(
-            preds, target, self.num_classes, self.top_k, self.average, self.multidim_average, self.ignore_index
+            preds, target, num_classes, self.top_k, self.average, self.multidim_average, self.ignore_index
         )
         self._update_state(tp, fp, tn, fn)
 
@@ -505,7 +506,7 @@ class StatScores(_ClassificationTaskWrapper):
     r"""Compute the number of true positives, false positives, true negatives, false negatives and the support.
 
     This function is a simple wrapper to get the task specific versions of this metric, which is done by setting the
-    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``multilabel``. See the documentation of
+    ``task`` argument to either ``'binary'``, ``'multiclass'`` or ``'multilabel'``. See the documentation of
     :class:`~torchmetrics.classification.BinaryStatScores`, :class:`~torchmetrics.classification.MulticlassStatScores`
     and :class:`~torchmetrics.classification.MultilabelStatScores` for the specific details of each argument influence
     and examples.

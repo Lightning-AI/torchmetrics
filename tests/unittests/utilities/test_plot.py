@@ -21,6 +21,7 @@ import numpy as np
 import pytest
 import torch
 from torch import tensor
+
 from torchmetrics import MetricCollection
 from torchmetrics.aggregation import MaxMetric, MeanMetric, MinMetric, SumMetric
 from torchmetrics.audio import (
@@ -104,6 +105,7 @@ from torchmetrics.detection import PanopticQuality
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
 from torchmetrics.image import (
+    DeepImageStructureAndTextureSimilarity,
     ErrorRelativeGlobalDimensionlessSynthesis,
     FrechetInceptionDistance,
     InceptionScore,
@@ -125,6 +127,7 @@ from torchmetrics.regression import (
     ConcordanceCorrCoef,
     CosineSimilarity,
     ExplainedVariance,
+    JensenShannonDivergence,
     KendallRankCorrCoef,
     KLDivergence,
     LogCoshError,
@@ -471,12 +474,24 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             lambda: torch.rand(10, 3, 100, 100),
             id="learned perceptual image patch similarity",
         ),
+        pytest.param(
+            DeepImageStructureAndTextureSimilarity,
+            _image_input,
+            _image_input,
+            id="deep image structure and texture similarity",
+        ),
         pytest.param(ConcordanceCorrCoef, _rand_input, _rand_input, id="concordance corr coef"),
         pytest.param(CosineSimilarity, _multilabel_rand_input, _multilabel_rand_input, id="cosine similarity"),
         pytest.param(ExplainedVariance, _rand_input, _rand_input, id="explained variance"),
         pytest.param(KendallRankCorrCoef, _rand_input, _rand_input, id="kendall rank corr coef"),
         pytest.param(
             KLDivergence,
+            lambda: torch.randn(10, 3).softmax(dim=-1),
+            lambda: torch.randn(10, 3).softmax(dim=-1),
+            id="kl divergence",
+        ),
+        pytest.param(
+            JensenShannonDivergence,
             lambda: torch.randn(10, 3).softmax(dim=-1),
             lambda: torch.randn(10, 3).softmax(dim=-1),
             id="kl divergence",

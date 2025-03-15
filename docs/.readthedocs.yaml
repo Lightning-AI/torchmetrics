@@ -23,6 +23,8 @@ version: 2
 # reference: https://docs.readthedocs.io/en/stable/config-file/v2.html#sphinx
 sphinx:
   fail_on_warning: true
+  # Path to your Sphinx configuration file.
+  configuration: docs/source/conf.py
 
 build:
   os: "ubuntu-22.04"

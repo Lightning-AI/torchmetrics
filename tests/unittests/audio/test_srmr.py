@@ -18,9 +18,9 @@ import pytest
 import torch
 from srmrpy import srmr as srmrpy_srmr
 from torch import Tensor
+
 from torchmetrics.audio.srmr import SpeechReverberationModulationEnergyRatio
 from torchmetrics.functional.audio.srmr import speech_reverberation_modulation_energy_ratio
-
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester
 

@@ -16,9 +16,9 @@ from typing import Any
 import numpy as np
 import pytest
 import torch
+
 from torchmetrics.detection.panoptic_qualities import PanopticQuality
 from torchmetrics.functional.detection.panoptic_qualities import panoptic_quality
-
 from unittests import _Input
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester

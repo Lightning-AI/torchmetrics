@@ -19,6 +19,7 @@ import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
 from torch import Tensor
+
 from torchmetrics.classification.specificity import (
     BinarySpecificity,
     MulticlassSpecificity,
@@ -32,7 +33,6 @@ from torchmetrics.functional.classification.specificity import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
-
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index

@@ -16,6 +16,7 @@ import warnings
 
 import pytest
 import torch
+
 from torchmetrics import Metric, MetricCollection
 from torchmetrics.classification import (
     MulticlassAccuracy,
@@ -25,8 +26,7 @@ from torchmetrics.classification import (
 )
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
 from torchmetrics.utilities.imports import _TORCHMETRICS_GREATER_EQUAL_1_6
-from torchmetrics.wrappers import MetricTracker, MultioutputWrapper
-
+from torchmetrics.wrappers import ClasswiseWrapper, MetricTracker, MultioutputWrapper
 from unittests._helpers import seed_all
 
 seed_all(42)
@@ -100,6 +100,11 @@ def test_raises_error_if_increment_not_called(method, method_input):
             MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
             (torch.randn(50), torch.randn(50)),
             [False, False],
+        ),
+        (
+            ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None)),
+            (torch.randint(3, (50,)), torch.randint(3, (50,))),
+            True,
         ),
     ],
 )
@@ -244,6 +249,7 @@ def test_tracker_futurewarning():
         MeanAbsoluteError(),
         MulticlassAccuracy(num_classes=10),
         MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
+        ClasswiseWrapper(MulticlassAccuracy(num_classes=10, average=None)),
     ],
 )
 def test_tracker_higher_is_better_integration(base_metric):

@@ -16,12 +16,12 @@ from functools import partial
 
 import pytest
 import torch
+
 from torchmetrics.aggregation import MeanMetric, SumMetric
 from torchmetrics.classification import BinaryAccuracy, BinaryConfusionMatrix
 from torchmetrics.collections import MetricCollection
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError, PearsonCorrCoef
 from torchmetrics.wrappers import Running
-
 from unittests import NUM_PROCESSES, USE_PYTEST_POOL
 
 
@@ -68,9 +68,9 @@ def test_forward():
 
     for i in range(10):
         assert compare_metric(i) == metric(i)
-        assert metric.compute() == (i + max(i - 1, 0) + max(i - 2, 0)) / min(
-            i + 1, 3
-        ), f"Running mean is not correct in step {i}"
+        assert metric.compute() == (i + max(i - 1, 0) + max(i - 2, 0)) / min(i + 1, 3), (
+            f"Running mean is not correct in step {i}"
+        )
 
 
 @pytest.mark.parametrize(
@@ -143,7 +143,7 @@ def _test_ddp_running(rank, dist_sync_on_step, expected):
     assert metric.compute() == 6
 
 
-@pytest.mark.DDP()
+@pytest.mark.DDP
 @pytest.mark.skipif(sys.platform == "win32", reason="DDP not available on windows")
 @pytest.mark.skipif(not USE_PYTEST_POOL, reason="DDP pool is not available.")
 @pytest.mark.parametrize(("dist_sync_on_step", "expected"), [(False, 1), (True, 2)])

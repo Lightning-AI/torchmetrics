@@ -19,6 +19,7 @@ import torch
 from scipy.special import expit as sigmoid
 from sklearn.metrics import accuracy_score as sk_accuracy
 from sklearn.metrics import confusion_matrix as sk_confusion_matrix
+
 from torchmetrics.classification.accuracy import Accuracy, BinaryAccuracy, MulticlassAccuracy, MultilabelAccuracy
 from torchmetrics.functional.classification.accuracy import (
     accuracy,
@@ -28,7 +29,6 @@ from torchmetrics.functional.classification.accuracy import (
 )
 from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_1
-
 from unittests import NUM_CLASSES, THRESHOLD
 from unittests._helpers import seed_all
 from unittests._helpers.testers import MetricTester, inject_ignore_index, remove_ignore_index
@@ -625,6 +625,12 @@ def test_corner_cases():
     metric = MulticlassAccuracy(num_classes=3, average="macro", ignore_index=0)
     res = metric(preds, target)
     assert res == 1.0
+
+    metric_micro1 = MulticlassAccuracy(num_classes=None, average="micro", ignore_index=0)
+    metric_micro2 = MulticlassAccuracy(num_classes=3, average="micro", ignore_index=0)
+    res1 = metric_micro1(preds, target)
+    res2 = metric_micro2(preds, target)
+    assert res1 == res2
 
 
 @pytest.mark.parametrize(

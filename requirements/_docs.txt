@@ -10,20 +10,21 @@ sphinx-paramlinks ==0.6.0
 sphinx-togglebutton ==0.3.2
 sphinx-copybutton ==0.5.2
 sphinx-autobuild ==2024.10.3
-sphinx-gallery ==0.18.0
+sphinx-gallery ==0.19.0
 
 lightning >=1.8.0, <2.6.0
-lightning-utilities ==0.11.9
+lightning-utilities ==0.14.0
 pydantic > 1.0.0, < 3.0.0
 
 # integrations
 -r _integrate.txt
--r visual.txt
 -r audio.txt
+-r clustering.txt
 -r detection.txt
 -r image.txt
 -r multimodal.txt
 -r text.txt
+-r visual.txt
 
 # Gallery extra requirements
 # --------------------------
