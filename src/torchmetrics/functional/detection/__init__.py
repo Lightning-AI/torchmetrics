@@ -24,10 +24,12 @@ if _TORCHVISION_AVAILABLE:
     from torchmetrics.functional.detection.diou import distance_intersection_over_union
     from torchmetrics.functional.detection.giou import generalized_intersection_over_union
     from torchmetrics.functional.detection.iou import intersection_over_union
+    from torchmetrics.functional.detection.map import mean_average_precision
 
     __all__ += [
         "complete_intersection_over_union",
         "distance_intersection_over_union",
         "generalized_intersection_over_union",
         "intersection_over_union",
+        "mean_average_precision",
     ]
