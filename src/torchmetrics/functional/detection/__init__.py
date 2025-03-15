@@ -29,7 +29,7 @@ if _TORCHVISION_AVAILABLE:
     __all__ += [
         "complete_intersection_over_union",
         "distance_intersection_over_union",
-        "mean_average_precision",
         "generalized_intersection_over_union",
         "intersection_over_union",
+        "mean_average_precision",
     ]
