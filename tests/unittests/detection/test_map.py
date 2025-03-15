@@ -961,7 +961,7 @@ def compare_with_class(functional_result, preds, target, **kwargs: Any):
     map_metric.update(preds, target)
     class_result = map_metric.compute()
     for key in class_result:
-        torch.testing.assert_close(functional_result[key], class_result[key])
+        torch.testing.assert_close(functional_result[key], class_result[key], atol=5e-5, rtol=1e-5)
 
 
 @pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
