@@ -112,21 +112,20 @@ class MeanIoU(Metric):
         self.include_background = include_background
         self.per_class = per_class
         self.input_format = input_format
-        
+
         self.add_state("score", default=torch.zeros(1), dist_reduce_fx="sum")
         self.add_state("num_batches", default=torch.tensor(0), dist_reduce_fx="sum")
         self._is_initialized = num_classes is not None
-            
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the state with the new data."""
         if not self._is_initialized:
             if self.input_format == "index" and self.num_classes is None:
                 raise ValueError("num_classes must be provided when input_format='index'")
-                
+
             if self.input_format == "one-hot":
                 self.num_classes = preds.shape[1]
-            
+
             num_out_classes = self.num_classes - 1 if not self.include_background else self.num_classes
             device, dtype = self.score.device, self.score.dtype
             self.score = torch.zeros(num_out_classes if self.per_class else 1, device=device, dtype=dtype)
