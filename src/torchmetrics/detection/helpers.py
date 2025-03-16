@@ -587,7 +587,7 @@ def _get_safe_item_values(
     coco_backend: CocoBackend,
     item: dict[str, Any],
     warn: bool = False,
-) -> Sequence[Optional[Union[Tensor, tuple]]]:
+) -> tuple[Optional[Tensor], Optional[tuple]]:
     """Convert and return the boxes or masks from the item depending on the iou_type.
 
     Args:
@@ -637,4 +637,4 @@ def _get_safe_item_values(
         or (output[1] is not None and len(output[1]) > max_detection_thresholds[-1])
     ):
         _warning_on_too_many_detections(max_detection_thresholds[-1])
-    return output
+    return output  # type: ignore[return-value]
