@@ -87,7 +87,7 @@ def mean_average_precision(
 
         # Example with bounding boxes
         >>> from torch import tensor
-        >>> from torchmetrics.functional.detection import mean_average_precision
+        >>> from torchmetrics.functional.detection.map import mean_average_precision
         >>> preds = [
         ...   {
         ...     "boxes": tensor([[258.0, 41.0, 606.0, 285.0]]),
@@ -110,7 +110,7 @@ def mean_average_precision(
         # Example with segmentation masks
         >>> import torch
         >>> from torch import tensor
-        >>> from torchmetrics.functional.detection import mean_average_precision
+        >>> from torchmetrics.functional.detection.map import mean_average_precision
         >>> mask_pred = tensor([
         ...   [0, 0, 0, 0, 0],
         ...   [0, 0, 1, 1, 0],
