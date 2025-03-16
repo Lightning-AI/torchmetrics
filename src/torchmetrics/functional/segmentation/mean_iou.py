@@ -85,7 +85,7 @@ def _mean_iou_compute(
 def mean_iou(
     preds: Tensor,
     target: Tensor,
-    num_classes: Optional[int],
+    num_classes: Optional[int] = None,
     include_background: bool = True,
     per_class: bool = False,
     input_format: Literal["one-hot", "index"] = "one-hot",
@@ -109,9 +109,9 @@ def mean_iou(
         >>> from torchmetrics.functional.segmentation import mean_iou
         >>> preds = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 prediction
         >>> target = randint(0, 2, (4, 5, 16, 16))  # 4 samples, 5 classes, 16x16 target
-        >>> mean_iou(preds, target, num_classes=5)
+        >>> mean_iou(preds, target)
         tensor([0.3193, 0.3305, 0.3382, 0.3246])
-        >>> mean_iou(preds, target, num_classes=5, per_class=True)
+        >>> mean_iou(preds, target, per_class=True)
         tensor([[0.3093, 0.3500, 0.3081, 0.3389, 0.2903],
                 [0.2963, 0.3316, 0.3505, 0.2804, 0.3936],
                 [0.3724, 0.3249, 0.3660, 0.3184, 0.3093],

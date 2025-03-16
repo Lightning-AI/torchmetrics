@@ -76,15 +76,15 @@ class MeanIoU(Metric):
     Example:
         >>> from torch import randint
         >>> from torchmetrics.segmentation import MeanIoU
-        >>> miou = MeanIoU(num_classes=3)
+        >>> miou = MeanIoU()
         >>> preds = randint(0, 2, (10, 3, 128, 128))
         >>> target = randint(0, 2, (10, 3, 128, 128))
         >>> miou(preds, target)
         tensor(0.3326)
-        >>> miou = MeanIoU(num_classes=3, per_class=True)
+        >>> miou = MeanIoU(per_class=True)
         >>> miou(preds, target)
         tensor([0.3334, 0.3327, 0.3318])
-        >>> miou = MeanIoU(num_classes=3, per_class=True, include_background=False)
+        >>> miou = MeanIoU(per_class=True, include_background=False)
         >>> miou(preds, target)
         tensor([0.3327, 0.3318])
 
