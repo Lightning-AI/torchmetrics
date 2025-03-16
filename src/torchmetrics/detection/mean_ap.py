@@ -529,11 +529,11 @@ class MeanAveragePrecision(Metric):
 
         for item in preds:
             bbox_detection, mask_detection = _get_safe_item_values(
-                self.iou_type,
-                self.box_format,
-                self.max_detection_thresholds,
-                self._coco_backend,
-                item,
+                iou_type=self.iou_type,
+                box_format=self.box_format,
+                max_detection_thresholds=self.max_detection_thresholds,
+                coco_backend=self._coco_backend,
+                item=item,
                 warn=self.warn_on_many_detections,
             )
             if bbox_detection is not None:

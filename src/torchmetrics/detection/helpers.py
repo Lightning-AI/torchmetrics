@@ -632,9 +632,13 @@ def _get_safe_item_values(
             rle = coco_backend.mask_utils.encode(np.asfortranarray(i))
             masks.append((tuple(rle["size"]), rle["counts"]))
         output[1] = tuple(masks)  # type: ignore[call-overload]
-    if warn and (
-        (output[0] is not None and len(output[0]) > max_detection_thresholds[-1])
-        or (output[1] is not None and len(output[1]) > max_detection_thresholds[-1])
-    ):
+
+    def _valid_output_len(idx: int) -> bool:
+        val = output[idx]
+        if val is None:
+            return False
+        return len(val) > max_detection_thresholds[-1]
+
+    if warn and (_valid_output_len(0) or _valid_output_len(1)):
         _warning_on_too_many_detections(max_detection_thresholds[-1])
     return output  # type: ignore[return-value]
