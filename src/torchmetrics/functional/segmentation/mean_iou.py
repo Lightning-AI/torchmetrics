@@ -15,6 +15,7 @@
 import torch
 from torch import Tensor
 from typing_extensions import Literal
+from typing import Optional
 
 from torchmetrics.functional.segmentation.utils import _ignore_background
 from torchmetrics.utilities.checks import _check_same_shape
@@ -22,13 +23,15 @@ from torchmetrics.utilities.compute import _safe_divide
 
 
 def _mean_iou_validate_args(
-    num_classes: int,
+    num_classes: Optional[int],
     include_background: bool,
     per_class: bool,
     input_format: Literal["one-hot", "index"] = "one-hot",
 ) -> None:
     """Validate the arguments of the metric."""
-    if num_classes <= 0:
+    if input_format == "index" and num_classes is None:
+        raise ValueError("Argument `num_classes` must be provided when `input_format='index'`.")
+    if num_classes is not None and num_classes <= 0:
         raise ValueError(f"Expected argument `num_classes` must be a positive integer, but got {num_classes}.")
     if not isinstance(include_background, bool):
         raise ValueError(f"Expected argument `include_background` must be a boolean, but got {include_background}.")
@@ -41,16 +44,21 @@ def _mean_iou_validate_args(
 def _mean_iou_update(
     preds: Tensor,
     target: Tensor,
-    num_classes: int,
-    include_background: bool = False,
+    num_classes: Optional[int] = None,
+    include_background: bool = True,
     input_format: Literal["one-hot", "index"] = "one-hot",
 ) -> tuple[Tensor, Tensor]:
     """Update the intersection and union counts for the mean IoU computation."""
     _check_same_shape(preds, target)
 
     if input_format == "index":
+        if num_classes is None:
+            raise ValueError("Argument `num_classes` must be provided when `input_format='index'`.")
         preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
         target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
+    elif input_format == "one-hot" and num_classes is None:
+        # Infer num_classes from the shape of preds
+        num_classes = preds.shape[1]
 
     if not include_background:
         preds, target = _ignore_background(preds, target)
@@ -61,7 +69,6 @@ def _mean_iou_update(
     pred_sum = torch.sum(preds, dim=reduce_axis)
     union = target_sum + pred_sum - intersection
     return intersection, union
-
 
 def _mean_iou_compute(
     intersection: Tensor,
@@ -76,7 +83,7 @@ def _mean_iou_compute(
 def mean_iou(
     preds: Tensor,
     target: Tensor,
-    num_classes: int,
+    num_classes: Optional[int],
     include_background: bool = True,
     per_class: bool = False,
     input_format: Literal["one-hot", "index"] = "one-hot",
@@ -86,7 +93,7 @@ def mean_iou(
     Args:
         preds: Predictions from model
         target: Ground truth values
-        num_classes: Number of classes
+        num_classes: Number of classes (required when input_format="index", optional when input_format="one-hot")
         include_background: Whether to include the background class in the computation
         per_class: Whether to compute the IoU for each class separately, else average over all classes
         input_format: What kind of input the function receives. Choose between ``"one-hot"`` for one-hot encoded tensors

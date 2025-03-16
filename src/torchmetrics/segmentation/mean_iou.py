@@ -52,7 +52,8 @@ class MeanIoU(Metric):
           set to ``False``, the output will be a scalar tensor.
 
     Args:
-        num_classes: The number of classes in the segmentation problem.
+        num_classes: The number of classes in the segmentation problem. Required when input_format="index",
+            optional when input_format="one-hot".
         include_background: Whether to include the background class in the computation
         per_class: Whether to compute the IoU for each class separately. If set to ``False``, the metric will
             compute the mean IoU over all classes.
@@ -63,6 +64,8 @@ class MeanIoU(Metric):
     Raises:
         ValueError:
             If ``num_classes`` is not a positive integer
+        ValueError:
+            If ``num_classes`` is not provided when ``input_format="index"``
         ValueError:
             If ``include_background`` is not a boolean
         ValueError:
@@ -97,7 +100,7 @@ class MeanIoU(Metric):
 
     def __init__(
         self,
-        num_classes: int,
+        num_classes: Optional[int] = None,
         include_background: bool = True,
         per_class: bool = False,
         input_format: Literal["one-hot", "index"] = "one-hot",
@@ -109,13 +112,24 @@ class MeanIoU(Metric):
         self.include_background = include_background
         self.per_class = per_class
         self.input_format = input_format
-
-        num_classes = num_classes - 1 if not include_background else num_classes
-        self.add_state("score", default=torch.zeros(num_classes if per_class else 1), dist_reduce_fx="sum")
-        self.add_state("num_batches", default=torch.tensor(0), dist_reduce_fx="sum")
+        
+        # Initialize states only if num_classes is provided
+        if num_classes is not None:
+            num_out_classes = num_classes - 1 if not include_background else num_classes
+            self.add_state("score", default=torch.zeros(num_out_classes if per_class else 1), dist_reduce_fx="sum")
+            self.add_state("num_batches", default=torch.tensor(0), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the state with the new data."""
+        # Infer num_classes if not provided and input_format is one-hot
+        if self.num_classes is None and self.input_format == "one-hot":
+            self.num_classes = preds.shape[1]
+            
+            # Initialize states now that we know num_classes
+            num_out_classes = self.num_classes - 1 if not self.include_background else self.num_classes
+            self.add_state("score", default=torch.zeros(num_out_classes if self.per_class else 1), dist_reduce_fx="sum")
+            self.add_state("num_batches", default=torch.tensor(0), dist_reduce_fx="sum")
+        
         intersection, union = _mean_iou_update(
             preds, target, self.num_classes, self.include_background, self.input_format
         )
