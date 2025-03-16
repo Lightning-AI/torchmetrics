@@ -22,6 +22,16 @@ from lightning_utilities import apply_to_collection
 from torch import Tensor
 
 from torchmetrics.detection.helpers import CocoBackend, _get_safe_item_values, _input_validator, _validate_iou_type_arg
+from torchmetrics.utilities.imports import (
+    _FASTER_COCO_EVAL_AVAILABLE,
+    _PYCOCOTOOLS_AVAILABLE,
+    _TORCHVISION_AVAILABLE,
+)
+
+if not (_PYCOCOTOOLS_AVAILABLE or _FASTER_COCO_EVAL_AVAILABLE) or not _TORCHVISION_AVAILABLE:
+    __doctest_skip__ = [
+        "mean_average_precision",
+    ]
 
 
 def mean_average_precision(
