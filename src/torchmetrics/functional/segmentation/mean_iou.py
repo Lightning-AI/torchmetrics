@@ -33,7 +33,9 @@ def _mean_iou_validate_args(
     if input_format == "index" and num_classes is None:
         raise ValueError("Argument `num_classes` must be provided when `input_format='index'`.")
     if num_classes is not None and num_classes <= 0:
-        raise ValueError(f"Expected argument `num_classes` must be `None` or a positive integer, but got {num_classes}.")
+        raise ValueError(
+            f"Expected argument `num_classes` must be `None` or a positive integer, but got {num_classes}."
+        )
     if not isinstance(include_background, bool):
         raise ValueError(f"Expected argument `include_background` must be a boolean, but got {include_background}.")
     if not isinstance(per_class, bool):
