@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional
+
 import torch
 from torch import Tensor
 from typing_extensions import Literal
-from typing import Optional
 
 from torchmetrics.functional.segmentation.utils import _ignore_background
 from torchmetrics.utilities.checks import _check_same_shape
@@ -69,6 +70,7 @@ def _mean_iou_update(
     pred_sum = torch.sum(preds, dim=reduce_axis)
     union = target_sum + pred_sum - intersection
     return intersection, union
+
 
 def _mean_iou_compute(
     intersection: Tensor,
