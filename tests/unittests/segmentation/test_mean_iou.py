@@ -99,3 +99,66 @@ class TestMeanIoU(MetricTester):
                 "input_format": input_format,
             },
         )
+
+
+class TestMeanIoUWithoutNumClasses(MetricTester):
+    """Test class for `MeanIoU` metric when num_classes is not specified."""
+
+    atol = 1e-4
+
+    @pytest.mark.parametrize(
+        ("preds", "target", "input_format"),
+        [
+            (_inputs1.preds, _inputs1.target, "one-hot"),
+            (_inputs2.preds, _inputs2.target, "one-hot"),
+        ],
+    )
+    @pytest.mark.parametrize("include_background", [True, False])
+    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
+    @pytest.mark.parametrize("per_class", [True, False])
+    def test_mean_iou_class_without_num_classes_one_hot(
+        self, preds, target, input_format, include_background, per_class, ddp
+    ):
+        """Test class implementation of metric with one-hot format without specifying num_classes."""
+        self.run_class_metric_test(
+            ddp=ddp,
+            preds=preds,
+            target=target,
+            metric_class=MeanIoU,
+            reference_metric=partial(
+                _reference_mean_iou,
+                input_format=input_format,
+                include_background=include_background,
+                per_class=per_class,
+                reduce=True,
+            ),
+            metric_args={
+                "include_background": include_background,
+                "per_class": per_class,
+                "input_format": input_format,
+            },
+        )
+
+    @pytest.mark.parametrize(
+        ("preds", "target", "input_format"),
+        [
+            (_inputs1.preds, _inputs1.target, "one-hot"),
+            (_inputs2.preds, _inputs2.target, "one-hot"),
+        ],
+    )
+    @pytest.mark.parametrize("include_background", [True, False])
+    def test_mean_iou_functional_without_num_classes_one_hot(self, preds, target, input_format, include_background):
+        """Test functional implementation of metric with one-hot format without specifying num_classes."""
+        self.run_functional_metric_test(
+            preds=preds,
+            target=target,
+            metric_functional=mean_iou,
+            reference_metric=partial(
+                _reference_mean_iou, input_format=input_format, include_background=include_background, reduce=False
+            ),
+            metric_args={
+                "include_background": include_background,
+                "per_class": True,
+                "input_format": input_format,
+            },
+        )
