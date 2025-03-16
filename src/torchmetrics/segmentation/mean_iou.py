@@ -112,23 +112,25 @@ class MeanIoU(Metric):
         self.include_background = include_background
         self.per_class = per_class
         self.input_format = input_format
-
-        # Initialize states only if num_classes is provided
-        if num_classes is not None:
-            num_out_classes = num_classes - 1 if not include_background else num_classes
-            self.add_state("score", default=torch.zeros(num_out_classes if per_class else 1), dist_reduce_fx="sum")
-            self.add_state("num_batches", default=torch.tensor(0), dist_reduce_fx="sum")
+        
+        self.add_state("score", default=torch.zeros(1), dist_reduce_fx="sum")
+        self.add_state("num_batches", default=torch.tensor(0), dist_reduce_fx="sum")
+        self._is_initialized = num_classes is not None
+            
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the state with the new data."""
-        # Infer num_classes if not provided and input_format is one-hot
-        if self.num_classes is None and self.input_format == "one-hot":
-            self.num_classes = preds.shape[1]
-
-            # Initialize states now that we know num_classes
+        if not self._is_initialized:
+            if self.input_format == "index" and self.num_classes is None:
+                raise ValueError("num_classes must be provided when input_format='index'")
+                
+            if self.input_format == "one-hot":
+                self.num_classes = preds.shape[1]
+            
             num_out_classes = self.num_classes - 1 if not self.include_background else self.num_classes
-            self.add_state("score", default=torch.zeros(num_out_classes if self.per_class else 1), dist_reduce_fx="sum")
-            self.add_state("num_batches", default=torch.tensor(0), dist_reduce_fx="sum")
+            device, dtype = self.score.device, self.score.dtype
+            self.score = torch.zeros(num_out_classes if self.per_class else 1, device=device, dtype=dtype)
+            self._is_initialized = True
 
         intersection, union = _mean_iou_update(
             preds, target, self.num_classes, self.include_background, self.input_format

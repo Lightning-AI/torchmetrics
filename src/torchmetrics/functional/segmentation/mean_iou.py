@@ -58,7 +58,6 @@ def _mean_iou_update(
         preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
         target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
     elif input_format == "one-hot" and num_classes is None:
-        # Infer num_classes from the shape of preds
         num_classes = preds.shape[1]
 
     if not include_background:
