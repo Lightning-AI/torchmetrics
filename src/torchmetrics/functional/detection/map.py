@@ -38,69 +38,109 @@ def mean_average_precision(
     backend: Literal["pycocotools", "faster_coco_eval"] = "pycocotools",
     warn_on_many_detections: bool = True,
 ) -> Union[Tensor, Dict[str, Tensor]]:
-    """Compute mean Average Precision (mAP) and mean Average Recall (mAR) metrics for object detection.
+    r"""Compute the mean average precision (mAP) and mean average recall (mAR) for object detection predictions.
+
+    This function evaluates detection predictions for either bounding boxes or segmentation masks based
+    on the provided ``iou_type``, comparing predictions (``preds``) and ground truth annotations (``target``)
+    using a COCO-style evaluation. The expected input for each image is a dictionary with keys:
+
+    - For bounding boxes (``iou_type="bbox"``): ``boxes``, ``scores``, and ``labels``.
+    - For segmentation (``iou_type="segm"``): ``masks``, ``scores``, and ``labels``.
+
+    In addition, ground truth dictionaries may include the optional keys ``iscrowd`` and ``area``.
+    Boxes are expected in the coordinate format provided via ``box_format``, which supports:
+    - ``"xyxy"``: [xmin, ymin, xmax, ymax]
+    - ``"xywh"``: [xmin, ymin, width, height]
+    - ``"cxcywh"``: [center_x, center_y, width, height]
+
+    The evaluation defaults to IoU thresholds from 0.50 to 0.95 (step 0.05), recall thresholds
+    from 0.00 to 1.00 (step 0.01), and maximum detection thresholds of [1, 10, 100]. These can be overridden
+    by specifying ``iou_thresholds``, ``rec_thresholds``, and ``max_detection_thresholds``, respectively.
+    Optionally, per-class metrics may be computed by enabling ``class_metrics``, and an extended summary
+    (including IoU, precision, recall, and scores) is available via ``extended_summary``.
+    The averaging method over labels can be set with ``average`` ("macro" or "micro") and the evaluation
+    is performed using either the ``pycocotools`` or ``faster_coco_eval`` backend.
 
     Args:
-        preds:
-            A list of dictionaries containing the detection predictions for each image. Each dictionary
-            should contain the following keys:
-            - 'boxes': Tensor of shape (N, 4) containing predicted bounding boxes
-            - 'scores': Tensor of shape (N,) containing confidence scores for each detection
-            - 'labels': Tensor of shape (N,) containing predicted class labels
-            - 'masks': (optional) Tensor containing segmentation masks if iou_type includes 'segm'
-        target:
-            A list of dictionaries containing the ground truth annotations for each image. Each dictionary
-            should contain the following keys:
-            - 'boxes': Tensor of shape (M, 4) containing ground truth bounding boxes
-            - 'labels': Tensor of shape (M,) containing ground truth class labels
-            - 'masks': (optional) Tensor containing segmentation masks if iou_type includes 'segm'
-            - 'area': (optional) Tensor of shape (M,) containing the area of each ground truth box
-            - 'iscrowd': (optional) Tensor of shape (M,) indicating whether the instance is a crowd
-        box_format:
-            Input format of given boxes. Supported formats are:
-            - 'xyxy': boxes are represented via corners, x1, y1 being top left and x2, y2 being bottom right.
-            - 'xywh': boxes are represented via corner, width and height, x1, y2 being top left, w, h being
-              width and height.
-            - 'cxcywh': boxes are represented via centre, width and height, cx, cy being center of box, w, h being
-              width and height.
-            Default is 'xyxy'.
-        iou_type:
-            Type of input (either masks or bounding-boxes) used for computing IOU. Supported IOU types are
-            "bbox" or "segm" or both as a tuple. Default is "bbox".
-        iou_thresholds:
-            IoU thresholds for evaluation. If set to ``None`` it corresponds to the stepped range ``[0.5,...,0.95]``
-            with step ``0.05``. Else provide a list of floats. Default is None.
-        rec_thresholds:
-            Recall thresholds for evaluation. If set to ``None`` it corresponds to the stepped range ``[0,...,1]``
-            with step ``0.01``. Else provide a list of floats. Default is None.
-        max_detection_thresholds:
-            Thresholds on max detections per image. If set to `None` will use thresholds ``[1, 10, 100]``.
-            Else, please provide a list of ints of length 3, which is the only supported length by both backends.
-            Default is None.
-        class_metrics:
-            Option to enable per-class metrics for mAP and mAR_100. Has a performance impact that scales linearly with
-            the number of classes in the dataset. Default is False.
-        extended_summary:
-            Option to enable extended summary with additional metrics including IOU, precision and recall. The output
-            dictionary will contain additional metrics. Default is False.
-        average:
-            Method for averaging scores over labels. Choose between "macro" and "micro". Default is "macro".
-        backend:
-            Backend to use for the evaluation. Choose between "pycocotools" and "faster_coco_eval".
-            Default is "pycocotools".
-        warn_on_many_detections:
-            Whether to warn if the number of detections exceeds the max_detection_thresholds. Default is True.
+        preds: List of dictionaries, each representing detection predictions for a single image.
+        target: List of dictionaries, each representing ground truth annotations for a single image.
+        box_format: Format of the input bounding boxes. Supported values are "xyxy", "xywh", and "cxcywh".
+        iou_type: Type of IoU to compute. Can be "bbox", "segm", or a tuple containing both.
+        iou_thresholds: List of IoU thresholds (default is [0.5, 0.55, ..., 0.95]).
+        rec_thresholds: List of recall thresholds (default is [0.0, 0.01, ..., 1.0]).
+        max_detection_thresholds: List of maximum detections per image (default is [1, 10, 100]).
+        class_metrics: Whether to compute per-class mAP and mAR metrics.
+        extended_summary: Whether to include additional outputs (IoU, precision, recall, scores) in the result.
+        average: Averaging method over labels, either "macro" or "micro".
+        backend: Backend to use for evaluation ("pycocotools" or "faster_coco_eval").
+        warn_on_many_detections: If True, warn when there are an unusually large number of detections.
 
     Returns:
-        If extended_summary is False, returns a tensor with the mean average precision.
-        If extended_summary is True, returns a dictionary with various metrics including:
-        - 'map': mean average precision averaged across IoU thresholds
-        - 'map_50': mean average precision at IoU threshold 0.5
-        - 'map_75': mean average precision at IoU threshold 0.75
-        - 'map_small', 'map_medium', 'map_large': mAP for different object sizes
-        - 'mar_1', 'mar_10', 'mar_100': mean average recall for different max detection thresholds
-        - 'mar_small', 'mar_medium', 'mar_large': mAR for different object sizes
-        - 'precision', 'recall', 'scores', 'ious': detailed arrays when extended_summary is True
+        dict: A dictionary containing the evaluation metrics. The dictionary includes the following keys:
+            - ``map``: Global mean average precision over the defined IoU thresholds.
+            - ``mar_{max_det}``: Global mean average recall for each maximum detection threshold.
+            - ``map_per_class``: Mean average precision per observed class (or -1 if ``class_metrics`` is disabled).
+            - ``mar_{max_det}_per_class``: Mean average recall per observed class for the highest detection threshold.
+            - ``classes``: A tensor listing all observed classes.
+
+    Example::
+
+        # Example with bounding boxes
+        >>> from torch import tensor
+        >>> from torchmetrics.functional.detection import mean_average_precision
+        >>> preds = [
+        ...   {
+        ...     "boxes": tensor([[258.0, 41.0, 606.0, 285.0]]),
+        ...     "scores": tensor([0.536]),
+        ...     "labels": tensor([0]),
+        ...   }
+        ... ]
+        >>> target = [
+        ...   {
+        ...     "boxes": tensor([[214.0, 41.0, 562.0, 285.0]]),
+        ...     "labels": tensor([0]),
+        ...   }
+        ... ]
+        >>> result = mean_average_precision(preds, target, iou_type="bbox")
+        >>> print(f"mAP: {result['map']:.4f}, mAP@0.5: {result['map_50']:.4f}")
+        mAP: 0.6000, mAP@0.5: 1.0000
+
+    Example::
+
+        # Example with segmentation masks
+        >>> import torch
+        >>> from torch import tensor
+        >>> from torchmetrics.functional.detection import mean_average_precision
+        >>> mask_pred = tensor([
+        ...   [0, 0, 0, 0, 0],
+        ...   [0, 0, 1, 1, 0],
+        ...   [0, 0, 1, 1, 0],
+        ...   [0, 0, 0, 0, 0],
+        ...   [0, 0, 0, 0, 0],
+        ... ], dtype=torch.bool)
+        >>> mask_tgt = tensor([
+        ...   [0, 0, 0, 0, 0],
+        ...   [0, 0, 1, 0, 0],
+        ...   [0, 0, 1, 1, 0],
+        ...   [0, 0, 1, 0, 0],
+        ...   [0, 0, 0, 0, 0],
+        ... ], dtype=torch.bool)
+        >>> preds = [
+        ...   {
+        ...     "masks": mask_pred.unsqueeze(0),
+        ...     "scores": tensor([0.536]),
+        ...     "labels": tensor([0]),
+        ...   }
+        ... ]
+        >>> target = [
+        ...   {
+        ...     "masks": mask_tgt.unsqueeze(0),
+        ...     "labels": tensor([0]),
+        ...   }
+        ... ]
+        >>> result = mean_average_precision(preds, target, iou_type="segm")
+        >>> print(f"mAP: {result['map']:.4f}, mAP@0.5: {result['map_50']:.4f}")
+        mAP: 0.2000, mAP@0.5: 1.0000
 
     """
     iou_thresholds = iou_thresholds or torch.linspace(0.5, 0.95, round((0.95 - 0.5) / 0.05) + 1).tolist()
