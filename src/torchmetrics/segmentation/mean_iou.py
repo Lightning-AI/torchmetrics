@@ -144,9 +144,6 @@ class MeanIoU(Metric):
             preds, target, self.num_classes, self.include_background, self.input_format
         )
         score = _mean_iou_compute(intersection, union, per_class=self.per_class)
-        print(f"score:{score}")
-        print(f"self.score: {self.score}")
-        print(f"sef.score.mean(0): {score.mean(0)}")
         self.score += score.mean(0) if self.per_class else score.mean()
         self.num_batches += 1
 
