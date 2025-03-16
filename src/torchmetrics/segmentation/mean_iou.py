@@ -135,10 +135,11 @@ class MeanIoU(Metric):
             if self.input_format == "one-hot":
                 self.num_classes = preds.shape[1]
 
-            num_out_classes = self.num_classes - 1 if not self.include_background else self.num_classes
-            device, dtype = self.score.device, self.score.dtype
-            self.score = torch.zeros(num_out_classes if self.per_class else 1, device=device, dtype=dtype)
-            self._is_initialized = True
+            if self.num_classes is not None:
+                num_out_classes = self.num_classes - 1 if not self.include_background else self.num_classes
+                device, dtype = self.score.device, self.score.dtype
+                self.score = torch.zeros(num_out_classes if self.per_class else 1, device=device, dtype=dtype)
+                self._is_initialized = True
 
         intersection, union = _mean_iou_update(
             preds, target, self.num_classes, self.include_background, self.input_format
