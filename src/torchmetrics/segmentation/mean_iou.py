@@ -63,7 +63,7 @@ class MeanIoU(Metric):
 
     Raises:
         ValueError:
-            If ``num_classes`` is not a positive integer
+            If ``num_classes`` is not ``None`` or a positive integer
         ValueError:
             If ``num_classes`` is not provided when ``input_format="index"``
         ValueError:
@@ -74,19 +74,23 @@ class MeanIoU(Metric):
             If ``input_format`` is not one of ``"one-hot"`` or ``"index"``
 
     Example:
+        >>> import torch
         >>> from torch import randint
         >>> from torchmetrics.segmentation import MeanIoU
         >>> miou = MeanIoU()
-        >>> preds = randint(0, 2, (10, 3, 128, 128))
-        >>> target = randint(0, 2, (10, 3, 128, 128))
+        >>> preds = randint(0, 2, (10, 3, 128, 128),generator=torch.Generator().manual_seed(42))
+        >>> target = randint(0, 2, (10, 3, 128, 128),generator=torch.Generator().manual_seed(43))
         >>> miou(preds, target)
-        tensor(0.3326)
-        >>> miou = MeanIoU(per_class=True)
+        tensor(0.3336)
+        >>> miou = MeanIoU(num_classes=3, per_class=True)
         >>> miou(preds, target)
-        tensor([0.3334, 0.3327, 0.3318])
+        tensor([0.3361, 0.3340, 0.3308])
         >>> miou = MeanIoU(per_class=True, include_background=False)
         >>> miou(preds, target)
-        tensor([0.3327, 0.3318])
+        tensor([0.3340, 0.3308])
+        >>> miou = MeanIoU(num_classes=3, per_class=True, include_background=True, input_format="index")
+        >>> miou(preds, target)
+        tensor([0.3334, 0.3336, 0.0000])
 
     """
 
@@ -140,6 +144,9 @@ class MeanIoU(Metric):
             preds, target, self.num_classes, self.include_background, self.input_format
         )
         score = _mean_iou_compute(intersection, union, per_class=self.per_class)
+        print(f"score:{score}")
+        print(f"self.score: {self.score}")
+        print(f"sef.score.mean(0): {score.mean(0)}")
         self.score += score.mean(0) if self.per_class else score.mean()
         self.num_batches += 1
 
