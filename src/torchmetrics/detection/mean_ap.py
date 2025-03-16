@@ -23,9 +23,8 @@ from torch import Tensor
 from torch import distributed as dist
 from typing_extensions import Literal
 
-from torchmetrics.detection.helpers import CocoBackend, _fix_empty_tensors, _input_validator, _validate_iou_type_arg
+from torchmetrics.detection.helpers import CocoBackend, _get_safe_item_values, _input_validator, _validate_iou_type_arg
 from torchmetrics.metric import Metric
-from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import (
     _FASTER_COCO_EVAL_AVAILABLE,
     _MATPLOTLIB_AVAILABLE,
@@ -529,7 +528,14 @@ class MeanAveragePrecision(Metric):
         _input_validator(preds, target, iou_type=self.iou_type)
 
         for item in preds:
-            bbox_detection, mask_detection = self._get_safe_item_values(item, warn=self.warn_on_many_detections)
+            bbox_detection, mask_detection = _get_safe_item_values(
+                self.iou_type,
+                self.box_format,
+                self.max_detection_thresholds,
+                self._coco_backend,
+                item,
+                warn=self.warn_on_many_detections,
+            )
             if bbox_detection is not None:
                 self.detection_box.append(bbox_detection)
             if mask_detection is not None:
@@ -538,7 +544,13 @@ class MeanAveragePrecision(Metric):
             self.detection_scores.append(item["scores"])
 
         for item in target:
-            bbox_groundtruth, mask_groundtruth = self._get_safe_item_values(item)
+            bbox_groundtruth, mask_groundtruth = _get_safe_item_values(
+                self.iou_type,
+                self.box_format,
+                self.max_detection_thresholds,
+                self._coco_backend,
+                item,
+            )
             if bbox_groundtruth is not None:
                 self.groundtruth_box.append(bbox_groundtruth)
             if mask_groundtruth is not None:
@@ -658,40 +670,6 @@ class MeanAveragePrecision(Metric):
 
         return result_dict
 
-    def _get_safe_item_values(
-        self, item: dict[str, Any], warn: bool = False
-    ) -> tuple[Optional[Tensor], Optional[tuple]]:
-        """Convert and return the boxes or masks from the item depending on the iou_type.
-
-        Args:
-            item: input dictionary containing the boxes or masks
-            warn: whether to warn if the number of boxes or masks exceeds the max_detection_thresholds
-
-        Returns:
-            boxes or masks depending on the iou_type
-
-        """
-        from torchvision.ops import box_convert
-
-        output = [None, None]
-        if "bbox" in self.iou_type:
-            boxes = _fix_empty_tensors(item["boxes"])
-            if boxes.numel() > 0:
-                boxes = box_convert(boxes, in_fmt=self.box_format, out_fmt="xywh")
-            output[0] = boxes  # type: ignore[call-overload]
-        if "segm" in self.iou_type:
-            masks = []
-            for i in item["masks"].cpu().numpy():
-                rle = self._coco_backend.mask_utils.encode(np.asfortranarray(i))
-                masks.append((tuple(rle["size"]), rle["counts"]))
-            output[1] = tuple(masks)  # type: ignore[call-overload]
-        if warn and (
-            (output[0] is not None and len(output[0]) > self.max_detection_thresholds[-1])
-            or (output[1] is not None and len(output[1]) > self.max_detection_thresholds[-1])
-        ):
-            _warning_on_too_many_detections(self.max_detection_thresholds[-1])
-        return output  # type: ignore[return-value]
-
     def _get_classes(self) -> list:
         """Return a list of unique classes found in ground truth and detection data."""
         if len(self.detection_labels) > 0 or len(self.groundtruth_labels) > 0:
@@ -802,13 +780,3 @@ class MeanAveragePrecision(Metric):
         dist.all_gather_object(list_gathered, list_to_gather, group=process_group)
 
         return [list_gathered[rank][idx] for idx in range(len(list_gathered[0])) for rank in range(world_size)]  # type: ignore[arg-type,index]
-
-
-def _warning_on_too_many_detections(limit: int) -> None:
-    rank_zero_warn(
-        f"Encountered more than {limit} detections in a single image. This means that certain detections with the"
-        " lowest scores will be ignored, that may have an undesirable impact on performance. Please consider adjusting"
-        " the `max_detection_threshold` to suit your use case. To disable this warning, set attribute class"
-        " `warn_on_many_detections=False`, after initializing the metric.",
-        UserWarning,
-    )

@@ -16,13 +16,14 @@ import io
 import json
 from collections.abc import Sequence
 from types import ModuleType
-from typing import List, Literal, Optional, Union
+from typing import Any, List, Literal, Optional, Tuple, Union
 
 import numpy as np
 import torch
 from lightning_utilities import apply_to_collection
 from torch import Tensor
 
+from torchmetrics.utilities import rank_zero_warn
 from torchmetrics.utilities.imports import (
     _FASTER_COCO_EVAL_AVAILABLE,
     _PYCOCOTOOLS_AVAILABLE,
@@ -567,3 +568,73 @@ class CocoBackend:
 
         classes = [{"id": i, "name": str(i)} for i in all_labels] if average != "micro" else [{"id": 0, "name": "0"}]
         return {"images": images, "annotations": annotations, "categories": classes}
+
+
+def _warning_on_too_many_detections(limit: int) -> None:
+    rank_zero_warn(
+        f"Encountered more than {limit} detections in a single image. This means that certain detections with the"
+        " lowest scores will be ignored, that may have an undesirable impact on performance. Please consider adjusting"
+        " the `max_detection_threshold` to suit your use case. To disable this warning, set attribute class"
+        " `warn_on_many_detections=False`, after initializing the metric.",
+        UserWarning,
+    )
+
+
+def _get_safe_item_values(
+    iou_type: Union[Literal["bbox", "segm"], Tuple[Literal["bbox", "segm"], ...]],
+    box_format: str,
+    max_detection_thresholds: List[int],
+    coco_backend: CocoBackend,
+    item: dict[str, Any],
+    warn: bool = False,
+) -> tuple[Optional[Tensor], Optional[tuple]]:
+    """Convert and return the boxes or masks from the item depending on the iou_type.
+
+    Args:
+        iou_type:
+            Type of input to process. Supported types are:
+                - "bbox": Process bounding boxes
+                - "segm": Process segmentation masks
+        box_format:
+            Input format of given boxes. Supported formats are:
+                - 'xyxy': boxes are represented via corners, x1, y1 being top left and x2, y2 being bottom right.
+                - 'xywh': boxes are represented via corner, width and height, x1, y2 being top left, w, h being
+                  width and height.
+                - 'cxcywh': boxes are represented via centre, width and height, cx, cy being center of box, w, h being
+                  width and height.
+        max_detection_thresholds:
+            List of thresholds on maximum detections per image. Used to determine if warnings should be raised
+            when the number of detections exceeds these thresholds.
+        coco_backend:
+            The COCO evaluation backend class type to use for processing the items.
+        item:
+            Input dictionary containing the boxes or masks to be processed, along with other detection information.
+        warn:
+            Whether to warn if the number of boxes or masks exceeds the max_detection_thresholds.
+            Default is False.
+
+    Returns:
+        A tuple containing processed boxes or masks depending on the iou_type. The first element is the
+        tensor representation, and the second element contains additional metadata if applicable.
+
+    """
+    from torchvision.ops import box_convert
+
+    output = [None, None]
+    if "bbox" in iou_type:
+        boxes = _fix_empty_tensors(item["boxes"])
+        if boxes.numel() > 0:
+            boxes = box_convert(boxes, in_fmt=box_format, out_fmt="xywh")
+        output[0] = boxes  # type: ignore[call-overload]
+    if "segm" in iou_type:
+        masks = []
+        for i in item["masks"].cpu().numpy():
+            rle = coco_backend.mask_utils.encode(np.asfortranarray(i))
+            masks.append((tuple(rle["size"]), rle["counts"]))
+        output[1] = tuple(masks)  # type: ignore[call-overload]
+    if warn and (
+        (output[0] is not None and len(output[0]) > max_detection_thresholds[-1])
+        or (output[1] is not None and len(output[1]) > max_detection_thresholds[-1])
+    ):
+        _warning_on_too_many_detections(max_detection_thresholds[-1])
+    return output

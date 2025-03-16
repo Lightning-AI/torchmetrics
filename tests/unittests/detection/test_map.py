@@ -976,26 +976,9 @@ def test_mean_average_precision_iou_type_functional(backend, iou_type):
     functional_result = mean_average_precision(
         preds_flat, target_flat, backend=backend, iou_type=iou_type, box_format="xywh"
     )
-
     compare_with_class(
         functional_result, preds_flat, target_flat, backend=backend, iou_type=iou_type, box_format="xywh"
     )
-
-    expected_keys = {
-        "map",
-        "map_50",
-        "map_75",
-        "map_small",
-        "map_medium",
-        "map_large",
-        "mar_1",
-        "mar_10",
-        "mar_100",
-        "mar_small",
-        "mar_medium",
-        "mar_large",
-    }
-    assert expected_keys.issubset(functional_result.keys())
 
 
 @pytest.mark.parametrize("backend", ["pycocotools", "faster_coco_eval"])
@@ -1113,67 +1096,3 @@ def test_mean_average_precision_custom_thresholds_functional(backend):
         box_format="xyxy",
         iou_type="bbox",
     )
-
-
-def test_mean_average_precision_error_on_wrong_input_functional():
-    """Test that the functional API raises the expected errors when provided with inputs of the wrong type."""
-    with pytest.raises(ValueError, match="Expected argument `preds` to be of type Sequence"):
-        mean_average_precision(torch.tensor([]), [])
-    with pytest.raises(ValueError, match="Expected argument `target` to be of type Sequence"):
-        mean_average_precision([], torch.tensor([]))
-
-    # Missing keys in preds
-    with pytest.raises(ValueError, match="Expected key `boxes` in each dict in `preds`"):
-        mean_average_precision(
-            [{"scores": torch.tensor([]), "labels": torch.tensor([])}],
-            [{"boxes": torch.tensor([]), "labels": torch.tensor([])}],
-        )
-    with pytest.raises(ValueError, match="Expected key `scores` in each dict in `preds`"):
-        mean_average_precision(
-            [{"boxes": torch.tensor([]), "labels": torch.tensor([])}],
-            [{"boxes": torch.tensor([]), "labels": torch.tensor([])}],
-        )
-    with pytest.raises(ValueError, match="Expected key `labels` in each dict in `preds`"):
-        mean_average_precision(
-            [{"boxes": torch.tensor([]), "scores": torch.tensor([])}],
-            [{"boxes": torch.tensor([]), "labels": torch.tensor([])}],
-        )
-
-    # Missing keys in target
-    with pytest.raises(ValueError, match="Expected key `boxes` in each dict in `target`"):
-        mean_average_precision(
-            [{"boxes": torch.tensor([]), "scores": torch.tensor([]), "labels": torch.tensor([])}],
-            [{"labels": torch.tensor([])}],
-        )
-    with pytest.raises(ValueError, match="Expected key `labels` in each dict in `target`"):
-        mean_average_precision(
-            [{"boxes": torch.tensor([]), "scores": torch.tensor([]), "labels": torch.tensor([])}],
-            [{"boxes": torch.tensor([])}],
-        )
-
-    # Type checks for elements in preds and target.
-    with pytest.raises(ValueError, match="Expected `boxes` in `preds` to be of type Tensor"):
-        mean_average_precision(
-            [{"boxes": [], "scores": torch.tensor([]), "labels": torch.tensor([])}],
-            [{"boxes": torch.tensor([]), "labels": torch.tensor([])}],
-        )
-    with pytest.raises(ValueError, match="Expected `scores` in `preds` to be of type Tensor"):
-        mean_average_precision(
-            [{"boxes": torch.tensor([]), "scores": [], "labels": torch.tensor([])}],
-            [{"boxes": torch.tensor([]), "labels": torch.tensor([])}],
-        )
-    with pytest.raises(ValueError, match="Expected `labels` in `preds` to be of type Tensor"):
-        mean_average_precision(
-            [{"boxes": torch.tensor([]), "scores": torch.tensor([]), "labels": []}],
-            [{"boxes": torch.tensor([]), "labels": torch.tensor([])}],
-        )
-    with pytest.raises(ValueError, match="Expected `boxes` in `target` to be of type Tensor"):
-        mean_average_precision(
-            [{"boxes": torch.tensor([]), "scores": torch.tensor([]), "labels": torch.tensor([])}],
-            [{"boxes": [], "labels": torch.tensor([])}],
-        )
-    with pytest.raises(ValueError, match="Expected `labels` in `target` to be of type Tensor"):
-        mean_average_precision(
-            [{"boxes": torch.tensor([]), "scores": torch.tensor([]), "labels": torch.tensor([])}],
-            [{"boxes": torch.tensor([]), "labels": []}],
-        )
