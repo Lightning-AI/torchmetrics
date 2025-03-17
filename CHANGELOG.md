@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `DeepImageStructureAndTextureSimilarity` to image package ([#2993](https://github.com/PyTorchLightning/metrics/pull/2993))
 
 
+- Added `Equal Error Rate (EER)` to classification package ([#3013](https://github.com/PyTorchLightning/metrics/pull/3013))
+
 ### Changed
 
 -
