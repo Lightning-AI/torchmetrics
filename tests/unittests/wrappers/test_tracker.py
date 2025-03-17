@@ -26,7 +26,7 @@ from torchmetrics.classification import (
 )
 from torchmetrics.regression import MeanAbsoluteError, MeanSquaredError
 from torchmetrics.utilities.imports import _TORCHMETRICS_GREATER_EQUAL_1_6
-from torchmetrics.wrappers import MetricTracker, MultioutputWrapper
+from torchmetrics.wrappers import ClasswiseWrapper, MetricTracker, MultioutputWrapper
 from unittests._helpers import seed_all
 
 seed_all(42)
@@ -100,6 +100,11 @@ def test_raises_error_if_increment_not_called(method, method_input):
             MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
             (torch.randn(50), torch.randn(50)),
             [False, False],
+        ),
+        (
+            ClasswiseWrapper(MulticlassAccuracy(num_classes=3, average=None)),
+            (torch.randint(3, (50,)), torch.randint(3, (50,))),
+            True,
         ),
     ],
 )
@@ -244,6 +249,8 @@ def test_tracker_futurewarning():
         MeanAbsoluteError(),
         MulticlassAccuracy(num_classes=10),
         MetricCollection([MeanSquaredError(), MeanAbsoluteError()]),
+        ClasswiseWrapper(MulticlassAccuracy(num_classes=10, average=None)),
+        MetricCollection([ClasswiseWrapper(MulticlassAccuracy(num_classes=10, average=None))]),
     ],
 )
 def test_tracker_higher_is_better_integration(base_metric):
@@ -252,4 +259,10 @@ def test_tracker_higher_is_better_integration(base_metric):
     if isinstance(base_metric, Metric):
         assert tracker.maximize == base_metric.higher_is_better
     else:
-        assert tracker.maximize == [m.higher_is_better for m in base_metric.values()]
+        collection_higher_is_better = []
+        for m in base_metric.values():
+            if isinstance(m, ClasswiseWrapper):
+                collection_higher_is_better.extend([m.higher_is_better] * m.metric.num_classes)
+            else:
+                collection_higher_is_better.append(m.higher_is_better)
+        assert tracker.maximize == collection_higher_is_better

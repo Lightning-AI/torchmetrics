@@ -24,6 +24,7 @@ from torchmetrics.metric import Metric
 from torchmetrics.utilities.imports import _MATPLOTLIB_AVAILABLE
 from torchmetrics.utilities.plot import _AX_TYPE, _PLOT_OUT_TYPE, plot_single_or_multi_val
 from torchmetrics.utilities.prints import rank_zero_warn
+from torchmetrics.wrappers import ClasswiseWrapper
 
 if not _MATPLOTLIB_AVAILABLE:
     __doctest_skip__ = ["MetricTracker.plot"]
@@ -133,7 +134,11 @@ class MetricTracker(ModuleList):
                             f"The metric '{name}' in the MetricCollection does not have a 'higher_is_better' attribute."
                             " Please provide the `maximize` argument explicitly."
                         )
-                    self.maximize.append(m.higher_is_better)  # type: ignore[arg-type]  # this is false alarm
+                    if isinstance(m, ClasswiseWrapper) and isinstance(m.metric.num_classes, int):
+                        m_higher_is_better = [m.higher_is_better for _ in range(int(m.metric.num_classes))]
+                    else:
+                        m_higher_is_better = [m.higher_is_better]
+                    self.maximize.extend(m_higher_is_better)  # type: ignore[arg-type]  # this is false alarm
         else:
             rank_zero_warn(
                 "The default value for `maximize` will be changed from `True` to `None` in v1.7.0 of TorchMetrics,"
@@ -269,7 +274,7 @@ class MetricTracker(ModuleList):
                 return None, None
             return None
 
-        if isinstance(self._base_metric, Metric):
+        if isinstance(self._base_metric, Metric) and not isinstance(self._base_metric, ClasswiseWrapper):
             fn = torch.max if self.maximize else torch.min
             try:
                 value, idx = fn(res, 0)

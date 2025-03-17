@@ -21,6 +21,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `ARNIQA` metric to image domain ([#2953](https://github.com/PyTorchLightning/metrics/pull/2953))
 
 
+- Added support for more models and processors in `CLIPScore` ([#2978](https://github.com/PyTorchLightning/metrics/pull/2978))
+
+
+- Added `DeepImageStructureAndTextureSimilarity` to image package ([#2993](https://github.com/PyTorchLightning/metrics/pull/2993))
+
+
 ### Changed
 
 -
@@ -33,10 +39,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--
+- Fix edge case in integration between classwise wrapper and metric tracker ([#3008](https://github.com/Lightning-AI/torchmetrics/pull/3008))
 
 
 ---
+
+## [1.6.3] - 2024-03-13
+
+### Fixed
+
+- Fixed logic in how metric states referencing is handled in `MetricCollection` ([#2990](https://github.com/Lightning-AI/torchmetrics/pull/2990))
+- Fixed integration between class-wise wrapper and metric tracker ([#3004](https://github.com/Lightning-AI/torchmetrics/pull/3004))
+
 
 ## [1.6.2] - 2024-02-28
 
