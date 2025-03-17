@@ -24,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for more models and processors in `CLIPScore` ([#2978](https://github.com/PyTorchLightning/metrics/pull/2978))
 
 
+- Added `DeepImageStructureAndTextureSimilarity` to image package ([#2993](https://github.com/PyTorchLightning/metrics/pull/2993))
+
+
 ### Changed
 
 -
@@ -36,13 +39,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed logic in how metric states referencing is handled in `MetricCollection` ([#2990](https://github.com/PyTorchLightning/metrics/pull/2990))
-
-
-- Fixed integration between classwise wrapper and metric tracker ([#3004](https://github.com/PyTorchLightning/metrics/pull/3004),[#3008](https://github.com/PyTorchLightning/metrics/pull/3008))
+-
 
 
 ---
+
+## [1.6.3] - 2024-03-13
+
+### Fixed
+
+- Fixed logic in how metric states referencing is handled in `MetricCollection` ([#2990](https://github.com/PyTorchLightning/metrics/pull/2990))
+- Fixed integration between class-wise wrapper and metric tracker ([#3004](https://github.com/PyTorchLightning/metrics/pull/3004))
+
 
 ## [1.6.2] - 2024-02-28
 
@@ -143,7 +151,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added segmentation metric `HausdorffDistance` ([#2122](https://github.com/Lightning-AI/torchmetrics/pull/2122))
 - Added audio metric `DNSMOS` ([#2525](https://github.com/Lightning-AI/torchmetrics/pull/2525))
-- Added shape metric `ProcrustesDistance` ([#2723](https://github.com/Lightning-AI/torchmetrics/pull/2723))
+- Added shape metric `ProcrustesDistance` ([#2723](https://github.com/Lightning-AI/torchmetrics/pull/2723)
 - Added `MetricInputTransformer` wrapper ([#2392](https://github.com/Lightning-AI/torchmetrics/pull/2392))
 - Added `input_format` argument to segmentation metrics ([#2572](https://github.com/Lightning-AI/torchmetrics/pull/2572))
 - Added `multi-output` support for MAE metric ([#2605](https://github.com/Lightning-AI/torchmetrics/pull/2605))
