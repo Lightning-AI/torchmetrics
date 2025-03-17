@@ -148,6 +148,7 @@ from torchmetrics.functional.classification.stat_scores import (
     multilabel_stat_scores,
     stat_scores,
 )
+from torchmetrics.functional.segmentation import generalized_dice_score
 
 __all__ = [
     "accuracy",
