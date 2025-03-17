@@ -2,7 +2,7 @@
 #  in case you want to preserve/enforce restrictions on the latest compatible version, add "strict" as an in-line comment
 
 codecov ==2.1.13
-coverage ==7.6.*
+coverage ==7.7.*
 codecov ==2.1.13
 pytest ==8.3.*
 pytest-cov ==6.0.0
