@@ -37,6 +37,12 @@ from torchmetrics.functional.classification.confusion_matrix import (
     multilabel_confusion_matrix,
 )
 from torchmetrics.functional.classification.dice import dice
+from torchmetrics.functional.classification.eer import (
+    binary_eer,
+    eer,
+    multiclass_eer,
+    multilabel_eer,
+)
 from torchmetrics.functional.classification.exact_match import (
     exact_match,
     multiclass_exact_match,
@@ -153,6 +159,7 @@ __all__ = [
     "binary_calibration_error",
     "binary_cohen_kappa",
     "binary_confusion_matrix",
+    "binary_eer",
     "binary_f1_score",
     "binary_fairness",
     "binary_fbeta_score",
@@ -178,6 +185,7 @@ __all__ = [
     "confusion_matrix",
     "demographic_parity",
     "dice",
+    "eer",
     "equal_opportunity",
     "exact_match",
     "f1_score",
@@ -194,6 +202,7 @@ __all__ = [
     "multiclass_calibration_error",
     "multiclass_cohen_kappa",
     "multiclass_confusion_matrix",
+    "multiclass_eer",
     "multiclass_exact_match",
     "multiclass_f1_score",
     "multiclass_fbeta_score",
@@ -218,6 +227,7 @@ __all__ = [
     "multilabel_average_precision",
     "multilabel_confusion_matrix",
     "multilabel_coverage_error",
+    "multilabel_eer",
     "multilabel_exact_match",
     "multilabel_f1_score",
     "multilabel_fbeta_score",
