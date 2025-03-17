@@ -16,7 +16,7 @@ import io
 import json
 from collections.abc import Sequence
 from types import ModuleType
-from typing import Any, List, Literal, Optional, Tuple, Union
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -642,3 +642,143 @@ def _get_safe_item_values(
     if warn and (_valid_output_len(0) or _valid_output_len(1)):
         _warning_on_too_many_detections(max_detection_thresholds[-1])
     return output  # type: ignore[return-value]
+
+
+def _get_classes(detection_labels: List[Tensor], groundtruth_labels: List[Tensor]) -> List[int]:
+    if len(detection_labels) > 0 or len(groundtruth_labels) > 0:
+        return torch.cat(detection_labels + groundtruth_labels).unique().cpu().tolist()
+    return []
+
+
+def _calculate_map_with_coco(
+    coco_backend: CocoBackend,
+    groundtruth_labels: List[Tensor],
+    groundtruth_box: List[Tensor],
+    groundtruth_mask: List[Tensor],
+    groundtruth_crowds: List[Tensor],
+    groundtruth_area: List[Tensor],
+    detection_labels: List[Tensor],
+    detection_box: List[Tensor],
+    detection_mask: List[Tensor],
+    detection_scores: List[Tensor],
+    iou_type: Union[Literal["bbox", "segm"], Tuple[Literal["bbox", "segm"], ...]],
+    average: Literal["macro", "micro"],
+    iou_thresholds: List[float],
+    rec_thresholds: List[float],
+    max_detection_thresholds: List[int],
+    class_metrics: bool,
+    extended_summary: bool,
+) -> Dict[str, Tensor]:
+    coco_preds, coco_target = coco_backend._get_coco_datasets(
+        groundtruth_labels,
+        groundtruth_box,
+        groundtruth_mask,
+        groundtruth_crowds,
+        groundtruth_area,
+        detection_labels,
+        detection_box,
+        detection_mask,
+        detection_scores,
+        iou_type,
+        average=average,
+    )
+
+    result_dict = {}
+    with contextlib.redirect_stdout(io.StringIO()):
+        for i_type in iou_type:
+            prefix = "" if len(iou_type) == 1 else f"{i_type}_"
+            if len(iou_type) > 1:
+                # the area calculation is different for bbox and segm and therefore to get the small, medium and
+                # large values correct we need to dynamically change the area attribute of the annotations
+                for anno in coco_preds.dataset["annotations"]:
+                    anno["area"] = anno[f"area_{i_type}"]
+
+            if len(coco_preds.imgs) == 0 or len(coco_target.imgs) == 0:
+                result_dict.update(
+                    coco_backend._coco_stats_to_tensor_dict(
+                        12 * [-1.0], prefix=prefix, max_detection_thresholds=max_detection_thresholds
+                    )
+                )
+            else:
+                coco_eval = coco_backend.cocoeval(coco_target, coco_preds, iouType=i_type)  # type: ignore[operator]
+                coco_eval.params.iouThrs = np.array(iou_thresholds, dtype=np.float64)
+                coco_eval.params.recThrs = np.array(rec_thresholds, dtype=np.float64)
+                coco_eval.params.maxDets = max_detection_thresholds
+
+                coco_eval.evaluate()
+                coco_eval.accumulate()
+                coco_eval.summarize()
+                stats = coco_eval.stats
+                result_dict.update(
+                    coco_backend._coco_stats_to_tensor_dict(
+                        stats, prefix=prefix, max_detection_thresholds=max_detection_thresholds
+                    )
+                )
+
+                summary = {}
+                if extended_summary:
+                    summary = {
+                        f"{prefix}ious": apply_to_collection(
+                            coco_eval.ious, np.ndarray, lambda x: torch.tensor(x, dtype=torch.float32)
+                        ),
+                        f"{prefix}precision": torch.tensor(coco_eval.eval["precision"]),
+                        f"{prefix}recall": torch.tensor(coco_eval.eval["recall"]),
+                        f"{prefix}scores": torch.tensor(coco_eval.eval["scores"]),
+                    }
+                result_dict.update(summary)
+
+                # if class mode is enabled, evaluate metrics per class
+                if class_metrics:
+                    # regardless of average method, reinitialize dataset to get rid of internal state which can
+                    # lead to wrong results when evaluating per class
+                    coco_preds, coco_target = coco_backend._get_coco_datasets(
+                        groundtruth_labels,
+                        groundtruth_box,
+                        groundtruth_mask,
+                        groundtruth_crowds,
+                        groundtruth_area,
+                        detection_labels,
+                        detection_box,
+                        detection_mask,
+                        detection_scores,
+                        iou_type,
+                        average="macro",
+                    )
+                    coco_eval = coco_backend.cocoeval(coco_target, coco_preds, iouType=i_type)  # type: ignore[operator]
+                    coco_eval.params.iouThrs = np.array(iou_thresholds, dtype=np.float64)
+                    coco_eval.params.recThrs = np.array(rec_thresholds, dtype=np.float64)
+                    coco_eval.params.maxDets = max_detection_thresholds
+
+                    map_per_class_list = []
+                    mar_per_class_list = []
+                    for class_id in _get_classes(
+                        detection_labels=detection_labels, groundtruth_labels=groundtruth_labels
+                    ):
+                        coco_eval.params.catIds = [class_id]
+                        with contextlib.redirect_stdout(io.StringIO()):
+                            coco_eval.evaluate()
+                            coco_eval.accumulate()
+                            coco_eval.summarize()
+                            class_stats = coco_eval.stats
+
+                        map_per_class_list.append(torch.tensor([class_stats[0]]))
+                        mar_per_class_list.append(torch.tensor([class_stats[8]]))
+
+                    map_per_class_values = torch.tensor(map_per_class_list, dtype=torch.float32)
+                    mar_per_class_values = torch.tensor(mar_per_class_list, dtype=torch.float32)
+                else:
+                    map_per_class_values = torch.tensor([-1], dtype=torch.float32)
+                    mar_per_class_values = torch.tensor([-1], dtype=torch.float32)
+                prefix = "" if len(iou_type) == 1 else f"{i_type}_"
+                result_dict.update(
+                    {
+                        f"{prefix}map_per_class": map_per_class_values,
+                        f"{prefix}mar_{max_detection_thresholds[-1]}_per_class": mar_per_class_values,
+                    },
+                )
+    result_dict.update({
+        "classes": torch.tensor(
+            _get_classes(detection_labels=detection_labels, groundtruth_labels=groundtruth_labels), dtype=torch.int32
+        )
+    })
+    return result_dict
