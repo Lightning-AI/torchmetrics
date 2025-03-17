@@ -136,7 +136,7 @@ class MetricTracker(ModuleList):
                         )
                     m_higher_is_better = [m.higher_is_better]
                     if isinstance(m, ClasswiseWrapper):
-                        m_higher_is_better = m_higher_is_better * m.metric.num_classes
+                        m_higher_is_better = [m_higher_is_better for _ in range(m.metric.num_classes)]
                     self.maximize.extend(m_higher_is_better)  # type: ignore[arg-type]  # this is false alarm
         else:
             rank_zero_warn(
