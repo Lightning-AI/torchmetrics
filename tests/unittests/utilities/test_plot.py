@@ -105,6 +105,7 @@ from torchmetrics.detection import PanopticQuality
 from torchmetrics.detection.mean_ap import MeanAveragePrecision
 from torchmetrics.functional.audio import scale_invariant_signal_noise_ratio
 from torchmetrics.image import (
+    DeepImageStructureAndTextureSimilarity,
     ErrorRelativeGlobalDimensionlessSynthesis,
     FrechetInceptionDistance,
     InceptionScore,
@@ -472,6 +473,12 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             lambda: torch.rand(10, 3, 100, 100),
             lambda: torch.rand(10, 3, 100, 100),
             id="learned perceptual image patch similarity",
+        ),
+        pytest.param(
+            DeepImageStructureAndTextureSimilarity,
+            _image_input,
+            _image_input,
+            id="deep image structure and texture similarity",
         ),
         pytest.param(ConcordanceCorrCoef, _rand_input, _rand_input, id="concordance corr coef"),
         pytest.param(CosineSimilarity, _multilabel_rand_input, _multilabel_rand_input, id="cosine similarity"),
