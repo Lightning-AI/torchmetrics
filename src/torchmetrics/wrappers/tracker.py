@@ -134,9 +134,10 @@ class MetricTracker(ModuleList):
                             f"The metric '{name}' in the MetricCollection does not have a 'higher_is_better' attribute."
                             " Please provide the `maximize` argument explicitly."
                         )
-                    m_higher_is_better = [m.higher_is_better]
-                    if isinstance(m, ClasswiseWrapper):
-                        m_higher_is_better = [m_higher_is_better for _ in range(m.metric.num_classes)]
+                    if isinstance(m, ClasswiseWrapper) and isinstance(m.metric.num_classes, int):
+                        m_higher_is_better = [m.higher_is_better for _ in range(int(m.metric.num_classes))]
+                    else:
+                        m_higher_is_better = [m.higher_is_better]
                     self.maximize.extend(m_higher_is_better)  # type: ignore[arg-type]  # this is false alarm
         else:
             rank_zero_warn(
