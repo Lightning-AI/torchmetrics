@@ -35,9 +35,9 @@ def _binary_eer_compute(fpr: Tensor, tpr: Tensor) -> Tensor:
 def _eer_compute(
     fpr: Union[Tensor, List[Tensor]],
     tpr: Union[Tensor, List[Tensor]],
-) -> Union[Tensor, List[Tensor]]:
+) -> Tensor:
     """Compute Equal Error Rate (EER)."""
-    if isinstance(fpr, Tensor) and fpr.ndim == 1:
+    if isinstance(fpr, Tensor) and isinstance(tpr, Tensor) and fpr.ndim == 1:
         return _binary_eer_compute(fpr, tpr)
     return torch.stack([_binary_eer_compute(f, t) for f, t in zip(fpr, tpr)])
 
@@ -276,9 +276,9 @@ def eer(
     if task == ClassificationTask.MULTICLASS:
         if not isinstance(num_classes, int):
             raise ValueError(f"`num_classes` is expected to be `int` but `{type(num_classes)} was passed.`")
-        return multiclass_eer(preds, target, num_classes, average, thresholds, ignore_index, validate_args)
+        return multiclass_eer(preds, target, num_classes, thresholds, average, ignore_index, validate_args)
     if task == ClassificationTask.MULTILABEL:
         if not isinstance(num_labels, int):
             raise ValueError(f"`num_labels` is expected to be `int` but `{type(num_labels)} was passed.`")
         return multilabel_eer(preds, target, num_labels, thresholds, ignore_index, validate_args)
-    return None
+    raise ValueError(f"Task {task} not supported.")
