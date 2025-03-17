@@ -37,7 +37,7 @@ MultilabelEER
 Functional Interface
 ____________________
 
-.. autofunction:: torchmetrics.functional.eer
+.. autofunction:: torchmetrics.functional.classification.eer
 
 binary_eer
 ^^^^^^^^^^^^
