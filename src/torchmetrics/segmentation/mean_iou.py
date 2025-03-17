@@ -124,20 +124,19 @@ class MeanIoU(Metric):
             self.add_state("score", default=torch.zeros(num_classes if per_class else 1), dist_reduce_fx="sum")
             self._is_initialized = True
         else:
+            if self.input_format == "index":
+                raise ValueError("num_classes must be provided when input_format='index'")
             self.add_state("score", default=torch.zeros(1), dist_reduce_fx="sum")
 
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the state with the new data."""
         if not self._is_initialized:
-            if self.input_format == "index" and self.num_classes is None:
-                raise ValueError("num_classes must be provided when input_format='index'")
-
-            if self.input_format == "one-hot":
-                self.num_classes = preds.shape[1]
+            self.num_classes = preds.shape[1]
 
             if self.num_classes is not None:
                 num_out_classes = self.num_classes - 1 if not self.include_background else self.num_classes
-                self.score = torch.zeros(num_out_classes if self.per_class else 1, device=self.device, dtype=self.dtype)
+                device, dtype = self.score.device, self.score.dtype
+                self.score = torch.zeros(num_out_classes if self.per_class else 1, device=device, dtype=dtype)
                 self._is_initialized = True
 
         intersection, union = _mean_iou_update(
