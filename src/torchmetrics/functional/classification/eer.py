@@ -35,12 +35,11 @@ def _binary_eer_compute(fpr: Tensor, tpr: Tensor) -> Tensor:
 def _eer_compute(
     fpr: Union[Tensor, List[Tensor]],
     tpr: Union[Tensor, List[Tensor]],
-    task: Literal["binary", "multiclass", "multilabel"],
 ) -> Union[Tensor, List[Tensor]]:
     """Compute Equal Error Rate (EER)."""
-    if task == "binary":
+    if isinstance(fpr, Tensor) and fpr.ndim == 1:
         return _binary_eer_compute(fpr, tpr)
-    return torch.cat([_binary_eer_compute(f, t) for f, t in zip(fpr, tpr)])
+    return torch.stack([_binary_eer_compute(f, t) for f, t in zip(fpr, tpr)])
 
 
 def binary_eer(
@@ -52,9 +51,11 @@ def binary_eer(
 ) -> Tensor:
     r"""Compute Equal Error Rate (EER) for binary classification task.
 
+    .. math::
+        \text{EER} = \frac{\text{FAR} + (1 - \text{FRR})}{2}, \text{where} \min_t abs(FAR_t-FRR_t)
+
     The Equal Error Rate (EER) is the point where the False Positive Rate (FPR) and True Positive Rate (TPR) are
-    equal. It is consider the optimal trade-off between between false acceptances and false rejections, and is mostly
-    used in biometric systems. A lower EER value signifies higher system accuracy.
+    equal, or in practise minimized. A lower EER value signifies higher system accuracy.
 
     Args:
         preds: Tensor with predictions
@@ -89,7 +90,7 @@ def binary_eer(
 
     """
     fpr, tpr, _ = binary_roc(preds, target, thresholds, ignore_index, validate_args)
-    return _eer_compute(fpr, tpr, task="binary")
+    return _eer_compute(fpr, tpr)
 
 
 def multiclass_eer(
@@ -103,9 +104,11 @@ def multiclass_eer(
 ) -> Tensor:
     r"""Compute Equal Error Rate (EER) for multiclass classification task.
 
+    .. math::
+        \text{EER} = \frac{\text{FAR} + (1 - \text{FRR})}{2}, \text{where} \min_t abs(FAR_t-FRR_t)
+
     The Equal Error Rate (EER) is the point where the False Positive Rate (FPR) and True Positive Rate (TPR) are
-    equal. It is consider the optimal trade-off between between false acceptances and false rejections, and is mostly
-    used in biometric systems. A lower EER value signifies higher system accuracy.
+    equal, or in practise minimized. A lower EER value signifies higher system accuracy.
 
     Args:
         preds: Tensor with predictions
@@ -149,15 +152,15 @@ def multiclass_eer(
         >>> multiclass_eer(preds, target, num_classes=5, average="macro", thresholds=None)
         tensor(0.4667)
         >>> multiclass_eer(preds, target, num_classes=5, average=None, thresholds=None)
-        tensor([1.0000, 1.0000, 0.3333, 0.3333, 0.0000])
+        tensor([0.0000, 0.0000, 0.6667, 0.6667, 1.0000])
         >>> multiclass_eer(preds, target, num_classes=5, average="macro", thresholds=5)
-        tensor(0.5333)
+        tensor(0.4667)
         >>> multiclass_eer(preds, target, num_classes=5, average=None, thresholds=5)
-        tensor([1.0000, 1.0000, 0.3333, 0.3333, 0.0000])
+        tensor([0.0000, 0.0000, 0.6667, 0.6667, 1.0000])
 
     """
     fpr, tpr, _ = multiclass_roc(preds, target, num_classes, thresholds, average, ignore_index, validate_args)
-    return _eer_compute(fpr, tpr, task="multiclass")
+    return _eer_compute(fpr, tpr)
 
 
 def multilabel_eer(
@@ -168,11 +171,13 @@ def multilabel_eer(
     ignore_index: Optional[int] = None,
     validate_args: bool = True,
 ) -> Tensor:
-    """Compute Equal Error Rate (EER) for multilabel classification task.
+    r"""Compute Equal Error Rate (EER) for multilabel classification task.
+
+    .. math::
+        \text{EER} = \frac{\text{FAR} + (1 - \text{FRR})}{2}, \text{where} \min_t abs(FAR_t-FRR_t)
 
     The Equal Error Rate (EER) is the point where the False Positive Rate (FPR) and True Positive Rate (TPR) are
-    equal. It is consider the optimal trade-off between between false acceptances and false rejections, and is mostly
-    used in biometric systems. A lower EER value signifies higher system accuracy.
+    equal, or in practise minimized. A lower EER value signifies higher system accuracy.
 
     Args:
         preds: Tensor with predictions
@@ -207,18 +212,14 @@ def multilabel_eer(
         ...                        [0, 0, 0],
         ...                        [0, 1, 1],
         ...                        [1, 1, 1]])
-        >>> multilabel_eer(preds, target, num_labels=3, average="macro", thresholds=None)
-        tensor(0.6528)
-        >>> multilabel_eer(preds, target, num_labels=3, average=None, thresholds=None)
-        tensor([0.6250, 0.5000, 0.8333])
-        >>> multilabel_eer(preds, target, num_labels=3, average="macro", thresholds=5)
-        tensor(0.6528)
-        >>> multilabel_eer(preds, target, num_labels=3, average=None, thresholds=5)
-        tensor([0.6250, 0.5000, 0.8333])
+        >>> multilabel_eer(preds, target, num_labels=3, thresholds=None)
+        tensor([0.5000, 0.5000, 0.1667])
+        >>> multilabel_eer(preds, target, num_labels=3, thresholds=5)
+        tensor([0.5000, 0.7500, 0.1667])
 
     """
     fpr, tpr, _ = multilabel_roc(preds, target, num_labels, thresholds, ignore_index, validate_args)
-    return _eer_compute(fpr, tpr, task="multilabel")
+    return _eer_compute(fpr, tpr)
 
 
 def eer(
@@ -266,7 +267,7 @@ def eer(
         ...                       [0.10, 0.10, 0.80]])
         >>> target = torch.tensor([0, 1, 1, 2, 2])
         >>> eer(preds, target, task='multiclass', num_classes=3, )
-        tensor(0.2778)
+        tensor([0.0000, 0.4167, 0.4167])
 
     """
     task = ClassificationTask.from_str(task)
