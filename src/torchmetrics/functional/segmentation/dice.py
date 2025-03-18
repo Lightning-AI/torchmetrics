@@ -102,8 +102,7 @@ def _dice_score_compute(
     if average in ("none", None):
         dice = _safe_divide(numerator, denominator, zero_division="nan")
         return torch.nanmean(dice, dim=0)
-
-    return dice
+    raise ValueError(f"Invalid value for `average`: {average}.")
 
 
 def dice_score(
