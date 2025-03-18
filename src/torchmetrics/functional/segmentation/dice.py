@@ -97,7 +97,7 @@ def _dice_score_compute(
         support = torch.sum(support, dim=0)
         weights = _safe_divide(support, torch.sum(support, dim=-1, keepdim=True), zero_division="nan")
         channel_scores = torch.nanmean(dice, dim=0)
-        return torch.mean(channel_scores * weights)
+        return torch.sum(channel_scores * weights)
     if average in ("none", None):
         return torch.nanmean(dice, dim=0)
     raise ValueError(f"Invalid value for `average`: {average}.")
