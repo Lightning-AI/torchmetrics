@@ -89,22 +89,18 @@ def _dice_score_compute(
             else torch.full(numerator.shape, torch.nan, dtype=torch.float, device=numerator.device)
         )
 
-    def _compute_channel(numerator: Tensor, denominator: Tensor, support: Optional[Tensor] = None) -> Tensor:
+    def _compute_channel(numerator: Tensor, denominator: Tensor) -> Tensor:
         """Compute the dice score of a single class channel."""
         if torch.all(denominator == 0):
             return torch.tensor(torch.nan, dtype=torch.float, device=numerator.device)
         dice = _divide_non_zero(numerator, denominator)
-        if support is not None:
-            mask = denominator != 0
-            weights = _safe_divide(support[mask], torch.sum(support[mask]), zero_division=0.0)
-            return torch.nansum(dice * weights)
         return torch.nanmean(dice)
 
     if aggregation_level == "global":
         # TODO: Deal with number overflows
-        numerator = torch.sum(numerator, dim=0)
-        denominator = torch.sum(denominator, dim=0)
-        support = torch.sum(support, dim=0) if support is not None else None
+        numerator = torch.sum(numerator, dim=0).unsqueeze(0)
+        denominator = torch.sum(denominator, dim=0).unsqueeze(0)
+        support = torch.sum(support, dim=0).unsqueeze(0) if support is not None else None
 
     if average == "micro":
         numerator = torch.sum(numerator, dim=-1)
@@ -114,10 +110,7 @@ def _dice_score_compute(
         channel_scores = [_compute_channel(numerator[:, i], denominator[:, i]) for i in range(numerator.shape[1])]
         return torch.stack(channel_scores)
     if average == "weighted":
-        channel_scores = [
-            _compute_channel(numerator[:, i], denominator[:, i], support[:, i]) for i in range(numerator.shape[1])
-        ]
-        return torch.stack(channel_scores)
+        raise NotImplementedError("TODO")
     if average in ("none", None):
         return _safe_divide(numerator, denominator, zero_division="nan")
     raise ValueError(f"Unsupported average method: {average}.")
