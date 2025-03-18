@@ -78,8 +78,8 @@ class MeanIoU(Metric):
         >>> from torch import randint
         >>> from torchmetrics.segmentation import MeanIoU
         >>> miou = MeanIoU()
-        >>> preds = randint(0, 2, (10, 3, 128, 128),generator=torch.Generator().manual_seed(42))
-        >>> target = randint(0, 2, (10, 3, 128, 128),generator=torch.Generator().manual_seed(43))
+        >>> preds = randint(0, 2, (10, 3, 128, 128), generator=torch.Generator().manual_seed(42))
+        >>> target = randint(0, 2, (10, 3, 128, 128), generator=torch.Generator().manual_seed(43))
         >>> miou(preds, target)
         tensor(0.3336)
         >>> miou = MeanIoU(num_classes=3, per_class=True)
