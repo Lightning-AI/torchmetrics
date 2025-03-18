@@ -47,7 +47,7 @@ def _pearson_corrcoef_update(
         var_y: current variance estimate of y tensor
         corr_xy: current covariance estimate between x and y tensor
         num_prior: current number of observed observations
-        num_outputs: Number of outputs in multioutput setting
+        num_outputs: number of outputs in multioutput setting
         weights: weights associated with scores
 
     """
@@ -58,38 +58,28 @@ def _pearson_corrcoef_update(
         _check_data_shape_to_weights(preds, weights)
 
     num_obs = preds.shape[0] if weights is None else weights.sum()
-    cond = num_prior.mean() > 0 or num_obs == 1
+    cond = num_prior.mean() > 0 or num_obs == 1 # True if prior observations exist
 
     if cond:
         if weights is None:
             mx_new = (num_prior * mean_x + preds.sum(0)) / (num_prior + num_obs)
             my_new = (num_prior * mean_y + target.sum(0)) / (num_prior + num_obs)
-        else:
-            mx_new = (num_prior * mean_x + torch.matmul(weights, preds)) / (num_prior + num_obs)
-            my_new = (num_prior * mean_y + torch.matmul(weights, target)) / (num_prior + num_obs)
-    else:
-        if weights is None:
-            mx_new = preds.mean(0).to(mean_x.dtype)
-            my_new = target.mean(0).to(mean_y.dtype)
-        else:
-            mx_new = torch.matmul(weights, preds) / weights.sum()
-            my_new = torch.matmul(weights, target) / weights.sum()
-
-    num_prior += num_obs
-
-    # Calculate variances
-    if cond:
-        if weights is None:
             var_x += ((preds - mx_new) * (preds - mean_x)).sum(0)
             var_y += ((target - my_new) * (target - mean_y)).sum(0)
         else:
+            mx_new = (num_prior * mean_x + torch.matmul(weights, preds)) / (num_prior + num_obs)
+            my_new = (num_prior * mean_y + torch.matmul(weights, target)) / (num_prior + num_obs)
             var_x += torch.matmul(weights, (preds - mx_new) * (preds - mean_x))
             var_y += torch.matmul(weights, (preds - my_new) * (preds - mean_y))
     else:
         if weights is None:
+            mx_new = preds.mean(0).to(mean_x.dtype)
+            my_new = target.mean(0).to(mean_y.dtype)
             var_x += preds.var(0) * (num_obs - 1)
             var_y += target.var(0) * (num_obs - 1)
         else:
+            mx_new = torch.matmul(weights, preds) / weights.sum()
+            my_new = torch.matmul(weights, target) / weights.sum()
             var_x += torch.matmul(weights, (preds - mx_new) ** 2)
             var_y += torch.matmul(weights, (target - my_new) ** 2)
 
@@ -98,7 +88,7 @@ def _pearson_corrcoef_update(
     else:
         corr_xy += torch.matmul(weights, (preds - mx_new) * (target - my_new))
 
-    return mx_new, my_new, var_x, var_y, corr_xy, num_prior
+    return mx_new, my_new, var_x, var_y, corr_xy, num_prior + num_obs
 
 
 def _pearson_corrcoef_compute(
@@ -120,6 +110,7 @@ def _pearson_corrcoef_compute(
     var_x = var_x / (nb - 1)
     var_y = var_y / (nb - 1)
     corr_xy = corr_xy / (nb - 1)
+
     # if var_x, var_y is float16 and on cpu, make it bfloat16 as sqrt is not supported for float16
     # on cpu, remove this after https://github.com/pytorch/pytorch/issues/54774 is fixed
     if var_x.dtype == torch.float16 and var_x.device == torch.device("cpu"):
