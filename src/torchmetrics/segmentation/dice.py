@@ -114,7 +114,7 @@ class DiceScore(Metric):
         num_classes: int,
         include_background: bool = True,
         average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
-        aggregation_level: Optional[Literal["samplewise", "global"]] = "global",
+        aggregation_level: Optional[Literal["samplewise", "global"]] = "samplewise",
         input_format: Literal["one-hot", "index"] = "one-hot",
         **kwargs: Any,
     ) -> None:
