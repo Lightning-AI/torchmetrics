@@ -35,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--
+- fix: Make `num_classes` optional for `one-hot` inputs in `MeanIoU` ([#3012](https://github.com/Lightning-AI/torchmetrics/pull/3012))
 
 
 ### Removed

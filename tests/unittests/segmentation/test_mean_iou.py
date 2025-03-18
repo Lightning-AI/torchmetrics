@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from functools import partial
+from typing import Optional
 
 import pytest
 import torch
@@ -29,14 +30,15 @@ def _reference_mean_iou(
     preds: torch.Tensor,
     target: torch.Tensor,
     input_format: str,
+    num_classes: Optional[int],
     include_background: bool = True,
     per_class: bool = True,
     reduce: bool = True,
 ):
     """Calculate reference metric for `MeanIoU`."""
     if input_format == "index":
-        preds = torch.nn.functional.one_hot(preds, num_classes=NUM_CLASSES).movedim(-1, 1)
-        target = torch.nn.functional.one_hot(target, num_classes=NUM_CLASSES).movedim(-1, 1)
+        preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
+        target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
 
     val = compute_iou(preds, target, include_background=include_background)
     val[torch.isnan(val)] = 0.0
@@ -46,11 +48,14 @@ def _reference_mean_iou(
 
 
 @pytest.mark.parametrize(
-    "preds, target, input_format",
+    "preds, target, input_format, num_classes",
     [
-        (_inputs1.preds, _inputs1.target, "one-hot"),
-        (_inputs2.preds, _inputs2.target, "one-hot"),
-        (_inputs3.preds, _inputs3.target, "index"),
+        (_inputs1.preds, _inputs1.target, "one-hot", NUM_CLASSES),
+        (_inputs2.preds, _inputs2.target, "one-hot", NUM_CLASSES),
+        (_inputs1.preds, _inputs1.target, "one-hot", None),
+        (_inputs2.preds, _inputs2.target, "one-hot", None),
+        (_inputs3.preds, _inputs3.target, "index", NUM_CLASSES),
+        (_inputs3.preds, _inputs3.target, "index", None),
     ],
 )
 @pytest.mark.parametrize("include_background", [True, False])
@@ -61,8 +66,15 @@ class TestMeanIoU(MetricTester):
 
     @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
     @pytest.mark.parametrize("per_class", [True, False])
-    def test_mean_iou_class(self, preds, target, input_format, include_background, per_class, ddp):
+    def test_mean_iou_class(self, preds, target, input_format, num_classes, include_background, per_class, ddp):
         """Test class implementation of metric."""
+        if input_format == "index" and num_classes is None:
+            with pytest.raises(
+                ValueError, match="Argument `num_classes` must be provided when `input_format='index'`."
+            ):
+                MeanIoU(num_classes=None, input_format="index")
+            return
+
         self.run_class_metric_test(
             ddp=ddp,
             preds=preds,
@@ -71,92 +83,41 @@ class TestMeanIoU(MetricTester):
             reference_metric=partial(
                 _reference_mean_iou,
                 input_format=input_format,
+                num_classes=num_classes,
                 include_background=include_background,
                 per_class=per_class,
                 reduce=True,
             ),
             metric_args={
-                "num_classes": NUM_CLASSES,
+                "num_classes": num_classes,
                 "include_background": include_background,
                 "per_class": per_class,
                 "input_format": input_format,
             },
         )
 
-    def test_mean_iou_functional(self, preds, target, input_format, include_background):
+    def test_mean_iou_functional(self, preds, target, input_format, num_classes, include_background):
         """Test functional implementation of metric."""
+        if input_format == "index" and num_classes is None:
+            with pytest.raises(
+                ValueError, match="Argument `num_classes` must be provided when `input_format='index'`."
+            ):
+                mean_iou(preds, target, num_classes=None, input_format="index")
+            return
+
         self.run_functional_metric_test(
             preds=preds,
             target=target,
             metric_functional=mean_iou,
-            reference_metric=partial(
-                _reference_mean_iou, input_format=input_format, include_background=include_background, reduce=False
-            ),
-            metric_args={
-                "num_classes": NUM_CLASSES,
-                "include_background": include_background,
-                "per_class": True,
-                "input_format": input_format,
-            },
-        )
-
-
-class TestMeanIoUWithoutNumClasses(MetricTester):
-    """Test class for `MeanIoU` metric when num_classes is not specified."""
-
-    atol = 1e-4
-
-    @pytest.mark.parametrize(
-        ("preds", "target", "input_format"),
-        [
-            (_inputs1.preds, _inputs1.target, "one-hot"),
-            (_inputs2.preds, _inputs2.target, "one-hot"),
-        ],
-    )
-    @pytest.mark.parametrize("include_background", [True, False])
-    @pytest.mark.parametrize("ddp", [pytest.param(True, marks=pytest.mark.DDP), False])
-    @pytest.mark.parametrize("per_class", [True, False])
-    def test_mean_iou_class_without_num_classes_one_hot(
-        self, preds, target, input_format, include_background, per_class, ddp
-    ):
-        """Test class implementation of metric with one-hot format without specifying num_classes."""
-        self.run_class_metric_test(
-            ddp=ddp,
-            preds=preds,
-            target=target,
-            metric_class=MeanIoU,
             reference_metric=partial(
                 _reference_mean_iou,
                 input_format=input_format,
+                num_classes=num_classes,
                 include_background=include_background,
-                per_class=per_class,
-                reduce=True,
+                reduce=False,
             ),
             metric_args={
-                "include_background": include_background,
-                "per_class": per_class,
-                "input_format": input_format,
-            },
-        )
-
-    @pytest.mark.parametrize(
-        ("preds", "target", "input_format"),
-        [
-            (_inputs1.preds, _inputs1.target, "one-hot"),
-            (_inputs2.preds, _inputs2.target, "one-hot"),
-        ],
-    )
-    @pytest.mark.parametrize("include_background", [True, False])
-    def test_mean_iou_functional_without_num_classes_one_hot(self, preds, target, input_format, include_background):
-        """Test functional implementation of metric with one-hot format without specifying num_classes."""
-        self.run_functional_metric_test(
-            preds=preds,
-            target=target,
-            metric_functional=mean_iou,
-            reference_metric=partial(
-                _reference_mean_iou, input_format=input_format, include_background=include_background, reduce=False
-            ),
-            metric_args={
+                "num_classes": num_classes,
                 "include_background": include_background,
                 "per_class": True,
                 "input_format": input_format,
