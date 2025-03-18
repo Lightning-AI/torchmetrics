@@ -209,6 +209,7 @@ class MulticlassEER(MulticlassROC):
         >>> mc_eer = MulticlassEER(num_classes=5, average=None, thresholds=None)
         >>> mc_eer(preds, target)
         tensor([0.0000, 0.0000, 0.6667, 0.6667, 1.0000])
+
     """
 
     def compute(self) -> Tensor:  # type: ignore[override]
