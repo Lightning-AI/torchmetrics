@@ -129,7 +129,15 @@ class MeanIoU(Metric):
     def update(self, preds: Tensor, target: Tensor) -> None:
         """Update the state with the new data."""
         if not self._is_initialized:
-            self.num_classes = preds.shape[1]
+            try:
+                self.num_classes = preds.shape[1]
+            except IndexError as err:
+                raise IndexError(f"Cannot determine `num_classes` from `preds` tensor: {preds}.") from err
+
+            if self.num_classes == 0:
+                raise ValueError(
+                    f"Expected argument `num_classes` to be a positive integer, but got {self.num_classes}."
+                )
 
             if self.num_classes is not None:
                 num_out_classes = self.num_classes - 1 if not self.include_background else self.num_classes
