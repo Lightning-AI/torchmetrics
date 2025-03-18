@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Optional, Union
+from typing import Optional
 
 import torch
 from torch import Tensor
@@ -79,10 +79,15 @@ def _dice_score_compute(
     support: Optional[Tensor] = None,
 ) -> Tensor:
     """Compute the Dice score from the numerator and denominator."""
+
     def _divide_non_zero(numerator: Tensor, denominator: Tensor) -> Tensor:
         """Divide two tensors while masking zero entries in the denominator."""
         mask = denominator != 0
-        return numerator[mask] / denominator[mask] if mask.sum() > 0 else torch.full(numerator.shape, torch.nan, dtype=torch.float, device=numerator.device)
+        return (
+            numerator[mask] / denominator[mask]
+            if mask.sum() > 0
+            else torch.full(numerator.shape, torch.nan, dtype=torch.float, device=numerator.device)
+        )
 
     def _compute_channel(numerator: Tensor, denominator: Tensor, support: Optional[Tensor] = None) -> Tensor:
         """Compute the dice score of a single class channel."""
@@ -105,16 +110,15 @@ def _dice_score_compute(
         numerator = torch.sum(numerator, dim=-1)
         denominator = torch.sum(denominator, dim=-1)
         return _divide_non_zero(numerator, denominator)
-    elif average == "macro":
+    if average == "macro":
         channel_scores = [_compute_channel(numerator[i], denominator[i]) for i in range(numerator.shape[1])]
         return torch.stack(channel_scores)
-    elif average == "weighted":
+    if average == "weighted":
         channel_scores = [_compute_channel(numerator[i], denominator[i], support[i]) for i in range(numerator.shape[1])]
         return torch.stack(channel_scores)
-    elif average in ("none", None):
+    if average in ("none", None):
         return _safe_divide(numerator, denominator, zero_division="nan")
-    else:
-        raise ValueError(f"Unsupported average method: {average}.")
+    raise ValueError(f"Unsupported average method: {average}.")
 
 
 def dice_score(
