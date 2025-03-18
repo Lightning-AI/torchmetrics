@@ -58,7 +58,7 @@ def _pearson_corrcoef_update(
         _check_data_shape_to_weights(preds, weights)
 
     num_obs = preds.shape[0] if weights is None else weights.sum()
-    cond = num_prior.mean() > 0 or num_obs == 1 # True if prior observations exist
+    cond = num_prior.mean() > 0 or num_obs == 1  # True if prior observations exist
 
     if cond:
         if weights is None:
