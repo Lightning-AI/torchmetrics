@@ -65,7 +65,7 @@ def _mean_iou_update(
         except IndexError as err:
             raise IndexError(f"Cannot determine `num_classes` from `preds` tensor: {preds}.") from err
         if num_classes == 0:
-            raise ValueError(f"Expected argument `num_classes` to be a positive integer, but got {self.num_classes}.")
+            raise ValueError(f"Expected argument `num_classes` to be a positive integer, but got {num_classes}.")
 
     if not include_background:
         preds, target = _ignore_background(preds, target)
