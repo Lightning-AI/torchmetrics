@@ -88,7 +88,7 @@ def _dice_score_compute(
         numerator = torch.sum(numerator, dim=-1)
         denominator = torch.sum(denominator, dim=-1)
         dice = _safe_divide(numerator, denominator, zero_division="nan")
-        return torch.nanmean(dice)
+        return torch.nanmean(dice, dim=0)
 
     dice = _safe_divide(numerator, denominator, zero_division="nan")
     if average == "macro":
@@ -100,7 +100,6 @@ def _dice_score_compute(
         channel_scores = torch.nanmean(dice, dim=0)
         return torch.mean(channel_scores * weights)
     if average in ("none", None):
-        dice = _safe_divide(numerator, denominator, zero_division="nan")
         return torch.nanmean(dice, dim=0)
     raise ValueError(f"Invalid value for `average`: {average}.")
 
