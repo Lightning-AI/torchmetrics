@@ -36,7 +36,6 @@ from torchmetrics.functional.classification.confusion_matrix import (
     multiclass_confusion_matrix,
     multilabel_confusion_matrix,
 )
-from torchmetrics.functional.classification.dice import dice
 from torchmetrics.functional.classification.exact_match import (
     exact_match,
     multiclass_exact_match,
@@ -177,12 +176,10 @@ __all__ = [
     "cohen_kappa",
     "confusion_matrix",
     "demographic_parity",
-    "dice",
     "equal_opportunity",
     "exact_match",
     "f1_score",
     "fbeta_score",
-    "generalized_dice_score",
     "hamming_distance",
     "hinge_loss",
     "jaccard_index",
