@@ -80,7 +80,6 @@ def _dice_score_compute(
 ) -> Tensor:
     """Compute the Dice score from the numerator and denominator."""
     if aggregation_level == "global":
-        # TODO: Deal with number overflows
         numerator = torch.sum(numerator, dim=0).unsqueeze(0)
         denominator = torch.sum(denominator, dim=0).unsqueeze(0)
 

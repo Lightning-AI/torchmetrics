@@ -14,6 +14,7 @@
 from collections.abc import Sequence
 from typing import Any, List, Optional, Union
 
+import torch
 from torch import Tensor
 from typing_extensions import Literal
 
@@ -143,11 +144,11 @@ class DiceScore(Metric):
     def compute(self) -> Tensor:
         """Computes the Dice Score."""
         return _dice_score_compute(
-            dim_zero_cat(self.numerator),
-            dim_zero_cat(self.denominator),
+            dim_zero_cat(self.numerator).to(torch.long),
+            dim_zero_cat(self.denominator).to(torch.long),
             self.average,
             self.aggregation_level,
-            support=dim_zero_cat(self.support) if self.average == "weighted" else None,
+            support=dim_zero_cat(self.support).to(torch.long) if self.average == "weighted" else None,
         )
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
