@@ -27,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `DeepImageStructureAndTextureSimilarity` to image package ([#2993](https://github.com/PyTorchLightning/metrics/pull/2993))
 
 
+- Added functional interface to `MeanAveragePrecision` metric ([#3011](https://github.com/Lightning-AI/torchmetrics/pull/3011))
+
+
 ### Changed
 
 -
