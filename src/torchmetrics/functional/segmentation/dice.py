@@ -27,7 +27,6 @@ def _dice_score_validate_args(
     include_background: bool,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
     input_format: Literal["one-hot", "index"] = "one-hot",
-    zero_divide: Union[float, Literal["warn", "nan"]] = 1.0,
 ) -> None:
     """Validate the arguments of the metric."""
     if not isinstance(num_classes, int) or num_classes <= 0:
@@ -39,10 +38,6 @@ def _dice_score_validate_args(
         raise ValueError(f"Expected argument `average` to be one of {allowed_average} or None, but got {average}.")
     if input_format not in ["one-hot", "index"]:
         raise ValueError(f"Expected argument `input_format` to be one of 'one-hot', 'index', but got {input_format}.")
-    if zero_divide not in [1.0, 0.0, "warn", "nan"]:
-        raise ValueError(
-            f"Expected argument `zero_divide` to be one of 1.0, 0.0, 'warn', 'nan', but got {zero_divide}."
-        )
 
 
 def _dice_score_update(
@@ -80,24 +75,46 @@ def _dice_score_compute(
     numerator: Tensor,
     denominator: Tensor,
     average: Optional[Literal["micro", "macro", "weighted", "none"]] = "micro",
+    aggregation_level: Optional[Literal["samplewise", "global"]] = "global",
     support: Optional[Tensor] = None,
-    zero_division: Union[float, Literal["warn", "nan"]] = 1.0,
 ) -> Tensor:
     """Compute the Dice score from the numerator and denominator."""
-    # If both numerator and denominator are 0, the dice score is 0
-    if torch.all(numerator == 0) and torch.all(denominator == 0):
-        return torch.tensor(0.0, device=numerator.device, dtype=torch.float)
+    def _divide_non_zero(numerator: Tensor, denominator: Tensor) -> Tensor:
+        """Divide two tensors while masking zero entries in the denominator."""
+        mask = denominator != 0
+        return numerator[mask] / denominator[mask] if mask.sum() > 0 else torch.full(numerator.shape, torch.nan, dtype=torch.float, device=numerator.device)
+
+    def _compute_channel(numerator: Tensor, denominator: Tensor, support: Optional[Tensor] = None) -> Tensor:
+        """Compute the dice score of a single class channel."""
+        if torch.all(denominator == 0):
+            return torch.tensor(torch.nan, dtype=torch.float, device=numerator.device)
+        dice = _divide_non_zero(numerator, denominator)
+        if support is not None:
+            mask = denominator != 0
+            weights = _safe_divide(support[mask], torch.sum(support[mask]), zero_division=0.0)
+            return torch.nansum(dice * weights)
+        return torch.nanmean(dice)
+
+    if aggregation_level == "global":
+        # TODO: Deal with number overflows
+        numerator = torch.sum(numerator, dim=0)
+        denominator = torch.sum(denominator, dim=0)
+        support = torch.sum(support, dim=0) if support is not None else None
 
     if average == "micro":
         numerator = torch.sum(numerator, dim=-1)
         denominator = torch.sum(denominator, dim=-1)
-    dice = _safe_divide(numerator, denominator, zero_division=zero_division)
-    if average == "macro":
-        dice = torch.mean(dice, dim=-1)
-    elif average == "weighted" and support is not None:
-        weights = _safe_divide(support, torch.sum(support, dim=-1, keepdim=True), zero_division=zero_division)
-        dice = torch.sum(dice * weights, dim=-1)
-    return dice
+        return _divide_non_zero(numerator, denominator)
+    elif average == "macro":
+        channel_scores = [_compute_channel(numerator[i], denominator[i]) for i in range(numerator.shape[1])]
+        return torch.stack(channel_scores)
+    elif average == "weighted":
+        channel_scores = [_compute_channel(numerator[i], denominator[i], support[i]) for i in range(numerator.shape[1])]
+        return torch.stack(channel_scores)
+    elif average in ("none", None):
+        return _safe_divide(numerator, denominator, zero_division="nan")
+    else:
+        raise ValueError(f"Unsupported average method: {average}.")
 
 
 def dice_score(
