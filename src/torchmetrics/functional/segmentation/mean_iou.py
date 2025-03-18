@@ -60,7 +60,14 @@ def _mean_iou_update(
         preds = torch.nn.functional.one_hot(preds, num_classes=num_classes).movedim(-1, 1)
         target = torch.nn.functional.one_hot(target, num_classes=num_classes).movedim(-1, 1)
     elif input_format == "one-hot" and num_classes is None:
-        num_classes = preds.shape[1]
+        try:
+            self.num_classes = preds.shape[1]
+        except IndexError as err:
+            raise IndexError(f"Cannot determine `num_classes` from `preds` tensor: {preds}.") from err
+        if self.num_classes == 0:
+            raise ValueError(
+                f"Expected argument `num_classes` to be a positive integer, but got {self.num_classes}."
+            )
 
     if not include_background:
         preds, target = _ignore_background(preds, target)
