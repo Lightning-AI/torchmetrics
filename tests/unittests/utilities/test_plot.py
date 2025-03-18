@@ -56,7 +56,6 @@ from torchmetrics.classification import (
     BinaryRecall,
     BinaryROC,
     BinarySpecificity,
-    Dice,
     MulticlassAccuracy,
     MulticlassAUROC,
     MulticlassAveragePrecision,
@@ -553,7 +552,6 @@ _text_input_4 = lambda: [["there is a cat on the mat", "a cat is on the mat"]]
             _rand_input,
             id="running metric wrapper",
         ),
-        pytest.param(Dice, _multiclass_randint_input, _multiclass_randint_input, id="dice"),
         pytest.param(
             partial(MulticlassExactMatch, num_classes=3),
             lambda: torch.randint(3, (20, 5)),

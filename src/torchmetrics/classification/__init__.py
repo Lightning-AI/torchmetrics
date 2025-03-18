@@ -31,7 +31,6 @@ from torchmetrics.classification.confusion_matrix import (
     MulticlassConfusionMatrix,
     MultilabelConfusionMatrix,
 )
-from torchmetrics.classification.dice import Dice
 from torchmetrics.classification.eer import EER, BinaryEER, MulticlassEER, MultilabelEER
 from torchmetrics.classification.exact_match import ExactMatch, MulticlassExactMatch, MultilabelExactMatch
 from torchmetrics.classification.f_beta import (
@@ -166,7 +165,6 @@ __all__ = [
     "CalibrationError",
     "CohenKappa",
     "ConfusionMatrix",
-    "Dice",
     "ExactMatch",
     "F1Score",
     "FBetaScore",
