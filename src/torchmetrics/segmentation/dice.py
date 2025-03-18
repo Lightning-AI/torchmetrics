@@ -148,7 +148,7 @@ class DiceScore(Metric):
             self.average,
             self.aggregation_level,
             support=dim_zero_cat(self.support) if self.average == "weighted" else None,
-        ).nanmean(dim=0)
+        )
 
     def plot(self, val: Union[Tensor, Sequence[Tensor], None] = None, ax: Optional[_AX_TYPE] = None) -> _PLOT_OUT_TYPE:
         """Plot a single or multiple values from the metric.

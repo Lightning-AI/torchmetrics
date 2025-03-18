@@ -79,41 +79,31 @@ def _dice_score_compute(
     support: Optional[Tensor] = None,
 ) -> Tensor:
     """Compute the Dice score from the numerator and denominator."""
-
-    def _divide_non_zero(numerator: Tensor, denominator: Tensor) -> Tensor:
-        """Divide two tensors while masking zero entries in the denominator."""
-        mask = denominator != 0
-        return (
-            numerator[mask] / denominator[mask]
-            if mask.sum() > 0
-            else torch.full(numerator.shape, torch.nan, dtype=torch.float, device=numerator.device)
-        )
-
-    def _compute_channel(numerator: Tensor, denominator: Tensor) -> Tensor:
-        """Compute the dice score of a single class channel."""
-        if torch.all(denominator == 0):
-            return torch.tensor(torch.nan, dtype=torch.float, device=numerator.device)
-        dice = _divide_non_zero(numerator, denominator)
-        return torch.nanmean(dice)
-
     if aggregation_level == "global":
         # TODO: Deal with number overflows
         numerator = torch.sum(numerator, dim=0).unsqueeze(0)
         denominator = torch.sum(denominator, dim=0).unsqueeze(0)
-        support = torch.sum(support, dim=0).unsqueeze(0) if support is not None else None
 
     if average == "micro":
         numerator = torch.sum(numerator, dim=-1)
         denominator = torch.sum(denominator, dim=-1)
-        return _divide_non_zero(numerator, denominator)
+        dice = _safe_divide(numerator, denominator, zero_division="nan")
+        return torch.nanmean(dice)
+
+    dice = _safe_divide(numerator, denominator, zero_division="nan")
     if average == "macro":
-        channel_scores = [_compute_channel(numerator[:, i], denominator[:, i]) for i in range(numerator.shape[1])]
-        return torch.stack(channel_scores)
+        channel_scores = torch.nanmean(dice, dim=0)
+        return torch.mean(channel_scores)
     if average == "weighted":
-        raise NotImplementedError("TODO")
+        support = torch.sum(support, dim=0)
+        weights = _safe_divide(support, torch.sum(support, dim=-1, keepdim=True), zero_division="nan")
+        channel_scores = torch.nanmean(dice, dim=0)
+        return torch.mean(channel_scores * weights)
     if average in ("none", None):
-        return _safe_divide(numerator, denominator, zero_division="nan")
-    raise ValueError(f"Unsupported average method: {average}.")
+        dice = _safe_divide(numerator, denominator, zero_division="nan")
+        return torch.nanmean(dice, dim=0)
+
+    return dice
 
 
 def dice_score(
