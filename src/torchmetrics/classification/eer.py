@@ -64,8 +64,7 @@ class BinaryEER(BinaryROC):
     size :math:`\mathcal{O}(n_{thresholds})` (constant memory).
 
     Args:
-        thresholds:
-            Can be one of:
+        thresholds: Can be one of:
 
             - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
               all the data. Most accurate but also most memory consuming approach.
@@ -173,8 +172,7 @@ class MulticlassEER(MulticlassROC):
 
     Args:
         num_classes: Integer specifying the number of classes
-        thresholds:
-            Can be one of:
+        thresholds: Can be one of:
 
             - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
               all the data. Most accurate but also most memory consuming approach.
@@ -293,15 +291,14 @@ class MultilabelEER(MultilabelROC):
 
     Args:
         num_labels: Integer specifying the number of labels
-        average:
-            Defines the reduction that is applied over labels. Should be one of the following:
+        average: Defines the reduction that is applied over labels. Should be one of the following:
 
             - ``micro``: Sum score over all labels
             - ``macro``: Calculate score for each label and average them
             - ``weighted``: calculates score for each label and computes weighted average using their support
             - ``"none"`` or ``None``: calculates score for each label and applies no reduction
-        thresholds:
-            Can be one of:
+
+        thresholds: Can be one of:
 
             - If set to `None`, will use a non-binned approach where thresholds are dynamically calculated from
               all the data. Most accurate but also most memory consuming approach.
