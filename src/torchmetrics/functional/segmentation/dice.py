@@ -111,10 +111,12 @@ def _dice_score_compute(
         denominator = torch.sum(denominator, dim=-1)
         return _divide_non_zero(numerator, denominator)
     if average == "macro":
-        channel_scores = [_compute_channel(numerator[i], denominator[i]) for i in range(numerator.shape[1])]
+        channel_scores = [_compute_channel(numerator[:, i], denominator[:, i]) for i in range(numerator.shape[1])]
         return torch.stack(channel_scores)
     if average == "weighted":
-        channel_scores = [_compute_channel(numerator[i], denominator[i], support[i]) for i in range(numerator.shape[1])]
+        channel_scores = [
+            _compute_channel(numerator[:, i], denominator[:, i], support[:, i]) for i in range(numerator.shape[1])
+        ]
         return torch.stack(channel_scores)
     if average in ("none", None):
         return _safe_divide(numerator, denominator, zero_division="nan")
