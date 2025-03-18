@@ -151,23 +151,23 @@ class MulticlassEER(MulticlassROC):
 
     As input to ``forward`` and ``update`` the metric accepts the following input:
 
-    - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)`` containing probabilities or logits
-      for each observation. If preds has values outside [0,1] range we consider the input to be logits and will auto
-      apply softmax per sample.
-    - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and
-      therefore only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
+        - ``preds`` (:class:`~torch.Tensor`): A float tensor of shape ``(N, C, ...)`` containing probabilities or logits
+          for each observation. If preds has values outside [0,1] range we consider the input to be logits and will auto
+          apply softmax per sample.
+        - ``target`` (:class:`~torch.Tensor`): An int tensor of shape ``(N, ...)`` containing ground truth labels, and
+          therefore only contain values in the [0, n_classes-1] range (except if `ignore_index` is specified).
 
     As output to ``forward`` and ``compute`` the metric returns the following output:
 
-    - ``mc_eer`` (:class:`~torch.Tensor`): If `average=None` then a 1d tensor of shape (n_classes, ) will
-      be returned with eer score per class. If `average="macro"|"micro" then a single scalar will be returned.
+        - ``mc_eer`` (:class:`~torch.Tensor`): If `average=None` then a 1d tensor of shape (n_classes, ) will
+          be returned with eer score per class. If `average="macro"|"micro"` then a single scalar will be returned.
 
     Additional dimension ``...`` will be flattened into the batch dimension.
 
-    The implementation both supports calculating the metric in a non-binned but accurate version and a binned version
-    that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will activate the
-    non-binned  version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the `thresholds`
-    argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
+    The implementation both supports calculating the metric in a non-binned but accurate version and a
+    binned version that is less accurate but more memory efficient. Setting the `thresholds` argument to `None` will
+    activate the non-binned version that uses memory of size :math:`\mathcal{O}(n_{samples})` whereas setting the
+    `thresholds` argument to either an integer, list or a 1d tensor will use a binned version that uses memory of
     size :math:`\mathcal{O}(n_{thresholds} \times n_{classes})` (constant memory).
 
     Args:
@@ -195,7 +195,7 @@ class MulticlassEER(MulticlassROC):
             Set to ``False`` for faster computations.
         kwargs: Additional keyword arguments, see :ref:`Metric kwargs` for more info.
 
-    Example:
+    Examples:
         >>> from torch import tensor
         >>> from torchmetrics.classification import MulticlassEER
         >>> preds = tensor([[0.75, 0.05, 0.05, 0.05, 0.05],
@@ -209,7 +209,6 @@ class MulticlassEER(MulticlassROC):
         >>> mc_eer = MulticlassEER(num_classes=5, average=None, thresholds=None)
         >>> mc_eer(preds, target)
         tensor([0.0000, 0.0000, 0.6667, 0.6667, 1.0000])
-
     """
 
     def compute(self) -> Tensor:  # type: ignore[override]
