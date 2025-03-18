@@ -54,7 +54,7 @@ def _check_data_shape_to_weights(preds: Tensor, weights: Tensor) -> None:
         raise ValueError(
             f"Expected `preds.shape` to equal to `weights.shape`, but got {preds.shape} and {weights.shape}."
         )
-    elif preds.ndim == 2:
+    if preds.ndim == 2:
         if weights.ndim == 1 and preds.shape[0] != len(weights):
             raise ValueError(
                 f"Expected `preds.shape[0]` to equal to `len(weights)` but got {preds.shape[0]} and {len(weights)}."

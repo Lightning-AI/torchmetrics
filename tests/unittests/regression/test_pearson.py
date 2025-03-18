@@ -18,6 +18,7 @@ import pytest
 import torch
 from scipy.stats import pearsonr
 from torch import Tensor
+
 from torchmetrics.functional.regression.pearson import pearson_corrcoef
 from torchmetrics.regression.pearson import PearsonCorrCoef, _final_aggregation
 from torchmetrics.utilities.imports import _TORCH_GREATER_EQUAL_2_5
